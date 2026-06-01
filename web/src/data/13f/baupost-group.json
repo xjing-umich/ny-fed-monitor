@@ -1,0 +1,603 @@
+{
+  "manager": {
+    "cik": "0001061768",
+    "slug": "baupost-group",
+    "name": "BAUPOST GROUP LLC/MA",
+    "person": "Seth Klarman"
+  },
+  "latest": {
+    "period": "2026-03-31",
+    "filedAt": "2026-05-14",
+    "accession": "0001061768-26-000007",
+    "holdings": [
+      {
+        "cusip": "23135106",
+        "issuer": "AMAZON COM INC",
+        "titleOfClass": "COM",
+        "value": 649543000,
+        "shares": 3118754,
+        "weight": 0.12697844539408606
+      },
+      {
+        "cusip": "76131D103",
+        "issuer": "RESTAURANT BRANDS INTL INC",
+        "titleOfClass": "COM",
+        "value": 597208000,
+        "shares": 8080112,
+        "weight": 0.11674753390754938
+      },
+      {
+        "cusip": "95082P105",
+        "issuer": "WESCO INTL INC",
+        "titleOfClass": "COM",
+        "value": 393159000,
+        "shares": 1436881,
+        "weight": 0.07685821972170201
+      },
+      {
+        "cusip": "907818108",
+        "issuer": "UNION PAC CORP",
+        "titleOfClass": "COM",
+        "value": 373876000,
+        "shares": 1540995,
+        "weight": 0.07308860729799155
+      },
+      {
+        "cusip": "36752103",
+        "issuer": "ELEVANCE HEALTH INC FORMERLY",
+        "titleOfClass": "COM",
+        "value": 373301000,
+        "shares": 1275154,
+        "weight": 0.0729762011815349
+      },
+      {
+        "cusip": "02079K107",
+        "issuer": "ALPHABET INC",
+        "titleOfClass": "CAP STK CL C",
+        "value": 338819000,
+        "shares": 1181131,
+        "weight": 0.06623535299430346
+      },
+      {
+        "cusip": "31488V107",
+        "issuer": "FERGUSON ENTERPRISES INC",
+        "titleOfClass": "COMMON STOCK NEW",
+        "value": 336457000,
+        "shares": 1442411,
+        "weight": 0.06577360821678938
+      },
+      {
+        "cusip": "G96629103",
+        "issuer": "WILLIS TOWERS WATSON PLC LTD",
+        "titleOfClass": "SHS",
+        "value": 259632000,
+        "shares": 893126,
+        "weight": 0.05075517361369048
+      },
+      {
+        "cusip": "G0403H108",
+        "issuer": "AON PLC",
+        "titleOfClass": "SHS CL A",
+        "value": 248218000,
+        "shares": 769000,
+        "weight": 0.0485238633298015
+      },
+      {
+        "cusip": "92826C839",
+        "issuer": "VISA INC",
+        "titleOfClass": "COM CL A",
+        "value": 211978000,
+        "shares": 701355,
+        "weight": 0.04143934565955999
+      },
+      {
+        "cusip": "879369106",
+        "issuer": "TELEFLEX INCORPORATED",
+        "titleOfClass": "COM",
+        "value": 190778000,
+        "shares": 1595000,
+        "weight": 0.03729498101802799
+      },
+      {
+        "cusip": "26969P108",
+        "issuer": "EAGLE MATLS INC",
+        "titleOfClass": "COM",
+        "value": 169134000,
+        "shares": 892763,
+        "weight": 0.03306381930570163
+      },
+      {
+        "cusip": "372460105",
+        "issuer": "GENUINE PARTS CO",
+        "titleOfClass": "COM",
+        "value": 157604000,
+        "shares": 1490348,
+        "weight": 0.030809832309623135
+      },
+      {
+        "cusip": "G61188127",
+        "issuer": "LIBERTY GLOBAL LTD",
+        "titleOfClass": "COM CL C",
+        "value": 157150000,
+        "shares": 13397247,
+        "weight": 0.03072108034984693
+      },
+      {
+        "cusip": "G4412G101",
+        "issuer": "HERBALIFE LTD",
+        "titleOfClass": "COM SHS",
+        "value": 136305000,
+        "shares": 9259844,
+        "weight": 0.026646114267170767
+      },
+      {
+        "cusip": "36165L108",
+        "issuer": "GDS HLDGS LTD",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 122676000,
+        "shares": 3044818,
+        "weight": 0.02398179607380097
+      },
+      {
+        "cusip": "03064D108",
+        "issuer": "AMERICOLD REALTY TRUST INC",
+        "titleOfClass": "COM",
+        "value": 89168000,
+        "shares": 7780800,
+        "weight": 0.017431354073402173
+      },
+      {
+        "cusip": "60855R100",
+        "issuer": "MOLINA HEALTHCARE INC",
+        "titleOfClass": "COM",
+        "value": 84460000,
+        "shares": 633609,
+        "weight": 0.01651099234074497
+      },
+      {
+        "cusip": "40054J109",
+        "issuer": "GRUPO AEROMEXICO SAB DE CV",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 68371000,
+        "shares": 4880188,
+        "weight": 0.01336577145783891
+      },
+      {
+        "cusip": "G66721104",
+        "issuer": "NORWEGIAN CRUISE LINE HLDGS",
+        "titleOfClass": "SHS",
+        "value": 67881000,
+        "shares": 3630000,
+        "weight": 0.013269981897728027
+      },
+      {
+        "cusip": "92243G108",
+        "issuer": "VAXCYTE INC",
+        "titleOfClass": "COM",
+        "value": 46488000,
+        "shares": 800000,
+        "weight": 0.009087887898846224
+      },
+      {
+        "cusip": "67011P100",
+        "issuer": "DNOW INC",
+        "titleOfClass": "COM",
+        "value": 43174000,
+        "shares": 3625000,
+        "weight": 0.008440037690259571
+      }
+    ],
+    "totalValue": 5115380000
+  },
+  "prior": {
+    "period": "2025-12-31",
+    "filedAt": "2026-02-13",
+    "accession": "0001061768-26-000005",
+    "holdings": [
+      {
+        "cusip": "76131D103",
+        "issuer": "RESTAURANT BRANDS INTL INC",
+        "titleOfClass": "COM",
+        "value": 551325000,
+        "shares": 8080112,
+        "weight": 0.10444550533381074
+      },
+      {
+        "cusip": "23135106",
+        "issuer": "AMAZON COM INC",
+        "titleOfClass": "COM",
+        "value": 489659000,
+        "shares": 2121391,
+        "weight": 0.09276321896567076
+      },
+      {
+        "cusip": "G96629103",
+        "issuer": "WILLIS TOWERS WATSON PLC LTD",
+        "titleOfClass": "SHS",
+        "value": 446108000,
+        "shares": 1357601,
+        "weight": 0.08451272025294633
+      },
+      {
+        "cusip": "36752103",
+        "issuer": "ELEVANCE HEALTH INC FORMERLY",
+        "titleOfClass": "COM",
+        "value": 444954000,
+        "shares": 1269302,
+        "weight": 0.0842941012656789
+      },
+      {
+        "cusip": "907818108",
+        "issuer": "UNION PAC CORP",
+        "titleOfClass": "COM",
+        "value": 376416000,
+        "shares": 1627254,
+        "weight": 0.07130995208947843
+      },
+      {
+        "cusip": "95082P105",
+        "issuer": "WESCO INTL INC",
+        "titleOfClass": "COM",
+        "value": 347103000,
+        "shares": 1418831,
+        "weight": 0.06575676459054407
+      },
+      {
+        "cusip": "02079K107",
+        "issuer": "ALPHABET INC",
+        "titleOfClass": "CAP STK CL C",
+        "value": 341157000,
+        "shares": 1087181,
+        "weight": 0.06463032741698067
+      },
+      {
+        "cusip": "31620M106",
+        "issuer": "FIDELITY NATL INFORMATION SV",
+        "titleOfClass": "COM",
+        "value": 299323000,
+        "shares": 4503801,
+        "weight": 0.05670510496174168
+      },
+      {
+        "cusip": "256677105",
+        "issuer": "DOLLAR GEN CORP NEW",
+        "titleOfClass": "COM",
+        "value": 273881000,
+        "shares": 2062821,
+        "weight": 0.051885257237254644
+      },
+      {
+        "cusip": "31488V107",
+        "issuer": "FERGUSON ENTERPRISES INC",
+        "titleOfClass": "COMMON STOCK NEW",
+        "value": 253138000,
+        "shares": 1137035,
+        "weight": 0.047955609357801986
+      },
+      {
+        "cusip": "26969P108",
+        "issuer": "EAGLE MATLS INC",
+        "titleOfClass": "COM",
+        "value": 244967000,
+        "shares": 1185248,
+        "weight": 0.04640765810566837
+      },
+      {
+        "cusip": "G61188127",
+        "issuer": "LIBERTY GLOBAL LTD",
+        "titleOfClass": "COM CL C",
+        "value": 230568000,
+        "shares": 20884781,
+        "weight": 0.04367984632259751
+      },
+      {
+        "cusip": "372460105",
+        "issuer": "GENUINE PARTS CO",
+        "titleOfClass": "COM",
+        "value": 182729000,
+        "shares": 1486088,
+        "weight": 0.03461700946654315
+      },
+      {
+        "cusip": "337738108",
+        "issuer": "FISERV INC",
+        "titleOfClass": "COM",
+        "value": 147774000,
+        "shares": 2200000,
+        "weight": 0.027994975931072502
+      },
+      {
+        "cusip": "G25508105",
+        "issuer": "CRH PLC",
+        "titleOfClass": "ORD",
+        "value": 133905000,
+        "shares": 1072957,
+        "weight": 0.02536756974873972
+      },
+      {
+        "cusip": "G4412G101",
+        "issuer": "HERBALIFE LTD",
+        "titleOfClass": "COM SHS",
+        "value": 119359000,
+        "shares": 9259844,
+        "weight": 0.022611909619803774
+      },
+      {
+        "cusip": "60855R100",
+        "issuer": "MOLINA HEALTHCARE INC",
+        "titleOfClass": "COM",
+        "value": 108463000,
+        "shares": 625000,
+        "weight": 0.020547722024252688
+      },
+      {
+        "cusip": "40054J109",
+        "issuer": "GRUPO AEROMEXICO SAB DE CV",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 106620000,
+        "shares": 4855180,
+        "weight": 0.020198575756025756
+      },
+      {
+        "cusip": "36165L108",
+        "issuer": "GDS HLDGS LTD",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 106264000,
+        "shares": 3044818,
+        "weight": 0.02013113350345452
+      },
+      {
+        "cusip": "03064D108",
+        "issuer": "AMERICOLD REALTY TRUST INC",
+        "titleOfClass": "COM",
+        "value": 44697000,
+        "shares": 3475685,
+        "weight": 0.008467602143754298
+      },
+      {
+        "cusip": "G61188101",
+        "issuer": "LIBERTY GLOBAL LTD",
+        "titleOfClass": "COM CL A",
+        "value": 23176000,
+        "shares": 2080456,
+        "weight": 0.004390566420199334
+      },
+      {
+        "cusip": "87507T101",
+        "issuer": "TAMBORAN RES CORP",
+        "titleOfClass": "COM",
+        "value": 7004000,
+        "shares": 257226,
+        "weight": 0.0013268694859801576
+      }
+    ],
+    "totalValue": 5278590000
+  },
+  "changes": [
+    {
+      "cusip": "23135106",
+      "issuer": "AMAZON COM INC",
+      "kind": "increased",
+      "prevShares": 2121391,
+      "shares": 3118754,
+      "value": 649543000,
+      "deltaPct": 0.47014576756477233
+    },
+    {
+      "cusip": "95082P105",
+      "issuer": "WESCO INTL INC",
+      "kind": "increased",
+      "prevShares": 1418831,
+      "shares": 1436881,
+      "value": 393159000,
+      "deltaPct": 0.012721740644234585
+    },
+    {
+      "cusip": "907818108",
+      "issuer": "UNION PAC CORP",
+      "kind": "decreased",
+      "prevShares": 1627254,
+      "shares": 1540995,
+      "value": 373876000,
+      "deltaPct": -0.05300893406929711
+    },
+    {
+      "cusip": "36752103",
+      "issuer": "ELEVANCE HEALTH INC FORMERLY",
+      "kind": "increased",
+      "prevShares": 1269302,
+      "shares": 1275154,
+      "value": 373301000,
+      "deltaPct": 0.004610407924985543
+    },
+    {
+      "cusip": "02079K107",
+      "issuer": "ALPHABET INC",
+      "kind": "increased",
+      "prevShares": 1087181,
+      "shares": 1181131,
+      "value": 338819000,
+      "deltaPct": 0.08641615333601305
+    },
+    {
+      "cusip": "31488V107",
+      "issuer": "FERGUSON ENTERPRISES INC",
+      "kind": "increased",
+      "prevShares": 1137035,
+      "shares": 1442411,
+      "value": 336457000,
+      "deltaPct": 0.2685722075397855
+    },
+    {
+      "cusip": "G96629103",
+      "issuer": "WILLIS TOWERS WATSON PLC LTD",
+      "kind": "decreased",
+      "prevShares": 1357601,
+      "shares": 893126,
+      "value": 259632000,
+      "deltaPct": -0.34212924121299265
+    },
+    {
+      "cusip": "G0403H108",
+      "issuer": "AON PLC",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 769000,
+      "value": 248218000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "92826C839",
+      "issuer": "VISA INC",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 701355,
+      "value": 211978000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "879369106",
+      "issuer": "TELEFLEX INCORPORATED",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 1595000,
+      "value": 190778000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "26969P108",
+      "issuer": "EAGLE MATLS INC",
+      "kind": "decreased",
+      "prevShares": 1185248,
+      "shares": 892763,
+      "value": 169134000,
+      "deltaPct": -0.24677113987958638
+    },
+    {
+      "cusip": "372460105",
+      "issuer": "GENUINE PARTS CO",
+      "kind": "increased",
+      "prevShares": 1486088,
+      "shares": 1490348,
+      "value": 157604000,
+      "deltaPct": 0.002866586635515528
+    },
+    {
+      "cusip": "G61188127",
+      "issuer": "LIBERTY GLOBAL LTD",
+      "kind": "decreased",
+      "prevShares": 20884781,
+      "shares": 13397247,
+      "value": 157150000,
+      "deltaPct": -0.3585162803478763
+    },
+    {
+      "cusip": "03064D108",
+      "issuer": "AMERICOLD REALTY TRUST INC",
+      "kind": "increased",
+      "prevShares": 3475685,
+      "shares": 7780800,
+      "value": 89168000,
+      "deltaPct": 1.2386378512437117
+    },
+    {
+      "cusip": "60855R100",
+      "issuer": "MOLINA HEALTHCARE INC",
+      "kind": "increased",
+      "prevShares": 625000,
+      "shares": 633609,
+      "value": 84460000,
+      "deltaPct": 0.0137744
+    },
+    {
+      "cusip": "40054J109",
+      "issuer": "GRUPO AEROMEXICO SAB DE CV",
+      "kind": "increased",
+      "prevShares": 4855180,
+      "shares": 4880188,
+      "value": 68371000,
+      "deltaPct": 0.005150787406440132
+    },
+    {
+      "cusip": "G66721104",
+      "issuer": "NORWEGIAN CRUISE LINE HLDGS",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 3630000,
+      "value": 67881000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "92243G108",
+      "issuer": "VAXCYTE INC",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 800000,
+      "value": 46488000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "67011P100",
+      "issuer": "DNOW INC",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 3625000,
+      "value": 43174000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "31620M106",
+      "issuer": "FIDELITY NATL INFORMATION SV",
+      "kind": "exited",
+      "prevShares": 4503801,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "256677105",
+      "issuer": "DOLLAR GEN CORP NEW",
+      "kind": "exited",
+      "prevShares": 2062821,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "337738108",
+      "issuer": "FISERV INC",
+      "kind": "exited",
+      "prevShares": 2200000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "G25508105",
+      "issuer": "CRH PLC",
+      "kind": "exited",
+      "prevShares": 1072957,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "G61188101",
+      "issuer": "LIBERTY GLOBAL LTD",
+      "kind": "exited",
+      "prevShares": 2080456,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "87507T101",
+      "issuer": "TAMBORAN RES CORP",
+      "kind": "exited",
+      "prevShares": 257226,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    }
+  ]
+}

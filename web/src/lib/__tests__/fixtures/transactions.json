@@ -1,0 +1,4202 @@
+{
+  "title": "Transactions and Liquidity",
+  "title_zh": "成交与流动性 Transactions / Liquidity",
+  "mode": "live",
+  "status": "available",
+  "source": "nyfed",
+  "freshness_status": "Stale",
+  "expected_update_frequency": "weekly",
+  "data_date": "2026-05-20",
+  "summary": "Latest level is $950.9 billion; Activity Direction is Stable / improving.",
+  "summary_zh": "最新水平为 $950.9 billion；成交方向 Activity Direction 为 Stable / improving。",
+  "interpretation": "Transactions represent primary dealer activity in the Treasury market. Lower activity can suggest softer liquidity, but it should be read together with fails, rates, and auction demand.",
+  "interpretation_zh": "Transactions 表示 primary dealers 在美债市场的成交活动。成交下降可能说明流动性走弱，但需要和 fails、利率、auction demand 一起判断。",
+  "why_it_matters": "Transaction activity helps monitor market depth and whether dealer intermediation remains active.",
+  "why_it_matters_zh": "成交活动有助于观察市场深度，以及 dealer 中介功能是否仍然活跃。",
+  "key_metrics": [
+    {
+      "label": "Latest Level",
+      "label_zh": "最新水平 Latest Level",
+      "value": "$950.9 billion",
+      "unit": ""
+    },
+    {
+      "label": "1-week Change",
+      "label_zh": "1周变化 1-week Change",
+      "value": "+$103.6 billion",
+      "unit": ""
+    },
+    {
+      "label": "4-week Change",
+      "label_zh": "4周变化 4-week Change",
+      "value": "+$287.3 billion",
+      "unit": ""
+    },
+    {
+      "label": "13-week Change",
+      "label_zh": "13周变化 13-week Change",
+      "value": "+$58.4 billion",
+      "unit": ""
+    },
+    {
+      "label": "Historical Percentile",
+      "label_zh": "历史分位 Historical Percentile",
+      "value": "98.4%",
+      "unit": ""
+    },
+    {
+      "label": "Rolling z-score",
+      "label_zh": "滚动 z-score Rolling z-score",
+      "value": "1.23",
+      "unit": ""
+    },
+    {
+      "label": "Observations Used",
+      "label_zh": "样本数量 Observations Used",
+      "value": "686",
+      "unit": ""
+    },
+    {
+      "label": "Activity Direction",
+      "label_zh": "成交方向 Activity Direction",
+      "value": "Stable / improving",
+      "unit": ""
+    }
+  ],
+  "signals": [
+    "Series keyid: PDGSWOEXTTOT",
+    "Description: Total - U.S. TREASURY SECURITIES (EXCLUDING TREASURY INFLATION-PROTECTED SECURITIES (TIPS)) - DEALER TRANSACTIONS WITH INTER-DEALER BROKERS + Total - U.S. TREASURY SECURITIES (EXCLUDING TREASURY INFLATION-PROTECTED SECURITIES (TIPS)) - DEALER TRANSACTIONS WITH OTHERS"
+  ],
+  "warnings": [],
+  "chart_url": "/assets/transactions.png",
+  "series_used": [
+    {
+      "metric": "Transactions and Liquidity",
+      "keyid": "PDGSWOEXTTOT",
+      "latest_date": "2026-05-20",
+      "formatted_value": "$950.9 billion",
+      "status": "used",
+      "description": "Total - U.S. TREASURY SECURITIES (EXCLUDING TREASURY INFLATION-PROTECTED SECURITIES (TIPS)) - DEALER TRANSACTIONS WITH INTER-DEALER BROKERS + Total - U.S. TREASURY SECURITIES (EXCLUDING TREASURY INFLATION-PROTECTED SECURITIES (TIPS)) - DEALER TRANSACTIONS WITH OTHERS"
+    }
+  ],
+  "normalized_data": [
+    {
+      "date": "2013-04-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 513610.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-04-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 539307.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-04-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 458789.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-04-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 483859.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 502440.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 499268.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 561715.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 535283.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 701745.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 698704.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 613619.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 539739.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 760146.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 582641.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 505358.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 463124.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 465943.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 483733.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 495419.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 410609.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 457878.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 516473.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 583084.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 580550.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 547511.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 524741.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 586805.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 542092.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 538035.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 486526.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 527889.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 493967.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 559216.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 549223.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 526832.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 526226.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 495501.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 510918.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 459205.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 289991.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 492285.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 554636.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 427236.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 614516.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 625738.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558598.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 479986.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 501183.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 595236.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 495124.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 546827.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 577617.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 580129.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 513573.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 471327.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 354621.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 512442.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 497223.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 470862.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 430120.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 478902.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 564730.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 463618.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 490566.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 453941.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 504540.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 434034.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 395850.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 376079.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 500025.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 542850.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 458776.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 461527.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 442777.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 574857.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 521858.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 502682.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 479314.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 555438.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 544302.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 637553.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 526565.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 476810.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 496815.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 450432.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 473322.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 496529.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 527796.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 540161.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 505648.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 394633.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 298819.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 505378.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 523020.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 532089.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 427248.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 625211.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 556415.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 516573.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 464698.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 591567.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 516213.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 450840.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 471627.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 527943.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 348345.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 370272.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 348043.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 504887.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 498650.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 541759.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 466278.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 449856.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 607431.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 500879.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 412889.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 444957.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 520582.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 486122.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 428400.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 385685.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 426870.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 517132.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 436855.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 434952.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 586459.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 560782.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 449134.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 430468.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 469378.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 509355.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 454976.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 418020.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 387559.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 427943.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 616049.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 594742.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 456714.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 425278.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 461786.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 502027.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 470268.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 316428.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 331559.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 502100.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558478.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 554526.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 491287.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 579995.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558664.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 573602.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 522159.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 622768.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 482673.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 448994.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 393501.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 491527.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 456199.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 405537.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 382711.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 470932.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 452144.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 444806.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 473096.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 444938.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 550239.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 473117.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 436474.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 495499.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 564148.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 511223.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 498784.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 419727.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 472425.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 510055.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 460205.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 455742.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 418538.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 525022.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 459086.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 552482.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 422284.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 520750.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558970.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 530385.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 479609.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 443478.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 555368.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 541335.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 774635.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 620900.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 584262.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 521244.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 528507.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 443809.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 348295.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 537583.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 485097.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 504787.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 529970.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 582170.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 522637.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 489849.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 490229.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 604130.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 512479.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 512637.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 425180.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 503189.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 535876.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 470728.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 409937.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 487185.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 521173.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 453553.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 512903.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 528050.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 530394.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 444207.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 504765.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 463983.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 537517.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 506631.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 418563.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 398904.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 414057.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 500682.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 406459.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 448039.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 367569.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 493826.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 527160.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 495908.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 436114.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 493232.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 543955.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 434558.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 422263.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 494957.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 559710.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 451485.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 501039.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 426100.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 525829.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 537571.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 494867.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 459143.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 370545.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 491766.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 493085.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 520810.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 550241.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 620077.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 725241.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 674681.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 572729.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 612161.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 532236.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 504256.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 451150.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 591072.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 492299.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 440100.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 432714.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 556314.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 537792.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 429963.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 523641.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 524751.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 682552.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 554205.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 486785.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 454083.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 460293.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 528411.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 398802.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 402314.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 463919.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 519340.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 408365.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 504178.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 396424.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 486167.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 554755.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 499991.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 486342.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 528291.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 559234.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 594670.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 485683.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 534260.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 599417.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 541907.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 526206.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 510575.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 567005.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 732733.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 709115.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 529790.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 488428.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 577184.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 664404.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 531689.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 519298.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 590177.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 671960.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 528265.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 503068.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 688380.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 656994.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 557903.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 484233.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 691326.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 672677.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 460717.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 490430.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 495989.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558567.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 519844.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 573739.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 480543.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 681575.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 756405.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 618586.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 513594.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 637398.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 557839.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 548551.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 468464.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 466371.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558148.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 734936.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 602775.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 529310.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 567720.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 696093.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 636971.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 608043.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 624003.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 627482.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 525219.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 559909.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 453621.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 521183.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 630555.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 600626.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 495190.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 606539.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 585102.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 532241.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 485579.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 417140.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 375491.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 610940.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 471652.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 494217.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 604635.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 667441.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 527477.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 574108.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 723877.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 1025462.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 869170.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 770507.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 848008.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 899245.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 788733.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 625074.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 542060.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 615146.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 616185.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 605913.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 569084.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 642818.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 721096.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 651849.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 548895.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 502203.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 583874.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 488877.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 424133.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 381845.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 482400.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 499722.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 460083.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 488112.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 526836.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 609286.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 552061.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 463957.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 500276.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 548160.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558945.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 466686.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 418164.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 469992.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 620621.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 598566.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 595625.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 597437.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 595948.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 500235.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 484334.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 429750.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 534342.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 604624.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 664589.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 573594.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 649426.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 678389.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 566248.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 642875.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 713750.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 922682.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 633778.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 559534.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 611396.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 653172.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 427365.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 520351.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 509051.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 559498.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 559120.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 533900.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 585022.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 583306.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 701855.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 541852.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 554728.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 721355.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 624782.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 482711.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 536654.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 540907.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 517550.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 593409.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 566421.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 544904.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 521795.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 612564.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 506417.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 484121.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 473605.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 740142.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 609508.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 684222.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 624351.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 628863.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 820911.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 660303.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 634760.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 714009.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 746593.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 624449.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 527687.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 484888.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 402057.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-01-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 593490.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-01-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 638406.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-01-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 645374.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-01-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 718250.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 677833.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 613945.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 710417.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 735746.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 859697.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 683308.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558932.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 595043.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 700176.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-04-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 644937.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-04-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 587170.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-04-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 562773.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-04-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 613094.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 609207.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 599818.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 591921.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 600935.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 702255.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 513307.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 580199.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 507446.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 558591.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-07-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 568663.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-07-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 497430.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-07-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 455179.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-07-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 523101.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 671038.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 557162.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 547371.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 579977.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 592470.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-09-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 532029.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-09-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 524654.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-09-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 455771.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-09-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 694614.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-10-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 622876.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-10-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 526186.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-10-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 497740.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-10-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 563322.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-11-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 644876.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-11-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 546050.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-11-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 684360.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-11-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 605149.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-11-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 594803.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-12-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 557150.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-12-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 540966.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-12-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 448383.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-12-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 413666.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-01-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 620980.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-01-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 571574.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-01-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 622089.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-01-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 574430.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 662977.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 672848.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 647824.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 658228.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 720938.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 600896.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 852049.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 652918.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 698208.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 632458.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 417228.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 527442.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 511746.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 684066.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 586314.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 651510.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 620731.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 771546.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-06-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 626518.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-06-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 547793.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-06-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 530273.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-06-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 583772.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-07-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 653810.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-07-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 608488.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-07-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 515571.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-07-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 543730.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 706506.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 616731.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 590816.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 520571.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 624407.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-09-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 731529.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-09-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 530516.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-09-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 513738.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-09-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 655659.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 781020.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 664953.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 589638.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 611376.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 738944.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 694319.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 657606.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 616205.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 796688.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-12-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 775367.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-12-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 670637.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-12-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 638633.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-12-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 529245.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 787700.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 695584.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 760931.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 698047.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 807251.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 798391.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 671663.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 667424.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 867169.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-03-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 793592.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-03-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 694292.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-03-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 637979.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-03-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 739487.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-04-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 622122.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-04-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 702751.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-04-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 664291.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-04-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 664073.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 746478.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 641871.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 630904.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 544656.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 761499.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-06-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 782358.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-06-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 670945.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-06-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 732167.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-06-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 686218.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 805087.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 628322.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 659746.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 669183.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 771246.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-08-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 943498.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-08-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 736048.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-08-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 665760.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-08-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 787744.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-09-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 912163.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-09-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 775843.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-09-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 681974.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-09-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 778574.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 840849.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 746513.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 668451.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 623762.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 821611.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 895080.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 813080.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 693219.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 870435.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-12-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 743433.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-12-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 657523.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-12-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 643261.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-12-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 697389.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-01-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 646103.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-01-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 763051.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-01-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 708075.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-01-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 748084.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-01-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 815910.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-02-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 798239.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-02-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 721865.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-02-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 807884.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-02-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 896596.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-03-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 988934.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-03-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 848003.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-03-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 684200.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-03-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 741302.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 873785.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 1130901.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 908028.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 790335.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 824670.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-05-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 776554.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-05-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 779205.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-05-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 707540.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-05-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 824665.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-06-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 875305.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-06-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 657053.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-06-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 651598.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-06-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 748880.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-02",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 849712.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-09",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 694059.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-16",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 611480.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-23",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 540660.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-30",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 740669.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-08-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 852640.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-08-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 675612.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-08-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 629523.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-08-27",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 784967.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 972027.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 851487.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 711548.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 722856.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-10-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 888341.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-10-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 650232.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-10-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 722757.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-10-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 686239.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-10-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 802718.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-11-05",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 902251.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-11-12",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 768284.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-11-19",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 781497.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-11-26",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 966377.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-12-03",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 847569.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-12-10",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 749764.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-12-17",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 706018.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-12-24",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 673531.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-12-31",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 629051.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-01-07",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 772260.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-01-14",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 829015.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-01-21",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 952200.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-01-28",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 824603.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-02-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 965323.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-02-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 832039.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-02-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 892455.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-02-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 898826.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-04",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 1030332.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-11",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 1026952.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-18",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 900142.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-25",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 976316.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-04-01",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 1056895.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-04-08",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 664557.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-04-15",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 708685.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-04-22",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 663578.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-04-29",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 842614.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-05-06",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 872621.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-05-13",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 847304.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-05-20",
+      "keyid": "PDGSWOEXTTOT",
+      "value": 950879.0,
+      "source": "nyfed_pd_get"
+    }
+  ],
+  "last_refreshed_at": "2026-05-29T12:56:05.898951+00:00",
+  "key": "transactions"
+}

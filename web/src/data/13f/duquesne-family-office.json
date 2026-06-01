@@ -1,0 +1,1865 @@
+{
+  "manager": {
+    "cik": "0001536411",
+    "slug": "duquesne-family-office",
+    "name": "Duquesne Family Office LLC",
+    "person": "Stanley Druckenmiller"
+  },
+  "latest": {
+    "period": "2026-03-31",
+    "filedAt": "2026-05-15",
+    "accession": "0001536411-26-000004",
+    "holdings": [
+      {
+        "cusip": "632307104",
+        "issuer": "Natera Inc",
+        "titleOfClass": "COM",
+        "value": 612691000,
+        "shares": 3063606,
+        "weight": 0.1814398009019115
+      },
+      {
+        "cusip": "457669307",
+        "issuer": "Insmed Inc",
+        "titleOfClass": "COM PAR $.01",
+        "value": 188717000,
+        "shares": 1154090,
+        "weight": 0.05588587870036614
+      },
+      {
+        "cusip": "874039100",
+        "issuer": "Taiwan Semiconductor Manufac",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 167380000,
+        "shares": 495280,
+        "weight": 0.049567226995274855
+      },
+      {
+        "cusip": "464286400",
+        "issuer": "Ishares Inc",
+        "titleOfClass": "MSCI BRAZIL ETF",
+        "value": 162313000,
+        "shares": 4228000,
+        "putCall": "Call",
+        "weight": 0.04806670638836209
+      },
+      {
+        "cusip": "46137V357",
+        "issuer": "Invesco Exchange Traded Fd T",
+        "titleOfClass": "S&P500 EQL WGT",
+        "value": 157566000,
+        "shares": 821000,
+        "putCall": "Call",
+        "weight": 0.04666094926955119
+      },
+      {
+        "cusip": "984245100",
+        "issuer": "Ypf Sociedad Anonima",
+        "titleOfClass": "SPON ADR CL D",
+        "value": 149566000,
+        "shares": 3235962,
+        "weight": 0.044291862067004896
+      },
+      {
+        "cusip": "464286400",
+        "issuer": "Ishares Inc",
+        "titleOfClass": "MSCI BRAZIL ETF",
+        "value": 131915000,
+        "shares": 3436170,
+        "weight": 0.03906476729048681
+      },
+      {
+        "cusip": "G0896C103",
+        "issuer": "Bbb Foods Inc",
+        "titleOfClass": "CL A COM",
+        "value": 109972000,
+        "shares": 3109202,
+        "weight": 0.03256665722980264
+      },
+      {
+        "cusip": "13872106",
+        "issuer": "Alcoa Corp",
+        "titleOfClass": "COM",
+        "value": 99057000,
+        "shares": 1493390,
+        "weight": 0.029334333877828543
+      },
+      {
+        "cusip": "N62509109",
+        "issuer": "Newamsterdam Pharma Company",
+        "titleOfClass": "ORDINARY SHARES",
+        "value": 98275000,
+        "shares": 3070146,
+        "weight": 0.029102755603779642
+      },
+      {
+        "cusip": "81141R100",
+        "issuer": "Sea Ltd",
+        "titleOfClass": "SPONSORD ADS",
+        "value": 91083000,
+        "shares": 1099905,
+        "weight": 0.026972946208690524
+      },
+      {
+        "cusip": "861012102",
+        "issuer": "Stmicroelectronics N V",
+        "titleOfClass": "NY REGISTRY",
+        "value": 90275000,
+        "shares": 2612880,
+        "weight": 0.026733668401233347
+      },
+      {
+        "cusip": "980745103",
+        "issuer": "Woodward Inc",
+        "titleOfClass": "COM",
+        "value": 75648000,
+        "shares": 211355,
+        "weight": 0.022402088587277765
+      },
+      {
+        "cusip": "881624209",
+        "issuer": "Teva Pharmaceutical Inds Ltd",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 71604000,
+        "shares": 2377285,
+        "weight": 0.021204515006390614
+      },
+      {
+        "cusip": "77543R102",
+        "issuer": "Roku Inc",
+        "titleOfClass": "COM CL A",
+        "value": 70983000,
+        "shares": 750190,
+        "weight": 0.021020614612292956
+      },
+      {
+        "cusip": "11135F101",
+        "issuer": "Broadcom Inc",
+        "titleOfClass": "COM",
+        "value": 60650000,
+        "shares": 195955,
+        "weight": 0.0179606423543041
+      },
+      {
+        "cusip": "78462F103",
+        "issuer": "State Str Spdr S&P 500 Etf T",
+        "titleOfClass": "TR UNIT",
+        "value": 58531000,
+        "shares": 90000,
+        "putCall": "Call",
+        "weight": 0.017333130381529647
+      },
+      {
+        "cusip": "22266T109",
+        "issuer": "Coupang Inc",
+        "titleOfClass": "CL A",
+        "value": 50362000,
+        "shares": 2667485,
+        "weight": 0.014913996211829563
+      },
+      {
+        "cusip": "68404L201",
+        "issuer": "Option Care Health Inc",
+        "titleOfClass": "COM NEW",
+        "value": 50301000,
+        "shares": 1868550,
+        "weight": 0.014895931921910148
+      },
+      {
+        "cusip": "23135106",
+        "issuer": "Amazon Com Inc",
+        "titleOfClass": "COM",
+        "value": 41654000,
+        "shares": 200000,
+        "putCall": "Call",
+        "weight": 0.012335244791857922
+      },
+      {
+        "cusip": "G25508105",
+        "issuer": "Crh Plc",
+        "titleOfClass": "ORD",
+        "value": 39689000,
+        "shares": 377555,
+        "weight": 0.011753337747732488
+      },
+      {
+        "cusip": "349381103",
+        "issuer": "Figure Technology Solutio",
+        "titleOfClass": "COM CL A",
+        "value": 39057000,
+        "shares": 1150415,
+        "weight": 0.01156617985873133
+      },
+      {
+        "cusip": "3.795e+263",
+        "issuer": "Global X Fds",
+        "titleOfClass": "GB MSCI AR ETF",
+        "value": 36152000,
+        "shares": 387400,
+        "weight": 0.010705905068306707
+      },
+      {
+        "cusip": "142152107",
+        "issuer": "Caris Life Sciences Inc",
+        "titleOfClass": "COM",
+        "value": 33873000,
+        "shares": 1894450,
+        "weight": 0.010031011351481331
+      },
+      {
+        "cusip": "76131D103",
+        "issuer": "Restaurant Brands Intl Inc",
+        "titleOfClass": "COM",
+        "value": 33583000,
+        "shares": 454435,
+        "weight": 0.009945131940389028
+      },
+      {
+        "cusip": "76155X100",
+        "issuer": "Revolution Medicines Inc",
+        "titleOfClass": "COM",
+        "value": 30717000,
+        "shares": 315860,
+        "weight": 0.009096406450076817
+      },
+      {
+        "cusip": "518415104",
+        "issuer": "Lattice Semiconductor Corp",
+        "titleOfClass": "COM",
+        "value": 29974000,
+        "shares": 323135,
+        "weight": 0.00887637747614033
+      },
+      {
+        "cusip": "80004C200",
+        "issuer": "Sandisk Corp",
+        "titleOfClass": "COM",
+        "value": 24241000,
+        "shares": 38155,
+        "weight": 0.007178630359615592
+      },
+      {
+        "cusip": "910047109",
+        "issuer": "United Airls Hldgs Inc",
+        "titleOfClass": "COM",
+        "value": 24168000,
+        "shares": 262495,
+        "weight": 0.007157012438892357
+      },
+      {
+        "cusip": "444859102",
+        "issuer": "Humana Inc",
+        "titleOfClass": "COM",
+        "value": 23842000,
+        "shares": 137505,
+        "weight": 0.007060472135388595
+      },
+      {
+        "cusip": "929740108",
+        "issuer": "Wabtec",
+        "titleOfClass": "COM",
+        "value": 23715000,
+        "shares": 94895,
+        "weight": 0.007022862876048173
+      },
+      {
+        "cusip": "90138F102",
+        "issuer": "Twilio Inc",
+        "titleOfClass": "CL A",
+        "value": 22869000,
+        "shares": 181760,
+        "weight": 0.006772331904378902
+      },
+      {
+        "cusip": "466313103",
+        "issuer": "Jabil Inc",
+        "titleOfClass": "COM",
+        "value": 21835000,
+        "shares": 82200,
+        "weight": 0.006466127383449794
+      },
+      {
+        "cusip": "84265V105",
+        "issuer": "Southern Copper Corp",
+        "titleOfClass": "COM",
+        "value": 20964000,
+        "shares": 121843,
+        "weight": 0.006208193014272566
+      },
+      {
+        "cusip": "46428R107",
+        "issuer": "Ishares S&P Gsci Commodity-",
+        "titleOfClass": "UNIT BEN INT",
+        "value": 20737000,
+        "shares": 643000,
+        "weight": 0.006140970164900315
+      },
+      {
+        "cusip": "G54950103",
+        "issuer": "Linde Plc",
+        "titleOfClass": "SHS",
+        "value": 20425000,
+        "shares": 41200,
+        "weight": 0.00604857576400101
+      },
+      {
+        "cusip": "G7997R103",
+        "issuer": "Seagate Technology Hldngs Pl",
+        "titleOfClass": "ORD SHS",
+        "value": 19862000,
+        "shares": 50700,
+        "weight": 0.0058818512521218135
+      },
+      {
+        "cusip": "464287655",
+        "issuer": "Ishares Tr",
+        "titleOfClass": "RUSSELL 2000 ETF",
+        "value": 19592000,
+        "shares": 79000,
+        "putCall": "Call",
+        "weight": 0.005801894559035876
+      },
+      {
+        "cusip": "185899101",
+        "issuer": "Cleveland-Cliffs Inc New",
+        "titleOfClass": "COM",
+        "value": 19549000,
+        "shares": 2313455,
+        "weight": 0.00578916071532219
+      },
+      {
+        "cusip": "67080N101",
+        "issuer": "Nuvation Bio Inc",
+        "titleOfClass": "COM CL A",
+        "value": 19476000,
+        "shares": 4539800,
+        "weight": 0.005767542794598955
+      },
+      {
+        "cusip": "93712107",
+        "issuer": "Bloom Energy Corp",
+        "titleOfClass": "COM CL A",
+        "value": 18470000,
+        "shares": 136320,
+        "weight": 0.005469630078878758
+      },
+      {
+        "cusip": "458140100",
+        "issuer": "Intel Corp",
+        "titleOfClass": "COM",
+        "value": 18155000,
+        "shares": 411400,
+        "weight": 0.0053763472702784984
+      },
+      {
+        "cusip": "07782B104",
+        "issuer": "Belite Bio Inc Sponsored",
+        "titleOfClass": "ADS",
+        "value": 16917000,
+        "shares": 106100,
+        "weight": 0.005009731025684459
+      },
+      {
+        "cusip": "7.4366e+106",
+        "issuer": "Protagonist Therapeutics Inc",
+        "titleOfClass": "COM",
+        "value": 16832000,
+        "shares": 159700,
+        "weight": 0.004984559474157405
+      },
+      {
+        "cusip": "91332U101",
+        "issuer": "Unity Software Inc",
+        "titleOfClass": "COM",
+        "value": 16209000,
+        "shares": 738785,
+        "weight": 0.004800066808259112
+      },
+      {
+        "cusip": "42068205",
+        "issuer": "Arm Holdings Plc",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 16142000,
+        "shares": 106700,
+        "weight": 0.004780225702937787
+      },
+      {
+        "cusip": "68062P106",
+        "issuer": "Olema Pharmaceuticals Inc",
+        "titleOfClass": "COM",
+        "value": 14714000,
+        "shares": 986827,
+        "weight": 0.004357343637283273
+      },
+      {
+        "cusip": "74743L100",
+        "issuer": "Qnity Electronics Inc",
+        "titleOfClass": "COMMON STOCK",
+        "value": 14498000,
+        "shares": 125655,
+        "weight": 0.004293378282814523
+      },
+      {
+        "cusip": "899104",
+        "issuer": "Adma Biologics Inc",
+        "titleOfClass": "COM",
+        "value": 13926000,
+        "shares": 1545610,
+        "weight": 0.004123988547832463
+      },
+      {
+        "cusip": "98420N105",
+        "issuer": "Xenon Pharmaceuticals Inc",
+        "titleOfClass": "COM",
+        "value": 13875000,
+        "shares": 238600,
+        "weight": 0.00410888561691623
+      },
+      {
+        "cusip": "N4732M103",
+        "issuer": "Jbs N.V.",
+        "titleOfClass": "CL A SHS",
+        "value": 11780000,
+        "shares": 655900,
+        "weight": 0.0034884809057494194
+      },
+      {
+        "cusip": "234264109",
+        "issuer": "Daktronics Inc",
+        "titleOfClass": "COM",
+        "value": 11000000,
+        "shares": 562637,
+        "weight": 0.0032574949035011555
+      },
+      {
+        "cusip": "18915M107",
+        "issuer": "Cloudflare Inc",
+        "titleOfClass": "CL A COM",
+        "value": 10840000,
+        "shares": 52535,
+        "weight": 0.0032101131594502296
+      },
+      {
+        "cusip": "N53745100",
+        "issuer": "Lyondellbasell Industries Nv",
+        "titleOfClass": "SHS - A -",
+        "value": 10588000,
+        "shares": 131435,
+        "weight": 0.0031354869125700215
+      },
+      {
+        "cusip": "92837L109",
+        "issuer": "Vista Energy S.A.B. De C.V.",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 10166000,
+        "shares": 134700,
+        "weight": 0.0030105175626357044
+      },
+      {
+        "cusip": "90184D100",
+        "issuer": "Twist Bioscience Corp",
+        "titleOfClass": "COM",
+        "value": 9789000,
+        "shares": 206000,
+        "weight": 0.0028988743282157103
+      },
+      {
+        "cusip": "19247G107",
+        "issuer": "Coherent Corp",
+        "titleOfClass": "COM",
+        "value": 9624000,
+        "shares": 40400,
+        "weight": 0.002850011904663193
+      },
+      {
+        "cusip": "23135106",
+        "issuer": "Amazon Com Inc",
+        "titleOfClass": "COM",
+        "value": 9539000,
+        "shares": 45800,
+        "weight": 0.0028248403531361383
+      },
+      {
+        "cusip": "15101Q207",
+        "issuer": "Celestica Inc",
+        "titleOfClass": "COM",
+        "value": 9373000,
+        "shares": 33275,
+        "weight": 0.002775681793683303
+      },
+      {
+        "cusip": "86384P109",
+        "issuer": "Stubhub Hldgs Inc",
+        "titleOfClass": "CL A",
+        "value": 8531000,
+        "shares": 1367177,
+        "weight": 0.002526335365615305
+      },
+      {
+        "cusip": "23306J309",
+        "issuer": "Dbv Technologies S A Sponsored",
+        "titleOfClass": "ADS",
+        "value": 8008000,
+        "shares": 383363,
+        "weight": 0.0023714562897488413
+      },
+      {
+        "cusip": "595112103",
+        "issuer": "Micron Technology Inc",
+        "titleOfClass": "COM",
+        "value": 7905000,
+        "shares": 23400,
+        "weight": 0.0023409542920160577
+      },
+      {
+        "cusip": "278768106",
+        "issuer": "Echostar Corp",
+        "titleOfClass": "CL A",
+        "value": 7114000,
+        "shares": 60765,
+        "weight": 0.002106710794864293
+      },
+      {
+        "cusip": "20398707",
+        "issuer": "Almonty Inds Inc",
+        "titleOfClass": "COM NEW",
+        "value": 6804000,
+        "shares": 469880,
+        "weight": 0.0020149086657656238
+      },
+      {
+        "cusip": "74623V103",
+        "issuer": "Purecycle Technologies Inc",
+        "titleOfClass": "COM",
+        "value": 4999000,
+        "shares": 963189,
+        "weight": 0.001480383365691116
+      },
+      {
+        "cusip": "55024U109",
+        "issuer": "Lumentum Hldgs Inc",
+        "titleOfClass": "COM",
+        "value": 4893000,
+        "shares": 6963,
+        "weight": 0.0014489929602573776
+      },
+      {
+        "cusip": "58733R102",
+        "issuer": "Mercadolibre  Inc",
+        "titleOfClass": "COM",
+        "value": 4782000,
+        "shares": 2766,
+        "weight": 0.0014161218753220477
+      },
+      {
+        "cusip": "83443Q103",
+        "issuer": "Solstice Advanced Matls Inc",
+        "titleOfClass": "COM SHS",
+        "value": 4762000,
+        "shares": 62525,
+        "weight": 0.001410199157315682
+      },
+      {
+        "cusip": "960413102",
+        "issuer": "Westlake Corporation",
+        "titleOfClass": "COM",
+        "value": 2476000,
+        "shares": 21194,
+        "weight": 0.0007332324891880783
+      },
+      {
+        "cusip": "Y95308105",
+        "issuer": "Wave Life Sciences Ltd",
+        "titleOfClass": "SHS",
+        "value": 1254000,
+        "shares": 173000,
+        "weight": 0.00037135441899913173
+      }
+    ],
+    "totalValue": 3376828000
+  },
+  "prior": {
+    "period": "2025-12-31",
+    "filedAt": "2026-02-17",
+    "accession": "0001536411-26-000002",
+    "holdings": [
+      {
+        "cusip": "632307104",
+        "issuer": "Natera Inc",
+        "titleOfClass": "COM",
+        "value": 575327000,
+        "shares": 2511357,
+        "weight": 0.12800832137413923
+      },
+      {
+        "cusip": "81369Y605",
+        "issuer": "Select Sector Spdr Tr",
+        "titleOfClass": "STATE STREET FIN",
+        "value": 300994000,
+        "shares": 5495600,
+        "weight": 0.06697015207644984
+      },
+      {
+        "cusip": "457669307",
+        "issuer": "Insmed Inc",
+        "titleOfClass": "COM PAR $.01",
+        "value": 257884000,
+        "shares": 1481752,
+        "weight": 0.057378322152877435
+      },
+      {
+        "cusip": "46137V357",
+        "issuer": "Invesco Exchange Traded Fd T",
+        "titleOfClass": "S&P500 EQL WGT",
+        "value": 224877000,
+        "shares": 1173925,
+        "weight": 0.05003437573006708
+      },
+      {
+        "cusip": "881624209",
+        "issuer": "Teva Pharmaceutical Inds Ltd",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 183355000,
+        "shares": 5874870,
+        "weight": 0.040795870462459256
+      },
+      {
+        "cusip": "980745103",
+        "issuer": "Woodward Inc",
+        "titleOfClass": "COM",
+        "value": 178650000,
+        "shares": 590930,
+        "weight": 0.03974902379601509
+      },
+      {
+        "cusip": "23135106",
+        "issuer": "Amazon Com Inc",
+        "titleOfClass": "COM",
+        "value": 170331000,
+        "shares": 737940,
+        "weight": 0.03789807429162634
+      },
+      {
+        "cusip": "874039100",
+        "issuer": "Taiwan Semiconductor Mfg Ltd",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 165038000,
+        "shares": 543085,
+        "weight": 0.03672039960395599
+      },
+      {
+        "cusip": "22266T109",
+        "issuer": "Coupang Inc",
+        "titleOfClass": "CL A",
+        "value": 159773000,
+        "shares": 6772909,
+        "weight": 0.03554895482205832
+      },
+      {
+        "cusip": "464286400",
+        "issuer": "Ishares Inc",
+        "titleOfClass": "MSCI BRAZIL ETF",
+        "value": 134324000,
+        "shares": 4228000,
+        "putCall": "Call",
+        "weight": 0.029886637964600785
+      },
+      {
+        "cusip": "02079K305",
+        "issuer": "Alphabet Inc",
+        "titleOfClass": "CAP STK CL A",
+        "value": 120505000,
+        "shares": 385000,
+        "weight": 0.02681195696915084
+      },
+      {
+        "cusip": "81141R100",
+        "issuer": "Sea Ltd",
+        "titleOfClass": "SPONSORD ADS",
+        "value": 120441000,
+        "shares": 944120,
+        "weight": 0.026797717184527583
+      },
+      {
+        "cusip": "464286400",
+        "issuer": "Ishares Inc",
+        "titleOfClass": "MSCI BRAZIL ETF",
+        "value": 112865000,
+        "shares": 3552575,
+        "weight": 0.02511208267974947
+      },
+      {
+        "cusip": "N62509109",
+        "issuer": "Newamsterdam Pharma Company",
+        "titleOfClass": "ORDINARY SHARES",
+        "value": 107701000,
+        "shares": 3070146,
+        "weight": 0.023963110057960372
+      },
+      {
+        "cusip": "58733R102",
+        "issuer": "Mercadolibre Inc",
+        "titleOfClass": "COM",
+        "value": 94970000,
+        "shares": 47149,
+        "weight": 0.02113050540110581
+      },
+      {
+        "cusip": "G0896C103",
+        "issuer": "Bbb Foods Inc",
+        "titleOfClass": "CL A COM",
+        "value": 89323000,
+        "shares": 2675152,
+        "weight": 0.019874066904738065
+      },
+      {
+        "cusip": "76131D103",
+        "issuer": "Restaurant Brands Intl Inc",
+        "titleOfClass": "COM",
+        "value": 82490000,
+        "shares": 1209000,
+        "weight": 0.01835374739957058
+      },
+      {
+        "cusip": "19240Q201",
+        "issuer": "Cogent Biosciences Inc",
+        "titleOfClass": "COM",
+        "value": 78658000,
+        "shares": 2214470,
+        "weight": 0.017501140295253036
+      },
+      {
+        "cusip": "13872106",
+        "issuer": "Alcoa Corp",
+        "titleOfClass": "COM",
+        "value": 73123000,
+        "shares": 1376050,
+        "weight": 0.016269621421975994
+      },
+      {
+        "cusip": "29362U104",
+        "issuer": "Entegris Inc",
+        "titleOfClass": "COM",
+        "value": 71120000,
+        "shares": 844160,
+        "weight": 0.015823960662594977
+      },
+      {
+        "cusip": "256163106",
+        "issuer": "Docusign Inc",
+        "titleOfClass": "COM",
+        "value": 69705000,
+        "shares": 1019085,
+        "weight": 0.015509127924440144
+      },
+      {
+        "cusip": "518415104",
+        "issuer": "Lattice Semiconductor Corp",
+        "titleOfClass": "COM",
+        "value": 68133000,
+        "shares": 925970,
+        "weight": 0.015159363214631379
+      },
+      {
+        "cusip": "93712107",
+        "issuer": "Bloom Energy Corp",
+        "titleOfClass": "COM CL A",
+        "value": 64346000,
+        "shares": 740545,
+        "weight": 0.01431676845887706
+      },
+      {
+        "cusip": "929740108",
+        "issuer": "Wabtec",
+        "titleOfClass": "COM",
+        "value": 64058000,
+        "shares": 300110,
+        "weight": 0.014252689428072401
+      },
+      {
+        "cusip": "77543R102",
+        "issuer": "Roku Inc",
+        "titleOfClass": "COM CL A",
+        "value": 63248000,
+        "shares": 582980,
+        "weight": 0.014072467153934298
+      },
+      {
+        "cusip": "349381103",
+        "issuer": "Figure Technology Solutio",
+        "titleOfClass": "COM CL A",
+        "value": 62885000,
+        "shares": 1539785,
+        "weight": 0.013991700875524258
+      },
+      {
+        "cusip": "78462F103",
+        "issuer": "Spdr S&P 500 Etf Tr",
+        "titleOfClass": "TR UNIT",
+        "value": 61373000,
+        "shares": 90000,
+        "putCall": "Call",
+        "weight": 0.013655285963799798
+      },
+      {
+        "cusip": "G25508105",
+        "issuer": "Crh Plc",
+        "titleOfClass": "ORD",
+        "value": 59274000,
+        "shares": 474955,
+        "weight": 0.013188265527483896
+      },
+      {
+        "cusip": "464287655",
+        "issuer": "Ishares Tr",
+        "titleOfClass": "RUSSELL 2000 ETF",
+        "value": 55632000,
+        "shares": 226000,
+        "putCall": "Call",
+        "weight": 0.012377932783766645
+      },
+      {
+        "cusip": "68404L201",
+        "issuer": "Option Care Health Inc",
+        "titleOfClass": "COM NEW",
+        "value": 55626000,
+        "shares": 1745950,
+        "weight": 0.012376597803958216
+      },
+      {
+        "cusip": "464287234",
+        "issuer": "Ishares Tr",
+        "titleOfClass": "MSCI EMG MKT ETF",
+        "value": 49376000,
+        "shares": 902500,
+        "weight": 0.010985993836843217
+      },
+      {
+        "cusip": "247361702",
+        "issuer": "Delta Air Lines Inc Del",
+        "titleOfClass": "COM NEW",
+        "value": 45173000,
+        "shares": 650910,
+        "weight": 0.010050840481037724
+      },
+      {
+        "cusip": "910047109",
+        "issuer": "United Airls Hldgs Inc",
+        "titleOfClass": "COM",
+        "value": 38958000,
+        "shares": 348400,
+        "weight": 0.008668023896138572
+      },
+      {
+        "cusip": "86384P109",
+        "issuer": "Stubhub Hldgs Inc",
+        "titleOfClass": "CL A",
+        "value": 31197000,
+        "shares": 2305751,
+        "weight": 0.0069412275139338515
+      },
+      {
+        "cusip": "682189105",
+        "issuer": "On Semiconductor Corp",
+        "titleOfClass": "COM",
+        "value": 29038000,
+        "shares": 536260,
+        "weight": 0.006460857279533647
+      },
+      {
+        "cusip": "G3643J108",
+        "issuer": "Flutter Entmt Plc",
+        "titleOfClass": "SHS",
+        "value": 24782000,
+        "shares": 115245,
+        "weight": 0.005513911602087018
+      },
+      {
+        "cusip": "74623V103",
+        "issuer": "Purecycle Technologies Inc",
+        "titleOfClass": "COM",
+        "value": 24726000,
+        "shares": 2878434,
+        "weight": 0.005501451790541668
+      },
+      {
+        "cusip": "00835Q202",
+        "issuer": "Aeva Technologies Inc",
+        "titleOfClass": "COM NEW",
+        "value": 24234000,
+        "shares": 1824862,
+        "weight": 0.0053919834462503756
+      },
+      {
+        "cusip": "38141G104",
+        "issuer": "Goldman Sachs Group Inc",
+        "titleOfClass": "COM",
+        "value": 24173000,
+        "shares": 27500,
+        "weight": 0.005378411151531333
+      },
+      {
+        "cusip": "185899101",
+        "issuer": "Cleveland-Cliffs Inc New",
+        "titleOfClass": "COM",
+        "value": 23182000,
+        "shares": 1745655,
+        "weight": 0.005157916986505579
+      },
+      {
+        "cusip": "23135106",
+        "issuer": "Amazon Com Inc",
+        "titleOfClass": "COM",
+        "value": 23082000,
+        "shares": 100000,
+        "putCall": "Call",
+        "weight": 0.005135667323031739
+      },
+      {
+        "cusip": "984245100",
+        "issuer": "Ypf Sociedad Anonima",
+        "titleOfClass": "SPON ADR CL D",
+        "value": 21949000,
+        "shares": 606990,
+        "weight": 0.004883578635873132
+      },
+      {
+        "cusip": "861012102",
+        "issuer": "Stmicroelectronics N V",
+        "titleOfClass": "NY REGISTRY",
+        "value": 20066000,
+        "shares": 773555,
+        "weight": 0.004464617472660726
+      },
+      {
+        "cusip": "91332U101",
+        "issuer": "Unity Software Inc",
+        "titleOfClass": "COM",
+        "value": 18111000,
+        "shares": 410020,
+        "weight": 0.0040296365517471545
+      },
+      {
+        "cusip": "84265V105",
+        "issuer": "Southern Copper Corp",
+        "titleOfClass": "COM",
+        "value": 17334000,
+        "shares": 120817,
+        "weight": 0.0038567566665554183
+      },
+      {
+        "cusip": "234264109",
+        "issuer": "Daktronics Inc",
+        "titleOfClass": "COM",
+        "value": 16863000,
+        "shares": 852960,
+        "weight": 0.0037519607515936323
+      },
+      {
+        "cusip": "74967X103",
+        "issuer": "Rh",
+        "titleOfClass": "COM",
+        "value": 15801000,
+        "shares": 88200,
+        "weight": 0.0035156693255014517
+      },
+      {
+        "cusip": "169656105",
+        "issuer": "Chipotle Mexican Grill Inc",
+        "titleOfClass": "COM",
+        "value": 14501000,
+        "shares": 391930,
+        "weight": 0.003226423700341532
+      },
+      {
+        "cusip": "7.4366e+106",
+        "issuer": "Protagonist Therapeutics Inc",
+        "titleOfClass": "COM",
+        "value": 13948000,
+        "shares": 159700,
+        "weight": 0.0031033830613311974
+      },
+      {
+        "cusip": "98954M200",
+        "issuer": "Zillow Group Inc",
+        "titleOfClass": "CL C CAP STK",
+        "value": 13142000,
+        "shares": 192640,
+        "weight": 0.0029240507737320473
+      },
+      {
+        "cusip": "171757206",
+        "issuer": "Cidara Therapeutics Inc",
+        "titleOfClass": "COM NEW",
+        "value": 10933000,
+        "shares": 49495,
+        "weight": 0.0024325557075949226
+      },
+      {
+        "cusip": "718172109",
+        "issuer": "Philip Morris Intl Inc",
+        "titleOfClass": "COM",
+        "value": 10811000,
+        "shares": 67400,
+        "weight": 0.0024054111181568377
+      },
+      {
+        "cusip": "02376R102",
+        "issuer": "American Airls Group Inc",
+        "titleOfClass": "COM",
+        "value": 9808000,
+        "shares": 639785,
+        "weight": 0.0021822469935142232
+      },
+      {
+        "cusip": "4.01e+112",
+        "issuer": "Argan Inc",
+        "titleOfClass": "COM",
+        "value": 9400000,
+        "shares": 30000,
+        "weight": 0.002091468366540956
+      },
+      {
+        "cusip": "25809K105",
+        "issuer": "Doordash Inc",
+        "titleOfClass": "CL A",
+        "value": 8131000,
+        "shares": 35900,
+        "weight": 0.001809120137057927
+      },
+      {
+        "cusip": "7.434e+107",
+        "issuer": "Progyny Inc",
+        "titleOfClass": "COM",
+        "value": 7579000,
+        "shares": 295115,
+        "weight": 0.0016863019946823305
+      },
+      {
+        "cusip": "278768106",
+        "issuer": "Echostar Corp",
+        "titleOfClass": "CL A",
+        "value": 6605000,
+        "shares": 60765,
+        "weight": 0.0014695902724471293
+      },
+      {
+        "cusip": "899104",
+        "issuer": "Adma Biologics Inc",
+        "titleOfClass": "COM",
+        "value": 4600000,
+        "shares": 252200,
+        "weight": 0.001023484519796638
+      },
+      {
+        "cusip": "20398707",
+        "issuer": "Almonty Inds Inc",
+        "titleOfClass": "COM NEW",
+        "value": 4140000,
+        "shares": 469880,
+        "weight": 0.0009211360678169743
+      },
+      {
+        "cusip": "97785W106",
+        "issuer": "Wolfspeed Inc",
+        "titleOfClass": "COMMON STOCK",
+        "value": 3254000,
+        "shares": 186900,
+        "weight": 0.0007240040494387522
+      },
+      {
+        "cusip": "Y95308105",
+        "issuer": "Wave Life Sciences Ltd",
+        "titleOfClass": "SHS",
+        "value": 2941000,
+        "shares": 173000,
+        "weight": 0.0006543626027656332
+      },
+      {
+        "cusip": "64073B103",
+        "issuer": "Neptune Ins Hldgs Inc",
+        "titleOfClass": "CL A",
+        "value": 583000,
+        "shares": 20000,
+        "weight": 0.00012971553805248695
+      }
+    ],
+    "totalValue": 4494450000
+  },
+  "changes": [
+    {
+      "cusip": "632307104",
+      "issuer": "Natera Inc",
+      "kind": "increased",
+      "prevShares": 2511357,
+      "shares": 3063606,
+      "value": 612691000,
+      "deltaPct": 0.21990063539353424
+    },
+    {
+      "cusip": "457669307",
+      "issuer": "Insmed Inc",
+      "kind": "decreased",
+      "prevShares": 1481752,
+      "shares": 1154090,
+      "value": 188717000,
+      "deltaPct": -0.2211314713933236
+    },
+    {
+      "cusip": "874039100",
+      "issuer": "Taiwan Semiconductor Manufac",
+      "kind": "decreased",
+      "prevShares": 543085,
+      "shares": 495280,
+      "value": 167380000,
+      "deltaPct": -0.08802489481388732
+    },
+    {
+      "cusip": "46137V357",
+      "issuer": "Invesco Exchange Traded Fd T",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 821000,
+      "value": 157566000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "984245100",
+      "issuer": "Ypf Sociedad Anonima",
+      "kind": "increased",
+      "prevShares": 606990,
+      "shares": 3235962,
+      "value": 149566000,
+      "deltaPct": 4.331161963129541
+    },
+    {
+      "cusip": "464286400",
+      "issuer": "Ishares Inc",
+      "kind": "decreased",
+      "prevShares": 3552575,
+      "shares": 3436170,
+      "value": 131915000,
+      "deltaPct": -0.032766373686692045
+    },
+    {
+      "cusip": "G0896C103",
+      "issuer": "Bbb Foods Inc",
+      "kind": "increased",
+      "prevShares": 2675152,
+      "shares": 3109202,
+      "value": 109972000,
+      "deltaPct": 0.16225246266380378
+    },
+    {
+      "cusip": "13872106",
+      "issuer": "Alcoa Corp",
+      "kind": "increased",
+      "prevShares": 1376050,
+      "shares": 1493390,
+      "value": 99057000,
+      "deltaPct": 0.0852730642055158
+    },
+    {
+      "cusip": "81141R100",
+      "issuer": "Sea Ltd",
+      "kind": "increased",
+      "prevShares": 944120,
+      "shares": 1099905,
+      "value": 91083000,
+      "deltaPct": 0.16500550777443546
+    },
+    {
+      "cusip": "861012102",
+      "issuer": "Stmicroelectronics N V",
+      "kind": "increased",
+      "prevShares": 773555,
+      "shares": 2612880,
+      "value": 90275000,
+      "deltaPct": 2.377755944955433
+    },
+    {
+      "cusip": "980745103",
+      "issuer": "Woodward Inc",
+      "kind": "decreased",
+      "prevShares": 590930,
+      "shares": 211355,
+      "value": 75648000,
+      "deltaPct": -0.6423349635320597
+    },
+    {
+      "cusip": "881624209",
+      "issuer": "Teva Pharmaceutical Inds Ltd",
+      "kind": "decreased",
+      "prevShares": 5874870,
+      "shares": 2377285,
+      "value": 71604000,
+      "deltaPct": -0.5953467906523889
+    },
+    {
+      "cusip": "77543R102",
+      "issuer": "Roku Inc",
+      "kind": "increased",
+      "prevShares": 582980,
+      "shares": 750190,
+      "value": 70983000,
+      "deltaPct": 0.28681944492092354
+    },
+    {
+      "cusip": "11135F101",
+      "issuer": "Broadcom Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 195955,
+      "value": 60650000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "22266T109",
+      "issuer": "Coupang Inc",
+      "kind": "decreased",
+      "prevShares": 6772909,
+      "shares": 2667485,
+      "value": 50362000,
+      "deltaPct": -0.6061537221303284
+    },
+    {
+      "cusip": "68404L201",
+      "issuer": "Option Care Health Inc",
+      "kind": "increased",
+      "prevShares": 1745950,
+      "shares": 1868550,
+      "value": 50301000,
+      "deltaPct": 0.07021965119276039
+    },
+    {
+      "cusip": "23135106",
+      "issuer": "Amazon Com Inc",
+      "kind": "increased",
+      "prevShares": 100000,
+      "shares": 200000,
+      "value": 41654000,
+      "deltaPct": 1
+    },
+    {
+      "cusip": "G25508105",
+      "issuer": "Crh Plc",
+      "kind": "decreased",
+      "prevShares": 474955,
+      "shares": 377555,
+      "value": 39689000,
+      "deltaPct": -0.20507205945826446
+    },
+    {
+      "cusip": "349381103",
+      "issuer": "Figure Technology Solutio",
+      "kind": "decreased",
+      "prevShares": 1539785,
+      "shares": 1150415,
+      "value": 39057000,
+      "deltaPct": -0.25287296603097187
+    },
+    {
+      "cusip": "3.795e+263",
+      "issuer": "Global X Fds",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 387400,
+      "value": 36152000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "142152107",
+      "issuer": "Caris Life Sciences Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 1894450,
+      "value": 33873000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "76131D103",
+      "issuer": "Restaurant Brands Intl Inc",
+      "kind": "decreased",
+      "prevShares": 1209000,
+      "shares": 454435,
+      "value": 33583000,
+      "deltaPct": -0.6241232423490488
+    },
+    {
+      "cusip": "76155X100",
+      "issuer": "Revolution Medicines Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 315860,
+      "value": 30717000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "518415104",
+      "issuer": "Lattice Semiconductor Corp",
+      "kind": "decreased",
+      "prevShares": 925970,
+      "shares": 323135,
+      "value": 29974000,
+      "deltaPct": -0.6510308109333995
+    },
+    {
+      "cusip": "80004C200",
+      "issuer": "Sandisk Corp",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 38155,
+      "value": 24241000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "910047109",
+      "issuer": "United Airls Hldgs Inc",
+      "kind": "decreased",
+      "prevShares": 348400,
+      "shares": 262495,
+      "value": 24168000,
+      "deltaPct": -0.24657003444316877
+    },
+    {
+      "cusip": "444859102",
+      "issuer": "Humana Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 137505,
+      "value": 23842000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "929740108",
+      "issuer": "Wabtec",
+      "kind": "decreased",
+      "prevShares": 300110,
+      "shares": 94895,
+      "value": 23715000,
+      "deltaPct": -0.6837992735996801
+    },
+    {
+      "cusip": "90138F102",
+      "issuer": "Twilio Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 181760,
+      "value": 22869000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "466313103",
+      "issuer": "Jabil Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 82200,
+      "value": 21835000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "84265V105",
+      "issuer": "Southern Copper Corp",
+      "kind": "increased",
+      "prevShares": 120817,
+      "shares": 121843,
+      "value": 20964000,
+      "deltaPct": 0.008492182391550859
+    },
+    {
+      "cusip": "46428R107",
+      "issuer": "Ishares S&P Gsci Commodity-",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 643000,
+      "value": 20737000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "G54950103",
+      "issuer": "Linde Plc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 41200,
+      "value": 20425000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "G7997R103",
+      "issuer": "Seagate Technology Hldngs Pl",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 50700,
+      "value": 19862000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "464287655",
+      "issuer": "Ishares Tr",
+      "kind": "decreased",
+      "prevShares": 226000,
+      "shares": 79000,
+      "value": 19592000,
+      "deltaPct": -0.6504424778761062
+    },
+    {
+      "cusip": "185899101",
+      "issuer": "Cleveland-Cliffs Inc New",
+      "kind": "increased",
+      "prevShares": 1745655,
+      "shares": 2313455,
+      "value": 19549000,
+      "deltaPct": 0.3252647287121453
+    },
+    {
+      "cusip": "67080N101",
+      "issuer": "Nuvation Bio Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 4539800,
+      "value": 19476000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "93712107",
+      "issuer": "Bloom Energy Corp",
+      "kind": "decreased",
+      "prevShares": 740545,
+      "shares": 136320,
+      "value": 18470000,
+      "deltaPct": -0.8159193566900054
+    },
+    {
+      "cusip": "458140100",
+      "issuer": "Intel Corp",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 411400,
+      "value": 18155000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "07782B104",
+      "issuer": "Belite Bio Inc Sponsored",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 106100,
+      "value": 16917000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "91332U101",
+      "issuer": "Unity Software Inc",
+      "kind": "increased",
+      "prevShares": 410020,
+      "shares": 738785,
+      "value": 16209000,
+      "deltaPct": 0.8018267401590167
+    },
+    {
+      "cusip": "42068205",
+      "issuer": "Arm Holdings Plc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 106700,
+      "value": 16142000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "68062P106",
+      "issuer": "Olema Pharmaceuticals Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 986827,
+      "value": 14714000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "74743L100",
+      "issuer": "Qnity Electronics Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 125655,
+      "value": 14498000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "899104",
+      "issuer": "Adma Biologics Inc",
+      "kind": "increased",
+      "prevShares": 252200,
+      "shares": 1545610,
+      "value": 13926000,
+      "deltaPct": 5.128509119746234
+    },
+    {
+      "cusip": "98420N105",
+      "issuer": "Xenon Pharmaceuticals Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 238600,
+      "value": 13875000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "N4732M103",
+      "issuer": "Jbs N.V.",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 655900,
+      "value": 11780000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "234264109",
+      "issuer": "Daktronics Inc",
+      "kind": "decreased",
+      "prevShares": 852960,
+      "shares": 562637,
+      "value": 11000000,
+      "deltaPct": -0.34037117801538175
+    },
+    {
+      "cusip": "18915M107",
+      "issuer": "Cloudflare Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 52535,
+      "value": 10840000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "N53745100",
+      "issuer": "Lyondellbasell Industries Nv",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 131435,
+      "value": 10588000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "92837L109",
+      "issuer": "Vista Energy S.A.B. De C.V.",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 134700,
+      "value": 10166000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "90184D100",
+      "issuer": "Twist Bioscience Corp",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 206000,
+      "value": 9789000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "19247G107",
+      "issuer": "Coherent Corp",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 40400,
+      "value": 9624000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "23135106",
+      "issuer": "Amazon Com Inc",
+      "kind": "decreased",
+      "prevShares": 737940,
+      "shares": 45800,
+      "value": 9539000,
+      "deltaPct": -0.9379353334959482
+    },
+    {
+      "cusip": "15101Q207",
+      "issuer": "Celestica Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 33275,
+      "value": 9373000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "86384P109",
+      "issuer": "Stubhub Hldgs Inc",
+      "kind": "decreased",
+      "prevShares": 2305751,
+      "shares": 1367177,
+      "value": 8531000,
+      "deltaPct": -0.40705783061570827
+    },
+    {
+      "cusip": "23306J309",
+      "issuer": "Dbv Technologies S A Sponsored",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 383363,
+      "value": 8008000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "595112103",
+      "issuer": "Micron Technology Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 23400,
+      "value": 7905000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "74623V103",
+      "issuer": "Purecycle Technologies Inc",
+      "kind": "decreased",
+      "prevShares": 2878434,
+      "shares": 963189,
+      "value": 4999000,
+      "deltaPct": -0.665377423974286
+    },
+    {
+      "cusip": "55024U109",
+      "issuer": "Lumentum Hldgs Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 6963,
+      "value": 4893000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "58733R102",
+      "issuer": "Mercadolibre  Inc",
+      "kind": "decreased",
+      "prevShares": 47149,
+      "shares": 2766,
+      "value": 4782000,
+      "deltaPct": -0.9413349169653651
+    },
+    {
+      "cusip": "83443Q103",
+      "issuer": "Solstice Advanced Matls Inc",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 62525,
+      "value": 4762000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "960413102",
+      "issuer": "Westlake Corporation",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 21194,
+      "value": 2476000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "81369Y605",
+      "issuer": "Select Sector Spdr Tr",
+      "kind": "exited",
+      "prevShares": 5495600,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "46137V357",
+      "issuer": "Invesco Exchange Traded Fd T",
+      "kind": "exited",
+      "prevShares": 1173925,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "02079K305",
+      "issuer": "Alphabet Inc",
+      "kind": "exited",
+      "prevShares": 385000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "19240Q201",
+      "issuer": "Cogent Biosciences Inc",
+      "kind": "exited",
+      "prevShares": 2214470,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "29362U104",
+      "issuer": "Entegris Inc",
+      "kind": "exited",
+      "prevShares": 844160,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "256163106",
+      "issuer": "Docusign Inc",
+      "kind": "exited",
+      "prevShares": 1019085,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "464287234",
+      "issuer": "Ishares Tr",
+      "kind": "exited",
+      "prevShares": 902500,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "247361702",
+      "issuer": "Delta Air Lines Inc Del",
+      "kind": "exited",
+      "prevShares": 650910,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "682189105",
+      "issuer": "On Semiconductor Corp",
+      "kind": "exited",
+      "prevShares": 536260,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "G3643J108",
+      "issuer": "Flutter Entmt Plc",
+      "kind": "exited",
+      "prevShares": 115245,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "00835Q202",
+      "issuer": "Aeva Technologies Inc",
+      "kind": "exited",
+      "prevShares": 1824862,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "38141G104",
+      "issuer": "Goldman Sachs Group Inc",
+      "kind": "exited",
+      "prevShares": 27500,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "74967X103",
+      "issuer": "Rh",
+      "kind": "exited",
+      "prevShares": 88200,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "169656105",
+      "issuer": "Chipotle Mexican Grill Inc",
+      "kind": "exited",
+      "prevShares": 391930,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "98954M200",
+      "issuer": "Zillow Group Inc",
+      "kind": "exited",
+      "prevShares": 192640,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "171757206",
+      "issuer": "Cidara Therapeutics Inc",
+      "kind": "exited",
+      "prevShares": 49495,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "718172109",
+      "issuer": "Philip Morris Intl Inc",
+      "kind": "exited",
+      "prevShares": 67400,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "02376R102",
+      "issuer": "American Airls Group Inc",
+      "kind": "exited",
+      "prevShares": 639785,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "4.01e+112",
+      "issuer": "Argan Inc",
+      "kind": "exited",
+      "prevShares": 30000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "25809K105",
+      "issuer": "Doordash Inc",
+      "kind": "exited",
+      "prevShares": 35900,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "7.434e+107",
+      "issuer": "Progyny Inc",
+      "kind": "exited",
+      "prevShares": 295115,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "97785W106",
+      "issuer": "Wolfspeed Inc",
+      "kind": "exited",
+      "prevShares": 186900,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "64073B103",
+      "issuer": "Neptune Ins Hldgs Inc",
+      "kind": "exited",
+      "prevShares": 20000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    }
+  ]
+}

@@ -1,0 +1,421 @@
+{
+  "manager": {
+    "cik": "0001649339",
+    "slug": "scion-asset-management",
+    "name": "Scion Asset Management, LLC",
+    "person": "Michael Burry"
+  },
+  "latest": {
+    "period": "2025-09-30",
+    "filedAt": "2025-11-03",
+    "accession": "0001649339-25-000007",
+    "holdings": [
+      {
+        "cusip": "69608A108",
+        "issuer": "PALANTIR TECHNOLOGIES INC",
+        "titleOfClass": "CL A",
+        "value": 912100000,
+        "shares": 5000000,
+        "putCall": "Put",
+        "weight": 0.6603687160073919
+      },
+      {
+        "cusip": "67066G104",
+        "issuer": "NVIDIA CORPORATION",
+        "titleOfClass": "COM",
+        "value": 186580000,
+        "shares": 1000000,
+        "putCall": "Put",
+        "weight": 0.13508562112998485
+      },
+      {
+        "cusip": "717081103",
+        "issuer": "PFIZER INC",
+        "titleOfClass": "COM",
+        "value": 152880000,
+        "shares": 6000000,
+        "putCall": "Call",
+        "weight": 0.11068651387261272
+      },
+      {
+        "cusip": "406216101",
+        "issuer": "HALLIBURTON CO",
+        "titleOfClass": "COM",
+        "value": 61500000,
+        "shares": 2500000,
+        "putCall": "Call",
+        "weight": 0.04452656072191053
+      },
+      {
+        "cusip": "60855R100",
+        "issuer": "MOLINA HEALTHCARE INC",
+        "titleOfClass": "COM",
+        "value": 23920000,
+        "shares": 125000,
+        "weight": 0.017318298088912193
+      },
+      {
+        "cusip": "550021109",
+        "issuer": "LULULEMON ATHLETICA INC",
+        "titleOfClass": "COM",
+        "value": 17793000,
+        "shares": 100000,
+        "weight": 0.012882294226422019
+      },
+      {
+        "cusip": "78442P106",
+        "issuer": "SLM CORP",
+        "titleOfClass": "COM",
+        "value": 13287895,
+        "shares": 480054,
+        "weight": 0.009620557131445063
+      },
+      {
+        "cusip": "116794207",
+        "issuer": "BRUKER CORP",
+        "titleOfClass": "6.375 PREF SER A",
+        "value": 13137181,
+        "shares": 48334,
+        "weight": 0.009511438821320802
+      }
+    ],
+    "totalValue": 1381198076
+  },
+  "prior": {
+    "period": "2025-06-30",
+    "filedAt": "2025-08-14",
+    "accession": "0001879202-25-000038",
+    "holdings": [
+      {
+        "cusip": "91324P102",
+        "issuer": "UNITEDHEALTH GROUP INC",
+        "titleOfClass": "COM",
+        "value": 109189500,
+        "shares": 350000,
+        "putCall": "Call",
+        "weight": 0.18879907812925142
+      },
+      {
+        "cusip": "75886F107",
+        "issuer": "REGENERON PHARMACEUTICALS",
+        "titleOfClass": "COM",
+        "value": 105000000,
+        "shares": 200000,
+        "putCall": "Call",
+        "weight": 0.18155503233892817
+      },
+      {
+        "cusip": "550021109",
+        "issuer": "LULULEMON ATHLETICA INC",
+        "titleOfClass": "COM",
+        "value": 95032000,
+        "shares": 400000,
+        "putCall": "Call",
+        "weight": 0.1643194079355526
+      },
+      {
+        "cusip": "30303M102",
+        "issuer": "META PLATFORMS INC",
+        "titleOfClass": "CL A",
+        "value": 73809000,
+        "shares": 100000,
+        "putCall": "Call",
+        "weight": 0.12762281316099
+      },
+      {
+        "cusip": "518439104",
+        "issuer": "LAUDER ESTEE COS INC",
+        "titleOfClass": "CL A",
+        "value": 40400000,
+        "shares": 500000,
+        "putCall": "Call",
+        "weight": 0.06985546006183523
+      },
+      {
+        "cusip": "47215P106",
+        "issuer": "JD.COM INC",
+        "titleOfClass": "SPON ADS CL A",
+        "value": 32640000,
+        "shares": 1000000,
+        "putCall": "Call",
+        "weight": 0.056437678624215386
+      },
+      {
+        "cusip": "01609W102",
+        "issuer": "ALIBABA GROUP HLDG LTD",
+        "titleOfClass": "SPONSORED ADS",
+        "value": 28352500,
+        "shares": 250000,
+        "putCall": "Call",
+        "weight": 0.04902418147037582
+      },
+      {
+        "cusip": "N07059210",
+        "issuer": "ASML HOLDING N V",
+        "titleOfClass": "N Y REGISTRY SHS",
+        "value": 20034750,
+        "shares": 25000,
+        "putCall": "Call",
+        "weight": 0.03464199699192706
+      },
+      {
+        "cusip": "918204108",
+        "issuer": "V F CORP",
+        "titleOfClass": "COM",
+        "value": 17625000,
+        "shares": 1500000,
+        "putCall": "Call",
+        "weight": 0.03047530899974866
+      },
+      {
+        "cusip": "518439104",
+        "issuer": "LAUDER ESTEE COS INC",
+        "titleOfClass": "CL A",
+        "value": 12120000,
+        "shares": 150000,
+        "weight": 0.020956638018550567
+      },
+      {
+        "cusip": "550021109",
+        "issuer": "LULULEMON ATHLETICA INC",
+        "titleOfClass": "COM",
+        "value": 11879000,
+        "shares": 50000,
+        "weight": 0.020539925991944076
+      },
+      {
+        "cusip": "116794108",
+        "issuer": "BRUKER CORP",
+        "titleOfClass": "COM",
+        "value": 10300000,
+        "shares": 250000,
+        "weight": 0.01780968412467581
+      },
+      {
+        "cusip": "75886F107",
+        "issuer": "REGENERON PHARMACEUTICALS",
+        "titleOfClass": "COM",
+        "value": 7875000,
+        "shares": 15000,
+        "weight": 0.013616627425419614
+      },
+      {
+        "cusip": "58733R102",
+        "issuer": "MERCADOLIBRE INC",
+        "titleOfClass": "COM",
+        "value": 7840890,
+        "shares": 3000,
+        "weight": 0.013557647976342653
+      },
+      {
+        "cusip": "91324P102",
+        "issuer": "UNITEDHEALTH GROUP INC",
+        "titleOfClass": "COM",
+        "value": 6239400,
+        "shares": 20000,
+        "weight": 0.010788518750242938
+      }
+    ],
+    "totalValue": 578337040
+  },
+  "changes": [
+    {
+      "cusip": "69608A108",
+      "issuer": "PALANTIR TECHNOLOGIES INC",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 5000000,
+      "value": 912100000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "67066G104",
+      "issuer": "NVIDIA CORPORATION",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 1000000,
+      "value": 186580000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "717081103",
+      "issuer": "PFIZER INC",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 6000000,
+      "value": 152880000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "406216101",
+      "issuer": "HALLIBURTON CO",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 2500000,
+      "value": 61500000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "60855R100",
+      "issuer": "MOLINA HEALTHCARE INC",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 125000,
+      "value": 23920000,
+      "deltaPct": null
+    },
+    {
+      "cusip": "550021109",
+      "issuer": "LULULEMON ATHLETICA INC",
+      "kind": "increased",
+      "prevShares": 50000,
+      "shares": 100000,
+      "value": 17793000,
+      "deltaPct": 1
+    },
+    {
+      "cusip": "78442P106",
+      "issuer": "SLM CORP",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 480054,
+      "value": 13287895,
+      "deltaPct": null
+    },
+    {
+      "cusip": "116794207",
+      "issuer": "BRUKER CORP",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 48334,
+      "value": 13137181,
+      "deltaPct": null
+    },
+    {
+      "cusip": "91324P102",
+      "issuer": "UNITEDHEALTH GROUP INC",
+      "kind": "exited",
+      "prevShares": 350000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "75886F107",
+      "issuer": "REGENERON PHARMACEUTICALS",
+      "kind": "exited",
+      "prevShares": 200000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "550021109",
+      "issuer": "LULULEMON ATHLETICA INC",
+      "kind": "exited",
+      "prevShares": 400000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "30303M102",
+      "issuer": "META PLATFORMS INC",
+      "kind": "exited",
+      "prevShares": 100000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "518439104",
+      "issuer": "LAUDER ESTEE COS INC",
+      "kind": "exited",
+      "prevShares": 500000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "47215P106",
+      "issuer": "JD.COM INC",
+      "kind": "exited",
+      "prevShares": 1000000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "01609W102",
+      "issuer": "ALIBABA GROUP HLDG LTD",
+      "kind": "exited",
+      "prevShares": 250000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "N07059210",
+      "issuer": "ASML HOLDING N V",
+      "kind": "exited",
+      "prevShares": 25000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "918204108",
+      "issuer": "V F CORP",
+      "kind": "exited",
+      "prevShares": 1500000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "518439104",
+      "issuer": "LAUDER ESTEE COS INC",
+      "kind": "exited",
+      "prevShares": 150000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "116794108",
+      "issuer": "BRUKER CORP",
+      "kind": "exited",
+      "prevShares": 250000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "75886F107",
+      "issuer": "REGENERON PHARMACEUTICALS",
+      "kind": "exited",
+      "prevShares": 15000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "58733R102",
+      "issuer": "MERCADOLIBRE INC",
+      "kind": "exited",
+      "prevShares": 3000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    },
+    {
+      "cusip": "91324P102",
+      "issuer": "UNITEDHEALTH GROUP INC",
+      "kind": "exited",
+      "prevShares": 20000,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    }
+  ]
+}

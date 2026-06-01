@@ -1,0 +1,3626 @@
+{
+  "title": "Repo Financing",
+  "title_zh": "回购融资 Repo Financing",
+  "mode": "live",
+  "status": "available",
+  "source": "nyfed",
+  "freshness_status": "Old",
+  "expected_update_frequency": "weekly",
+  "data_date": "2026-05-06",
+  "summary": "Latest level is $3.2 trillion; Usage Label is Elevated / High usage.",
+  "summary_zh": "最新水平为 $3.2 trillion；使用标签 Usage Label 为 Elevated / High usage。",
+  "interpretation": "Repo Financing represents dealer secured funding usage for Treasury inventories. Higher usage can mean higher balance-sheet usage, but it does not automatically imply funding stress.",
+  "interpretation_zh": "Repo Financing 表示 dealer 通过回购市场为证券库存融资的规模。使用量偏高可能说明 balance sheet usage 上升，但不一定代表 funding stress。",
+  "why_it_matters": "Repo financing helps separate inventory funding needs from rate-based funding stress.",
+  "why_it_matters_zh": "回购融资有助于区分库存融资需求上升，与真正的利率型 funding stress 之间的差别。",
+  "key_metrics": [
+    {
+      "label": "Latest Level",
+      "label_zh": "最新水平 Latest Level",
+      "value": "$3.2 trillion",
+      "unit": ""
+    },
+    {
+      "label": "1-week Change",
+      "label_zh": "1周变化 1-week Change",
+      "value": "+$49.6 billion",
+      "unit": ""
+    },
+    {
+      "label": "4-week Change",
+      "label_zh": "4周变化 4-week Change",
+      "value": "+$49.6 billion",
+      "unit": ""
+    },
+    {
+      "label": "13-week Change",
+      "label_zh": "13周变化 13-week Change",
+      "value": "+$83.0 billion",
+      "unit": ""
+    },
+    {
+      "label": "Historical Percentile",
+      "label_zh": "历史分位 Historical Percentile",
+      "value": "99.5%",
+      "unit": ""
+    },
+    {
+      "label": "Rolling z-score",
+      "label_zh": "滚动 z-score Rolling z-score",
+      "value": "1.42",
+      "unit": ""
+    },
+    {
+      "label": "Observations Used",
+      "label_zh": "样本数量 Observations Used",
+      "value": "590",
+      "unit": ""
+    },
+    {
+      "label": "Usage Label",
+      "label_zh": "使用标签 Usage Label",
+      "value": "Elevated / High usage",
+      "unit": ""
+    }
+  ],
+  "signals": [
+    "Series keyid: PDSORA-UTSETTOT",
+    "Description: Total - Repurchase Agreements: U.S. Treasury securities (excluding TIPS)"
+  ],
+  "warnings": [],
+  "chart_url": "/assets/repo_financing.png",
+  "series_used": [
+    {
+      "metric": "Repo Financing",
+      "keyid": "PDSORA-UTSETTOT",
+      "latest_date": "2026-05-06",
+      "formatted_value": "$3.2 trillion",
+      "status": "used",
+      "description": "Total - Repurchase Agreements: U.S. Treasury securities (excluding TIPS)"
+    }
+  ],
+  "normalized_data": [
+    {
+      "date": "2013-04-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1535302.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-04-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1577704.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-04-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1574010.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-04-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1532935.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1581953.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1570365.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1615840.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1558689.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-05-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1554688.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1591721.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1586034.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1543306.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-06-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1568565.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1487587.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1463983.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1435508.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1420106.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-07-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1461273.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1455131.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1476045.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1464223.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-08-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1509458.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1501678.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1513899.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1480557.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-09-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1482117.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1440708.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1459825.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1468128.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1498019.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-10-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1529874.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1531811.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1527573.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1483938.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-11-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1513492.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1506815.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1511539.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1427259.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2013-12-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1424706.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1274427.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1344907.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1358297.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1391647.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-01-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1415735.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1404723.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1427383.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1374455.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-02-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1446572.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1427112.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1449483.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1418100.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-03-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1430220.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1340518.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1368146.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1383502.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1373085.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-04-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1353518.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1356234.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1378547.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1432465.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-05-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1423605.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1432426.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1461206.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1461817.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-06-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1432394.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1348632.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1364659.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1358659.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1421750.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-07-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1417849.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1430080.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1429127.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1417793.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-08-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1458144.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1452423.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1461006.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1441197.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-09-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1462758.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1389386.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1422318.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1424398.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1425304.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-10-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1395222.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1392735.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1402370.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1393031.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-11-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1397227.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1417138.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1417161.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1413431.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1341667.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2014-12-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1187002.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1280258.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1314724.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1275085.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-01-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1316114.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1317202.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1348862.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1331551.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-02-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1379595.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1330220.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1374499.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1339878.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-03-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1354936.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1295647.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1320021.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1289391.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1288994.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-04-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1291290.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1349329.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1360674.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1331118.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-05-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1335291.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1362933.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1346322.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1297148.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-06-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1268038.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1256227.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1235186.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1216855.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1239712.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-07-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1262121.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1285081.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1262786.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1269310.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-08-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1319241.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1346494.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1326470.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1328569.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1335951.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-09-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1266349.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1301861.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1312999.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1370852.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-10-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1357829.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1384198.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1400844.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1389026.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-11-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1338575.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1343146.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1390294.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1352628.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1363456.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2015-12-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1310236.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1316064.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1357704.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1343728.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-01-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1374157.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1397784.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1419447.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1400307.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-02-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1411113.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1424432.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1431975.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1391530.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1420419.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-03-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1382894.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1412086.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1440021.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1402519.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-04-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1394594.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1369966.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1394445.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1422916.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-05-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1434510.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1468920.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1497411.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1451608.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1428623.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-06-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1463255.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1404287.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1448682.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1396508.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-07-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1429849.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1434462.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1421581.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1436330.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1461681.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-08-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1455850.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1495189.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1549638.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1527210.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-09-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1472355.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1489720.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1490700.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1494930.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-10-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1480322.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1488560.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1464754.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1528442.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1490431.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-11-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1431379.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1484832.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1519248.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1457794.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2016-12-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1395580.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1347185.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1388691.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1395740.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-01-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1380619.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1368314.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1386332.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1416167.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-02-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1409522.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1426616.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1456132.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1433481.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1456183.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-03-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1418639.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1406642.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1415410.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1445710.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-04-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1423103.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1448219.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1434700.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1460589.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1479149.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-05-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1432126.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1536861.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1505125.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1505000.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-06-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1479257.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1426789.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1431518.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1431759.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-07-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1436969.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1405462.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1438741.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1455157.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1462669.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-08-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1478093.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1501494.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1519939.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1499707.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-09-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1497531.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1462560.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1507535.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1500155.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-10-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1498713.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1549843.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1569954.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1536928.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1564898.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-11-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1566337.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1485544.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1505083.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1487723.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2017-12-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1470773.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1419714.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1456876.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1418157.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1428386.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-01-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1469311.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1485633.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1486270.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1495780.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-02-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1484906.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1524923.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1520860.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1492444.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-03-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1425852.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1429267.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1381471.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1357860.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-04-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1360619.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1394331.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1426361.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1410254.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1402026.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-05-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1387178.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1439113.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1429164.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1423594.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-06-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1392236.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1329265.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1306321.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1336105.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-07-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1341049.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1359288.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1338198.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1354603.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1378171.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-08-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1366099.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1383154.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1417695.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1376580.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-09-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1354444.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1363953.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1380906.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1373794.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1407773.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-10-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1437600.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1462076.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1441407.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1542652.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-11-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1554384.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1640346.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1649204.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1673913.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2018-12-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1658459.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1608086.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1630669.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1636097.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1642793.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-01-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1621571.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1576564.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1608992.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1635140.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-02-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1671850.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1680095.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1674048.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1673008.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-03-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1654602.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1657756.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1688925.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1659738.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-04-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1682308.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1709494.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1724397.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1698252.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1733622.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-05-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1778374.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1786813.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1785456.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1773508.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-06-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1759202.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1749798.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1730706.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1724357.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1774922.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-07-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1750934.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1787548.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1807628.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1776011.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-08-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1807640.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1810859.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1788073.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1767548.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-09-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1736014.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1762701.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1768762.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1814027.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1766259.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-10-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1734058.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1790999.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1769086.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1796797.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-11-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1766474.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1792513.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1796023.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1808345.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2019-12-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1782127.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1604722.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1641687.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1654676.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1646558.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-01-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1671183.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1700750.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1695649.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1716634.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-02-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1733552.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1946741.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2039916.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2070026.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-03-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2000445.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1853506.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1786924.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1775697.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1747205.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-04-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1752425.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1725041.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1745859.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1743923.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-05-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1763419.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1778177.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1775419.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1732737.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-06-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1731448.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1681107.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1671748.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1685788.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1690813.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-07-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1652746.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1687898.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1697435.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1723649.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-08-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1682527.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1721056.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1713760.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1682020.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1694144.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-09-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1699716.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1763661.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1717489.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1720406.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-10-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1705157.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1708530.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1729992.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1768788.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-11-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1733615.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1816176.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1799077.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1803889.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1806189.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2020-12-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1834702.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1817033.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1775042.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1678848.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-01-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1658855.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1693047.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1667253.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1663221.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-02-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1629526.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1675234.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1653210.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1605228.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1588949.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-03-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1618842.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1649535.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1621217.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1561884.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-04-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1538868.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1589415.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1603755.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1618279.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-05-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1640065.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1708454.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1706593.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1683421.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1670093.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-06-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1646854.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1601547.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1597244.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1592783.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-07-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1545130.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1604156.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1623252.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1662164.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-08-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1612279.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1677734.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1638183.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1660888.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1658008.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-09-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1679562.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1705162.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1720106.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1699024.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-10-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1704327.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1717145.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1674200.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1717390.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-11-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1708847.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1773528.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1760512.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1748872.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1773392.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2021-12-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1765453.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-01-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1730013.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-01-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1757911.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-01-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1730074.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1753182.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1742536.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1765972.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-02-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1768682.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1820536.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1777046.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1746256.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-03-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1746411.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-04-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1730685.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-04-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1721294.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-04-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1697768.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1719853.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1735551.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1775785.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-05-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1801806.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1786439.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1782610.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1763001.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1778870.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-06-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1768796.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-07-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1713319.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-07-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1724036.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-07-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1708994.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1726468.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1784475.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1804826.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-08-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1807075.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-09-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1823586.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-10-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1694202.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-10-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1655233.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-10-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1668181.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-11-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1650606.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-11-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1743495.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2022-12-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1753043.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1811754.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1861776.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1825338.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-02-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1811339.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1882592.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1863189.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1940350.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-03-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1981446.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1970965.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-12",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1916795.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1938150.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-04-26",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1910817.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1984119.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1955870.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2000940.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2020667.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-05-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2087894.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-06-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2048163.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-06-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2036482.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-07-05",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1940629.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-07-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1988618.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1875259.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1893586.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-08-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1944284.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-09-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1959134.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-09-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1955227.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1939634.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1931989.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1875689.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-10-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1850986.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1901064.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1932063.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 1962682.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-11-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2012330.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-12-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2080758.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2023-12-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2149073.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2181078.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2119337.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2117104.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2103923.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-01-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2172904.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2139343.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2147952.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-21",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2100388.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-02-28",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2147294.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-03-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2206491.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-04-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2248166.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-04-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2154583.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2185367.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-08",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2165620.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2227038.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2245821.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-05-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2284415.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2314247.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2273432.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2330994.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-07-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2307647.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-08-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2365049.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-09-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2408906.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-09-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2425887.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2558613.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2389747.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-10-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2406596.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2356179.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-13",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2407259.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-20",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2456059.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2024-11-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2480935.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-01-01",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2641844.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-02",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2701057.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-09",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2829767.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2811572.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2808031.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-04-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2845391.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-05-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2820537.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-06-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2799528.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-16",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2786442.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-23",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2794850.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-07-30",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2815123.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-08-27",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2949446.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-03",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2967924.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-10",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3033233.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-17",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3020999.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-09-24",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3002887.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-10-22",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2938872.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-10-29",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3005792.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-11-19",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 2993598.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2025-12-31",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3167819.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-01-07",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3114417.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-01-14",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3098604.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-02-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3107677.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-04",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3247155.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-11",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3231424.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-18",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3183907.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-03-25",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3209022.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-04-15",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3141133.0,
+      "source": "nyfed_pd_get"
+    },
+    {
+      "date": "2026-05-06",
+      "keyid": "PDSORA-UTSETTOT",
+      "value": 3190705.0,
+      "source": "nyfed_pd_get"
+    }
+  ],
+  "last_refreshed_at": "2026-05-29T12:56:26.022939+00:00",
+  "key": "repo-financing"
+}

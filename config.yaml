@@ -1,0 +1,33 @@
+project:
+  name: nyfed_treasury_web_agent
+  mode: mock
+  description: Clean React + FastAPI NY Fed Treasury web dashboard skeleton.
+
+server:
+  backend_port: 8010
+  frontend_port: 5174
+
+data:
+  cache_dir: data/cache
+  raw_dir: data/raw
+  processed_dir: data/processed
+  manual_dir: data/manual
+  report_assets_dir: data/reports/assets
+
+features:
+  live_nyfed_data: true
+  database: false
+  trading_recommendations: false
+
+reference_rates:
+  sofr: https://markets.newyorkfed.org/api/rates/secured/sofr/last/30.json
+  effr: https://markets.newyorkfed.org/api/rates/unsecured/effr/last/30.json
+  obfr: https://markets.newyorkfed.org/api/rates/unsecured/obfr/last/30.json
+  tgcr: https://markets.newyorkfed.org/api/rates/secured/tgcr/last/30.json
+  bgcr: https://markets.newyorkfed.org/api/rates/secured/bgcr/last/30.json
+
+soma:
+  summary_endpoint: https://markets.newyorkfed.org/api/soma/summary.json
+
+policy_expectations:
+  sme_file_path: "data/manual/sme_latest.xlsx"

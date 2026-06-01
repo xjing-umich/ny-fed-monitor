@@ -1,0 +1,34 @@
+# --- secrets (NEVER commit) ---
+**/.env
+**/.env.local
+**/.env.*.local
+
+# --- node / next (anywhere) ---
+node_modules/
+.next/
+dist/
+.vite/
+out/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- python ---
+backend/.venv/
+**/__pycache__/
+*.pyc
+
+# --- generated / large data (not source) ---
+data/raw/
+data/cache/
+data/processed/
+data/reports/
+
+# --- brainstorm / tooling artifacts ---
+.superpowers/
+
+# --- os / misc ---
+.DS_Store
+*.log
+.claude/
+.vercel

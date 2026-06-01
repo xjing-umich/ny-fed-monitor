@@ -1,0 +1,283 @@
+{
+  "manager": {
+    "cik": "0001336528",
+    "slug": "pershing-square",
+    "name": "Pershing Square Capital Management, L.P.",
+    "person": "Bill Ackman"
+  },
+  "latest": {
+    "period": "2026-03-31",
+    "filedAt": "2026-05-15",
+    "accession": "0001172661-26-002336",
+    "holdings": [
+      {
+        "cusip": "11271J107",
+        "issuer": "BROOKFIELD CORP",
+        "titleOfClass": "CL A LTD VT SH",
+        "value": 2415946008,
+        "shares": 59697208,
+        "weight": 0.17616254803282663
+      },
+      {
+        "cusip": "23135106",
+        "issuer": "AMAZON COM INC",
+        "titleOfClass": "COM",
+        "value": 2385104083,
+        "shares": 11451981,
+        "weight": 0.1739136599880416
+      },
+      {
+        "cusip": "90353T100",
+        "issuer": "UBER TECHNOLOGIES INC",
+        "titleOfClass": "COM",
+        "value": 2154934398,
+        "shares": 29958771,
+        "weight": 0.15713047110250872
+      },
+      {
+        "cusip": "594918104",
+        "issuer": "MICROSOFT CORP",
+        "titleOfClass": "COM",
+        "value": 2092970053,
+        "shares": 5654078,
+        "weight": 0.15261224227361964
+      },
+      {
+        "cusip": "76131D103",
+        "issuer": "RESTAURANT BRANDS INTL INC",
+        "titleOfClass": "COM",
+        "value": 1673501194,
+        "shares": 22645483,
+        "weight": 0.1220260028555314
+      },
+      {
+        "cusip": "30303M102",
+        "issuer": "META PLATFORMS INC",
+        "titleOfClass": "CL A",
+        "value": 1522358404,
+        "shares": 2660861,
+        "weight": 0.11100518578634862
+      },
+      {
+        "cusip": "44267T102",
+        "issuer": "HOWARD HUGHES HOLDINGS INC",
+        "titleOfClass": "COM",
+        "value": 1192581569,
+        "shares": 18852064,
+        "weight": 0.08695898303867486
+      },
+      {
+        "cusip": "812215200",
+        "issuer": "SEAPORT ENTMT GROUP INC",
+        "titleOfClass": "COMMON STOCK",
+        "value": 107910794,
+        "shares": 5023780,
+        "weight": 0.007868487279242815
+      },
+      {
+        "cusip": "02079K107",
+        "issuer": "ALPHABET INC",
+        "titleOfClass": "CAP STK CL C",
+        "value": 89421720,
+        "shares": 311726,
+        "weight": 0.0065203270240789145
+      },
+      {
+        "cusip": "42806J700",
+        "issuer": "HERTZ GLOBAL HLDGS INC",
+        "titleOfClass": "COM NEW",
+        "value": 70261595,
+        "shares": 15241127,
+        "weight": 0.00512323601730528
+      },
+      {
+        "cusip": "02079K305",
+        "issuer": "ALPHABET INC",
+        "titleOfClass": "CAP STK CL A",
+        "value": 9310043,
+        "shares": 32376,
+        "weight": 0.0006788566018215343
+      }
+    ],
+    "totalValue": 13714299861
+  },
+  "prior": {
+    "period": "2025-12-31",
+    "filedAt": "2026-02-17",
+    "accession": "0001172661-26-001091",
+    "holdings": [
+      {
+        "cusip": "11271J107",
+        "issuer": "BROOKFIELD CORP",
+        "titleOfClass": "CL A LTD VT SH",
+        "value": 2817787754,
+        "shares": 61403089,
+        "weight": 0.18147970230018573
+      },
+      {
+        "cusip": "90353T100",
+        "issuer": "UBER TECHNOLOGIES INC",
+        "titleOfClass": "COM",
+        "value": 2468273945,
+        "shares": 30207734,
+        "weight": 0.1589692552599208
+      },
+      {
+        "cusip": "23135106",
+        "issuer": "AMAZON COM INC",
+        "titleOfClass": "COM",
+        "value": 2217677936,
+        "shares": 9607824,
+        "weight": 0.14282961200738128
+      },
+      {
+        "cusip": "02079K107",
+        "issuer": "ALPHABET INC",
+        "titleOfClass": "CAP STK CL C",
+        "value": 1934222720,
+        "shares": 6163871,
+        "weight": 0.1245736705717316
+      },
+      {
+        "cusip": "30303M102",
+        "issuer": "META PLATFORMS INC",
+        "titleOfClass": "CL A",
+        "value": 1764796161,
+        "shares": 2673569,
+        "weight": 0.11366174810865141
+      },
+      {
+        "cusip": "76131D103",
+        "issuer": "RESTAURANT BRANDS INTL INC",
+        "titleOfClass": "COM",
+        "value": 1560199922,
+        "shares": 22866773,
+        "weight": 0.10048472138165626
+      },
+      {
+        "cusip": "44267T102",
+        "issuer": "HOWARD HUGHES HOLDINGS INC",
+        "titleOfClass": "COM",
+        "value": 1503829145,
+        "shares": 18852064,
+        "weight": 0.09685415984845779
+      },
+      {
+        "cusip": "43300A203",
+        "issuer": "HILTON WORLDWIDE HLDGS INC",
+        "titleOfClass": "COM",
+        "value": 869983734,
+        "shares": 3028664,
+        "weight": 0.05603132770670845
+      },
+      {
+        "cusip": "02079K305",
+        "issuer": "ALPHABET INC",
+        "titleOfClass": "CAP STK CL A",
+        "value": 212306961,
+        "shares": 678297,
+        "weight": 0.013673636001804108
+      },
+      {
+        "cusip": "812215200",
+        "issuer": "SEAPORT ENTMT GROUP INC",
+        "titleOfClass": "COMMON STOCK",
+        "value": 99320131,
+        "shares": 5023780,
+        "weight": 0.006396715927489068
+      },
+      {
+        "cusip": "42806J700",
+        "issuer": "HERTZ GLOBAL HLDGS INC",
+        "titleOfClass": "COM NEW",
+        "value": 78339393,
+        "shares": 15241127,
+        "weight": 0.0050454508860134865
+      }
+    ],
+    "totalValue": 15526737802
+  },
+  "changes": [
+    {
+      "cusip": "11271J107",
+      "issuer": "BROOKFIELD CORP",
+      "kind": "decreased",
+      "prevShares": 61403089,
+      "shares": 59697208,
+      "value": 2415946008,
+      "deltaPct": -0.02778168049493406
+    },
+    {
+      "cusip": "23135106",
+      "issuer": "AMAZON COM INC",
+      "kind": "increased",
+      "prevShares": 9607824,
+      "shares": 11451981,
+      "value": 2385104083,
+      "deltaPct": 0.1919432537481952
+    },
+    {
+      "cusip": "90353T100",
+      "issuer": "UBER TECHNOLOGIES INC",
+      "kind": "decreased",
+      "prevShares": 30207734,
+      "shares": 29958771,
+      "value": 2154934398,
+      "deltaPct": -0.008241697308378046
+    },
+    {
+      "cusip": "594918104",
+      "issuer": "MICROSOFT CORP",
+      "kind": "new",
+      "prevShares": 0,
+      "shares": 5654078,
+      "value": 2092970053,
+      "deltaPct": null
+    },
+    {
+      "cusip": "76131D103",
+      "issuer": "RESTAURANT BRANDS INTL INC",
+      "kind": "decreased",
+      "prevShares": 22866773,
+      "shares": 22645483,
+      "value": 1673501194,
+      "deltaPct": -0.00967736024667757
+    },
+    {
+      "cusip": "30303M102",
+      "issuer": "META PLATFORMS INC",
+      "kind": "decreased",
+      "prevShares": 2673569,
+      "shares": 2660861,
+      "value": 1522358404,
+      "deltaPct": -0.0047531969438604355
+    },
+    {
+      "cusip": "02079K107",
+      "issuer": "ALPHABET INC",
+      "kind": "decreased",
+      "prevShares": 6163871,
+      "shares": 311726,
+      "value": 89421720,
+      "deltaPct": -0.9494269104593526
+    },
+    {
+      "cusip": "02079K305",
+      "issuer": "ALPHABET INC",
+      "kind": "decreased",
+      "prevShares": 678297,
+      "shares": 32376,
+      "value": 9310043,
+      "deltaPct": -0.9522686964559772
+    },
+    {
+      "cusip": "43300A203",
+      "issuer": "HILTON WORLDWIDE HLDGS INC",
+      "kind": "exited",
+      "prevShares": 3028664,
+      "shares": 0,
+      "value": 0,
+      "deltaPct": -1
+    }
+  ]
+}

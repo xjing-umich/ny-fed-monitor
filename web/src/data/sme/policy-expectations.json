@@ -1,0 +1,470 @@
+{
+  "title": "Policy Expectations and FOMC Risk",
+  "title_zh": "政策预期 Policy Expectations",
+  "mode": "manual-live",
+  "status": "available",
+  "source": "manual_sme_file",
+  "freshness_status": "Manual",
+  "expected_update_frequency": "manual",
+  "data_date": "2026-04-15",
+  "summary": "SME release date is 2026-04-15. Latest fed funds median is 3.63%, year-end 2026 median is 3.38%, and Policy Expectations Risk is Watch.",
+  "summary_zh": "SME 发布时间为 2026-04-15。最新联邦基金利率中位数为 3.63%，2026 年底中位数为 3.38%，政策预期风险为 Watch。",
+  "interpretation": "The SME median path summarizes survey-based expectations for the fed funds path, inflation, recession risk, and balance sheet assumptions.",
+  "interpretation_zh": "SME 用于观察 market participants 对 Fed funds path、inflation、recession risk 和 balance sheet 的调查型预期。",
+  "why_it_matters": "Survey-based policy expectations help show whether market economists expect easing, steady policy, or a firmer policy path.",
+  "why_it_matters_zh": "政策预期可以帮助判断市场是否预期降息、按兵不动，或更偏紧的政策路径。",
+  "key_metrics": [
+    {
+      "label": "SME Release Date",
+      "label_zh": "SME 发布时间 SME Release Date",
+      "value": "2026-04-15",
+      "unit": ""
+    },
+    {
+      "label": "Latest Fed Funds Median",
+      "label_zh": "最新联邦基金利率中位数 Latest Fed Funds Median",
+      "value": "3.63%",
+      "unit": ""
+    },
+    {
+      "label": "Year-end 2026 Fed Funds Median",
+      "label_zh": "2026年底联邦基金利率中位数 Year-end 2026 Fed Funds Median",
+      "value": "3.38%",
+      "unit": ""
+    },
+    {
+      "label": "U.S. Recession Now",
+      "label_zh": "当前美国衰退概率 U.S. Recession Now",
+      "value": "9.0%",
+      "unit": ""
+    },
+    {
+      "label": "U.S. Recession in 6 Months",
+      "label_zh": "6个月美国衰退概率 U.S. Recession in 6 Months",
+      "value": "25.0%",
+      "unit": ""
+    },
+    {
+      "label": "Core PCE 2026 Median",
+      "label_zh": "2026年 Core PCE 中位数 Core PCE 2026 Median",
+      "value": "2.90%",
+      "unit": ""
+    },
+    {
+      "label": "Policy Expectations Risk",
+      "label_zh": "政策预期风险 Policy Expectations Risk",
+      "value": "Watch",
+      "unit": ""
+    }
+  ],
+  "tables": [
+    {
+      "title": "Fed Funds Path Expectations",
+      "title_zh": "Fed Funds Path Expectations",
+      "columns": [
+        "Horizon",
+        "Median",
+        "25th percentile",
+        "75th percentile"
+      ],
+      "rows": [
+        {
+          "Horizon": "2026",
+          "Median": "3.63%",
+          "25th percentile": "3.63%",
+          "75th percentile": "3.63%"
+        },
+        {
+          "Horizon": "2027",
+          "Median": "3.25%",
+          "25th percentile": "3.13%",
+          "75th percentile": "3.38%"
+        },
+        {
+          "Horizon": "2028",
+          "Median": "3.13%",
+          "25th percentile": "2.88%",
+          "75th percentile": "3.38%"
+        },
+        {
+          "Horizon": "2029",
+          "Median": "3.13%",
+          "25th percentile": "2.88%",
+          "75th percentile": "3.38%"
+        },
+        {
+          "Horizon": "2030",
+          "Median": "3.13%",
+          "25th percentile": "2.88%",
+          "75th percentile": "3.38%"
+        }
+      ]
+    },
+    {
+      "title": "Balance Sheet and SOMA Expectations",
+      "title_zh": "Balance Sheet and SOMA Expectations",
+      "columns": [
+        "Item",
+        "Latest period",
+        "Median expectation"
+      ],
+      "rows": [
+        {
+          "Item": "Total Fed assets",
+          "Latest period": "April 2026",
+          "Median expectation": "$6.73 trillion"
+        },
+        {
+          "Item": "SOMA assets",
+          "Latest period": "Mid-May to mid-Jun. 2026",
+          "Median expectation": "$22 billion"
+        },
+        {
+          "Item": "Treasury holdings",
+          "Latest period": "April 2026",
+          "Median expectation": "$4.40 trillion"
+        },
+        {
+          "Item": "Agency MBS holdings",
+          "Latest period": "April 2026",
+          "Median expectation": "$1.99 trillion"
+        },
+        {
+          "Item": "Reserve balances",
+          "Latest period": "2026 Q2",
+          "Median expectation": "$3.02 trillion"
+        },
+        {
+          "Item": "ON RRP",
+          "Latest period": "2026 Q2",
+          "Median expectation": "$3 billion"
+        }
+      ]
+    },
+    {
+      "title": "Recession Probabilities",
+      "title_zh": "Recession Probabilities",
+      "columns": [
+        "Measure",
+        "Median probability",
+        "75th percentile"
+      ],
+      "rows": [
+        {
+          "Measure": "U.S. recession now",
+          "Median probability": "9.0%",
+          "75th percentile": "14.0%"
+        },
+        {
+          "Measure": "U.S. recession in 6 months",
+          "Median probability": "25.0%",
+          "75th percentile": "30.0%"
+        },
+        {
+          "Measure": "Global recession in 6 months",
+          "Median probability": "30.0%",
+          "75th percentile": "35.0%"
+        }
+      ]
+    },
+    {
+      "title": "Core PCE Inflation Expectations",
+      "title_zh": "Core PCE Inflation Expectations",
+      "columns": [
+        "Horizon",
+        "Median"
+      ],
+      "rows": [
+        {
+          "Horizon": "2026",
+          "Median": "2.90%"
+        },
+        {
+          "Horizon": "2027",
+          "Median": "2.30%"
+        },
+        {
+          "Horizon": "2028",
+          "Median": "2.10%"
+        }
+      ]
+    },
+    {
+      "title": "Headline PCE Inflation Expectations",
+      "title_zh": "Headline PCE Inflation Expectations",
+      "columns": [
+        "Horizon",
+        "Median"
+      ],
+      "rows": [
+        {
+          "Horizon": "2026",
+          "Median": "3.20%"
+        },
+        {
+          "Horizon": "2027",
+          "Median": "2.20%"
+        },
+        {
+          "Horizon": "2028",
+          "Median": "2.00%"
+        },
+        {
+          "Horizon": "Longer run",
+          "Median": "2.00%"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    "SME sheet used: Sheet1.",
+    "Global recession in 6 months median: 30.0%."
+  ],
+  "warnings": [
+    "SME sheet names: Sheet1"
+  ],
+  "caveat": "This section is based on a manually downloaded NY Fed SME file and should be interpreted as survey-based expectations, not forecast certainty.",
+  "normalized_data_preview": [
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "global_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the global economy being in a recession in 6 months?",
+      "question_tag": "globalrecession_prob_6months",
+      "value_tag": "globalrecession_prob_6months",
+      "top_header_value": "",
+      "left_header_value": "the global economy being in a recession in 6 months",
+      "horizon": "6months",
+      "horizon_date": "2026-10-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "count",
+      "aggregation_value": "62.0",
+      "aggregation_value_num": "62.0"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "global_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the global economy being in a recession in 6 months?",
+      "question_tag": "globalrecession_prob_6months",
+      "value_tag": "globalrecession_prob_6months",
+      "top_header_value": "",
+      "left_header_value": "the global economy being in a recession in 6 months",
+      "horizon": "6months",
+      "horizon_date": "2026-10-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "pctl75",
+      "aggregation_value": "0.35",
+      "aggregation_value_num": "0.35"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "global_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the global economy being in a recession in 6 months?",
+      "question_tag": "globalrecession_prob_6months",
+      "value_tag": "globalrecession_prob_6months",
+      "top_header_value": "",
+      "left_header_value": "the global economy being in a recession in 6 months",
+      "horizon": "6months",
+      "horizon_date": "2026-10-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "pctl50",
+      "aggregation_value": "0.3",
+      "aggregation_value_num": "0.3"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "global_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the global economy being in a recession in 6 months?",
+      "question_tag": "globalrecession_prob_6months",
+      "value_tag": "globalrecession_prob_6months",
+      "top_header_value": "",
+      "left_header_value": "the global economy being in a recession in 6 months",
+      "horizon": "6months",
+      "horizon_date": "2026-10-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "pctl25",
+      "aggregation_value": "0.21",
+      "aggregation_value_num": "0.21"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "us_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the U.S. economy currently being in a recession?",
+      "question_tag": "usrecession_prob_current",
+      "value_tag": "usrecession_prob_current",
+      "top_header_value": "",
+      "left_header_value": "the U.S. economy currently being in a recession",
+      "horizon": "current",
+      "horizon_date": "2026-04-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "count",
+      "aggregation_value": "62.0",
+      "aggregation_value_num": "62.0"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "us_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the U.S. economy currently being in a recession?",
+      "question_tag": "usrecession_prob_current",
+      "value_tag": "usrecession_prob_current",
+      "top_header_value": "",
+      "left_header_value": "the U.S. economy currently being in a recession",
+      "horizon": "current",
+      "horizon_date": "2026-04-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "pctl75",
+      "aggregation_value": "0.14",
+      "aggregation_value_num": "0.14"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "us_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the U.S. economy currently being in a recession?",
+      "question_tag": "usrecession_prob_current",
+      "value_tag": "usrecession_prob_current",
+      "top_header_value": "",
+      "left_header_value": "the U.S. economy currently being in a recession",
+      "horizon": "current",
+      "horizon_date": "2026-04-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "pctl50",
+      "aggregation_value": "0.09",
+      "aggregation_value_num": "0.09"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "us_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the U.S. economy currently being in a recession?",
+      "question_tag": "usrecession_prob_current",
+      "value_tag": "usrecession_prob_current",
+      "top_header_value": "",
+      "left_header_value": "the U.S. economy currently being in a recession",
+      "horizon": "current",
+      "horizon_date": "2026-04-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "pctl25",
+      "aggregation_value": "0.05",
+      "aggregation_value_num": "0.05"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "us_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the U.S. economy being in a recession in 6 months?",
+      "question_tag": "usrecession_prob_6months",
+      "value_tag": "usrecession_prob_6months",
+      "top_header_value": "",
+      "left_header_value": "the U.S. economy being in a recession in 6 months",
+      "horizon": "6months",
+      "horizon_date": "2026-10-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "count",
+      "aggregation_value": "62.0",
+      "aggregation_value_num": "62.0"
+    },
+    {
+      "survey_release_date": "2026-04-15",
+      "survey_due_date": "2026-04-20",
+      "panel_type": "Combined",
+      "spd_question_number": "10",
+      "theme": "economic_outlook",
+      "subject_group": "recession",
+      "subject": "us_recession",
+      "question_type": "probability",
+      "question_mode": "levels",
+      "question_text": "What percent chance do you attach to the U.S. economy being in a recession in 6 months?",
+      "question_tag": "usrecession_prob_6months",
+      "value_tag": "usrecession_prob_6months",
+      "top_header_value": "",
+      "left_header_value": "the U.S. economy being in a recession in 6 months",
+      "horizon": "6months",
+      "horizon_date": "2026-10-20",
+      "bucket_range": "",
+      "bucket_low": "",
+      "bucket_high": "",
+      "aggregation": "pctl75",
+      "aggregation_value": "0.3",
+      "aggregation_value_num": "0.3"
+    }
+  ],
+  "last_refreshed_at": "2026-06-01T02:15:09.703218+00:00"
+}
