@@ -15,7 +15,13 @@ export async function GET(): Promise<Response> {
     const freshness_status = await getFreshnessStatus();
     return Response.json({ freshness_status });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return Response.json({ error: message }, { status: 500 });
+    const warning =
+      error instanceof Error
+        ? error.message
+        : "Market freshness status is unavailable. Confirm the market schema has been applied.";
+    return Response.json({
+      freshness_status: [],
+      warning,
+    });
   }
 }

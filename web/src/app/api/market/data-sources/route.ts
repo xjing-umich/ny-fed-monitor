@@ -15,7 +15,13 @@ export async function GET(): Promise<Response> {
     const data_sources = await listMarketDataSources();
     return Response.json({ data_sources });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return Response.json({ error: message }, { status: 500 });
+    const warning =
+      error instanceof Error
+        ? error.message
+        : "Market data sources are unavailable. Confirm the market schema has been applied.";
+    return Response.json({
+      data_sources: [],
+      warning,
+    });
   }
 }
