@@ -37,6 +37,17 @@ export type MarketIngestionRunInput = {
   raw_response_hash?: string | null;
 };
 
+export type MarketTimeSeriesObservation = {
+  id: number;
+  source_id: number;
+  series_code: string;
+  observation_date: string;
+  value: number | null;
+  unit: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
 export async function listMarketDataSources(): Promise<MarketDataSource[]> {
   const { data, error } = await getDb()
     .from("market_data_sources")
@@ -46,6 +57,17 @@ export async function listMarketDataSources(): Promise<MarketDataSource[]> {
 
   if (error) throw error;
   return (data ?? []) as MarketDataSource[];
+}
+
+export async function getMarketDataSourceByName(name: string): Promise<MarketDataSource | null> {
+  const { data, error } = await getDb()
+    .from("market_data_sources")
+    .select("*")
+    .eq("name", name)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data as MarketDataSource | null) ?? null;
 }
 
 export async function upsertTimeSeriesObservations(
@@ -71,6 +93,51 @@ export async function upsertTimeSeriesObservations(
 
   if (error) throw error;
   return rows.length;
+}
+
+export async function listTimeSeriesObservations(
+  sourceId: number,
+  options: {
+    seriesCodes?: string[];
+    limit?: number;
+  } = {}
+): Promise<MarketTimeSeriesObservation[]> {
+  let query = getDb()
+    .from("market_time_series_observations")
+    .select("*")
+    .eq("source_id", sourceId)
+    .order("observation_date", { ascending: false })
+    .order("series_code", { ascending: true });
+
+  if (options.seriesCodes?.length) {
+    query = query.in("series_code", options.seriesCodes);
+  }
+  if (options.limit) {
+    query = query.limit(options.limit);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as MarketTimeSeriesObservation[];
+}
+
+export async function listLatestObservationsBySeries(
+  sourceId: number,
+  seriesCodes: string[]
+): Promise<MarketTimeSeriesObservation[]> {
+  const rows = await listTimeSeriesObservations(sourceId, {
+    seriesCodes,
+    limit: seriesCodes.length * 30,
+  });
+  const latestBySeries = new Map<string, MarketTimeSeriesObservation>();
+  for (const row of rows) {
+    if (!latestBySeries.has(row.series_code)) {
+      latestBySeries.set(row.series_code, row);
+    }
+  }
+  return seriesCodes
+    .map((seriesCode) => latestBySeries.get(seriesCode))
+    .filter((row): row is MarketTimeSeriesObservation => Boolean(row));
 }
 
 export async function recordIngestionRun(input: MarketIngestionRunInput): Promise<number> {

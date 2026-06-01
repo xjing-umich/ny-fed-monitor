@@ -147,13 +147,13 @@ insert into market_data_sources (
 ) values
   (
     'Reference Rates',
-    'Federal Reserve Bank of New York',
+    'NY Fed',
     'https://www.newyorkfed.org/markets/reference-rates',
     'https://markets.newyorkfed.org/api/rates',
     'business_daily',
     1,
     false,
-    'SOFR, EFFR, OBFR, TGCR, and BGCR are published on NY Fed schedules and may be revised.'
+    'Reference rates measure overnight funding conditions. SOFR/TGCR/BGCR are secured repo-based rates, while EFFR/OBFR are unsecured bank funding rates. These should not be interpreted as a single market signal without context.'
   ),
   (
     'ON RRP / SRP Facility Usage',
