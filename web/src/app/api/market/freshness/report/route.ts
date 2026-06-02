@@ -18,6 +18,8 @@ function unavailableReport(warning: string) {
     fresh_modules: [],
     stale_modules: [],
     failed_modules: [],
+    partial_modules: [],
+    empty_modules: [],
     manual_required_modules: [],
     unknown_modules: [],
     safe_to_analyze: false,

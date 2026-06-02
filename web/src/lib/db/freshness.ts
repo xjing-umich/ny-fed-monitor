@@ -52,6 +52,8 @@ export type MarketFreshnessReport = {
   fresh_modules: MarketFreshnessStatusRow[];
   stale_modules: MarketFreshnessStatusRow[];
   failed_modules: MarketFreshnessStatusRow[];
+  partial_modules: MarketFreshnessStatusRow[];
+  empty_modules: MarketFreshnessStatusRow[];
   manual_required_modules: MarketFreshnessStatusRow[];
   unknown_modules: MarketFreshnessStatusRow[];
   safe_to_analyze: boolean;
@@ -163,8 +165,10 @@ export async function getFreshnessReport(): Promise<MarketFreshnessReport> {
       empty: emptyModules.length,
     },
     fresh_modules: freshModules,
-    stale_modules: [...staleModules, ...partialModules, ...emptyModules],
+    stale_modules: staleModules,
     failed_modules: failedModules,
+    partial_modules: partialModules,
+    empty_modules: emptyModules,
     manual_required_modules: manualRequiredModules,
     unknown_modules: unknownModules,
     safe_to_analyze:
