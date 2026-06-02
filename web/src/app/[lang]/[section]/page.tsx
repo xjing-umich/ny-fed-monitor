@@ -13,6 +13,7 @@ import {
   badgeTone,
 } from "@/lib/dashboard";
 import SectionChartClient from "@/components/dashboard/SectionChartClient";
+import DataFreshnessReport from "@/components/dashboard/DataFreshnessReport";
 import type { Metric, TableT } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -573,6 +574,12 @@ export default async function SectionPage({
               <DenseTable key={`${table.title}-${i}`} table={table} lang={lang} />
             ))}
           </div>
+        </SectionBlock>
+      )}
+
+      {section === "data-freshness" && (
+        <SectionBlock heading={lang === "zh" ? "实时数据库状态" : "Live Database Status"}>
+          <DataFreshnessReport lang={lang} />
         </SectionBlock>
       )}
     </div>
