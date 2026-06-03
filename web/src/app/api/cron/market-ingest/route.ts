@@ -5,7 +5,7 @@ import { hasSupabaseEnv } from "@/lib/managers/db";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   if (!isAuthorizedIngestRequest(request)) return unauthorizedResponse();
   if (!hasSupabaseEnv()) return databaseNotConfigured();
   return Response.json(await runBatchMarketIngestion());

@@ -32,3 +32,22 @@ data/reports/
 *.log
 .claude/
 .vercel
+
+# local environments and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# python virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# node dependencies
+node_modules/
+
+# local logs
+*.log
+.DS_Store
