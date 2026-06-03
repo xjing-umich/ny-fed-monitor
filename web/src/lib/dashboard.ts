@@ -141,35 +141,6 @@ export function buildWatchList(lang: Lang, _summary?: SummaryData | null): strin
   ];
 }
 
-export function topDashboardCards(summary: SummaryData | undefined | null): SummaryCard[] {
-  const cards = Object.fromEntries((summary?.cards ?? []).map((card) => [card.id, card]));
-  return [
-    cards.dealer_inventory_pressure,
-    cards.repo_financing_usage,
-    cards.funding_rate_stress,
-    cards.policy_expectations_risk,
-    cards.liquidity_stress,
-    cards.auction_risk,
-  ].filter(Boolean) as SummaryCard[];
-}
-
-export function shortCardValue(cardId: string, lang: Lang, value: string | undefined | null): string {
-  const text = String(value ?? "Unavailable");
-  if (lang !== "zh") {
-    if (cardId === "repo_financing_usage" && text === "Elevated / High usage") return "Elevated / High";
-    return text;
-  }
-  const mapping: Record<string, string> = {
-    Normal: "正常",
-    Watch: "观察",
-    High: "高",
-    Extreme: "极端",
-    "Elevated / High usage": "偏高",
-    Elevated: "偏高",
-  };
-  return mapping[text] ?? text;
-}
-
 export function keyMetricLimit(_sectionKey: string): number {
   // All current cases return 6; preserve thresholds for future expansion.
   return 6;

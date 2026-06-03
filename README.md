@@ -1,90 +1,30 @@
-# NY Fed Treasury Web Agent
+# NY Fed Treasury Monitor
 
-Clean deployment-ready skeleton for a future public NY Fed Treasury dashboard.
+Real-time dashboard for NY Fed market data, Treasury auctions, and institutional 13F holdings.
 
-This rebuild is running in partial-live mode. Reference Rates, SOMA, Primary Dealer sections, and Treasury auction data can be connected live section by section. It does not use a database and does not generate trading recommendations.
+## Tech Stack
 
-## Structure
+- **Next.js 16** (App Router, SSR + API Routes) / React 19 / TypeScript / Tailwind CSS v4
+- **Supabase** (13F holdings storage)
+- **Vercel** (hosting + cron jobs)
+- **Node 20**
 
-```text
-backend/
-frontend/
-data/cache/
-data/raw/
-data/processed/
-data/manual/
-data/reports/assets/
-config.yaml
-README.md
-CHANGELOG.md
-```
-
-## Requirements
-
-- Python `3.11`–`3.14` (deps are pinned to compatible ranges; `--only-binary` avoids slow source builds on very new Python)
-- Node `>=18` (Vite 6 will not run on older Node; see `frontend/.nvmrc`)
-
-## Backend
-
-Port: `8010`
+## Quick Start
 
 ```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --only-binary=:all: -r requirements.txt
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8010
+cd web && nvm use && npm install && npm run dev
+# → http://localhost:3000/zh
 ```
 
-First start builds the matplotlib font cache (~20s), which is normal.
+## Data Sources
 
-Endpoints:
+- **Reference Rates** (SOFR/EFFR/OBFR/TGCR/BGCR), **SOMA Holdings**: NY Fed Markets API
+- **Treasury Auctions**: US Treasury API
+- **13F Institutional Holdings**: SEC EDGAR (via `npm run ingest` → Supabase)
+- **Policy Expectations**: NY Fed SME survey (`data/manual/sme_latest.xlsx`)
 
-- `GET /api/health`
-- `GET /api/summary`
-- `GET /api/sections/{section_name}`
-- `POST /api/refresh/all`
-- `GET /api/status/refresh`
-- `GET /api/debug/analysis-keys`
+## Deployment
 
-## Frontend
+Deployed on Vercel as `ny-fed-monitor`. Push to `db-foundation` triggers production deployment.
 
-Port: `5174`
-
-```bash
-cd frontend
-nvm use        # picks up .nvmrc (Node 20); required — older Node hangs Vite silently
-npm install
-npm run dev
-```
-
-Routes:
-
-- `/zh`
-- `/en`
-
-## Reconnection Plan
-
-Real data modules can be reintroduced one section at a time after the mock API contracts and UI are stable.
-
-## Manual SME / Policy Expectations Update
-
-The `Policy Expectations` section uses a manually downloaded NY Fed Survey of Market Expectations file.
-
-1. Download the latest NY Fed SME data file as Excel or CSV.
-2. Save it as:
-
-```text
-data/manual/sme_latest.xlsx
-```
-
-3. Or update `config.yaml`:
-
-```yaml
-policy_expectations:
-  sme_file_path: "data/manual/sme_latest.xlsx"
-```
-
-4. Restart or refresh the backend, then click `Refresh` in the frontend.
-
-If the file is missing, the Policy Expectations section will show `Unavailable` / `Missing` instead of crashing.
+See [PROJECT_GUIDE.md](PROJECT_GUIDE.md) for full setup instructions.

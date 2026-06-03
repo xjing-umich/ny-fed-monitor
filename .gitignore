@@ -51,3 +51,4 @@ node_modules/
 # local logs
 *.log
 .DS_Store
+.env*
