@@ -1,0 +1,768 @@
+{
+  "skill_name": "nyfed_treasury_monitor_derived_metrics",
+  "version": "1.0.0",
+  "language": "zh-CN",
+  "purpose": "为 NY Fed Treasury Market Monitor 提供可计算指标、公式、解释规则和 AI 分析输入结构。",
+  "global_caveats": [
+    "所有指标均为 rule-based monitoring indicators，不是预测模型。",
+    "指标上升代表需要观察某类风险，不等于市场一定会发生对应变化。",
+    "不要把任何单一指标直接解释为交易建议。",
+    "缺失值必须显示为 Unavailable，不能填 0。",
+    "ON RRP 下降不是资金压力本身，只代表系统现金缓冲减少；需要结合 SOFR/EFFR、SRP、repo financing、fails 等指标判断。"
+  ],
+  "metric_groups": [
+    {
+      "group": "Funding Stress",
+      "description": "衡量短端资金市场、repo 市场和政策利率执行是否出现压力。",
+      "metrics": [
+        {
+          "id": "sofr_effr_spread",
+          "name": "SOFR-EFFR Spread",
+          "formula": "SOFR_EFFR_spread_bps = (SOFR - EFFR) * 100",
+          "inputs": [
+            "SOFR",
+            "EFFR"
+          ],
+          "unit": "bps",
+          "interpretation": {
+            "increase": "repo secured funding 相对 fed funds 变贵，repo 市场压力可能上升。",
+            "decrease": "repo funding 压力缓和或 secured funding 更宽松。",
+            "normal": "短端资金市场较平稳。"
+          },
+          "market_impact": "若 SOFR-EFFR 明显扩大，可能影响 repo financing cost、Treasury basis trade funding cost 和短端利率敏感资产。",
+          "caveat": "SOFR-EFFR 单独扩大不一定代表广泛 funding stress，需要结合 SRP、fails、repo financing、ON RRP。"
+        },
+        {
+          "id": "sofr_iorb_spread",
+          "name": "SOFR-IORB Spread",
+          "formula": "SOFR_IORB_spread_bps = (SOFR - IORB) * 100",
+          "inputs": [
+            "SOFR",
+            "IORB"
+          ],
+          "unit": "bps",
+          "interpretation": {
+            "sofr_below_iorb": "repo funding 仍较宽松。",
+            "sofr_near_iorb": "短端 funding 开始变敏感。",
+            "sofr_above_iorb": "repo 市场可能出现压力。"
+          },
+          "market_impact": "SOFR 接近或高于 IORB 时，Treasury repo 融资成本可能上升，basis trade 和 dealer inventory financing 压力增加。"
+        },
+        {
+          "id": "effr_iorb_spread",
+          "name": "EFFR-IORB Spread",
+          "formula": "EFFR_IORB_spread_bps = (EFFR - IORB) * 100",
+          "inputs": [
+            "EFFR",
+            "IORB"
+          ],
+          "unit": "bps",
+          "interpretation": {
+            "near_or_below_iorb": "Fed funds market 运行正常。",
+            "above_iorb": "银行间无担保 funding 可能变紧，reserves scarcity 风险上升。"
+          },
+          "market_impact": "如果 EFFR 接近或高于 IORB，可能说明 Fed 政策执行压力增加，短端利率波动风险上升。"
+        },
+        {
+          "id": "repo_financing_change",
+          "name": "Repo Financing Change",
+          "formula": "repo_financing_change_Nw = repo_financing_t - repo_financing_t-Nw",
+          "inputs": [
+            "repo_financing_series"
+          ],
+          "unit": "USD",
+          "periods": [
+            "1w",
+            "4w",
+            "13w"
+          ],
+          "interpretation": {
+            "increase": "dealer 使用更多 secured funding 支撑库存。",
+            "decrease": "dealer repo 融资使用量下降。",
+            "increase_plus_rate_stress": "若同时 SOFR-EFFR 扩大，funding pressure 更可信。"
+          },
+          "market_impact": "Repo financing 上升可能代表 dealer balance sheet usage 增加，但不等于广泛资金紧张。"
+        },
+        {
+          "id": "repo_financing_percentile",
+          "name": "Repo Financing Historical Percentile",
+          "formula": "percentile = mean(history <= latest_value) * 100",
+          "inputs": [
+            "repo_financing_history",
+            "repo_financing_latest"
+          ],
+          "unit": "%",
+          "thresholds": [
+            {
+              "range": "<50",
+              "label": "Normal / Low"
+            },
+            {
+              "range": "50-75",
+              "label": "Moderate"
+            },
+            {
+              "range": "75-90",
+              "label": "Elevated"
+            },
+            {
+              "range": ">90",
+              "label": "Extreme"
+            }
+          ],
+          "market_impact": "高分位代表 repo financing usage 偏高，需要结合 reference rates 和 SRP 判断是否为 funding stress。"
+        }
+      ]
+    },
+    {
+      "group": "ON RRP / SRP Facility Usage",
+      "description": "衡量系统现金缓冲和 Fed repo backstop 使用情况。",
+      "metrics": [
+        {
+          "id": "on_rrp_change",
+          "name": "ON RRP Cash Buffer Change",
+          "formula": "ON_RRP_change_Nw = ON_RRP_t - ON_RRP_t-Nw",
+          "inputs": [
+            "ON_RRP_series"
+          ],
+          "unit": "USD",
+          "periods": [
+            "1w",
+            "4w"
+          ],
+          "interpretation": {
+            "increase": "系统多余现金缓冲增加，money market funds 仍有大量现金放在 Fed。",
+            "decrease": "系统多余现金缓冲减少。",
+            "near_zero": "cash buffer 变薄，需要观察 reserves、SOFR、SRP、fails。"
+          },
+          "market_impact": "ON RRP 下降本身不是 stress，但会降低系统对 Treasury issuance / TGA 上升 / reserves 下降的缓冲能力。",
+          "caveat": "ON RRP 下降不能单独解读为资金压力。"
+        },
+        {
+          "id": "on_rrp_percentile",
+          "name": "ON RRP Historical Percentile",
+          "formula": "percentile = mean(ON_RRP_history <= ON_RRP_latest) * 100",
+          "inputs": [
+            "ON_RRP_history",
+            "ON_RRP_latest"
+          ],
+          "unit": "%",
+          "thresholds": [
+            {
+              "range": ">75",
+              "label": "Cash buffer high"
+            },
+            {
+              "range": "25-75",
+              "label": "Cash buffer moderate"
+            },
+            {
+              "range": "<25",
+              "label": "Cash buffer low / watch"
+            }
+          ],
+          "market_impact": "低分位说明系统现金缓冲较低，若同时 SRP 使用、SOFR 上升、fails 上升，则 funding stress 可信度上升。"
+        },
+        {
+          "id": "srp_active_flag",
+          "name": "SRP / SRF Backstop Usage",
+          "formula": "SRP_active_flag = 1 if SRP_usage > 0 else 0",
+          "inputs": [
+            "SRP_usage"
+          ],
+          "unit": "binary",
+          "interpretation": {
+            "zero": "Fed repo backstop 未被使用，通常较平稳。",
+            "positive": "有机构使用 Fed repo backstop，需要观察。",
+            "rising_plus_sofr_widening": "funding pressure 可能升级。"
+          },
+          "market_impact": "SRP 使用上升可能说明部分机构需要 Fed 现金支持，若与 SOFR-EFFR 扩大、fails 上升共同出现，应提高 funding stress 等级。"
+        },
+        {
+          "id": "facility_stress_signal",
+          "name": "Facility Stress Signal",
+          "formula": "if ON_RRP_low and SRP_active: Elevated; elif ON_RRP_low or SRP_active: Watch; else Normal",
+          "inputs": [
+            "ON_RRP_percentile",
+            "SRP_active_flag",
+            "SOFR_EFFR_spread"
+          ],
+          "unit": "label",
+          "interpretation": {
+            "normal": "现金缓冲尚可，Fed backstop 未被使用。",
+            "watch": "现金缓冲低或 SRP 有使用，需观察。",
+            "elevated": "现金缓冲低且 SRP 使用，或 SRP 使用伴随 SOFR-EFFR 扩大。"
+          }
+        }
+      ]
+    },
+    {
+      "group": "Dealer Inventory / Balance Sheet Pressure",
+      "description": "衡量 dealer 是否在承接过多 Treasury inventory，以及是否存在 balance sheet capacity 压力。",
+      "metrics": [
+        {
+          "id": "treasury_net_dealer_position",
+          "name": "Treasury Net Dealer Position",
+          "formula": "net_position = dealer_long_position - dealer_short_position",
+          "inputs": [
+            "dealer_long_position",
+            "dealer_short_position"
+          ],
+          "unit": "USD",
+          "interpretation": {
+            "net_long_increase": "dealer inventory pressure 上升。",
+            "net_long_high": "dealer 手里持有较多 Treasury，可能影响新供给吸收能力。",
+            "net_short_increase": "可能反映 short positioning 或客户需求较强。"
+          },
+          "market_impact": "net long 高位时，auction 周更容易出现 concession / tail risk。"
+        },
+        {
+          "id": "dealer_inventory_percentile",
+          "name": "Dealer Inventory Percentile",
+          "formula": "percentile = mean(inventory_history <= inventory_latest) * 100",
+          "inputs": [
+            "dealer_inventory_history",
+            "dealer_inventory_latest"
+          ],
+          "unit": "%",
+          "thresholds": [
+            {
+              "range": "<50",
+              "label": "Low / Normal"
+            },
+            {
+              "range": "50-75",
+              "label": "Moderate"
+            },
+            {
+              "range": "75-90",
+              "label": "Elevated"
+            },
+            {
+              "range": ">90",
+              "label": "Extreme"
+            }
+          ],
+          "market_impact": "Extreme 代表 dealer balance sheet 使用较高，若叠加大规模 auction supply，拍卖风险上升。"
+        },
+        {
+          "id": "long_end_inventory_pressure",
+          "name": "Long-End Inventory Pressure",
+          "formula": "long_end_inventory = net_position_7_11y + net_position_11_21y + net_position_21y_plus",
+          "fallback_formula": "if only 7-11y is available: long_end_inventory = net_position_7_11y",
+          "inputs": [
+            "net_position_7_11y",
+            "net_position_11_21y",
+            "net_position_21y_plus"
+          ],
+          "unit": "USD",
+          "market_impact": "长端库存高 + 20y/30y auction coming 时，long-end auction risk 和长端收益率上行压力可能增加。"
+        },
+        {
+          "id": "inventory_absorption_pressure_score",
+          "name": "Inventory Absorption Pressure Score",
+          "formula": "0.4*inventory_percentile_score + 0.3*long_end_inventory_score + 0.2*auction_supply_score + 0.1*transaction_weakness_score",
+          "inputs": [
+            "inventory_percentile_score",
+            "long_end_inventory_score",
+            "auction_supply_score",
+            "transaction_weakness_score"
+          ],
+          "unit": "score_0_1",
+          "thresholds": [
+            {
+              "range": "0-0.3",
+              "label": "Low"
+            },
+            {
+              "range": "0.3-0.6",
+              "label": "Watch"
+            },
+            {
+              "range": "0.6-0.8",
+              "label": "Elevated"
+            },
+            {
+              "range": "0.8-1.0",
+              "label": "High"
+            }
+          ],
+          "market_impact": "综合判断 dealer 是否面临承接供给压力。"
+        }
+      ]
+    },
+    {
+      "group": "Transactions / Liquidity",
+      "description": "衡量 Treasury market activity 与 liquidity momentum。",
+      "metrics": [
+        {
+          "id": "transaction_momentum",
+          "name": "Transaction Momentum",
+          "formula": "transaction_momentum = (transactions_t - transactions_t-1w) / transactions_t-1w",
+          "inputs": [
+            "transactions_series"
+          ],
+          "unit": "%",
+          "interpretation": {
+            "increase": "market activity 增强。",
+            "decrease": "流动性可能走弱。",
+            "decrease_plus_fails_rising": "market functioning watch。"
+          }
+        },
+        {
+          "id": "transaction_percentile",
+          "name": "Transaction Percentile",
+          "formula": "percentile = mean(transaction_history <= transaction_latest) * 100",
+          "inputs": [
+            "transaction_history",
+            "transaction_latest"
+          ],
+          "unit": "%",
+          "caveat": "高交易量不一定代表压力，低交易量也不一定代表流动性差，需要结合 fails、dealer inventory。"
+        },
+        {
+          "id": "liquidity_stress_signal",
+          "name": "Liquidity Stress Signal",
+          "formula": "if transactions_falling and fails_rising: Watch; elif transactions_falling and fails_extreme: Elevated; else Normal",
+          "inputs": [
+            "transaction_momentum",
+            "fails_change",
+            "fails_percentile"
+          ],
+          "unit": "label",
+          "market_impact": "交易下降且 fails 上升时，Treasury market functioning 可能走弱。"
+        }
+      ]
+    },
+    {
+      "group": "Fails / Settlement Stress",
+      "description": "衡量 Treasury settlement friction、collateral scarcity 和 specialness。",
+      "metrics": [
+        {
+          "id": "total_treasury_fails",
+          "name": "Total Treasury Fails",
+          "formula": "total_fails = fails_to_deliver + fails_to_receive",
+          "inputs": [
+            "fails_to_deliver",
+            "fails_to_receive"
+          ],
+          "unit": "USD",
+          "interpretation": {
+            "increase": "交割摩擦或 collateral scarcity 上升。",
+            "spike": "可能存在 specialness / squeeze。",
+            "increase_plus_sofr_increase": "repo stress 可信度增强。"
+          }
+        },
+        {
+          "id": "fails_percentile",
+          "name": "Fails Percentile",
+          "formula": "percentile = mean(total_fails_history <= total_fails_latest) * 100",
+          "inputs": [
+            "total_fails_history",
+            "total_fails_latest"
+          ],
+          "unit": "%",
+          "thresholds": [
+            {
+              "range": "<50",
+              "label": "Normal"
+            },
+            {
+              "range": "50-75",
+              "label": "Moderate"
+            },
+            {
+              "range": "75-90",
+              "label": "Elevated"
+            },
+            {
+              "range": ">90",
+              "label": "Stress"
+            }
+          ]
+        },
+        {
+          "id": "fails_momentum",
+          "name": "Fails Momentum",
+          "formula": "fails_growth_rate = (total_fails_t - total_fails_t-1w) / total_fails_t-1w",
+          "inputs": [
+            "total_fails_series"
+          ],
+          "unit": "%",
+          "market_impact": "fails 快速上升代表 settlement stress 增强；若 percentile 仍中等，则只应标为 Watch。"
+        }
+      ]
+    },
+    {
+      "group": "Auction Risk",
+      "description": "衡量 Treasury auction supply、demand quality 和 dealer absorption pressure。",
+      "metrics": [
+        {
+          "id": "upcoming_supply",
+          "name": "Upcoming Treasury Supply",
+          "formula": "upcoming_supply_Nd = sum(offering_amount for auctions within next N days)",
+          "inputs": [
+            "auction_calendar"
+          ],
+          "unit": "USD",
+          "periods": [
+            "7d",
+            "14d"
+          ],
+          "market_impact": "未来供给大 + dealer inventory 高时，auction risk 上升。"
+        },
+        {
+          "id": "bid_to_cover_ratio",
+          "name": "Bid-to-Cover Ratio",
+          "formula": "bid_to_cover = total_bids / accepted_amount",
+          "inputs": [
+            "total_bids",
+            "accepted_amount"
+          ],
+          "unit": "ratio",
+          "interpretation": {
+            "high": "拍卖需求较强。",
+            "low": "拍卖需求偏弱。"
+          }
+        },
+        {
+          "id": "primary_dealer_takedown_share",
+          "name": "Primary Dealer Takedown Share",
+          "formula": "primary_dealer_share = primary_dealer_accepted / total_accepted",
+          "inputs": [
+            "primary_dealer_accepted",
+            "total_accepted"
+          ],
+          "unit": "%",
+          "interpretation": {
+            "high": "dealer 承接更多，end-user demand 可能偏弱。",
+            "low": "真实投资者需求较强。"
+          }
+        },
+        {
+          "id": "indirect_bidder_share",
+          "name": "Indirect Bidder Share",
+          "formula": "indirect_bidder_share = indirect_bidder_accepted / total_accepted",
+          "inputs": [
+            "indirect_bidder_accepted",
+            "total_accepted"
+          ],
+          "unit": "%",
+          "interpretation": {
+            "high": "foreign / real money / end-user demand 较强。",
+            "low": "需求质量偏弱。"
+          }
+        },
+        {
+          "id": "auction_demand_score",
+          "name": "Auction Demand Score",
+          "formula": "0.4*bid_to_cover_score + 0.3*indirect_bidder_share_score + 0.3*(1-primary_dealer_share_score)",
+          "inputs": [
+            "bid_to_cover_score",
+            "indirect_bidder_share_score",
+            "primary_dealer_share_score"
+          ],
+          "unit": "score_0_1",
+          "thresholds": [
+            {
+              "range": ">0.75",
+              "label": "Strong"
+            },
+            {
+              "range": "0.50-0.75",
+              "label": "Normal"
+            },
+            {
+              "range": "0.25-0.50",
+              "label": "Weak"
+            },
+            {
+              "range": "<0.25",
+              "label": "Very weak"
+            }
+          ]
+        },
+        {
+          "id": "auction_risk_score",
+          "name": "Auction Risk Score",
+          "formula": "0.35*dealer_inventory_pressure_score + 0.25*upcoming_supply_score + 0.25*weak_auction_demand_score + 0.15*liquidity_stress_score",
+          "inputs": [
+            "dealer_inventory_pressure_score",
+            "upcoming_supply_score",
+            "weak_auction_demand_score",
+            "liquidity_stress_score"
+          ],
+          "unit": "score_0_1",
+          "market_impact": "拍卖风险高时，auction concession / tail risk 和 dealer absorption pressure 可能上升。"
+        }
+      ]
+    },
+    {
+      "group": "SOMA / Fed Balance Sheet",
+      "description": "衡量 Fed 持仓变化和私人部门久期吸收压力。",
+      "metrics": [
+        {
+          "id": "soma_total_change",
+          "name": "SOMA Total Change",
+          "formula": "SOMA_total_change_Nw = SOMA_total_t - SOMA_total_t-Nw",
+          "inputs": [
+            "SOMA_total_series"
+          ],
+          "unit": "USD",
+          "periods": [
+            "1w",
+            "4w",
+            "13w"
+          ],
+          "interpretation": {
+            "increase": "Fed 吸收更多资产。",
+            "decrease": "private market 需要吸收更多 duration。"
+          }
+        },
+        {
+          "id": "treasury_share_of_soma",
+          "name": "Treasury Share of SOMA",
+          "formula": "Treasury_share = SOMA_Treasury_holdings / SOMA_total_holdings",
+          "inputs": [
+            "SOMA_Treasury_holdings",
+            "SOMA_total_holdings"
+          ],
+          "unit": "%"
+        },
+        {
+          "id": "mbs_share_of_soma",
+          "name": "MBS Share of SOMA",
+          "formula": "MBS_share = SOMA_MBS_holdings / SOMA_total_holdings",
+          "inputs": [
+            "SOMA_MBS_holdings",
+            "SOMA_total_holdings"
+          ],
+          "unit": "%"
+        },
+        {
+          "id": "private_duration_absorption_proxy",
+          "name": "Private Duration Absorption Proxy",
+          "formula": "private_absorption_proxy = upcoming_supply_14d - SOMA_Treasury_4w_change",
+          "inputs": [
+            "upcoming_supply_14d",
+            "SOMA_Treasury_4w_change"
+          ],
+          "unit": "USD",
+          "market_impact": "Fed 减少吸收 duration 或 auction supply 增加时，私人部门需要吸收更多久期，长端收益率可能承压。"
+        }
+      ]
+    },
+    {
+      "group": "Market Share / Concentration",
+      "description": "衡量 market making 是否依赖少数 dealer。",
+      "metrics": [
+        {
+          "id": "first_quintile_market_share",
+          "name": "First Quintile Market Share",
+          "formula": "first_quintile_share = top_20_percent_dealers_volume / total_volume",
+          "inputs": [
+            "top_quintile_volume",
+            "total_volume"
+          ],
+          "unit": "%",
+          "market_impact": "高集中度代表市场活动依赖少数 dealer，但 sparse category 可能造成误读。"
+        },
+        {
+          "id": "dealer_concentration_flag",
+          "name": "Dealer Concentration Flag",
+          "formula": "if first_quintile_share > 65% and daily_avg_volume_large: High; elif first_quintile_share > 65% and daily_avg_volume_small: Sparse category warning; else Normal",
+          "inputs": [
+            "first_quintile_share",
+            "daily_avg_volume"
+          ],
+          "unit": "label"
+        },
+        {
+          "id": "dealer_hhi",
+          "name": "Dealer HHI Concentration",
+          "formula": "HHI = sum((dealer_share_i / 100)^2)",
+          "inputs": [
+            "dealer_level_market_shares"
+          ],
+          "unit": "index",
+          "market_impact": "HHI 越高，market making 越集中。"
+        }
+      ]
+    },
+    {
+      "group": "Policy Expectations / SME",
+      "description": "衡量 Fed policy path、通胀、衰退和政策不确定性。",
+      "metrics": [
+        {
+          "id": "expected_policy_easing",
+          "name": "Expected Policy Easing",
+          "formula": "expected_easing = latest_fed_funds_median - year_end_fed_funds_median",
+          "inputs": [
+            "latest_fed_funds_median",
+            "year_end_fed_funds_median"
+          ],
+          "unit": "bps",
+          "market_impact": "expected easing 增加代表市场预期 Fed 更鸽派；若通胀预期仍高，policy contradiction risk 上升。"
+        },
+        {
+          "id": "fed_funds_path_slope",
+          "name": "Fed Funds Path Slope",
+          "formula": "policy_path_slope = fed_funds_median_later - fed_funds_median_near_term",
+          "inputs": [
+            "fed_funds_median_later",
+            "fed_funds_median_near_term"
+          ],
+          "unit": "bps",
+          "interpretation": {
+            "negative": "市场预期降息。",
+            "positive": "市场预期加息。"
+          }
+        },
+        {
+          "id": "policy_uncertainty_range",
+          "name": "Policy Uncertainty Range",
+          "formula": "policy_uncertainty = fed_funds_75th_percentile - fed_funds_25th_percentile",
+          "inputs": [
+            "fed_funds_25th_percentile",
+            "fed_funds_75th_percentile"
+          ],
+          "unit": "bps",
+          "market_impact": "uncertainty range 扩大代表 FOMC uncertainty 上升，可能增加 rates volatility。"
+        },
+        {
+          "id": "recession_risk_signal",
+          "name": "Recession Risk Signal",
+          "formula": "recession_risk = recession_probability_6m",
+          "inputs": [
+            "recession_probability_6m"
+          ],
+          "unit": "%",
+          "thresholds": [
+            {
+              "range": "<15",
+              "label": "Low"
+            },
+            {
+              "range": "15-30",
+              "label": "Watch"
+            },
+            {
+              "range": "30-50",
+              "label": "Elevated"
+            },
+            {
+              "range": ">50",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "inflation_gap",
+          "name": "Inflation Gap",
+          "formula": "inflation_gap = core_PCE_2026_median - 2.0%",
+          "inputs": [
+            "core_PCE_2026_median"
+          ],
+          "unit": "percentage points",
+          "market_impact": "通胀预期高于目标时，若市场同时预期降息，policy risk 上升。"
+        },
+        {
+          "id": "policy_expectations_risk_score",
+          "name": "Policy Expectations Risk Score",
+          "formula": "0.35*inflation_gap_score + 0.25*recession_probability_score + 0.25*policy_uncertainty_score + 0.15*easing_contradiction_score",
+          "inputs": [
+            "inflation_gap_score",
+            "recession_probability_score",
+            "policy_uncertainty_score",
+            "easing_contradiction_score"
+          ],
+          "unit": "score_0_1"
+        }
+      ]
+    },
+    {
+      "group": "Composite Regime Scores",
+      "description": "把多个模块合成为 overall regime label。",
+      "metrics": [
+        {
+          "id": "overall_funding_condition_score",
+          "name": "Overall Funding Condition Score",
+          "formula": "0.30*repo_financing_usage_score + 0.25*rate_stress_score + 0.20*facility_stress_score + 0.15*fails_score + 0.10*ON_RRP_cash_buffer_score",
+          "inputs": [
+            "repo_financing_usage_score",
+            "rate_stress_score",
+            "facility_stress_score",
+            "fails_score",
+            "ON_RRP_cash_buffer_score"
+          ],
+          "unit": "score_0_1",
+          "thresholds": [
+            {
+              "range": "0-0.25",
+              "label": "Normal"
+            },
+            {
+              "range": "0.25-0.50",
+              "label": "Watch / Mixed"
+            },
+            {
+              "range": "0.50-0.75",
+              "label": "Elevated"
+            },
+            {
+              "range": "0.75-1.00",
+              "label": "High / Stress"
+            }
+          ]
+        },
+        {
+          "id": "treasury_market_functioning_score",
+          "name": "Treasury Market Functioning Score",
+          "formula": "0.30*liquidity_stress_score + 0.25*fails_score + 0.20*dealer_inventory_score + 0.15*auction_risk_score + 0.10*funding_score",
+          "inputs": [
+            "liquidity_stress_score",
+            "fails_score",
+            "dealer_inventory_score",
+            "auction_risk_score",
+            "funding_score"
+          ],
+          "unit": "score_0_1"
+        },
+        {
+          "id": "long_end_supply_pressure_score",
+          "name": "Long-End Supply Pressure Score",
+          "formula": "0.35*long_end_inventory_score + 0.25*long_end_auction_supply_score + 0.20*private_duration_absorption_score + 0.20*weak_long_end_auction_demand_score",
+          "inputs": [
+            "long_end_inventory_score",
+            "long_end_auction_supply_score",
+            "private_duration_absorption_score",
+            "weak_long_end_auction_demand_score"
+          ],
+          "unit": "score_0_1"
+        }
+      ]
+    }
+  ],
+  "function_list": [
+    "calculate_spread(rate_a, rate_b)",
+    "calculate_change(series, periods)",
+    "calculate_percentile(series, latest)",
+    "calculate_zscore(series, window)",
+    "analyze_repo_financing(repo_series, sofr_effr_spread)",
+    "analyze_on_rrp_cash_buffer(on_rrp_series)",
+    "analyze_srp_backstop_usage(srp_series, sofr_effr_spread)",
+    "calculate_total_fails(fails_deliver, fails_receive)",
+    "analyze_liquidity_stress(transactions, fails)",
+    "calculate_dealer_inventory_pressure(position_series)",
+    "calculate_long_end_pressure(long_end_positions, auctions, soma)",
+    "calculate_auction_demand_score(bid_to_cover, dealer_share, indirect_share)",
+    "calculate_auction_risk_score(inventory, supply, demand, liquidity)",
+    "calculate_soma_change(soma_series)",
+    "calculate_private_duration_absorption(issuance, soma_change)",
+    "calculate_policy_easing(fed_funds_near, fed_funds_year_end)",
+    "calculate_policy_uncertainty(p25, p75)",
+    "calculate_policy_risk(inflation, recession, easing)",
+    "calculate_overall_funding_score(repo, rates, facilities, fails, on_rrp)",
+    "calculate_market_functioning_score(liquidity, fails, inventory, auction, funding)"
+  ]
+}
