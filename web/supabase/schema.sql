@@ -264,3 +264,16 @@ on conflict (name) do update set
   is_manual = excluded.is_manual,
   limitation_note = excluded.limitation_note,
   updated_at = now();
+-- AI commentary cache for production-safe DeepSeek analysis
+create extension if not exists pgcrypto;
+
+create table if not exists ai_analysis_cache (
+  id uuid primary key default gen_random_uuid(),
+  page_key text not null,
+  analysis_json jsonb not null,
+  model text,
+  source_data_timestamp text,
+  created_at timestamptz not null default now()
+);
+create index if not exists ai_analysis_cache_page_created_idx
+  on ai_analysis_cache (page_key, created_at desc);

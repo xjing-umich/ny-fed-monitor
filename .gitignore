@@ -37,6 +37,7 @@ data/reports/
 .env
 .env.local
 .env.*.local
+*.env
 *.pem
 
 # python virtual environments

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { buildAllSections } from "@/lib/build";
+import AIMarketCommentary from "@/components/dashboard/AIMarketCommentary";
 import { badgeTone, buildWatchList, sectionLabel, metricLabel } from "@/lib/dashboard";
 import { getManagerIndex } from "@/lib/managers/source";
 import type { Section } from "@/lib/types";
@@ -411,6 +412,9 @@ export default async function OverviewPage({
 
       {/* What to Watch */}
       <WatchPanel lang={lang} lines={watchLines} />
+
+      {/* DeepSeek AI commentary */}
+      <AIMarketCommentary lang={lang} />
 
       {/* Data coverage note */}
       <div
