@@ -19,6 +19,7 @@ import type {
 import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
+import { enrichSecurities } from "./lib/enrichSecurities.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
@@ -409,6 +410,13 @@ async function main() {
       catch (e) { console.warn(`[${detail.manager.slug}] Supabase upsert failed: ${e}`); }
     }
     console.log("Supabase upsert done.");
+
+    try {
+      const stats = await enrichSecurities(db, process.env.OPENFIGI_API_KEY);
+      console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
+    } catch (e) {
+      console.warn(`Securities enrich failed (非致命): ${e instanceof Error ? e.message : e}`);
+    }
   } else {
     console.log("No Supabase env — JSON only (set SUPABASE_URL / SUPABASE_SERVICE_KEY to write DB).");
   }

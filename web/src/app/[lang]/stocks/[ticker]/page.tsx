@@ -1,8 +1,9 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
+import { getCusipMap, tickerToCusips } from "@/lib/managers/securities";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -16,43 +17,27 @@ import { formatUSD } from "@/lib/format";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ lang: string; id: string }>;
+  params: Promise<{ lang: string; ticker: string }>;
 }): Promise<Metadata> {
-  const { lang: rawLang, id } = await params;
+  const { lang: rawLang, ticker } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
 
-  // Quick scan for issuer name without full aggregation
-  const idx = await getManagerIndex();
-  let issuer = id;
-  for (const m of idx.managers) {
-    const d = await getManagerDetail(m.slug);
-    if (!d) continue;
-    const h = d.latest.holdings.find((h) => h.cusip === id);
-    if (h) {
-      issuer = h.issuer;
-      break;
-    }
-  }
+  // ticker 下任一 cusip 的 issuer 名作展示
+  const cusips = await tickerToCusips(ticker);
+  const cusipMap = await getCusipMap();
+  let issuer = ticker;
+  for (const c of cusips) { const info = cusipMap.get(c); if (info?.name) { issuer = info.name; break; } }
 
   const l = lang === "en" ? "en" : "zh";
   const alternates = {
-    canonical: `/${l}/stocks/${id}`,
-    languages: {
-      "zh-CN": `/zh/stocks/${id}`,
-      en: `/en/stocks/${id}`,
-    },
+    canonical: `/${l}/stocks/${ticker}`,
+    languages: { "zh-CN": `/zh/stocks/${ticker}`, en: `/en/stocks/${ticker}` },
   };
   return lang === "zh"
-    ? {
-        title: `${issuer} — 谁在持有 / 机构持仓 — Compounder · 复利`,
-        description: `查看持有 ${issuer}（CUSIP ${id}）的超级投资者，了解机构持仓分布。`,
-        alternates,
-      }
-    : {
-        title: `${issuer} — Who's Holding — Compounder · 复利`,
-        description: `See which superinvestors hold ${issuer} (CUSIP ${id}) and their position sizes.`,
-        alternates,
-      };
+    ? { title: `${issuer}（${ticker}）— 谁在持有 / 机构持仓 — Compounder · 复利`,
+        description: `查看持有 ${issuer}（${ticker}）的超级投资者，了解机构持仓分布。`, alternates }
+    : { title: `${issuer} (${ticker}) — Who's Holding — Compounder · 复利`,
+        description: `See which superinvestors hold ${issuer} (${ticker}) and their position sizes.`, alternates };
 }
 
 // ── Holders table ─────────────────────────────────────────────────────────────
@@ -159,75 +144,61 @@ function HoldersTable({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default async function StockCusipPage({
+export default async function StockTickerPage({
   params,
 }: {
-  params: Promise<{ lang: string; id: string }>;
+  params: Promise<{ lang: string; ticker: string }>;
 }): Promise<React.ReactElement> {
-  const { lang: rawLang, id } = await params;
+  const { lang: rawLang, ticker: rawTicker } = await params;
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  // Aggregate all managers to find holders of this CUSIP
+  // 旧 CUSIP URL → 301 到 ticker(若该 cusip 已解析)
+  const cusipMap = await getCusipMap();
+  const asCusip = cusipMap.get(rawTicker);
+  if (asCusip?.ticker && asCusip.ticker !== rawTicker) {
+    redirect(`/${lang}/stocks/${asCusip.ticker}`);
+  }
+
+  const ticker = rawTicker;
+  // 该 ticker 下的全部 cusip(含历史)；若库为空(本地)或未解析, 回退把入参当作单个 cusip
+  const cusipsForTicker = await tickerToCusips(ticker);
+  const targetCusips = new Set(cusipsForTicker.length ? cusipsForTicker : [ticker]);
+
   const idx = await getManagerIndex();
   const holders: HolderRow[] = [];
-  let issuer = id; // fallback to raw CUSIP if no match
   const issuerFreq: Record<string, number> = {};
   let latestFiledAt = "";
 
   for (const summary of idx.managers) {
     const d = await getManagerDetail(summary.slug);
     if (!d) continue;
-    const h = d.latest.holdings.find((holding) => holding.cusip === id);
+    const h = d.latest.holdings.find((holding) => targetCusips.has(holding.cusip));
     if (!h) continue;
-
-    // Track most common issuer name
     issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
-
-    // Track latest filing date
-    if (!latestFiledAt || d.latest.filedAt > latestFiledAt) {
-      latestFiledAt = d.latest.filedAt;
-    }
-
-    holders.push({
-      person: summary.person,
-      slug: summary.slug,
-      value: h.value,
-      shares: h.shares,
-      weight: h.weight,
-    });
+    if (!latestFiledAt || d.latest.filedAt > latestFiledAt) latestFiledAt = d.latest.filedAt;
+    holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight });
   }
 
   if (holders.length === 0) notFound();
 
-  // Pick most-frequent issuer string
-  issuer = Object.entries(issuerFreq).sort((a, b) => b[1] - a[1])[0][0];
-
+  const issuer = Object.entries(issuerFreq).sort((a, b) => b[1] - a[1])[0][0];
   const n = holders.length;
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
 
   const subtitle =
     lang === "zh"
-      ? `${n} 位超级投资者持有该证券（CUSIP ${id}）。股票估值数据即将上线。`
-      : `Held by ${n} superinvestor${n === 1 ? "" : "s"} (CUSIP ${id}). Valuation data coming soon.`;
+      ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。股票估值数据即将上线。`
+      : `Held by ${n} superinvestor${n === 1 ? "" : "s"} (${ticker}). Valuation data coming soon.`;
 
   const keyFacts = [
-    {
-      label: lang === "zh" ? "持有人数" : "Holder count",
-      value: String(n),
-    },
-    {
-      label: lang === "zh" ? "合计市值" : "Total value held",
-      value: formatUSD(totalValue),
-    },
-    {
-      label: lang === "zh" ? "最大持有人" : "Largest holder",
-      value: topHolder.person,
-    },
+    { label: lang === "zh" ? "代码" : "Ticker", value: ticker },
+    { label: lang === "zh" ? "持有人数" : "Holder count", value: String(n) },
+    { label: lang === "zh" ? "合计市值" : "Total value held", value: formatUSD(totalValue) },
+    { label: lang === "zh" ? "最大持有人" : "Largest holder", value: topHolder.person },
   ];
 
-  // Related: link back to each holder's investor page (up to 6)
   const related = [...holders]
     .sort((a, b) => b.value - a.value)
     .slice(0, 6)
@@ -237,33 +208,20 @@ export default async function StockCusipPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: lang === "zh" ? "个股" : "Stocks",
-        item: `https://thecompounder.fyi/${lang}/stocks`,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: issuer,
-        item: `https://thecompounder.fyi/${lang}/stocks/${id}`,
-      },
+      { "@type": "ListItem", position: 1, name: lang === "zh" ? "个股" : "Stocks", item: `https://thecompounder.fyi/${lang}/stocks` },
+      { "@type": "ListItem", position: 2, name: issuer, item: `https://thecompounder.fyi/${lang}/stocks/${ticker}` },
     ],
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <EntityPage
         lang={lang}
         title={issuer}
         subtitle={subtitle}
         keyFacts={keyFacts}
-        aiPageKey={`stock:${id}`}
+        aiPageKey={`stock:${ticker}`}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt }]}
         related={related}
       >
