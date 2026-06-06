@@ -4,6 +4,8 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // Characterful display serif for the wordmark and editorial headlines.
 const fraunces = Fraunces({
@@ -14,6 +16,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://thecompounder.fyi"),
   title: "Compounder · 复利",
   description:
     "Compounder (复利) — an editorial read on smart-money holdings, single-stock valuation, and the macro funding backdrop.",
@@ -39,6 +42,8 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

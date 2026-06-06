@@ -111,7 +111,7 @@ export default async function HomePage({
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Compounder",
-    url: `https://compounder.fyi/${lang}`,
+    url: `https://thecompounder.fyi/${lang}`,
     description: isZh
       ? "聚合超级投资者 13F 持仓、个股估值与宏观流动性。"
       : "Smart-money 13F holdings, single-stock valuation, and the macro funding backdrop.",

@@ -3,7 +3,7 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { mostHeld } from "@/lib/aggregations";
 import { MACRO_GROUPS } from "@/lib/nav";
 
-const BASE = "https://compounder.fyi";
+const BASE = "https://thecompounder.fyi";
 const LANGS = ["zh", "en"] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

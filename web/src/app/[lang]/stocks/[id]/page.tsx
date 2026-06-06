@@ -241,13 +241,13 @@ export default async function StockCusipPage({
         "@type": "ListItem",
         position: 1,
         name: lang === "zh" ? "个股" : "Stocks",
-        item: `https://compounder.fyi/${lang}/stocks`,
+        item: `https://thecompounder.fyi/${lang}/stocks`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: issuer,
-        item: `https://compounder.fyi/${lang}/stocks/${id}`,
+        item: `https://thecompounder.fyi/${lang}/stocks/${id}`,
       },
     ],
   };
