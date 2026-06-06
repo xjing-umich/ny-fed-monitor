@@ -413,7 +413,7 @@ async function main() {
 
     try {
       const stats = await enrichSecurities(db, process.env.OPENFIGI_API_KEY);
-      console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}`);
+      console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
     } catch (e) {
       console.warn(`Securities enrich failed (非致命): ${e instanceof Error ? e.message : e}`);
     }

@@ -27,7 +27,8 @@ async function main() {
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
   const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
   const stats = await enrichSecurities(db, env.OPENFIGI_API_KEY);
-  console.log(`完成: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}`);
+  console.log(`完成: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
+  if (stats.skippedBatches > 0) console.warn(`⚠ 有 ${stats.skippedBatches} 个批次因错误跳过, 建议重跑 npm run enrich 补齐。`);
 }
 
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });

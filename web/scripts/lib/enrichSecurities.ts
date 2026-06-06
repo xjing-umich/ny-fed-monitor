@@ -22,7 +22,7 @@ export async function mapBatch(
  * 从 holdings 取去重 cusip(带 issuer), 跳过 security_cusips 中已 resolved 的, 分批富化并 upsert 两表。
  * db: supabase client。返回统计。
  */
-export async function enrichSecurities(db: any, apiKey?: string): Promise<{ total: number; resolved: number; unresolved: number }> {
+export async function enrichSecurities(db: any, apiKey?: string): Promise<{ total: number; resolved: number; unresolved: number; skippedBatches: number }> {
   // 1) 去重 cusip + 代表性 issuer(分页读 holdings)
   const cusipIssuer = new Map<string, string>();
   for (let from = 0; ; from += 1000) {
@@ -48,14 +48,16 @@ export async function enrichSecurities(db: any, apiKey?: string): Promise<{ tota
   // 3) 分批: 有 key 100/批, 无 key 10/批; 限速避免 429
   const batchSize = apiKey ? 100 : 10;
   const intervalMs = apiKey ? 300 : 2600; // 无 key < 25 req/min
-  let resolved = 0, unresolved = 0;
+  let resolved = 0, unresolved = 0, skippedBatches = 0;
   for (let i = 0; i < todo.length; i += batchSize) {
     const batch = todo.slice(i, i + batchSize);
     let rows: SecurityRow[];
     try {
       rows = await mapBatch(batch, apiKey);
     } catch (e) {
-      console.warn(`batch ${i}-${i + batch.length} failed: ${e instanceof Error ? e.message : e}`);
+      // 数据准确性: 整批失败(如 429/5xx)不静默丢弃——计数并上报, 这些 cusip 留待下次跑补齐。
+      console.warn(`batch ${i}-${i + batch.length} failed (跳过, 下次重试): ${e instanceof Error ? e.message : e}`);
+      skippedBatches++;
       await sleep(intervalMs);
       continue;
     }
@@ -75,5 +77,5 @@ export async function enrichSecurities(db: any, apiKey?: string): Promise<{ tota
     console.log(`progress ${Math.min(i + batchSize, todo.length)}/${todo.length} (resolved ${resolved}, unresolved ${unresolved})`);
     await sleep(intervalMs);
   }
-  return { total: todo.length, resolved, unresolved };
+  return { total: todo.length, resolved, unresolved, skippedBatches };
 }

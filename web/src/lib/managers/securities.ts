@@ -19,7 +19,12 @@ export const getCusipMap = cache(async (): Promise<Map<string, CusipInfo>> => {
   const rows: CusipMapRow[] = [];
   for (let from = 0; ; from += 1000) {
     const { data, error } = await db.from("security_cusips").select("cusip,ticker,issuer").range(from, from + 999);
-    if (error || !data?.length) break;
+    if (error) {
+      // 数据准确性: 不静默吞错——读失败时记录, 让退化为空 Map 这件事可见。
+      console.error(`getCusipMap: security_cusips 读取在 offset ${from} 失败: ${error.message}`);
+      break;
+    }
+    if (!data?.length) break;
     rows.push(...(data as CusipMapRow[]));
     if (data.length < 1000) break;
   }
@@ -30,6 +35,10 @@ export const getCusipMap = cache(async (): Promise<Map<string, CusipInfo>> => {
 export async function tickerToCusips(ticker: string): Promise<string[]> {
   if (!hasSupabaseEnv()) return [];
   const db = getDb();
-  const { data } = await db.from("security_cusips").select("cusip").eq("ticker", ticker);
+  const { data, error } = await db.from("security_cusips").select("cusip").eq("ticker", ticker);
+  if (error) {
+    console.error(`tickerToCusips(${ticker}) 失败: ${error.message}`);
+    return [];
+  }
   return (data ?? []).map((r: { cusip: string }) => r.cusip);
 }
