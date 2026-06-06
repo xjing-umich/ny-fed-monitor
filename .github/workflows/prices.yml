@@ -1,0 +1,20 @@
+name: Daily Prices
+on:
+  schedule:
+    - cron: "0 22 * * 1-5"   # 工作日 22:00 UTC(美股收盘后, 兼顾夏令时)
+  workflow_dispatch: {}
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: web
+      - run: npm run prices
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
