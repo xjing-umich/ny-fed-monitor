@@ -1,435 +1,324 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
-import { buildAllSections } from "@/lib/build";
-import AIMarketCommentary from "@/components/dashboard/AIMarketCommentary";
-import { badgeTone, buildWatchList, sectionLabel, metricLabel } from "@/lib/dashboard";
+import type { Metadata } from "next";
+import { Users, LineChart, Activity, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { getManagerIndex } from "@/lib/managers/source";
-import type { Section } from "@/lib/types";
+import { buildAllSections } from "@/lib/build";
+import { sectionLabel, metricLabel } from "@/lib/dashboard";
+import { formatUSD } from "@/lib/format";
+import { investorPath, macroPath } from "@/lib/urls";
+import type { Lang } from "@/lib/nav";
+import type { Section, Metric } from "@/lib/types";
 import type { ManagerSummary } from "@/lib/managers/types";
 
 export const dynamic = "force-dynamic";
 
-type Lang = "zh" | "en";
+// ── Copy ──────────────────────────────────────────────────────────────────────
 
-// The 6 signal cards — section key, display labels, and the key_metric label
-// whose value is the section's headline RISK signal (so the card shows e.g.
-// "Extreme" rather than a raw dollar level). `signalMetric` undefined → first metric.
-const SIGNAL_CARDS: { sectionKey: string; en: string; zh: string; signalMetric?: string }[] = [
-  { sectionKey: "dealer-inventory",  en: "Dealer Inventory",  zh: "交易商库存", signalMetric: "Pressure Label" },
-  { sectionKey: "repo-financing",    en: "Repo Financing",    zh: "回购融资",   signalMetric: "Usage Label" },
-  { sectionKey: "reference-rates",   en: "Reference Rates",   zh: "短端利率",   signalMetric: "Funding Rate Stress" },
-  { sectionKey: "fails",             en: "Fails / Liquidity", zh: "结算失败",   signalMetric: "Fails Direction" },
-  { sectionKey: "auction-risk",      en: "Auction Risk",      zh: "拍卖风险",   signalMetric: "Auction Risk" },
-  { sectionKey: "soma",              en: "SOMA",              zh: "美联储持仓" },
-];
+const COPY = {
+  zh: {
+    product: "聪明钱观察",
+    beta: "公开测试版",
+    headline: "看清聪明钱在买什么、它值不值、大环境如何",
+    sub: "把顶级投资者的持仓、个股估值与宏观流动性，整理成普通投资者也能读懂的清晰视图。",
+    ctaPrimary: "浏览超级投资者",
+    ctaSecondary: "查看宏观环境",
+    pillarsTitle: "三个视角",
+    pillars: {
+      who: { title: "谁在买", desc: "跟踪巴菲特、Burry 等顶级基金经理的 SEC 13F 季度持仓。" },
+      worth: { title: "值不值", desc: "结合持仓与个股估值，判断好公司是否处在好价格。", soon: "估值数据即将上线" },
+      macro: { title: "大环境", desc: "回购、利率、拍卖与美联储工具，读懂资金面的大背景。" },
+    },
+    focusTitle: "本周聚焦",
+    focusInvestors: "组合规模最大的投资者",
+    focusMacro: "一个值得留意的宏观信号",
+    topHolding: "第一大持仓",
+    viewAll: "查看全部",
+    sources: "数据来源：SEC EDGAR 13F、纽约联储、Treasury.gov。",
+  },
+  en: {
+    product: "Smart Money Watch",
+    beta: "Public beta",
+    headline: "See what smart money is buying, whether it's worth it, and the macro backdrop",
+    sub: "Top investors' holdings, single-stock valuation, and macro liquidity — organized into a clear view everyday investors can read.",
+    ctaPrimary: "Browse superinvestors",
+    ctaSecondary: "View the macro backdrop",
+    pillarsTitle: "Three ways to look",
+    pillars: {
+      who: { title: "Who's buying", desc: "Track quarterly SEC 13F holdings of top managers like Buffett and Burry." },
+      worth: { title: "Is it worth it", desc: "Pair holdings with single-stock valuation to see if a good company is at a good price.", soon: "Valuation data coming soon" },
+      macro: { title: "Macro backdrop", desc: "Repo, rates, auctions, and Fed facilities — read the funding backdrop." },
+    },
+    focusTitle: "This week's focus",
+    focusInvestors: "Largest portfolios right now",
+    focusMacro: "One macro signal worth watching",
+    topHolding: "Top holding",
+    viewAll: "View all",
+    sources: "Sources: SEC EDGAR 13F, NY Fed, Treasury.gov.",
+  },
+} as const;
 
-// Clean single-language Chinese for the common risk labels (no bilingual stacking).
-const RISK_ZH: Record<string, string> = {
-  Extreme: "极端", High: "高", "Elevated / High usage": "偏高", Elevated: "偏高",
-  Normal: "正常", Watch: "观察", "Watch / Mild": "观察", "Watch / Mixed": "观察 / 混合",
-  Medium: "中", Low: "低", rising: "上升", "stable / falling": "平稳 / 回落",
-  Moderate: "中等", "Limited sample": "样本有限", Unavailable: "不可用",
-};
+// ── Metadata ─────────────────────────────────────────────────────────────────
 
-function displayRisk(lang: Lang, raw: string): string {
-  if (lang === "zh") return RISK_ZH[raw] ?? raw;
-  return raw;
-}
-
-// Tone → CSS color token mapping
-const TONE_COLOR: Record<string, string> = {
-  red:    "var(--tt-negative)",
-  orange: "var(--tt-warn)",
-  yellow: "var(--tt-warn)",
-  green:  "var(--tt-positive)",
-  gray:   "var(--tt-faint)",
-};
-
-function deriveSignalValue(section: Section | undefined, signalMetric?: string): string {
-  if (!section) return "Unavailable";
-  // Prefer the section's headline risk label (e.g. Pressure Label → "Extreme")
-  if (signalMetric) {
-    const m = section.key_metrics?.find((km) => km.label === signalMetric);
-    if (m?.value && !m.value.toLowerCase().includes("unavailable")) return m.value;
-  }
-  // Fallback: first key metric, then freshness/mode
-  const first = section.key_metrics?.[0]?.value;
-  if (first && !first.toLowerCase().includes("unavailable")) return first;
-  if (section.freshness_status) return section.freshness_status;
-  return section.mode === "unavailable" ? "Unavailable" : "N/A";
-}
-
-function deriveDetailText(lang: Lang, section: Section | undefined): string {
-  if (!section) return lang === "zh" ? "数据不可用" : "Data unavailable";
-  const m = section.key_metrics?.[0];
-  if (m) {
-    const lbl = metricLabel(lang, m) ?? m.label;
-    return `${lbl}: ${m.value}${m.unit ? " " + m.unit : ""}`;
-  }
-  if (section.freshness_status) return section.freshness_status;
-  return lang === "zh" ? "无指标数据" : "No metric data";
-}
-
-function SignalCard({
-  lang,
-  sectionKey,
-  section,
-  label,
-  signalMetric,
+export async function generateMetadata({
+  params,
 }: {
-  lang: Lang;
-  sectionKey: string;
-  section: Section | undefined;
-  label: string;
-  signalMetric?: string;
-}) {
-  const rawValue = deriveSignalValue(section, signalMetric);
-  const value = displayRisk(lang, rawValue);
-  const tone = badgeTone(rawValue);
-  const dotColor = TONE_COLOR[tone] ?? TONE_COLOR.gray;
-  const detail = deriveDetailText(lang, section);
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: rawLang } = await params;
+  const lang: Lang = rawLang === "en" ? "en" : "zh";
+  const t = COPY[lang];
+  return { title: `${t.product}`, description: t.headline };
+}
 
-  return (
-    <a
-      href={`/${lang}/${sectionKey}`}
-      style={{
-        display: "block",
-        background: "var(--tt-panel)",
-        border: "1px solid var(--tt-border)",
-        borderRadius: 6,
-        padding: "14px 16px",
-        textDecoration: "none",
-        transition: "border-color 0.1s",
-      }}
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function titleCase(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
+
+/** Pick one meaningful macro headline signal, defensively. Returns null if none usable. */
+function pickMacroSignal(
+  lang: Lang,
+  sections: Record<string, Section>
+): { indicator: string; name: string; metricLabel: string; value: string } | null {
+  // Priority order: funding-stress style signals first, then broad fallbacks.
+  const candidates = [
+    "reference-rates",
+    "repo-financing",
+    "dealer-inventory",
+    "auction-risk",
+    "fails",
+    "soma",
+  ];
+  for (const indicator of candidates) {
+    const section = sections[indicator];
+    if (!section) continue;
+    const metric: Metric | undefined = section.key_metrics?.find(
+      (m) => m.value && !m.value.toLowerCase().includes("unavailable")
+    );
+    if (!metric) continue;
+    const name = sectionLabel(lang, section) ?? indicator;
+    const lbl = metricLabel(lang, metric) ?? metric.label;
+    const value = `${metric.value}${metric.unit ? " " + metric.unit : ""}`;
+    return { indicator, name, metricLabel: lbl, value };
+  }
+  return null;
+}
+
+// ── Sub-components (server-safe; hover via CSS utility classes only) ───────────
+
+function PillarCard({
+  icon: Icon,
+  title,
+  desc,
+  soon,
+  href,
+}: {
+  icon: typeof Users;
+  title: string;
+  desc: string;
+  soon?: string;
+  href?: string;
+}) {
+  const inner = (
+    <Card
+      className={
+        "h-full transition-colors" + (href ? " hover:border-primary/40" : "")
+      }
     >
-      {/* Label row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 8,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 500,
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "var(--tt-muted)",
-          }}
-        >
-          {label}
+      <CardContent className="flex h-full flex-col gap-3 px-6 py-6">
+        <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Icon className="size-5" aria-hidden />
         </span>
-        {/* Severity dot */}
-        <span
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: dotColor,
-            flexShrink: 0,
-          }}
-        />
-      </div>
-
-      {/* Value */}
-      <div
-        style={{
-          fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
-          fontSize: 18,
-          fontWeight: 600,
-          color: dotColor,
-          fontVariantNumeric: "tabular-nums",
-          lineHeight: 1.2,
-          marginBottom: 6,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {value}
-      </div>
-
-      {/* Detail */}
-      <div
-        style={{
-          fontSize: 11,
-          color: "var(--tt-faint)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {detail}
-      </div>
-    </a>
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          {soon && (
+            <Badge variant="secondary" className="text-[10px] font-normal">
+              {soon}
+            </Badge>
+          )}
+        </div>
+        <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
+        {href && (
+          <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary">
+            <ArrowRight className="size-4" aria-hidden />
+          </span>
+        )}
+      </CardContent>
+    </Card>
+  );
+  return href ? (
+    <Link href={href} className="block">
+      {inner}
+    </Link>
+  ) : (
+    inner
   );
 }
 
-function WatchPanel({ lang, lines }: { lang: Lang; lines: string[] }) {
+function ManagerMiniCard({ lang, manager }: { lang: Lang; manager: ManagerSummary }) {
+  const t = COPY[lang];
   return (
-    <div
-      style={{
-        background: "var(--tt-panel)",
-        border: "1px solid var(--tt-border)",
-        borderRadius: 6,
-        padding: "16px",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 500,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          color: "var(--tt-faint)",
-          marginBottom: 10,
-        }}
-      >
-        {lang === "zh" ? "重点关注" : "What to Watch"}
-      </div>
-      <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-        {lines.map((line, i) => (
-          <li
-            key={i}
-            style={{
-              display: "flex",
-              gap: 8,
-              paddingBottom: i < lines.length - 1 ? 8 : 0,
-              marginBottom: i < lines.length - 1 ? 8 : 0,
-              borderBottom: i < lines.length - 1 ? "1px solid var(--tt-border)" : "none",
-            }}
-          >
-            <span
-              style={{
-                color: "var(--tt-warn)",
-                fontWeight: 700,
-                flexShrink: 0,
-                lineHeight: 1.5,
-              }}
-            >
-              ▸
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                color: "var(--tt-text)",
-                lineHeight: 1.5,
-              }}
-            >
-              {line}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function formatPortfolioValue(v: number): string {
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(1)}T`;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-  return `$${v.toLocaleString()}`;
-}
-
-function ManagerMiniCard({
-  lang,
-  manager,
-}: {
-  lang: Lang;
-  manager: ManagerSummary;
-}) {
-  const href = `/${lang}/managers/${manager.cik}`;
-  return (
-    <Link
-      href={href}
-      style={{
-        display: "block",
-        background: "var(--tt-panel)",
-        border: "1px solid var(--tt-border)",
-        borderRadius: 6,
-        padding: "12px 14px",
-        textDecoration: "none",
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: "var(--tt-text)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          marginBottom: 4,
-        }}
-      >
-        {manager.person}
-      </div>
-      <div
-        style={{
-          fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
-          fontSize: 13,
-          fontWeight: 600,
-          color: "var(--tt-accent)",
-          fontVariantNumeric: "tabular-nums",
-          marginBottom: 4,
-        }}
-      >
-        {formatPortfolioValue(manager.totalValue)}
-      </div>
-      <div
-        style={{
-          fontSize: 11,
-          color: "var(--tt-faint)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        Top: {manager.topHolding}
-      </div>
+    <Link href={investorPath(lang, manager.slug)} className="block">
+      <Card className="h-full transition-colors hover:border-primary/40">
+        <CardContent className="flex h-full flex-col gap-1.5 px-5 py-4">
+          <span className="truncate text-sm font-semibold text-foreground">
+            {manager.person}
+          </span>
+          <span className="tnum font-mono text-base font-semibold text-primary">
+            {formatUSD(manager.totalValue)}
+          </span>
+          <span className="truncate text-xs text-muted-foreground">
+            {t.topHolding}: {titleCase(manager.topHolding)}
+          </span>
+        </CardContent>
+      </Card>
     </Link>
   );
 }
 
-export default async function OverviewPage({
+// ── Page ────────────────────────────────────────────────────────────────────────
+
+export default async function LandingPage({
   params,
 }: {
   params: Promise<{ lang: string }>;
 }) {
   const { lang: rawLang } = await params;
-  if (rawLang !== "zh" && rawLang !== "en") {
-    redirect("/zh");
-  }
+  if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
+  const t = COPY[lang];
 
-  const data = await buildAllSections();
-  const watchLines = buildWatchList(lang);
-
+  // Real data, defensive.
   const managerIdx = await getManagerIndex();
-  const topManagers = [...managerIdx.managers]
+  const topManagers = [...(managerIdx.managers ?? [])]
     .sort((a, b) => b.totalValue - a.totalValue)
-    .slice(0, 6);
+    .slice(0, 4);
+
+  let macroSignal: ReturnType<typeof pickMacroSignal> = null;
+  try {
+    const data = await buildAllSections();
+    macroSignal = pickMacroSignal(lang, data.sections);
+  } catch {
+    macroSignal = null;
+  }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      {/* Title row */}
-      <div>
-        <h1
-          style={{
-            fontSize: 20,
-            fontWeight: 600,
-            color: "var(--tt-text)",
-            margin: 0,
-            lineHeight: 1.2,
-          }}
-        >
-          {lang === "zh" ? "总览" : "Overview"}
+    <div className="mx-auto flex max-w-5xl flex-col gap-14 px-2 py-8 sm:py-12">
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="flex flex-col items-start gap-5">
+        <Badge variant="secondary">{t.beta}</Badge>
+        <h1 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+          {t.headline}
         </h1>
-        <p
-          style={{
-            fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
-            fontSize: 11,
-            color: "var(--tt-faint)",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            margin: "4px 0 0",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {lang === "zh" ? "截至" : "AS OF"} {data.as_of}
+        <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          {t.sub}
         </p>
-      </div>
-
-      {/* Top Managers / 13F block */}
-      {topManagers.length > 0 && (
-        <div>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--tt-faint)",
-              marginBottom: 12,
-            }}
+        <div className="flex flex-wrap gap-3 pt-1">
+          <Link href={`/${lang}/investors`} className={buttonVariants({ size: "lg" })}>
+            {t.ctaPrimary}
+          </Link>
+          <Link
+            href={`/${lang}/macro`}
+            className={buttonVariants({ size: "lg", variant: "outline" })}
           >
-            {lang === "zh" ? "顶级经理人 / 13F" : "Top Managers / 13F"}
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 8,
-            }}
-            className="signal-grid"
-          >
-            {topManagers.map((m) => (
-              <ManagerMiniCard key={m.cik} lang={lang} manager={m} />
-            ))}
-          </div>
+            {t.ctaSecondary}
+          </Link>
         </div>
+      </section>
+
+      {/* ── Three pillars ─────────────────────────────────────────────── */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          {t.pillarsTitle}
+        </h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <PillarCard
+            icon={Users}
+            title={t.pillars.who.title}
+            desc={t.pillars.who.desc}
+            href={`/${lang}/investors`}
+          />
+          <PillarCard
+            icon={LineChart}
+            title={t.pillars.worth.title}
+            desc={t.pillars.worth.desc}
+            soon={t.pillars.worth.soon}
+          />
+          <PillarCard
+            icon={Activity}
+            title={t.pillars.macro.title}
+            desc={t.pillars.macro.desc}
+            href={`/${lang}/macro`}
+          />
+        </div>
+      </section>
+
+      {/* ── This week's focus ─────────────────────────────────────────── */}
+      {(topManagers.length > 0 || macroSignal) && (
+        <section className="flex flex-col gap-6">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            {t.focusTitle}
+          </h2>
+
+          {topManagers.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {t.focusInvestors}
+                </span>
+                <Link
+                  href={`/${lang}/investors`}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                >
+                  {t.viewAll}
+                  <ArrowRight className="size-3.5" aria-hidden />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {topManagers.map((m) => (
+                  <ManagerMiniCard key={m.cik} lang={lang} manager={m} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {macroSignal && (
+            <div className="flex flex-col gap-3">
+              <span className="text-sm font-medium text-foreground">
+                {t.focusMacro}
+              </span>
+              <Link href={macroPath(lang, macroSignal.indicator)} className="block">
+                <Card className="transition-colors hover:border-primary/40">
+                  <CardContent className="flex flex-wrap items-center justify-between gap-4 px-6 py-5">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                        {macroSignal.name}
+                      </span>
+                      <span className="text-sm text-foreground">
+                        {macroSignal.metricLabel}
+                      </span>
+                    </div>
+                    <span className="tnum font-mono text-xl font-semibold text-foreground">
+                      {macroSignal.value}
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          )}
+        </section>
       )}
 
-      {/* Signal grid: 3 cols desktop, 2 cols tablet, 1 col mobile */}
-      <div>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 500,
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "var(--tt-faint)",
-            marginBottom: 12,
-          }}
-        >
-          {lang === "zh" ? "市场信号" : "Market Signals"}
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 8,
-          }}
-          className="signal-grid"
-        >
-          {SIGNAL_CARDS.map((card) => (
-            <SignalCard
-              key={card.sectionKey}
-              lang={lang}
-              sectionKey={card.sectionKey}
-              section={data.sections[card.sectionKey]}
-              label={lang === "zh" ? card.zh : card.en}
-              signalMetric={card.signalMetric}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* What to Watch */}
-      <WatchPanel lang={lang} lines={watchLines} />
-
-      {/* DeepSeek AI commentary */}
-      <AIMarketCommentary lang={lang} />
-
-      {/* Data coverage note */}
-      <div
-        style={{
-          fontSize: 11,
-          color: "var(--tt-faint)",
-          fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
-          padding: "8px 0",
-          borderTop: "1px solid var(--tt-border)",
-        }}
-      >
-        {lang === "zh"
-          ? `LIVE 模块: ${data.summary.live_sections.length} / ${data.summary.section_order.length} · 模式: ${data.summary.data_mode}`
-          : `LIVE sections: ${data.summary.live_sections.length} / ${data.summary.section_order.length} · mode: ${data.summary.data_mode}`}
-      </div>
+      {/* ── Sources line (short; full trust note is in AppShell footer) ── */}
+      <p className="text-xs leading-relaxed text-muted-foreground">{t.sources}</p>
     </div>
   );
 }
