@@ -1,7 +1,7 @@
 import React from "react";
 import TopNav from "./TopNav";
 import MobileDrawer from "./MobileDrawer";
-import ContactModal from "./ContactModal";
+import Footer from "./Footer";
 import type { Lang } from "@/lib/nav";
 import { LogoMark } from "@/components/brand/Logo";
 
@@ -35,25 +35,8 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
         </div>
       </main>
 
-      {/* Footer — editorial colophon */}
-      <footer className="border-t border-[var(--tt-border)] py-4 px-8">
-        <div className="max-w-[1180px] mx-auto flex flex-wrap items-baseline justify-between gap-2">
-          <span className="flex items-center gap-1.5">
-            <LogoMark className="h-[14px] w-[14px] text-[var(--tt-faint)] shrink-0" />
-            <span className="font-display text-sm font-medium text-[var(--tt-faint)]">
-              Compounder
-            </span>
-          </span>
-          <span className="flex items-center gap-3">
-            <ContactModal lang={lang} />
-            <span className="text-[11px] italic text-[var(--tt-faint)]">
-              {lang === "zh"
-                ? "本系统不提供交易建议 · 数据来源: NY Fed · Treasury.gov · SEC EDGAR"
-                : "No trading advice · Sources: NY Fed · Treasury.gov · SEC EDGAR"}
-            </span>
-          </span>
-        </div>
-      </footer>
+      {/* Footer */}
+      <Footer lang={lang} />
     </div>
   );
 }
