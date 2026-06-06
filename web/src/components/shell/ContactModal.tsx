@@ -102,9 +102,9 @@ export default function ContactModal({ lang }: ContactModalProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 text-[11px] text-[var(--tt-faint)] hover:text-[var(--tt-text)] transition-colors"
+        className="inline-flex items-center gap-1.5 self-start text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors"
       >
-        <Mail size={12} />
+        <Mail size={13} />
         {c.link}
       </button>
 
