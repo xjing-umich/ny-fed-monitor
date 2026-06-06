@@ -1,4 +1,15 @@
 /**
+ * Formats a USD dollar amount with T/B/M suffixes.
+ * e.g. 1_500_000_000 → "$1.50B"
+ */
+export function formatUSD(v: number): string {
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+  return `$${v.toLocaleString()}`;
+}
+
+/**
  * Returns "up" if value starts with "+", "down" if value starts with "-" followed by a digit,
  * null otherwise (unsigned numbers, "Unavailable", etc.).
  */

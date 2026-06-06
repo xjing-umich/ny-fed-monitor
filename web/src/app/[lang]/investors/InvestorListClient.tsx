@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { ManagerSummary } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
-
-function formatUSD(v: number): string {
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-  return `$${v.toLocaleString()}`;
-}
+import { formatUSD } from "@/lib/format";
 
 const COPY = {
   zh: {
