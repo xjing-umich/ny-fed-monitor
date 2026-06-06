@@ -26,17 +26,11 @@ const HEADERS = {
   Accept: "application/json",
 };
 
-const SEED_MANAGERS: Omit<Manager, "name">[] = [
-  { cik: "0001067983", slug: "berkshire-hathaway", person: "Warren Buffett" },
-  { cik: "0001649339", slug: "scion-asset-management", person: "Michael Burry" },
-  { cik: "0001336528", slug: "pershing-square", person: "Bill Ackman" },
-  { cik: "0001350694", slug: "bridgewater-associates", person: "Ray Dalio" },
-  { cik: "0001536411", slug: "duquesne-family-office", person: "Stanley Druckenmiller" },
-  { cik: "0001061768", slug: "baupost-group", person: "Seth Klarman" },
-];
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const SEED_MANAGERS: Omit<Manager, "name">[] = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "../config/managers.json"), "utf8")
+);
 const OUT_DIR = path.join(__dirname, "../src/data/13f");
 
 function sleep(ms: number) {
