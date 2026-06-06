@@ -1,63 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Users, LineChart, Activity, ArrowRight } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
 import { getManagerIndex } from "@/lib/managers/source";
+import { mostHeld, notableMoves } from "@/lib/aggregations";
 import { buildAllSections } from "@/lib/build";
-import { sectionLabel, metricLabel } from "@/lib/dashboard";
+import { sectionLabel } from "@/lib/dashboard";
 import { formatUSD } from "@/lib/format";
-import { investorPath, macroPath } from "@/lib/urls";
+import { investorPath, stockPath, macroPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
-import type { Section, Metric } from "@/lib/types";
-import type { ManagerSummary } from "@/lib/managers/types";
 
 export const dynamic = "force-dynamic";
-
-// ── Copy ──────────────────────────────────────────────────────────────────────
-
-const COPY = {
-  zh: {
-    product: "Compounder · 复利",
-    beta: "公开测试版",
-    headline: "看清聪明钱在买什么、它值不值、大环境如何",
-    sub: "把顶级投资者的持仓、个股估值与宏观流动性，整理成普通投资者也能读懂的清晰视图。",
-    ctaPrimary: "浏览超级投资者",
-    ctaSecondary: "查看宏观环境",
-    pillarsTitle: "三个视角",
-    pillars: {
-      who: { title: "谁在买", desc: "跟踪巴菲特、Burry 等顶级基金经理的 SEC 13F 季度持仓。" },
-      worth: { title: "值不值", desc: "结合持仓与个股估值，判断好公司是否处在好价格。", soon: "估值数据即将上线" },
-      macro: { title: "大环境", desc: "回购、利率、拍卖与美联储工具，读懂资金面的大背景。" },
-    },
-    focusTitle: "本周聚焦",
-    focusInvestors: "组合规模最大的投资者",
-    focusMacro: "一个值得留意的宏观信号",
-    topHolding: "第一大持仓",
-    viewAll: "查看全部",
-    sources: "数据来源：SEC EDGAR 13F、纽约联储、Treasury.gov。",
-  },
-  en: {
-    product: "Compounder · 复利",
-    beta: "Public beta",
-    headline: "See what smart money is buying, whether it's worth it, and the macro backdrop",
-    sub: "Top investors' holdings, single-stock valuation, and macro liquidity — organized into a clear view everyday investors can read.",
-    ctaPrimary: "Browse superinvestors",
-    ctaSecondary: "View the macro backdrop",
-    pillarsTitle: "Three ways to look",
-    pillars: {
-      who: { title: "Who's buying", desc: "Track quarterly SEC 13F holdings of top managers like Buffett and Burry." },
-      worth: { title: "Is it worth it", desc: "Pair holdings with single-stock valuation to see if a good company is at a good price.", soon: "Valuation data coming soon" },
-      macro: { title: "Macro backdrop", desc: "Repo, rates, auctions, and Fed facilities — read the funding backdrop." },
-    },
-    focusTitle: "This week's focus",
-    focusInvestors: "Largest portfolios right now",
-    focusMacro: "One macro signal worth watching",
-    topHolding: "Top holding",
-    viewAll: "View all",
-    sources: "Sources: SEC EDGAR 13F, NY Fed, Treasury.gov.",
-  },
-} as const;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -66,10 +18,21 @@ export async function generateMetadata({
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  const { lang: rawLang } = await params;
-  const lang: Lang = rawLang === "en" ? "en" : "zh";
-  const t = COPY[lang];
-  return { title: `${t.product}`, description: t.headline };
+  const { lang } = await params;
+  const l = lang === "en" ? "en" : "zh";
+  const title =
+    l === "zh"
+      ? "Compounder · 复利 — 超级投资者持仓 × 个股估值 × 宏观"
+      : "Compounder — Smart-money holdings × valuation × macro";
+  const description =
+    l === "zh"
+      ? "追踪巴菲特等顶级投资者的 SEC 13F 季度持仓、跨机构共识与宏观流动性信号。数据来源 SEC EDGAR / NY Fed。"
+      : "Track top investors' SEC 13F holdings, cross-fund consensus, and macro funding signals. Sources: SEC EDGAR / NY Fed.";
+  return {
+    title,
+    description,
+    alternates: { canonical: `/${l}`, languages: { "zh-CN": "/zh", en: "/en" } },
+  };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -81,103 +44,9 @@ function titleCase(s: string): string {
     .trim();
 }
 
-/** Pick one meaningful macro headline signal, defensively. Returns null if none usable. */
-function pickMacroSignal(
-  lang: Lang,
-  sections: Record<string, Section>
-): { indicator: string; name: string; metricLabel: string; value: string } | null {
-  // Priority order: funding-stress style signals first, then broad fallbacks.
-  const candidates = [
-    "reference-rates",
-    "repo-financing",
-    "dealer-inventory",
-    "auction-risk",
-    "fails",
-    "soma",
-  ];
-  for (const indicator of candidates) {
-    const section = sections[indicator];
-    if (!section) continue;
-    const metric: Metric | undefined = section.key_metrics?.find(
-      (m) => m.value && !m.value.toLowerCase().includes("unavailable")
-    );
-    if (!metric) continue;
-    const name = sectionLabel(lang, section) ?? indicator;
-    const lbl = metricLabel(lang, metric) ?? metric.label;
-    const value = `${metric.value}${metric.unit ? " " + metric.unit : ""}`;
-    return { indicator, name, metricLabel: lbl, value };
-  }
-  return null;
-}
-
-// ── Sub-components (server-safe; hover via CSS utility classes only) ───────────
-
-function PillarCard({
-  icon: Icon,
-  title,
-  desc,
-  soon,
-  href,
-}: {
-  icon: typeof Users;
-  title: string;
-  desc: string;
-  soon?: string;
-  href?: string;
-}) {
-  const inner = (
-    <div className="group/pillar flex h-full flex-col gap-3 py-1">
-      <Icon className="size-5 text-primary" aria-hidden />
-      <div className="flex items-center gap-2">
-        <h3 className="font-display text-lg font-medium text-foreground">{title}</h3>
-        {soon && (
-          <span className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-            {soon}
-          </span>
-        )}
-      </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
-      {href && (
-        <span className="mt-auto inline-flex items-center gap-1 pt-2 text-[12px] font-medium uppercase tracking-[0.1em] text-primary">
-          <ArrowRight className="size-3.5 transition-transform group-hover/pillar:translate-x-0.5" aria-hidden />
-        </span>
-      )}
-    </div>
-  );
-  return href ? (
-    <Link href={href} className="block h-full no-underline">
-      {inner}
-    </Link>
-  ) : (
-    inner
-  );
-}
-
-function ManagerMiniCard({ lang, manager }: { lang: Lang; manager: ManagerSummary }) {
-  const t = COPY[lang];
-  return (
-    <Link
-      href={investorPath(lang, manager.slug)}
-      className="group/mgr block h-full border-t-2 border-border pt-3 no-underline transition-colors hover:border-primary"
-    >
-      <div className="flex h-full flex-col gap-1.5">
-        <span className="font-display truncate text-base font-medium text-foreground">
-          {manager.person}
-        </span>
-        <span className="tnum font-mono text-lg font-medium text-foreground">
-          {formatUSD(manager.totalValue)}
-        </span>
-        <span className="truncate text-xs text-muted-foreground">
-          {t.topHolding}: {titleCase(manager.topHolding)}
-        </span>
-      </div>
-    </Link>
-  );
-}
-
 // ── Page ────────────────────────────────────────────────────────────────────────
 
-export default async function LandingPage({
+export default async function HomePage({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -185,139 +54,283 @@ export default async function LandingPage({
   const { lang: rawLang } = await params;
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
-  const t = COPY[lang];
+  const isZh = lang === "zh";
 
-  // Real data, defensive.
-  const managerIdx = await getManagerIndex();
-  const topManagers = [...(managerIdx.managers ?? [])]
-    .sort((a, b) => b.totalValue - a.totalValue)
-    .slice(0, 4);
+  // ── Data (server, defensive) ──────────────────────────────────────────────
+  const idx = await getManagerIndex();
+  const topManagers = [...(idx.managers ?? [])].sort(
+    (a, b) => b.totalValue - a.totalValue
+  );
+  const period = topManagers[0]?.period ?? "";
 
-  let macroSignal: ReturnType<typeof pickMacroSignal> = null;
+  const moves = await notableMoves(6);
+  const held = await mostHeld(8);
+
+  let macroSignals: { key: string; name: string; value: string }[] = [];
   try {
     const data = await buildAllSections();
-    macroSignal = pickMacroSignal(lang, data.sections);
+    macroSignals = ["reference-rates", "repo-financing", "auction-risk"]
+      .map((k) => data.sections[k])
+      .filter(Boolean)
+      .map((s) => {
+        const m = (s.key_metrics ?? []).find(
+          (km) =>
+            km.value && !String(km.value).toLowerCase().includes("unavailable")
+        );
+        return m
+          ? {
+              key: s.key,
+              name: sectionLabel(lang, s) ?? s.key,
+              value: `${m.value}${m.unit ? " " + m.unit : ""}`,
+            }
+          : null;
+      })
+      .filter(Boolean)
+      .slice(0, 3) as { key: string; name: string; value: string }[];
   } catch {
-    macroSignal = null;
+    macroSignals = [];
   }
 
+  // ── JSON-LD ────────────────────────────────────────────────────────────────
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Compounder",
+    url: `https://compounder.fyi/${lang}`,
+    description: isZh
+      ? "聚合超级投资者 13F 持仓、个股估值与宏观流动性。"
+      : "Smart-money 13F holdings, single-stock valuation, and the macro funding backdrop.",
+  };
+
+  const topInvestors = topManagers.slice(0, 8);
+
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-14 px-2 py-8 sm:py-12">
-      {/* ── Hero ── editorial masthead: kicker, big serif headline, deck ─ */}
-      <section className="flex flex-col items-start gap-6 border-b border-border pb-12">
-        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
-          {t.product} <span className="text-muted-foreground">— {t.beta}</span>
-        </span>
-        <h1 className="font-display max-w-4xl text-4xl font-medium leading-[1.08] tracking-tight text-foreground sm:text-5xl">
-          {t.headline}
-        </h1>
-        <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          {t.sub}
+    <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
+      />
+
+      {/* ── 1. Dateline ──────────────────────────────────────────────── */}
+      <div className="border-b border-[var(--tt-border)] pb-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-muted)]">
+          {isZh
+            ? `截至 ${period} · ${topManagers.length} 位投资者 · 数据来源 SEC 13F`
+            : `As of ${period} · ${topManagers.length} investors · Source: SEC 13F`}
         </p>
-        <div className="flex flex-wrap items-center gap-6 pt-2">
-          <Link href={`/${lang}/investors`} className={buttonVariants({ size: "lg" })}>
-            {t.ctaPrimary}
-          </Link>
-          <Link
-            href={`/${lang}/macro`}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 decoration-border hover:decoration-primary underline transition-colors"
-          >
-            {t.ctaSecondary}
-            <ArrowRight className="size-4" aria-hidden />
-          </Link>
-        </div>
-      </section>
+      </div>
 
-      {/* ── Three pillars — ruled editorial columns ───────────────────── */}
-      <section className="flex flex-col gap-6">
-        <h2 className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          {t.pillarsTitle}
-        </h2>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-0">
-          <div className="sm:pr-8">
-            <PillarCard
-              icon={Users}
-              title={t.pillars.who.title}
-              desc={t.pillars.who.desc}
-              href={`/${lang}/investors`}
-            />
-          </div>
-          <div className="sm:border-l sm:border-border sm:px-8">
-            <PillarCard
-              icon={LineChart}
-              title={t.pillars.worth.title}
-              desc={t.pillars.worth.desc}
-              soon={t.pillars.worth.soon}
-              href={`/${lang}/stocks`}
-            />
-          </div>
-          <div className="sm:border-l sm:border-border sm:pl-8">
-            <PillarCard
-              icon={Activity}
-              title={t.pillars.macro.title}
-              desc={t.pillars.macro.desc}
-              href={`/${lang}/macro`}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── This week's focus ─────────────────────────────────────────── */}
-      {(topManagers.length > 0 || macroSignal) && (
-        <section className="flex flex-col gap-6">
-          <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-            {t.focusTitle}
+      {/* ── 2. Notable moves this quarter — wide lead ────────────────── */}
+      {(moves.mostBought.length > 0 || moves.mostSold.length > 0) && (
+        <section className="mt-10">
+          <h2 className="font-display text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">
+            {isZh ? "本季显著动向" : "Notable moves this quarter"}
           </h2>
-
-          {topManagers.length > 0 && (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">
-                  {t.focusInvestors}
-                </span>
-                <Link
-                  href={`/${lang}/investors`}
-                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-                >
-                  {t.viewAll}
-                  <ArrowRight className="size-3.5" aria-hidden />
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {topManagers.map((m) => (
-                  <ManagerMiniCard key={m.cik} lang={lang} manager={m} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {macroSignal && (
-            <div className="flex flex-col gap-3">
-              <span className="text-sm font-medium text-foreground">
-                {t.focusMacro}
-              </span>
-              <Link
-                href={macroPath(lang, macroSignal.indicator)}
-                className="group/macro block border-t-2 border-border pt-4 no-underline transition-colors hover:border-primary"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-display text-lg text-foreground">
-                      {macroSignal.name}
-                    </span>
-                  </div>
-                  <span className="tnum font-mono text-2xl font-medium text-foreground">
-                    {macroSignal.value}
-                  </span>
-                </div>
-              </Link>
-            </div>
-          )}
+          <div className="mt-5 grid grid-cols-1 gap-x-10 gap-y-8 border-t border-[var(--tt-border)] pt-5 md:grid-cols-2">
+            {moves.mostBought.length > 0 && (
+              <MoveColumn
+                lang={lang}
+                title={isZh ? "本季最多人增持" : "Most bought"}
+                rows={moves.mostBought}
+              />
+            )}
+            {moves.mostSold.length > 0 && (
+              <MoveColumn
+                lang={lang}
+                title={isZh ? "本季最多人减持" : "Most sold"}
+                rows={moves.mostSold}
+              />
+            )}
+          </div>
         </section>
       )}
 
-      {/* ── Sources line (short; full trust note is in AppShell footer) ── */}
-      <p className="text-xs leading-relaxed text-muted-foreground">{t.sources}</p>
+      {/* ── 3 / 4 / 5 stacked editorial blocks ───────────────────────── */}
+      <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-2">
+        {/* 3. Consensus holdings */}
+        {held.length > 0 && (
+          <section>
+            <BlockHeading
+              title={isZh ? "共识持仓" : "Consensus holdings"}
+              href={`/${lang}/stocks`}
+              isZh={isZh}
+            />
+            <table className="mt-4 w-full border-collapse text-sm">
+              <tbody>
+                {held.map((row) => (
+                  <tr
+                    key={row.cusip}
+                    className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+                  >
+                    <td className="py-2.5 pr-4">
+                      <Link
+                        href={stockPath(lang, row.cusip)}
+                        className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                      >
+                        {titleCase(row.issuer)}
+                      </Link>
+                    </td>
+                    <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+                      {isZh ? `${row.holderCount} 位` : `${row.holderCount}`}
+                    </td>
+                    <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+                      {formatUSD(row.totalValue)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* 4. Investors */}
+        {topInvestors.length > 0 && (
+          <section>
+            <BlockHeading
+              title={isZh ? "投资者" : "Investors"}
+              href={`/${lang}/investors`}
+              isZh={isZh}
+            />
+            <table className="mt-4 w-full border-collapse text-sm">
+              <tbody>
+                {topInvestors.map((m) => (
+                  <tr
+                    key={m.cik}
+                    className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+                  >
+                    <td className="py-2.5 pr-4">
+                      <Link
+                        href={investorPath(lang, m.slug)}
+                        className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                      >
+                        {m.person}
+                      </Link>
+                      <span className="ml-2 truncate text-[11px] text-[var(--tt-faint)]">
+                        {titleCase(m.topHolding)}
+                      </span>
+                    </td>
+                    <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+                      {m.holdingCount}
+                    </td>
+                    <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-text)]">
+                      {formatUSD(m.totalValue)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+      </div>
+
+      {/* 5. Macro snapshot */}
+      {macroSignals.length > 0 && (
+        <section className="mt-12">
+          <BlockHeading
+            title={isZh ? "宏观速览" : "Macro snapshot"}
+            href={`/${lang}/macro`}
+            isZh={isZh}
+          />
+          <table className="mt-4 w-full border-collapse text-sm">
+            <tbody>
+              {macroSignals.map((s) => (
+                <tr
+                  key={s.key}
+                  className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+                >
+                  <td className="py-2.5 pr-4">
+                    <Link
+                      href={macroPath(lang, s.key)}
+                      className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                    >
+                      {s.name}
+                    </Link>
+                  </td>
+                  <td className="py-2.5 text-right font-mono text-sm tabular-nums text-[var(--tt-text)]">
+                    {s.value}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      <p className="mt-12 border-t border-[var(--tt-border)] pt-6 text-xs text-[var(--tt-faint)]">
+        {isZh
+          ? "数据来源：SEC EDGAR 13F 季度报告、纽约联储。持仓数据存在 45 天延迟，仅供参考。"
+          : "Sources: SEC EDGAR 13F quarterly filings, NY Fed. Holdings data has a 45-day lag and is for reference only."}
+      </p>
+    </div>
+  );
+}
+
+// ── Sub-components (server-safe; CSS hover only) ──────────────────────────────
+
+function BlockHeading({
+  title,
+  href,
+  isZh,
+}: {
+  title: string;
+  href: string;
+  isZh: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between border-b border-[var(--tt-border)] pb-2">
+      <h2 className="font-display text-xl font-medium tracking-tight text-[var(--tt-text)]">
+        {title}
+      </h2>
+      <Link
+        href={href}
+        className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
+      >
+        {isZh ? "查看全部 →" : "View all →"}
+      </Link>
+    </div>
+  );
+}
+
+function MoveColumn({
+  lang,
+  title,
+  rows,
+}: {
+  lang: Lang;
+  title: string;
+  rows: { cusip: string; issuer: string; count: number; value: number }[];
+}) {
+  const isZh = lang === "zh";
+  return (
+    <div>
+      <h3 className="text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--tt-muted)]">
+        {title}
+      </h3>
+      <table className="mt-3 w-full border-collapse text-sm">
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.cusip}
+              className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+            >
+              <td className="py-2.5 pr-4">
+                <Link
+                  href={stockPath(lang, row.cusip)}
+                  className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                >
+                  {titleCase(row.issuer)}
+                </Link>
+              </td>
+              <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+                {isZh ? `${row.count} 位` : `${row.count} investors`}
+              </td>
+              <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+                {formatUSD(row.value)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
