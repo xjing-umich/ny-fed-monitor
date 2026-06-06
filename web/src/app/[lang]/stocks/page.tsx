@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
+import { mostHeld } from "@/lib/aggregations";
 import { stockPath } from "@/lib/urls";
 import { formatUSD } from "@/lib/format";
 import SubNav from "@/components/shell/SubNav";
@@ -30,58 +30,6 @@ export async function generateMetadata({
       };
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type SecurityRow = {
-  cusip: string;
-  issuer: string;
-  holderCount: number;
-  totalValue: number;
-};
-
-// ── Data aggregation ──────────────────────────────────────────────────────────
-
-async function getMostHeldSecurities(): Promise<SecurityRow[]> {
-  const index = await getManagerIndex();
-  const slugs = index.managers.map((m) => m.slug);
-
-  // Fetch all manager details in parallel
-  const details = await Promise.all(slugs.map((s) => getManagerDetail(s)));
-
-  // Tally per cusip
-  const byCount = new Map<string, { issuers: string[]; totalValue: number; holderCount: number }>();
-
-  for (const detail of details) {
-    if (!detail) continue;
-    for (const holding of detail.latest.holdings) {
-      const { cusip, issuer, value } = holding;
-      const existing = byCount.get(cusip);
-      if (existing) {
-        existing.holderCount += 1;
-        existing.totalValue += value;
-        existing.issuers.push(issuer);
-      } else {
-        byCount.set(cusip, { holderCount: 1, totalValue: value, issuers: [issuer] });
-      }
-    }
-  }
-
-  // Pick most common issuer name per cusip
-  const rows: SecurityRow[] = Array.from(byCount.entries()).map(([cusip, data]) => {
-    const freq = new Map<string, number>();
-    for (const name of data.issuers) {
-      freq.set(name, (freq.get(name) ?? 0) + 1);
-    }
-    const issuer = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0];
-    return { cusip, issuer, holderCount: data.holderCount, totalValue: data.totalValue };
-  });
-
-  // Sort by holderCount desc, then totalValue desc, take top 40
-  return rows
-    .sort((a, b) => b.holderCount - a.holderCount || b.totalValue - a.totalValue)
-    .slice(0, 40);
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function StocksIndexPage({
@@ -93,7 +41,7 @@ export default async function StocksIndexPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  const rows = await getMostHeldSecurities();
+  const rows = await mostHeld(40);
 
   const isZh = lang === "zh";
 
