@@ -13,9 +13,16 @@ interface SearchItem {
 interface SearchBoxProps {
   lang: Lang;
   items: SearchItem[];
+  variant?: "default" | "hero";
+  placeholder?: string;
 }
 
-export default function SearchBox({ lang, items }: SearchBoxProps) {
+export default function SearchBox({
+  lang,
+  items,
+  variant = "default",
+  placeholder: placeholderProp,
+}: SearchBoxProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -60,12 +67,24 @@ export default function SearchBox({ lang, items }: SearchBoxProps) {
     setOpen(false);
   }
 
-  const placeholder = lang === "zh" ? "搜索投资者/指标…" : "Search investors / indicators…";
+  const placeholder =
+    placeholderProp ??
+    (lang === "zh" ? "搜索投资者/指标…" : "Search investors / indicators…");
+
+  const isHero = variant === "hero";
 
   return (
-    <div ref={containerRef} className="relative">
-      <div className="flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] text-[var(--tt-muted)] focus-within:border-[var(--tt-accent)] transition-colors">
-        <Search size={13} className="shrink-0" />
+    <div
+      ref={containerRef}
+      className={isHero ? "relative w-full max-w-xl" : "relative"}
+    >
+      <div
+        className={[
+          "flex items-center rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] text-[var(--tt-muted)] focus-within:border-[var(--tt-accent)] transition-colors",
+          isHero ? "gap-2.5 h-12 px-4" : "gap-1.5 h-8 px-2.5",
+        ].join(" ")}
+      >
+        <Search size={isHero ? 18 : 13} className="shrink-0" />
         <input
           ref={inputRef}
           type="text"
@@ -78,17 +97,28 @@ export default function SearchBox({ lang, items }: SearchBoxProps) {
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           aria-label={placeholder}
-          className="w-36 bg-transparent text-xs text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] outline-none"
+          className={[
+            "bg-transparent text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] outline-none",
+            isHero ? "w-full flex-1 text-base" : "w-36 text-xs",
+          ].join(" ")}
         />
       </div>
 
       {open && filtered.length > 0 && (
-        <div className="absolute top-full mt-1 left-0 w-64 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] shadow-md z-50 overflow-hidden">
+        <div
+          className={[
+            "absolute top-full mt-1 left-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] shadow-md z-50 overflow-hidden",
+            isHero ? "w-full" : "w-64",
+          ].join(" ")}
+        >
           {filtered.map((item) => (
             <button
               key={item.href}
               onMouseDown={() => handleSelect(item.href)}
-              className="w-full text-left px-3 py-2 text-xs text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors truncate"
+              className={[
+                "w-full text-left text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors truncate",
+                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-xs",
+              ].join(" ")}
             >
               {item.label}
             </button>

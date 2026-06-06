@@ -8,6 +8,8 @@ import { sectionLabel } from "@/lib/dashboard";
 import { formatUSD } from "@/lib/format";
 import { investorPath, stockPath, macroPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
+import { MACRO_GROUPS } from "@/lib/nav";
+import SearchBox from "@/components/shell/SearchBox";
 
 export const dynamic = "force-dynamic";
 
@@ -66,9 +68,22 @@ export default async function HomePage({
   const moves = await notableMoves(6);
   const held = await mostHeld(8);
 
+  // Hero search items: macro indicators (localized via section labels)
+  const macroItems: { label: string; href: string }[] = [];
+
   let macroSignals: { key: string; name: string; value: string }[] = [];
   try {
     const data = await buildAllSections();
+    for (const group of MACRO_GROUPS) {
+      for (const ind of group.indicators) {
+        const s = data.sections[ind];
+        if (!s) continue;
+        macroItems.push({
+          label: sectionLabel(lang, s) ?? ind,
+          href: macroPath(lang, ind),
+        });
+      }
+    }
     macroSignals = ["reference-rates", "repo-financing", "auction-risk"]
       .map((k) => data.sections[k])
       .filter(Boolean)
@@ -104,12 +119,63 @@ export default async function HomePage({
 
   const topInvestors = topManagers.slice(0, 8);
 
+  // ── Hero search items (investors + stocks + macro), de-duped ──────────────
+  const heroItems: { label: string; href: string }[] = [];
+  const seen = new Set<string>();
+  function pushItem(label: string, href: string) {
+    const key = href.toLowerCase();
+    if (!label || seen.has(key)) return;
+    seen.add(key);
+    heroItems.push({ label, href });
+  }
+  for (const m of topManagers) pushItem(m.person, investorPath(lang, m.slug));
+  for (const row of held) pushItem(titleCase(row.issuer), stockPath(lang, row.cusip));
+  for (const it of macroItems) pushItem(it.label, it.href);
+
   return (
     <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
       />
+
+      {/* ── 0. Hero — value-investing quote + search CTA ─────────────── */}
+      <section className="border-b border-[var(--tt-border)] pb-10 pt-2 sm:pb-12">
+        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--tt-muted)]">
+          {isZh ? "COMPOUNDER · 复利" : "COMPOUNDER"}
+        </p>
+        <blockquote className="mt-4 max-w-3xl">
+          <p className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl md:text-5xl">
+            {isZh
+              ? "「价格是你付出的，价值是你得到的。」"
+              : "“Price is what you pay. Value is what you get.”"}
+          </p>
+          <cite className="mt-3 block font-display text-base not-italic text-[var(--tt-muted)]">
+            {isZh ? "— 沃伦·巴菲特" : "— Warren Buffett"}
+          </cite>
+        </blockquote>
+
+        <div className="mt-7">
+          <SearchBox
+            lang={lang}
+            items={heroItems}
+            variant="hero"
+            placeholder={
+              isZh
+                ? "搜索投资者、个股或指标…"
+                : "Search investors, stocks, or indicators…"
+            }
+          />
+          <p className="mt-3 text-sm">
+            <Link
+              href={`/${lang}/investors`}
+              className="font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
+            >
+              {isZh ? "或浏览全部超级投资者 →" : "Or browse all superinvestors →"}
+            </Link>
+          </p>
+        </div>
+      </section>
 
       {/* ── 1. Dateline ──────────────────────────────────────────────── */}
       <div className="border-b border-[var(--tt-border)] pb-3">
