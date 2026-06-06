@@ -14,6 +14,9 @@ import { formatUSD } from "@/lib/format";
 
 const MAX_HOLDINGS = 25;
 
+// ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的 AI 叙述(及更新的持仓)无需重新部署即可在 1 小时内出现, 同时保持静态托管利于 SEO。
+export const revalidate = 3600;
+
 export async function generateStaticParams() {
   const idx = await getManagerIndex();
   const langs = ["zh", "en"] as const;
@@ -32,7 +35,7 @@ export async function generateMetadata({
   const d = await getManagerDetail(slug);
   if (!d) return {};
   const { person, name } = d.manager;
-  const nb = await getInvestorNarrative(slug, d.latest.period, lang);
+  const nb = await getInvestorNarrative(slug, lang);
   const l = lang === "en" ? "en" : "zh";
   const alternates = {
     canonical: `/${l}/investors/${slug}`,
@@ -260,8 +263,8 @@ export default async function InvestorSlugPage({
 
   const { manager, latest, prior, changes } = d;
 
-  // 服务端读已缓存的 AI 叙述(无缓存/无库 → null, 优雅降级)
-  const narrative = await getInvestorNarrative(slug, latest.period, lang);
+  // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
+  const narrative = await getInvestorNarrative(slug, lang);
 
   // Verdict
   const buying = changes.filter((c) => c.kind === "new" || c.kind === "increased").length;

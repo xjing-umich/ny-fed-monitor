@@ -49,14 +49,18 @@ export async function generateAndCacheNarrative(
   return data;
 }
 
-/** 读最新缓存叙述。无 env / 无缓存 → null。每次渲染缓存一次。 */
+/**
+ * 读某投资者某语言的**最新**缓存叙述(按 created_at 降序, 不绑定具体 period)。
+ * 这样页面正文与 generateMetadata 读到的一致, 且对 latest.period 漂移/新季度生成天然鲁棒。
+ * 无 env / 无缓存 → null。每次渲染缓存一次。
+ */
 export const getInvestorNarrative = cache(
-  async (slug: string, period: string, lang: Lang): Promise<InvestorNarrativeData | null> => {
+  async (slug: string, lang: Lang): Promise<InvestorNarrativeData | null> => {
     if (!hasSupabaseEnv()) return null;
     const { data, error } = await getDb()
       .from("ai_analysis_cache")
       .select("analysis_json")
-      .eq("page_key", narrativeKey(slug, period, lang))
+      .like("page_key", `investor:${slug}:%:${lang}`)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
