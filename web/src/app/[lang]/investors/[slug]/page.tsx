@@ -30,14 +30,24 @@ export async function generateMetadata({
   const d = await getManagerDetail(slug);
   if (!d) return {};
   const { person, name } = d.manager;
+  const l = lang === "en" ? "en" : "zh";
+  const alternates = {
+    canonical: `/${l}/investors/${slug}`,
+    languages: {
+      "zh-CN": `/zh/investors/${slug}`,
+      en: `/en/investors/${slug}`,
+    },
+  };
   return lang === "zh"
     ? {
         title: `${person} 持仓 13F — Compounder · 复利`,
         description: `${name} — ${person} 的最新 SEC 13F 季度持仓披露，持仓明细与环比变动。`,
+        alternates,
       }
     : {
         title: `${person} 13F Holdings — Compounder · 复利`,
         description: `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
+        alternates,
       };
 }
 
@@ -300,19 +310,44 @@ export default async function InvestorSlugPage({
 
   const hasChanges = changes.length > 0 && prior != null;
 
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: lang === "zh" ? "超级投资者" : "Superinvestors",
+        item: `https://compounder.fyi/${lang}/investors`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: manager.person,
+        item: `https://compounder.fyi/${lang}/investors/${manager.slug}`,
+      },
+    ],
+  };
+
   return (
-    <EntityPage
-      lang={lang}
-      title={manager.person}
-      subtitle={subtitle}
-      verdict={verdict}
-      keyFacts={keyFacts}
-      aiPageKey={`investor:${slug}`}
-      sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
-      related={related}
-    >
-      <HoldingsTable holdings={latest.holdings} lang={lang} />
-      {hasChanges && <ChangesSection changes={changes} lang={lang} />}
-    </EntityPage>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <EntityPage
+        lang={lang}
+        title={manager.person}
+        subtitle={subtitle}
+        verdict={verdict}
+        keyFacts={keyFacts}
+        aiPageKey={`investor:${slug}`}
+        sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
+        related={related}
+      >
+        <HoldingsTable holdings={latest.holdings} lang={lang} />
+        {hasChanges && <ChangesSection changes={changes} lang={lang} />}
+      </EntityPage>
+    </>
   );
 }

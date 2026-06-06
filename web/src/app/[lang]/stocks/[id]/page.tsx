@@ -34,14 +34,24 @@ export async function generateMetadata({
     }
   }
 
+  const l = lang === "en" ? "en" : "zh";
+  const alternates = {
+    canonical: `/${l}/stocks/${id}`,
+    languages: {
+      "zh-CN": `/zh/stocks/${id}`,
+      en: `/en/stocks/${id}`,
+    },
+  };
   return lang === "zh"
     ? {
         title: `${issuer} — 谁在持有 / 机构持仓 — Compounder · 复利`,
         description: `查看持有 ${issuer}（CUSIP ${id}）的超级投资者，了解机构持仓分布。`,
+        alternates,
       }
     : {
         title: `${issuer} — Who's Holding — Compounder · 复利`,
         description: `See which superinvestors hold ${issuer} (CUSIP ${id}) and their position sizes.`,
+        alternates,
       };
 }
 
@@ -223,17 +233,42 @@ export default async function StockCusipPage({
     .slice(0, 6)
     .map((r) => ({ label: r.person, href: investorPath(lang, r.slug) }));
 
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: lang === "zh" ? "个股" : "Stocks",
+        item: `https://compounder.fyi/${lang}/stocks`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: issuer,
+        item: `https://compounder.fyi/${lang}/stocks/${id}`,
+      },
+    ],
+  };
+
   return (
-    <EntityPage
-      lang={lang}
-      title={issuer}
-      subtitle={subtitle}
-      keyFacts={keyFacts}
-      aiPageKey={`stock:${id}`}
-      sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt }]}
-      related={related}
-    >
-      <HoldersTable holders={holders} lang={lang} />
-    </EntityPage>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <EntityPage
+        lang={lang}
+        title={issuer}
+        subtitle={subtitle}
+        keyFacts={keyFacts}
+        aiPageKey={`stock:${id}`}
+        sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt }]}
+        related={related}
+      >
+        <HoldersTable holders={holders} lang={lang} />
+      </EntityPage>
+    </>
   );
 }

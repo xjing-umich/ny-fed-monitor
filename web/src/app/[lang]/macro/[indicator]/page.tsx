@@ -67,14 +67,24 @@ export async function generateMetadata({
   const name = names ? names[lang] : indicator;
   const blurb = INDICATOR_BLURBS[indicator]?.[lang] ?? "";
 
+  const l = lang === "en" ? "en" : "zh";
+  const alternates = {
+    canonical: `/${l}/macro/${indicator}`,
+    languages: {
+      "zh-CN": `/zh/macro/${indicator}`,
+      en: `/en/macro/${indicator}`,
+    },
+  };
   return lang === "zh"
     ? {
         title: `${name} — 宏观/流动性 · Treasury Market Monitor`,
         description: blurb,
+        alternates,
       }
     : {
         title: `${name} — Macro/Liquidity · Treasury Market Monitor`,
         description: blurb,
+        alternates,
       };
 }
 
