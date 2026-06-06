@@ -71,8 +71,9 @@ export async function generateMetadata({
   const alternates = {
     canonical: `/${l}/macro/${indicator}`,
     languages: {
-      "zh-CN": `/zh/macro/${indicator}`,
       en: `/en/macro/${indicator}`,
+      "zh-CN": `/zh/macro/${indicator}`,
+      "x-default": `/en/macro/${indicator}`,
     },
   };
   return lang === "zh"

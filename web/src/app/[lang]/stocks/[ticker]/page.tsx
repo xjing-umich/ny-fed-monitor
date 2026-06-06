@@ -32,7 +32,7 @@ export async function generateMetadata({
   const l = lang === "en" ? "en" : "zh";
   const alternates = {
     canonical: `/${l}/stocks/${ticker}`,
-    languages: { "zh-CN": `/zh/stocks/${ticker}`, en: `/en/stocks/${ticker}` },
+    languages: { en: `/en/stocks/${ticker}`, "zh-CN": `/zh/stocks/${ticker}`, "x-default": `/en/stocks/${ticker}` },
   };
   return lang === "zh"
     ? { title: `${issuer}（${ticker}）— 谁在持有 / 机构持仓 — Compounder · 复利`,
