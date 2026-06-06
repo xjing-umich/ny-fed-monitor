@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
 import { InvestorListClient } from "./InvestorListClient";
+import SubNav from "@/components/shell/SubNav";
 
 export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
@@ -40,5 +41,10 @@ export default async function InvestorsPage({
   const idx = await getManagerIndex();
   const managers = [...idx.managers].sort((a, b) => b.totalValue - a.totalValue);
 
-  return <InvestorListClient lang={lang} managers={managers} />;
+  return (
+    <>
+      <SubNav lang={lang} section="investors" active="all" />
+      <InvestorListClient lang={lang} managers={managers} />
+    </>
+  );
 }

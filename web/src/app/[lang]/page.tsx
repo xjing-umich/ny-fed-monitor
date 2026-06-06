@@ -248,6 +248,7 @@ export default async function LandingPage({
               title={t.pillars.worth.title}
               desc={t.pillars.worth.desc}
               soon={t.pillars.worth.soon}
+              href={`/${lang}/stocks`}
             />
           </div>
           <div className="sm:border-l sm:border-border sm:pl-8">

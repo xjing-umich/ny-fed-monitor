@@ -8,6 +8,7 @@ import { macroPath } from "@/lib/urls";
 import { buildAllSections } from "@/lib/build";
 import { sectionLabel, badgeTone } from "@/lib/dashboard";
 import { INDICATOR_BLURBS } from "@/lib/indicatorBlurbs";
+import SubNav from "@/components/shell/SubNav";
 
 export const dynamic = "force-dynamic";
 
@@ -164,6 +165,8 @@ export default async function MacroOverviewPage({
     <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
       {/* CSS hover effect for indicator cards — no JS event handlers needed */}
       <style>{`.indicator-card:hover { border-color: var(--tt-accent) !important; }`}</style>
+      {/* Section sub-nav */}
+      <SubNav lang={lang} section="macro" />
       {/* Page heading */}
       <div>
         <h1
@@ -188,7 +191,7 @@ export default async function MacroOverviewPage({
       {MACRO_GROUPS.map((group) => {
         const groupLabel = GROUP_LABELS[group.key] ?? { zh: group.key, en: group.key };
         return (
-          <section key={group.key}>
+          <section key={group.key} id={group.key}>
             {/* Group heading */}
             <div
               style={{

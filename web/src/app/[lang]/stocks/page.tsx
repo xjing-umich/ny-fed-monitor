@@ -1,0 +1,189 @@
+import React from "react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import type { Lang } from "@/lib/nav";
+import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
+import { stockPath } from "@/lib/urls";
+import { formatUSD } from "@/lib/format";
+import SubNav from "@/components/shell/SubNav";
+
+export const dynamic = "force-dynamic";
+
+// ── Metadata ─────────────────────────────────────────────────────────────────
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: rawLang } = await params;
+  const lang: Lang = rawLang === "en" ? "en" : "zh";
+  return lang === "zh"
+    ? {
+        title: "个股 · 最多机构持有 — Compounder · 复利",
+        description: "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。",
+      }
+    : {
+        title: "Stocks · Most held — Compounder · 复利",
+        description: "Securities held by the most superinvestors simultaneously, derived from 13F filings.",
+      };
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type SecurityRow = {
+  cusip: string;
+  issuer: string;
+  holderCount: number;
+  totalValue: number;
+};
+
+// ── Data aggregation ──────────────────────────────────────────────────────────
+
+async function getMostHeldSecurities(): Promise<SecurityRow[]> {
+  const index = await getManagerIndex();
+  const slugs = index.managers.map((m) => m.slug);
+
+  // Fetch all manager details in parallel
+  const details = await Promise.all(slugs.map((s) => getManagerDetail(s)));
+
+  // Tally per cusip
+  const byCount = new Map<string, { issuers: string[]; totalValue: number; holderCount: number }>();
+
+  for (const detail of details) {
+    if (!detail) continue;
+    for (const holding of detail.latest.holdings) {
+      const { cusip, issuer, value } = holding;
+      const existing = byCount.get(cusip);
+      if (existing) {
+        existing.holderCount += 1;
+        existing.totalValue += value;
+        existing.issuers.push(issuer);
+      } else {
+        byCount.set(cusip, { holderCount: 1, totalValue: value, issuers: [issuer] });
+      }
+    }
+  }
+
+  // Pick most common issuer name per cusip
+  const rows: SecurityRow[] = Array.from(byCount.entries()).map(([cusip, data]) => {
+    const freq = new Map<string, number>();
+    for (const name of data.issuers) {
+      freq.set(name, (freq.get(name) ?? 0) + 1);
+    }
+    const issuer = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    return { cusip, issuer, holderCount: data.holderCount, totalValue: data.totalValue };
+  });
+
+  // Sort by holderCount desc, then totalValue desc, take top 40
+  return rows
+    .sort((a, b) => b.holderCount - a.holderCount || b.totalValue - a.totalValue)
+    .slice(0, 40);
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function StocksIndexPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang: rawLang } = await params;
+  if (rawLang !== "zh" && rawLang !== "en") notFound();
+  const lang = rawLang as Lang;
+
+  const rows = await getMostHeldSecurities();
+
+  const isZh = lang === "zh";
+
+  return (
+    <div className="mx-auto max-w-4xl px-2 py-8 sm:py-10">
+      {/* Section sub-nav */}
+      <SubNav lang={lang} section="stocks" active="held" />
+
+      {/* Editorial section heading */}
+      <div className="mb-8 border-b border-[var(--tt-border)] pb-6">
+        <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
+          {isZh ? "个股" : "Stocks"}
+          <span className="mx-2 text-[var(--tt-faint)]">·</span>
+          <span className="text-[var(--tt-muted)]">
+            {isZh ? "最多机构持有" : "Most held"}
+          </span>
+        </h1>
+        <p className="mt-2 text-sm text-[var(--tt-muted)]">
+          {isZh
+            ? "按持有机构数排列，数据来源：SEC 13F 持仓披露。"
+            : "Ranked by number of superinvestors holding the security. Source: SEC 13F filings."}
+        </p>
+      </div>
+
+      {/* Editorial table */}
+      <div className="w-full overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-[var(--tt-border)]">
+              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-8">#</th>
+              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
+                {isZh ? "标的 / Security" : "Security"}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-28">
+                {isZh ? "持有机构数" : "Holders"}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-36">
+                {isZh ? "合计市值" : "Total value"}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr
+                key={row.cusip}
+                className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+              >
+                <td className="py-3 pr-3 font-mono text-[11px] text-[var(--tt-faint)] tabular-nums">
+                  {i + 1}
+                </td>
+                <td className="py-3 pr-4">
+                  <Link
+                    href={stockPath(lang, row.cusip)}
+                    className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
+                  >
+                    {row.issuer}
+                  </Link>
+                  <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">
+                    {row.cusip}
+                  </span>
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
+                  <span className="inline-flex items-center justify-end gap-1.5">
+                    <span
+                      className="inline-block h-1.5 rounded-full bg-[var(--tt-accent)] opacity-70"
+                      style={{ width: `${Math.round((row.holderCount / rows[0].holderCount) * 32)}px` }}
+                    />
+                    {row.holderCount}
+                  </span>
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
+                  {formatUSD(row.totalValue)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {rows.length === 0 && (
+        <p className="py-8 text-center text-sm text-[var(--tt-muted)]">
+          {isZh ? "暂无数据" : "No data available"}
+        </p>
+      )}
+
+      <p className="mt-8 text-xs text-[var(--tt-faint)]">
+        {isZh
+          ? "数据来源：SEC EDGAR 13F 季度报告。持仓数据存在 45 天延迟，仅供参考。"
+          : "Source: SEC EDGAR 13F quarterly filings. Holdings data has a 45-day lag and is for reference only."}
+      </p>
+    </div>
+  );
+}
