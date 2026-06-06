@@ -93,6 +93,12 @@ Phase 3  估值引擎 + SEO/GEO + 打点 + 分享卡（另立 spec）
 - 打点用外部 SaaS(微软 Clarity / 百度统计 / Vercel Analytics)，无架构改动。
 - **Phase 0 不涉及任何上述数据/批处理**；本节为后续阶段定调，确保骨架设计不与之冲突。
 
+**付费策略与触发点：**
+- Vercel 付费(Pro) 买的是"商用合规 + serving 更宽 + 分钟级/不限量 cron"，**不是性能、也救不了长批处理**(25 分钟日更股价超函数上限、active-CPU 计费下昂贵 → 仍走 GitHub Actions)。Hobby 按 ToS 仅限非商用。
+- **Phase 0 现在不付费**：Hobby + 独立 Supabase 免费档足够。
+- **升级 Pro 触发点**：公开上线/算商用、或需分钟级 cron/撞 Hobby 限额——预计 **Phase 1 真数据上线时**。
+- **Supabase 是否挂 Vercel(`vercel install supabase`)**：纯 DX+统一账单之别，底层同一 Postgres、**不更快**；个人产品略偏向保持**独立 Supabase**(可移植、官方 dashboard、自有免费档)，手填 5 个 env 一次即可。
+
 ---
 
 ## 3. Phase 0 详细设计
