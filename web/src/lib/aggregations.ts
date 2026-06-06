@@ -66,8 +66,14 @@ export function computeNotableMoves(scan: ScanRow[], limit: number): NotableMove
 }
 
 export async function mostHeld(limit = 40): Promise<HeldRow[]> {
-  return computeMostHeld(await scanAllManagers(), limit);
+  const { readConsensusHeld } = await import("@/lib/managers/consensusRead");
+  const fromDb = await readConsensusHeld(limit);
+  if (fromDb && fromDb.length) return fromDb;
+  return computeMostHeld(await scanAllManagers(), limit); // 回退: 无库/空表时请求时计算
 }
 export async function notableMoves(limit = 6): Promise<NotableMoves> {
+  const { readConsensusMoves } = await import("@/lib/managers/consensusRead");
+  const fromDb = await readConsensusMoves(limit);
+  if (fromDb && (fromDb.mostBought.length || fromDb.mostSold.length)) return fromDb;
   return computeNotableMoves(await scanAllManagers(), limit);
 }
