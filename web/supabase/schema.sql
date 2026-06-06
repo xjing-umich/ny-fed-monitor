@@ -32,13 +32,30 @@ create table if not exists holdings (
 create index if not exists holdings_filing_idx on holdings (filing_id);
 create index if not exists holdings_cusip_idx on holdings (cusip);
 
+-- 证券主表(脊梁): ticker 为锚, 三支柱挂其上
 create table if not exists securities (
-  cusip text primary key,
-  ticker text,
+  ticker text primary key,
   name text,
+  exchange text,
   sector text,
-  updated_at timestamptz default now()
+  figi text,
+  primary_cusip text,
+  source text,
+  as_of date,
+  updated_at timestamptz not null default now()
 );
+
+-- CUSIP → ticker 映射(13F holdings 用 cusip, 经此表落到脊梁)
+-- cusip 存 holdings 中的原始形态(可能缺前导零), 补零仅用于调 OpenFIGI
+create table if not exists security_cusips (
+  cusip text primary key,
+  ticker text references securities(ticker) on delete set null,
+  issuer text,
+  resolved boolean not null default false,
+  source text,
+  updated_at timestamptz not null default now()
+);
+create index if not exists security_cusips_ticker_idx on security_cusips (ticker);
 
 -- Market monitor database foundation (Phase 1)
 do $$
