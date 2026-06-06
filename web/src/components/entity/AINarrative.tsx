@@ -20,9 +20,12 @@ type AiResponse =
   | { status: "available"; analysis: AiAnalysis; created_at?: string; model?: string }
   | { status: "unavailable"; message: string; analysis?: AiAnalysis };
 
-async function fetchAiAnalysis(): Promise<AiResponse> {
-  const res = await fetch("/api/ai-analysis", { cache: "no-store" });
-  if (!res.ok) throw new Error(`/api/ai-analysis ${res.status}`);
+async function fetchAiAnalysis(pageKey?: string): Promise<AiResponse> {
+  const url = pageKey
+    ? `/api/ai-analysis?page=${encodeURIComponent(pageKey)}`
+    : "/api/ai-analysis";
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`${url} ${res.status}`);
   return res.json();
 }
 
@@ -31,16 +34,17 @@ export type AINarrativeProps = {
   pageKey?: string;
 };
 
-export function AINarrative({ lang }: AINarrativeProps) {
+export function AINarrative({ lang, pageKey }: AINarrativeProps) {
   const [response, setResponse] = useState<AiResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAiAnalysis()
+    setLoading(true);
+    fetchAiAnalysis(pageKey)
       .then(setResponse)
       .catch(() => setResponse(null))
       .finally(() => setLoading(false));
-  }, []);
+  }, [pageKey]);
 
   const heading = lang === "zh" ? "AI 解读" : "AI Read";
 

@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-type Tone = "positive" | "warn" | "negative" | "neutral";
+import type { Tone } from "./types";
 
 const TONE_CLASS: Record<Tone, string> = {
   positive: "bg-[color:var(--color-positive)]/15 text-[color:var(--color-positive)] border-[color:var(--color-positive)]/30",

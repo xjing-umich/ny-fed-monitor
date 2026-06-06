@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
-
-type Tone = "positive" | "warn" | "negative" | "neutral";
+import type { Tone } from "./types";
 
 export type KeyFact = {
   label: string;

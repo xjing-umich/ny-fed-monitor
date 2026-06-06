@@ -10,8 +10,9 @@ import { RelatedLinks, type RelatedItem } from "./RelatedLinks";
 export type { KeyFact } from "./KeyFacts";
 export type { RelatedItem } from "./RelatedLinks";
 export type { Source } from "./SourceFooter";
+export type { Tone } from "./types";
 
-type Tone = "positive" | "warn" | "negative" | "neutral";
+import type { Tone } from "./types";
 
 export type EntityPageProps = {
   lang: "zh" | "en";
