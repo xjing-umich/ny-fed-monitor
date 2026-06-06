@@ -13,16 +13,19 @@ import {
   type Lang,
 } from "./investorNarrative";
 
-// 缺省模型: 走 AI Gateway 的 "provider/model" 字符串。
-// 实际可用 slug 用 `gateway.getAvailableModels()` 核准, 并可由 env NARRATIVE_MODEL 覆盖。
-const DEFAULT_MODEL = "deepseek/deepseek-v3.2-exp";
+// 缺省模型: 走 AI Gateway 的 "provider/model" 字符串(已用 gateway.getAvailableModels() 核准)。
+// 可由 env NARRATIVE_MODEL 覆盖(如 deepseek/deepseek-v4-pro)。
+const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
 
 /** 调 AI Gateway 生成并写库。缺 env 抛错（路由捕获）。 */
 export async function generateAndCacheNarrative(
   d: ManagerDetailLike,
   lang: Lang
 ): Promise<InvestorNarrativeData> {
-  if (!process.env.AI_GATEWAY_API_KEY) throw new Error("AI_GATEWAY_API_KEY not configured");
+  // AI Gateway 认证: 静态 AI_GATEWAY_API_KEY 优先, 否则回退 vercel env pull 的 VERCEL_OIDC_TOKEN
+  if (!process.env.AI_GATEWAY_API_KEY && !process.env.VERCEL_OIDC_TOKEN) {
+    throw new Error("No AI Gateway auth (set AI_GATEWAY_API_KEY or VERCEL_OIDC_TOKEN)");
+  }
   if (!hasSupabaseEnv()) throw new Error("Supabase env not configured");
 
   const model = process.env.NARRATIVE_MODEL || DEFAULT_MODEL;
