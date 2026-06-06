@@ -2,7 +2,8 @@ import type { Lang } from "@/lib/nav";
 import { MACRO_GROUPS } from "@/lib/nav";
 
 export const investorPath = (lang: Lang, slug: string) => `/${lang}/investors/${slug}`;
-export const stockPath = (lang: Lang, id: string) => `/${lang}/stocks/${id}`;
+// 个股 URL 以 ticker 为锚(无 ticker 的标的回退用 cusip, 仍可访问)
+export const stockPath = (lang: Lang, tickerOrCusip: string) => `/${lang}/stocks/${tickerOrCusip}`;
 export const macroPath = (lang: Lang, indicator: string) => `/${lang}/macro/${indicator}`;
 
 const SECTION_KEYS = new Set(MACRO_GROUPS.flatMap((g) => g.indicators as readonly string[]));

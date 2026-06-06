@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { mostHeld } from "@/lib/aggregations";
+import { getCusipMap } from "@/lib/managers/securities";
 import { stockPath } from "@/lib/urls";
 import { formatUSD } from "@/lib/format";
 import SubNav from "@/components/shell/SubNav";
@@ -42,6 +43,7 @@ export default async function StocksIndexPage({
   const lang = rawLang as Lang;
 
   const rows = await mostHeld(40);
+  const cusipMap = await getCusipMap();
 
   const isZh = lang === "zh";
 
@@ -84,7 +86,10 @@ export default async function StocksIndexPage({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
+            {rows.map((row, i) => {
+              const info = cusipMap.get(row.cusip);
+              const tickerOrCusip = info?.ticker ?? row.cusip;
+              return (
               <tr
                 key={row.cusip}
                 className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
@@ -94,13 +99,13 @@ export default async function StocksIndexPage({
                 </td>
                 <td className="py-3 pr-4">
                   <Link
-                    href={stockPath(lang, row.cusip)}
+                    href={stockPath(lang, tickerOrCusip)}
                     className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
                   >
                     {row.issuer}
                   </Link>
                   <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">
-                    {row.cusip}
+                    {info?.ticker ?? row.cusip}
                   </span>
                 </td>
                 <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
@@ -116,7 +121,8 @@ export default async function StocksIndexPage({
                   {formatUSD(row.totalValue)}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
