@@ -225,7 +225,6 @@ export default async function StockTickerPage({
         title={issuer}
         subtitle={subtitle}
         keyFacts={keyFacts}
-        aiPageKey={`stock:${ticker}`}
         sources={price
           ? [{ name: "SEC EDGAR 13F", asOf: latestFiledAt }, { name: "Finnhub", asOf: price.date }]
           : [{ name: "SEC EDGAR 13F", asOf: latestFiledAt }]}

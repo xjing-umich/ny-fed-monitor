@@ -1,6 +1,7 @@
 import React from "react";
 import TopNav from "./TopNav";
 import MobileDrawer from "./MobileDrawer";
+import ContactModal from "./ContactModal";
 import type { Lang } from "@/lib/nav";
 import { LogoMark } from "@/components/brand/Logo";
 
@@ -43,10 +44,13 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
               Compounder
             </span>
           </span>
-          <span className="text-[11px] italic text-[var(--tt-faint)]">
-            {lang === "zh"
-              ? "本系统不提供交易建议 · 数据来源: NY Fed · Treasury.gov · SEC EDGAR"
-              : "No trading advice · Sources: NY Fed · Treasury.gov · SEC EDGAR"}
+          <span className="flex items-center gap-3">
+            <ContactModal lang={lang} />
+            <span className="text-[11px] italic text-[var(--tt-faint)]">
+              {lang === "zh"
+                ? "本系统不提供交易建议 · 数据来源: NY Fed · Treasury.gov · SEC EDGAR"
+                : "No trading advice · Sources: NY Fed · Treasury.gov · SEC EDGAR"}
+            </span>
           </span>
         </div>
       </footer>
