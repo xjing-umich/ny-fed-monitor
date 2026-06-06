@@ -77,6 +77,7 @@ export default function SearchBox({ lang, items }: SearchBoxProps) {
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          aria-label={placeholder}
           className="w-36 bg-transparent text-xs text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] outline-none"
         />
       </div>

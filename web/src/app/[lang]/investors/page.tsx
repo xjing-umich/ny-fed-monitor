@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
@@ -33,7 +33,7 @@ export default async function InvestorsPage({
 }) {
   const { lang: rawLang } = await params;
   if (rawLang !== "zh" && rawLang !== "en") {
-    redirect("/zh");
+    notFound();
   }
   const lang = rawLang as Lang;
 

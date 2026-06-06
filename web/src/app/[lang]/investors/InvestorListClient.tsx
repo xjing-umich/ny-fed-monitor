@@ -122,6 +122,7 @@ export function InvestorListClient({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.search}
+          aria-label={t.search}
           className="flex-1 min-w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <div className="flex gap-2">
