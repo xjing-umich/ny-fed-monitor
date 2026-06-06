@@ -23,7 +23,8 @@ export default function RootLayout({
       <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           {children}

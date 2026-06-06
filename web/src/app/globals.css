@@ -4,106 +4,132 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Treasury Terminal design tokens ────────────────────────────────────────── */
-/* Dark (default) */
+/* ── Design system tokens ───────────────────────────────────────────────────── */
+/* LIGHT is the default theme (clean, approachable fintech content site).        */
+/* The shadcn semantic tokens are the single source of truth; the legacy         */
+/* --tt-* terminal variables are re-mapped onto them so existing inline-style     */
+/* components inherit the new look automatically.                                 */
 :root {
-  --tt-bg:           #0B0E14;
-  --tt-panel:        #11151F;
-  --tt-panel-2:      #0F131C;
-  --tt-border:       #1C2230;
-  --tt-border-strong:#2A3140;
-  --tt-text:         #E6E9EF;
-  --tt-muted:        #8A93A6;
-  --tt-faint:        #5A6172;
-  --tt-accent:       #6E8BFF;
-  --tt-positive:     #3FB950;
-  --tt-negative:     #F0616D;
-  --tt-warn:         #D9A642;
+  /* Surfaces — near-white background, white cards, soft slate borders */
+  --background:          #F8FAFC; /* slate-50, faintly cool near-white */
+  --foreground:          #16202E; /* comfortable dark slate (not pure black) */
+  --card:                #FFFFFF;
+  --card-foreground:     #16202E;
+  --popover:             #FFFFFF;
+  --popover-foreground:  #16202E;
 
-  /* shadcn/tailwind wired to TT tokens */
-  --background:          var(--tt-bg);
-  --foreground:          var(--tt-text);
-  --card:                var(--tt-panel);
-  --card-foreground:     var(--tt-text);
-  --popover:             var(--tt-panel);
-  --popover-foreground:  var(--tt-text);
-  --primary:             var(--tt-accent);
-  --primary-foreground:  #0B0E14;
-  --secondary:           var(--tt-panel-2);
-  --secondary-foreground:var(--tt-text);
-  --muted:               var(--tt-panel-2);
-  --muted-foreground:    var(--tt-muted);
-  --accent:              var(--tt-panel-2);
-  --accent-foreground:   var(--tt-text);
-  --destructive:         var(--tt-negative);
-  --border:              var(--tt-border);
-  --input:               var(--tt-border-strong);
-  --ring:                var(--tt-accent);
-  --radius:              0.375rem; /* 6px */
-  --sidebar:             var(--tt-panel);
-  --sidebar-foreground:  var(--tt-text);
-  --sidebar-primary:     var(--tt-accent);
-  --sidebar-primary-foreground: #0B0E14;
-  --sidebar-accent:      var(--tt-panel-2);
-  --sidebar-accent-foreground: var(--tt-text);
-  --sidebar-border:      var(--tt-border);
-  --sidebar-ring:        var(--tt-accent);
+  /* One restrained professional accent — a calm trustworthy blue */
+  --primary:             #2563C9;
+  --primary-foreground:  #FFFFFF;
 
-  /* Chart palette */
-  --chart-1: #6E8BFF;  /* accent */
-  --chart-2: #3DB8A0;  /* teal */
-  --chart-3: #D9A642;  /* amber/warn */
-  --chart-4: #F0616D;  /* negative */
-  --chart-5: #8A93A6;  /* slate muted */
+  /* Quiet secondary / muted surfaces */
+  --secondary:           #EEF2F7;
+  --secondary-foreground:#27313F;
+  --muted:               #F1F5F9;
+  --muted-foreground:    #5A6675; /* readable secondary text */
+  --accent:              #EAF1FB; /* soft tinted hover/selected surface */
+  --accent-foreground:   #1E4FA3;
+
+  /* Semantic state colors (used sparingly) */
+  --destructive:         #D1343B; /* negative / red */
+  --positive:            #1A8F4A; /* green */
+  --warn:                #B07400; /* amber */
+
+  /* Lines & controls */
+  --border:              #E3E9F0; /* soft border */
+  --border-strong:       #D2DAE4;
+  --input:               #D2DAE4;
+  --ring:                #2563C9;
+  --radius:              0.5625rem; /* ~9px — friendly, not bubbly */
+
+  /* Sidebar */
+  --sidebar:             #FFFFFF;
+  --sidebar-foreground:  #16202E;
+  --sidebar-primary:     #2563C9;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:      #EAF1FB;
+  --sidebar-accent-foreground: #1E4FA3;
+  --sidebar-border:      #E3E9F0;
+  --sidebar-ring:        #2563C9;
+
+  /* Chart palette — accent blue, teal, amber, red, slate */
+  --chart-1: #2563C9;
+  --chart-2: #0E9384;
+  --chart-3: #B07400;
+  --chart-4: #D1343B;
+  --chart-5: #6B7686;
+
+  /* ── Legacy terminal tokens → semantic tokens (single source of truth) ──── */
+  --tt-bg:            var(--background);
+  --tt-panel:         var(--card);
+  --tt-panel-2:       var(--muted);
+  --tt-border:        var(--border);
+  --tt-border-strong: var(--border-strong);
+  --tt-text:          var(--foreground);
+  --tt-muted:         var(--muted-foreground);
+  --tt-faint:         #93A0B0; /* faint tertiary text */
+  --tt-accent:        var(--primary);
+  --tt-positive:      var(--positive);
+  --tt-negative:      var(--destructive);
+  --tt-warn:          var(--warn);
 }
 
-/* ── Light theme ─────────────────────────────────────────────────────────────── */
-.light {
-  --tt-bg:           #FAFBFC;
-  --tt-panel:        #FFFFFF;
-  --tt-panel-2:      #F4F6F9;
-  --tt-border:       #E6E9EF;
-  --tt-border-strong:#D4D9E2;
-  --tt-text:         #0B0E14;
-  --tt-muted:        #5A6172;
-  --tt-faint:        #8A93A6;
-  --tt-accent:       #3E5BD9;
-  --tt-positive:     #1A7F37;
-  --tt-negative:     #CF222E;
-  --tt-warn:         #9A6700;
+/* ── Dark theme (optional, refined — not the old harsh terminal) ─────────────── */
+.dark {
+  --background:          #0F141B; /* deep slate, softer than old #0B0E14 */
+  --foreground:          #E6EBF2;
+  --card:                #161C26;
+  --card-foreground:     #E6EBF2;
+  --popover:             #161C26;
+  --popover-foreground:  #E6EBF2;
 
-  --background:          var(--tt-bg);
-  --foreground:          var(--tt-text);
-  --card:                var(--tt-panel);
-  --card-foreground:     var(--tt-text);
-  --popover:             var(--tt-panel);
-  --popover-foreground:  var(--tt-text);
-  --primary:             var(--tt-accent);
-  --primary-foreground:  #FFFFFF;
-  --secondary:           var(--tt-panel-2);
-  --secondary-foreground:var(--tt-text);
-  --muted:               var(--tt-panel-2);
-  --muted-foreground:    var(--tt-muted);
-  --accent:              var(--tt-panel-2);
-  --accent-foreground:   var(--tt-text);
-  --destructive:         var(--tt-negative);
-  --border:              var(--tt-border);
-  --input:               var(--tt-border-strong);
-  --ring:                var(--tt-accent);
-  --sidebar:             var(--tt-panel);
-  --sidebar-foreground:  var(--tt-text);
-  --sidebar-primary:     var(--tt-accent);
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:      var(--tt-panel-2);
-  --sidebar-accent-foreground: var(--tt-text);
-  --sidebar-border:      var(--tt-border);
-  --sidebar-ring:        var(--tt-accent);
+  --primary:             #5B8DEF; /* slightly lifted blue for dark surfaces */
+  --primary-foreground:  #0B1018;
 
-  --chart-1: #3E5BD9;
-  --chart-2: #0F8E7B;
-  --chart-3: #9A6700;
-  --chart-4: #CF222E;
-  --chart-5: #5A6172;
+  --secondary:           #1C2430;
+  --secondary-foreground:#D5DCE6;
+  --muted:               #1A222D;
+  --muted-foreground:    #9AA6B5;
+  --accent:              #1E2A3D;
+  --accent-foreground:   #BFD2F2;
+
+  --destructive:         #F0616D;
+  --positive:            #3FCB6E;
+  --warn:                #E0B257;
+
+  --border:              #232C39;
+  --border-strong:       #313C4C;
+  --input:               #313C4C;
+  --ring:                #5B8DEF;
+
+  --sidebar:             #161C26;
+  --sidebar-foreground:  #E6EBF2;
+  --sidebar-primary:     #5B8DEF;
+  --sidebar-primary-foreground: #0B1018;
+  --sidebar-accent:      #1E2A3D;
+  --sidebar-accent-foreground: #BFD2F2;
+  --sidebar-border:      #232C39;
+  --sidebar-ring:        #5B8DEF;
+
+  --chart-1: #5B8DEF;
+  --chart-2: #2DD4BF;
+  --chart-3: #E0B257;
+  --chart-4: #F0616D;
+  --chart-5: #8A93A6;
+
+  /* Legacy terminal tokens inherit the dark semantic values */
+  --tt-bg:            var(--background);
+  --tt-panel:         var(--card);
+  --tt-panel-2:       var(--muted);
+  --tt-border:        var(--border);
+  --tt-border-strong: var(--border-strong);
+  --tt-text:          var(--foreground);
+  --tt-muted:         var(--muted-foreground);
+  --tt-faint:         #6B7686;
+  --tt-accent:        var(--primary);
+  --tt-positive:      var(--positive);
+  --tt-negative:      var(--destructive);
+  --tt-warn:          var(--warn);
 }
 
 @theme inline {
@@ -129,6 +155,8 @@
   --color-input:         var(--input);
   --color-border:        var(--border);
   --color-destructive:   var(--destructive);
+  --color-positive:      var(--positive);
+  --color-warn:          var(--warn);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent:        var(--accent);
   --color-muted-foreground: var(--muted-foreground);
