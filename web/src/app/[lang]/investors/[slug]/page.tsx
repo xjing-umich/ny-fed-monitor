@@ -7,6 +7,8 @@ import type { Holding, HoldingChange } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
+import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
+import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD } from "@/lib/format";
 
@@ -30,6 +32,7 @@ export async function generateMetadata({
   const d = await getManagerDetail(slug);
   if (!d) return {};
   const { person, name } = d.manager;
+  const nb = await getInvestorNarrative(slug, d.latest.period, lang);
   const l = lang === "en" ? "en" : "zh";
   const alternates = {
     canonical: `/${l}/investors/${slug}`,
@@ -42,12 +45,12 @@ export async function generateMetadata({
   return lang === "zh"
     ? {
         title: `${person} 持仓 13F — Compounder · 复利`,
-        description: `${name} — ${person} 的最新 SEC 13F 季度持仓披露，持仓明细与环比变动。`,
+        description: nb?.judgment_line ?? `${name} — ${person} 的最新 SEC 13F 季度持仓披露，持仓明细与环比变动。`,
         alternates,
       }
     : {
         title: `${person} 13F Holdings — Compounder · 复利`,
-        description: `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
+        description: nb?.judgment_line ?? `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
         alternates,
       };
 }
@@ -257,6 +260,9 @@ export default async function InvestorSlugPage({
 
   const { manager, latest, prior, changes } = d;
 
+  // 服务端读已缓存的 AI 叙述(无缓存/无库 → null, 优雅降级)
+  const narrative = await getInvestorNarrative(slug, latest.period, lang);
+
   // Verdict
   const buying = changes.filter((c) => c.kind === "new" || c.kind === "increased").length;
   const selling = changes.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
@@ -342,6 +348,7 @@ export default async function InvestorSlugPage({
         subtitle={subtitle}
         verdict={verdict}
         keyFacts={keyFacts}
+        aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
         related={related}
       >

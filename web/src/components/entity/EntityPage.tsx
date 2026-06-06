@@ -20,6 +20,8 @@ export type EntityPageProps = {
   verdict?: { label: string; tone: Tone };
   keyFacts: KeyFact[];
   aiPageKey?: string;
+  /** 若提供, 用服务端渲染的叙述节点替代客户端 AINarrative(SEO/GEO 可见) */
+  aiNarrative?: React.ReactNode;
   children: React.ReactNode;
   sources: { name: string; asOf: string }[];
   related?: RelatedItem[];
@@ -32,6 +34,7 @@ export function EntityPage({
   verdict,
   keyFacts,
   aiPageKey,
+  aiNarrative,
   children,
   sources,
   related,
@@ -58,8 +61,8 @@ export function EntityPage({
         </div>
       )}
 
-      {/* ③ AI narrative — only when a page explicitly opts in via aiPageKey */}
-      {aiPageKey && <AINarrative lang={lang} pageKey={aiPageKey} />}
+      {/* ③ AI narrative — 服务端节点优先(SEO可见), 否则回退客户端 AINarrative(仅当 aiPageKey 显式启用) */}
+      {aiNarrative ?? (aiPageKey ? <AINarrative lang={lang} pageKey={aiPageKey} /> : null)}
 
       {/* ④ Data body (tables / charts passed as children) */}
       <div className="space-y-4">{children}</div>
