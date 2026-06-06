@@ -341,7 +341,6 @@ export default async function InvestorSlugPage({
         subtitle={subtitle}
         verdict={verdict}
         keyFacts={keyFacts}
-        aiPageKey={`investor:${slug}`}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
         related={related}
       >

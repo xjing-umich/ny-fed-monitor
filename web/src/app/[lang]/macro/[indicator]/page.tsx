@@ -171,7 +171,6 @@ export default async function IndicatorEntityPage({
       subtitle={subtitle}
       verdict={verdict}
       keyFacts={keyFacts}
-      aiPageKey={`macro:${indicator}`}
       sources={sources}
       related={related}
     >
