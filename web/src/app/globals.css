@@ -5,59 +5,60 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ── Design system tokens ───────────────────────────────────────────────────── */
-/* LIGHT is the default theme (clean, approachable fintech content site).        */
-/* The shadcn semantic tokens are the single source of truth; the legacy         */
-/* --tt-* terminal variables are re-mapped onto them so existing inline-style     */
-/* components inherit the new look automatically.                                 */
+/* LIGHT is the default theme — a FINANCIAL EDITORIAL palette: warm paper, warm   */
+/* ink, hairline rules, and one deep money-green accent (fits "Compounder/复利").  */
+/* The shadcn semantic tokens are the single source of truth; the legacy          */
+/* --tt-* terminal variables are re-mapped onto them so existing inline-style      */
+/* components inherit the new look automatically.                                  */
 :root {
-  /* Surfaces — near-white background, white cards, soft slate borders */
-  --background:          #F8FAFC; /* slate-50, faintly cool near-white */
-  --foreground:          #16202E; /* comfortable dark slate (not pure black) */
-  --card:                #FFFFFF;
-  --card-foreground:     #16202E;
-  --popover:             #FFFFFF;
-  --popover-foreground:  #16202E;
+  /* Surfaces — warm paper background, near-white warm cards */
+  --background:          #FAF8F3; /* warm off-white "paper" */
+  --foreground:          #1C1917; /* warm near-black "ink" */
+  --card:                #FCFBF7; /* warm near-white surface */
+  --card-foreground:     #1C1917;
+  --popover:             #FCFBF7;
+  --popover-foreground:  #1C1917;
 
-  /* One restrained professional accent — a calm trustworthy blue */
-  --primary:             #2563C9;
-  --primary-foreground:  #FFFFFF;
+  /* One rich accent — deep money green (compounding) */
+  --primary:             #1B5E3F;
+  --primary-foreground:  #FAF8F3; /* paper on green */
 
-  /* Quiet secondary / muted surfaces */
-  --secondary:           #EEF2F7;
-  --secondary-foreground:#27313F;
-  --muted:               #F1F5F9;
-  --muted-foreground:    #5A6675; /* readable secondary text */
-  --accent:              #EAF1FB; /* soft tinted hover/selected surface */
-  --accent-foreground:   #1E4FA3;
+  /* Quiet secondary / muted surfaces — warm, not slate */
+  --secondary:           #F0ECE2;
+  --secondary-foreground:#2C2722;
+  --muted:               #F2EEE4;
+  --muted-foreground:    #6B6157; /* warm readable secondary text */
+  --accent:              #ECF1ED; /* soft green-tinted hover/selected surface */
+  --accent-foreground:   #1B5E3F;
 
-  /* Semantic state colors (used sparingly) */
-  --destructive:         #D1343B; /* negative / red */
-  --positive:            #1A8F4A; /* green */
-  --warn:                #B07400; /* amber */
+  /* Semantic state colors — money green / oxblood / muted gold */
+  --destructive:         #8A2B22; /* negative — oxblood/burgundy */
+  --positive:            #1B7A4B; /* positive — green */
+  --warn:                #9A6B1E; /* warn — muted gold */
 
-  /* Lines & controls */
-  --border:              #E3E9F0; /* soft border */
-  --border-strong:       #D2DAE4;
-  --input:               #D2DAE4;
-  --ring:                #2563C9;
-  --radius:              0.5625rem; /* ~9px — friendly, not bubbly */
+  /* Lines & controls — warm HAIRLINE rules */
+  --border:              #E7E1D5; /* warm, subtle hairline */
+  --border-strong:       #D8D0C0;
+  --input:               #D8D0C0;
+  --ring:                #1B5E3F;
+  --radius:              0.4375rem; /* ~7px — quiet, editorial */
 
   /* Sidebar */
-  --sidebar:             #FFFFFF;
-  --sidebar-foreground:  #16202E;
-  --sidebar-primary:     #2563C9;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:      #EAF1FB;
-  --sidebar-accent-foreground: #1E4FA3;
-  --sidebar-border:      #E3E9F0;
-  --sidebar-ring:        #2563C9;
+  --sidebar:             #FCFBF7;
+  --sidebar-foreground:  #1C1917;
+  --sidebar-primary:     #1B5E3F;
+  --sidebar-primary-foreground: #FAF8F3;
+  --sidebar-accent:      #ECF1ED;
+  --sidebar-accent-foreground: #1B5E3F;
+  --sidebar-border:      #E7E1D5;
+  --sidebar-ring:        #1B5E3F;
 
-  /* Chart palette — accent blue, teal, amber, red, slate */
-  --chart-1: #2563C9;
-  --chart-2: #0E9384;
-  --chart-3: #B07400;
-  --chart-4: #D1343B;
-  --chart-5: #6B7686;
+  /* Chart palette — green, oxblood, gold, ink, warm clay */
+  --chart-1: #1B5E3F;
+  --chart-2: #8A2B22;
+  --chart-3: #9A6B1E;
+  --chart-4: #4A4039;
+  --chart-5: #A8794E;
 
   /* ── Legacy terminal tokens → semantic tokens (single source of truth) ──── */
   --tt-bg:            var(--background);
@@ -67,55 +68,55 @@
   --tt-border-strong: var(--border-strong);
   --tt-text:          var(--foreground);
   --tt-muted:         var(--muted-foreground);
-  --tt-faint:         #93A0B0; /* faint tertiary text */
+  --tt-faint:         #998F82; /* warm faint tertiary text */
   --tt-accent:        var(--primary);
   --tt-positive:      var(--positive);
   --tt-negative:      var(--destructive);
   --tt-warn:          var(--warn);
 }
 
-/* ── Dark theme (optional, refined — not the old harsh terminal) ─────────────── */
+/* ── Dark theme (opt-in) — complementary "ink paper": warm dark, paper text ───── */
 .dark {
-  --background:          #0F141B; /* deep slate, softer than old #0B0E14 */
-  --foreground:          #E6EBF2;
-  --card:                #161C26;
-  --card-foreground:     #E6EBF2;
-  --popover:             #161C26;
-  --popover-foreground:  #E6EBF2;
+  --background:          #16130F; /* warm near-black "ink paper" */
+  --foreground:          #EDE7DA; /* warm paper text */
+  --card:                #1E1A15;
+  --card-foreground:     #EDE7DA;
+  --popover:             #1E1A15;
+  --popover-foreground:  #EDE7DA;
 
-  --primary:             #5B8DEF; /* slightly lifted blue for dark surfaces */
-  --primary-foreground:  #0B1018;
+  --primary:             #4FBF8A; /* lifted money-green for dark surfaces */
+  --primary-foreground:  #0E1A13;
 
-  --secondary:           #1C2430;
-  --secondary-foreground:#D5DCE6;
-  --muted:               #1A222D;
-  --muted-foreground:    #9AA6B5;
-  --accent:              #1E2A3D;
-  --accent-foreground:   #BFD2F2;
+  --secondary:           #26211B;
+  --secondary-foreground:#DDD5C6;
+  --muted:               #221E18;
+  --muted-foreground:    #A89C8A;
+  --accent:              #20302A;
+  --accent-foreground:   #9FE0BE;
 
-  --destructive:         #F0616D;
-  --positive:            #3FCB6E;
-  --warn:                #E0B257;
+  --destructive:         #D9756A; /* warm oxblood, lifted */
+  --positive:            #4FBF8A;
+  --warn:                #D9AF63;
 
-  --border:              #232C39;
-  --border-strong:       #313C4C;
-  --input:               #313C4C;
-  --ring:                #5B8DEF;
+  --border:              #2E281F;
+  --border-strong:       #403828;
+  --input:               #403828;
+  --ring:                #4FBF8A;
 
-  --sidebar:             #161C26;
-  --sidebar-foreground:  #E6EBF2;
-  --sidebar-primary:     #5B8DEF;
-  --sidebar-primary-foreground: #0B1018;
-  --sidebar-accent:      #1E2A3D;
-  --sidebar-accent-foreground: #BFD2F2;
-  --sidebar-border:      #232C39;
-  --sidebar-ring:        #5B8DEF;
+  --sidebar:             #1E1A15;
+  --sidebar-foreground:  #EDE7DA;
+  --sidebar-primary:     #4FBF8A;
+  --sidebar-primary-foreground: #0E1A13;
+  --sidebar-accent:      #20302A;
+  --sidebar-accent-foreground: #9FE0BE;
+  --sidebar-border:      #2E281F;
+  --sidebar-ring:        #4FBF8A;
 
-  --chart-1: #5B8DEF;
-  --chart-2: #2DD4BF;
-  --chart-3: #E0B257;
-  --chart-4: #F0616D;
-  --chart-5: #8A93A6;
+  --chart-1: #4FBF8A;
+  --chart-2: #D9756A;
+  --chart-3: #D9AF63;
+  --chart-4: #C9BCA6;
+  --chart-5: #BE9468;
 
   /* Legacy terminal tokens inherit the dark semantic values */
   --tt-bg:            var(--background);
@@ -125,7 +126,7 @@
   --tt-border-strong: var(--border-strong);
   --tt-text:          var(--foreground);
   --tt-muted:         var(--muted-foreground);
-  --tt-faint:         #6B7686;
+  --tt-faint:         #7A715F;
   --tt-accent:        var(--primary);
   --tt-positive:      var(--positive);
   --tt-negative:      var(--destructive);
@@ -137,7 +138,8 @@
   --color-foreground:    var(--foreground);
   --font-sans:           var(--font-geist-sans);
   --font-mono:           var(--font-geist-mono);
-  --font-heading:        var(--font-geist-sans);
+  --font-display:        var(--font-display), Georgia, "Times New Roman", serif;
+  --font-heading:        var(--font-display), Georgia, serif;
   --color-sidebar-ring:              var(--sidebar-ring);
   --color-sidebar-border:            var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -203,6 +205,11 @@
   }
   .font-mono {
     font-family: var(--font-geist-mono), ui-monospace, monospace;
+  }
+  .font-display {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.005em;
   }
   .tt-label {
     font-size: 11px;

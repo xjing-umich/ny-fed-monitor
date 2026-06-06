@@ -33,21 +33,23 @@ export default function TopNav({ lang, items }: TopNavProps) {
   }
 
   return (
-    <header className="hidden md:flex h-13 min-h-[52px] sticky top-0 z-30 w-full items-center gap-4 px-6 bg-[var(--tt-panel)] border-b border-[var(--tt-border)]">
-      {/* Logo / product name */}
+    <header className="hidden md:flex h-15 min-h-[60px] sticky top-0 z-30 w-full items-center gap-6 px-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
+      {/* Masthead wordmark — display serif */}
       <Link
         href={homeHref}
-        className="flex items-center gap-2 shrink-0 text-sm font-semibold text-[var(--tt-text)] hover:text-[var(--tt-accent)] transition-colors no-underline"
+        className="flex items-baseline gap-2 shrink-0 text-[var(--tt-text)] hover:text-[var(--tt-accent)] transition-colors no-underline"
       >
-        <span className="text-[var(--tt-accent)] font-bold text-base">◈</span>
-        <span>{lang === "zh" ? "机构动向监控" : "Smart Money Monitor"}</span>
+        <span className="font-display text-xl font-medium tracking-tight leading-none">
+          Compounder
+        </span>
+        <span className="text-sm text-[var(--tt-muted)] leading-none">复利</span>
       </Link>
 
-      {/* Separator */}
+      {/* Hairline separator */}
       <span className="w-px h-5 bg-[var(--tt-border)] shrink-0" />
 
-      {/* Nav links */}
-      <nav className="flex items-center gap-1">
+      {/* Nav links — understated uppercase-tracked text links */}
+      <nav className="flex items-center gap-6">
         {TOP_NAV.map((entry) => {
           const active = isActive(entry);
           const href = entry.key === "home" ? homeHref : `/${lang}${entry.href}`;
@@ -56,10 +58,10 @@ export default function TopNav({ lang, items }: TopNavProps) {
               key={entry.key}
               href={href}
               className={[
-                "px-3 py-1.5 rounded-md text-sm font-medium transition-colors no-underline",
+                "relative text-[12px] uppercase tracking-[0.1em] transition-colors no-underline pb-0.5 border-b",
                 active
-                  ? "text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_10%,transparent)]"
-                  : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)]",
+                  ? "text-[var(--tt-text)] border-[var(--tt-accent)]"
+                  : "text-[var(--tt-muted)] border-transparent hover:text-[var(--tt-text)]",
               ].join(" ")}
             >
               {lang === "zh" ? entry.zh : entry.en}

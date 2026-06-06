@@ -14,19 +14,22 @@ export function SourceFooter({ lang, sources }: SourceFooterProps) {
   const asOfLabel = lang === "zh" ? "截至" : "as of";
 
   return (
-    <div className="border-t border-border pt-3 space-y-1">
-      <p className="tt-faint-label">{heading}</p>
-      <ul className="flex flex-wrap gap-x-4 gap-y-1">
-        {sources.map((src) => (
-          <li key={src.name} className="text-xs text-muted-foreground">
-            <span className="font-medium text-card-foreground">{src.name}</span>
-            {" "}
-            <span>
-              {asOfLabel} {src.asOf}
-            </span>
-          </li>
+    <div className="border-t border-border pt-3">
+      <p className="text-xs italic text-muted-foreground">
+        <span className="not-italic font-medium uppercase tracking-[0.08em] text-[11px] text-[var(--tt-faint)]">
+          {heading}
+        </span>
+        <span className="mx-1.5 text-[var(--tt-faint)]">·</span>
+        {sources.map((src, i) => (
+          <span key={src.name}>
+            {i > 0 && <span className="mx-1.5 text-[var(--tt-faint)]">·</span>}
+            <span className="not-italic font-medium text-card-foreground">
+              {src.name}
+            </span>{" "}
+            {asOfLabel} {src.asOf}
+          </span>
         ))}
-      </ul>
+      </p>
     </div>
   );
 }

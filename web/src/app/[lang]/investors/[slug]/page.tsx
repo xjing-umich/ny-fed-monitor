@@ -33,11 +33,11 @@ export async function generateMetadata({
   const { person, name } = d.manager;
   return lang === "zh"
     ? {
-        title: `${person} 持仓 13F — 聪明钱观察`,
+        title: `${person} 持仓 13F — Compounder · 复利`,
         description: `${name} — ${person} 的最新 SEC 13F 季度持仓披露，持仓明细与环比变动。`,
       }
     : {
-        title: `${person} 13F Holdings — Smart Money Watch`,
+        title: `${person} 13F Holdings — Compounder · 复利`,
         description: `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
       };
 }

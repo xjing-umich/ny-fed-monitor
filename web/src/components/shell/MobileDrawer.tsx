@@ -83,8 +83,11 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--tt-border)] shrink-0">
-          <span className="text-sm font-semibold text-[var(--tt-text)]">
-            {lang === "zh" ? "机构动向监控" : "Smart Money Monitor"}
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-display text-lg font-medium tracking-tight text-[var(--tt-text)]">
+              Compounder
+            </span>
+            <span className="text-xs text-[var(--tt-muted)]">复利</span>
           </span>
           <button
             onClick={() => setOpen(false)}

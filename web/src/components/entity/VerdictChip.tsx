@@ -1,12 +1,19 @@
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Tone } from "./types";
 
-const TONE_CLASS: Record<Tone, string> = {
-  positive: "bg-[color:var(--color-positive)]/15 text-[color:var(--color-positive)] border-[color:var(--color-positive)]/30",
-  warn:     "bg-[color:var(--color-warn)]/15 text-[color:var(--color-warn)] border-[color:var(--color-warn)]/30",
-  negative: "bg-destructive/10 text-destructive border-destructive/30",
-  neutral:  "bg-muted text-muted-foreground border-border",
+// Restrained editorial tag: a colored dot + uppercase-tracked label, hairline rule.
+const DOT_CLASS: Record<Tone, string> = {
+  positive: "bg-[color:var(--color-positive)]",
+  warn:     "bg-[color:var(--color-warn)]",
+  negative: "bg-destructive",
+  neutral:  "bg-muted-foreground",
+};
+
+const TEXT_CLASS: Record<Tone, string> = {
+  positive: "text-[color:var(--color-positive)]",
+  warn:     "text-[color:var(--color-warn)]",
+  negative: "text-destructive",
+  neutral:  "text-muted-foreground",
 };
 
 export type VerdictChipProps = {
@@ -16,11 +23,16 @@ export type VerdictChipProps = {
 
 export function VerdictChip({ label, tone }: VerdictChipProps) {
   return (
-    <Badge
-      variant="outline"
-      className={cn("text-xs font-semibold px-2.5 py-0.5", TONE_CLASS[tone])}
-    >
-      {label}
-    </Badge>
+    <span className="inline-flex items-center gap-1.5 border border-border px-2 py-0.5">
+      <span className={cn("size-1.5 rounded-full", DOT_CLASS[tone])} aria-hidden />
+      <span
+        className={cn(
+          "text-[10px] font-medium uppercase tracking-[0.12em]",
+          TEXT_CLASS[tone]
+        )}
+      >
+        {label}
+      </span>
+    </span>
   );
 }

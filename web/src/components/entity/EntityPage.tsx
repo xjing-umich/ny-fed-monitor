@@ -1,5 +1,4 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { VerdictChip } from "./VerdictChip";
 import { KeyFacts, type KeyFact } from "./KeyFacts";
 import { AINarrative } from "./AINarrative";
@@ -38,29 +37,25 @@ export function EntityPage({
   related,
 }: EntityPageProps): React.ReactElement {
   return (
-    <div className="space-y-6">
-      {/* ① Title + subtitle + verdict */}
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-start gap-3">
-          <h1 className="text-2xl font-semibold leading-tight text-foreground">
+    <div className="space-y-7">
+      {/* ① Masthead — serif headline, verdict, standfirst, hairline rule */}
+      <header className="space-y-3 pb-1">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <h1 className="font-display text-3xl sm:text-4xl font-medium leading-[1.1] tracking-tight text-foreground">
             {title}
           </h1>
-          {verdict && (
-            <span className="mt-1">
-              <VerdictChip label={verdict.label} tone={verdict.tone} />
-            </span>
-          )}
+          {verdict && <VerdictChip label={verdict.label} tone={verdict.tone} />}
         </div>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
-      </div>
+        <p className="max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
+          {subtitle}
+        </p>
+      </header>
 
-      {/* ② Key facts strip */}
+      {/* ② Key facts — editorial stat row separated by hairlines (no card) */}
       {keyFacts.length > 0 && (
-        <Card className="border border-border shadow-sm">
-          <CardContent className="p-4">
-            <KeyFacts facts={keyFacts} />
-          </CardContent>
-        </Card>
+        <div className="border-y border-border py-4">
+          <KeyFacts facts={keyFacts} />
+        </div>
       )}
 
       {/* ③ AI narrative */}

@@ -17,11 +17,11 @@ export async function generateMetadata({
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   return lang === "zh"
     ? {
-        title: "超级投资者 — 聪明钱观察",
+        title: "超级投资者 — Compounder · 复利",
         description: "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。",
       }
     : {
-        title: "Superinvestors — Smart Money Watch",
+        title: "Superinvestors — Compounder · 复利",
         description: "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.",
       };
 }

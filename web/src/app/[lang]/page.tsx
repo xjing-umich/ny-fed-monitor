@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Users, LineChart, Activity, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { getManagerIndex } from "@/lib/managers/source";
 import { buildAllSections } from "@/lib/build";
@@ -20,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 const COPY = {
   zh: {
-    product: "聪明钱观察",
+    product: "Compounder · 复利",
     beta: "公开测试版",
     headline: "看清聪明钱在买什么、它值不值、大环境如何",
     sub: "把顶级投资者的持仓、个股估值与宏观流动性，整理成普通投资者也能读懂的清晰视图。",
@@ -40,7 +38,7 @@ const COPY = {
     sources: "数据来源：SEC EDGAR 13F、纽约联储、Treasury.gov。",
   },
   en: {
-    product: "Smart Money Watch",
+    product: "Compounder · 复利",
     beta: "Public beta",
     headline: "See what smart money is buying, whether it's worth it, and the macro backdrop",
     sub: "Top investors' holdings, single-stock valuation, and macro liquidity — organized into a clear view everyday investors can read.",
@@ -128,34 +126,26 @@ function PillarCard({
   href?: string;
 }) {
   const inner = (
-    <Card
-      className={
-        "h-full transition-colors" + (href ? " hover:border-primary/40" : "")
-      }
-    >
-      <CardContent className="flex h-full flex-col gap-3 px-6 py-6">
-        <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-5" aria-hidden />
-        </span>
-        <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold text-foreground">{title}</h3>
-          {soon && (
-            <Badge variant="secondary" className="text-[10px] font-normal">
-              {soon}
-            </Badge>
-          )}
-        </div>
-        <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
-        {href && (
-          <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary">
-            <ArrowRight className="size-4" aria-hidden />
+    <div className="group/pillar flex h-full flex-col gap-3 py-1">
+      <Icon className="size-5 text-primary" aria-hidden />
+      <div className="flex items-center gap-2">
+        <h3 className="font-display text-lg font-medium text-foreground">{title}</h3>
+        {soon && (
+          <span className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+            {soon}
           </span>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
+      {href && (
+        <span className="mt-auto inline-flex items-center gap-1 pt-2 text-[12px] font-medium uppercase tracking-[0.1em] text-primary">
+          <ArrowRight className="size-3.5 transition-transform group-hover/pillar:translate-x-0.5" aria-hidden />
+        </span>
+      )}
+    </div>
   );
   return href ? (
-    <Link href={href} className="block">
+    <Link href={href} className="block h-full no-underline">
       {inner}
     </Link>
   ) : (
@@ -166,20 +156,21 @@ function PillarCard({
 function ManagerMiniCard({ lang, manager }: { lang: Lang; manager: ManagerSummary }) {
   const t = COPY[lang];
   return (
-    <Link href={investorPath(lang, manager.slug)} className="block">
-      <Card className="h-full transition-colors hover:border-primary/40">
-        <CardContent className="flex h-full flex-col gap-1.5 px-5 py-4">
-          <span className="truncate text-sm font-semibold text-foreground">
-            {manager.person}
-          </span>
-          <span className="tnum font-mono text-base font-semibold text-primary">
-            {formatUSD(manager.totalValue)}
-          </span>
-          <span className="truncate text-xs text-muted-foreground">
-            {t.topHolding}: {titleCase(manager.topHolding)}
-          </span>
-        </CardContent>
-      </Card>
+    <Link
+      href={investorPath(lang, manager.slug)}
+      className="group/mgr block h-full border-t-2 border-border pt-3 no-underline transition-colors hover:border-primary"
+    >
+      <div className="flex h-full flex-col gap-1.5">
+        <span className="font-display truncate text-base font-medium text-foreground">
+          {manager.person}
+        </span>
+        <span className="tnum font-mono text-lg font-medium text-foreground">
+          {formatUSD(manager.totalValue)}
+        </span>
+        <span className="truncate text-xs text-muted-foreground">
+          {t.topHolding}: {titleCase(manager.topHolding)}
+        </span>
+      </div>
     </Link>
   );
 }
@@ -212,52 +203,61 @@ export default async function LandingPage({
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-14 px-2 py-8 sm:py-12">
-      {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-start gap-5">
-        <Badge variant="secondary">{t.beta}</Badge>
-        <h1 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+      {/* ── Hero ── editorial masthead: kicker, big serif headline, deck ─ */}
+      <section className="flex flex-col items-start gap-6 border-b border-border pb-12">
+        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
+          {t.product} <span className="text-muted-foreground">— {t.beta}</span>
+        </span>
+        <h1 className="font-display max-w-4xl text-4xl font-medium leading-[1.08] tracking-tight text-foreground sm:text-5xl">
           {t.headline}
         </h1>
-        <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+        <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
           {t.sub}
         </p>
-        <div className="flex flex-wrap gap-3 pt-1">
+        <div className="flex flex-wrap items-center gap-6 pt-2">
           <Link href={`/${lang}/investors`} className={buttonVariants({ size: "lg" })}>
             {t.ctaPrimary}
           </Link>
           <Link
             href={`/${lang}/macro`}
-            className={buttonVariants({ size: "lg", variant: "outline" })}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 decoration-border hover:decoration-primary underline transition-colors"
           >
             {t.ctaSecondary}
+            <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
       </section>
 
-      {/* ── Three pillars ─────────────────────────────────────────────── */}
-      <section className="flex flex-col gap-4">
-        <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+      {/* ── Three pillars — ruled editorial columns ───────────────────── */}
+      <section className="flex flex-col gap-6">
+        <h2 className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           {t.pillarsTitle}
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <PillarCard
-            icon={Users}
-            title={t.pillars.who.title}
-            desc={t.pillars.who.desc}
-            href={`/${lang}/investors`}
-          />
-          <PillarCard
-            icon={LineChart}
-            title={t.pillars.worth.title}
-            desc={t.pillars.worth.desc}
-            soon={t.pillars.worth.soon}
-          />
-          <PillarCard
-            icon={Activity}
-            title={t.pillars.macro.title}
-            desc={t.pillars.macro.desc}
-            href={`/${lang}/macro`}
-          />
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-0">
+          <div className="sm:pr-8">
+            <PillarCard
+              icon={Users}
+              title={t.pillars.who.title}
+              desc={t.pillars.who.desc}
+              href={`/${lang}/investors`}
+            />
+          </div>
+          <div className="sm:border-l sm:border-border sm:px-8">
+            <PillarCard
+              icon={LineChart}
+              title={t.pillars.worth.title}
+              desc={t.pillars.worth.desc}
+              soon={t.pillars.worth.soon}
+            />
+          </div>
+          <div className="sm:border-l sm:border-border sm:pl-8">
+            <PillarCard
+              icon={Activity}
+              title={t.pillars.macro.title}
+              desc={t.pillars.macro.desc}
+              href={`/${lang}/macro`}
+            />
+          </div>
         </div>
       </section>
 
@@ -295,22 +295,23 @@ export default async function LandingPage({
               <span className="text-sm font-medium text-foreground">
                 {t.focusMacro}
               </span>
-              <Link href={macroPath(lang, macroSignal.indicator)} className="block">
-                <Card className="transition-colors hover:border-primary/40">
-                  <CardContent className="flex flex-wrap items-center justify-between gap-4 px-6 py-5">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                        {macroSignal.name}
-                      </span>
-                      <span className="text-sm text-foreground">
-                        {macroSignal.metricLabel}
-                      </span>
-                    </div>
-                    <span className="tnum font-mono text-xl font-semibold text-foreground">
-                      {macroSignal.value}
+              <Link
+                href={macroPath(lang, macroSignal.indicator)}
+                className="group/macro block border-t-2 border-border pt-4 no-underline transition-colors hover:border-primary"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                      {macroSignal.name}
                     </span>
-                  </CardContent>
-                </Card>
+                    <span className="font-display text-lg text-foreground">
+                      {macroSignal.metricLabel}
+                    </span>
+                  </div>
+                  <span className="tnum font-mono text-2xl font-medium text-foreground">
+                    {macroSignal.value}
+                  </span>
+                </div>
               </Link>
             </div>
           )}

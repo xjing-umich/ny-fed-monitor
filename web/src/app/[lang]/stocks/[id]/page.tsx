@@ -37,11 +37,11 @@ export async function generateMetadata({
 
   return lang === "zh"
     ? {
-        title: `${issuer} — 谁在持有 / 机构持仓 — 聪明钱观察`,
+        title: `${issuer} — 谁在持有 / 机构持仓 — Compounder · 复利`,
         description: `查看持有 ${issuer}（CUSIP ${id}）的超级投资者，了解机构持仓分布。`,
       }
     : {
-        title: `${issuer} — Who's Holding — Smart Money Watch`,
+        title: `${issuer} — Who's Holding — Compounder · 复利`,
         description: `See which superinvestors hold ${issuer} (CUSIP ${id}) and their position sizes.`,
       };
 }

@@ -16,10 +16,13 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
       <TopNav lang={lang} items={items} />
 
       {/* Mobile header strip with hamburger */}
-      <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 bg-[var(--tt-panel)] border-b border-[var(--tt-border)]">
+      <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
         <MobileDrawer lang={lang} />
-        <span className="text-sm font-semibold text-[var(--tt-text)] flex-1 truncate">
-          {lang === "zh" ? "机构动向监控" : "Smart Money Monitor"}
+        <span className="flex items-baseline gap-1.5 flex-1 truncate">
+          <span className="font-display text-lg font-medium tracking-tight text-[var(--tt-text)]">
+            Compounder
+          </span>
+          <span className="text-xs text-[var(--tt-muted)]">复利</span>
         </span>
       </header>
 
@@ -30,11 +33,21 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--tt-border)] py-2 px-6 text-[11px] text-[var(--tt-faint)] text-center">
-        {lang === "zh"
-          ? "本系统不提供交易建议 · 数据来源: NY Fed · Treasury.gov · SEC EDGAR"
-          : "No trading advice · Sources: NY Fed · Treasury.gov · SEC EDGAR"}
+      {/* Footer — editorial colophon */}
+      <footer className="border-t border-[var(--tt-border)] py-4 px-8">
+        <div className="max-w-[1180px] mx-auto flex flex-wrap items-baseline justify-between gap-2">
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-display text-sm font-medium text-[var(--tt-text)]">
+              Compounder
+            </span>
+            <span className="text-[11px] text-[var(--tt-faint)]">复利</span>
+          </span>
+          <span className="text-[11px] italic text-[var(--tt-faint)]">
+            {lang === "zh"
+              ? "本系统不提供交易建议 · 数据来源: NY Fed · Treasury.gov · SEC EDGAR"
+              : "No trading advice · Sources: NY Fed · Treasury.gov · SEC EDGAR"}
+          </span>
+        </div>
       </footer>
     </div>
   );
