@@ -2,7 +2,6 @@ import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Card, CardContent } from "@/components/ui/card";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
@@ -90,62 +89,61 @@ function HoldersTable({
   const sorted = [...holders].sort((a, b) => b.value - a.value);
 
   return (
-    <Card className="border border-border shadow-sm">
-      <CardContent className="p-4">
-        <div className="mb-3">
-          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-            {t.title}
-          </span>
-        </div>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-left">
-                <th className="px-4 py-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.investor}
-                </th>
-                <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.value}
-                </th>
-                <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.shares}
-                </th>
-                <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.weight}
-                </th>
+    <section>
+      {/* Section label with hairline rule */}
+      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
+        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+          {t.title}
+        </span>
+      </div>
+      <div className="w-full overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-[var(--tt-border)]">
+              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
+                {t.cols.investor}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
+                {t.cols.value}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
+                {t.cols.shares}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-24">
+                {t.cols.weight}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((row) => (
+              <tr
+                key={row.slug}
+                className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+              >
+                <td className="py-3 pr-4">
+                  <Link
+                    href={investorPath(lang, row.slug)}
+                    className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
+                  >
+                    {row.person}
+                  </Link>
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
+                  {formatUSD(row.value)}
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
+                  {row.shares.toLocaleString()}
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
+                  {row.weight != null ? `${(row.weight * 100).toFixed(2)}%` : "—"}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {sorted.map((row, i) => (
-                <tr
-                  key={row.slug}
-                  className={i < sorted.length - 1 ? "border-b border-border" : ""}
-                >
-                  <td className="px-4 py-2.5 font-medium text-foreground">
-                    <Link
-                      href={investorPath(lang, row.slug)}
-                      className="hover:text-primary hover:underline"
-                    >
-                      {row.person}
-                    </Link>
-                  </td>
-                  <td className="tnum px-4 py-2.5 text-right font-mono text-foreground">
-                    {formatUSD(row.value)}
-                  </td>
-                  <td className="tnum px-4 py-2.5 text-right font-mono text-muted-foreground">
-                    {row.shares.toLocaleString()}
-                  </td>
-                  <td className="tnum px-4 py-2.5 text-right font-mono text-muted-foreground">
-                    {row.weight != null ? `${(row.weight * 100).toFixed(2)}%` : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">{t.coming}</p>
-      </CardContent>
-    </Card>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-xs text-[var(--tt-faint)]">{t.coming}</p>
+    </section>
   );
 }
 

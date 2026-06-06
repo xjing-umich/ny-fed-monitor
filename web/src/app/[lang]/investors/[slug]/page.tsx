@@ -2,7 +2,6 @@ import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Card, CardContent } from "@/components/ui/card";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
@@ -64,66 +63,68 @@ function HoldingsTable({ holdings, lang }: { holdings: Holding[]; lang: Lang }):
   const truncated = sorted.length > MAX_HOLDINGS;
 
   return (
-    <Card className="border border-border shadow-sm">
-      <CardContent className="p-4">
-        <div className="mb-3">
-          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-            {t.title}
-          </span>
-        </div>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-left">
-                <th className="px-4 py-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.issuer}
-                </th>
-                <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.value}
-                </th>
-                <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.shares}
-                </th>
-                <th className="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {t.cols.weight}
-                </th>
+    <section>
+      {/* Section label with hairline rule */}
+      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
+        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+          {t.title}
+        </span>
+      </div>
+      <div className="w-full overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-[var(--tt-border)]">
+              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
+                {t.cols.issuer}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
+                {t.cols.value}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
+                {t.cols.shares}
+              </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-24">
+                {t.cols.weight}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {capped.map((h, i) => (
+              <tr
+                key={h.cusip}
+                className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+              >
+                <td className="py-3 pr-4">
+                  <Link
+                    href={stockPath(lang, h.cusip)}
+                    className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
+                  >
+                    {h.issuer}
+                  </Link>
+                  <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">
+                    {h.cusip}
+                  </span>
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
+                  {formatUSD(h.value)}
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
+                  {h.shares.toLocaleString()}
+                </td>
+                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
+                  {h.weight != null ? `${(h.weight * 100).toFixed(2)}%` : "—"}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {capped.map((h, i) => (
-                <tr
-                  key={h.cusip}
-                  className={i < capped.length - 1 ? "border-b border-border" : ""}
-                >
-                  <td className="px-4 py-2.5 font-medium text-foreground">
-                    <Link
-                      href={stockPath(lang, h.cusip)}
-                      className="hover:text-primary hover:underline"
-                    >
-                      {h.issuer}
-                    </Link>
-                  </td>
-                  <td className="tnum px-4 py-2.5 text-right font-mono text-foreground">
-                    {formatUSD(h.value)}
-                  </td>
-                  <td className="tnum px-4 py-2.5 text-right font-mono text-muted-foreground">
-                    {h.shares.toLocaleString()}
-                  </td>
-                  <td className="tnum px-4 py-2.5 text-right font-mono text-muted-foreground">
-                    {h.weight != null ? `${(h.weight * 100).toFixed(2)}%` : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {truncated && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            {t.truncated(MAX_HOLDINGS, sorted.length)}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {truncated && (
+        <p className="mt-2 text-xs text-[var(--tt-faint)]">
+          {t.truncated(MAX_HOLDINGS, sorted.length)}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -149,10 +150,10 @@ const CHANGE_COPY = {
 } as const;
 
 const KIND_COLOR: Record<HoldingChange["kind"], string> = {
-  new: "text-[var(--positive)]",
-  exited: "text-destructive",
-  increased: "text-primary",
-  decreased: "text-[var(--warn)]",
+  new:       "text-[var(--tt-positive)]",
+  exited:    "text-[var(--tt-negative)]",
+  increased: "text-[var(--tt-accent)]",
+  decreased: "text-[var(--tt-warn)]",
 };
 
 function ChangeGroup({
@@ -166,27 +167,27 @@ function ChangeGroup({
 }): React.ReactElement {
   const colorClass = KIND_COLOR[kind];
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
-      <div className={`px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] border-b border-border ${colorClass}`}>
+    <div className="border-t border-[var(--tt-border)] pt-3">
+      <div className={`text-[10px] font-medium uppercase tracking-[0.1em] mb-2 ${colorClass}`}>
         {label}
       </div>
-      <div className="py-1.5">
+      <div>
         {items.length === 0 ? (
-          <div className="px-3 py-1 text-xs text-muted-foreground">—</div>
+          <div className="text-xs text-[var(--tt-faint)]">—</div>
         ) : (
           items.map((c) => (
             <div
               key={c.cusip}
-              className="flex items-center justify-between gap-2 px-3 py-1"
+              className="flex items-center justify-between gap-2 py-1 border-b border-[var(--tt-border)] last:border-0"
             >
-              <span className="text-xs text-foreground truncate flex-1">{c.issuer}</span>
+              <span className="text-xs text-[var(--tt-text)] truncate flex-1">{c.issuer}</span>
               {(kind === "increased" || kind === "decreased") && c.deltaPct != null ? (
-                <span className={`tnum font-mono text-[11px] flex-shrink-0 ${colorClass}`}>
+                <span className={`font-mono tabular-nums text-[11px] flex-shrink-0 ${colorClass}`}>
                   {kind === "increased" ? "+" : ""}
                   {(c.deltaPct * 100).toFixed(1)}%
                 </span>
               ) : (
-                <span className="tnum font-mono text-[11px] text-muted-foreground flex-shrink-0">
+                <span className="font-mono tabular-nums text-[11px] text-[var(--tt-faint)] flex-shrink-0">
                   {formatUSD(c.value)}
                 </span>
               )}
@@ -201,32 +202,31 @@ function ChangeGroup({
 function ChangesSection({ changes, lang }: { changes: HoldingChange[]; lang: Lang }): React.ReactElement {
   const t = CHANGE_COPY[lang];
   const groups: { kind: HoldingChange["kind"]; label: string }[] = [
-    { kind: "new", label: `${t.new} (${changes.filter((c) => c.kind === "new").length})` },
-    { kind: "exited", label: `${t.exited} (${changes.filter((c) => c.kind === "exited").length})` },
-    { kind: "increased", label: `${t.increased} (${changes.filter((c) => c.kind === "increased").length})` },
-    { kind: "decreased", label: `${t.decreased} (${changes.filter((c) => c.kind === "decreased").length})` },
+    { kind: "new",       label: `${t.new} (${changes.filter((c) => c.kind === "new").length})` },
+    { kind: "exited",   label: `${t.exited} (${changes.filter((c) => c.kind === "exited").length})` },
+    { kind: "increased",label: `${t.increased} (${changes.filter((c) => c.kind === "increased").length})` },
+    { kind: "decreased",label: `${t.decreased} (${changes.filter((c) => c.kind === "decreased").length})` },
   ];
 
   return (
-    <Card className="border border-border shadow-sm">
-      <CardContent className="p-4">
-        <div className="mb-3">
-          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-            {t.title}
-          </span>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {groups.map(({ kind, label }) => (
-            <ChangeGroup
-              key={kind}
-              label={label}
-              items={changes.filter((c) => c.kind === kind).slice(0, 8)}
-              kind={kind}
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <section>
+      {/* Section label with hairline rule */}
+      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
+        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+          {t.title}
+        </span>
+      </div>
+      <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+        {groups.map(({ kind, label }) => (
+          <ChangeGroup
+            key={kind}
+            label={label}
+            items={changes.filter((c) => c.kind === kind).slice(0, 8)}
+            kind={kind}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
 

@@ -42,7 +42,7 @@ const GROUP_LABELS: Record<string, { zh: string; en: string }> = {
   policy:  { zh: "政策面", en: "Policy" },
 };
 
-// ── Tone → border/background color ───────────────────────────────────────────
+// ── Tone → signal color ───────────────────────────────────────────────────────
 
 const TONE_ACCENT: Record<string, string> = {
   red:    "var(--tt-negative)",
@@ -52,7 +52,7 @@ const TONE_ACCENT: Record<string, string> = {
   gray:   "var(--tt-faint)",
 };
 
-// ── Indicator card ─────────────────────────────────────────────────────────────
+// ── Indicator cell (editorial hairline style) ──────────────────────────────────
 
 function IndicatorCard({
   lang,
@@ -74,47 +74,18 @@ function IndicatorCard({
   return (
     <Link
       href={macroPath(lang, indicator)}
-      style={{ textDecoration: "none", display: "block" }}
+      className="indicator-card block no-underline"
     >
-      <div className="indicator-card"
-        style={{
-          background: "var(--tt-panel)",
-          border: "1px solid var(--tt-border)",
-          borderRadius: 8,
-          padding: "14px 16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          transition: "border-color 0.15s",
-          cursor: "pointer",
-        }}
-      >
-        {/* Name row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: "var(--tt-text)",
-              lineHeight: 1.3,
-            }}
-          >
+      <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2">
+        {/* Name + freshness badge */}
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
             {name}
           </span>
           {signal && (
             <span
-              style={{
-                flexShrink: 0,
-                fontSize: 10,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: accentColor,
-                border: `1px solid ${accentColor}`,
-                borderRadius: 4,
-                padding: "1px 6px",
-                whiteSpace: "nowrap",
-              }}
+              className="flex-shrink-0 font-mono text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-sm"
+              style={{ color: accentColor, border: `1px solid ${accentColor}` }}
             >
               {signal}
             </span>
@@ -122,27 +93,14 @@ function IndicatorCard({
         </div>
 
         {/* One-liner blurb */}
-        <p
-          style={{
-            fontSize: 12,
-            color: "var(--tt-muted)",
-            lineHeight: 1.5,
-            margin: 0,
-          }}
-        >
+        <p className="text-xs text-[var(--tt-muted)] leading-relaxed m-0">
           {blurb}
         </p>
 
-        {/* Arrow hint */}
-        <div
-          style={{
-            fontSize: 11,
-            color: "var(--tt-accent)",
-            marginTop: 2,
-          }}
-        >
+        {/* Money-green arrow link */}
+        <span className="font-mono text-[11px] text-[var(--tt-accent)]">
           {lang === "zh" ? "查看详情 →" : "View details →"}
-        </div>
+        </span>
       </div>
     </Link>
   );
@@ -162,25 +120,19 @@ export default async function MacroOverviewPage({
   const data = await buildAllSections();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-      {/* CSS hover effect for indicator cards — no JS event handlers needed */}
-      <style>{`.indicator-card:hover { border-color: var(--tt-accent) !important; }`}</style>
+    <div className="mx-auto max-w-4xl px-2 py-8 sm:py-10 flex flex-col gap-10">
+      {/* CSS hover: indicator links darken text on hover — no JS event handlers */}
+      <style>{`.indicator-card:hover span.font-display { color: var(--tt-accent); }`}</style>
+
       {/* Section sub-nav */}
       <SubNav lang={lang} section="macro" />
-      {/* Page heading */}
-      <div>
-        <h1
-          style={{
-            fontSize: 24,
-            fontWeight: 700,
-            color: "var(--tt-text)",
-            margin: "0 0 6px",
-            lineHeight: 1.2,
-          }}
-        >
+
+      {/* Editorial page heading */}
+      <div className="border-b border-[var(--tt-border)] pb-6">
+        <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {lang === "zh" ? "宏观 / 流动性" : "Macro / Liquidity"}
         </h1>
-        <p style={{ fontSize: 14, color: "var(--tt-muted)", margin: 0, lineHeight: 1.6 }}>
+        <p className="mt-2 text-sm text-[var(--tt-muted)]">
           {lang === "zh"
             ? "追踪美国国债市场资金面、供给面与政策面动态，数据来自 NY Fed 及 Treasury.gov。"
             : "Track US Treasury market funding, supply, and policy dynamics sourced from NY Fed and Treasury.gov."}
@@ -192,30 +144,13 @@ export default async function MacroOverviewPage({
         const groupLabel = GROUP_LABELS[group.key] ?? { zh: group.key, en: group.key };
         return (
           <section key={group.key} id={group.key}>
-            {/* Group heading */}
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.10em",
-                color: "var(--tt-faint)",
-                borderBottom: "1px solid var(--tt-border)",
-                paddingBottom: 8,
-                marginBottom: 12,
-              }}
-            >
+            {/* Group label — uppercase tracked, hairline below */}
+            <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] border-b border-[var(--tt-border)] pb-2 mb-0">
               {lang === "zh" ? groupLabel.zh : groupLabel.en}
             </div>
 
-            {/* Indicator cards */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                gap: 12,
-              }}
-            >
+            {/* Indicator cells — hairline-ruled grid */}
+            <div className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
               {group.indicators.map((indicator) => {
                 const section = data.sections[indicator];
                 const name = sectionLabel(lang, section) ?? indicator;
@@ -224,7 +159,7 @@ export default async function MacroOverviewPage({
                 // Headline signal: freshness_status or mode-derived label
                 const signalRaw = section?.freshness_status ?? section?.mode;
                 const signalTone = signalRaw ? badgeTone(signalRaw) : "gray";
-                // Only show signal if meaningful (not just "live" or "unavailable" clutter)
+                // Only show signal if meaningful
                 const showSignal =
                   signalRaw &&
                   !["live", "manual-live"].includes(signalRaw) &&
@@ -252,47 +187,24 @@ export default async function MacroOverviewPage({
 
       {/* System area */}
       <section>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.10em",
-            color: "var(--tt-faint)",
-            borderBottom: "1px solid var(--tt-border)",
-            paddingBottom: 8,
-            marginBottom: 12,
-          }}
-        >
+        <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] border-b border-[var(--tt-border)] pb-2 mb-0">
           {lang === "zh" ? "系统" : "System"}
         </div>
 
         <Link
           href={macroPath(lang, "data-freshness")}
-          style={{ textDecoration: "none", display: "inline-block" }}
+          className="indicator-card block no-underline"
         >
-          <div
-            style={{
-              background: "var(--tt-panel)",
-              border: "1px solid var(--tt-border)",
-              borderRadius: 8,
-              padding: "12px 16px",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              cursor: "pointer",
-              minWidth: 260,
-            }}
-          >
-            <span style={{ fontSize: 16 }}>🗄</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--tt-text)" }}>
-                {lang === "zh" ? "数据新鲜度" : "Data Freshness"}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--tt-muted)", marginTop: 2 }}>
-                {INDICATOR_BLURBS["data-freshness"]?.[lang] ?? ""}
-              </div>
-            </div>
+          <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2 max-w-xs">
+            <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
+              {lang === "zh" ? "数据新鲜度" : "Data Freshness"}
+            </span>
+            <p className="text-xs text-[var(--tt-muted)] leading-relaxed m-0">
+              {INDICATOR_BLURBS["data-freshness"]?.[lang] ?? ""}
+            </p>
+            <span className="font-mono text-[11px] text-[var(--tt-accent)]">
+              {lang === "zh" ? "查看详情 →" : "View details →"}
+            </span>
           </div>
         </Link>
       </section>

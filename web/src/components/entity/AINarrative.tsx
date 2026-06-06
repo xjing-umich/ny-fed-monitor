@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 
 type Lang = "zh" | "en";
 
@@ -46,7 +45,7 @@ export function AINarrative({ lang, pageKey }: AINarrativeProps) {
       .finally(() => setLoading(false));
   }, [pageKey]);
 
-  const heading = lang === "zh" ? "AI 解读" : "AI Read";
+  const heading = lang === "zh" ? "AI 解读 / AI Read" : "AI Read";
 
   const analysis =
     response?.status === "available"
@@ -58,44 +57,45 @@ export function AINarrative({ lang, pageKey }: AINarrativeProps) {
     lang === "zh" ? "暂无解读 / No commentary yet." : "No commentary yet.";
 
   return (
-    <Card className="border border-border shadow-sm bg-card/95">
-      <CardContent className="p-4 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <section>
+      {/* Hairline top rule + uppercase tracked label */}
+      <div className="border-t border-[var(--tt-border)] pt-4 pb-1 mb-3">
+        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
           {heading}
+        </span>
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-[var(--tt-muted)]">
+          {lang === "zh" ? "加载中…" : "Loading…"}
         </p>
-
-        {loading ? (
-          <p className="text-sm text-muted-foreground">
-            {lang === "zh" ? "加载中…" : "Loading…"}
+      ) : !isAvailable || !analysis?.executive_summary ? (
+        <p className="text-sm text-[var(--tt-muted)]">{placeholder}</p>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-sm leading-relaxed text-[var(--tt-text)]">
+            {analysis.executive_summary}
           </p>
-        ) : !isAvailable || !analysis?.executive_summary ? (
-          <p className="text-sm text-muted-foreground">{placeholder}</p>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm leading-relaxed text-card-foreground">
-              {analysis.executive_summary}
-            </p>
 
-            {(analysis.top_signals ?? []).length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {lang === "zh" ? "主要信号" : "Top Signals"}
-                </p>
-                <ul className="space-y-1">
-                  {(analysis.top_signals ?? []).slice(0, 3).map((sig, i) => (
-                    <li key={i} className="text-sm text-card-foreground leading-relaxed">
-                      <span className="font-medium">{sig.signal ?? sig.module}</span>
-                      {sig.interpretation && (
-                        <span className="text-muted-foreground"> — {sig.interpretation}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {(analysis.top_signals ?? []).length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {lang === "zh" ? "主要信号" : "Top Signals"}
+              </p>
+              <ul className="space-y-1.5">
+                {(analysis.top_signals ?? []).slice(0, 3).map((sig, i) => (
+                  <li key={i} className="text-sm text-[var(--tt-text)] leading-relaxed">
+                    <span className="font-medium">{sig.signal ?? sig.module}</span>
+                    {sig.interpretation && (
+                      <span className="text-[var(--tt-muted)]"> — {sig.interpretation}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
