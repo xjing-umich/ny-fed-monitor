@@ -75,7 +75,7 @@ function IndicatorCard({
       href={macroPath(lang, indicator)}
       style={{ textDecoration: "none", display: "block" }}
     >
-      <div
+      <div className="indicator-card"
         style={{
           background: "var(--tt-panel)",
           border: "1px solid var(--tt-border)",
@@ -86,12 +86,6 @@ function IndicatorCard({
           gap: 6,
           transition: "border-color 0.15s",
           cursor: "pointer",
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = "var(--tt-accent)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = "var(--tt-border)";
         }}
       >
         {/* Name row */}
@@ -168,6 +162,8 @@ export default async function MacroOverviewPage({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+      {/* CSS hover effect for indicator cards — no JS event handlers needed */}
+      <style>{`.indicator-card:hover { border-color: var(--tt-accent) !important; }`}</style>
       {/* Page heading */}
       <div>
         <h1
