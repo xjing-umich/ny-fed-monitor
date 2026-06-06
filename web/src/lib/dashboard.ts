@@ -81,7 +81,7 @@ export function inferSectionMode(section: Section | undefined | null): string {
 // The ported analyzer labels are bilingual: `label_zh` is "<中文> <English>" where the
 // trailing English equals `label`. For a single-language UI we strip that English suffix
 // in zh mode so the Chinese route shows only Chinese (a key "de-AI" cleanup).
-function stripEnglishSuffix(zh: string, en: string | undefined): string {
+export function stripEnglishSuffix(zh: string, en: string | undefined): string {
   if (en && zh.length > en.length && zh.endsWith(en)) {
     return zh.slice(0, -en.length).trim();
   }

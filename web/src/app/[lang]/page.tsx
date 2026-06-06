@@ -302,11 +302,8 @@ export default async function LandingPage({
               >
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
-                      {macroSignal.name}
-                    </span>
                     <span className="font-display text-lg text-foreground">
-                      {macroSignal.metricLabel}
+                      {macroSignal.name}
                     </span>
                   </div>
                   <span className="tnum font-mono text-2xl font-medium text-foreground">

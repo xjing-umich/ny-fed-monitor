@@ -5,7 +5,7 @@ import type { Lang } from "@/lib/nav";
 import { MACRO_GROUPS, indicatorToGroup } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
 import { buildAllSections } from "@/lib/build";
-import { sectionLabel, badgeTone } from "@/lib/dashboard";
+import { sectionLabel, metricLabel, badgeTone } from "@/lib/dashboard";
 import { indicatorBlurb, INDICATOR_BLURBS } from "@/lib/indicatorBlurbs";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { SectionBody } from "@/components/dashboard/SectionBody";
@@ -130,7 +130,7 @@ export default async function IndicatorEntityPage({
 
   // Key facts: first 5 key_metrics
   const keyFacts = (section.key_metrics ?? []).slice(0, 5).map((m) => ({
-    label: lang === "zh" ? (m.label_zh ?? m.label) : m.label,
+    label: metricLabel(lang, m) ?? m.label,
     value: m.unit ? `${m.value} ${m.unit}` : m.value,
   }));
 

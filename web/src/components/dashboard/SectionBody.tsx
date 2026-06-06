@@ -10,6 +10,7 @@
 
 import React from "react";
 import { buildChartSpec } from "@/lib/charts";
+import { stripEnglishSuffix } from "@/lib/dashboard";
 import {
   keyMetricLimit,
   tablePreviewCount,
@@ -150,7 +151,10 @@ function KpiTile({ metric, lang }: { metric: Metric; lang: Lang }) {
 
 function DenseTable({ table, lang }: { table: TableT; lang: Lang }) {
   const rows = table.rows ?? [];
-  const title = lang === "zh" ? (table.title_zh ?? table.title) : table.title;
+  const title =
+    lang === "zh" && table.title_zh
+      ? stripEnglishSuffix(table.title_zh, table.title)
+      : (table.title ?? table.title_zh);
   const previewCount = tablePreviewCount(table.title);
   const previewRows = rows.slice(0, previewCount);
   const overflowRows = rows.slice(previewCount);
