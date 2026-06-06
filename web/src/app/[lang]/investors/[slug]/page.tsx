@@ -318,13 +318,13 @@ export default async function InvestorSlugPage({
         "@type": "ListItem",
         position: 1,
         name: lang === "zh" ? "超级投资者" : "Superinvestors",
-        item: `https://compounder.fyi/${lang}/investors`,
+        item: `https://thecompounder.fyi/${lang}/investors`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: manager.person,
-        item: `https://compounder.fyi/${lang}/investors/${manager.slug}`,
+        item: `https://thecompounder.fyi/${lang}/investors/${manager.slug}`,
       },
     ],
   };
