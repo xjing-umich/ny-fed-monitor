@@ -33,7 +33,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `/${l}`, languages: { "zh-CN": "/zh", en: "/en" } },
+    alternates: { canonical: `/${l}`, languages: { en: "/en", "zh-CN": "/zh", "x-default": "/en" } },
   };
 }
 
@@ -111,7 +111,10 @@ export default async function HomePage({
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Compounder",
-    url: `https://thecompounder.fyi/${lang}`,
+    alternateName: "复利",
+    url: "https://thecompounder.fyi",
+    logo: "https://thecompounder.fyi/icon.png",
+    image: "https://thecompounder.fyi/icon.png",
     description: isZh
       ? "聚合超级投资者 13F 持仓、个股估值与宏观流动性。"
       : "Smart-money 13F holdings, single-stock valuation, and the macro funding backdrop.",

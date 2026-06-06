@@ -34,8 +34,9 @@ export async function generateMetadata({
   const alternates = {
     canonical: `/${l}/investors/${slug}`,
     languages: {
-      "zh-CN": `/zh/investors/${slug}`,
       en: `/en/investors/${slug}`,
+      "zh-CN": `/zh/investors/${slug}`,
+      "x-default": `/en/investors/${slug}`,
     },
   };
   return lang === "zh"
