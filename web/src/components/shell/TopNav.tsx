@@ -8,6 +8,7 @@ import { Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
 import SearchBox from "./SearchBox";
+import { LogoMark } from "@/components/brand/Logo";
 
 interface TopNavProps {
   lang: Lang;
@@ -37,12 +38,12 @@ export default function TopNav({ lang, items }: TopNavProps) {
       {/* Masthead wordmark — display serif */}
       <Link
         href={homeHref}
-        className="flex items-baseline gap-2 shrink-0 text-[var(--tt-text)] hover:text-[var(--tt-accent)] transition-colors no-underline"
+        className="flex items-center gap-2 shrink-0 text-[var(--tt-text)] hover:text-[var(--tt-accent)] transition-colors no-underline"
       >
+        <LogoMark className="h-[22px] w-[22px] text-[var(--tt-accent)] shrink-0" />
         <span className="font-display text-xl font-medium tracking-tight leading-none">
           Compounder
         </span>
-        <span className="text-sm text-[var(--tt-muted)] leading-none">复利</span>
       </Link>
 
       {/* Hairline separator */}

@@ -45,7 +45,7 @@ export function AINarrative({ lang, pageKey }: AINarrativeProps) {
       .finally(() => setLoading(false));
   }, [pageKey]);
 
-  const heading = lang === "zh" ? "AI 解读 / AI Read" : "AI Read";
+  const heading = lang === "zh" ? "AI 解读" : "AI Read";
 
   const analysis =
     response?.status === "available"
@@ -54,7 +54,7 @@ export function AINarrative({ lang, pageKey }: AINarrativeProps) {
 
   const isAvailable = response?.status === "available";
   const placeholder =
-    lang === "zh" ? "暂无解读 / No commentary yet." : "No commentary yet.";
+    lang === "zh" ? "暂无解读" : "No commentary yet.";
 
   return (
     <section>

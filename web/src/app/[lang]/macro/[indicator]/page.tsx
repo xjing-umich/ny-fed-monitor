@@ -34,10 +34,10 @@ type IndicatorKey = (typeof ALL_SECTION_KEYS)[number];
 const SECTION_NAME: Record<IndicatorKey, { zh: string; en: string }> = {
   "repo-financing":      { zh: "回购融资", en: "Repo Financing" },
   "reference-rates":     { zh: "短端利率", en: "Reference Rates" },
-  "facility-usage":      { zh: "资金工具 ON RRP / SRP", en: "ON RRP / SRP" },
+  "facility-usage":      { zh: "资金工具", en: "ON RRP / SRP" },
   "fails":               { zh: "结算失败", en: "Fails / Specialness" },
   "auction-risk":        { zh: "拍卖风险", en: "Auction Risk" },
-  "soma":                { zh: "美联储持仓 SOMA", en: "SOMA" },
+  "soma":                { zh: "美联储持仓", en: "SOMA" },
   "dealer-inventory":    { zh: "交易商库存", en: "Dealer Inventory" },
   "transactions":        { zh: "成交与流动性", en: "Transactions / Liquidity" },
   "market-share":        { zh: "交易商集中度", en: "Market Share" },

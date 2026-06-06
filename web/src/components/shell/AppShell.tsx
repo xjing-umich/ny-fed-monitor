@@ -2,6 +2,7 @@ import React from "react";
 import TopNav from "./TopNav";
 import MobileDrawer from "./MobileDrawer";
 import type { Lang } from "@/lib/nav";
+import { LogoMark } from "@/components/brand/Logo";
 
 interface AppShellProps {
   lang: Lang;
@@ -18,11 +19,11 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
       {/* Mobile header strip with hamburger */}
       <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
         <MobileDrawer lang={lang} />
-        <span className="flex items-baseline gap-1.5 flex-1 truncate">
+        <span className="flex items-center gap-2 flex-1 truncate">
+          <LogoMark className="h-[20px] w-[20px] text-[var(--tt-accent)] shrink-0" />
           <span className="font-display text-lg font-medium tracking-tight text-[var(--tt-text)]">
             Compounder
           </span>
-          <span className="text-xs text-[var(--tt-muted)]">复利</span>
         </span>
       </header>
 
@@ -36,11 +37,11 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
       {/* Footer — editorial colophon */}
       <footer className="border-t border-[var(--tt-border)] py-4 px-8">
         <div className="max-w-[1180px] mx-auto flex flex-wrap items-baseline justify-between gap-2">
-          <span className="flex items-baseline gap-1.5">
-            <span className="font-display text-sm font-medium text-[var(--tt-text)]">
+          <span className="flex items-center gap-1.5">
+            <LogoMark className="h-[14px] w-[14px] text-[var(--tt-faint)] shrink-0" />
+            <span className="font-display text-sm font-medium text-[var(--tt-faint)]">
               Compounder
             </span>
-            <span className="text-[11px] text-[var(--tt-faint)]">复利</span>
           </span>
           <span className="text-[11px] italic text-[var(--tt-faint)]">
             {lang === "zh"

@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
+import { LogoMark } from "@/components/brand/Logo";
 
 interface MobileDrawerProps {
   lang: Lang;
@@ -83,11 +84,11 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--tt-border)] shrink-0">
-          <span className="flex items-baseline gap-1.5">
+          <span className="flex items-center gap-2">
+            <LogoMark className="h-[20px] w-[20px] text-[var(--tt-accent)] shrink-0" />
             <span className="font-display text-lg font-medium tracking-tight text-[var(--tt-text)]">
               Compounder
             </span>
-            <span className="text-xs text-[var(--tt-muted)]">复利</span>
           </span>
           <button
             onClick={() => setOpen(false)}

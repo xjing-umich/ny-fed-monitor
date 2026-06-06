@@ -125,7 +125,7 @@ export default async function StocksIndexPage({
             <tr className="border-b border-[var(--tt-border)]">
               <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-8">#</th>
               <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
-                {isZh ? "标的 / Security" : "Security"}
+                {isZh ? "标的" : "Security"}
               </th>
               <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-28">
                 {isZh ? "持有机构数" : "Holders"}
