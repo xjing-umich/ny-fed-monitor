@@ -392,8 +392,18 @@ async function main() {
   console.log(`\nIndex written to ${indexPath}`);
   console.log(`Total managers processed: ${summaries.length}`);
 
-  const sbUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const sbKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // 凭据优先用 process.env(CI/GitHub Actions secrets)，本地回退仓库根 .env.local。
+  const fileEnv: Record<string, string> = {};
+  const envPath = path.join(__dirname, "../../.env.local");
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+      const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+      if (m) fileEnv[m[1]] = m[2].trim().replace(/^["']|["']$/g, "");
+    }
+  }
+  const env = { ...fileEnv, ...process.env } as Record<string, string>;
+  const sbUrl = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
+  const sbKey = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
   if (sbUrl && sbKey) {
     const db = createClient(sbUrl, sbKey, {
       auth: { persistSession: false },
@@ -406,7 +416,7 @@ async function main() {
     console.log("Supabase upsert done.");
 
     try {
-      const stats = await enrichSecurities(db, process.env.OPENFIGI_API_KEY);
+      const stats = await enrichSecurities(db, env.OPENFIGI_API_KEY);
       console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
     } catch (e) {
       console.warn(`Securities enrich failed (非致命): ${e instanceof Error ? e.message : e}`);
