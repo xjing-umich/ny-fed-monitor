@@ -9,6 +9,7 @@
     "lint": "eslint",
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
+    "consensus": "tsx scripts/consensus.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -294,3 +294,26 @@ create table if not exists ai_analysis_cache (
 );
 create index if not exists ai_analysis_cache_page_created_idx
   on ai_analysis_cache (page_key, created_at desc);
+
+-- 共识物化快照(ticker-keyed): 替代请求时全表扫。每次摄取后整体重算。
+create table if not exists consensus_holdings (
+  ticker text primary key,
+  issuer text,
+  holder_count int not null default 0,
+  total_value bigint not null default 0,
+  computed_at timestamptz not null default now()
+);
+create index if not exists consensus_holdings_rank_idx
+  on consensus_holdings (holder_count desc, total_value desc);
+
+create table if not exists consensus_moves (
+  ticker text not null,
+  direction text not null,            -- 'bought' | 'sold'
+  issuer text,
+  manager_count int not null default 0,
+  net_value bigint not null default 0,
+  computed_at timestamptz not null default now(),
+  primary key (ticker, direction)
+);
+create index if not exists consensus_moves_rank_idx
+  on consensus_moves (direction, manager_count desc, net_value desc);

@@ -20,23 +20,18 @@ import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
+import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
   Accept: "application/json",
 };
 
-const SEED_MANAGERS: Omit<Manager, "name">[] = [
-  { cik: "0001067983", slug: "berkshire-hathaway", person: "Warren Buffett" },
-  { cik: "0001649339", slug: "scion-asset-management", person: "Michael Burry" },
-  { cik: "0001336528", slug: "pershing-square", person: "Bill Ackman" },
-  { cik: "0001350694", slug: "bridgewater-associates", person: "Ray Dalio" },
-  { cik: "0001536411", slug: "duquesne-family-office", person: "Stanley Druckenmiller" },
-  { cik: "0001061768", slug: "baupost-group", person: "Seth Klarman" },
-];
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const SEED_MANAGERS: Omit<Manager, "name">[] = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "../config/managers.json"), "utf8")
+);
 const OUT_DIR = path.join(__dirname, "../src/data/13f");
 
 function sleep(ms: number) {
@@ -398,8 +393,18 @@ async function main() {
   console.log(`\nIndex written to ${indexPath}`);
   console.log(`Total managers processed: ${summaries.length}`);
 
-  const sbUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const sbKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // 凭据优先用 process.env(CI/GitHub Actions secrets)，本地回退仓库根 .env.local。
+  const fileEnv: Record<string, string> = {};
+  const envPath = path.join(__dirname, "../../.env.local");
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+      const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+      if (m) fileEnv[m[1]] = m[2].trim().replace(/^["']|["']$/g, "");
+    }
+  }
+  const env = { ...fileEnv, ...process.env } as Record<string, string>;
+  const sbUrl = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
+  const sbKey = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
   if (sbUrl && sbKey) {
     const db = createClient(sbUrl, sbKey, {
       auth: { persistSession: false },
@@ -412,10 +417,16 @@ async function main() {
     console.log("Supabase upsert done.");
 
     try {
-      const stats = await enrichSecurities(db, process.env.OPENFIGI_API_KEY);
+      const stats = await enrichSecurities(db, env.OPENFIGI_API_KEY);
       console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
     } catch (e) {
       console.warn(`Securities enrich failed (非致命): ${e instanceof Error ? e.message : e}`);
+    }
+    try {
+      const c = await computeAndStoreConsensus(db);
+      console.log(`Consensus: holdings ${c.holdings} 行, moves ${c.moves} 行`);
+    } catch (e) {
+      console.warn(`Consensus 计算失败 (非致命): ${e instanceof Error ? e.message : e}`);
     }
   } else {
     console.log("No Supabase env — JSON only (set SUPABASE_URL / SUPABASE_SERVICE_KEY to write DB).");
