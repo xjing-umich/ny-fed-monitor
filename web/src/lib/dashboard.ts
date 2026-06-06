@@ -15,43 +15,43 @@ export function displayStatusValue(lang: Lang, value: string | undefined | null)
     return mapping[value ?? ""] ?? value ?? "Unavailable";
   }
   const mapping: Record<string, string> = {
-    Normal: "Normal 正常",
-    Watch: "Watch 观察",
-    "Watch / Mixed": "Watch / Mixed 观察 / 混合",
-    Elevated: "Elevated 偏高",
-    "Elevated / High usage": "Elevated / High usage 偏高 / 高使用量",
-    High: "High 高",
-    Extreme: "Extreme 极端",
-    Fresh: "Fresh 最新",
-    Stale: "Stale 可能过期",
-    Old: "Old 已过期",
-    Missing: "Missing 缺失",
-    Manual: "Manual 手动",
-    Unavailable: "Unavailable 不可用",
-    unavailable: "Unavailable 不可用",
-    live: "Live 实时数据",
-    mock: "Mock 模拟数据",
-    "manual-live": "Live 实时数据",
-    "manual-missing": "Unavailable 不可用",
-    "partial-live": "Partial 部分真实数据",
-    partial: "Partial 部分真实数据",
-    mixed: "mixed 混合",
-    completed: "completed 已完成",
-    idle: "idle 空闲",
-    Active: "Active / Watch 活跃 / 观察",
-    Inactive: "Inactive 未使用",
-    "Small value exercise only": "Small value exercise only 小额测试",
-    Moderate: "Moderate 中等",
-    "Low-Watch": "Low / Watch 偏低 / 观察",
-    "Limited sample": "Limited sample 样本有限",
-    "Stable / improving": "Stable / improving 稳定 / 改善",
-    rising: "rising 上升",
-    some_unavailable: "部分不可用 Some Unavailable",
-    some_stale: "部分过期 Some Stale",
-    all_fresh: "全部较新 All Fresh",
-    manual_required: "需要手动更新 Manual Required",
+    Normal: "正常",
+    Watch: "观察",
+    "Watch / Mixed": "观察 / 混合",
+    Elevated: "偏高",
+    "Elevated / High usage": "偏高 / 高使用量",
+    High: "高",
+    Extreme: "极端",
+    Fresh: "最新",
+    Stale: "可能过期",
+    Old: "已过期",
+    Missing: "缺失",
+    Manual: "手动",
+    Unavailable: "不可用",
+    unavailable: "不可用",
+    live: "实时数据",
+    mock: "模拟数据",
+    "manual-live": "实时数据",
+    "manual-missing": "不可用",
+    "partial-live": "部分真实数据",
+    partial: "部分真实数据",
+    mixed: "混合",
+    completed: "已完成",
+    idle: "空闲",
+    Active: "活跃 / 观察",
+    Inactive: "未使用",
+    "Small value exercise only": "小额测试",
+    Moderate: "中等",
+    "Low-Watch": "偏低 / 观察",
+    "Limited sample": "样本有限",
+    "Stable / improving": "稳定 / 改善",
+    rising: "上升",
+    some_unavailable: "部分不可用",
+    some_stale: "部分过期",
+    all_fresh: "全部较新",
+    manual_required: "需要手动更新",
   };
-  return mapping[value ?? ""] ?? value ?? "Unavailable 不可用";
+  return mapping[value ?? ""] ?? value ?? "不可用";
 }
 
 export function badgeTone(value: string | number | undefined | null): "red" | "orange" | "yellow" | "gray" | "green" {
@@ -81,7 +81,7 @@ export function inferSectionMode(section: Section | undefined | null): string {
 // The ported analyzer labels are bilingual: `label_zh` is "<中文> <English>" where the
 // trailing English equals `label`. For a single-language UI we strip that English suffix
 // in zh mode so the Chinese route shows only Chinese (a key "de-AI" cleanup).
-function stripEnglishSuffix(zh: string, en: string | undefined): string {
+export function stripEnglishSuffix(zh: string, en: string | undefined): string {
   if (en && zh.length > en.length && zh.endsWith(en)) {
     return zh.slice(0, -en.length).trim();
   }

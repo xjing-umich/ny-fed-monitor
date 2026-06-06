@@ -1,0 +1,74 @@
+import React from "react";
+import { VerdictChip } from "./VerdictChip";
+import { KeyFacts, type KeyFact } from "./KeyFacts";
+import { AINarrative } from "./AINarrative";
+import { SourceFooter } from "./SourceFooter";
+import { RelatedLinks, type RelatedItem } from "./RelatedLinks";
+
+// Re-export shared types so consumers can import from one place
+export type { KeyFact } from "./KeyFacts";
+export type { RelatedItem } from "./RelatedLinks";
+export type { Source } from "./SourceFooter";
+export type { Tone } from "./types";
+
+import type { Tone } from "./types";
+
+export type EntityPageProps = {
+  lang: "zh" | "en";
+  title: string;
+  subtitle: string;
+  verdict?: { label: string; tone: Tone };
+  keyFacts: KeyFact[];
+  aiPageKey?: string;
+  children: React.ReactNode;
+  sources: { name: string; asOf: string }[];
+  related?: RelatedItem[];
+};
+
+export function EntityPage({
+  lang,
+  title,
+  subtitle,
+  verdict,
+  keyFacts,
+  aiPageKey,
+  children,
+  sources,
+  related,
+}: EntityPageProps): React.ReactElement {
+  return (
+    <div className="space-y-7">
+      {/* ① Masthead — serif headline, verdict, standfirst, hairline rule */}
+      <header className="space-y-3 pb-1">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <h1 className="font-display text-3xl sm:text-4xl font-medium leading-[1.1] tracking-tight text-foreground">
+            {title}
+          </h1>
+          {verdict && <VerdictChip label={verdict.label} tone={verdict.tone} />}
+        </div>
+        <p className="max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
+          {subtitle}
+        </p>
+      </header>
+
+      {/* ② Key facts — editorial stat row separated by hairlines (no card) */}
+      {keyFacts.length > 0 && (
+        <div className="border-y border-border py-4">
+          <KeyFacts facts={keyFacts} />
+        </div>
+      )}
+
+      {/* ③ AI narrative */}
+      <AINarrative lang={lang} pageKey={aiPageKey} />
+
+      {/* ④ Data body (tables / charts passed as children) */}
+      <div className="space-y-4">{children}</div>
+
+      {/* ⑤ Source footer */}
+      <SourceFooter lang={lang} sources={sources} />
+
+      {/* ⑥ Related links */}
+      <RelatedLinks lang={lang} items={related} />
+    </div>
+  );
+}
