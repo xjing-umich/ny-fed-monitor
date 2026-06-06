@@ -113,7 +113,7 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
 
   return (
     <div style={{ width: "100%", height: 300 }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: 8 }}>
           <CartesianGrid
             stroke={t.grid}
