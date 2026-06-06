@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { padCusip, parseMappingResult, type MappingResultItem } from "./openfigi";
+import { padCusip, parseMappingResult, normalizeTicker, type MappingResultItem } from "./openfigi";
 
 describe("padCusip", () => {
   it("补足 9 位前导零", () => {
@@ -7,6 +7,15 @@ describe("padCusip", () => {
   });
   it("已是 9 位则原样返回", () => {
     expect(padCusip("191216100")).toBe("191216100"); // Coca-Cola
+  });
+});
+
+describe("normalizeTicker", () => {
+  it("斜杠类别股 → 点号(BRK/B → BRK.B)", () => {
+    expect(normalizeTicker("BRK/B")).toBe("BRK.B");
+  });
+  it("无斜杠原样", () => {
+    expect(normalizeTicker("AAPL")).toBe("AAPL");
   });
 });
 

@@ -24,6 +24,14 @@ export function padCusip(cusip: string): string {
   return cusip.trim().padStart(9, "0");
 }
 
+/**
+ * OpenFIGI 双类别股/权证 ticker 用斜杠(如 BRK/B)，会破坏路径路由(/stocks/BRK/B)。
+ * 规范化为点号(BRK.B，业界通用)，使 ticker 可安全作 URL 段与主键。
+ */
+export function normalizeTicker(ticker: string): string {
+  return ticker.replace(/\//g, ".");
+}
+
 /** 把一条 OpenFIGI 结果解析为待写库的行。无匹配/报错 → resolved=false 并保留 issuer 名。 */
 export function parseMappingResult(
   cusip: string,
@@ -34,7 +42,7 @@ export function parseMappingResult(
   if (first?.ticker) {
     return {
       cusip,
-      ticker: first.ticker,
+      ticker: normalizeTicker(first.ticker),
       name: first.name ?? issuer,
       exchange: first.exchCode ?? null,
       figi: first.figi ?? null,
