@@ -20,6 +20,7 @@ import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
+import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
@@ -420,6 +421,12 @@ async function main() {
       console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
     } catch (e) {
       console.warn(`Securities enrich failed (非致命): ${e instanceof Error ? e.message : e}`);
+    }
+    try {
+      const c = await computeAndStoreConsensus(db);
+      console.log(`Consensus: holdings ${c.holdings} 行, moves ${c.moves} 行`);
+    } catch (e) {
+      console.warn(`Consensus 计算失败 (非致命): ${e instanceof Error ? e.message : e}`);
     }
   } else {
     console.log("No Supabase env — JSON only (set SUPABASE_URL / SUPABASE_SERVICE_KEY to write DB).");
