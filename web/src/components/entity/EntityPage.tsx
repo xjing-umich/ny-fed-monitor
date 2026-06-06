@@ -58,8 +58,8 @@ export function EntityPage({
         </div>
       )}
 
-      {/* ③ AI narrative */}
-      <AINarrative lang={lang} pageKey={aiPageKey} />
+      {/* ③ AI narrative — only when a page explicitly opts in via aiPageKey */}
+      {aiPageKey && <AINarrative lang={lang} pageKey={aiPageKey} />}
 
       {/* ④ Data body (tables / charts passed as children) */}
       <div className="space-y-4">{children}</div>

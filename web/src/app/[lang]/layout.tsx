@@ -17,7 +17,7 @@ export default async function LangLayout({
 }) {
   const { lang: rawLang } = await params;
   if (rawLang !== "zh" && rawLang !== "en") {
-    redirect("/zh");
+    redirect("/en");
   }
   const lang = rawLang as Lang;
 
