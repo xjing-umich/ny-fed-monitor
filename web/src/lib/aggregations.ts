@@ -73,15 +73,34 @@ export function computeNotableMoves(scan: ScanRow[], limit: number): NotableMove
   return { mostBought: top(buys, "buy"), mostSold: top(sells, "sell") };
 }
 
+/**
+ * 把内存扫描产出的真实 cusip 解析为 ticker(与 DB 共识路径保持一致, 让 /stocks/{id} 链接命中 ticker 页)。
+ * 无 Supabase env 时 getCusipMap 返回空 Map → 原样保留 cusip(个股页有 cusip 兜底)。
+ */
+async function tickerizeRows<T extends { cusip: string }>(rows: T[]): Promise<T[]> {
+  const { getCusipMap } = await import("@/lib/managers/securities");
+  const map = await getCusipMap();
+  if (map.size === 0) return rows;
+  return rows.map((r) => {
+    const ticker = map.get(r.cusip)?.ticker;
+    return ticker ? { ...r, cusip: ticker } : r;
+  });
+}
+
 export async function mostHeld(limit = 40): Promise<HeldRow[]> {
   const { readConsensusHeld } = await import("@/lib/managers/consensusRead");
   const fromDb = await readConsensusHeld(limit);
   if (fromDb && fromDb.length) return fromDb;
-  return computeMostHeld(await scanAllManagers(), limit); // 回退: 无库/空表时请求时计算
+  return tickerizeRows(computeMostHeld(await scanAllManagers(), limit)); // 回退: 无库/空表时请求时计算
 }
 export async function notableMoves(limit = 6): Promise<NotableMoves> {
   const { readConsensusMoves } = await import("@/lib/managers/consensusRead");
   const fromDb = await readConsensusMoves(limit);
   if (fromDb && (fromDb.mostBought.length || fromDb.mostSold.length)) return fromDb;
-  return computeNotableMoves(await scanAllManagers(), limit);
+  const m = computeNotableMoves(await scanAllManagers(), limit);
+  const [mostBought, mostSold] = await Promise.all([
+    tickerizeRows(m.mostBought),
+    tickerizeRows(m.mostSold),
+  ]);
+  return { mostBought, mostSold };
 }
