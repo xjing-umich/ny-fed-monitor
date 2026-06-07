@@ -17,22 +17,20 @@
 | 站点 | 用途 | URL 模板 |
 |---|---|---|
 | Yahoo Finance | 行情/K线/新闻 | `https://finance.yahoo.com/quote/{TICKER}` |
-| Google Finance | 行情/搜索 | `https://www.google.com/finance/quote/{TICKER}:{EXCHANGE}`(见降级规则) |
+| Google | 行情卡片(搜索) | `https://www.google.com/search?q={TICKER}+stock` |
 | SEC EDGAR | 官方申报原文 | `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker={TICKER}&type=10-K&count=40` |
 
-### Google Finance 交易所降级规则
-Google Finance 必须带交易所后缀,否则 404。`securities.exchange` 在部分 cusip 上缺失或为泛代码(如 `"US"`)。
+### 为什么 Google 用搜索 URL 而非 Google Finance 页面(已核实数据)
+查线上 `securities` 表: `exchange` 字段 **1000/1000 全为 `"US"`**(富化时用 OpenFIGI 复合代码 `exchCode:"US"`,拿不到具体 NASDAQ/NYSE)。
 
-- 维护一个小的交易所归一化映射,把已知值映射到 Google 兼容代码:
-  - OpenFIGI `UW` / `UQ` / `NASDAQ` → `NASDAQ`
-  - OpenFIGI `UN` / `NYSE` → `NYSE`
-  - 其他/缺失/无法映射 → **降级**为 `https://www.google.com/search?q={TICKER}+stock`
-- 目标: Google 链接**永不拼出 404**。
+- Google Finance quote 页 (`/finance/quote/{TICKER}:{EXCHANGE}`) 必须带具体交易所后缀,裸 ticker 会 404。
+- 现有数据无法提供具体交易所 → 改用 `google.com/search?q={TICKER}+stock`:页面顶部即 Google 金融卡片(价格/K线),效果≈Google Finance,且对任意 ticker **永不 404**。
+- **重要后果: 三条链接全部只依赖 `ticker`,不需要 `exchange` 字段,无任何额外数据读取。**(若未来补齐真实交易所数据,可作为独立任务升级为 Google Finance 真页面。)
 
 ### Ticker 归一化
-- URL 中的 ticker 用规范化形式。注意双类股: 数据库存 `BRK.B`。
-  - Yahoo 用 `-`(`BRK-B`)。
-  - Google Finance / SEC 按各自接受格式处理(SEC EDGAR ticker 查询大小写不敏感,点号需在构造时校验)。
+- URL 中的 ticker 按各站点接受的形态处理。注意双类股: 数据库存 `BRK.B`。
+  - Yahoo 用 `-`(`BRK.B` → `BRK-B`)。
+  - Google 搜索 / SEC EDGAR ticker 查询: 用原始形态(`BRK.B`),URL 编码即可。
 - 在 `buildExternalFinanceLinks()` 内集中处理 per-站点的 ticker 形态,调用方不关心。
 
 ## 3. 视觉规范
@@ -67,31 +65,28 @@ Google Finance 必须带交易所后缀,否则 404。`securities.exchange` 在�
 
 ## 5. 数据接入
 
-- 详情页与列表页需要每个 ticker 的 `exchange`(目前页面未读取)。
-- 加一个轻量 helper 读取 `securities.exchange`:
-  - 详情页: 按单 ticker 取。
-  - 列表页: 批量取(随现有 most-held 查询一并 join/select `securities.exchange`,避免 N+1)。
-- 取不到 exchange 时, Google 链接走降级 URL,**不报错、不影响 Yahoo/SEC**。
+- **无需任何额外数据读取**。三条链接全部从已有的 `ticker` 派生(详情页与列表页都已持有 ticker)。
+- 不读 `securities.exchange`、不改聚合查询、无 N+1 风险。
 
 ## 6. 组件与文件结构
 
 | 文件 | 职责 |
 |---|---|
-| `src/lib/externalLinks.ts`(新建) | `buildExternalFinanceLinks(ticker, exchange)` → `{ yahoo, google, sec }` URL;含交易所归一化映射 + per-站点 ticker 归一化 + Google 降级 |
+| `src/lib/externalLinks.ts`(新建) | `buildExternalFinanceLinks(ticker)` → `{ yahoo, google, sec }` URL;含 per-站点 ticker 归一化(纯函数,可单测) |
 | `src/components/icons/YahooIcon.tsx`(新建) | 内联 Yahoo SVG, `currentColor` |
 | `src/components/icons/GoogleIcon.tsx`(新建) | 内联 Google SVG, `currentColor` |
-| `src/components/entity/ExternalFinanceLinks.tsx`(新建) | 入参 `{ ticker, exchange, variant }`,渲染三图标行;封装 hover/品牌色/可访问性 |
-| `src/app/[lang]/stocks/page.tsx`(改) | 列表查询补 `exchange`;每行渲染 `variant="table"` |
+| `src/components/entity/ExternalFinanceLinks.tsx`(新建) | 入参 `{ ticker, variant, lang }`,渲染三图标行;封装 hover/品牌色/可访问性 |
+| `src/app/[lang]/stocks/page.tsx`(改) | 每行渲染 `variant="table"`(已有 ticker,无需改查询) |
 | `src/app/[lang]/stocks/[ticker]/page.tsx`(改) | Key Facts 区域渲染 `variant="detail"` |
 
 ## 7. 不做的 (YAGNI)
 
 - 不做第三方站(Finviz / StockAnalysis / Roic.ai)。
-- 不做 logo 墙、不做配置开关、不做新数据抓取(只用已有 `securities.exchange`)。
+- 不做 logo 墙、不做配置开关、不做新数据抓取(三条链接全部从 ticker 派生)。
 - 不在投资人页或其他列表加(仅个股列表 + 个股详情)。
 
 ## 8. 验证(本项目无测试套件,人工 + tsc)
 
 - `tsc` 通过。
 - 详情页与列表页页面观察: 三图标显示、灰/hover 品牌色、桌面 hover 提亮、移动常驻。
-- 抽查几个 ticker 的三个链接实际可达(含一个 exchange 缺失的,确认 Google 走降级且不 404):如 AAPL(NASDAQ)、BAC(NYSE)、BRK.B(双类股)、以及一个无 exchange 的 cusip。
+- 抽查几个 ticker 的三个链接实际可达:如 AAPL、BAC、BRK.B(双类股,确认 Yahoo 变 `BRK-B`、SEC/Google 用 `BRK.B`)。
