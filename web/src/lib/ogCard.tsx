@@ -1,18 +1,20 @@
 import { ImageResponse } from "next/og";
 
 // Shared 1200×630 social card used by the site-wide and per-page opengraph-image
-// routes. Keeps every OG image on-brand (cream paper, green compounding mark,
-// editorial serif) with a consistent layout: eyebrow → headline → subtitle →
-// footer. next/og runs Satori, which has no embedded font here, so it falls back
-// to a system serif — acceptable and consistent across cards.
+// routes. Dark, on-brand (warm near-black ground, lifted compounding green, paper
+// text) with a consistent layout: eyebrow → headline → subtitle → footer. The
+// dark ground matches the site's signature look and stands out in light social
+// feeds. next/og runs Satori with no embedded font here, so it falls back to its
+// default face — consistent across cards.
 
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 export const OG_CONTENT_TYPE = "image/png";
 
-const GREEN = "#1B5E3F";
-const PAPER = "#FAF8F3";
-const INK = "#1C1917";
-const MUTED = "#5C5650";
+// Dark theme (matches the site's dark palette in globals.css).
+const BG = "#16130F"; // warm near-black ground
+const FG = "#EDE7DA"; // paper text
+const GREEN = "#4FBF8A"; // lifted money-green for dark surfaces
+const MUTED = "#A89C8A"; // secondary text
 
 export function ogCard({
   eyebrow,
@@ -32,8 +34,8 @@ export function ogCard({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: PAPER,
-          color: INK,
+          background: BG,
+          color: FG,
           padding: "72px 80px",
           fontFamily: "Georgia, 'Times New Roman', serif",
         }}
@@ -45,13 +47,13 @@ export function ogCard({
             <g transform="translate(96,96) scale(13.333)">
               <path
                 d="M2.5 19.5 C 8.5 19.5, 12 16.5, 14 10.5 C 15.6 5.8, 18 3.6, 21 3.2"
-                stroke={PAPER}
+                stroke={BG}
                 strokeWidth="2.25"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 fill="none"
               />
-              <circle cx="21" cy="3.3" r="2.1" fill={PAPER} />
+              <circle cx="21" cy="3.3" r="2.1" fill={BG} />
             </g>
           </svg>
           <div style={{ display: "flex", fontSize: 38, fontWeight: 600, letterSpacing: -1 }}>
