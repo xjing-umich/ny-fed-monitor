@@ -1,7 +1,9 @@
 name: Daily Prices
 on:
-  schedule:
-    - cron: "0 22 * * 1-5"   # 工作日 22:00 UTC(美股收盘后, 兼顾夏令时)
+  # 价格暂不在站内展示(改走 Yahoo / Google Finance 外链), 故停掉每日定时拉取。
+  # 保留 workflow_dispatch 以便需要时手动跑; 恢复展示后取消下面 schedule 的注释即可。
+  # schedule:
+  #   - cron: "0 22 * * 1-5"   # 工作日 22:00 UTC(美股收盘后, 兼顾夏令时)
   workflow_dispatch: {}
 jobs:
   prices:

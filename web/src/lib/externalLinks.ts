@@ -1,5 +1,7 @@
-// 个股外部数据出口 URL 构造。纯函数, 仅依赖 ticker(已核实 securities.exchange 全为 "US",
-// 无法构造 Google Finance quote 页, 故 Google 走搜索 URL)。无网络、无 DB, 可单测。
+// 个股外部数据出口 URL 构造。纯函数, 仅依赖 ticker。无网络、无 DB, 可单测。
+// Google 用 Google Finance 的 quote 路径(裸 ticker, 无交易所后缀): Google 会自行
+// 跳转到对应 quote 页。securities.exchange 全为 "US", 无 NASDAQ/NYSE 信息拼后缀,
+// 但裸 ticker 形式仍稳定落到 Google Finance(而非 Google 搜索)。
 
 export type ExternalFinanceUrls = { yahoo: string; google: string; sec: string };
 
@@ -18,7 +20,7 @@ export function buildExternalFinanceLinks(ticker: string): ExternalFinanceUrls {
   const enc = encodeURIComponent(t); // encodeURIComponent 保留 "." 不变
   return {
     yahoo: `https://finance.yahoo.com/quote/${yahooSym}`,
-    google: `https://www.google.com/search?q=${enc}+stock`,
+    google: `https://www.google.com/finance/quote/${enc}`,
     sec: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=${enc}&type=10-K&count=40`,
   };
 }

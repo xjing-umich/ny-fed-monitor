@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 type Variant = "table" | "detail";
 
 const LABELS = {
-  zh: { yahoo: "在 Yahoo Finance 查看", google: "在 Google 查看", sec: "在 SEC EDGAR 查看" },
-  en: { yahoo: "View on Yahoo Finance", google: "Search on Google", sec: "View on SEC EDGAR" },
+  zh: { yahoo: "在 Yahoo Finance 查看", google: "在 Google Finance 查看", sec: "在 SEC EDGAR 查看" },
+  en: { yahoo: "View on Yahoo Finance", google: "View on Google Finance", sec: "View on SEC EDGAR" },
 } as const;
 
 export function ExternalFinanceLinks({
