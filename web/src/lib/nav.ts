@@ -5,6 +5,7 @@ export const TOP_NAV = [
   { key: "investors", zh: "超级投资者", en: "Superinvestors", href: "/investors" },
   { key: "stocks", zh: "个股", en: "Stocks", href: "/stocks" },
   { key: "macro", zh: "宏观/流动性", en: "Macro / Liquidity", href: "/macro" },
+  { key: "learn", zh: "学习", en: "Learn", href: "/learn" },
 ] as const;
 
 export type SecondaryNavItem = {
