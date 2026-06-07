@@ -92,9 +92,9 @@ export default async function HomePage({
 
       {/* Value-prop tagline — site positioning; doubles as the page h1 */}
       <h1 className="font-display text-lg font-medium leading-snug tracking-tight text-[var(--tt-text)] sm:text-xl">
-        {isZh ? "与最有耐心的投资者同行" : "Walk with the most patient investors"}
+        {isZh ? "与最有耐心的投资者同行。" : "Walk with the most patient investors."}
         <span className="text-[var(--tt-muted)]">
-          {isZh ? " — 追踪 13F 持仓，理解复利。" : " — track 13F holdings, understand compounding."}
+          {isZh ? " 追踪他们的 13F 持仓,看懂复利。" : " Track their 13F holdings and how compounding works."}
         </span>
       </h1>
 

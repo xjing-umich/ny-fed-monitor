@@ -10,27 +10,27 @@ const ABOUT: Record<Lang, LegalDoc> = {
   zh: {
     title: "关于 Compounder",
     intro:
-      "Compounder(复利,thecompounder.fyi)是一个面向价值投资者的财经教育与研究工具。我们把分散在监管申报里的数据整理成清晰、可读的形式,帮助你独立思考——而不是替你做决定。",
+      "Compounder(复利,thecompounder.fyi)是一个面向价值投资者的财经教育与研究工具。很多有用的数据埋在监管申报里,我们把它们集中到一处、整理得能读,剩下的思考留给你自己。",
     sections: [
       {
         heading: "我们做什么",
         paragraphs: [
-          "我们呈现三类公开数据:超级投资者的 SEC 13F 持仓与跨基金共识、单只股票的估值框架,以及宏观流动性背景(资金面、供给面、政策面)。",
-          "目标是把专业投资者关注的信息,用普通投资者也能读懂的方式整理出来,作为学习与研究的起点。",
+          "我们把三类公开数据放到一起:超级投资者的 SEC 13F 持仓和基金之间的重叠、单只股票的估值框架,以及宏观流动性背景(资金面、供给面、政策面)。",
+          "想法是把专业投资者会留意的信息,整理成普通人也读得懂的样子。它是你做研究的起点,不是终点。",
         ],
       },
       {
         heading: "我们不做什么",
         paragraphs: [
-          "我们不荐股,不提供买卖点或目标价,也不提供任何个性化的投资、法律、会计或税务建议。本站所有内容仅供信息与教育之用。",
-          "我们不管理资金、不收取代客理财费用,也不会因为你买卖任何证券而获益。任何投资决策都应基于你自己的独立判断,并在必要时咨询持牌专业人士。",
+          "我们不荐股,不设目标价,不喊买卖,也不提供任何个性化的投资、法律、会计或税务建议。这里的一切只供信息和教育用途。",
+          "我们不管钱,不收代客理财的费用,你买卖任何证券我们也不从中获利。钱怎么用是你自己的决定;真要听建议,该问的是持牌的专业人士。",
         ],
       },
       {
         heading: "我们的理念",
         paragraphs: [
-          "我们忠于复利与价值投资的长期主义传统——本杰明·格雷厄姆的安全边际,以及沃伦·巴菲特对优秀企业、合理价格与耐心持有的坚持。",
-          "我们相信:理解一门生意,远比预测一个价格更重要;而长期复利,来自纪律而非投机。",
+          "我们出自价值投资这一脉:本杰明·格雷厄姆的安全边际,以及沃伦·巴菲特那种偏好——以合理价格买好生意,然后耐心拿着。",
+          "我们的偏向是:把一门生意搞懂,比猜它价格下一步往哪走更值钱;复利奖励的是纪律,不是投机。",
         ],
       },
       {
@@ -51,27 +51,27 @@ const ABOUT: Record<Lang, LegalDoc> = {
   en: {
     title: "About Compounder",
     intro:
-      "Compounder (thecompounder.fyi) is an educational and research tool for value investors. We turn data scattered across regulatory filings into a clear, readable form — to help you think independently, not to decide for you.",
+      "Compounder (thecompounder.fyi) is an educational and research tool for value investors. A lot of useful data sits buried in regulatory filings. We pull it into one place and make it readable, so the thinking is left to you.",
     sections: [
       {
         heading: "What We Do",
         paragraphs: [
-          "We surface three kinds of public data: superinvestors' SEC 13F holdings and cross-fund consensus, valuation frameworks for individual stocks, and the macro-liquidity backdrop (funding, supply, and policy).",
-          "The goal is to organize the information professional investors watch into a form ordinary investors can read — a starting point for learning and research.",
+          "We bring together three kinds of public data: superinvestors' SEC 13F holdings and where funds overlap, valuation frameworks for individual stocks, and the macro-liquidity backdrop (funding, supply, and policy).",
+          "The idea is to take the information professional investors pay attention to and put it in a form anyone can read. It's a place to start your own research, not a finish line.",
         ],
       },
       {
         heading: "What We Don't Do",
         paragraphs: [
-          "We do not recommend stocks, give buy/sell calls or price targets, or provide any personalized investment, legal, accounting, or tax advice. Everything on the Site is for informational and educational purposes only.",
-          "We do not manage money, charge advisory fees, or profit from any security you buy or sell. Every investment decision should rest on your own independent judgment and, where appropriate, the advice of a licensed professional.",
+          "We don't recommend stocks, set price targets, or call buys and sells, and we don't give personalized investment, legal, accounting, or tax advice. Everything here is for information and education only.",
+          "We don't manage money, charge advisory fees, or make anything when you buy or sell a security. What you do with your money is your decision, and a licensed professional is the right person to ask when you need real advice.",
         ],
       },
       {
         heading: "Our Philosophy",
         paragraphs: [
-          "We are faithful to the long-term tradition of compounding and value investing — Benjamin Graham's margin of safety, and Warren Buffett's insistence on great businesses, fair prices, and patient holding.",
-          "We believe understanding a business matters far more than forecasting a price, and that long-term compounding comes from discipline, not speculation.",
+          "We come out of the value-investing tradition: Benjamin Graham's margin of safety, and Warren Buffett's preference for good businesses bought at fair prices and held patiently.",
+          "Our bias is that understanding a business is worth more than guessing where its price goes next, and that compounding rewards discipline rather than speculation.",
         ],
       },
       {
