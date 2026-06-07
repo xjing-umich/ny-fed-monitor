@@ -10,9 +10,7 @@
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
     "consensus": "tsx scripts/consensus.ts",
-    "prices": "tsx scripts/prices.ts",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "prices": "tsx scripts/prices.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -46,7 +44,6 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "tsx": "^4.22.3",
-    "typescript": "^5",
-    "vitest": "^2.1.9"
+    "typescript": "^5"
   }
 }
