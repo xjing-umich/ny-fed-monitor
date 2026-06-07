@@ -6,7 +6,9 @@
 
 **Architecture:** A pure URL builder (`buildExternalFinanceLinks(ticker)`) derives all three links from the ticker alone (no `exchange` data — verified `securities.exchange` is `"US"` for all rows, so Google uses a search URL instead of a Finance quote URL). A single Server Component `ExternalFinanceLinks` renders the icon row in two `variant`s. Yahoo/Google logos are inlined Simple Icons SVGs (zero new deps, CC0); SEC uses lucide `FileText`. Hover reveals each brand color; the table variant stays near-invisible until the row is hovered/focused (pure CSS group-hover), always visible on mobile.
 
-**Tech Stack:** Next.js 16.2.6 (App Router, React Server Components), Tailwind CSS, lucide-react (already installed), vitest (already configured). All new components are Server Components — no `"use client"` (hover is pure CSS).
+**Tech Stack:** Next.js 16.2.6 (App Router, React Server Components), Tailwind CSS, lucide-react (already installed). All new components are Server Components — no `"use client"` (hover is pure CSS).
+
+**No tests in this project (per user standing instruction):** do NOT write `*.test.*` files or add a test runner. Verify everything with `npx tsc --noEmit` and manual checks in the dev server.
 
 **Repo note (IMPORTANT):** `web/AGENTS.md` warns this Next.js version has breaking changes — consult `node_modules/next/dist/docs/` before writing any Next-specific code. This feature is plain React + Tailwind + plain `<a>` external links, so no Next-specific APIs are introduced, but heed this if anything unexpected arises.
 
@@ -18,58 +20,10 @@
 
 **Files:**
 - Create: `web/src/lib/externalLinks.ts`
-- Test: `web/src/lib/externalLinks.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+(No test file — this project does not use tests. Correctness is verified by the inline sanity check in Step 2 and by clicking links in Task 7.)
 
-Create `web/src/lib/externalLinks.test.ts`:
-
-```ts
-import { describe, it, expect } from "vitest";
-import { buildExternalFinanceLinks, isLikelyTicker } from "./externalLinks";
-
-describe("buildExternalFinanceLinks", () => {
-  it("builds all three URLs from a plain ticker", () => {
-    const l = buildExternalFinanceLinks("AAPL");
-    expect(l.yahoo).toBe("https://finance.yahoo.com/quote/AAPL");
-    expect(l.google).toBe("https://www.google.com/search?q=AAPL+stock");
-    expect(l.sec).toBe(
-      "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=AAPL&type=10-K&count=40"
-    );
-  });
-
-  it("uppercases lowercase input", () => {
-    expect(buildExternalFinanceLinks("aapl").yahoo).toBe("https://finance.yahoo.com/quote/AAPL");
-  });
-
-  it("uses hyphen for Yahoo dual-class tickers, dot elsewhere", () => {
-    const l = buildExternalFinanceLinks("BRK.B");
-    expect(l.yahoo).toBe("https://finance.yahoo.com/quote/BRK-B");
-    expect(l.google).toBe("https://www.google.com/search?q=BRK.B+stock");
-    expect(l.sec).toContain("ticker=BRK.B");
-  });
-});
-
-describe("isLikelyTicker", () => {
-  it("accepts plain and dual-class tickers", () => {
-    expect(isLikelyTicker("AAPL")).toBe(true);
-    expect(isLikelyTicker("BRK.B")).toBe(true);
-    expect(isLikelyTicker("brk.b")).toBe(true);
-  });
-  it("rejects 9-char CUSIPs and junk", () => {
-    expect(isLikelyTicker("037833100")).toBe(false); // Apple CUSIP
-    expect(isLikelyTicker("594918104")).toBe(false); // Microsoft CUSIP
-    expect(isLikelyTicker("")).toBe(false);
-  });
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `npx vitest run src/lib/externalLinks.test.ts`
-Expected: FAIL — cannot find module `./externalLinks` (or `buildExternalFinanceLinks is not a function`).
-
-- [ ] **Step 3: Write minimal implementation**
+- [ ] **Step 1: Write the implementation**
 
 Create `web/src/lib/externalLinks.ts`:
 
@@ -100,15 +54,30 @@ export function buildExternalFinanceLinks(ticker: string): ExternalFinanceUrls {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 2: Sanity-check the output (no test file — one-off inline eval)**
 
-Run: `npx vitest run src/lib/externalLinks.test.ts`
-Expected: PASS (6 tests).
-
-- [ ] **Step 5: Commit**
+Run from `web/`:
 
 ```bash
-git add src/lib/externalLinks.ts src/lib/externalLinks.test.ts
+npx tsx -e "import {buildExternalFinanceLinks as b, isLikelyTicker as t} from './src/lib/externalLinks.ts'; console.log(b('AAPL')); console.log(b('brk.b')); console.log(t('AAPL'), t('BRK.B'), t('037833100'));"
+```
+
+Expected output:
+- `AAPL`: yahoo `.../quote/AAPL`, google `...search?q=AAPL+stock`, sec `...ticker=AAPL&type=10-K&count=40`
+- `brk.b`: yahoo `.../quote/BRK-B`, google `...q=BRK.B+stock`, sec `...ticker=BRK.B`
+- guard line: `true true false`
+
+(If `tsx` is unavailable, skip this step and rely on `tsc` + the link clicks in Task 7.)
+
+- [ ] **Step 3: Typecheck**
+
+Run: `npx tsc --noEmit`
+Expected: PASS.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/lib/externalLinks.ts
 git commit -m "feat(stocks): pure external-finance URL builder (Yahoo/Google/SEC)"
 ```
 
@@ -516,12 +485,7 @@ git commit -m "feat(stocks): external data links column in most-held table"
 
 **Files:** none (verification only).
 
-- [ ] **Step 1: Run the unit tests**
-
-Run: `npx vitest run`
-Expected: PASS, including the 6 new `externalLinks` tests.
-
-- [ ] **Step 2: Typecheck the whole project**
+- [ ] **Step 1: Typecheck the whole project**
 
 Run: `npx tsc --noEmit`
 Expected: PASS, no errors.
@@ -551,4 +515,5 @@ git commit -m "fix(stocks): external links visual adjustments from manual review
 
 - **Spec coverage:** §2 URLs → Task 1; §3 visual/variants → Tasks 3,5,6; §4 icons → Task 2 (Yahoo/Google) + lucide `FileText` in Task 3 (SEC); §5 no extra data → confirmed (builder is ticker-only); §6 file structure → Tasks 1–6 match the table; §7 YAGNI → no third-party sites, no config, no data fetch; §8 validation → Task 7.
 - **Type consistency:** `buildExternalFinanceLinks(ticker)` / `isLikelyTicker(s)` defined in Task 1 and consumed identically in Tasks 3 & 6. `ExternalFinanceLinks` props `{ ticker, variant, lang }` defined in Task 3, called identically in Tasks 5 & 6. `KeyFact.node` added in Task 4, used in Task 5.
-- **Edge cases handled:** cusip-fallback rows/pages skip links (`isLikelyTicker` + `cusipsForTicker.length`); dual-class ticker URL forms covered by tests; keyboard a11y via `group-focus-within`.
+- **Edge cases handled:** cusip-fallback rows/pages skip links (`isLikelyTicker` + `cusipsForTicker.length`); dual-class ticker URL forms verified by the Task 1 inline sanity check and the Task 7 link clicks; keyboard a11y via `group-focus-within`.
+- **No tests:** per project standing rule, no `*.test.*` files are created; verification is `tsc --noEmit` + manual dev-server checks.
