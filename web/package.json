@@ -10,15 +10,14 @@
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
     "consensus": "tsx scripts/consensus.ts",
-    "prices": "tsx scripts/prices.ts",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "prices": "tsx scripts/prices.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@supabase/supabase-js": "^2.106.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "ai": "^6.0.197",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fast-xml-parser": "^5.8.0",
@@ -45,7 +44,6 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "tsx": "^4.22.3",
-    "typescript": "^5",
-    "vitest": "^2.1.9"
+    "typescript": "^5"
   }
 }

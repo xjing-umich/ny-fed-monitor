@@ -7,10 +7,16 @@ import type { Holding, HoldingChange } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
+import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
+import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
+import { isPeriodStale } from "@/lib/ai/investorNarrative";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD } from "@/lib/format";
 
 const MAX_HOLDINGS = 25;
+
+// ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的 AI 叙述(及更新的持仓)无需重新部署即可在 1 小时内出现, 同时保持静态托管利于 SEO。
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const idx = await getManagerIndex();
@@ -30,6 +36,7 @@ export async function generateMetadata({
   const d = await getManagerDetail(slug);
   if (!d) return {};
   const { person, name } = d.manager;
+  const nb = await getInvestorNarrative(slug, lang);
   const l = lang === "en" ? "en" : "zh";
   const alternates = {
     canonical: `/${l}/investors/${slug}`,
@@ -42,12 +49,12 @@ export async function generateMetadata({
   return lang === "zh"
     ? {
         title: `${person} 持仓 13F — Compounder · 复利`,
-        description: `${name} — ${person} 的最新 SEC 13F 季度持仓披露，持仓明细与环比变动。`,
+        description: nb?.judgment_line ?? `${name} — ${person} 的最新 SEC 13F 季度持仓披露，持仓明细与环比变动。`,
         alternates,
       }
     : {
         title: `${person} 13F Holdings — Compounder · 复利`,
-        description: `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
+        description: nb?.judgment_line ?? `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
         alternates,
       };
 }
@@ -257,6 +264,19 @@ export default async function InvestorSlugPage({
 
   const { manager, latest, prior, changes } = d;
 
+  // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
+  const narrative = await getInvestorNarrative(slug, lang);
+
+  // 数据新鲜度: 最近申报是否早于"应有最新季"(45天延迟后)。防旧申报冒充当前 → 顶部醒目标注。
+  const stale = isPeriodStale(latest.period, new Date());
+  const staleNotice = stale ? (
+    <div className="border-l-2 border-[var(--tt-warn)] bg-[var(--tt-surface)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
+      {lang === "zh"
+        ? `⚠ 该投资者在此申报主体下最近一次 SEC 13F 申报为 ${latest.period}，此后未再申报。以下持仓与解读反映该期数据，可能并非当前持仓。`
+        : `⚠ This manager's most recent SEC 13F filing under this filer is for ${latest.period}, with none since. Holdings and the summary below reflect that filing and may not be current.`}
+    </div>
+  ) : undefined;
+
   // Verdict
   const buying = changes.filter((c) => c.kind === "new" || c.kind === "increased").length;
   const selling = changes.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
@@ -367,6 +387,8 @@ export default async function InvestorSlugPage({
         subtitle={subtitle}
         verdict={verdict}
         keyFacts={keyFacts}
+        notice={staleNotice}
+        aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
         related={related}
       >
