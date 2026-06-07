@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
-import { getCusipMap, tickerToCusips } from "@/lib/managers/securities";
+import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -214,6 +214,8 @@ export default async function StockTickerPage({
       ? "仅供教育与信息参考，不构成投资建议。13F 持仓为机构自行申报，可能滞后最多 45 天。"
       : "Educational data only — not investment advice. 13F positions are self-reported and can lag up to 45 days.";
 
+  const exchange = (await getTickerExchangeMap()).get(ticker);
+
   const keyFacts = [
     { label: lang === "zh" ? "代码" : "Ticker", value: ticker },
     { label: lang === "zh" ? "持有人数" : "Holder count", value: String(n) },
@@ -225,7 +227,7 @@ export default async function StockTickerPage({
           label: lang === "zh" ? "外部数据" : "External",
           value: "",
           node: (
-            <ExternalFinanceLinks ticker={ticker} variant="detail" lang={lang} />
+            <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="detail" lang={lang} />
           ),
         }]
       : []),

@@ -17,12 +17,15 @@ export function ExternalFinanceLinks({
   ticker,
   variant,
   lang,
+  exchange,
 }: {
   ticker: string;
   variant: Variant;
   lang: Lang;
+  /** Google Finance 交易所代码(如 NASDAQ/NYSE)；缺省则 Google 回退搜索。 */
+  exchange?: string | null;
 }): React.ReactElement {
-  const links = buildExternalFinanceLinks(ticker);
+  const links = buildExternalFinanceLinks(ticker, exchange);
   const t = LABELS[lang];
   const iconSize = variant === "detail" ? 18 : 15;
 
