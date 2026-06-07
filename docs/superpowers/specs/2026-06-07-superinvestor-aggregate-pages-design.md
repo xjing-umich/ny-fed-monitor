@@ -32,11 +32,14 @@
 
 `web/src/lib/nav.ts` 中 `SECONDARY_NAV.investors` 的三个 `soon:true` tab（`buys` / `sells` / `consensus`）：去掉 `soon`、补 `href`（`/investors/buys` 等），即通路由。
 
-### 2.3 /stocks 重定位（不删 SEO 资产）
+### 2.3 /stocks 重定位为薄目录/搜索页（保留「个股」一级导航）
 
-- `/[lang]/stocks`（列表页＝现在的"最多机构持有"）→ **301 到 `/[lang]/investors/consensus`**，canonical 一并指向 consensus，避免两页语义重复抢排名。走 `next.config` redirect（参照现有 CUSIP→ticker 的 301/307 模式）。
+「个股」是 product-direction 里特意提为一级导航的入口，故 **`/stocks` 不做 301**，而是把"最多机构持有"榜单内容搬到 `/investors/consensus`（canonical 唯一），`/stocks` 本身改造为轻量个股入口：
+
+- `/[lang]/stocks` v1 = **搜索框 + 个股索引（字母或行业）+ "按持有大佬数浏览 → consensus" 的 CTA**。**不再渲染"最多机构持有"排行表**，以免与 consensus 内容重复抢排名。
 - **保留不动**：`/[lang]/stocks/[ticker]` 个股详情页、sitemap 全量个股、canonical ticker URL、各页 OG。
-- `SECONDARY_NAV.stocks` 现有 `held→/stocks`：聚合已搬到超投，故 stocks 二级简化——`held`、`moves` 不再在 stocks 下出现；stocks 二级仅保留个股目录/搜索入口（若 v1 无独立目录页，可暂时让 stocks 一级直接走搜索，不渲染 held/moves tab）。
+- `SECONDARY_NAV.stocks` 现有 `held→/stocks`：改为 `/stocks` 仍指目录页本身；`held`（最多机构持有）作为概念已搬到超投 consensus，stocks 二级移除 `held`、`moves` 两 tab（或整组 stocks 二级在 v1 隐藏，因目录页本身即一级落地）。
+- 注：薄目录页是本 spec 相对"纯三页"的唯一额外小页，换取保住「个股」一级决策。
 
 ### 2.4 渲染策略
 
@@ -122,7 +125,7 @@
 
 1. 三个路由 `/investors/{consensus,buys,sells}` 在 zh/en 均 200，ISR 静态。
 2. `SubNav.investors` 三 tab 通路由、active 态正确。
-3. `/stocks` 列表 301 到 `/investors/consensus`，canonical 正确；`/stocks/[ticker]` 与 sitemap 不受影响。
+3. `/stocks` 改薄目录/搜索页（搜索框 + 索引 + consensus CTA），不再渲染最多机构持有榜单；「个股」一级导航仍指 `/stocks`；`/stocks/[ticker]` 与 sitemap 不受影响。consensus 为最多机构持有内容的唯一 canonical。
 4. 共识页含 5 件套：持有大佬数（主数字）、占比%、环比 delta、解读句、数据截至徽标；移动端 B 卡片、桌面补列。
 5. 买/卖页含动作大佬数（主数字）、动作色块标签、涉及金额、解读句、徽标。
 6. 解读句确定性、双语、无推荐措辞、可回溯到表格；空数据走边界分支不报错。
@@ -132,5 +135,5 @@
 ## 8. 风险与备注
 
 - **唯一新数据工作** = `readConsensusHolderDeltas()`；若 `consensus_moves` 的 kind 粒度不足以区分 new/exited，需回退按 `scanAllManagers` 比对 latest/prior 持有人集合派生（成本略增，仍可行）。
-- /stocks 列表 301 会改变一个已收录页的 URL 语义——需在 GSC 关注重定向收录，旧 `/stocks` 外链通过 301 传递权重到 consensus。
+- `/stocks` 从"最多机构持有"改为薄目录页，其历史"most held"内容/排名信号转移到 `/investors/consensus`——需在 GSC 关注 consensus 新页收录与 `/stocks` 内容变更后的表现；consensus 为该内容唯一 canonical，避免重复。
 - 多 session 共用主工作树：本 spec 的实现应在独立分支/worktree 进行（遵 [[data-layer-state]] 教训）。
