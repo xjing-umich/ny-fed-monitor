@@ -19,13 +19,12 @@ export type SecondaryNavItem = {
 export const SECONDARY_NAV: Record<string, SecondaryNavItem[]> = {
   investors: [
     { key: "all", zh: "全部投资者", en: "All", href: "/investors" },
-    { key: "buys", zh: "本季最多人买", en: "Top buys", soon: true },
-    { key: "sells", zh: "本季最多人卖", en: "Top sells", soon: true },
-    { key: "consensus", zh: "共识持仓", en: "Consensus", soon: true },
+    { key: "buys", zh: "本季最多人买", en: "Top buys", href: "/investors/buys" },
+    { key: "sells", zh: "本季最多人卖", en: "Top sells", href: "/investors/sells" },
+    { key: "consensus", zh: "共识持仓", en: "Consensus", href: "/investors/consensus" },
   ],
   stocks: [
-    { key: "held", zh: "最多机构持有", en: "Most held", href: "/stocks" },
-    { key: "moves", zh: "本季异动", en: "Movers", soon: true },
+    { key: "directory", zh: "个股目录", en: "Directory", href: "/stocks" },
   ],
   macro: [
     { key: "funding", zh: "资金面", en: "Funding", href: "/macro#funding" },
