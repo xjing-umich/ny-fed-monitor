@@ -17,6 +17,10 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
+  // next-themes can't know the theme during SSR; gate theme-dependent UI on mount
+  // so the server and first client render agree (prevents hydration mismatch).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const otherLang: Lang = lang === "zh" ? "en" : "zh";
   const otherLangPath = pathname
@@ -156,7 +160,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
             aria-label={lang === "zh" ? "切换主题" : "Toggle theme"}
             className="flex items-center justify-center w-8 h-8 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
           >
-            {resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+            {mounted && resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
           </button>
         </div>
       </div>

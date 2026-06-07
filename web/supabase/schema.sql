@@ -312,8 +312,10 @@ create table if not exists consensus_moves (
   issuer text,
   manager_count int not null default 0,
   net_value bigint not null default 0,
+  dominant_kind text,
   computed_at timestamptz not null default now(),
   primary key (ticker, direction)
 );
 create index if not exists consensus_moves_rank_idx
   on consensus_moves (direction, manager_count desc, net_value desc);
+alter table consensus_moves add column if not exists dominant_kind text;

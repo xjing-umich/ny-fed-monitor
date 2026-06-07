@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -18,6 +18,10 @@ interface TopNavProps {
 export default function TopNav({ lang, items }: TopNavProps) {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
+  // next-themes can't know the theme during SSR; gate theme-dependent UI on mount
+  // so the server and first client render agree (prevents hydration mismatch).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const otherLang: Lang = lang === "zh" ? "en" : "zh";
   const otherLangPath = pathname
@@ -105,7 +109,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
         aria-label={lang === "zh" ? "切换主题" : "Toggle theme"}
         className="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
       >
-        {resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+        {mounted && resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
       </button>
     </header>
   );

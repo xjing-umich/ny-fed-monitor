@@ -61,16 +61,22 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
   // latest filing per manager + its top holding, via a view-like query
   const { data, error } = await db.rpc("manager_index"); // see README: optional SQL function; fallback below
   if (!error && data) return mapIndexRows(data as IndexRow[], generatedAt);
-  // Fallback: compose in TS if RPC not present
+  // Fallback: compose in TS if the manager_index RPC isn't present.
+  // 关键性能点:此前对每个 manager 串行查 filings→holdings(~34×2 次首尾相接的往返,
+  // 在远端 Supabase 上累计十几秒),而本函数在根布局里对每个请求都执行——这是全站
+  // "每页等十几秒"的主因。改为 Promise.all 并行:等待时间由"累加"降为"取最慢一个"。
+  // 注:理想是建 manager_index SQL 函数一次返回(见 README),那条更快路径仍优先生效。
   const { data: mgrs } = await db.from("managers").select("*");
-  const out: IndexRow[] = [];
-  for (const m of mgrs ?? []) {
-    const { data: f } = await db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(1);
-    const latest = f?.[0];
-    if (!latest) continue;
-    const { data: h } = await db.from("holdings").select("issuer,value").eq("filing_id", latest.id).order("value", { ascending: false }).limit(1);
-    out.push({ ...m, period: latest.period, total_value: latest.total_value, holding_count: latest.holding_count, top_holding: h?.[0]?.issuer ?? "", totalValue: latest.total_value, holdingCount: latest.holding_count, topHolding: h?.[0]?.issuer ?? "" } as IndexRow);
-  }
+  const rows = await Promise.all(
+    (mgrs ?? []).map(async (m): Promise<IndexRow | null> => {
+      const { data: f } = await db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(1);
+      const latest = f?.[0];
+      if (!latest) return null;
+      const { data: h } = await db.from("holdings").select("issuer,value").eq("filing_id", latest.id).order("value", { ascending: false }).limit(1);
+      return { ...m, period: latest.period, total_value: latest.total_value, holding_count: latest.holding_count, top_holding: h?.[0]?.issuer ?? "", totalValue: latest.total_value, holdingCount: latest.holding_count, topHolding: h?.[0]?.issuer ?? "" } as IndexRow;
+    })
+  );
+  const out = rows.filter((x): x is IndexRow => x !== null);
   return mapIndexRows(out, generatedAt);
 }
 

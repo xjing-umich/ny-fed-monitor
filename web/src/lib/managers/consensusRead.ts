@@ -1,10 +1,10 @@
 import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
-import type { HeldRow, MoveRow, NotableMoves } from "@/lib/aggregations";
+import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
 
 type HeldDbRow = { ticker: string; issuer: string; holder_count: number; total_value: number };
-type MoveDbRow = { ticker: string; direction: string; issuer: string; manager_count: number; net_value: number };
+type MoveDbRow = { ticker: string; direction: string; issuer: string; manager_count: number; net_value: number; dominant_kind?: string | null };
 
 /** 纯映射(单测): consensus_holdings 行 → HeldRow(cusip 字段填 ticker)。 */
 export function mapHeldRows(rows: HeldDbRow[]): HeldRow[] {
@@ -12,7 +12,13 @@ export function mapHeldRows(rows: HeldDbRow[]): HeldRow[] {
 }
 /** 纯映射(单测): consensus_moves 行 → {mostBought, mostSold}。 */
 export function mapMoveRows(rows: MoveDbRow[]): NotableMoves {
-  const toRow = (r: MoveDbRow): MoveRow => ({ cusip: r.ticker, issuer: r.issuer, count: r.manager_count, value: Number(r.net_value) });
+  const VALID: MoveKind[] = ["new", "increased", "exited", "decreased"];
+  const toRow = (r: MoveDbRow): MoveRow => {
+    const dk = (r.dominant_kind && VALID.includes(r.dominant_kind as MoveKind))
+      ? (r.dominant_kind as MoveKind)
+      : (r.direction === "bought" ? "increased" : "decreased"); // conservative weak default
+    return { cusip: r.ticker, issuer: r.issuer, count: r.manager_count, value: Number(r.net_value), dominantKind: dk };
+  };
   return {
     mostBought: rows.filter((r) => r.direction === "bought").map(toRow),
     mostSold: rows.filter((r) => r.direction === "sold").map(toRow),
@@ -33,9 +39,14 @@ export const readConsensusHeld = cache(async (limit: number): Promise<HeldRow[] 
 export const readConsensusMoves = cache(async (limit: number): Promise<NotableMoves | null> => {
   if (!hasSupabaseEnv()) return null;
   const { data, error } = await getDb()
-    .from("consensus_moves").select("ticker,direction,issuer,manager_count,net_value")
+    .from("consensus_moves").select("ticker,direction,issuer,manager_count,net_value,dominant_kind")
     .order("manager_count", { ascending: false }).order("net_value", { ascending: false });
-  if (error) { console.error(`readConsensusMoves 失败: ${error.message}`); return null; }
+  if (error) {
+    // 42703 = undefined_column: dominant_kind 尚未迁移 → 静默回退到内存扫描(标签更准, 含 NEW/EXIT)。
+    // 迁移后(alter table consensus_moves add column dominant_kind text; npm run consensus)自动启用 DB 快路径。
+    if (error.code !== "42703") console.error(`readConsensusMoves 失败: ${error.message}`);
+    return null;
+  }
   const all = mapMoveRows((data ?? []) as MoveDbRow[]);
   return { mostBought: all.mostBought.slice(0, limit), mostSold: all.mostSold.slice(0, limit) };
 });

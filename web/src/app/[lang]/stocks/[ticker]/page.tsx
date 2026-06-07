@@ -10,10 +10,11 @@ import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { formatUSD } from "@/lib/format";
 
-// NOTE: No generateStaticParams — this route renders on-demand per request.
-// The union of CUSIPs across all managers is ~1000+; prerendering them all at
-// build time would be prohibitively slow. Dynamic rendering is acceptable for
-// Phase 0 (6 managers, fast JSON reads).
+// No generateStaticParams — the CUSIP universe is ~1000+, too many to prerender
+// at build. Instead we render on first request, then cache the result for an hour
+// (13F data is quarterly, so hourly revalidation is plenty fresh). After the first
+// hit each ticker is served statically from the cache — no per-request DB work.
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,
@@ -171,8 +172,13 @@ export default async function StockTickerPage({
   const issuerFreq: Record<string, number> = {};
   let latestFiledAt = "";
 
-  for (const summary of idx.managers) {
-    const d = await getManagerDetail(summary.slug);
+  // 并行读取全部 manager 详情(此前为串行 for-await,34 位投资者 × 每位 3 个查询
+  // = ~100 次首尾相接的 DB 往返,是个股页"等几秒"的主因)。Promise.all 后等待时间
+  // 由"累加"变为"取最慢一个",数量级下降。
+  const details = await Promise.all(
+    idx.managers.map(async (summary) => ({ summary, detail: await getManagerDetail(summary.slug) }))
+  );
+  for (const { summary, detail: d } of details) {
     if (!d) continue;
     const h = d.latest.holdings.find((holding) => targetCusips.has(holding.cusip));
     if (!h) continue;

@@ -7,7 +7,14 @@ export type ScanInput = { slug: string; holdings: ScanHolding[]; changes: ScanCh
 export type CusipInfo = { ticker: string | null; name: string | null };
 
 export type ConsensusHoldingRow = { ticker: string; issuer: string; holder_count: number; total_value: number };
-export type ConsensusMoveRow = { ticker: string; direction: "bought" | "sold"; issuer: string; manager_count: number; net_value: number };
+export type ConsensusMoveRow = { ticker: string; direction: "bought" | "sold"; issuer: string; manager_count: number; net_value: number; dominant_kind: "new" | "increased" | "exited" | "decreased" };
+
+type MoveKind = "new" | "increased" | "exited" | "decreased";
+function dominantKind(kinds: Map<MoveKind, number>, direction: "bought" | "sold"): MoveKind {
+  const [strong, weak]: MoveKind[] = direction === "bought" ? ["new", "increased"] : ["exited", "decreased"];
+  // Most frequent wins; tie → stronger signal.
+  return (kinds.get(weak) ?? 0) > (kinds.get(strong) ?? 0) ? weak : strong;
+}
 
 function keyOf(cusip: string, map: Map<string, CusipInfo>): { ticker: string; name: string | null } {
   const info = map.get(cusip);
@@ -33,7 +40,7 @@ export function computeConsensus(
     .map(([ticker, e]) => ({ ticker, issuer: e.issuer, holder_count: e.holders.size, total_value: e.total }))
     .sort((a, b) => b.holder_count - a.holder_count || b.total_value - a.total_value);
 
-  const mv = new Map<string, { issuer: string; managers: Set<string>; net: number; direction: "bought" | "sold" }>();
+  const mv = new Map<string, { issuer: string; managers: Set<string>; net: number; direction: "bought" | "sold"; kinds: Map<MoveKind, number> }>();
   for (const m of scan) {
     for (const c of m.changes) {
       const direction: "bought" | "sold" | null =
@@ -41,14 +48,15 @@ export function computeConsensus(
       if (!direction) continue;
       const { ticker, name } = keyOf(c.cusip, cusipToTicker);
       const k = `${ticker}|${direction}`;
-      const e = mv.get(k) ?? { issuer: name ?? c.issuer, managers: new Set<string>(), net: 0, direction };
+      const e = mv.get(k) ?? { issuer: name ?? c.issuer, managers: new Set<string>(), net: 0, direction, kinds: new Map<MoveKind, number>() };
       e.managers.add(m.slug);
       e.net += c.value ?? 0;
+      e.kinds.set(c.kind, (e.kinds.get(c.kind) ?? 0) + 1);
       mv.set(k, e);
     }
   }
   const moves: ConsensusMoveRow[] = [...mv.entries()]
-    .map(([k, e]) => ({ ticker: k.split("|")[0], direction: e.direction, issuer: e.issuer, manager_count: e.managers.size, net_value: e.net }))
+    .map(([k, e]) => ({ ticker: k.split("|")[0], direction: e.direction, issuer: e.issuer, manager_count: e.managers.size, net_value: e.net, dominant_kind: dominantKind(e.kinds, e.direction) }))
     .sort((a, b) => b.manager_count - a.manager_count || b.net_value - a.net_value);
 
   return { holdings, moves };

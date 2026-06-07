@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getManagerIndex } from "@/lib/managers/source";
+import { mostHeld } from "@/lib/aggregations";
+import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import { MACRO_GROUPS } from "@/lib/nav";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
@@ -105,6 +107,11 @@ export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
 }
 
+// 共识标的 issuer 多为全大写(如 "MICROSOFT CORP"),转为 Title Case 便于阅读。
+function titleCaseIssuer(s: string): string {
+  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim();
+}
+
 export default async function LangLayout({
   children,
   params,
@@ -119,12 +126,28 @@ export default async function LangLayout({
   const lang = rawLang as Lang;
   const htmlLang = lang === "zh" ? "zh-CN" : "en";
 
-  // Build search items: managers + macro indicators
-  const managerIdx = await getManagerIndex();
+  // Build search items: investors (+中文别名) + stocks (ticker) + macro indicators.
+  // 两个轻量读取并行;mostHeld 提供热门个股下拉建议(任意 ticker 仍可经搜索框回车直达)。
+  const [managerIdx, held] = await Promise.all([getManagerIndex(), mostHeld(250)]);
+
   const managerItems = managerIdx.managers.map((m) => ({
     label: m.person,
     href: `/${lang}/investors/${m.slug}`,
+    keywords: INVESTOR_ALIASES[m.slug],
   }));
+
+  // 个股建议:按持有人数排序的共识标的(cusip 字段已解析为 ticker)。以 ticker 去重。
+  const seenTickers = new Set<string>();
+  const stockItems = held.flatMap((row) => {
+    const ticker = row.cusip;
+    if (seenTickers.has(ticker)) return [];
+    seenTickers.add(ticker);
+    return [{
+      label: titleCaseIssuer(row.issuer),
+      href: `/${lang}/stocks/${ticker}`,
+      keywords: ticker,
+    }];
+  });
 
   const macroItems = MACRO_GROUPS.flatMap((group) =>
     group.indicators.map((indicator) => ({
@@ -133,7 +156,7 @@ export default async function LangLayout({
     }))
   );
 
-  const items = [...managerItems, ...macroItems];
+  const items = [...managerItems, ...stockItems, ...macroItems];
 
   return (
     <html
@@ -144,8 +167,8 @@ export default async function LangLayout({
       <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
           <AppShell lang={lang} items={items}>
