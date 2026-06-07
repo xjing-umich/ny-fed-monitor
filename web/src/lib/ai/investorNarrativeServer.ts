@@ -1,6 +1,5 @@
 import "server-only";
 import { cache } from "react";
-import { generateText } from "ai";
 import { getDb, hasSupabaseEnv } from "@/lib/managers/db";
 import {
   buildMovesPayload,
@@ -13,30 +12,45 @@ import {
   type Lang,
 } from "./investorNarrative";
 
-// 缺省模型: 走 AI Gateway 的 "provider/model" 字符串(已用 gateway.getAvailableModels() 核准)。
-// 可由 env NARRATIVE_MODEL 覆盖(如 deepseek/deepseek-v4-pro)。
-const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
+// 直连用户自己的 DeepSeek API(OpenAI 兼容 /chat/completions), 绕开 Vercel AI Gateway 的免费档模型门槛。
+// 模型优先级: NARRATIVE_MODEL > DEEPSEEK_MODEL > 缺省 v4-flash。base url 默认 DeepSeek 官方。
+const DEFAULT_BASE = "https://api.deepseek.com";
+const DEFAULT_MODEL = "deepseek-v4-flash";
 
-/** 调 AI Gateway 生成并写库。缺 env 抛错（路由捕获）。 */
+/** 直连 DeepSeek 生成并写库。缺 env 抛错（路由捕获）。 */
 export async function generateAndCacheNarrative(
   d: ManagerDetailLike,
   lang: Lang
 ): Promise<InvestorNarrativeData> {
-  // AI Gateway 认证: 静态 AI_GATEWAY_API_KEY 优先, 否则回退 vercel env pull 的 VERCEL_OIDC_TOKEN
-  if (!process.env.AI_GATEWAY_API_KEY && !process.env.VERCEL_OIDC_TOKEN) {
-    throw new Error("No AI Gateway auth (set AI_GATEWAY_API_KEY or VERCEL_OIDC_TOKEN)");
-  }
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) throw new Error("DEEPSEEK_API_KEY not configured");
   if (!hasSupabaseEnv()) throw new Error("Supabase env not configured");
 
-  const model = process.env.NARRATIVE_MODEL || DEFAULT_MODEL;
+  const base = (process.env.DEEPSEEK_BASE_URL || DEFAULT_BASE).replace(/\/+$/, "");
+  const model = process.env.NARRATIVE_MODEL || process.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
   const payload = buildMovesPayload(d);
 
-  const { text } = await generateText({
-    model, // 纯 "provider/model" 字符串 → 自动走 AI Gateway
-    temperature: 0.2,
-    system: systemPrompt(lang),
-    prompt: userPrompt(payload),
+  const res = await fetch(`${base}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      // v4 是推理模型, reasoning 先吃 token; 给足上限避免正文(content)被截断为空。
+      max_tokens: 4000,
+      messages: [
+        { role: "system", content: systemPrompt(lang) },
+        { role: "user", content: userPrompt(payload, lang) },
+      ],
+    }),
   });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`deepseek ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+  const text = json.choices?.[0]?.message?.content ?? "";
+  if (!text.trim()) throw new Error("deepseek returned empty content");
   const data = parseInvestorNarrative(text);
 
   const { error } = await getDb().from("ai_analysis_cache").insert({

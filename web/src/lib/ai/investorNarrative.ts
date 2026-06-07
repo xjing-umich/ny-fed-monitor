@@ -75,7 +75,30 @@ export function systemPrompt(lang: Lang): string {
   return [...common, langLine].join("\n");
 }
 
-export function userPrompt(payload: MovesPayload): string {
+export function userPrompt(payload: MovesPayload, lang: Lang): string {
+  const data = JSON.stringify(payload);
+  // 注意: user message 的语言会强烈影响输出语言(尤其推理模型), 所以指令本身必须按 lang 切换,
+  // 不能只靠 systemPrompt 的一行说明, 否则英文页会被生成成中文。
+  if (lang === "en") {
+    return [
+      "Generate STRICT JSON (no Markdown) from the JSON below. Output format:",
+      JSON.stringify({
+        judgment_line: "one-sentence summary of this quarter's position changes; no valuation, no buy/sell advice",
+        moves: [
+          {
+            issuer: "...",
+            action: "new | added | trimmed | exited",
+            why: "one clause on the likely rationale / what the portfolio shift suggests; only state what the facts support",
+          },
+        ],
+        confidence: "low | medium | high",
+        limitations: ["..."],
+      }),
+      "The ONLY data you may use:",
+      data,
+      "Write ALL output text in English.",
+    ].join("\n\n");
+  }
   return [
     "请基于以下 JSON 生成严格 JSON（不要 Markdown）。输出格式：",
     JSON.stringify({
@@ -85,7 +108,8 @@ export function userPrompt(payload: MovesPayload): string {
       limitations: ["..."],
     }),
     "唯一允许使用的数据：",
-    JSON.stringify(payload),
+    data,
+    "全部输出文本用简体中文。",
   ].join("\n\n");
 }
 
