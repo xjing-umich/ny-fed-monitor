@@ -126,7 +126,7 @@ export default async function HomePage({
       {/* Consensus holdings (stacked, mobile-first) */}
       {held.length > 0 && (
         <section className="mt-12">
-          <BlockHeading title={isZh ? "共识持仓" : "Consensus holdings"} href={`/${lang}/stocks`} isZh={isZh} />
+          <BlockHeading title={isZh ? "共识持仓" : "Consensus holdings"} href={`/${lang}/investors/consensus`} isZh={isZh} />
           <table className="mt-4 w-full border-collapse text-sm">
             <tbody>
               {held.map((row) => (

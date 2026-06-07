@@ -104,3 +104,33 @@ export async function notableMoves(limit = 6): Promise<NotableMoves> {
   ]);
   return { mostBought, mostSold };
 }
+
+/**
+ * 持有人净增减(季度环比): 每标的 (新建仓数 − 清仓数)。
+ * consensus_moves 表按 ticker+direction 聚合, 无法拆 new/exited, 故从 scan 的 changes 派生。
+ * 返回以 **cusip** 为键(与 changes 原始一致)。
+ */
+export function computeHolderDeltas(scan: ScanRow[]): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const row of scan) {
+    for (const c of row.changes) {
+      if (c.kind === "new") m.set(c.cusip, (m.get(c.cusip) ?? 0) + 1);
+      else if (c.kind === "exited") m.set(c.cusip, (m.get(c.cusip) ?? 0) - 1);
+    }
+  }
+  return m;
+}
+
+/** 把 delta 的键从 cusip 映射为 ticker(与 mostHeld 行的 cusip 字段=ticker 对齐)。无库映射时原样返回。 */
+export async function holderDeltas(): Promise<Map<string, number>> {
+  const raw = computeHolderDeltas(await scanAllManagers());
+  const { getCusipMap } = await import("@/lib/managers/securities");
+  const map = await getCusipMap();
+  if (map.size === 0) return raw;
+  const out = new Map<string, number>();
+  for (const [cusip, v] of raw) {
+    const ticker = map.get(cusip)?.ticker ?? cusip;
+    out.set(ticker, (out.get(ticker) ?? 0) + v);
+  }
+  return out;
+}
