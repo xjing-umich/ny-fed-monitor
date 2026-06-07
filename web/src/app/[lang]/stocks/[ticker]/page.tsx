@@ -244,9 +244,34 @@ export default async function StockTickerPage({
     ],
   };
 
+  // FAQ structured data — answers the canonical "who holds X?" query with the
+  // actual holder list, the exact kind of factual Q&A AI engines cite.
+  const holderNames = [...holders].sort((a, b) => b.value - a.value).map((h) => h.person);
+  const faq = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name:
+          lang === "zh"
+            ? `哪些超级投资者持有 ${issuer}（${ticker}）？`
+            : `Which superinvestors hold ${issuer} (${ticker})?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            lang === "zh"
+              ? `根据最新 SEC 13F 披露，${n} 位超级投资者持有 ${issuer}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
+              : `Per the latest SEC 13F filings, ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
+        },
+      },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <EntityPage
         lang={lang}
         title={issuer}
