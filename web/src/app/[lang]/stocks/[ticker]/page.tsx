@@ -10,11 +10,21 @@ import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { formatUSD } from "@/lib/format";
 
-// No generateStaticParams — the CUSIP universe is ~1000+, too many to prerender
-// at build. Instead we render on first request, then cache the result for an hour
-// (13F data is quarterly, so hourly revalidation is plenty fresh). After the first
-// hit each ticker is served statically from the cache — no per-request DB work.
+// 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
+// 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
+// + 每小时 ISR 缓存。13F 季度级数据,1h 重验足够新鲜。
 export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams(): Promise<Array<{ lang: string; ticker: string }>> {
+  const { mostHeld } = await import("@/lib/aggregations");
+  const rows = await mostHeld(200);
+  const tickers = [...new Set(rows.map((r) => r.cusip))].filter(Boolean);
+  return tickers.flatMap((ticker) => [
+    { lang: "en", ticker },
+    { lang: "zh", ticker },
+  ]);
+}
 
 export async function generateMetadata({
   params,

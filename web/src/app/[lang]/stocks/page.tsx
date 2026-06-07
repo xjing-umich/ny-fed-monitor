@@ -9,7 +9,8 @@ import { stockPath } from "@/lib/urls";
 import { formatUSD } from "@/lib/format";
 import SubNav from "@/components/shell/SubNav";
 
-export const dynamic = "force-dynamic";
+// 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 每小时 ISR → 列表页 CDN 秒开。
+export const revalidate = 3600;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 
