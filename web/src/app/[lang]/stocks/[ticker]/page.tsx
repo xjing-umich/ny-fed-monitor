@@ -8,13 +8,24 @@ import { getLatestPrice, fmtPriceFact } from "@/lib/managers/priceRead";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
+import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD } from "@/lib/format";
 
-// No generateStaticParams — the CUSIP universe is ~1000+, too many to prerender
-// at build. Instead we render on first request, then cache the result for an hour
-// (13F data is quarterly, so hourly revalidation is plenty fresh). After the first
-// hit each ticker is served statically from the cache — no per-request DB work.
+// 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
+// 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
+// + 每小时 ISR 缓存。13F 季度级数据,1h 重验足够新鲜。
 export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams(): Promise<Array<{ lang: string; ticker: string }>> {
+  const { mostHeld } = await import("@/lib/aggregations");
+  const rows = await mostHeld(200);
+  const tickers = [...new Set(rows.map((r) => r.cusip))].filter(Boolean);
+  return tickers.flatMap((ticker) => [
+    { lang: "en", ticker },
+    { lang: "zh", ticker },
+  ]);
+}
 
 export async function generateMetadata({
   params,
@@ -207,6 +218,16 @@ export default async function StockTickerPage({
     { label: lang === "zh" ? "持有人数" : "Holder count", value: String(n) },
     { label: lang === "zh" ? "合计市值" : "Total value held", value: formatUSD(totalValue) },
     { label: lang === "zh" ? "最大持有人" : "Largest holder", value: topHolder.person },
+    // 外部数据出口(仅在以真实 ticker 命中时, 即该 ticker 已解析到 cusip 时显示)
+    ...(cusipsForTicker.length > 0
+      ? [{
+          label: lang === "zh" ? "外部数据" : "External",
+          value: "",
+          node: (
+            <ExternalFinanceLinks ticker={ticker} variant="detail" lang={lang} />
+          ),
+        }]
+      : []),
   ];
 
   const related = [...holders]

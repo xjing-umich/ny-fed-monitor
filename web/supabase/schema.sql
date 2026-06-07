@@ -319,3 +319,45 @@ create table if not exists consensus_moves (
 create index if not exists consensus_moves_rank_idx
   on consensus_moves (direction, manager_count desc, net_value desc);
 alter table consensus_moves add column if not exists dominant_kind text;
+
+-- ── manager_index() ────────────────────────────────────────────────────────────
+-- 经理人索引快路径:每位经理人返回其最新 filing 的概要 + 最大持仓 issuer,一次查询
+-- 取代应用层对 34 户逐个查 filings+holdings 的扇出(getManagerIndex 的回退)。
+-- 该函数在根 layout 对每个页面渲染都会被调用,故对全站取数/构建预渲染/ISR 重验都关键。
+-- 列与 supabase.ts 的 IndexRow 一一对应(cik/slug/name/person/period/total_value/
+-- holding_count/top_holding)。函数缺失时应用自动回退,故新增此函数是纯加速、无破坏。
+-- 部署:在 Supabase SQL Editor 执行本段;若 PostgREST 仍报找不到函数,执行
+--   notify pgrst, 'reload schema';
+create or replace function manager_index()
+returns table (
+  cik text,
+  slug text,
+  name text,
+  person text,
+  period date,
+  total_value bigint,
+  holding_count int,
+  top_holding text
+)
+language sql
+stable
+as $$
+  select
+    m.cik, m.slug, m.name, m.person,
+    f.period, f.total_value, f.holding_count,
+    (
+      select h.issuer
+      from holdings h
+      where h.filing_id = f.id
+      order by h.value desc
+      limit 1
+    ) as top_holding
+  from managers m
+  join lateral (
+    select id, period, total_value, holding_count
+    from filings
+    where cik = m.cik
+    order by period desc
+    limit 1
+  ) f on true;
+$$;

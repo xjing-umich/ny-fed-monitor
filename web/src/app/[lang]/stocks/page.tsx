@@ -6,10 +6,13 @@ import type { Lang } from "@/lib/nav";
 import { mostHeld } from "@/lib/aggregations";
 import { getCusipMap } from "@/lib/managers/securities";
 import { stockPath } from "@/lib/urls";
+import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
+import { isLikelyTicker } from "@/lib/externalLinks";
 import { formatUSD } from "@/lib/format";
 import SubNav from "@/components/shell/SubNav";
 
-export const dynamic = "force-dynamic";
+// 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 每小时 ISR → 列表页 CDN 秒开。
+export const revalidate = 3600;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -83,6 +86,9 @@ export default async function StocksIndexPage({
               <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-36">
                 {isZh ? "合计市值" : "Total value"}
               </th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-24">
+                {isZh ? "链接" : "Links"}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -92,7 +98,7 @@ export default async function StocksIndexPage({
               return (
               <tr
                 key={row.cusip}
-                className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+                className="group border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
               >
                 <td className="py-3 pr-3 font-mono text-[11px] text-[var(--tt-faint)] tabular-nums">
                   {i + 1}
@@ -119,6 +125,15 @@ export default async function StocksIndexPage({
                 </td>
                 <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
                   {formatUSD(row.totalValue)}
+                </td>
+                <td className="py-3 pl-3 text-right">
+                  {/* mostHeld 的 cusip 字段实为 ticker(consensusRead/tickerizeRows 已 tickerize),
+                      故用 tickerOrCusip;info?.ticker 按 ticker 查 cusipMap 必为 undefined。 */}
+                  {isLikelyTicker(tickerOrCusip) ? (
+                    <span className="inline-flex justify-end">
+                      <ExternalFinanceLinks ticker={tickerOrCusip} variant="table" lang={lang} />
+                    </span>
+                  ) : null}
                 </td>
               </tr>
               );
