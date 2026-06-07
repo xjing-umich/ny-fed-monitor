@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16 (App Router, RSC), React 19, TypeScript, Tailwind v4, Supabase (optional; bundled JSON fallback), Vitest.
 
-**Testing policy for this plan:** Per project convention (solo dev — MEMORY: "默认不跑测试套件, 验证用 tsc / 人工看页面"), we write Vitest unit tests ONLY for the pure data-layer functions that already have test files (`compute.ts`, `aggregations.ts`, `consensusRead.ts`). UI/page/schema changes are verified with `npx tsc --noEmit`, `npm run test`, and a manual dev-server check — not new UI tests.
+**Testing policy for this plan (UPDATED — user directive):** This project has **no tests**. Do **NOT** write or run any Vitest tests. **Skip every "Write/Run the test" step** below (Task 1 Steps 1–2 & 4, Task 2 Steps 1–2 & 4, Task 3 Steps 1–2 & 4). For each task, implement the code change directly and verify with `npx tsc --noEmit` (+ the manual dev check in Task 4). Existing `*.test.ts` files are not maintained — if `tsc` flags a type error inside an existing test file caused by a shape change, fix the literal minimally so `tsc` passes; otherwise leave test files alone.
 
 **Pre-flight (read before coding):** This repo runs a modified Next.js. Per `web/AGENTS.md`, before writing page/ISR code, skim the relevant guide under `web/node_modules/next/dist/docs/` for `revalidate` / route segment config to confirm the ISR API shape.
 
@@ -662,10 +662,7 @@ git commit -m "feat(search): widen header search as primary entry point"
 
 **Files:** none (verification only)
 
-- [ ] **Step 1: Run the full unit test suite**
-
-Run: `cd web && npm run test`
-Expected: PASS — all suites, including the three modified pure-function tests.
+- [ ] **Step 1: (skipped — no tests in this project)**
 
 - [ ] **Step 2: Type-check the whole project**
 
