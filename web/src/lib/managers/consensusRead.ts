@@ -4,7 +4,7 @@ import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
 import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
 
 type HeldDbRow = { ticker: string; issuer: string; holder_count: number; total_value: number };
-type MoveDbRow = { ticker: string; direction: string; issuer: string; manager_count: number; net_value: number };
+type MoveDbRow = { ticker: string; direction: string; issuer: string; manager_count: number; net_value: number; dominant_kind?: string | null };
 
 /** 纯映射(单测): consensus_holdings 行 → HeldRow(cusip 字段填 ticker)。 */
 export function mapHeldRows(rows: HeldDbRow[]): HeldRow[] {
@@ -12,9 +12,12 @@ export function mapHeldRows(rows: HeldDbRow[]): HeldRow[] {
 }
 /** 纯映射(单测): consensus_moves 行 → {mostBought, mostSold}。 */
 export function mapMoveRows(rows: MoveDbRow[]): NotableMoves {
+  const VALID: MoveKind[] = ["new", "increased", "exited", "decreased"];
   const toRow = (r: MoveDbRow): MoveRow => {
-    const dominantKind: MoveKind = r.direction === "bought" ? "new" : "exited";
-    return { cusip: r.ticker, issuer: r.issuer, count: r.manager_count, value: Number(r.net_value), dominantKind };
+    const dk = (r.dominant_kind && VALID.includes(r.dominant_kind as MoveKind))
+      ? (r.dominant_kind as MoveKind)
+      : (r.direction === "bought" ? "increased" : "decreased"); // conservative weak default
+    return { cusip: r.ticker, issuer: r.issuer, count: r.manager_count, value: Number(r.net_value), dominantKind: dk };
   };
   return {
     mostBought: rows.filter((r) => r.direction === "bought").map(toRow),
@@ -36,7 +39,7 @@ export const readConsensusHeld = cache(async (limit: number): Promise<HeldRow[] 
 export const readConsensusMoves = cache(async (limit: number): Promise<NotableMoves | null> => {
   if (!hasSupabaseEnv()) return null;
   const { data, error } = await getDb()
-    .from("consensus_moves").select("ticker,direction,issuer,manager_count,net_value")
+    .from("consensus_moves").select("ticker,direction,issuer,manager_count,net_value,dominant_kind")
     .order("manager_count", { ascending: false }).order("net_value", { ascending: false });
   if (error) { console.error(`readConsensusMoves 失败: ${error.message}`); return null; }
   const all = mapMoveRows((data ?? []) as MoveDbRow[]);
