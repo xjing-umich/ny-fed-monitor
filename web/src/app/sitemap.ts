@@ -43,6 +43,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const urls: MetadataRoute.Sitemap = [
     entry("", "daily", 1),
     entry("/investors", "weekly", 0.8),
+    entry("/investors/consensus", "weekly", 0.8),
+    entry("/investors/buys", "weekly", 0.8),
+    entry("/investors/sells", "weekly", 0.8),
     entry("/stocks", "weekly", 0.8),
     entry("/macro", "daily", 0.7),
     entry("/about", "monthly", 0.4),
