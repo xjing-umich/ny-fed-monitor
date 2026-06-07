@@ -27,6 +27,8 @@ export type EntityPageProps = {
   children: React.ReactNode;
   sources: { name: string; asOf: string }[];
   related?: RelatedItem[];
+  /** Optional compliance/disclaimer line shown under the subtitle. */
+  disclaimer?: string;
 };
 
 export function EntityPage({
@@ -41,6 +43,7 @@ export function EntityPage({
   children,
   sources,
   related,
+  disclaimer,
 }: EntityPageProps): React.ReactElement {
   return (
     <div className="space-y-7">
@@ -55,6 +58,11 @@ export function EntityPage({
         <p className="max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
           {subtitle}
         </p>
+        {disclaimer && (
+          <p className="max-w-3xl text-xs leading-relaxed text-[var(--tt-faint)]">
+            {disclaimer}
+          </p>
+        )}
       </header>
 
       {/* 数据陈旧告示(若有) */}

@@ -15,6 +15,7 @@ export interface FooterCopy {
   subscribed: string;
   subscribeError: string;
   contact: string;
+  about: string;
   rights: string;
   notAffiliated: string;
   noAdvice: string;
@@ -35,6 +36,7 @@ export function footerCopy(lang: Lang): FooterCopy {
         subscribed: "已订阅,谢谢!",
         subscribeError: "订阅失败,请稍后再试。",
         contact: "联系我们",
+        about: "关于",
         rights: "保留所有权利。",
         notAffiliated: "与美国证券交易委员会(SEC)或 EDGAR 系统无任何隶属关系。",
         noAdvice: "不构成投资建议。",
@@ -52,6 +54,7 @@ export function footerCopy(lang: Lang): FooterCopy {
         subscribed: "Subscribed, thanks!",
         subscribeError: "Subscription failed. Please try again.",
         contact: "Contact Us",
+        about: "About",
         rights: "All rights reserved.",
         notAffiliated: "Not affiliated with the U.S. S.E.C. or the EDGAR System.",
         noAdvice: "Not investment advice.",

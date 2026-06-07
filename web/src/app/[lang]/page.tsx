@@ -90,8 +90,16 @@ export default async function HomePage({
     <div className="mx-auto max-w-5xl px-2 pb-10 pt-1 sm:pb-12 sm:pt-2">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
+      {/* Value-prop tagline — site positioning; doubles as the page h1 */}
+      <h1 className="font-display text-lg font-medium leading-snug tracking-tight text-[var(--tt-text)] sm:text-xl">
+        {isZh ? "与最有耐心的投资者同行" : "Walk with the most patient investors"}
+        <span className="text-[var(--tt-muted)]">
+          {isZh ? " — 追踪 13F 持仓，理解复利。" : " — track 13F holdings, understand compounding."}
+        </span>
+      </h1>
+
       {/* Dateline (replaces hero) — subtle, low-profile */}
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] tracking-[0.04em] text-[var(--tt-faint)]">
+      <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] tracking-[0.04em] text-[var(--tt-faint)] sm:mt-3">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--tt-accent)]" aria-hidden />
         {isZh
           ? `截至 ${period} · ${topManagers.length} 位投资者 · SEC 13F · 45 天延迟`
