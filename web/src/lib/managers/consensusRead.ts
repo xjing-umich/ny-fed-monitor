@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
-import type { HeldRow, MoveRow, NotableMoves } from "@/lib/aggregations";
+import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
 
 type HeldDbRow = { ticker: string; issuer: string; holder_count: number; total_value: number };
 type MoveDbRow = { ticker: string; direction: string; issuer: string; manager_count: number; net_value: number };
@@ -12,7 +12,10 @@ export function mapHeldRows(rows: HeldDbRow[]): HeldRow[] {
 }
 /** 纯映射(单测): consensus_moves 行 → {mostBought, mostSold}。 */
 export function mapMoveRows(rows: MoveDbRow[]): NotableMoves {
-  const toRow = (r: MoveDbRow): MoveRow => ({ cusip: r.ticker, issuer: r.issuer, count: r.manager_count, value: Number(r.net_value) });
+  const toRow = (r: MoveDbRow): MoveRow => {
+    const dominantKind: MoveKind = r.direction === "bought" ? "new" : "exited";
+    return { cusip: r.ticker, issuer: r.issuer, count: r.manager_count, value: Number(r.net_value), dominantKind };
+  };
   return {
     mostBought: rows.filter((r) => r.direction === "bought").map(toRow),
     mostSold: rows.filter((r) => r.direction === "sold").map(toRow),

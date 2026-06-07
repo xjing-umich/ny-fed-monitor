@@ -10,7 +10,8 @@ export type ScanRow = {
 };
 
 export type HeldRow = { cusip: string; issuer: string; holderCount: number; totalValue: number };
-export type MoveRow = { cusip: string; issuer: string; count: number; value: number };
+export type MoveKind = "new" | "increased" | "exited" | "decreased";
+export type MoveRow = { cusip: string; issuer: string; count: number; value: number; dominantKind: MoveKind };
 export type NotableMoves = { mostBought: MoveRow[]; mostSold: MoveRow[] };
 
 /** Scan every manager's latest holdings + changes. Cached per render to avoid re-reads. */
@@ -43,26 +44,33 @@ export function computeMostHeld(scan: ScanRow[], limit: number): HeldRow[] {
     .slice(0, limit);
 }
 
+function dominantOf(kinds: Map<MoveKind, number>, side: "buy" | "sell"): MoveKind {
+  const [strong, weak]: MoveKind[] = side === "buy" ? ["new", "increased"] : ["exited", "decreased"];
+  return (kinds.get(weak) ?? 0) > (kinds.get(strong) ?? 0) ? weak : strong;
+}
+
 export function computeNotableMoves(scan: ScanRow[], limit: number): NotableMoves {
-  const buys = new Map<string, { issuer: string; count: number; value: number }>();
-  const sells = new Map<string, { issuer: string; count: number; value: number }>();
+  type Agg = { issuer: string; count: number; value: number; kinds: Map<MoveKind, number> };
+  const buys = new Map<string, Agg>();
+  const sells = new Map<string, Agg>();
+  const bump = (m: Map<string, Agg>, c: HoldingChange) => {
+    const e = m.get(c.cusip) ?? { issuer: c.issuer, count: 0, value: 0, kinds: new Map<MoveKind, number>() };
+    e.count += 1; e.value += c.value ?? 0;
+    e.kinds.set(c.kind as MoveKind, (e.kinds.get(c.kind as MoveKind) ?? 0) + 1);
+    m.set(c.cusip, e);
+  };
   for (const row of scan) {
     for (const c of row.changes) {
-      if (c.kind === "new" || c.kind === "increased") {
-        const e = buys.get(c.cusip) ?? { issuer: c.issuer, count: 0, value: 0 };
-        e.count += 1; e.value += c.value ?? 0; buys.set(c.cusip, e);
-      } else if (c.kind === "exited" || c.kind === "decreased") {
-        const e = sells.get(c.cusip) ?? { issuer: c.issuer, count: 0, value: 0 };
-        e.count += 1; e.value += c.value ?? 0; sells.set(c.cusip, e);
-      }
+      if (c.kind === "new" || c.kind === "increased") bump(buys, c);
+      else if (c.kind === "exited" || c.kind === "decreased") bump(sells, c);
     }
   }
-  const top = (m: Map<string, { issuer: string; count: number; value: number }>): MoveRow[] =>
+  const top = (m: Map<string, Agg>, side: "buy" | "sell"): MoveRow[] =>
     [...m.entries()]
-      .map(([cusip, e]) => ({ cusip, issuer: e.issuer, count: e.count, value: e.value }))
+      .map(([cusip, e]) => ({ cusip, issuer: e.issuer, count: e.count, value: e.value, dominantKind: dominantOf(e.kinds, side) }))
       .sort((a, b) => b.count - a.count || b.value - a.value)
       .slice(0, limit);
-  return { mostBought: top(buys), mostSold: top(sells) };
+  return { mostBought: top(buys, "buy"), mostSold: top(sells, "sell") };
 }
 
 export async function mostHeld(limit = 40): Promise<HeldRow[]> {
