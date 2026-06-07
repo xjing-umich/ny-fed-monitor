@@ -76,18 +76,17 @@ export default async function HomePage({
     <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      {/* Dateline (replaces hero) */}
-      <div className="border-b border-[var(--tt-border)] pb-3">
-        <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-muted)]">
-          {isZh
-            ? `截至 ${period} · ${topManagers.length} 位投资者 · 数据来源 SEC 13F · 45 天延迟`
-            : `As of ${period} · ${topManagers.length} investors · SEC 13F · 45-day lag`}
-        </p>
-      </div>
+      {/* Dateline (replaces hero) — subtle, low-profile */}
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] tracking-[0.04em] text-[var(--tt-faint)]">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--tt-accent)]" aria-hidden />
+        {isZh
+          ? `截至 ${period} · ${topManagers.length} 位投资者 · SEC 13F · 45 天延迟`
+          : `As of ${period} · ${topManagers.length} investors · SEC 13F · 45-day lag`}
+      </p>
 
       {/* Notable moves — lead, with change-type tags */}
       {(moves.mostBought.length > 0 || moves.mostSold.length > 0) && (
-        <section className="mt-8">
+        <section className="mt-6">
           <h2 className="font-display text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">
             {isZh ? "本季显著动向" : "Notable moves this quarter"}
           </h2>

@@ -8,6 +8,8 @@ import type { Lang } from "@/lib/nav";
 interface SearchItem {
   label: string;
   href: string;
+  /** 额外搜索关键词(中文别名、ticker 等),空格分隔;参与匹配但不展示。 */
+  keywords?: string;
 }
 
 interface SearchBoxProps {
@@ -29,12 +31,23 @@ export default function SearchBox({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const q = query.trim().toLowerCase();
   const filtered =
-    query.trim().length > 0
-      ? items.filter((item) =>
-          item.label.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 8)
+    q.length > 0
+      ? items
+          .filter(
+            (item) =>
+              item.label.toLowerCase().includes(q) ||
+              (item.keywords && item.keywords.toLowerCase().includes(q))
+          )
+          .slice(0, 8)
       : [];
+
+  // 形如 ticker 的输入(1-6 位字母, 可含点, 如 BRK.B):即使下拉无匹配, 也允许直达个股页。
+  const tickerGuess =
+    /^[a-zA-Z]{1,6}(\.[a-zA-Z])?$/.test(query.trim())
+      ? query.trim().toUpperCase()
+      : null;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -54,8 +67,14 @@ export default function SearchBox({
       setQuery("");
       setOpen(false);
       inputRef.current?.blur();
-    } else if (e.key === "Enter" && filtered.length > 0) {
-      router.push(filtered[0].href);
+    } else if (e.key === "Enter") {
+      const dest = filtered.length > 0
+        ? filtered[0].href
+        : tickerGuess
+          ? `/${lang}/stocks/${tickerGuess}`
+          : null;
+      if (!dest) return;
+      router.push(dest);
       setQuery("");
       setOpen(false);
     }
@@ -69,7 +88,10 @@ export default function SearchBox({
 
   const placeholder =
     placeholderProp ??
-    (lang === "zh" ? "搜索投资者/指标…" : "Search investors / indicators…");
+    (lang === "zh" ? "搜索投资者 / 股票 / 指标…" : "Search investors / stocks / indicators…");
+
+  // 下拉无匹配但输入像 ticker 时, 提供一条「直达个股」入口。
+  const showTickerFallback = tickerGuess !== null && filtered.length === 0;
 
   const isHero = variant === "hero";
 
@@ -104,7 +126,7 @@ export default function SearchBox({
         />
       </div>
 
-      {open && filtered.length > 0 && (
+      {open && (filtered.length > 0 || showTickerFallback) && (
         <div
           className={[
             "absolute top-full mt-1 left-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] shadow-md z-50 overflow-hidden",
@@ -123,6 +145,20 @@ export default function SearchBox({
               {item.label}
             </button>
           ))}
+          {showTickerFallback && (
+            <button
+              onMouseDown={() => handleSelect(`/${lang}/stocks/${tickerGuess}`)}
+              className={[
+                "flex w-full items-center justify-between gap-2 text-left text-[var(--tt-muted)] hover:bg-[var(--tt-surface)] transition-colors",
+                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-xs",
+              ].join(" ")}
+            >
+              <span className="truncate">
+                {lang === "zh" ? `查看个股 ${tickerGuess}` : `Go to ${tickerGuess}`}
+              </span>
+              <span className="shrink-0 font-mono text-[var(--tt-accent)]">→</span>
+            </button>
+          )}
         </div>
       )}
     </div>
