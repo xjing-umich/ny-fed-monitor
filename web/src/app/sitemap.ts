@@ -44,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/investors", "weekly", 0.8),
     entry("/stocks", "weekly", 0.8),
     entry("/macro", "daily", 0.7),
+    entry("/about", "monthly", 0.4),
   ];
 
   for (const m of idx.managers ?? []) {

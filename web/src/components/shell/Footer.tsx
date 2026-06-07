@@ -49,6 +49,9 @@ export default function Footer({ lang }: { lang: Lang }) {
           {/* Support */}
           <div className="flex flex-col gap-3">
             <span className={colHeading}>{c.support}</span>
+            <Link href={`/${lang}/about`} className={colLink}>
+              {c.about}
+            </Link>
             <ContactModal lang={lang} />
           </div>
 

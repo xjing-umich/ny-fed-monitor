@@ -212,6 +212,11 @@ export default async function StockTickerPage({
       ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。股票估值数据即将上线。`
       : `Held by ${n} superinvestor${n === 1 ? "" : "s"} (${ticker}). Valuation data coming soon.`;
 
+  const disclaimer =
+    lang === "zh"
+      ? "仅供教育与信息参考，不构成投资建议。13F 持仓为机构自行申报，可能滞后最多 45 天。"
+      : "Educational data only — not investment advice. 13F positions are self-reported and can lag up to 45 days.";
+
   const keyFacts = [
     { label: lang === "zh" ? "现价" : "Price", value: fmtPriceFact(price) },
     { label: lang === "zh" ? "代码" : "Ticker", value: ticker },
@@ -276,6 +281,7 @@ export default async function StockTickerPage({
         lang={lang}
         title={issuer}
         subtitle={subtitle}
+        disclaimer={disclaimer}
         keyFacts={keyFacts}
         sources={price
           ? [{ name: "SEC EDGAR 13F", asOf: latestFiledAt }, { name: "Finnhub", asOf: price.date }]
