@@ -127,9 +127,11 @@ export default async function StocksIndexPage({
                   {formatUSD(row.totalValue)}
                 </td>
                 <td className="py-3 pl-3 text-right">
-                  {info?.ticker && isLikelyTicker(info.ticker) ? (
+                  {/* mostHeld 的 cusip 字段实为 ticker(consensusRead/tickerizeRows 已 tickerize),
+                      故用 tickerOrCusip;info?.ticker 按 ticker 查 cusipMap 必为 undefined。 */}
+                  {isLikelyTicker(tickerOrCusip) ? (
                     <span className="inline-flex justify-end">
-                      <ExternalFinanceLinks ticker={info.ticker} variant="table" lang={lang} />
+                      <ExternalFinanceLinks ticker={tickerOrCusip} variant="table" lang={lang} />
                     </span>
                   ) : null}
                 </td>
