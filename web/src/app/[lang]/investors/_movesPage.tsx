@@ -38,7 +38,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
     : (isZh ? "本季被最多超级投资者清仓或减仓的股票。" : "Stocks most superinvestors exited or trimmed this quarter.");
 
   return (
-    <div className="mx-auto max-w-4xl px-2 py-8 sm:py-10">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -50,14 +50,16 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
         }) }}
       />
       <SubNav lang={lang} section="investors" active={side === "buy" ? "buys" : "sells"} />
-      <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
-        <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">{heading}</h1>
-        <p className="mt-2 text-sm text-[var(--tt-muted)]">{sub}</p>
-        <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
+      <div className="mx-auto max-w-4xl px-2 pb-8 sm:pb-10">
+        <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
+          <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">{heading}</h1>
+          <p className="mt-2 text-sm text-[var(--tt-muted)]">{sub}</p>
+          <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
+        </div>
+        <AggregateBlurb text={movesBlurb(blurbRows, side, lang)} />
+        <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "位投资者" : "managers"} />
       </div>
-      <AggregateBlurb text={movesBlurb(blurbRows, side, lang)} />
-      <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "位投资者" : "managers"} />
-    </div>
+    </>
   );
 }
 

@@ -195,6 +195,8 @@
   }
   html {
     @apply font-sans;
+    /* 始终预留竖直滚动条宽度, 避免不同页面有无滚动条导致居中内容(含二级导航)横向抖动 */
+    scrollbar-gutter: stable;
   }
 }
 

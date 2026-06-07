@@ -44,7 +44,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   const blurbRows: BlurbRow[] = rankRows.map((r) => ({ ticker: r.ticker, issuer: r.issuer, primary: r.primary, delta: r.delta }));
 
   return (
-    <div className="mx-auto max-w-4xl px-2 py-8 sm:py-10">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -56,17 +56,19 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
         }) }}
       />
       <SubNav lang={lang} section="investors" active="consensus" />
-      <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
-        <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">
-          {isZh ? "共识持仓" : "Consensus holdings"}
-        </h1>
-        <p className="mt-2 text-sm text-[var(--tt-muted)]">
-          {isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
-        </p>
-        <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
+      <div className="mx-auto max-w-4xl px-2 pb-8 sm:pb-10">
+        <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
+          <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">
+            {isZh ? "共识持仓" : "Consensus holdings"}
+          </h1>
+          <p className="mt-2 text-sm text-[var(--tt-muted)]">
+            {isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
+          </p>
+          <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
+        </div>
+        <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang)} />
+        <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "持有" : "holders"} />
       </div>
-      <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang)} />
-      <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "持有" : "holders"} />
-    </div>
+    </>
   );
 }
