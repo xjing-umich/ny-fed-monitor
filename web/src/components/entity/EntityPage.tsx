@@ -19,6 +19,8 @@ export type EntityPageProps = {
   subtitle: string;
   verdict?: { label: string; tone: Tone };
   keyFacts: KeyFact[];
+  /** 顶部醒目提示(如数据陈旧告示), 紧跟标题之下渲染 */
+  notice?: React.ReactNode;
   aiPageKey?: string;
   /** 若提供, 用服务端渲染的叙述节点替代客户端 AINarrative(SEO/GEO 可见) */
   aiNarrative?: React.ReactNode;
@@ -33,6 +35,7 @@ export function EntityPage({
   subtitle,
   verdict,
   keyFacts,
+  notice,
   aiPageKey,
   aiNarrative,
   children,
@@ -53,6 +56,9 @@ export function EntityPage({
           {subtitle}
         </p>
       </header>
+
+      {/* 数据陈旧告示(若有) */}
+      {notice}
 
       {/* ② Key facts — editorial stat row separated by hairlines (no card) */}
       {keyFacts.length > 0 && (

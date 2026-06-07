@@ -9,6 +9,7 @@ import { investorPath, stockPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
+import { isPeriodStale } from "@/lib/ai/investorNarrative";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD } from "@/lib/format";
 
@@ -266,6 +267,16 @@ export default async function InvestorSlugPage({
   // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
   const narrative = await getInvestorNarrative(slug, lang);
 
+  // 数据新鲜度: 最近申报是否早于"应有最新季"(45天延迟后)。防旧申报冒充当前 → 顶部醒目标注。
+  const stale = isPeriodStale(latest.period, new Date());
+  const staleNotice = stale ? (
+    <div className="border-l-2 border-[var(--tt-warn)] bg-[var(--tt-surface)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
+      {lang === "zh"
+        ? `⚠ 该投资者在此申报主体下最近一次 SEC 13F 申报为 ${latest.period}，此后未再申报。以下持仓与解读反映该期数据，可能并非当前持仓。`
+        : `⚠ This manager's most recent SEC 13F filing under this filer is for ${latest.period}, with none since. Holdings and the summary below reflect that filing and may not be current.`}
+    </div>
+  ) : undefined;
+
   // Verdict
   const buying = changes.filter((c) => c.kind === "new" || c.kind === "increased").length;
   const selling = changes.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
@@ -351,6 +362,7 @@ export default async function InvestorSlugPage({
         subtitle={subtitle}
         verdict={verdict}
         keyFacts={keyFacts}
+        notice={staleNotice}
         aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
         related={related}
