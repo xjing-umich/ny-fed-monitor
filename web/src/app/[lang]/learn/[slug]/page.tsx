@@ -62,11 +62,36 @@ export default async function ArticlePage({
     mainEntityOfPage: `https://thecompounder.fyi/${lang}/learn/${slug}`,
   };
 
+  // Breadcrumb — matches the convention on stock/investor detail pages and
+  // surfaces a "Learn › {article}" trail in search results.
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: lang === "zh" ? "学习" : "Learn",
+        item: `https://thecompounder.fyi/${lang}/learn`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: article.title,
+        item: `https://thecompounder.fyi/${lang}/learn/${slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       <div className="max-w-[720px] mx-auto">
         <Link
