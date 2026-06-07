@@ -41,7 +41,12 @@ export const readConsensusMoves = cache(async (limit: number): Promise<NotableMo
   const { data, error } = await getDb()
     .from("consensus_moves").select("ticker,direction,issuer,manager_count,net_value,dominant_kind")
     .order("manager_count", { ascending: false }).order("net_value", { ascending: false });
-  if (error) { console.error(`readConsensusMoves 失败: ${error.message}`); return null; }
+  if (error) {
+    // 42703 = undefined_column: dominant_kind 尚未迁移 → 静默回退到内存扫描(标签更准, 含 NEW/EXIT)。
+    // 迁移后(alter table consensus_moves add column dominant_kind text; npm run consensus)自动启用 DB 快路径。
+    if (error.code !== "42703") console.error(`readConsensusMoves 失败: ${error.message}`);
+    return null;
+  }
   const all = mapMoveRows((data ?? []) as MoveDbRow[]);
   return { mostBought: all.mostBought.slice(0, limit), mostSold: all.mostSold.slice(0, limit) };
 });
