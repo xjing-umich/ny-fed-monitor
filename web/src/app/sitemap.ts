@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { mostHeld } from "@/lib/aggregations";
 import { MACRO_GROUPS } from "@/lib/nav";
+import { ARTICLE_SLUGS } from "@/lib/learn";
 
 const BASE = "https://thecompounder.fyi";
 
@@ -45,7 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/stocks", "weekly", 0.8),
     entry("/macro", "daily", 0.7),
     entry("/about", "monthly", 0.4),
+    entry("/learn", "weekly", 0.6),
   ];
+
+  for (const slug of ARTICLE_SLUGS) {
+    urls.push(entry(`/learn/${slug}`, "monthly", 0.6));
+  }
 
   for (const m of idx.managers ?? []) {
     urls.push(entry(`/investors/${m.slug}`, "weekly", 0.7));
