@@ -39,6 +39,16 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
 
   return (
     <div className="mx-auto max-w-4xl px-2 py-8 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: rankRows.slice(0, 20).map((r, i) => ({
+            "@type": "ListItem", position: i + 1, name: `${r.ticker} ${r.issuer}`,
+          })),
+        }) }}
+      />
       <SubNav lang={lang} section="investors" active={side === "buy" ? "buys" : "sells"} />
       <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
         <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">{heading}</h1>
