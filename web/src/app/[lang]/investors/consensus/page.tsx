@@ -56,7 +56,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
         }) }}
       />
       <SubNav lang={lang} section="investors" active="consensus" />
-      <div className="mx-auto max-w-4xl px-2 pb-8 sm:pb-10">
+      <div className="pb-8 sm:pb-10">
         <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
           <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {isZh ? "共识持仓" : "Consensus holdings"}
