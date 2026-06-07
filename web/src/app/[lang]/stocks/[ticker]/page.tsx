@@ -4,7 +4,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { getCusipMap, tickerToCusips } from "@/lib/managers/securities";
-import { getLatestPrice, fmtPriceFact } from "@/lib/managers/priceRead";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -205,8 +204,6 @@ export default async function StockTickerPage({
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
 
-  const price = await getLatestPrice(ticker);
-
   const subtitle =
     lang === "zh"
       ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。股票估值数据即将上线。`
@@ -218,7 +215,6 @@ export default async function StockTickerPage({
       : "Educational data only — not investment advice. 13F positions are self-reported and can lag up to 45 days.";
 
   const keyFacts = [
-    { label: lang === "zh" ? "现价" : "Price", value: fmtPriceFact(price) },
     { label: lang === "zh" ? "代码" : "Ticker", value: ticker },
     { label: lang === "zh" ? "持有人数" : "Holder count", value: String(n) },
     { label: lang === "zh" ? "合计市值" : "Total value held", value: formatUSD(totalValue) },
@@ -283,9 +279,7 @@ export default async function StockTickerPage({
         subtitle={subtitle}
         disclaimer={disclaimer}
         keyFacts={keyFacts}
-        sources={price
-          ? [{ name: "SEC EDGAR 13F", asOf: latestFiledAt }, { name: "Finnhub", asOf: price.date }]
-          : [{ name: "SEC EDGAR 13F", asOf: latestFiledAt }]}
+        sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt }]}
         related={related}
       >
         <HoldersTable holders={holders} lang={lang} />
