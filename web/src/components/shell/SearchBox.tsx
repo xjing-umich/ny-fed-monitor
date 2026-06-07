@@ -99,7 +99,7 @@ export default function SearchBox({
           aria-label={placeholder}
           className={[
             "bg-transparent text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] outline-none",
-            isHero ? "w-full flex-1 text-base" : "w-36 text-xs",
+            isHero ? "w-full flex-1 text-base" : "w-56 text-xs",
           ].join(" ")}
         />
       </div>
@@ -108,7 +108,7 @@ export default function SearchBox({
         <div
           className={[
             "absolute top-full mt-1 left-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] shadow-md z-50 overflow-hidden",
-            isHero ? "w-full" : "w-64",
+            isHero ? "w-full" : "w-72",
           ].join(" ")}
         >
           {filtered.map((item) => (
