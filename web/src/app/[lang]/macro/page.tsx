@@ -10,7 +10,9 @@ import { sectionLabel, badgeTone } from "@/lib/dashboard";
 import { INDICATOR_BLURBS } from "@/lib/indicatorBlurbs";
 import SubNav from "@/components/shell/SubNav";
 
-export const dynamic = "force-dynamic";
+// 宏观数据由 cron 周期更新;与 /macro/[indicator] 子页一致用 10 分钟 ISR 静态化,
+// 而非每请求重算 → 概览页 CDN 秒开,数据最多滞后 10 分钟。
+export const revalidate = 600;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 
