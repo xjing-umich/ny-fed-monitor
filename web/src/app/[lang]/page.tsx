@@ -61,19 +61,33 @@ export default async function HomePage({
 
   const ld = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Compounder",
-    alternateName: "复利",
-    url: "https://thecompounder.fyi",
-    logo: "https://thecompounder.fyi/icon.png",
-    image: "https://thecompounder.fyi/icon.png",
-    description: isZh
-      ? "聚合超级投资者 13F 持仓、个股估值与宏观流动性。"
-      : "Smart-money 13F holdings, single-stock valuation, and the macro funding backdrop.",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://thecompounder.fyi/#org",
+        name: "Compounder",
+        alternateName: "复利",
+        url: "https://thecompounder.fyi",
+        logo: "https://thecompounder.fyi/icon.png",
+        image: "https://thecompounder.fyi/icon.png",
+        description: isZh
+          ? "聚合超级投资者 13F 持仓、个股估值与宏观流动性。"
+          : "Smart-money 13F holdings, single-stock valuation, and the macro funding backdrop.",
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://thecompounder.fyi/#website",
+        url: "https://thecompounder.fyi",
+        name: "Compounder",
+        alternateName: "复利",
+        inLanguage: isZh ? "zh-CN" : "en",
+        publisher: { "@id": "https://thecompounder.fyi/#org" },
+      },
+    ],
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10">
+    <div className="mx-auto max-w-5xl px-2 pb-10 pt-1 sm:pb-12 sm:pt-2">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       {/* Dateline (replaces hero) — subtle, low-profile */}

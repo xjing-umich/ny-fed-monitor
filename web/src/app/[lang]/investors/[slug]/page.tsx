@@ -330,11 +330,36 @@ export default async function InvestorSlugPage({
     ],
   };
 
+  // Person structured data — identifies the investor as an entity and links the
+  // fund they run, so search/AI engines can attribute holdings to a real person.
+  const person = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: manager.person,
+    url: `https://thecompounder.fyi/${lang}/investors/${manager.slug}`,
+    jobTitle: lang === "zh" ? "投资人" : "Investor",
+    worksFor: { "@type": "Organization", name: manager.name },
+    subjectOf: {
+      "@type": "Dataset",
+      name:
+        lang === "zh"
+          ? `${manager.person} 的 SEC 13F 持仓`
+          : `${manager.person}'s SEC 13F holdings`,
+      isAccessibleForFree: true,
+      ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
+      sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
+    },
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }}
       />
       <EntityPage
         lang={lang}
