@@ -32,6 +32,29 @@ export const getCusipMap = cache(async (): Promise<Map<string, CusipInfo>> => {
 });
 
 /**
+ * ticker → 交易所代码(Google Finance 用, 如 NASDAQ/NYSE)。无 env → 空 Map。
+ * 来源 securities.exchange(经 SEC 回填)。每次渲染缓存一次。
+ */
+export const getTickerExchangeMap = cache(async (): Promise<Map<string, string>> => {
+  if (!hasSupabaseEnv()) return new Map();
+  const db = getDb();
+  const out = new Map<string, string>();
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db.from("securities").select("ticker,exchange").range(from, from + 999);
+    if (error) {
+      console.error(`getTickerExchangeMap: securities 读取在 offset ${from} 失败: ${error.message}`);
+      break;
+    }
+    if (!data?.length) break;
+    for (const r of data as { ticker: string | null; exchange: string | null }[]) {
+      if (r.ticker && r.exchange) out.set(r.ticker, r.exchange);
+    }
+    if (data.length < 1000) break;
+  }
+  return out;
+});
+
+/**
  * ticker → 该 ticker 下的全部 cusip(用于按 ticker 聚合持有人)。无 env → []。
  * 从已缓存的全量 getCusipMap 派生,而非再发一次 DB 查询——个股页本就需要 getCusipMap
  * (做 cusip→ticker 重定向),复用它可省掉一次重复往返。cache() 再对同 ticker 去重。

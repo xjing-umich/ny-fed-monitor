@@ -1,7 +1,7 @@
-// 个股外部数据出口 URL 构造。纯函数, 仅依赖 ticker。无网络、无 DB, 可单测。
-// Google 用 Google Finance 的 quote 路径(裸 ticker, 无交易所后缀): Google 会自行
-// 跳转到对应 quote 页。securities.exchange 全为 "US", 无 NASDAQ/NYSE 信息拼后缀,
-// 但裸 ticker 形式仍稳定落到 Google Finance(而非 Google 搜索)。
+// 个股外部数据出口 URL 构造。纯函数, 无网络、无 DB, 可单测。
+// Google Finance 的 quote 页必须带交易所后缀(TICKER:EXCHANGE, 如 GOOG:NASDAQ);
+// 裸 ticker 会落到空白页。交易所由 securities.exchange 提供(经 SEC 回填为
+// NASDAQ/NYSE 等)。未知交易所则回退 Google 搜索, 避免空白链接。
 
 export type ExternalFinanceUrls = { yahoo: string; google: string; sec: string };
 
@@ -13,14 +13,21 @@ export function isLikelyTicker(s: string): boolean {
   return /^[A-Za-z]{1,6}(\.[A-Za-z])?$/.test(s);
 }
 
-/** ticker → Yahoo / Google / SEC EDGAR 三个 URL。 */
-export function buildExternalFinanceLinks(ticker: string): ExternalFinanceUrls {
+// Google Finance 能识别的交易所代码白名单(其余/未知 → 回退搜索)。
+const GF_EXCHANGES = new Set(["NASDAQ", "NYSE", "OTCMKTS", "NYSEAMERICAN", "NYSEARCA", "CBOE"]);
+
+/** ticker(+交易所) → Yahoo / Google Finance / SEC EDGAR 三个 URL。 */
+export function buildExternalFinanceLinks(ticker: string, exchange?: string | null): ExternalFinanceUrls {
   const t = ticker.trim().toUpperCase();
   const yahooSym = encodeURIComponent(t.replace(/\./g, "-")); // BRK.B → BRK-B
   const enc = encodeURIComponent(t); // encodeURIComponent 保留 "." 不变
+  const ex = (exchange ?? "").trim().toUpperCase();
+  const google = GF_EXCHANGES.has(ex)
+    ? `https://www.google.com/finance/quote/${enc}:${ex}` // 如 GOOG:NASDAQ
+    : `https://www.google.com/search?q=${enc}+stock`; // 未知交易所 → 回退搜索
   return {
     yahoo: `https://finance.yahoo.com/quote/${yahooSym}`,
-    google: `https://www.google.com/finance/quote/${enc}`,
+    google,
     sec: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=${enc}&type=10-K&count=40`,
   };
 }
