@@ -51,7 +51,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
           "@context": "https://schema.org",
           "@type": "ItemList",
           itemListElement: rankRows.slice(0, 20).map((r, i) => ({
-            "@type": "ListItem", position: i + 1, name: `${r.ticker} ${r.issuer}`,
+            "@type": "ListItem", position: i + 1, name: r.issuer,
           })),
         }) }}
       />
@@ -61,7 +61,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
           {isZh ? "共识持仓" : "Consensus holdings"}
         </h1>
         <p className="mt-2 text-sm text-[var(--tt-muted)]">
-          {isZh ? "最多超级投资者同时持有的股票，按持有大佬数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
+          {isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
         </p>
         <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
       </div>

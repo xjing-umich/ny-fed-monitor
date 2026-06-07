@@ -1,12 +1,13 @@
 import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
-import { formatUSD } from "@/lib/format";
+import { formatUSD, titleCase } from "@/lib/format";
+import { isLikelyTicker } from "@/lib/externalLinks";
 
 export type RankRow = {
   ticker: string;
   issuer: string;
-  primary: number;            // 主数字: 持有大佬数 / 动作大佬数
+  primary: number;            // 主数字: 持有投资者数 / 动作投资者数
   href: string;
   delta?: number | null;      // 共识页: 持有人净增减
   pctOfAggregate?: number;    // 共识页: 0–1
@@ -39,8 +40,8 @@ export function AggregateRankingList({
           <span className="w-6 shrink-0 font-display text-xl text-[var(--tt-faint)] tabular-nums">{i + 1}</span>
           <div className="min-w-0 flex-1">
             <Link href={r.href} className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
-              {r.ticker}
-              <span className="ml-2 font-normal text-[var(--tt-muted)]">{r.issuer}</span>
+              {titleCase(r.issuer)}
+              {isLikelyTicker(r.ticker) && <span className="ml-2 font-normal text-[var(--tt-muted)]">{r.ticker}</span>}
             </Link>
             <div className="mt-0.5 text-[11px] text-[var(--tt-faint)]">
               {r.pctOfAggregate != null && (isZh ? `占聚合 ${(r.pctOfAggregate * 100).toFixed(1)}%` : `${(r.pctOfAggregate * 100).toFixed(1)}% of aggregate`)}

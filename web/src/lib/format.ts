@@ -9,6 +9,11 @@ export function formatUSD(v: number): string {
   return `$${v.toLocaleString()}`;
 }
 
+/** 把全大写的发行人名(如 "AMAZON COM INC")转为标题大小写("Amazon Com Inc")。 */
+export function titleCase(s: string): string {
+  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim();
+}
+
 /**
  * Returns "up" if value starts with "+", "down" if value starts with "-" followed by a digit,
  * null otherwise (unsigned numbers, "Unavailable", etc.).

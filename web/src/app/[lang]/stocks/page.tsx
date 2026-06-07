@@ -37,7 +37,7 @@ export default async function StocksDirectoryPage({ params }: { params: Promise<
           {isZh ? "个股目录" : "Stock directory"}
         </h1>
         <p className="mt-2 text-sm text-[var(--tt-muted)]">
-          {isZh ? "顶级投资者 13F 覆盖的全部个股。想看哪只票被最多大佬持有？" : "Every stock covered by superinvestor 13F filings. Looking for what the most superinvestors hold?"}
+          {isZh ? "顶级投资者 13F 覆盖的全部个股。想看哪只票被最多投资者持有？" : "Every stock covered by superinvestor 13F filings. Looking for what the most superinvestors hold?"}
           <Link href={`/${lang}/investors/consensus`} className="ml-1 text-[var(--tt-accent)] no-underline hover:underline">
             {isZh ? "查看共识持仓榜 →" : "See the consensus ranking →"}
           </Link>

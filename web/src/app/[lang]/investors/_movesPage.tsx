@@ -45,7 +45,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
           "@context": "https://schema.org",
           "@type": "ItemList",
           itemListElement: rankRows.slice(0, 20).map((r, i) => ({
-            "@type": "ListItem", position: i + 1, name: `${r.ticker} ${r.issuer}`,
+            "@type": "ListItem", position: i + 1, name: r.issuer,
           })),
         }) }}
       />
@@ -56,7 +56,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
         <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
       </div>
       <AggregateBlurb text={movesBlurb(blurbRows, side, lang)} />
-      <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "位大佬" : "managers"} />
+      <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "位投资者" : "managers"} />
     </div>
   );
 }
