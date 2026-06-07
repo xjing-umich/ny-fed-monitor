@@ -8,6 +8,7 @@ import { getLatestPrice, fmtPriceFact } from "@/lib/managers/priceRead";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
+import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD } from "@/lib/format";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
@@ -217,6 +218,16 @@ export default async function StockTickerPage({
     { label: lang === "zh" ? "持有人数" : "Holder count", value: String(n) },
     { label: lang === "zh" ? "合计市值" : "Total value held", value: formatUSD(totalValue) },
     { label: lang === "zh" ? "最大持有人" : "Largest holder", value: topHolder.person },
+    // 外部数据出口(仅在以真实 ticker 命中时, 即该 ticker 已解析到 cusip 时显示)
+    ...(cusipsForTicker.length > 0
+      ? [{
+          label: lang === "zh" ? "外部数据" : "External",
+          value: "",
+          node: (
+            <ExternalFinanceLinks ticker={ticker} variant="detail" lang={lang} />
+          ),
+        }]
+      : []),
   ];
 
   const related = [...holders]
