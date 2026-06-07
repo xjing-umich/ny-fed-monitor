@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { ManagerIndex, ManagerDetail } from "@/lib/managers/types";
 import { hasSupabaseEnv } from "@/lib/managers/db";
 import * as supa from "@/lib/managers/supabase";
@@ -19,12 +20,14 @@ function jsonDetail(cikOrSlug: string): ManagerDetail | null {
   return JSON_DETAILS.find((d) => d.manager.cik === cikOrSlug || d.manager.slug === cikOrSlug) ?? null;
 }
 
-export async function getManagerIndex(): Promise<ManagerIndex> {
+// cache(): 同一请求内对相同入参去重(generateMetadata 与 page 组件、以及
+// 扫描/个股页对同一 manager 的重复读取共享一次查询),避免重复往返 Supabase。
+export const getManagerIndex = cache(async (): Promise<ManagerIndex> => {
   if (hasSupabaseEnv()) return supa.getManagerIndex(new Date().toISOString());
   return jsonIndex();
-}
+});
 
-export async function getManagerDetail(cikOrSlug: string): Promise<ManagerDetail | null> {
+export const getManagerDetail = cache(async (cikOrSlug: string): Promise<ManagerDetail | null> => {
   if (hasSupabaseEnv()) return supa.getManagerDetail(cikOrSlug);
   return jsonDetail(cikOrSlug);
-}
+});

@@ -31,14 +31,17 @@ export const getCusipMap = cache(async (): Promise<Map<string, CusipInfo>> => {
   return rowsToCusipMap(rows);
 });
 
-/** ticker → 该 ticker 下的全部 cusip(用于按 ticker 聚合持有人)。无 env → []。 */
-export async function tickerToCusips(ticker: string): Promise<string[]> {
-  if (!hasSupabaseEnv()) return [];
-  const db = getDb();
-  const { data, error } = await db.from("security_cusips").select("cusip").eq("ticker", ticker);
-  if (error) {
-    console.error(`tickerToCusips(${ticker}) 失败: ${error.message}`);
-    return [];
+/**
+ * ticker → 该 ticker 下的全部 cusip(用于按 ticker 聚合持有人)。无 env → []。
+ * 从已缓存的全量 getCusipMap 派生,而非再发一次 DB 查询——个股页本就需要 getCusipMap
+ * (做 cusip→ticker 重定向),复用它可省掉一次重复往返。cache() 再对同 ticker 去重。
+ */
+export const tickerToCusips = cache(async (ticker: string): Promise<string[]> => {
+  const map = await getCusipMap();
+  if (map.size === 0) return [];
+  const out: string[] = [];
+  for (const [cusip, info] of map) {
+    if (info.ticker === ticker) out.push(cusip);
   }
-  return (data ?? []).map((r: { cusip: string }) => r.cusip);
-}
+  return out;
+});
