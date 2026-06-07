@@ -24,7 +24,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavItem[]> = {
     { key: "consensus", zh: "共识持仓", en: "Consensus", href: "/investors/consensus" },
   ],
   stocks: [
-    { key: "directory", zh: "个股目录", en: "Directory", href: "/stocks" },
+    { key: "held", zh: "最多机构持有", en: "Most held", href: "/stocks" },
   ],
   macro: [
     { key: "funding", zh: "资金面", en: "Funding", href: "/macro#funding" },
