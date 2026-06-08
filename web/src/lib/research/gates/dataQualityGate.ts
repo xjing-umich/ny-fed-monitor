@@ -109,7 +109,7 @@ export function dataQualityGate(data: NormalizedResearchData): DataQualityGateRe
   const forbidden_claims = unique([
     ...ALWAYS_FORBIDDEN,
     ...THIRTEEN_F_FORBIDDEN,
-    ...(!valuationAvailable ? VALUATION_FORBIDDEN : []),
+    ...VALUATION_FORBIDDEN,
     ...(!fundamentalsAvailable ? FUNDAMENTAL_FORBIDDEN : []),
     ...(!peerAvailable ? PEER_FORBIDDEN : []),
     ...(!externalEvidenceAvailable ? EXTERNAL_RISK_FORBIDDEN : []),
@@ -149,7 +149,9 @@ export function dataQualityGate(data: NormalizedResearchData): DataQualityGateRe
     "The workflow is a data-quality-aware equity research assistant, not an automated trading system.",
     "No buy, sell, hold, target price, broker execution, or automated trading output is allowed.",
     !fundamentalsAvailable ? "Fundamental quality, profitability, FCF quality, balance sheet strength, ROIC, and ROE claims are disabled." : "",
-    !valuationAvailable ? "Valuation conclusions such as cheap, expensive, undervalued, overvalued, fair value, target price, upside, downside, and margin of safety are disabled." : "",
+    valuationAvailable
+      ? "Valuation metrics may be discussed only as historical/point-in-time ratios; cheap, expensive, undervalued, overvalued, fair value, target price, upside, downside, and margin of safety claims remain disabled."
+      : "Valuation conclusions such as cheap, expensive, undervalued, overvalued, fair value, target price, upside, downside, and margin of safety are disabled.",
     thirteenFAvailable ? "13F data is lagged and supports disclosed holdings only, not real-time holdings or investor motivation." : "",
     !peerAvailable ? "Peer-relative claims such as best-in-class, market leader, better than peers, and industry leader are disabled." : "",
     !externalEvidenceAvailable ? "External risk claims such as regulatory, litigation, competition, churn, management, or geopolitical risks are disabled unless provided as evidence." : "",
