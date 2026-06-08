@@ -54,11 +54,16 @@ export default async function ArticlePage({
     "@type": "Article",
     headline: article.title,
     description: article.description,
+    image: `https://thecompounder.fyi/${lang}/learn/${slug}/opengraph-image`,
     datePublished: article.updated,
     dateModified: article.updated,
     inLanguage: lang === "zh" ? "zh-CN" : "en",
-    author: { "@type": "Organization", name: "Compounder" },
-    publisher: { "@type": "Organization", name: "Compounder" },
+    author: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
+    publisher: {
+      "@type": "Organization",
+      name: "Compounder",
+      logo: { "@type": "ImageObject", url: "https://thecompounder.fyi/icon.png" },
+    },
     mainEntityOfPage: `https://thecompounder.fyi/${lang}/learn/${slug}`,
   };
 
