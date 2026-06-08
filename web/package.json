@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:research-workflow": "tsx scripts/tests/research-workflow.ts",
+    "test:sec-data-layer": "tsx scripts/tests/sec-data-layer.ts",
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
     "consensus": "tsx scripts/consensus.ts",
