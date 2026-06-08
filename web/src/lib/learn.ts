@@ -188,12 +188,99 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       ],
     },
   },
+  "reading-cross-fund-consensus": {
+    en: {
+      slug: "reading-cross-fund-consensus",
+      title: "Reading Cross-Fund Consensus",
+      description:
+        "Which stocks the most superinvestors hold at once — what that overlap tells you, where it misleads, and how to use cross-fund consensus as a starting point rather than a buy signal.",
+      updated: "2026-06-08",
+      intro:
+        "Compounder's stock pages are built around one idea: counting how many superinvestors hold the same company at the same time. We call that cross-fund consensus, and it's the first thing you see when you open the Stocks page. A high number looks like a strong signal. Sometimes it is. More often it's less than it appears, and telling the difference is most of the value.",
+      sections: [
+        {
+          heading: "What consensus means here",
+          paragraphs: [
+            "Consensus here is a plain count. For every stock, we look across the superinvestors we track and tally how many of them held it as of their latest 13F. Hold the same name as two or more of them and the stock shows up on the Stocks page, ranked by that holder count.",
+            "We draw the line at two on purpose. One famous investor owning something tells you about that one investor. Several owning the same thing, each doing their own work, is a different kind of evidence. Two is the point where overlap starts to mean anything at all.",
+          ],
+        },
+        {
+          heading: "Why overlap is worth a look",
+          paragraphs: [
+            "When people who don't talk to each other reach the same conclusion, it's worth asking why. They've each run their own numbers and still landed on the same company. That doesn't make them right, but it does make the company a reasonable place to start reading.",
+            "Consensus works best as a filter, not a verdict. There are thousands of public companies. A short list of the ones serious, independent investors keep returning to is a shortcut to the businesses worth understanding first. Treat it as a reading list drawn up by people who read carefully.",
+          ],
+        },
+        {
+          heading: "Why consensus can mislead",
+          paragraphs: [
+            "Now the catch. A high holder count can fool you in a few ways, and the data behind it carries the same blind spots every 13F does.",
+            "The investors aren't as independent as the count suggests. Many of them read the same letters, sit in the same conferences, and came up through the same handful of firms. When a dozen of them own one stock, you may be seeing a single good idea that spread, not a dozen separate ones.",
+            "The filings are old. A 13F can lag the real portfolio by up to 45 days, so a consensus you read today was assembled from positions held weeks or months ago. Some of those investors may already be out.",
+            "And a crowd says nothing about price. Each of those investors bought at a different time, at a different cost, for reasons the filing never shows. A stock twenty funds own is not therefore cheap. It might be expensive precisely because it's popular.",
+          ],
+        },
+        {
+          heading: "How to use it on Compounder",
+          paragraphs: [
+            "Use consensus to find candidates, then set it aside. Open the Stocks page, see which companies the most investors hold, and let that point you toward names worth a closer look. At that point the count has done its job.",
+            "The real work starts on the individual stock and investor pages: who holds it, how that group has shifted over the last few quarters, whether the people buying are ones whose thinking you respect. A position someone keeps adding to says more than a crowd that happened to be holding on one particular day.",
+            "None of this is a buy signal, and none of it is advice. Consensus shows you where thoughtful investors have been looking. Whether any of it belongs in your own portfolio is a question only you can answer, once you understand the business yourself.",
+          ],
+        },
+      ],
+    },
+    zh: {
+      slug: "reading-cross-fund-consensus",
+      title: "读懂跨基金共识",
+      description:
+        "哪些股票被最多超级投资者同时持有——这种重叠能告诉你什么、又会在哪里骗你,以及怎样把跨基金共识当作研究起点,而不是买入信号。",
+      updated: "2026-06-08",
+      intro:
+        "Compounder 的个股页面就围着一件事转:数一数有多少位超级投资者在同一时间持有同一家公司。我们管这叫跨基金共识,你一打开「个股」页,最先看到的就是它。数字高,看上去像个强信号。有时候确实是,但更多时候它没看起来那么重,而能不能分清这点,正是它大半的价值。",
+      sections: [
+        {
+          heading: "这里说的「共识」是什么",
+          paragraphs: [
+            "这里的「共识」就是个简单的计数。对每只股票,我们把追踪的超级投资者过一遍,数出在他们最新一份 13F 里持有它的有几位。被其中两位或更多人持有,这只股票就会出现在「个股」页上,按持有人数排序。",
+            "我们特意把线划在「两位」。一位名气大的投资者持有某样东西,告诉你的是关于他这一个人的事;好几位各自做功课的人持有同一样东西,则是另一种证据。两位,正是重叠开始有点意义的那个门槛。",
+          ],
+        },
+        {
+          heading: "重叠为什么值得看",
+          paragraphs: [
+            "当一群互不通气的人得出同一个结论,这事值得问个为什么。他们各自算过账,最后还是落到了同一家公司上。这不代表他们对,但确实让这家公司成了一个合理的阅读起点。",
+            "共识最好用的时候,是当成筛子,而不是判决。上市公司成千上万,而一份「严肃、独立的投资者反复回头看」的短名单,是条捷径,帮你先去搞懂那些最值得搞懂的生意。把它当成一份阅读清单,由一群读得很仔细的人开出来的。",
+          ],
+        },
+        {
+          heading: "共识为什么会骗你",
+          paragraphs: [
+            "现在说说陷阱。一个高持有人数能从好几个方向骗到你,而它背后的数据,也带着每份 13F 都有的那些盲点。",
+            "这些投资者,没有计数显示得那么独立。他们里很多人读同样的信、坐同样的会、出自同样那几家公司。当一打人持有同一只股票,你看到的可能是一个好点子传开了,而不是一打各自独立的点子。",
+            "申报是旧的。13F 最多能比真实组合滞后 45 天,所以你今天读到的共识,是用几周甚至几个月前的仓位拼出来的。其中一些人,可能早就出来了。",
+            "而且,扎堆这件事,对价格只字未提。那些投资者每一位都在不同时间、以不同成本、出于你在申报里看不到的理由买入。一只被二十家基金持有的股票,并不因此就便宜。它可能恰恰因为热门而贵。",
+          ],
+        },
+        {
+          heading: "在 Compounder 上怎么用",
+          paragraphs: [
+            "用共识来找候选,然后就把它放下。打开「个股」页,看哪些公司被最多投资者持有,让它把你引向值得细看的名字。到这一步,计数的活儿就干完了。",
+            "真正的功夫,从个股页和投资者页才开始:谁在持有、这群人过去几个季度怎么变的、正在买入的是不是你尊重其思路的人。一个有人不断加仓的仓位,比某一天碰巧被一群人拿着,要说明问题得多。",
+            "这一切都不是买入信号,也都不是投资建议。共识让你看到用心的投资者一直在看哪里;这其中有没有哪样该进你自己的组合,是个只有你能回答的问题——在你自己搞懂了那门生意之后。",
+          ],
+        },
+      ],
+    },
+  },
 };
 
 // Display order on the index page.
 export const ARTICLE_SLUGS: string[] = [
   "how-to-read-a-13f",
   "what-is-a-superinvestor",
+  "reading-cross-fund-consensus",
 ];
 
 export function getArticle(slug: string, lang: Lang): Article | undefined {
