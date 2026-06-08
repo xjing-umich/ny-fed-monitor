@@ -1,6 +1,6 @@
 import "server-only";
 import type {
-  ManagerIndex, ManagerSummary, ManagerDetail, Manager, FilingData, Holding, HoldingChange,
+  ManagerIndex, ManagerSummary, ManagerDetail, Manager, FilingData, Holding, HoldingChange, ManagerQoQ,
 } from "@/lib/managers/types";
 import { getDb } from "@/lib/managers/db";
 
@@ -78,6 +78,37 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
   );
   const out = rows.filter((x): x is IndexRow => x !== null);
   return mapIndexRows(out, generatedAt);
+}
+
+// manager_qoq RPC 行(snake_case, 与 SQL 函数 returns table 一一对应)。
+type QoQRow = {
+  cik: string;
+  value_delta_pct: number | null;
+  count_delta: number | null;
+  verdict: string | null;
+  top_move_issuer: string | null;
+  top_move_kind: string | null;
+};
+
+/**
+ * 每户季度变化信号 Map(cik → ManagerQoQ)。仅 /investors 列表页调用。
+ * 函数未部署/出错 → 返回空 Map(优雅降级,列表不显 QoQ,不抛)。
+ */
+export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
+  const out = new Map<string, ManagerQoQ>();
+  const db = getDb();
+  const { data, error } = await db.rpc("manager_qoq");
+  if (error || !data) return out;
+  for (const r of data as QoQRow[]) {
+    out.set(r.cik, {
+      valueDeltaPct: r.value_delta_pct,
+      countDelta: r.count_delta,
+      verdict: (r.verdict as ManagerQoQ["verdict"]) ?? null,
+      topMoveIssuer: r.top_move_issuer,
+      topMoveKind: (r.top_move_kind as ManagerQoQ["topMoveKind"]) ?? null,
+    });
+  }
+  return out;
 }
 
 export async function getManagerDetail(cikOrSlug: string): Promise<ManagerDetail | null> {

@@ -51,3 +51,12 @@ export type ManagerIndex = {
   generatedAt: string;
   managers: ManagerSummary[];
 };
+
+/** 列表页季度变化信号(来自 manager_qoq RPC)。各字段为 null 表示无 prior/无变动。 */
+export type ManagerQoQ = {
+  valueDeltaPct: number | null;
+  countDelta: number | null;
+  verdict: "buying" | "selling" | "mixed" | null;
+  topMoveIssuer: string | null;
+  topMoveKind: "new" | "exited" | "increased" | "decreased" | null;
+};

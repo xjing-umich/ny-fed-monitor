@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import type { ManagerIndex, ManagerDetail } from "@/lib/managers/types";
+import type { ManagerIndex, ManagerDetail, ManagerQoQ } from "@/lib/managers/types";
 import { hasSupabaseEnv } from "@/lib/managers/db";
 import * as supa from "@/lib/managers/supabase";
 import indexJson from "@/data/13f/index.json";
@@ -25,6 +25,13 @@ function jsonDetail(cikOrSlug: string): ManagerDetail | null {
 export const getManagerIndex = cache(async (): Promise<ManagerIndex> => {
   if (hasSupabaseEnv()) return supa.getManagerIndex(new Date().toISOString());
   return jsonIndex();
+});
+
+// 列表页季度变化信号:有 Supabase 走 RPC,否则空 Map(JSON 兜底数据无 QoQ)。
+// cache() 使同一请求内多次调用只查一次。
+export const getManagerQoQ = cache(async (): Promise<Map<string, ManagerQoQ>> => {
+  if (hasSupabaseEnv()) return supa.getManagerQoQ();
+  return new Map();
 });
 
 export const getManagerDetail = cache(async (cikOrSlug: string): Promise<ManagerDetail | null> => {

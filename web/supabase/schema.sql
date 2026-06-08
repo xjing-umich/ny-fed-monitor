@@ -361,3 +361,97 @@ as $$
     limit 1
   ) f on true;
 $$;
+
+-- ── manager_qoq() ───────────────────────────────────────────────────────────
+-- 投资人列表页季度变化信号:每户返回 市值环比% / 持仓数Δ / 整体买卖向 / 本季最大动作。
+-- 仅 /investors 列表页调用一次(非根布局热路径),库内一次算完 holdings diff,故对全站
+-- 取数零影响。函数缺失时应用层 getManagerQoQ 返回空 → 列表优雅退回无 QoQ。
+-- 口径与详情页 getManagerDetail 的 changes/verdict 一致:
+--   buy=new+increased, sell=exited+decreased(按持股数 shares 判定真实买卖,不受股价漂移影响)。
+-- 部署:Supabase SQL Editor 执行;若 PostgREST 报找不到函数 → notify pgrst, 'reload schema';
+create or replace function manager_qoq()
+returns table (
+  cik text,
+  value_delta_pct double precision,   -- null: 无 prior 或 prior.total_value=0
+  count_delta int,                     -- null: 无 prior
+  verdict text,                        -- 'buying' | 'selling' | 'mixed' | null(无prior)
+  top_move_issuer text,                -- null: 无 prior 或无变动
+  top_move_kind text                   -- 'new'|'exited'|'increased'|'decreased' | null
+)
+language sql
+stable
+as $$
+  with latest as (
+    select distinct on (f.cik)
+      f.cik, f.id as filing_id, f.period, f.total_value, f.holding_count
+    from filings f
+    order by f.cik, f.period desc
+  ),
+  prior as (
+    select distinct on (f.cik)
+      f.cik, f.id as filing_id, f.total_value, f.holding_count
+    from filings f
+    join latest l on l.cik = f.cik and f.period < l.period
+    order by f.cik, f.period desc
+  ),
+  hl as (
+    select l.cik, h.cusip, h.issuer, h.value, h.shares
+    from latest l join holdings h on h.filing_id = l.filing_id
+  ),
+  hp as (
+    select p.cik, h.cusip, h.issuer, h.value, h.shares
+    from prior p join holdings h on h.filing_id = p.filing_id
+  ),
+  diff as (
+    select
+      coalesce(hl.cik, hp.cik) as cik,
+      coalesce(hl.issuer, hp.issuer) as issuer,
+      case
+        when hp.cusip is null then 'new'
+        when hl.cusip is null then 'exited'
+        when hl.shares > hp.shares then 'increased'
+        when hl.shares < hp.shares then 'decreased'
+        else 'unchanged'
+      end as kind,
+      case
+        when hp.cusip is null then coalesce(hl.value, 0)
+        when hl.cusip is null then coalesce(hp.value, 0)
+        else abs(coalesce(hl.value, 0) - coalesce(hp.value, 0))
+      end as impact,
+      coalesce(hl.value, 0) as latest_value
+    from hl
+    full outer join hp on hp.cik = hl.cik and hp.cusip = hl.cusip
+  ),
+  verdicts as (
+    select cik,
+      count(*) filter (where kind in ('new','increased'))  as buys,
+      count(*) filter (where kind in ('exited','decreased')) as sells
+    from diff
+    where kind <> 'unchanged'
+    group by cik
+  ),
+  topmove as (
+    select distinct on (cik) cik, issuer as top_move_issuer, kind as top_move_kind
+    from diff
+    where kind <> 'unchanged'
+    order by cik, impact desc, latest_value desc
+  )
+  select
+    l.cik,
+    case when p.cik is not null and p.total_value > 0
+         then (l.total_value - p.total_value)::double precision / p.total_value
+         else null end as value_delta_pct,
+    case when p.cik is not null
+         then l.holding_count - p.holding_count
+         else null end as count_delta,
+    case when p.cik is null then null
+         when coalesce(v.buys,0) > coalesce(v.sells,0) then 'buying'
+         when coalesce(v.sells,0) > coalesce(v.buys,0) then 'selling'
+         else 'mixed' end as verdict,
+    tm.top_move_issuer,
+    tm.top_move_kind
+  from latest l
+  left join prior   p  on p.cik  = l.cik
+  left join verdicts v on v.cik = l.cik
+  left join topmove tm on tm.cik = l.cik;
+$$;

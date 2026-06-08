@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
-import type { Holding, HoldingChange } from "@/lib/managers/types";
+import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -64,25 +64,83 @@ export async function generateMetadata({
 const HOLD_COPY = {
   zh: {
     title: "持仓明细",
-    cols: { issuer: "标的", value: "市值", shares: "持股数", weight: "权重" },
+    cols: { issuer: "标的", value: "市值", shares: "持股数", weight: "权重(上季→本季)" },
     truncated: (n: number, total: number) => `显示前 ${n} 条，共 ${total} 个持仓`,
+    newPos: "新建",
+    exitedTitle: (n: number) => `本季清仓 (${n})`,
+    more: (n: number) => `… 等 ${n} 只`,
   },
   en: {
     title: "Holdings",
-    cols: { issuer: "Security", value: "Value", shares: "Shares", weight: "Weight" },
+    cols: { issuer: "Security", value: "Value", shares: "Shares", weight: "Weight (prev→now)" },
     truncated: (n: number, total: number) => `Showing top ${n} of ${total} positions`,
+    newPos: "New",
+    exitedTitle: (n: number) => `Exited this quarter (${n})`,
+    more: (n: number) => `… +${n} more`,
   },
 } as const;
 
-function HoldingsTable({ holdings, lang }: { holdings: Holding[]; lang: Lang }): React.ReactElement {
+const fmtPct1 = (w: number | undefined): string =>
+  w != null ? `${(w * 100).toFixed(1)}%` : "—";
+
+/** QoQ 权重单元格: 数字取权重, 箭头/色取自 change.kind(持股口径)。 */
+function WeightQoQ({
+  cur,
+  prior,
+  kind,
+  lang,
+}: {
+  cur?: number;
+  prior?: number;
+  kind?: HoldingChange["kind"];
+  lang: Lang;
+}): React.ReactElement {
+  const t = HOLD_COPY[lang];
+  // 新建: prior 不存在该持仓
+  if (prior == null) {
+    return (
+      <span className="font-mono tabular-nums text-[var(--tt-positive)]">
+        {t.newPos} · {fmtPct1(cur)}
+      </span>
+    );
+  }
+  const arrow = kind === "increased" ? "▲" : kind === "decreased" ? "▼" : "";
+  const colorClass =
+    kind === "increased"
+      ? "text-[var(--tt-positive)]"
+      : kind === "decreased"
+      ? "text-[var(--tt-warn)]"
+      : "text-[var(--tt-faint)]";
+  return (
+    <span className="font-mono tabular-nums text-[var(--tt-muted)]">
+      {fmtPct1(prior)} <span className={colorClass}>→ {fmtPct1(cur)} {arrow}</span>
+    </span>
+  );
+}
+
+function HoldingsTable({
+  holdings,
+  prior,
+  changes,
+  lang,
+}: {
+  holdings: Holding[];
+  prior?: FilingData;
+  changes: HoldingChange[];
+  lang: Lang;
+}): React.ReactElement {
   const t = HOLD_COPY[lang];
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
 
+  const priorByCusip = new Map((prior?.holdings ?? []).map((h) => [h.cusip, h]));
+  const changeByCusip = new Map(changes.map((c) => [c.cusip, c]));
+  const exits = changes.filter((c) => c.kind === "exited");
+  const EXIT_CAP = 12;
+
   return (
     <section>
-      {/* Section label with hairline rule */}
       <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
         <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
           {t.title}
@@ -92,158 +150,55 @@ function HoldingsTable({ holdings, lang }: { holdings: Holding[]; lang: Lang }):
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-[var(--tt-border)]">
-              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
-                {t.cols.issuer}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
-                {t.cols.value}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
-                {t.cols.shares}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-24">
-                {t.cols.weight}
-              </th>
+              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">{t.cols.issuer}</th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">{t.cols.value}</th>
+              <th className="hidden sm:table-cell pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">{t.cols.shares}</th>
+              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-40">{t.cols.weight}</th>
             </tr>
           </thead>
           <tbody>
-            {capped.map((h, i) => (
-              <tr
-                key={h.cusip}
-                className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
-              >
-                <td className="py-3 pr-4">
-                  <Link
-                    href={stockPath(lang, h.cusip)}
-                    className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
-                  >
-                    {h.issuer}
-                  </Link>
-                  <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">
-                    {h.cusip}
-                  </span>
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
-                  {formatUSD(h.value)}
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
-                  {h.shares.toLocaleString()}
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
-                  {h.weight != null ? `${(h.weight * 100).toFixed(2)}%` : "—"}
-                </td>
-              </tr>
-            ))}
+            {capped.map((h) => {
+              const ph = priorByCusip.get(h.cusip);
+              const ch = changeByCusip.get(h.cusip);
+              return (
+                <tr key={h.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
+                  <td className="py-3 pr-4">
+                    <Link href={stockPath(lang, h.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors">
+                      {h.issuer}
+                    </Link>
+                    <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">{h.cusip}</span>
+                  </td>
+                  <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">{formatUSD(h.value)}</td>
+                  <td className="hidden sm:table-cell py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">{h.shares.toLocaleString()}</td>
+                  <td className="py-3 text-right text-[13px]">
+                    <WeightQoQ cur={h.weight} prior={ph?.weight} kind={ch?.kind} lang={lang} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
       {truncated && (
-        <p className="mt-2 text-xs text-[var(--tt-faint)]">
-          {t.truncated(MAX_HOLDINGS, sorted.length)}
-        </p>
+        <p className="mt-2 text-xs text-[var(--tt-faint)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
       )}
-    </section>
-  );
-}
 
-// ── Changes section ───────────────────────────────────────────────────────────
-
-const CHANGE_COPY = {
-  zh: {
-    title: "环比变动",
-    new: "新建",
-    exited: "清仓",
-    increased: "加仓",
-    decreased: "减仓",
-    none: "—",
-  },
-  en: {
-    title: "Quarter Changes",
-    new: "New",
-    exited: "Exited",
-    increased: "Added",
-    decreased: "Trimmed",
-    none: "—",
-  },
-} as const;
-
-const KIND_COLOR: Record<HoldingChange["kind"], string> = {
-  new:       "text-[var(--tt-positive)]",
-  exited:    "text-[var(--tt-negative)]",
-  increased: "text-[var(--tt-accent)]",
-  decreased: "text-[var(--tt-warn)]",
-};
-
-function ChangeGroup({
-  label,
-  items,
-  kind,
-}: {
-  label: string;
-  items: HoldingChange[];
-  kind: HoldingChange["kind"];
-}): React.ReactElement {
-  const colorClass = KIND_COLOR[kind];
-  return (
-    <div className="border-t border-[var(--tt-border)] pt-3">
-      <div className={`text-[10px] font-medium uppercase tracking-[0.1em] mb-2 ${colorClass}`}>
-        {label}
-      </div>
-      <div>
-        {items.length === 0 ? (
-          <div className="text-xs text-[var(--tt-faint)]">—</div>
-        ) : (
-          items.map((c) => (
-            <div
-              key={c.cusip}
-              className="flex items-center justify-between gap-2 py-1 border-b border-[var(--tt-border)] last:border-0"
-            >
-              <span className="text-xs text-[var(--tt-text)] truncate flex-1">{c.issuer}</span>
-              {(kind === "increased" || kind === "decreased") && c.deltaPct != null ? (
-                <span className={`font-mono tabular-nums text-[11px] flex-shrink-0 ${colorClass}`}>
-                  {kind === "increased" ? "+" : ""}
-                  {(c.deltaPct * 100).toFixed(1)}%
-                </span>
-              ) : (
-                <span className="font-mono tabular-nums text-[11px] text-[var(--tt-faint)] flex-shrink-0">
-                  {formatUSD(c.value)}
-                </span>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ChangesSection({ changes, lang }: { changes: HoldingChange[]; lang: Lang }): React.ReactElement {
-  const t = CHANGE_COPY[lang];
-  const groups: { kind: HoldingChange["kind"]; label: string }[] = [
-    { kind: "new",       label: `${t.new} (${changes.filter((c) => c.kind === "new").length})` },
-    { kind: "exited",   label: `${t.exited} (${changes.filter((c) => c.kind === "exited").length})` },
-    { kind: "increased",label: `${t.increased} (${changes.filter((c) => c.kind === "increased").length})` },
-    { kind: "decreased",label: `${t.decreased} (${changes.filter((c) => c.kind === "decreased").length})` },
-  ];
-
-  return (
-    <section>
-      {/* Section label with hairline rule */}
-      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-          {t.title}
-        </span>
-      </div>
-      <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-        {groups.map(({ kind, label }) => (
-          <ChangeGroup
-            key={kind}
-            label={label}
-            items={changes.filter((c) => c.kind === kind).slice(0, 8)}
-            kind={kind}
-          />
-        ))}
-      </div>
+      {exits.length > 0 && (
+        <div className="mt-4 border-t border-[var(--tt-border)] pt-3">
+          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-negative)]">
+            {t.exitedTitle(exits.length)}
+          </span>
+          <span className="ml-2 text-sm text-[var(--tt-muted)]">
+            {exits.slice(0, EXIT_CAP).map((c, i) => (
+              <React.Fragment key={c.cusip}>
+                {i > 0 && "、"}
+                <Link href={stockPath(lang, c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{c.issuer}</Link>
+              </React.Fragment>
+            ))}
+            {exits.length > EXIT_CAP && <span className="text-[var(--tt-faint)]">{t.more(exits.length - EXIT_CAP)}</span>}
+          </span>
+        </div>
+      )}
     </section>
   );
 }
@@ -297,23 +252,41 @@ export default async function InvestorSlugPage({
       ? [...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer
       : "—";
 
+  // 组合级 QoQ(无 prior 时不显环比)
+  const valDeltaPct =
+    prior && prior.totalValue > 0 ? (latest.totalValue - prior.totalValue) / prior.totalValue : null;
+  const cntDelta = prior ? latest.holdings.length - prior.holdings.length : 0;
+  const sign = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
+  const deltaClass = (n: number) =>
+    n > 0 ? "text-[var(--tt-positive)]" : n < 0 ? "text-[var(--tt-warn)]" : "text-[var(--tt-faint)]";
+
+  const valueNode = (
+    <span className="tnum font-mono text-xl font-medium leading-none text-card-foreground">
+      {formatUSD(latest.totalValue)}
+      {valDeltaPct != null && valDeltaPct !== 0 && (
+        <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
+          （{lang === "zh" ? "环比 " : ""}{sign(valDeltaPct)}
+          {Math.abs(valDeltaPct * 100).toFixed(0)}%）
+        </span>
+      )}
+    </span>
+  );
+  const countNode = (
+    <span className="tnum font-mono text-xl font-medium leading-none text-card-foreground">
+      {latest.holdings.length}
+      {cntDelta !== 0 && (
+        <span className={`ml-1.5 text-xs ${deltaClass(cntDelta)}`}>
+          （{sign(cntDelta)}{Math.abs(cntDelta)}）
+        </span>
+      )}
+    </span>
+  );
+
   const keyFacts = [
-    {
-      label: lang === "zh" ? "组合市值" : "Portfolio value",
-      value: formatUSD(latest.totalValue),
-    },
-    {
-      label: lang === "zh" ? "持仓数" : "Holdings",
-      value: String(latest.holdings.length),
-    },
-    {
-      label: lang === "zh" ? "最新报告期" : "Latest period",
-      value: latest.period,
-    },
-    {
-      label: lang === "zh" ? "第一大持仓" : "Top holding",
-      value: topHolding,
-    },
+    { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(latest.totalValue), node: valueNode },
+    { label: lang === "zh" ? "持仓数" : "Holdings", value: String(latest.holdings.length), node: countNode },
+    { label: lang === "zh" ? "最新报告期" : "Latest period", value: latest.period },
+    { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
   ];
 
   // Subtitle
@@ -328,8 +301,6 @@ export default async function InvestorSlugPage({
     .filter((m) => m.slug !== slug)
     .slice(0, 6)
     .map((m) => ({ label: m.person, href: investorPath(lang, m.slug) }));
-
-  const hasChanges = changes.length > 0 && prior != null;
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -392,8 +363,7 @@ export default async function InvestorSlugPage({
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
         related={related}
       >
-        <HoldingsTable holdings={latest.holdings} lang={lang} />
-        {hasChanges && <ChangesSection changes={changes} lang={lang} />}
+        <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} />
       </EntityPage>
     </>
   );
