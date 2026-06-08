@@ -77,11 +77,12 @@ export type HealthReport = {
 
 读 `market_freshness_status`（每源 `latest_observation_date` / `freshness_status` / `checked_at`）+ `market_data_sources`（`name` / `expected_lag_days` / `is_manual` / `update_frequency`）。
 
-两套信号分工明确：信号 1 **独立**核查（抓"管道没跑"，不信任何自报），信号 2 **直接采信管道自报的 `freshness_status`**（管道确实跑了、诚实报告 stale/failed，无需重算）。这样既独立抓住最危险的"没跑"，又不重复造判定逻辑。
+两套信号分工明确：信号 1 **独立**核查（抓"管道没跑"，不信任何自报），信号 2 **采信管道自报的 `freshness_status`** 但**只在真失败时告警**（`failed`/`empty`），天然滞后的 `stale` 降级为参考信息。这样既独立抓住最危险的"没跑"，又不为周更源的天然滞后刷屏。
 
 - **信号 1 · 管道停跑（独立）**：所有源的 `max(checked_at)` 距 `today` > **2 天** → problem「宏观管道可能停跑：freshness 状态 {n} 天未刷新」。这抓"Vercel cron 没触发"。
   - 若 `market_freshness_status` 为空（从未写过）→ problem「宏观 freshness 从未写入」。
-- **信号 2 · 源失败/过期（采信自报）**：逐源、仅**非手动**源（`is_manual=false`），`freshness_status ∈ {failed, stale, empty}` → problem「宏观源 {name} 状态 {freshness_status}（截至 {latest_observation_date}）」。
+- **信号 2 · 源真失败（采信自报）**：逐源、仅**非手动**源（`is_manual=false`），`freshness_status ∈ {failed, empty}` → problem「宏观源 {name} 状态 {freshness_status}（截至 {latest_observation_date}）」。`failed`=拉取报错（如 Market Share 返回非 JSON），`empty`=拉到零数据——都是真问题。
+  - **`stale` 不触发告警**，改为进 `info` 作参考：列出滞后源（如「宏观滞后(参考): Repo Financing(2026-05-06)…」）。**理由**（来自真实库验证 2026-06-08）：NY Fed 的 Repo/Settlement Fails/Primary Dealer 等周更源**天然滞后**，管道自身按 `expected_lag_days` 把它们标 `stale` 属正常；若 `stale` 也告警，看门狗会天天为这些源刷屏 → 运营者很快无视告警（最坏结局）。
   - `partial` / `manual_required` / `unknown` **不触发**（partial 为部分成功容忍；后两者主要对应手动/未知源）。
 - **手动源跳过**（`is_manual=true`，如 SME）——靠人工更新，不纳入自动告警，避免长期误报。
 
@@ -121,7 +122,7 @@ export type HealthReport = {
 
 - **纯逻辑自检** `web/src/lib/health/checks.check.ts`（node:assert + `npx tsx`，与 1E 一致，**不引 vitest**）：
   - 13F：`latestPeriod` 早于 dueQuarter → 触发；等于/晚于 → 不触发；空 → 触发。
-  - 宏观：`freshness_status ∈ {failed,stale,empty}` 的非手动源被列入；`is_manual` 源被跳过；`partial/manual_required/unknown` 不触发；`max(checked_at)` 超 2 天 → 触发停跑信号。
+  - 宏观：`freshness_status ∈ {failed,empty}` 的非手动源被列入 problems；`stale` 进 info 不告警；`is_manual` 源被跳过；`partial/manual_required/unknown` 不触发；`max(checked_at)` 超 2 天 → 触发停跑信号。
   - 为可测，核查的纯判定部分（给定输入行→problems）抽成不依赖 DB 的纯函数 `evaluate13F(latestPeriod, perManagerPeriods, today)` 与 `evaluateMacro(rows, today)`，DB 读取层只负责取数后喂给它们。
 - **手动验收**：本地/preview 用 `GET /api/cron/health-watchdog?dryRun=1` 看 health JSON（不发邮件）；`?test=1` 发一封测试告警确认 Resend 通路。对线上库跑一次 dryRun 验真实判定（仿之前 13F 体检脚本）。
 - **门禁**：`node_modules/typescript/bin/tsc --noEmit` + `npm run build`（用 node 20）。

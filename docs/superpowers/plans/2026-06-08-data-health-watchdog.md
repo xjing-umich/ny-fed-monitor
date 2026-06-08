@@ -108,38 +108,40 @@ const mk = (o: Partial<MacroStatusInput>): MacroStatusInput => ({
 });
 // 全合成行(id=0) → freshness 从未写入
 {
-  const p = evaluateMacro([mk({ id: 0 }), mk({ id: 0, name: "B" })], today);
-  assert.equal(p.length, 1, "全合成应 1 问题");
-  assert.match(p[0].message, /从未写入/);
+  const { problems } = evaluateMacro([mk({ id: 0 }), mk({ id: 0, name: "B" })], today);
+  assert.equal(problems.length, 1, "全合成应 1 问题");
+  assert.match(problems[0].message, /从未写入/);
 }
 // 真实行 checkedAt 7 天前 → 管道停跑
 {
-  const p = evaluateMacro([mk({ checkedAt: "2026-06-01T09:00:00Z" })], today);
-  assert.ok(p.some((x) => /停跑/.test(x.message)), "7天未刷新应报停跑");
+  const { problems } = evaluateMacro([mk({ checkedAt: "2026-06-01T09:00:00Z" })], today);
+  assert.ok(problems.some((x) => /停跑/.test(x.message)), "7天未刷新应报停跑");
 }
 // 非手动 failed → 报; 手动 failed → 跳过; fresh → 不报
 {
-  const p = evaluateMacro([
+  const { problems } = evaluateMacro([
     mk({ name: "F", freshnessStatus: "failed" }),
     mk({ name: "M", freshnessStatus: "failed", isManual: true }),
     mk({ name: "OK", freshnessStatus: "fresh" }),
   ], today);
-  const names = p.filter((x) => x.source !== "宏观整体").map((x) => x.source);
+  const names = problems.filter((x) => x.source !== "宏观整体").map((x) => x.source);
   assert.ok(names.includes("F"), "非手动 failed 应报");
   assert.ok(!names.includes("M"), "手动源应跳过");
   assert.ok(!names.includes("OK"), "fresh 不应报");
 }
-// stale / empty 触发, partial / unknown / manual_required 不触发
+// failed/empty 触发; stale 进 info 不告警; partial/unknown 不触发
 {
-  const p = evaluateMacro([
-    mk({ name: "S", freshnessStatus: "stale" }),
+  const { problems, info } = evaluateMacro([
     mk({ name: "E", freshnessStatus: "empty" }),
+    mk({ name: "S", freshnessStatus: "stale" }),
     mk({ name: "P", freshnessStatus: "partial" }),
     mk({ name: "U", freshnessStatus: "unknown" }),
   ], today);
-  const names = p.map((x) => x.source);
-  assert.ok(names.includes("S") && names.includes("E"), "stale/empty 应报");
+  const names = problems.map((x) => x.source);
+  assert.ok(names.includes("E"), "empty 应报");
+  assert.ok(!names.includes("S"), "stale 不应进 problems");
   assert.ok(!names.includes("P") && !names.includes("U"), "partial/unknown 不应报");
+  assert.ok(info.some((s) => /滞后/.test(s) && /S/.test(s)), "stale 源应进 info");
 }
 
 console.log("checks.check.ts: all assertions passed ✓");
@@ -189,7 +191,7 @@ export type MacroStatusInput = {
   checkedAt: string;
 };
 
-const MACRO_ALERT_STATUSES = new Set(["failed", "stale", "empty"]);
+const MACRO_ALERT_STATUSES = new Set(["failed", "empty"]); // 真失败才告警;stale(天然滞后)仅作参考
 const MACRO_STALE_CHECKED_DAYS = 2;
 
 // UTC 日历天差(向下取整)。from 为空 → Infinity(视为极陈)。
@@ -227,9 +229,10 @@ export function evaluate13F(
 }
 
 // 宏观判定。信号1: 真实行(id!==0)的 max(checkedAt) 超阈 → 停跑;
-// 信号2: 非手动源 freshnessStatus ∈ {failed,stale,empty} → 报。
-export function evaluateMacro(rows: MacroStatusInput[], today: Date): HealthProblem[] {
+// 信号2: 非手动源 freshnessStatus ∈ {failed,empty} → 报; stale → 进 info(天然滞后,不告警)。
+export function evaluateMacro(rows: MacroStatusInput[], today: Date): { problems: HealthProblem[]; info: string[] } {
   const problems: HealthProblem[] = [];
+  const info: string[] = [];
   const real = rows.filter((r) => r.id !== 0);
   if (real.length === 0) {
     problems.push({ pipeline: "macro", source: "宏观整体", message: "freshness 从未写入(管道或未跑过)", asOf: null, expected: "应有每日刷新" });
@@ -240,13 +243,17 @@ export function evaluateMacro(rows: MacroStatusInput[], today: Date): HealthProb
       problems.push({ pipeline: "macro", source: "宏观整体", message: `管道可能停跑: 状态 ${days} 天未刷新`, asOf: maxChecked.slice(0, 10), expected: `应 ≤ ${MACRO_STALE_CHECKED_DAYS} 天` });
     }
   }
+  const staleSrc: string[] = [];
   for (const r of rows) {
     if (r.isManual) continue;
     if (MACRO_ALERT_STATUSES.has(r.freshnessStatus)) {
       problems.push({ pipeline: "macro", source: r.name, message: `状态 ${r.freshnessStatus}`, asOf: r.latestObservationDate, expected: "应 fresh" });
+    } else if (r.freshnessStatus === "stale") {
+      staleSrc.push(`${r.name}(${r.latestObservationDate ?? "—"})`);
     }
   }
-  return problems;
+  if (staleSrc.length) info.push(`宏观滞后(参考,不告警): ${staleSrc.join(", ")}`);
+  return { problems, info };
 }
 ```
 
@@ -320,7 +327,7 @@ async function gather13F(today: Date): Promise<{ problems: HealthProblem[]; info
 }
 
 // 读 market_freshness_status(含 source 关联),映射成纯函数输入。
-async function gatherMacro(today: Date): Promise<HealthProblem[]> {
+async function gatherMacro(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
   try {
     const rows = await getFreshnessStatus();
     const inputs: MacroStatusInput[] = rows.map((r) => ({
@@ -333,14 +340,15 @@ async function gatherMacro(today: Date): Promise<HealthProblem[]> {
     }));
     return evaluateMacro(inputs, today);
   } catch (e) {
-    return [{ pipeline: "macro", source: "宏观核查", message: `核查自身出错: ${e instanceof Error ? e.message : String(e)}`, asOf: null, expected: "核查应成功" }];
+    return { problems: [{ pipeline: "macro", source: "宏观核查", message: `核查自身出错: ${e instanceof Error ? e.message : String(e)}`, asOf: null, expected: "核查应成功" }], info: [] };
   }
 }
 
 export async function gatherHealth(today: Date): Promise<HealthReport> {
-  const [r13, macroProblems] = await Promise.all([gather13F(today), gatherMacro(today)]);
-  const problems = [...r13.problems, ...macroProblems];
-  return { ok: problems.length === 0, checkedAt: today.toISOString(), problems, info: r13.info };
+  const [r13, rMacro] = await Promise.all([gather13F(today), gatherMacro(today)]);
+  const problems = [...r13.problems, ...rMacro.problems];
+  const info = [...r13.info, ...rMacro.info];
+  return { ok: problems.length === 0, checkedAt: today.toISOString(), problems, info };
 }
 ```
 
