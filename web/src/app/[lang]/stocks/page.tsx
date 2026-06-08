@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { mostHeld } from "@/lib/aggregations";
-import { getCusipMap } from "@/lib/managers/securities";
+import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { stockPath } from "@/lib/urls";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { isLikelyTicker } from "@/lib/externalLinks";
@@ -47,6 +47,8 @@ export default async function StocksIndexPage({
 
   const rows = await mostHeld(40);
   const cusipMap = await getCusipMap();
+  // Google Finance 链接需 TICKER:EXCHANGE; 与个股详情页一致取交易所, 否则回退搜索。
+  const exchangeMap = await getTickerExchangeMap();
 
   const isZh = lang === "zh";
 
@@ -131,7 +133,7 @@ export default async function StocksIndexPage({
                       故用 tickerOrCusip;info?.ticker 按 ticker 查 cusipMap 必为 undefined。 */}
                   {isLikelyTicker(tickerOrCusip) ? (
                     <span className="inline-flex justify-end">
-                      <ExternalFinanceLinks ticker={tickerOrCusip} variant="table" lang={lang} />
+                      <ExternalFinanceLinks ticker={tickerOrCusip} exchange={exchangeMap.get(tickerOrCusip)} variant="table" lang={lang} />
                     </span>
                   ) : null}
                 </td>

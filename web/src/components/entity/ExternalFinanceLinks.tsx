@@ -29,12 +29,8 @@ export function ExternalFinanceLinks({
   const t = LABELS[lang];
   const iconSize = variant === "detail" ? 18 : 15;
 
-  // table 变体: 默认极淡, 桌面端 hover/focus 行才提亮(行需带 `group` 类); 移动常驻。
-  const wrapper = cn(
-    "inline-flex items-center gap-3 transition-opacity",
-    variant === "table" &&
-      "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
-  );
+  // 第三方链接常驻显示(table 与 detail 一致), 不再 hover 才出现。
+  const wrapper = "inline-flex items-center gap-3";
 
   const linkBase = "inline-flex items-center text-[var(--tt-faint)] transition-colors";
 
