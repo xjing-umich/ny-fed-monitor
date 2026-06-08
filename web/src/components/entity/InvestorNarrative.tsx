@@ -7,11 +7,13 @@ const COPY = {
   zh: {
     heading: "本季动作 · AI 解读",
     disclosure: "本段由 AI 依据 SEC 13F 申报自动生成，可能存在错误，不构成投资建议。",
+    toggle: (n: number) => `展开本季动作（${n}）`,
   },
   en: {
     heading: "This Quarter · AI Read",
     disclosure:
       "This section is AI-generated from the SEC 13F filing, may contain errors, and is not investment advice.",
+    toggle: (n: number) => `Show this quarter's moves (${n})`,
   },
 } as const;
 
@@ -33,19 +35,24 @@ export function InvestorNarrative({
 
       <p className="text-[15px] leading-relaxed text-[var(--tt-text)]">{data.judgment_line}</p>
 
-      {data.moves.length > 0 && (
-        <ul className="mt-3 space-y-1.5">
-          {data.moves.map((m, i) => (
-            <li key={i} className="text-sm leading-relaxed text-[var(--tt-text)]">
-              <span className="font-medium">{m.issuer}</span>
-              <span className="ml-1 text-[var(--tt-muted)]">· {m.action}</span>
-              {m.why && <span className="text-[var(--tt-muted)]"> — {m.why}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
+      <p className="mt-2 text-[11px] leading-relaxed text-[var(--tt-faint)]">{t.disclosure}</p>
 
-      <p className="mt-3 text-[11px] leading-relaxed text-[var(--tt-faint)]">{t.disclosure}</p>
+      {data.moves.length > 0 && (
+        <details className="mt-3 group">
+          <summary className="cursor-pointer list-none text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] hover:text-[var(--tt-text)]">
+            {t.toggle(data.moves.length)}
+          </summary>
+          <ul className="mt-2 space-y-1.5">
+            {data.moves.map((m, i) => (
+              <li key={i} className="text-sm leading-relaxed text-[var(--tt-text)]">
+                <span className="font-medium">{m.issuer}</span>
+                <span className="ml-1 text-[var(--tt-muted)]">· {m.action}</span>
+                {m.why && <span className="text-[var(--tt-muted)]"> — {m.why}</span>}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </section>
   );
 }
