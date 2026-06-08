@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getManagerIndex } from "@/lib/managers/source";
+import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
 import { InvestorListClient } from "./InvestorListClient";
 import SubNav from "@/components/shell/SubNav";
@@ -38,8 +38,10 @@ export default async function InvestorsPage({
   }
   const lang = rawLang as Lang;
 
-  const idx = await getManagerIndex();
-  const managers = [...idx.managers].sort((a, b) => b.totalValue - a.totalValue);
+  const [idx, qoq] = await Promise.all([getManagerIndex(), getManagerQoQ()]);
+  const managers = [...idx.managers]
+    .sort((a, b) => b.totalValue - a.totalValue)
+    .map((m) => ({ ...m, qoq: qoq.get(m.cik) }));
 
   return (
     <>
