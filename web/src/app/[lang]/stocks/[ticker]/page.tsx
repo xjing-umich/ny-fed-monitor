@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
+import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -181,6 +182,7 @@ export default async function StockTickerPage({
   const holders: HolderRow[] = [];
   const issuerFreq: Record<string, number> = {};
   let latestFiledAt = "";
+  let latestPeriod = "";
 
   // 并行读取全部 manager 详情(此前为串行 for-await,34 位投资者 × 每位 3 个查询
   // = ~100 次首尾相接的 DB 往返,是个股页"等几秒"的主因)。Promise.all 后等待时间
@@ -194,6 +196,7 @@ export default async function StockTickerPage({
     if (!h) continue;
     issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
     if (!latestFiledAt || d.latest.filedAt > latestFiledAt) latestFiledAt = d.latest.filedAt;
+    if (!latestPeriod || d.latest.period > latestPeriod) latestPeriod = d.latest.period;
     holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight });
   }
 
@@ -281,7 +284,7 @@ export default async function StockTickerPage({
         subtitle={subtitle}
         disclaimer={disclaimer}
         keyFacts={keyFacts}
-        sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt }]}
+        sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         related={related}
       >
         <HoldersTable holders={holders} lang={lang} />

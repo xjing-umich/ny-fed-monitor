@@ -1,6 +1,9 @@
+import { FreshnessDot } from "./FreshnessDot";
+import type { FreshnessStatus } from "@/lib/freshness/derive";
+
 type Lang = "zh" | "en";
 
-export type Source = { name: string; asOf: string };
+export type Source = { name: string; asOf: string; status?: FreshnessStatus };
 
 export type SourceFooterProps = {
   lang: Lang;
@@ -23,6 +26,11 @@ export function SourceFooter({ lang, sources }: SourceFooterProps) {
         {sources.map((src, i) => (
           <span key={src.name}>
             {i > 0 && <span className="mx-1.5 text-[var(--tt-faint)]">·</span>}
+            {src.status && (
+              <>
+                <FreshnessDot status={src.status} lang={lang} />{" "}
+              </>
+            )}
             <span className="not-italic font-medium text-card-foreground">
               {src.name}
             </span>{" "}
