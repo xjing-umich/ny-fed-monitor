@@ -7,6 +7,8 @@ import { formatUSD } from "@/lib/format";
 import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
 import MoveTag from "@/components/shell/MoveTag";
+import { FreshnessDot } from "@/components/entity/FreshnessDot";
+import { filingFreshness } from "@/lib/freshness/derive";
 
 // 13F data updates quarterly; revalidate hourly so the page is statically cached
 // and served from the CDN instead of blocking on per-request work.
@@ -100,7 +102,7 @@ export default async function HomePage({
 
       {/* Dateline (replaces hero) — subtle, low-profile */}
       <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] tracking-[0.04em] text-[var(--tt-faint)] sm:mt-3">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--tt-accent)]" aria-hidden />
+        <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
         {isZh
           ? `截至 ${period} · ${topManagers.length} 位投资者 · SEC 13F · 45 天延迟`
           : `As of ${period} · ${topManagers.length} investors · SEC 13F · 45-day lag`}
