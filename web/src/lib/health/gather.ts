@@ -12,7 +12,9 @@ import {
 // 读 filings,算库内最新季度 + 每户最新季度。
 async function gather13F(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
   try {
-    const { data, error } = await getDb().from("filings").select("cik,period");
+    // .range 上限远高于现实行数(filings≈managers×季度);防 PostgREST 默认 1000 行
+    // 静默截断——否则丢失 manager 会让看门狗误报"13F 整体落后"(纠错工具不能被自己骗)。
+    const { data, error } = await getDb().from("filings").select("cik,period").range(0, 99999);
     if (error) throw error;
     const rows = (data ?? []) as { cik: string; period: string }[];
     const maxByCik = new Map<string, string>();
