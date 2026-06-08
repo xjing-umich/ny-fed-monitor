@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { mostHeld } from "@/lib/aggregations";
+import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { stockPath } from "@/lib/urls";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
@@ -45,7 +45,10 @@ export default async function StocksIndexPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  const rows = await mostHeld(40);
+  // Full consensus set (held by ≥2 funds) — every stock we submit to search has
+  // an internal link from this hub. Single-holder long tail stays out (crawlable
+  // but not promoted). Shared source with the sitemap so the two never drift.
+  const rows = await consensusHeld();
   const cusipMap = await getCusipMap();
   // Google Finance 链接需 TICKER:EXCHANGE; 与个股详情页一致取交易所, 否则回退搜索。
   const exchangeMap = await getTickerExchangeMap();

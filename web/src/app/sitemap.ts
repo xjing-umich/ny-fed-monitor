@@ -1,15 +1,16 @@
 import type { MetadataRoute } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
-import { mostHeld } from "@/lib/aggregations";
+import { consensusHeld } from "@/lib/aggregations";
 import { MACRO_GROUPS } from "@/lib/nav";
 import { ARTICLE_SLUGS } from "@/lib/learn";
 
 const BASE = "https://thecompounder.fyi";
 
-// Cover the full held-stock universe (~1000+), not just a top-N slice. The
-// consensus table stores every ticker held by ≥1 manager; the legacy 50-row cap
-// left most stock pages out of the sitemap entirely.
-const STOCK_LIMIT = 5000;
+// Only submit the substantial stock pages — those held by ≥2 funds (consensus).
+// On a new, low-authority domain, listing the full ~1000-page universe (mostly
+// thin single-holder pages with no internal links) buries crawl budget and
+// drags quality signals; those pages stay crawlable but out of the sitemap until
+// they have more content. consensusHeld() is the shared source with /stocks.
 
 type ChangeFreq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 
@@ -37,7 +38,7 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [idx, held] = await Promise.all([getManagerIndex(), mostHeld(STOCK_LIMIT)]);
+  const [idx, held] = await Promise.all([getManagerIndex(), consensusHeld()]);
   const indicators = MACRO_GROUPS.flatMap((g) => g.indicators as readonly string[]);
 
   const urls: MetadataRoute.Sitemap = [

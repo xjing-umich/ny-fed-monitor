@@ -93,6 +93,19 @@ export async function mostHeld(limit = 40): Promise<HeldRow[]> {
   if (fromDb && fromDb.length) return fromDb;
   return tickerizeRows(computeMostHeld(await scanAllManagers(), limit)); // 回退: 无库/空表时请求时计算
 }
+
+// Minimum holders for a stock to count as "consensus". On a new, low-authority
+// domain we only submit / internally link the substantial pages (held by ≥2
+// funds) and let the thin single-holder long tail stay crawlable but out of the
+// sitemap until it has more content. Single source of truth for the sitemap and
+// the /stocks hub so they never drift.
+export const CONSENSUS_MIN_HOLDERS = 2;
+
+/** Stocks held by at least CONSENSUS_MIN_HOLDERS superinvestors, ranked by mostHeld. */
+export async function consensusHeld(): Promise<HeldRow[]> {
+  const rows = await mostHeld(5000);
+  return rows.filter((r) => r.holderCount >= CONSENSUS_MIN_HOLDERS);
+}
 export async function notableMoves(limit = 6): Promise<NotableMoves> {
   const { readConsensusMoves } = await import("@/lib/managers/consensusRead");
   const fromDb = await readConsensusMoves(limit);
