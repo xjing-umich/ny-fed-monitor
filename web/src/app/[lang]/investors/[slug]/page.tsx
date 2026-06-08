@@ -354,23 +354,41 @@ export default async function InvestorSlugPage({
       ? [...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer
       : "—";
 
+  // 组合级 QoQ(无 prior 时不显环比)
+  const valDeltaPct =
+    prior && prior.totalValue > 0 ? (latest.totalValue - prior.totalValue) / prior.totalValue : null;
+  const cntDelta = prior ? latest.holdings.length - prior.holdings.length : 0;
+  const sign = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
+  const deltaClass = (n: number) =>
+    n > 0 ? "text-[var(--tt-positive)]" : n < 0 ? "text-[var(--tt-warn)]" : "text-[var(--tt-faint)]";
+
+  const valueNode = (
+    <span className="tnum font-mono text-xl font-medium leading-none text-card-foreground">
+      {formatUSD(latest.totalValue)}
+      {valDeltaPct != null && valDeltaPct !== 0 && (
+        <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
+          （{lang === "zh" ? "环比 " : ""}{sign(valDeltaPct)}
+          {Math.abs(valDeltaPct * 100).toFixed(0)}%）
+        </span>
+      )}
+    </span>
+  );
+  const countNode = (
+    <span className="tnum font-mono text-xl font-medium leading-none text-card-foreground">
+      {latest.holdings.length}
+      {cntDelta !== 0 && (
+        <span className={`ml-1.5 text-xs ${deltaClass(cntDelta)}`}>
+          （{sign(cntDelta)}{Math.abs(cntDelta)}）
+        </span>
+      )}
+    </span>
+  );
+
   const keyFacts = [
-    {
-      label: lang === "zh" ? "组合市值" : "Portfolio value",
-      value: formatUSD(latest.totalValue),
-    },
-    {
-      label: lang === "zh" ? "持仓数" : "Holdings",
-      value: String(latest.holdings.length),
-    },
-    {
-      label: lang === "zh" ? "最新报告期" : "Latest period",
-      value: latest.period,
-    },
-    {
-      label: lang === "zh" ? "第一大持仓" : "Top holding",
-      value: topHolding,
-    },
+    { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(latest.totalValue), node: valueNode },
+    { label: lang === "zh" ? "持仓数" : "Holdings", value: String(latest.holdings.length), node: countNode },
+    { label: lang === "zh" ? "最新报告期" : "Latest period", value: latest.period },
+    { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
   ];
 
   // Subtitle
