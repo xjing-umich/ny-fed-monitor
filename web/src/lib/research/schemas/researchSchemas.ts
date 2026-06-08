@@ -83,12 +83,24 @@ export type ThirteenFSummary = {
 };
 
 export type ValuationMetrics = {
+  latest_price?: number;
+  price_date?: string;
+  price_currency?: string;
+  price_source?: string;
+  market_cap?: number;
+  enterprise_value?: number;
   pe?: number;
   forward_pe?: number;
   ev_to_ebitda?: number;
   price_to_sales?: number;
   price_to_book?: number;
+  pfcf_ratio?: number;
+  ev_sales?: number;
+  ev_ebit?: number;
   fcf_yield?: number;
+  earnings_yield?: number;
+  dividend_yield?: number;
+  buyback_yield?: number;
   historical_range_note?: string;
 };
 
