@@ -1,7 +1,7 @@
-name: Weekly 13F Ingest
+name: 13F Ingest (Mon & Thu)
 on:
   schedule:
-    - cron: "0 9 * * 1"      # 每周一 09:00 UTC; 幂等(无新 filing 不写)
+    - cron: "0 9 * * 1,4"    # 每周一/周四 09:00 UTC; 幂等(无新 filing 不写)。13F 为命脉,filing 季加密捕捉
   workflow_dispatch: {}
 jobs:
   ingest:
