@@ -42,6 +42,8 @@ export type ManagerSummary = Manager & {
 
 export type ManagerDetail = {
   manager: Manager;
+  /** 全历史，按 period 降序，[0]=最新（最多 8 季）。单一来源；latest/prior/changes 由 assembleManagerDetail 派生。 */
+  filings: FilingData[];
   latest: FilingData;
   prior?: FilingData;
   changes: HoldingChange[];
