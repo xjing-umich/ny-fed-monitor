@@ -34,6 +34,10 @@ const SEED_MANAGERS: Omit<Manager, "name">[] = JSON.parse(
 );
 const OUT_DIR = path.join(__dirname, "../src/data/13f");
 
+// 13F 为命脉。每位经理人独立 try/catch(单个失败不致命),但若成功占比过低,
+// 整次跑必须标红(exit 1),否则"静默部分失败"会伪装成绿色成功,让 13F 悄悄变陈。
+const MIN_SUCCESS_RATIO = 0.9;
+
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -430,6 +434,19 @@ async function main() {
     }
   } else {
     console.log("No Supabase env — JSON only (set SUPABASE_URL / SUPABASE_SERVICE_KEY to write DB).");
+  }
+
+  // 护栏:成功经理人占比低于阈值 → 标红。已落库的部分数据保留(上面已写),
+  // 但 exit 1 让 GitHub Actions 显示失败,杜绝静默部分失败伪装成功。
+  const expected = SEED_MANAGERS.length;
+  const succeeded = summaries.length;
+  const ratio = expected > 0 ? succeeded / expected : 0;
+  if (ratio < MIN_SUCCESS_RATIO) {
+    console.error(
+      `13F ingest 护栏触发:${succeeded}/${expected} 位经理人成功 ` +
+        `(${(ratio * 100).toFixed(1)}% < ${(MIN_SUCCESS_RATIO * 100).toFixed(0)}% 阈值)。标记本次运行失败。`
+    );
+    process.exitCode = 1;
   }
 }
 
