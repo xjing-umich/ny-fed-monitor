@@ -1,6 +1,5 @@
 import React from "react";
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
@@ -9,7 +8,8 @@ import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
-import { formatUSD } from "@/lib/format";
+import { formatUSD, cleanIssuer } from "@/lib/format";
+import { DataTable, type Column } from "@/components/common/DataTable";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -39,7 +39,7 @@ export async function generateMetadata({
   const cusips = await tickerToCusips(ticker);
   const cusipMap = await getCusipMap();
   let issuer = ticker;
-  for (const c of cusips) { const info = cusipMap.get(c); if (info?.name) { issuer = info.name; break; } }
+  for (const c of cusips) { const info = cusipMap.get(c); if (info?.name) { issuer = cleanIssuer(info.name); break; } }
 
   const l = lang === "en" ? "en" : "zh";
   const alternates = {
@@ -96,6 +96,36 @@ function HoldersTable({
   const t = TABLE_COPY[lang];
   const sorted = [...holders].sort((a, b) => b.value - a.value);
 
+  const columns: Column<HolderRow>[] = [
+    {
+      key: "investor",
+      header: t.cols.investor,
+      role: "primary",
+      cell: (r) => r.person,
+    },
+    {
+      key: "value",
+      header: t.cols.value,
+      align: "right",
+      width: "w-32",
+      cell: (r) => formatUSD(r.value),
+    },
+    {
+      key: "shares",
+      header: t.cols.shares,
+      align: "right",
+      width: "w-32",
+      cell: (r) => r.shares.toLocaleString(),
+    },
+    {
+      key: "weight",
+      header: t.cols.weight,
+      align: "right",
+      width: "w-24",
+      cell: (r) => (r.weight != null ? `${(r.weight * 100).toFixed(2)}%` : "—"),
+    },
+  ];
+
   return (
     <section>
       {/* Section label with hairline rule */}
@@ -104,52 +134,13 @@ function HoldersTable({
           {t.title}
         </span>
       </div>
-      <div className="w-full overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-[var(--tt-border)]">
-              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
-                {t.cols.investor}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
-                {t.cols.value}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">
-                {t.cols.shares}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-24">
-                {t.cols.weight}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((row) => (
-              <tr
-                key={row.slug}
-                className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
-              >
-                <td className="py-3 pr-4">
-                  <Link
-                    href={investorPath(lang, row.slug)}
-                    className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
-                  >
-                    {row.person}
-                  </Link>
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
-                  {formatUSD(row.value)}
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
-                  {row.shares.toLocaleString()}
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
-                  {row.weight != null ? `${(row.weight * 100).toFixed(2)}%` : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        rows={sorted}
+        getKey={(r) => r.slug}
+        rowHref={(r) => investorPath(lang, r.slug)}
+        breakpoint="lg"
+      />
       <p className="mt-3 text-xs text-[var(--tt-faint)]">{t.coming}</p>
     </section>
   );
@@ -202,7 +193,7 @@ export default async function StockTickerPage({
 
   if (holders.length === 0) notFound();
 
-  const issuer = Object.entries(issuerFreq).sort((a, b) => b[1] - a[1])[0][0];
+  const issuer = cleanIssuer(Object.entries(issuerFreq).sort((a, b) => b[1] - a[1])[0][0]);
   const n = holders.length;
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];

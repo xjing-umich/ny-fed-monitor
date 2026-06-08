@@ -1,12 +1,12 @@
 import type { Lang } from "@/lib/nav";
-import { titleCase } from "@/lib/format";
+import { cleanIssuer } from "@/lib/format";
 import { isLikelyTicker } from "@/lib/externalLinks";
 
 export type BlurbRow = { ticker: string; issuer: string; primary: number; delta?: number | null };
 
 /** 句中称呼: 有真 ticker 用 ticker, 否则用标题化公司名(不暴露 CUSIP id)。 */
 function subjectName(r: BlurbRow): string {
-  return isLikelyTicker(r.ticker) ? r.ticker : titleCase(r.issuer);
+  return isLikelyTicker(r.ticker) ? r.ticker : cleanIssuer(r.issuer);
 }
 
 /** 共识页解读句。事实派生、无推荐措辞。空数据 → null(不渲染)。 */

@@ -9,9 +9,34 @@ export function formatUSD(v: number): string {
   return `$${v.toLocaleString()}`;
 }
 
-/** 把全大写的发行人名(如 "AMAZON COM INC")转为标题大小写("Amazon Com Inc")。 */
+/**
+ * 把全大写的发行人名(如 "AMAZON COM INC")转为标题大小写("Amazon Com Inc")。
+ * 撇号后的字母保持小写,避免 "MOODY'S" → "Moody'S"(应为 "Moody's")。
+ */
 export function titleCase(s: string): string {
-  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim();
+  return s
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/('|’)([A-Za-z])/g, (_, apos, c) => apos + c.toLowerCase())
+    .trim();
+}
+
+/**
+ * 清洗 SEC EDGAR 发行人原始名,用于前端展示:标题化 + 去除结尾标点与 EDGAR 限定词。
+ * 例:"MICROSOFT CORP." → "Microsoft Corp";"BERKSHIRE HATHAWAY INC DEL" → "Berkshire Hathaway Inc";
+ *     "ELEVANCE HEALTH INC FORMERLY" → "Elevance Health Inc"。
+ * 仅剥离明确的结尾限定词,不动名称主体,避免误删。
+ */
+export function cleanIssuer(raw: string): string {
+  let s = titleCase(raw);
+  let prev = "";
+  while (s !== prev) {
+    prev = s;
+    s = s
+      .replace(/[.,\s]+$/, "")              // 结尾标点/空格
+      .replace(/\s+(Del|Formerly|New)$/i, ""); // EDGAR 结尾限定词
+  }
+  return s;
 }
 
 /**
