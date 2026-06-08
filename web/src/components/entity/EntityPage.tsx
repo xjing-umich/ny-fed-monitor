@@ -3,6 +3,7 @@ import { VerdictChip } from "./VerdictChip";
 import { KeyFacts, type KeyFact } from "./KeyFacts";
 import { AINarrative } from "./AINarrative";
 import { SourceFooter } from "./SourceFooter";
+import type { Source } from "./SourceFooter";
 import { RelatedLinks, type RelatedItem } from "./RelatedLinks";
 
 // Re-export shared types so consumers can import from one place
@@ -25,7 +26,7 @@ export type EntityPageProps = {
   /** 若提供, 用服务端渲染的叙述节点替代客户端 AINarrative(SEO/GEO 可见) */
   aiNarrative?: React.ReactNode;
   children: React.ReactNode;
-  sources: { name: string; asOf: string }[];
+  sources: Source[];
   related?: RelatedItem[];
   /** Optional compliance/disclaimer line shown under the subtitle. */
   disclaimer?: string;
