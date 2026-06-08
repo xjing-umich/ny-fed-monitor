@@ -10,7 +10,8 @@
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
     "consensus": "tsx scripts/consensus.ts",
-    "prices": "tsx scripts/prices.ts"
+    "prices": "tsx scripts/prices.ts",
+    "ai-check": "tsx scripts/ai-tells.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

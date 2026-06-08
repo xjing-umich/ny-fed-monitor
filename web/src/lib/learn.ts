@@ -112,7 +112,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         "Where the word comes from, the Graham-to-Buffett value-investing tradition behind it, and what these investors have in common: temperament, patience, and compounding.",
       updated: "2026-06-07",
       intro:
-        "\"Superinvestor\" turns up all over Compounder, and it isn't just a flattering word for whoever topped the charts last year. It points to a particular tradition of value investors, and a particular way of thinking about businesses, prices, and time. Here's what we mean by it.",
+        "\"Superinvestor\" turns up all over Compounder. The word isn't a pat on the back for whoever topped the charts last year. It points to a particular tradition of value investors, and a particular way of thinking about businesses, prices, and time. Here's what we mean by it.",
       sections: [
         {
           heading: "Where the word comes from",
