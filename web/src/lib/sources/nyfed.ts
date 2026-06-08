@@ -9,6 +9,13 @@ type Opts = {
   maxAttempts?: number;
   backoffMs?: number;
   fetchImpl?: typeof fetch;
+  /**
+   * Optional pre-parse transform on the raw response body. When provided, the
+   * body is read as text, passed through `sanitize`, then JSON.parsed — instead
+   * of calling `res.json()` directly. Use to repair known upstream JSON defects
+   * (e.g. NY Fed emits bare unquoted `*` sentinels that break strict parsing).
+   */
+  sanitize?: (raw: string) => string;
 };
 
 /**
@@ -22,6 +29,7 @@ export async function fetchJsonWithRetry(url: string, opts: Opts): Promise<unkno
     maxAttempts = 3,
     backoffMs = 500,
     fetchImpl = fetch,
+    sanitize,
   } = opts;
   let lastErr: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -29,7 +37,10 @@ export async function fetchJsonWithRetry(url: string, opts: Opts): Promise<unkno
       const res = await fetchImpl(url, {
         next: { revalidate, tags: [tag] },
       } as RequestInit);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        if (sanitize) return JSON.parse(sanitize(await res.text()));
+        return await res.json();
+      }
       if (res.status < 500) throw new Error(`${url} ${res.status}`);
       lastErr = new Error(`${url} ${res.status}`);
     } catch (e) {
