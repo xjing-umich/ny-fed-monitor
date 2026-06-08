@@ -6,3 +6,4 @@ export * from "./skills/evidenceBasedRiskCheck";
 export * from "./skills/researchNoteWriter";
 export * from "./workflow/runResearchWorkflow";
 export * from "./mock/msftResearchMock";
+export * from "./sec";

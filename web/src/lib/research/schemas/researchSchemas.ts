@@ -16,10 +16,17 @@ export type NormalizedFinancials = {
   net_income?: number;
   eps?: number;
   cash?: number;
+  total_assets?: number;
+  total_liabilities?: number;
   debt?: number;
   net_debt?: number;
   shareholders_equity?: number;
+  short_term_debt?: number;
+  long_term_debt?: number;
   share_count?: number;
+  shares_basic?: number;
+  shares_diluted?: number;
+  shares_outstanding?: number;
   buybacks?: number;
   dividends?: number;
 };
@@ -35,6 +42,9 @@ export type FinancialMetrics = {
   roic?: number;
   roe?: number;
   interest_coverage?: number;
+  capital_expenditure?: number;
+  total_debt?: number;
+  debt_to_equity?: number;
 };
 
 export type GrowthMetrics = {
@@ -44,6 +54,12 @@ export type GrowthMetrics = {
   profit_growth?: number;
   eps_growth?: number;
   free_cash_flow_growth?: number;
+  revenue_cagr_3y?: number;
+  revenue_cagr_5y?: number;
+  fcf_growth_yoy?: number;
+  fcf_cagr_3y?: number;
+  fcf_cagr_5y?: number;
+  share_count_change_yoy?: number;
   margin_change?: number;
   reinvestment_rate?: number;
   growth_efficiency?: number;
