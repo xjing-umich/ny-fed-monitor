@@ -1,15 +1,11 @@
-import React from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
-import { stockPath } from "@/lib/urls";
-import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { isLikelyTicker } from "@/lib/externalLinks";
-import { formatUSD } from "@/lib/format";
 import SubNav from "@/components/shell/SubNav";
+import { StocksTableClient, type StockRow } from "./StocksTableClient";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 每小时 ISR → 列表页 CDN 秒开。
 export const revalidate = 3600;
@@ -55,6 +51,23 @@ export default async function StocksIndexPage({
 
   const isZh = lang === "zh";
 
+  // 服务端预塑形为可序列化行,交给 client 组件(DataTable + 分页)。
+  const maxHolders = rows[0]?.holderCount ?? 1;
+  const tableRows: StockRow[] = rows.map((row) => {
+    const info = cusipMap.get(row.cusip);
+    // mostHeld 的 cusip 字段实为 ticker(consensusRead/tickerizeRows 已 tickerize)。
+    const ticker = info?.ticker ?? row.cusip;
+    return {
+      ticker,
+      issuer: row.issuer,
+      holderCount: row.holderCount,
+      totalValue: row.totalValue,
+      barWidth: Math.round((row.holderCount / maxHolders) * 32),
+      exchange: exchangeMap.get(ticker) ?? null,
+      isTicker: isLikelyTicker(ticker),
+    };
+  });
+
   return (
     <div className="mx-auto max-w-4xl px-2 py-8 sm:py-10">
       {/* Section sub-nav */}
@@ -76,82 +89,8 @@ export default async function StocksIndexPage({
         </p>
       </div>
 
-      {/* Editorial table */}
-      <div className="w-full overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-[var(--tt-border)]">
-              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-8">#</th>
-              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
-                {isZh ? "标的" : "Security"}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-28">
-                {isZh ? "持有机构数" : "Holders"}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-36">
-                {isZh ? "合计市值" : "Total value"}
-              </th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-24">
-                {isZh ? "链接" : "Links"}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => {
-              const info = cusipMap.get(row.cusip);
-              const tickerOrCusip = info?.ticker ?? row.cusip;
-              return (
-              <tr
-                key={row.cusip}
-                className="group border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
-              >
-                <td className="py-3 pr-3 font-mono text-[11px] text-[var(--tt-faint)] tabular-nums">
-                  {i + 1}
-                </td>
-                <td className="py-3 pr-4">
-                  <Link
-                    href={stockPath(lang, tickerOrCusip)}
-                    className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
-                  >
-                    {row.issuer}
-                  </Link>
-                  <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">
-                    {info?.ticker ?? row.cusip}
-                  </span>
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
-                  <span className="inline-flex items-center justify-end gap-1.5">
-                    <span
-                      className="inline-block h-1.5 rounded-full bg-[var(--tt-accent)] opacity-70"
-                      style={{ width: `${Math.round((row.holderCount / rows[0].holderCount) * 32)}px` }}
-                    />
-                    {row.holderCount}
-                  </span>
-                </td>
-                <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">
-                  {formatUSD(row.totalValue)}
-                </td>
-                <td className="py-3 pl-3 text-right">
-                  {/* mostHeld 的 cusip 字段实为 ticker(consensusRead/tickerizeRows 已 tickerize),
-                      故用 tickerOrCusip;info?.ticker 按 ticker 查 cusipMap 必为 undefined。 */}
-                  {isLikelyTicker(tickerOrCusip) ? (
-                    <span className="inline-flex justify-end">
-                      <ExternalFinanceLinks ticker={tickerOrCusip} exchange={exchangeMap.get(tickerOrCusip)} variant="table" lang={lang} />
-                    </span>
-                  ) : null}
-                </td>
-              </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {rows.length === 0 && (
-        <p className="py-8 text-center text-sm text-[var(--tt-muted)]">
-          {isZh ? "暂无数据" : "No data available"}
-        </p>
-      )}
+      {/* Responsive table + 分页(client) */}
+      <StocksTableClient lang={lang} rows={tableRows} />
 
       <p className="mt-8 text-xs text-[var(--tt-faint)]">
         {isZh

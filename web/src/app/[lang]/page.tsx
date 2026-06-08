@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { mostHeld, notableMoves, type MoveRow } from "@/lib/aggregations";
-import { formatUSD } from "@/lib/format";
+import { formatUSD, cleanIssuer } from "@/lib/format";
+import { EntityName } from "@/components/common/EntityName";
 import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
 import MoveTag from "@/components/shell/MoveTag";
@@ -34,10 +35,6 @@ export async function generateMetadata({
     description,
     alternates: { canonical: `/${l}`, languages: { en: "/en", "zh-CN": "/zh", "x-default": "/en" } },
   };
-}
-
-function titleCase(s: string): string {
-  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim();
 }
 
 export default async function HomePage({
@@ -135,10 +132,10 @@ export default async function HomePage({
                 <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
                   <td className="py-2.5 pr-4">
                     <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                      {titleCase(row.issuer)}
+                      <EntityName issuer={row.issuer} ticker={row.cusip} />
                     </Link>
                   </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                     {isZh ? `${row.holderCount} 位` : `${row.holderCount}`}
                   </td>
                   <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
@@ -163,7 +160,7 @@ export default async function HomePage({
                     <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
                       {m.person}
                     </Link>
-                    <span className="ml-2 truncate text-[11px] text-[var(--tt-faint)]">{titleCase(m.topHolding)}</span>
+                    <span className="ml-2 truncate text-[11px] text-[var(--tt-faint)]">{cleanIssuer(m.topHolding)}</span>
                   </td>
                   <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">{m.holdingCount}</td>
                   <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-text)]">{formatUSD(m.totalValue)}</td>
@@ -219,14 +216,14 @@ function MoveColumn({ lang, title, rows }: { lang: Lang; title: string; rows: Mo
                 <span className="flex items-center gap-2">
                   <MoveTag kind={row.dominantKind} />
                   <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                    {titleCase(row.issuer)}
+                    <EntityName issuer={row.issuer} ticker={row.cusip} />
                   </Link>
                 </span>
               </td>
-              <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+              <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                 {isZh ? `${row.count} 位` : `${row.count} inv`}
               </td>
-              <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+              <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                 {formatUSD(row.value)}
               </td>
             </tr>

@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
 import type { ManagerSummary, ManagerQoQ } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
-import { formatUSD } from "@/lib/format";
+import { formatUSD, cleanIssuer } from "@/lib/format";
+import { DataTable, type Column } from "@/components/common/DataTable";
+import { Badge, type BadgeTone } from "@/components/common/Badge";
 
 type Row = ManagerSummary & { qoq?: ManagerQoQ };
 
@@ -64,10 +65,10 @@ function fmtCountDelta(n: number | null | undefined): { text: string; cls: strin
   return { text: `${n > 0 ? "+" : "−"}${Math.abs(n)}`, cls };
 }
 
-const VERDICT_CLASS: Record<NonNullable<ManagerQoQ["verdict"]>, string> = {
-  buying: "text-[var(--tt-positive)] border-[var(--tt-positive)]",
-  selling: "text-[var(--tt-warn)] border-[var(--tt-warn)]",
-  mixed: "text-[var(--tt-faint)] border-[var(--tt-border)]",
+const VERDICT_TONE: Record<NonNullable<ManagerQoQ["verdict"]>, BadgeTone> = {
+  buying: "positive",
+  selling: "warn",
+  mixed: "neutral",
 };
 
 const KIND_CLASS: Record<NonNullable<ManagerQoQ["topMoveKind"]>, string> = {
@@ -101,6 +102,85 @@ export function InvestorListClient({
       sort === "value" ? b.totalValue - a.totalValue : b.holdingCount - a.holdingCount
     );
   }, [managers, query, sort]);
+
+  const columns: Column<Row>[] = [
+    {
+      key: "investor",
+      header: t.cols.investor,
+      role: "primary",
+      cell: (m) => (
+        <>
+          {m.person}
+          <span className="mt-0.5 block text-[11px] font-normal text-[var(--tt-faint)]">
+            {m.name}
+          </span>
+        </>
+      ),
+    },
+    {
+      key: "portfolio",
+      header: t.cols.portfolio,
+      align: "right",
+      width: "w-36",
+      cell: (m) => {
+        const pd = fmtPctDelta(m.qoq?.valueDeltaPct);
+        return (
+          <span className="font-medium text-[var(--tt-accent)]">
+            {formatUSD(m.totalValue)}
+            {pd && <span className={`ml-1.5 text-[11px] ${pd.cls}`}>{pd.text}</span>}
+          </span>
+        );
+      },
+    },
+    {
+      key: "holdings",
+      header: t.cols.holdings,
+      align: "right",
+      width: "w-24",
+      cell: (m) => {
+        const cd = fmtCountDelta(m.qoq?.countDelta);
+        return (
+          <span className="text-[var(--tt-text)]">
+            {m.holdingCount}
+            {cd && <span className={`ml-1.5 text-[11px] ${cd.cls}`}>{cd.text}</span>}
+          </span>
+        );
+      },
+    },
+    {
+      key: "period",
+      header: t.cols.period,
+      align: "right",
+      width: "w-28",
+      hideOnMobile: true,
+      cell: (m) => m.period,
+    },
+    {
+      key: "move",
+      header: t.cols.move,
+      align: "right",
+      width: "w-44",
+      role: "trail",
+      cell: (m) => {
+        const v = m.qoq?.verdict ?? null;
+        const issuer = m.qoq?.topMoveIssuer ?? null;
+        const kind = m.qoq?.topMoveKind ?? null;
+        if (!v) return <span className="text-[var(--tt-faint)]">—</span>;
+        return (
+          <>
+            <Badge tone={VERDICT_TONE[v]}>{t.verdict[v]}</Badge>
+            {issuer && kind && (
+              <span className="mt-1 hidden text-[11px] text-[var(--tt-muted)] sm:block">
+                {t.topPrefix}
+                <span className="text-[var(--tt-text)]">{cleanIssuer(issuer)}</span>{" "}
+                <span className={KIND_CLASS[kind]}>{t.kind[kind]}</span>
+              </span>
+            )}
+          </>
+        );
+      },
+    },
+  ];
 
   return (
     <div className="space-y-8">
@@ -148,95 +228,15 @@ export function InvestorListClient({
         </div>
       </div>
 
-      {/* Editorial table */}
-      {filtered.length === 0 ? (
-        <p className="py-8 text-center text-sm text-[var(--tt-muted)]">{t.noResults}</p>
-      ) : (
-        <div className="w-full overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-[var(--tt-border)]">
-                <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
-                  {t.cols.investor}
-                </th>
-                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-36">
-                  {t.cols.portfolio}
-                </th>
-                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-24">
-                  {t.cols.holdings}
-                </th>
-                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-28 hidden sm:table-cell">
-                  {t.cols.period}
-                </th>
-                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-44">
-                  {t.cols.move}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((m) => {
-                const pd = fmtPctDelta(m.qoq?.valueDeltaPct);
-                const cd = fmtCountDelta(m.qoq?.countDelta);
-                const v = m.qoq?.verdict ?? null;
-                const issuer = m.qoq?.topMoveIssuer ?? null;
-                const kind = m.qoq?.topMoveKind ?? null;
-                return (
-                  <tr
-                    key={m.cik}
-                    className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
-                  >
-                    <td className="py-3 pr-4">
-                      <Link
-                        href={investorPath(lang, m.slug)}
-                        className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors"
-                      >
-                        {m.person}
-                      </Link>
-                      <span className="block text-[11px] text-[var(--tt-faint)] mt-0.5">
-                        {m.name}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-accent)] font-medium">
-                      {formatUSD(m.totalValue)}
-                      {pd && <span className={`ml-1.5 text-[11px] ${pd.cls}`}>{pd.text}</span>}
-                    </td>
-                    <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">
-                      {m.holdingCount}
-                      {cd && <span className={`ml-1.5 text-[11px] ${cd.cls}`}>{cd.text}</span>}
-                    </td>
-                    <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-muted)] hidden sm:table-cell">
-                      {m.period}
-                    </td>
-                    <td className="py-3 text-right">
-                      {v ? (
-                        <>
-                          <span
-                            className={[
-                              "inline-block font-mono text-[10px] uppercase tracking-[0.04em] px-1.5 py-0.5 border rounded-sm",
-                              VERDICT_CLASS[v],
-                            ].join(" ")}
-                          >
-                            {t.verdict[v]}
-                          </span>
-                          {issuer && kind && (
-                            <span className="block text-[11px] text-[var(--tt-muted)] mt-1 hidden sm:block">
-                              {t.topPrefix}
-                              <span className="text-[var(--tt-text)]">{issuer}</span>{" "}
-                              <span className={KIND_CLASS[kind]}>{t.kind[kind]}</span>
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-[var(--tt-faint)]">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* Responsive table → 移动端堆叠卡片 */}
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        getKey={(m) => m.cik}
+        rowHref={(m) => investorPath(lang, m.slug)}
+        breakpoint="lg"
+        emptyText={t.noResults}
+      />
     </div>
   );
 }

@@ -12,7 +12,9 @@ import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
 import { isPeriodStale } from "@/lib/ai/investorNarrative";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Tone } from "@/components/entity/types";
-import { formatUSD } from "@/lib/format";
+import { formatUSD, cleanIssuer } from "@/lib/format";
+import { DataTable, type Column } from "@/components/common/DataTable";
+import { EntityName } from "@/components/common/EntityName";
 
 const MAX_HOLDINGS = 25;
 
@@ -140,6 +142,44 @@ function HoldingsTable({
   const exits = changes.filter((c) => c.kind === "exited");
   const EXIT_CAP = 12;
 
+  const columns: Column<Holding>[] = [
+    {
+      key: "issuer",
+      header: t.cols.issuer,
+      role: "primary",
+      cell: (h) => <EntityName issuer={h.issuer} ticker={h.cusip} />,
+    },
+    {
+      key: "value",
+      header: t.cols.value,
+      align: "right",
+      width: "w-32",
+      cell: (h) => formatUSD(h.value),
+    },
+    {
+      key: "shares",
+      header: t.cols.shares,
+      align: "right",
+      width: "w-32",
+      hideOnMobile: true,
+      cell: (h) => h.shares.toLocaleString(),
+    },
+    {
+      key: "weight",
+      header: t.cols.weight,
+      align: "right",
+      width: "w-40",
+      cell: (h) => (
+        <WeightQoQ
+          cur={h.weight}
+          prior={priorByCusip.get(h.cusip)?.weight}
+          kind={changeByCusip.get(h.cusip)?.kind}
+          lang={lang}
+        />
+      ),
+    },
+  ];
+
   return (
     <section>
       <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
@@ -147,39 +187,13 @@ function HoldingsTable({
           {t.title}
         </span>
       </div>
-      <div className="w-full overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-[var(--tt-border)]">
-              <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">{t.cols.issuer}</th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">{t.cols.value}</th>
-              <th className="hidden sm:table-cell pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-32">{t.cols.shares}</th>
-              <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)] w-40">{t.cols.weight}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {capped.map((h) => {
-              const ph = priorByCusip.get(h.cusip);
-              const ch = changeByCusip.get(h.cusip);
-              return (
-                <tr key={h.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-3 pr-4">
-                    <Link href={stockPath(lang, h.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] transition-colors">
-                      {h.issuer}
-                    </Link>
-                    <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">{h.cusip}</span>
-                  </td>
-                  <td className="py-3 text-right font-mono tabular-nums text-[var(--tt-text)]">{formatUSD(h.value)}</td>
-                  <td className="hidden sm:table-cell py-3 text-right font-mono tabular-nums text-[var(--tt-muted)]">{h.shares.toLocaleString()}</td>
-                  <td className="py-3 text-right text-[13px]">
-                    <WeightQoQ cur={h.weight} prior={ph?.weight} kind={ch?.kind} lang={lang} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        rows={capped}
+        getKey={(h) => h.cusip}
+        rowHref={(h) => stockPath(lang, h.cusip)}
+        breakpoint="lg"
+      />
       {truncated && (
         <p className="mt-2 text-xs text-[var(--tt-faint)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
       )}
@@ -193,7 +207,7 @@ function HoldingsTable({
             {exits.slice(0, EXIT_CAP).map((c, i) => (
               <React.Fragment key={c.cusip}>
                 {i > 0 && "、"}
-                <Link href={stockPath(lang, c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{c.issuer}</Link>
+                <Link href={stockPath(lang, c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
               </React.Fragment>
             ))}
             {exits.length > EXIT_CAP && <span className="text-[var(--tt-faint)]">{t.more(exits.length - EXIT_CAP)}</span>}
@@ -250,7 +264,7 @@ export default async function InvestorSlugPage({
   // Key facts
   const topHolding =
     latest.holdings.length > 0
-      ? [...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer
+      ? cleanIssuer([...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
       : "—";
 
   // 组合级 QoQ(无 prior 时不显环比)

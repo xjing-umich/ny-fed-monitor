@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { mostHeld } from "@/lib/aggregations";
+import { cleanIssuer } from "@/lib/format";
 import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import { MACRO_GROUPS } from "@/lib/nav";
 import AppShell from "@/components/shell/AppShell";
@@ -107,11 +108,6 @@ export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
 }
 
-// 共识标的 issuer 多为全大写(如 "MICROSOFT CORP"),转为 Title Case 便于阅读。
-function titleCaseIssuer(s: string): string {
-  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim();
-}
-
 export default async function LangLayout({
   children,
   params,
@@ -143,7 +139,7 @@ export default async function LangLayout({
     if (seenTickers.has(ticker)) return [];
     seenTickers.add(ticker);
     return [{
-      label: titleCaseIssuer(row.issuer),
+      label: cleanIssuer(row.issuer),
       href: `/${lang}/stocks/${ticker}`,
       keywords: ticker,
     }];
