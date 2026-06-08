@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:research-workflow": "tsx scripts/tests/research-workflow.ts",
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
     "consensus": "tsx scripts/consensus.ts",
