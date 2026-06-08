@@ -60,11 +60,6 @@ assert(
   ),
 );
 assert(
-  scenarioD.skill_results.growth_capacity_check.growth_risk_flags[0].includes(
-    "cannot assess future cloud demand without guidance, segment trend, or external evidence",
-  ),
-);
-assert(
   scenarioD.skill_results.fundamental_quality_check.cannot_conclude.includes(
     "Cannot determine whether the company is better than peers because peer comparison is missing.",
   ),

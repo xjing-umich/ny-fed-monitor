@@ -69,7 +69,9 @@ export function runGrowthCapacityCheck(input: SkillInput): GrowthCapacityCheckRe
       ? `Forward-looking visibility is limited to supplied indicators: guidance ${growth?.guidance ?? "missing"}, estimates ${growth?.analyst_estimates ?? "missing"}, backlog ${growth?.backlog ?? "missing"}, bookings ${growth?.bookings ?? "missing"}, RPO ${growth?.rpo ?? "missing"}, deferred revenue ${growth?.deferred_revenue ?? "missing"}.`
       : unavailable("guidance, estimates, backlog, bookings, RPO, and deferred revenue are missing; future growth cannot be assumed."),
     growth_quality_assessment: "Growth quality assessment is limited to the provided historical growth, margin, cash-flow, and reinvestment metrics.",
-    growth_risk_flags: input.risk_signals?.growth_risk ?? [],
+    growth_risk_flags: (input.risk_signals?.signals ?? [])
+      .filter((signal) => signal.category === "Growth Risk")
+      .map((signal) => `${signal.id}: ${signal.evidence}`),
     supported_conclusions: ["Historical growth can be discussed only where normalized growth metrics are present."],
     cannot_conclude: hasForward
       ? cannotConclude

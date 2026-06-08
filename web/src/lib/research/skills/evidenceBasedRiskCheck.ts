@@ -1,54 +1,51 @@
-import type { EvidenceBasedRiskCheckResult, SkillInput, SupportedRiskFlag } from "../schemas/researchSchemas";
-import { coverageBlock, disclaimer, hasAny, unavailable } from "./skillHelpers";
+import type { EvidenceBasedRiskCheckResult, RiskSignal, RiskSignalCategory, SkillInput, SupportedRiskFlag } from "../schemas/researchSchemas";
+import { coverageBlock, disclaimer, unavailable } from "./skillHelpers";
 
-function flags(category: string, values: string[] | undefined, dataNeededNext: string[]): SupportedRiskFlag[] {
-  return (values ?? []).map((evidence) => ({
-    risk_category: category,
-    severity: "Medium",
-    evidence,
-    why_it_matters: "This risk is included only because it appears in the normalized risk signal input.",
-    data_needed_next: dataNeededNext,
-  }));
+function byCategory(signals: RiskSignal[], category: RiskSignalCategory): RiskSignal[] {
+  return signals.filter((signal) => signal.category === category);
+}
+
+function summarize(signals: RiskSignal[], fallback: string): string {
+  if (signals.length === 0) return unavailable(fallback);
+  return signals.map((signal) => `${signal.id}: ${signal.evidence}`).join("; ");
+}
+
+function toSupportedRiskFlag(signal: RiskSignal): SupportedRiskFlag {
+  return {
+    id: signal.id,
+    risk_category: signal.category,
+    severity: signal.severity,
+    evidence_strength: signal.evidence_strength,
+    evidence: signal.evidence,
+    why_it_matters: signal.why_it_matters,
+    data_needed_next: signal.data_needed_next,
+    source_fields: signal.source_fields,
+    source: signal.source,
+  };
 }
 
 export function runEvidenceBasedRiskCheck(input: SkillInput): EvidenceBasedRiskCheckResult {
-  const risk = input.risk_signals;
+  const signals = input.risk_signals?.signals ?? [];
   const external = input.external_evidence;
-  const hasRisk = hasAny(risk) || hasAny(external) || hasAny(input.thirteen_f_summary);
-  const supported_risk_flags = [
-    ...flags("Growth risk", risk?.growth_risk, ["segment growth", "forward growth indicators"]),
-    ...flags("Profitability and margin risk", risk?.profitability_margin_risk, ["margin bridge", "cost drivers"]),
-    ...flags("Free cash flow risk", risk?.free_cash_flow_risk, ["working capital", "capex", "cash conversion"]),
-    ...flags("Balance sheet and leverage risk", risk?.balance_sheet_leverage_risk, ["debt maturity schedule", "interest coverage"]),
-    ...flags("Capital allocation risk", risk?.capital_allocation_risk, ["share count trend", "buybacks", "dividends"]),
-    ...flags("Valuation risk", risk?.valuation_risk, ["valuation metrics", "historical valuation range"]),
-    ...flags("Forward-looking risk", risk?.forward_looking_risk, ["guidance", "backlog", "RPO", "deferred revenue"]),
-  ];
+  const supported_risk_flags = signals.map(toSupportedRiskFlag);
+  const dataQualitySignals = byCategory(signals, "Data Quality Risk");
 
   return {
-    data_coverage: coverageBlock(input, hasRisk ? "Partial" : "Missing"),
-    investor_signal_risk: input.thirteen_f_summary
-      ? "13F investor signal risk is limited to lagged disclosed holdings and position changes; it cannot support real-time holding or motivation claims."
-      : unavailable("13F summary data is missing."),
-    growth_risk: risk?.growth_risk?.join("; ") || unavailable("growth risk signals are missing."),
-    profitability_margin_risk:
-      risk?.profitability_margin_risk?.join("; ") || unavailable("profitability and margin risk signals are missing."),
-    free_cash_flow_risk: risk?.free_cash_flow_risk?.join("; ") || unavailable("free cash flow risk signals are missing."),
-    balance_sheet_leverage_risk:
-      risk?.balance_sheet_leverage_risk?.join("; ") || unavailable("balance sheet and leverage risk signals are missing."),
-    capital_allocation_risk:
-      risk?.capital_allocation_risk?.join("; ") || unavailable("capital allocation risk signals are missing."),
-    valuation_risk: input.valuation_metrics
-      ? risk?.valuation_risk?.join("; ") || "No normalized valuation risk signal was supplied."
-      : unavailable("valuation metrics are missing, so valuation risk cannot be assessed."),
-    forward_looking_risk:
-      risk?.forward_looking_risk?.join("; ") || unavailable("forward-looking risk signals are missing."),
-    external_evidence_risk: hasAny(external)
+    data_coverage: coverageBlock(input, signals.length > 0 ? "Partial" : "Missing"),
+    investor_signal_risk: summarize(byCategory(signals, "13F Investor Signal Risk"), "13F summary data is missing or no 13F risk signal was generated."),
+    growth_risk: summarize(byCategory(signals, "Growth Risk"), "growth risk signals are missing."),
+    profitability_margin_risk: summarize(byCategory(signals, "Profitability and Margin Risk"), "profitability and margin risk signals are missing."),
+    free_cash_flow_risk: summarize(byCategory(signals, "Free Cash Flow Risk"), "free cash flow risk signals are missing."),
+    balance_sheet_leverage_risk: summarize(byCategory(signals, "Balance Sheet and Leverage Risk"), "balance sheet and leverage risk signals are missing."),
+    capital_allocation_risk: summarize(byCategory(signals, "Capital Allocation Risk"), "capital allocation risk signals are missing."),
+    valuation_risk: summarize(byCategory(signals, "Valuation Risk"), "valuation risk signals are missing."),
+    forward_looking_risk: summarize(dataQualitySignals.filter((signal) => signal.id === "missing_forward_looking_data"), "forward-looking risk signals are missing."),
+    external_evidence_risk: external
       ? Object.entries(external ?? {})
           .flatMap(([category, values]) => (values ?? []).map((value) => `${category}: ${value}`))
           .join("; ")
-      : unavailable("external evidence is missing; regulatory, litigation, competition, churn, management, and geopolitical risks cannot be invented."),
-    data_quality_risk: input.data_quality_gate.limitations.join(" "),
+      : summarize(dataQualitySignals.filter((signal) => signal.id === "missing_external_evidence"), "external evidence is missing; regulatory, litigation, competition, churn, management, and geopolitical risks cannot be invented."),
+    data_quality_risk: summarize(dataQualitySignals, "data quality risk signals are missing."),
     supported_risk_flags,
     cannot_assess: input.data_quality_gate.missing_data.map((field) => `Cannot assess ${field} without normalized supporting data.`),
     overall_risk_summary:

@@ -56,13 +56,7 @@ export const msftResearchMock: NormalizedResearchData = {
     fcf_yield: 0.021,
     historical_range_note: "Mock valuation metrics only; no target price is provided.",
   },
-  risk_signals: {
-    growth_risk: [
-      "Growth risk is linked to cloud revenue exposure in the normalized mock metrics. The workflow cannot assess future cloud demand without guidance, segment trend, or external evidence.",
-    ],
-    valuation_risk: ["Valuation multiples are present, but peer comparison is not included in this mock."],
-    forward_looking_risk: ["RPO and deferred revenue are available, but management guidance text is not supplied."],
-  },
+  risk_signals: { signals: [] },
 };
 
 export const researchScenarioMocks = {
@@ -79,9 +73,7 @@ export const researchScenarioMocks = {
     normalized_financials: msftResearchMock.normalized_financials,
     financial_metrics: msftResearchMock.financial_metrics,
     growth_metrics: msftResearchMock.growth_metrics,
-    risk_signals: {
-      profitability_margin_risk: ["Operating margin changed in the normalized mock metrics."],
-    },
+    risk_signals: { signals: [] },
   },
   scenarioCFinancialValuationNoPeer: {
     ticker: "MSFT",

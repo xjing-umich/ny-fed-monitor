@@ -1,5 +1,5 @@
 import type { NormalizedResearchData } from "../schemas/researchSchemas";
-import { latestFinancialMetrics, latestGrowthMetrics, latestNormalizedFinancials, secRiskSignals } from "./derivedMetrics";
+import { annualResearchHistory, latestFinancialMetrics, latestGrowthMetrics, latestNormalizedFinancials } from "./derivedMetrics";
 import { fetchCompanyFactsByTicker } from "./companyFacts";
 import { latestFact, normalizeAnnualCompanyFacts } from "./normalizeCompanyFacts";
 import type { SecCompanyFactsJson, SecResearchDataResult } from "./types";
@@ -19,7 +19,7 @@ export function buildResearchDataFromCompanyFacts(
     normalized_financials: latestNormalizedFinancials(normalized),
     financial_metrics: latestFinancialMetrics(normalized),
     growth_metrics: latestGrowthMetrics(normalized),
-    risk_signals: secRiskSignals(normalized),
+    annual_history: annualResearchHistory(normalized),
   };
 
   return {
@@ -42,14 +42,12 @@ export async function buildSecResearchDataForTicker(
   return buildResearchDataFromCompanyFacts(ticker, cik, facts);
 }
 
-export function emptySecResearchData(ticker: string, error: string): SecResearchDataResult {
+export function emptySecResearchData(ticker: string): SecResearchDataResult {
   return {
     normalizedData: {
       ticker: ticker.toUpperCase(),
       company_name: `${ticker.toUpperCase()} SEC research profile`,
-      risk_signals: {
-        forward_looking_risk: [`SEC companyfacts data unavailable: ${error}`],
-      },
+      risk_signals: { signals: [] },
     },
     sec: {
       source: "SEC_COMPANYFACTS",
