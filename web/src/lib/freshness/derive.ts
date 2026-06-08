@@ -8,7 +8,7 @@ export const PRICE_STALE_AFTER_TRADING_DAYS = 3; // 价格落后超过 3 个工�
 export const FILING_DEADLINE_DAYS = 45; // 13F：季度末 + 45 天为 SEC 截止日
 
 // YYYY-MM-DD → UTC Date（避免本地时区漂移）。非法/空 → null。
-function parseUTC(s: string | null): Date | null {
+export function parseUTC(s: string | null): Date | null {
   if (!s) return null;
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
   if (!m) return null;
