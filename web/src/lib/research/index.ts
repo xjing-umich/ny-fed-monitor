@@ -8,3 +8,4 @@ export * from "./workflow/runResearchWorkflow";
 export * from "./mock/msftResearchMock";
 export * from "./sec";
 export * from "./valuation";
+export * from "./risk";

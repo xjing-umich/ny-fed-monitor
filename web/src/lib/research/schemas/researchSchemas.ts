@@ -8,6 +8,7 @@ export type AnalysisLevel =
   | "core_financial_supported"
   | "full_supported";
 export type RiskSeverity = "High" | "Medium" | "Low";
+export type EvidenceStrength = "High" | "Medium" | "Low";
 
 export type NormalizedFinancials = {
   revenue?: number;
@@ -104,14 +105,52 @@ export type ValuationMetrics = {
   historical_range_note?: string;
 };
 
+export type RiskSignalCategory =
+  | "Growth Risk"
+  | "Profitability and Margin Risk"
+  | "Free Cash Flow Risk"
+  | "Balance Sheet and Leverage Risk"
+  | "Capital Allocation Risk"
+  | "Valuation Risk"
+  | "13F Investor Signal Risk"
+  | "Data Quality Risk";
+
+export type RiskSignal = {
+  id: string;
+  category: RiskSignalCategory;
+  severity: RiskSeverity;
+  evidence_strength: EvidenceStrength;
+  evidence: string;
+  why_it_matters: string;
+  data_needed_next: string[];
+  source_fields: string[];
+  source: "SYSTEM_DERIVED_RISK_SIGNAL";
+};
+
+export type AnnualResearchSnapshot = {
+  fiscal_year: number;
+  revenue?: number;
+  gross_margin?: number;
+  operating_margin?: number;
+  net_margin?: number;
+  net_income?: number;
+  operating_cash_flow?: number;
+  capital_expenditure?: number;
+  free_cash_flow?: number;
+  fcf_margin?: number;
+  fcf_conversion?: number;
+  cash?: number;
+  total_debt?: number;
+  net_debt?: number;
+  debt_to_equity?: number;
+  shareholders_equity?: number;
+  share_count?: number;
+  buybacks?: number;
+  dividends?: number;
+};
+
 export type RiskSignals = {
-  growth_risk?: string[];
-  profitability_margin_risk?: string[];
-  free_cash_flow_risk?: string[];
-  balance_sheet_leverage_risk?: string[];
-  capital_allocation_risk?: string[];
-  valuation_risk?: string[];
-  forward_looking_risk?: string[];
+  signals: RiskSignal[];
 };
 
 export type PeerComparison = {
@@ -137,6 +176,7 @@ export type NormalizedResearchData = {
   growth_metrics?: GrowthMetrics;
   thirteen_f_summary?: ThirteenFSummary;
   valuation_metrics?: ValuationMetrics;
+  annual_history?: AnnualResearchSnapshot[];
   risk_signals?: RiskSignals;
   peer_comparison?: PeerComparison;
   external_evidence?: ExternalEvidence;
@@ -198,11 +238,15 @@ export type GrowthCapacityCheckResult = {
 };
 
 export type SupportedRiskFlag = {
+  id?: string;
   risk_category: string;
   severity: RiskSeverity;
+  evidence_strength?: EvidenceStrength;
   evidence: string;
   why_it_matters: string;
   data_needed_next: string[];
+  source_fields?: string[];
+  source?: "SYSTEM_DERIVED_RISK_SIGNAL";
 };
 
 export type EvidenceBasedRiskCheckResult = {

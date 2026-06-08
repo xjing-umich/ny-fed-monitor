@@ -1,4 +1,4 @@
-import type { FinancialMetrics, GrowthMetrics, NormalizedFinancials, RiskSignals } from "../schemas/researchSchemas";
+import type { AnnualResearchSnapshot, FinancialMetrics, GrowthMetrics, NormalizedFinancials } from "../schemas/researchSchemas";
 import { factForYear, latestFact } from "./normalizeCompanyFacts";
 import type { SecNormalizedAnnualFinancials, SecNormalizedField } from "./types";
 
@@ -115,21 +115,42 @@ export function latestGrowthMetrics(normalized: SecNormalizedAnnualFinancials): 
   };
 }
 
-export function secRiskSignals(normalized: SecNormalizedAnnualFinancials): RiskSignals {
-  const risks: RiskSignals = {};
-  const latestYear = normalized.latest_fiscal_year;
-  if (!latestYear) return risks;
-  const revenueGrowth = latestGrowthMetrics(normalized).revenue_growth;
-  const fcf = valueForYear(normalized, "free_cash_flow", latestYear);
-  const debtToEquity = ratio(value(normalized, "total_debt"), value(normalized, "shareholders_equity"));
-  if (revenueGrowth != null && revenueGrowth < 0) {
-    risks.growth_risk = ["SEC-normalized annual revenue declined year over year."];
-  }
-  if (fcf != null && fcf < 0) {
-    risks.free_cash_flow_risk = ["SEC-normalized annual free cash flow is negative."];
-  }
-  if (debtToEquity != null && debtToEquity > 2) {
-    risks.balance_sheet_leverage_risk = ["SEC-normalized total debt is more than two times shareholders' equity."];
-  }
-  return risks;
+export function annualResearchHistory(normalized: SecNormalizedAnnualFinancials): AnnualResearchSnapshot[] {
+  return normalized.fiscal_years.map((fiscalYear) => {
+    const revenue = valueForYear(normalized, "revenue", fiscalYear);
+    const grossProfit = valueForYear(normalized, "gross_profit", fiscalYear);
+    const operatingIncome = valueForYear(normalized, "operating_income", fiscalYear);
+    const netIncome = valueForYear(normalized, "net_income", fiscalYear);
+    const operatingCashFlow = valueForYear(normalized, "operating_cash_flow", fiscalYear);
+    const capitalExpenditure = valueForYear(normalized, "capital_expenditure", fiscalYear);
+    const freeCashFlow = valueForYear(normalized, "free_cash_flow", fiscalYear);
+    const cash = valueForYear(normalized, "cash", fiscalYear);
+    const totalDebt = valueForYear(normalized, "total_debt", fiscalYear);
+    const netDebt = valueForYear(normalized, "net_debt", fiscalYear);
+    const shareholdersEquity = valueForYear(normalized, "shareholders_equity", fiscalYear);
+    return {
+      fiscal_year: fiscalYear,
+      revenue,
+      gross_margin: ratio(grossProfit, revenue),
+      operating_margin: ratio(operatingIncome, revenue),
+      net_margin: ratio(netIncome, revenue),
+      net_income: netIncome,
+      operating_cash_flow: operatingCashFlow,
+      capital_expenditure: capitalExpenditure,
+      free_cash_flow: freeCashFlow,
+      fcf_margin: ratio(freeCashFlow, revenue),
+      fcf_conversion: ratio(freeCashFlow, netIncome),
+      cash,
+      total_debt: totalDebt,
+      net_debt: netDebt,
+      debt_to_equity: ratio(totalDebt, shareholdersEquity),
+      shareholders_equity: shareholdersEquity,
+      share_count:
+        valueForYear(normalized, "shares_diluted", fiscalYear) ??
+        valueForYear(normalized, "shares_basic", fiscalYear) ??
+        valueForYear(normalized, "shares_outstanding", fiscalYear),
+      buybacks: valueForYear(normalized, "buybacks", fiscalYear),
+      dividends: valueForYear(normalized, "dividends", fiscalYear),
+    };
+  });
 }
