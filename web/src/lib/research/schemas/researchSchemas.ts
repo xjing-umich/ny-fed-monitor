@@ -1,6 +1,12 @@
 export type DataConfidence = "High" | "Medium" | "Low";
 export type CoverageStatus = "Available" | "Partial" | "Missing";
-export type AnalysisLevel = "none" | "13f_only" | "financial_supported" | "full_supported";
+export type AnalysisLevel =
+  | "none"
+  | "13f_only"
+  | "financial_supported"
+  | "financial_and_valuation_supported_peer_external_missing"
+  | "core_financial_supported"
+  | "full_supported";
 export type RiskSeverity = "High" | "Medium" | "Low";
 
 export type NormalizedFinancials = {

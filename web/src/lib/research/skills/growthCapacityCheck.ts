@@ -10,6 +10,15 @@ export function runGrowthCapacityCheck(input: SkillInput): GrowthCapacityCheckRe
     growth?.bookings != null ||
     growth?.rpo != null ||
     growth?.deferred_revenue != null;
+  const cannotConclude: string[] = [];
+  if (input.data_quality_gate.missing_data.includes("peer_comparison")) {
+    cannotConclude.push("Cannot determine whether the company is better than peers because peer comparison is missing.");
+  }
+  if (input.data_quality_gate.missing_data.includes("external_evidence")) {
+    cannotConclude.push(
+      "Cannot assess regulatory, litigation, competition, management, customer churn, or geopolitical risks because external evidence is missing.",
+    );
+  }
 
   if (!hasGrowth) {
     return {
@@ -62,7 +71,9 @@ export function runGrowthCapacityCheck(input: SkillInput): GrowthCapacityCheckRe
     growth_quality_assessment: "Growth quality assessment is limited to the provided historical growth, margin, cash-flow, and reinvestment metrics.",
     growth_risk_flags: input.risk_signals?.growth_risk ?? [],
     supported_conclusions: ["Historical growth can be discussed only where normalized growth metrics are present."],
-    cannot_conclude: hasForward ? [] : ["Future growth trajectory or durability cannot be concluded without forward-looking indicators."],
+    cannot_conclude: hasForward
+      ? cannotConclude
+      : ["Future growth trajectory or durability cannot be concluded without forward-looking indicators.", ...cannotConclude],
     next_data_needed: input.data_quality_gate.missing_data,
     disclaimer: disclaimer(),
   };

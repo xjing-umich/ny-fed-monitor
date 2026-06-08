@@ -7,6 +7,14 @@ export function runFundamentalQualityCheck(input: SkillInput): FundamentalQualit
   const hasFundamentals = hasAny(financials) || hasAny(metrics);
   const supported: string[] = [];
   const cannot: string[] = [];
+  if (input.data_quality_gate.missing_data.includes("peer_comparison")) {
+    cannot.push("Cannot determine whether the company is better than peers because peer comparison is missing.");
+  }
+  if (input.data_quality_gate.missing_data.includes("external_evidence")) {
+    cannot.push(
+      "Cannot assess regulatory, litigation, competition, management, customer churn, or geopolitical risks because external evidence is missing.",
+    );
+  }
 
   if (!hasFundamentals) {
     return {
@@ -55,8 +63,8 @@ export function runFundamentalQualityCheck(input: SkillInput): FundamentalQualit
     data_coverage: coverageBlock(input, "Available"),
     business_quality:
       metrics?.roic != null || metrics?.roe != null
-        ? `Quality indicators are limited to provided returns: ROIC ${formatPct(metrics.roic) ?? "not provided"}, ROE ${formatPct(metrics.roe) ?? "not provided"}.`
-        : "Business quality can only be described from the supplied profitability and cash-flow evidence; ROIC/ROE are not provided.",
+        ? `Business quality cannot be fully assessed from returns alone. The provided ROIC and ROE metrics support a limited capital-return observation, but peer comparison, multi-year stability, and external evidence are missing. Provided returns: ROIC ${formatPct(metrics.roic) ?? "not provided"}, ROE ${formatPct(metrics.roe) ?? "not provided"}.`
+        : "Business quality cannot be fully assessed because ROIC, ROE, peer comparison, multi-year stability, and external evidence are not all provided.",
     profitability:
       grossMargin || operatingMargin || netMargin
         ? `Provided margins: gross ${grossMargin ?? "missing"}, operating ${operatingMargin ?? "missing"}, net ${netMargin ?? "missing"}.`

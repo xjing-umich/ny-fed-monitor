@@ -57,7 +57,9 @@ export const msftResearchMock: NormalizedResearchData = {
     historical_range_note: "Mock valuation metrics only; no target price is provided.",
   },
   risk_signals: {
-    growth_risk: ["Revenue growth is dependent on continued cloud demand in the normalized mock metrics."],
+    growth_risk: [
+      "Growth risk is linked to cloud revenue exposure in the normalized mock metrics. The workflow cannot assess future cloud demand without guidance, segment trend, or external evidence.",
+    ],
     valuation_risk: ["Valuation multiples are present, but peer comparison is not included in this mock."],
     forward_looking_risk: ["RPO and deferred revenue are available, but management guidance text is not supplied."],
   },

@@ -127,13 +127,15 @@ export function dataQualityGate(data: NormalizedResearchData): DataQualityGateRe
   ].filter(Boolean);
 
   const analysis_level =
-    fundamentalsAvailable && valuationAvailable
+    fundamentalsAvailable && valuationAvailable && peerAvailable && externalEvidenceAvailable
       ? "full_supported"
-      : fundamentalsAvailable
-        ? "financial_supported"
-        : thirteenFAvailable
-          ? "13f_only"
-          : "none";
+      : fundamentalsAvailable && valuationAvailable
+        ? "financial_and_valuation_supported_peer_external_missing"
+        : fundamentalsAvailable
+          ? "core_financial_supported"
+          : thirteenFAvailable
+            ? "13f_only"
+            : "none";
 
   const data_confidence =
     fundamentalsAvailable && growthAvailable && valuationAvailable && (peerAvailable || externalEvidenceAvailable)
