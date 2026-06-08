@@ -10,6 +10,7 @@ import { EntityPage } from "@/components/entity/EntityPage";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
 import { isPeriodStale } from "@/lib/ai/investorNarrative";
+import { filingFreshness } from "@/lib/freshness/derive";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD } from "@/lib/format";
 
@@ -360,7 +361,7 @@ export default async function InvestorSlugPage({
         keyFacts={keyFacts}
         notice={staleNotice}
         aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
-        sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt }]}
+        sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
       >
         <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} />
