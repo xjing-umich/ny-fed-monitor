@@ -75,11 +75,13 @@ const valuationData: NormalizedResearchData = {
 assertHas(valuationData, "valuation_available_but_peer_context_missing");
 assertHas(valuationData, "pe_above_configured_threshold");
 const workflow = runResearchWorkflow("TST", { ...valuationData, risk_signals: generateRiskSignals(valuationData) });
-const { data_coverage: riskCoverage, ...riskNarrative } = workflow.skill_results.evidence_based_risk_check;
+const { data_coverage: riskCoverage, disclaimer: riskDisclaimer, ...riskNarrative } = workflow.skill_results.evidence_based_risk_check;
 void riskCoverage;
-for (const forbidden of ["cheap", "expensive", "undervalued", "overvalued"]) {
+void riskDisclaimer;
+for (const forbidden of ["cheap", "expensive", "undervalued", "overvalued", "fair value", "target price", "upside", "downside", "margin of safety"]) {
   assert(workflow.data_quality_gate.forbidden_claims.includes(forbidden));
   assert(!JSON.stringify(riskNarrative).toLowerCase().includes(forbidden));
+  assert(!JSON.stringify(generateRiskSignals(valuationData).signals).toLowerCase().includes(forbidden));
 }
 
 assertHas(financialData, "missing_external_evidence");
