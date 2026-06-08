@@ -203,108 +203,6 @@ function HoldingsTable({
   );
 }
 
-// ── Changes section ───────────────────────────────────────────────────────────
-
-const CHANGE_COPY = {
-  zh: {
-    title: "环比变动",
-    new: "新建",
-    exited: "清仓",
-    increased: "加仓",
-    decreased: "减仓",
-    none: "—",
-  },
-  en: {
-    title: "Quarter Changes",
-    new: "New",
-    exited: "Exited",
-    increased: "Added",
-    decreased: "Trimmed",
-    none: "—",
-  },
-} as const;
-
-const KIND_COLOR: Record<HoldingChange["kind"], string> = {
-  new:       "text-[var(--tt-positive)]",
-  exited:    "text-[var(--tt-negative)]",
-  increased: "text-[var(--tt-accent)]",
-  decreased: "text-[var(--tt-warn)]",
-};
-
-function ChangeGroup({
-  label,
-  items,
-  kind,
-}: {
-  label: string;
-  items: HoldingChange[];
-  kind: HoldingChange["kind"];
-}): React.ReactElement {
-  const colorClass = KIND_COLOR[kind];
-  return (
-    <div className="border-t border-[var(--tt-border)] pt-3">
-      <div className={`text-[10px] font-medium uppercase tracking-[0.1em] mb-2 ${colorClass}`}>
-        {label}
-      </div>
-      <div>
-        {items.length === 0 ? (
-          <div className="text-xs text-[var(--tt-faint)]">—</div>
-        ) : (
-          items.map((c) => (
-            <div
-              key={c.cusip}
-              className="flex items-center justify-between gap-2 py-1 border-b border-[var(--tt-border)] last:border-0"
-            >
-              <span className="text-xs text-[var(--tt-text)] truncate flex-1">{c.issuer}</span>
-              {(kind === "increased" || kind === "decreased") && c.deltaPct != null ? (
-                <span className={`font-mono tabular-nums text-[11px] flex-shrink-0 ${colorClass}`}>
-                  {kind === "increased" ? "+" : ""}
-                  {(c.deltaPct * 100).toFixed(1)}%
-                </span>
-              ) : (
-                <span className="font-mono tabular-nums text-[11px] text-[var(--tt-faint)] flex-shrink-0">
-                  {formatUSD(c.value)}
-                </span>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ChangesSection({ changes, lang }: { changes: HoldingChange[]; lang: Lang }): React.ReactElement {
-  const t = CHANGE_COPY[lang];
-  const groups: { kind: HoldingChange["kind"]; label: string }[] = [
-    { kind: "new",       label: `${t.new} (${changes.filter((c) => c.kind === "new").length})` },
-    { kind: "exited",   label: `${t.exited} (${changes.filter((c) => c.kind === "exited").length})` },
-    { kind: "increased",label: `${t.increased} (${changes.filter((c) => c.kind === "increased").length})` },
-    { kind: "decreased",label: `${t.decreased} (${changes.filter((c) => c.kind === "decreased").length})` },
-  ];
-
-  return (
-    <section>
-      {/* Section label with hairline rule */}
-      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-          {t.title}
-        </span>
-      </div>
-      <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-        {groups.map(({ kind, label }) => (
-          <ChangeGroup
-            key={kind}
-            label={label}
-            items={changes.filter((c) => c.kind === kind).slice(0, 8)}
-            kind={kind}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function InvestorSlugPage({
@@ -404,8 +302,6 @@ export default async function InvestorSlugPage({
     .slice(0, 6)
     .map((m) => ({ label: m.person, href: investorPath(lang, m.slug) }));
 
-  const hasChanges = changes.length > 0 && prior != null;
-
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -468,7 +364,6 @@ export default async function InvestorSlugPage({
         related={related}
       >
         <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} />
-        {hasChanges && <ChangesSection changes={changes} lang={lang} />}
       </EntityPage>
     </>
   );
