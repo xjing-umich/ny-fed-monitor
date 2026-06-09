@@ -1,11 +1,12 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
+import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
@@ -15,6 +16,8 @@ import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
+import { isLikelyTicker } from "@/lib/externalLinks";
+import { getCusipMap } from "@/lib/managers/securities";
 
 const MAX_HOLDINGS = 25;
 
@@ -126,11 +129,13 @@ function HoldingsTable({
   prior,
   changes,
   lang,
+  cusipToTicker,
 }: {
   holdings: Holding[];
   prior?: FilingData;
   changes: HoldingChange[];
   lang: Lang;
+  cusipToTicker: Map<string, string>;
 }): React.ReactElement {
   const t = HOLD_COPY[lang];
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
@@ -147,7 +152,7 @@ function HoldingsTable({
       key: "issuer",
       header: t.cols.issuer,
       role: "primary",
-      cell: (h) => <EntityName issuer={h.issuer} ticker={h.cusip} />,
+      cell: (h) => <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />,
     },
     {
       key: "value",
@@ -191,7 +196,11 @@ function HoldingsTable({
         columns={columns}
         rows={capped}
         getKey={(h) => h.cusip}
-        rowHref={(h) => stockPath(lang, h.cusip)}
+        rowHref={(h) => {
+          const tk = cusipToTicker.get(h.cusip);
+          if (tk) return stockPath(lang, tk);
+          return h.cusip ? stockPath(lang, h.cusip) : "";
+        }}
         breakpoint="lg"
       />
       {truncated && (
@@ -207,7 +216,7 @@ function HoldingsTable({
             {exits.slice(0, EXIT_CAP).map((c, i) => (
               <React.Fragment key={c.cusip}>
                 {i > 0 && "、"}
-                <Link href={stockPath(lang, c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
+                <Link href={stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
               </React.Fragment>
             ))}
             {exits.length > EXIT_CAP && <span className="text-[var(--tt-faint)]">{t.more(exits.length - EXIT_CAP)}</span>}
@@ -230,9 +239,24 @@ export default async function InvestorSlugPage({
   const lang = rawLang as Lang;
 
   const d = await getManagerDetail(slug);
-  if (!d) notFound();
+  if (!d) {
+    // 别名解析:查不到真实页 → 尝试把别名(人名/接班人/票代/中英/曾用名)308 跳到 canonical。
+    // 仅 high 触发;命中且 ≠ 当前 slug 才跳(自指 no-op);否则 404。permanentRedirect 抛出,
+    // 控制流等价于 notFound()(spec §5.1, §6)。
+    const hit = await resolveEntity("investor", slug);
+    if (hit && hit.canonicalSlug !== slug) permanentRedirect(investorPath(lang, hit.canonicalSlug));
+    notFound();
+  }
 
   const { manager, latest, prior, changes } = d;
+
+  // CUSIP→ticker 内链解析(spec §5.3)。无库(本地)→ 空 Map → 退回原 cusip 链接(行为不变)。
+  // 仅收 ticker 形态的值:脊梁富化偶有脏 ticker(如数字 "9.2343e+106"),否则会生成坏内链;
+  // 这类行回退为原 cusip 链接(个股页仍能按 cusip 解析)。
+  const cusipMap = await getCusipMap();
+  const cusipToTicker = new Map<string, string>();
+  for (const [cusip, info] of cusipMap)
+    if (info.ticker && isLikelyTicker(info.ticker)) cusipToTicker.set(cusip, info.ticker);
 
   // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
   const narrative = await getInvestorNarrative(slug, lang);
@@ -338,10 +362,13 @@ export default async function InvestorSlugPage({
 
   // Person structured data — identifies the investor as an entity and links the
   // fund they run, so search/AI engines can attribute holdings to a real person.
+  // 别名外露:把人名/接班人/票代/中英/曾用名喂给搜索/AI(spec §5.2)。排除与主名重复者。
+  const aliasNames = (await getEntityAliases("investor", manager.slug)).filter((a) => a !== manager.person);
   const person = {
     "@context": "https://schema.org",
     "@type": "Person",
     name: manager.person,
+    ...(aliasNames.length ? { alternateName: aliasNames } : {}),
     url: `https://thecompounder.fyi/${lang}/investors/${manager.slug}`,
     jobTitle: lang === "zh" ? "投资人" : "Investor",
     worksFor: { "@type": "Organization", name: manager.name },
@@ -378,7 +405,7 @@ export default async function InvestorSlugPage({
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
       >
-        <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} />
+        <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} />
       </EntityPage>
     </>
   );
