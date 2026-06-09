@@ -34,6 +34,9 @@ const SEED_MANAGERS: Omit<Manager, "name">[] = JSON.parse(
 );
 const OUT_DIR = path.join(__dirname, "../src/data/13f");
 
+// slug → EDGAR 曾用名(基金改名史)。ingest 期填充,末尾 emit 到 former-names.json。
+const FORMER_NAMES: Record<string, string[]> = {};
+
 // 13F 为命脉。每位经理人独立 try/catch(单个失败不致命),但若成功占比过低,
 // 整次跑必须标红(exit 1),否则"静默部分失败"会伪装成绿色成功,让 13F 悄悄变陈。
 const MIN_SUCCESS_RATIO = 0.9;
@@ -58,6 +61,7 @@ async function fetchText(url: string): Promise<string> {
 
 interface SubmissionsData {
   name: string;
+  formerNames?: Array<{ name: string; from?: string; to?: string }>;
   filings: {
     recent: {
       form: string[];
@@ -88,6 +92,7 @@ async function getLatestFilings(cik: string, maxCount = 2) {
 
   const { form, accessionNumber, filingDate, reportDate } = data.filings.recent;
   const name = data.name;
+  const formerNames = (data.formerNames ?? []).map((f) => f.name).filter(Boolean);
 
   // Find 13F-HR indices (prefer non-amendment first)
   const indices: number[] = [];
@@ -114,7 +119,7 @@ async function getLatestFilings(cik: string, maxCount = 2) {
     if (selected.length >= maxCount) break;
   }
 
-  return { name, filings: selected };
+  return { name, formerNames, filings: selected };
 }
 
 async function parseInfoTable(cikInt: string, accession: string): Promise<Holding[]> {
@@ -313,7 +318,8 @@ async function ingestManager(seed: Omit<Manager, "name">): Promise<ManagerDetail
   const cikInt = seed.cik.replace(/^0+/, "");
   console.log(`\n[${seed.slug}] Fetching submissions...`);
 
-  const { name, filings } = await getLatestFilings(seed.cik, 2);
+  const { name, formerNames, filings } = await getLatestFilings(seed.cik, 2);
+  if (formerNames.length) FORMER_NAMES[seed.slug] = formerNames;
   console.log(`[${seed.slug}] Resolved name: ${name}, filings found: ${filings.length}`);
 
   if (filings.length === 0) {
@@ -397,6 +403,10 @@ async function main() {
   console.log(`\nIndex written to ${indexPath}`);
   console.log(`Total managers processed: ${summaries.length}`);
 
+  const formerPath = path.join(OUT_DIR, "former-names.json");
+  fs.writeFileSync(formerPath, JSON.stringify(FORMER_NAMES, null, 2));
+  console.log(`Former names written to ${formerPath} (${Object.keys(FORMER_NAMES).length} managers with history)`);
+
   // 凭据优先用 process.env(CI/GitHub Actions secrets)，本地回退仓库根 .env.local。
   const fileEnv: Record<string, string> = {};
   const envPath = path.join(__dirname, "../../.env.local");
@@ -415,7 +425,7 @@ async function main() {
       realtime: { transport: WebSocket as unknown as never },
     });
     for (const detail of allDetails) {
-      try { await upsertManagerDetail(db, detail); console.log(`[${detail.manager.slug}] upserted to Supabase`); }
+      try { await upsertManagerDetail(db, detail, FORMER_NAMES[detail.manager.slug]); console.log(`[${detail.manager.slug}] upserted to Supabase`); }
       catch (e) { console.warn(`[${detail.manager.slug}] Supabase upsert failed: ${e}`); }
     }
     console.log("Supabase upsert done.");
