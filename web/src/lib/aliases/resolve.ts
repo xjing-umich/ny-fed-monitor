@@ -40,19 +40,21 @@ const buildInvestorIndex = cache(async (): Promise<BuiltIndex> =>
   buildFromEntries(investorAliasEntries())
 );
 
-// 公司名常见「企业形态」后缀(去掉后得口语短名:"APPLE INC"→"Apple")。
-// 含股份类别标记(cl/class a/b/c);多个连续后缀会被逐个剥离("ALPHABET INC CL A"→"Alphabet")。
+// 公司名尾部噪声 token(剥掉后得口语短名:"APPLE INC"→"Apple")。涵盖企业形态、股份类别、
+// 以及 OpenFIGI 富化名常见的杂项("VISA INC-CLASS A COMMON STOCK"、"COCA-COLA CO/THE")。
 const CORP_SUFFIXES = new Set([
   "inc", "incorporated", "corp", "corporation", "co", "company", "cos",
   "ltd", "limited", "plc", "lp", "llc", "llp", "sa", "nv", "ag",
   "holdings", "hldgs", "holding", "group", "grp", "com", "the", "trust", "tr",
   "class", "cl", "a", "b", "c",
+  "common", "stock", "stk", "shares", "share", "sponsored", "adr", "ads",
+  "ord", "ordinary", "cap", "new", "del", "reit", "units", "unit",
 ]);
 
-// cleanIssuer 后的名字 → 剥掉尾部企业形态后缀的短名。无法缩短则原样返回。
-// 仅用于派生一个"短名"别名;歧义(如 alphabet→GOOGL+GOOG)由 buildFromEntries 的 §6 闸拦掉。
+// cleanIssuer 后的名字 → 剥掉尾部噪声后缀的短名。先把连字符/斜杠当分隔符,再逐个剥尾部噪声 token。
+// 仅用于派生一个"短名"别名;歧义(如 alphabet→GOOGL+GOOG、各双股份类别)由 buildFromEntries §6 闸拦掉。
 function companyShortName(cleaned: string): string {
-  const toks = cleaned.split(/\s+/).filter(Boolean);
+  const toks = cleaned.replace(/[-/]/g, " ").split(/\s+/).filter(Boolean);
   while (toks.length > 1 && CORP_SUFFIXES.has(toks[toks.length - 1].toLowerCase().replace(/[.,&]/g, ""))) {
     toks.pop();
   }
