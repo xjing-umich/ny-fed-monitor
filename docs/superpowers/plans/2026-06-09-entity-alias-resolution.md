@@ -275,9 +275,17 @@ async function indexFor(type: EntityType): Promise<BuiltIndex> {
 
 // 任意别名 → canonical。仅返回 confidence=high(v1 全 high);loose 不经此函数(只进
 // 结构化数据)。未命中 → null。调用方负责比较 rawSlug≠canonicalSlug 再决定跳转。
+// rawSlug 来自 URL 动态段:Next 不会自动解码(中文别名到达时仍是 %E5%B7%B4… 形式),
+// 故先 decodeURIComponent 再归一化;畸形编码则回退原串。
 export async function resolveEntity(type: EntityType, rawSlug: string): Promise<AliasTarget | null> {
   const idx = await indexFor(type);
-  const hit = idx.resolve.get(normalize(rawSlug));
+  let decoded = rawSlug;
+  try {
+    decoded = decodeURIComponent(rawSlug);
+  } catch {
+    // 畸形百分号编码 → 用原串(normalize 会去掉残余标点)。
+  }
+  const hit = idx.resolve.get(normalize(decoded));
   return hit ? { canonicalSlug: hit, confidence: "high" } : null;
 }
 
