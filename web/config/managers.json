@@ -1,5 +1,15 @@
 [
-  { "cik": "0001067983", "slug": "berkshire-hathaway", "person": "Warren Buffett" },
+  {
+    "cik": "0001067983",
+    "slug": "berkshire-hathaway",
+    "person": "Warren Buffett",
+    "people": [
+      { "name": "Warren Buffett", "zh": "巴菲特" },
+      { "name": "Greg Abel", "zh": "阿贝尔", "role": "CEO" },
+      { "name": "Charlie Munger", "zh": "芒格" }
+    ],
+    "aliases": ["BRK", "BRK.A", "BRK.B", "伯克希尔", "伯克希尔哈撒韦"]
+  },
   { "cik": "0001649339", "slug": "scion-asset-management", "person": "Michael Burry" },
   { "cik": "0001336528", "slug": "pershing-square", "person": "Bill Ackman" },
   { "cik": "0001061768", "slug": "baupost-group", "person": "Seth Klarman" },
