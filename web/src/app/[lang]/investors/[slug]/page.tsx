@@ -1,11 +1,12 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
+import { resolveEntity } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
@@ -230,7 +231,14 @@ export default async function InvestorSlugPage({
   const lang = rawLang as Lang;
 
   const d = await getManagerDetail(slug);
-  if (!d) notFound();
+  if (!d) {
+    // 别名解析:查不到真实页 → 尝试把别名(人名/接班人/票代/中英/曾用名)308 跳到 canonical。
+    // 仅 high 触发;命中且 ≠ 当前 slug 才跳(自指 no-op);否则 404。permanentRedirect 抛出,
+    // 控制流等价于 notFound()(spec §5.1, §6)。
+    const hit = await resolveEntity("investor", slug);
+    if (hit && hit.canonicalSlug !== slug) permanentRedirect(investorPath(lang, hit.canonicalSlug));
+    notFound();
+  }
 
   const { manager, latest, prior, changes } = d;
 
