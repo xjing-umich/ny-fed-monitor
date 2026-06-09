@@ -6,7 +6,7 @@ import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/manager
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
-import { resolveEntity } from "@/lib/aliases/resolve";
+import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer } from "@/lib/format";
@@ -431,10 +431,23 @@ export default async function StockTickerPage({
     ],
   };
 
+  // 个股别名外露:公司名变体 + 票代(CUSIP 不外露——非用户语义;中文名待 Tier 2)。
+  const stockAliases = (await getEntityAliases("stock", ticker)).filter(
+    (a) => a !== issuer && a !== ticker
+  );
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: issuer,
+    alternateName: [ticker, ...stockAliases],
+    url: `https://thecompounder.fyi/${lang}/stocks/${ticker}`,
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
       <EntityPage
         lang={lang}
         title={issuer}
