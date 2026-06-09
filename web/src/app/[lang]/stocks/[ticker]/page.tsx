@@ -1,11 +1,12 @@
 import React from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
-import { investorPath } from "@/lib/urls";
+import { investorPath, stockPath } from "@/lib/urls";
+import { resolveEntity } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer } from "@/lib/format";
@@ -319,6 +320,13 @@ export default async function StockTickerPage({
   const asCusip = cusipMap.get(rawTicker);
   if (asCusip?.ticker && asCusip.ticker !== rawTicker) {
     redirect(`/${lang}/stocks/${asCusip.ticker}`);
+  }
+
+  // 别名解析:公司名等非票代别名(如 /stocks/apple)308 跳到 canonical ticker。
+  // ticker 自指 no-op;无库(本地)→ 索引空 → null → 不跳,沿用原逻辑(spec §5.1)。
+  const aliasHit = await resolveEntity("stock", rawTicker);
+  if (aliasHit && aliasHit.canonicalSlug !== rawTicker) {
+    permanentRedirect(stockPath(lang, aliasHit.canonicalSlug));
   }
 
   const ticker = rawTicker;
