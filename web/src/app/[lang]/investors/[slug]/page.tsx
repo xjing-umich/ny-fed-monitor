@@ -6,7 +6,7 @@ import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
-import { resolveEntity } from "@/lib/aliases/resolve";
+import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
@@ -346,10 +346,13 @@ export default async function InvestorSlugPage({
 
   // Person structured data — identifies the investor as an entity and links the
   // fund they run, so search/AI engines can attribute holdings to a real person.
+  // 别名外露:把人名/接班人/票代/中英/曾用名喂给搜索/AI(spec §5.2)。排除与主名重复者。
+  const aliasNames = (await getEntityAliases("investor", manager.slug)).filter((a) => a !== manager.person);
   const person = {
     "@context": "https://schema.org",
     "@type": "Person",
     name: manager.person,
+    ...(aliasNames.length ? { alternateName: aliasNames } : {}),
     url: `https://thecompounder.fyi/${lang}/investors/${manager.slug}`,
     jobTitle: lang === "zh" ? "投资人" : "Investor",
     worksFor: { "@type": "Organization", name: manager.name },
