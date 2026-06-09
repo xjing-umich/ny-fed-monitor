@@ -4,6 +4,7 @@ import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { isLikelyTicker } from "@/lib/externalLinks";
+import { getSecLatestMap } from "@/lib/sec/read";
 import SubNav from "@/components/shell/SubNav";
 import { StocksTableClient, type StockRow } from "./StocksTableClient";
 
@@ -48,6 +49,7 @@ export default async function StocksIndexPage({
   const cusipMap = await getCusipMap();
   // Google Finance 链接需 TICKER:EXCHANGE; 与个股详情页一致取交易所, 否则回退搜索。
   const exchangeMap = await getTickerExchangeMap();
+  const secLatestMap = await getSecLatestMap();
 
   const isZh = lang === "zh";
 
@@ -57,11 +59,18 @@ export default async function StocksIndexPage({
     const info = cusipMap.get(row.cusip);
     // mostHeld 的 cusip 字段实为 ticker(consensusRead/tickerizeRows 已 tickerize)。
     const ticker = info?.ticker ?? row.cusip;
+    const sec = secLatestMap.get(ticker);
     return {
       ticker,
       issuer: row.issuer,
       holderCount: row.holderCount,
       totalValue: row.totalValue,
+      latestRevenue: sec?.latest_revenue ?? null,
+      latestRevenueYoy: sec?.latest_revenue_yoy ?? null,
+      latestNetMargin: sec?.latest_net_margin ?? null,
+      latestFcfMargin: sec?.latest_fcf_margin ?? null,
+      latestRoe: sec?.latest_roe ?? null,
+      secQuality: sec?.quality_status ?? null,
       barWidth: Math.round((row.holderCount / maxHolders) * 32),
       exchange: exchangeMap.get(ticker) ?? null,
       isTicker: isLikelyTicker(ticker),
@@ -74,7 +83,7 @@ export default async function StocksIndexPage({
       <SubNav lang={lang} section="stocks" active="held" />
 
       {/* Editorial section heading */}
-      <div className="mb-8 border-b border-[var(--tt-border)] pb-6">
+      <div id="sec-fundamentals" className="mb-8 border-b border-[var(--tt-border)] pb-6">
         <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {isZh ? "个股" : "Stocks"}
           <span className="mx-2 text-[var(--tt-faint)]">·</span>
