@@ -5,6 +5,7 @@ import "server-only";
 import { cache } from "react";
 import { normalize } from "./normalize";
 import { cleanIssuer } from "@/lib/format";
+import { isLikelyTicker } from "@/lib/externalLinks";
 import { investorAliasEntries } from "./config";
 import { getCusipMap } from "@/lib/managers/securities";
 import type { EntityType, AliasEntry, AliasTarget, BuiltIndex } from "./types";
@@ -42,11 +43,13 @@ const buildInvestorIndex = cache(async (): Promise<BuiltIndex> =>
 // 个股索引:从证券脊梁 getCusipMap 派生(零 hardcode, spec §4.3)。
 //   normalize(name)→ticker、ticker→ticker(自指)、cusip→ticker。
 // 无 Supabase env(本地)→ getCusipMap 为空 → 索引为空 → 优雅降级,不解析(spec §4.4)。
+// 脊梁富化偶有脏 ticker(如 OpenFIGI 回传数字 "9.2343e+106"):非 ticker 形态者整行跳过,
+// 否则会把"名字/cusip"重定向到一个根本不存在的垃圾 canonical。
 const buildStockIndex = cache(async (): Promise<BuiltIndex> => {
   const cusipMap = await getCusipMap();
   const entries: AliasEntry[] = [];
   for (const [cusip, info] of cusipMap) {
-    if (!info.ticker) continue;
+    if (!info.ticker || !isLikelyTicker(info.ticker)) continue;
     entries.push({ alias: info.ticker, display: info.ticker, canonical: info.ticker });
     entries.push({ alias: cusip, display: "", canonical: info.ticker });
     if (info.name) entries.push({ alias: info.name, display: cleanIssuer(info.name), canonical: info.ticker });
