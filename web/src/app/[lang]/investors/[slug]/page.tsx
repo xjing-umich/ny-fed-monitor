@@ -59,7 +59,7 @@ export async function generateMetadata({
         alternates,
       }
     : {
-        title: `${person} 13F Holdings — Compounder · 复利`,
+        title: `${person} 13F Holdings — Compounder`,
         description: nb?.judgment_line ?? `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
         alternates,
       };

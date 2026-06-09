@@ -51,7 +51,7 @@ export async function generateMetadata({
   return lang === "zh"
     ? { title: `${issuer}（${ticker}）— 谁在持有 / 机构持仓 — Compounder · 复利`,
         description: `查看持有 ${issuer}（${ticker}）的超级投资者，了解机构持仓分布。`, alternates }
-    : { title: `${issuer} (${ticker}) — Who's Holding — Compounder · 复利`,
+    : { title: `${issuer} (${ticker}) — Who's Holding — Compounder`,
         description: `See which superinvestors hold ${issuer} (${ticker}) and their position sizes.`, alternates };
 }
 
