@@ -22,7 +22,7 @@ export async function generateMetadata({
         description: "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。",
       }
     : {
-        title: "Superinvestors — Compounder · 复利",
+        title: "Superinvestors — Compounder",
         description: "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.",
       };
 }

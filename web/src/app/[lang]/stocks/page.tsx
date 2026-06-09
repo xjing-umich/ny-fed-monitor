@@ -26,7 +26,7 @@ export async function generateMetadata({
         description: "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。",
       }
     : {
-        title: "Stocks · Most held — Compounder · 复利",
+        title: "Stocks · Most held — Compounder",
         description: "Securities held by the most superinvestors simultaneously, derived from 13F filings.",
       };
 }
