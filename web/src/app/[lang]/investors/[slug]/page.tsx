@@ -24,6 +24,15 @@ const MAX_HOLDINGS = 25;
 // ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的 AI 叙述(及更新的持仓)无需重新部署即可在 1 小时内出现, 同时保持静态托管利于 SEO。
 export const revalidate = 3600;
 
+// "2026-03-31" → "Q1 2026" for SEO-friendly titles ("[name] portfolio Q1 2026").
+// Passes through any value not in YYYY-MM-DD form unchanged.
+function quarterLabel(period: string): string {
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(period);
+  if (!m) return period;
+  const q = Math.floor((parseInt(m[2], 10) - 1) / 3) + 1;
+  return `Q${q} ${m[1]}`;
+}
+
 export async function generateStaticParams() {
   const idx = await getManagerIndex();
   const langs = ["zh", "en"] as const;
@@ -44,6 +53,8 @@ export async function generateMetadata({
   const { person, name } = d.manager;
   const nb = await getInvestorNarrative(slug, lang);
   const l = lang === "en" ? "en" : "zh";
+  const q = d.latest?.period ? quarterLabel(d.latest.period) : "";
+  const qSuffix = q ? ` ${q}` : "";
   const alternates = {
     canonical: `/${l}/investors/${slug}`,
     languages: {
@@ -54,13 +65,13 @@ export async function generateMetadata({
   };
   return lang === "zh"
     ? {
-        title: `${person} 持仓 13F — Compounder · 复利`,
-        description: nb?.judgment_line ?? `${name} — ${person} 的最新 SEC 13F 季度持仓披露，持仓明细与环比变动。`,
+        title: `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`,
+        description: nb?.judgment_line ?? `${person} 的最新 SEC 13F 季度持仓组合（${name}${q ? `，${q}` : ""}）：持仓明细与环比变动。`,
         alternates,
       }
     : {
-        title: `${person} 13F Holdings — Compounder`,
-        description: nb?.judgment_line ?? `${name} — Latest SEC 13F quarterly holdings for ${person}, with positions and quarter-over-quarter changes.`,
+        title: `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`,
+        description: nb?.judgment_line ?? `${person}'s latest SEC 13F portfolio${q ? ` (${q})` : ""} — holdings for ${name}, with positions and quarter-over-quarter changes.`,
         alternates,
       };
 }
