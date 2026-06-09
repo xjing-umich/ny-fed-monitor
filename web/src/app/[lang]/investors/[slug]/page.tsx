@@ -16,6 +16,7 @@ import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
+import { getCusipMap } from "@/lib/managers/securities";
 
 const MAX_HOLDINGS = 25;
 
@@ -127,11 +128,13 @@ function HoldingsTable({
   prior,
   changes,
   lang,
+  cusipToTicker,
 }: {
   holdings: Holding[];
   prior?: FilingData;
   changes: HoldingChange[];
   lang: Lang;
+  cusipToTicker: Map<string, string>;
 }): React.ReactElement {
   const t = HOLD_COPY[lang];
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
@@ -148,7 +151,7 @@ function HoldingsTable({
       key: "issuer",
       header: t.cols.issuer,
       role: "primary",
-      cell: (h) => <EntityName issuer={h.issuer} ticker={h.cusip} />,
+      cell: (h) => <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />,
     },
     {
       key: "value",
@@ -192,7 +195,11 @@ function HoldingsTable({
         columns={columns}
         rows={capped}
         getKey={(h) => h.cusip}
-        rowHref={(h) => stockPath(lang, h.cusip)}
+        rowHref={(h) => {
+          const tk = cusipToTicker.get(h.cusip);
+          if (tk) return stockPath(lang, tk);
+          return h.cusip ? stockPath(lang, h.cusip) : "";
+        }}
         breakpoint="lg"
       />
       {truncated && (
@@ -241,6 +248,11 @@ export default async function InvestorSlugPage({
   }
 
   const { manager, latest, prior, changes } = d;
+
+  // CUSIP→ticker 内链解析(spec §5.3)。无库(本地)→ 空 Map → 退回原 cusip 链接(行为不变)。
+  const cusipMap = await getCusipMap();
+  const cusipToTicker = new Map<string, string>();
+  for (const [cusip, info] of cusipMap) if (info.ticker) cusipToTicker.set(cusip, info.ticker);
 
   // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
   const narrative = await getInvestorNarrative(slug, lang);
@@ -389,7 +401,7 @@ export default async function InvestorSlugPage({
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
       >
-        <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} />
+        <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} />
       </EntityPage>
     </>
   );
