@@ -12,6 +12,14 @@ declare module "next/server" {
   }
 }
 
+declare module "next/navigation" {
+  export function redirect(url: string): never;
+}
+
+declare module "next/navigation.js" {
+  export * from "next/navigation";
+}
+
 declare module "next/server.js" {
   export * from "next/server";
 }
