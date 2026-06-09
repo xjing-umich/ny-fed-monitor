@@ -215,7 +215,7 @@ function HoldingsTable({
             {exits.slice(0, EXIT_CAP).map((c, i) => (
               <React.Fragment key={c.cusip}>
                 {i > 0 && "、"}
-                <Link href={stockPath(lang, c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
+                <Link href={stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
               </React.Fragment>
             ))}
             {exits.length > EXIT_CAP && <span className="text-[var(--tt-faint)]">{t.more(exits.length - EXIT_CAP)}</span>}
