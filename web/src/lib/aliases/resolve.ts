@@ -40,8 +40,27 @@ const buildInvestorIndex = cache(async (): Promise<BuiltIndex> =>
   buildFromEntries(investorAliasEntries())
 );
 
+// 公司名常见「企业形态」后缀(去掉后得口语短名:"APPLE INC"→"Apple")。
+// 含股份类别标记(cl/class a/b/c);多个连续后缀会被逐个剥离("ALPHABET INC CL A"→"Alphabet")。
+const CORP_SUFFIXES = new Set([
+  "inc", "incorporated", "corp", "corporation", "co", "company", "cos",
+  "ltd", "limited", "plc", "lp", "llc", "llp", "sa", "nv", "ag",
+  "holdings", "hldgs", "holding", "group", "grp", "com", "the", "trust", "tr",
+  "class", "cl", "a", "b", "c",
+]);
+
+// cleanIssuer 后的名字 → 剥掉尾部企业形态后缀的短名。无法缩短则原样返回。
+// 仅用于派生一个"短名"别名;歧义(如 alphabet→GOOGL+GOOG)由 buildFromEntries 的 §6 闸拦掉。
+function companyShortName(cleaned: string): string {
+  const toks = cleaned.split(/\s+/).filter(Boolean);
+  while (toks.length > 1 && CORP_SUFFIXES.has(toks[toks.length - 1].toLowerCase().replace(/[.,&]/g, ""))) {
+    toks.pop();
+  }
+  return toks.join(" ");
+}
+
 // 个股索引:从证券脊梁 getCusipMap 派生(零 hardcode, spec §4.3)。
-//   normalize(name)→ticker、ticker→ticker(自指)、cusip→ticker。
+//   normalize(name)→ticker、短名→ticker、ticker→ticker(自指)、cusip→ticker。
 // 无 Supabase env(本地)→ getCusipMap 为空 → 索引为空 → 优雅降级,不解析(spec §4.4)。
 // 脊梁富化偶有脏 ticker(如 OpenFIGI 回传数字 "9.2343e+106"):非 ticker 形态者整行跳过,
 // 否则会把"名字/cusip"重定向到一个根本不存在的垃圾 canonical。
@@ -52,7 +71,15 @@ const buildStockIndex = cache(async (): Promise<BuiltIndex> => {
     if (!info.ticker || !isLikelyTicker(info.ticker)) continue;
     entries.push({ alias: info.ticker, display: info.ticker, canonical: info.ticker });
     entries.push({ alias: cusip, display: "", canonical: info.ticker });
-    if (info.name) entries.push({ alias: info.name, display: cleanIssuer(info.name), canonical: info.ticker });
+    if (info.name) {
+      const full = cleanIssuer(info.name);
+      entries.push({ alias: info.name, display: full, canonical: info.ticker });
+      // 口语短名:"APPLE INC"→"Apple",让 /stocks/apple 也能命中(spec §4.3 name 派生的延伸)。
+      const short = companyShortName(full);
+      if (short && short.toLowerCase() !== full.toLowerCase()) {
+        entries.push({ alias: short, display: short, canonical: info.ticker });
+      }
+    }
   }
   return buildFromEntries(entries);
 });
