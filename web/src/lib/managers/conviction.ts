@@ -11,7 +11,7 @@ export type ConvictionPick = {
   issuer: string;
   signal: ConvictionSignal; // 最强适用的那一档（优先级见下）
   quartersHeld: number;     // 末尾连续持有季数（到最新季为止）
-  series: number[];         // 按时间升序的每季持股数；未持有季=0
+  series: readonly number[]; // 按时间升序的每季持股数；未持有季=0
   latestWeight: number | null; // 最新季权重（排序/文案用，缺失=null）
   addStreak: number;        // 末尾连续加仓季数（accumulating 文案用）
 };
@@ -43,7 +43,8 @@ export function deriveConviction(filings: FilingData[], limit = 3): ConvictionPi
   const asc = [...filings].sort((a, b) => (a.period > b.period ? 1 : -1));
   const latest = asc[asc.length - 1];
 
-  // 每证券（按 cusip 归并；13F 同券可多行/子账户，shares 求和）的升序持股序列
+  // 每证券（按 cusip 归并；13F 同券可多行/子账户/put-call，shares 求和）的升序持股序列。
+  // 有意不按 putCall 分键（与 assemble.ts 不同）：卡片与内链均以 cusip 为口径（spec §3）。
   const byCusip = new Map<string, { issuer: string; series: number[] }>();
   asc.forEach((f, qi) => {
     for (const h of f.holdings) {
@@ -95,7 +96,7 @@ export function deriveConviction(filings: FilingData[], limit = 3): ConvictionPi
     let signal: ConvictionSignal | null = null;
     if (addStreak >= MIN_ADD_STREAK) {
       signal = "accumulating";
-    } else if (last >= 1 && series[last] > series[last - 1] && latestWeight != null && latestWeight >= FRESH_MIN_WEIGHT) {
+    } else if (last > 0 && series[last] > series[last - 1] && latestWeight != null && latestWeight >= FRESH_MIN_WEIGHT) { // last>0: 短历史（单季）容忍——单条 filing 无法区分新买/加仓
       signal = "fresh_conviction";
     } else if (quartersHeld >= LONG_CORE_MIN_QUARTERS && topNCusips.has(cusip)) {
       signal = "long_core";
