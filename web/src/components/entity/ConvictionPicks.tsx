@@ -55,8 +55,8 @@ function Sparkline({ series, color }: { series: readonly number[]; color: string
   const W = 120;
   const H = 28;
   const PAD = 2;
-  const min = Math.min(...[...series]);
-  const max = Math.max(...[...series]);
+  const min = Math.min(...series);
+  const max = Math.max(...series);
   const span = max - min || 1; // 全平序列 → 画一条水平线
   const step = series.length > 1 ? (W - PAD * 2) / (series.length - 1) : 0;
   const points = series

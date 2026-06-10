@@ -21,6 +21,8 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { getCusipMap } from "@/lib/managers/securities";
+import { deriveConviction } from "@/lib/managers/conviction";
+import { ConvictionPicks } from "@/components/entity/ConvictionPicks";
 
 const MAX_HOLDINGS = 25;
 
@@ -272,6 +274,9 @@ export default async function InvestorSlugPage({
   for (const [cusip, info] of cusipMap)
     if (info.ticker && isLikelyTicker(info.ticker)) cusipToTicker.set(cusip, info.ticker);
 
+  // 信念精选：复用已加载的 d.filings，零新增 IO（spec §5）
+  const picks = deriveConviction(d.filings);
+
   // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
   const narrative = await getInvestorNarrative(slug, lang);
 
@@ -441,7 +446,12 @@ export default async function InvestorSlugPage({
         related={related}
         footerCta={<NewsletterCTA lang={lang} />}
       >
-        <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} />
+        <>
+          {picks.length > 0 && (
+            <ConvictionPicks picks={picks} lang={lang} investor={slug} cusipToTicker={cusipToTicker} />
+          )}
+          <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} />
+        </>
       </EntityPage>
     </>
   );
