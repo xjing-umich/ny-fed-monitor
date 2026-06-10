@@ -5,8 +5,10 @@ import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath } from "@/lib/urls";
+import { investorPath, stockPath, absoluteUrl } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
+import { ShareButton } from "@/components/share/ShareButton";
+import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
@@ -302,6 +304,19 @@ export default async function InvestorSlugPage({
       ? cleanIssuer([...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
       : "—";
 
+  // 分享文案数据（确定性，缺失走退化）
+  const shareTopHolding =
+    latest.holdings.length > 0
+      ? [...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer
+      : null;
+  const shareAddedName = changes.find((c) => c.kind === "new")?.issuer ?? null;
+  const shareUrl = absoluteUrl(investorPath(lang, slug));
+  const shareText = buildShareText(
+    { kind: "investor", managerName: manager.person, topHolding: shareTopHolding, addedName: shareAddedName },
+    lang,
+    manager.person,
+  );
+
   // 组合级 QoQ(无 prior 时不显环比)
   const valDeltaPct =
     prior && prior.totalValue > 0 ? (latest.totalValue - prior.totalValue) / prior.totalValue : null;
@@ -411,6 +426,14 @@ export default async function InvestorSlugPage({
         subtitle={subtitle}
         verdict={verdict}
         keyFacts={keyFacts}
+        headerAction={
+          <ShareButton
+            url={shareUrl}
+            text={shareText}
+            labels={shareLabels(lang)}
+            meta={{ entity: slug, entityType: "investor", lang }}
+          />
+        }
         notice={staleNotice}
         aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
