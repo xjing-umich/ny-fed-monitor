@@ -10,6 +10,7 @@ import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
+import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
 import { isPeriodStale } from "@/lib/ai/investorNarrative";
@@ -438,6 +439,7 @@ export default async function InvestorSlugPage({
         aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
+        footerCta={<NewsletterCTA lang={lang} />}
       >
         <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} />
       </EntityPage>

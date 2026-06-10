@@ -8,6 +8,7 @@ import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
+import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -456,6 +457,7 @@ export default async function StockTickerPage({
         keyFacts={keyFacts}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         related={related}
+        footerCta={<NewsletterCTA lang={lang} />}
       >
         <HoldersTable holders={holders} lang={lang} />
         <SecFundamentalsPanel sec={sec} lang={lang} />
