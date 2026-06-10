@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { mostHeld, holderDeltas } from "@/lib/aggregations";
 import { getManagerIndex } from "@/lib/managers/source";
-import { stockPath } from "@/lib/urls";
+import { stockPath, absoluteUrl } from "@/lib/urls";
+import { ShareButton } from "@/components/share/ShareButton";
+import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
@@ -42,6 +44,13 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
     href: stockPath(lang, r.cusip),
   }));
   const blurbRows: BlurbRow[] = rankRows.map((r) => ({ ticker: r.ticker, issuer: r.issuer, primary: r.primary, delta: r.delta }));
+  const top = rankRows[0];
+  const shareUrl = absoluteUrl(`/${lang}/investors/consensus`);
+  const shareText = buildShareText(
+    { kind: "consensus", topName: top?.issuer ?? null, holderCount: top?.primary ?? null, managerCount },
+    lang,
+    isZh ? "共识持仓" : "Consensus holdings",
+  );
 
   return (
     <>
@@ -58,9 +67,19 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
       <SubNav lang={lang} section="investors" active="consensus" />
       <div className="pb-8 sm:pb-10">
         <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
-          <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">
-            {isZh ? "共识持仓" : "Consensus holdings"}
-          </h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">
+              {isZh ? "共识持仓" : "Consensus holdings"}
+            </h1>
+            <div className="shrink-0 pt-1">
+              <ShareButton
+                url={shareUrl}
+                text={shareText}
+                labels={shareLabels(lang)}
+                meta={{ entity: "consensus", entityType: "consensus", lang }}
+              />
+            </div>
+          </div>
           <p className="mt-2 text-sm text-[var(--tt-muted)]">
             {isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
           </p>
