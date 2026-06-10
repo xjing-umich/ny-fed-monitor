@@ -16,7 +16,7 @@ function holdingRows(f: FilingData): HoldingRow[] {
 }
 
 export function buildUpsertPayload(d: ManagerDetail, formerNames?: string[]): UpsertPayload {
-  const filings: FilingData[] = [d.latest, ...(d.prior ? [d.prior] : [])];
+  const filings: FilingData[] = d.filings;
   return {
     manager: { ...d.manager, ...(formerNames?.length ? { former_names: formerNames } : {}) },
     filings: filings.map((f) => filingRow(d.manager.cik, f)),

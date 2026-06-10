@@ -10,12 +10,12 @@ import { fileURLToPath } from "url";
 import type {
   Holding,
   FilingData,
-  HoldingChange,
   Manager,
   ManagerDetail,
   ManagerIndex,
   ManagerSummary,
 } from "../src/lib/managers/types.js";
+import { assembleManagerDetail } from "../src/lib/managers/assemble.js";
 import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
@@ -240,59 +240,6 @@ function aggregateByCusip(holdings: Holding[]): Holding[] {
   return [...map.values()];
 }
 
-function computeChanges(latest: Holding[], prior: Holding[]): HoldingChange[] {
-  const latestMap = new Map(latest.map((h) => [holdingKey(h), h]));
-  const priorMap = new Map(prior.map((h) => [holdingKey(h), h]));
-  const changes: HoldingChange[] = [];
-
-  // New + increased/decreased
-  for (const [key, lh] of latestMap) {
-    const ph = priorMap.get(key);
-    if (!ph) {
-      changes.push({
-        cusip: lh.cusip,
-        issuer: lh.issuer,
-        kind: "new",
-        prevShares: 0,
-        shares: lh.shares,
-        value: lh.value,
-        deltaPct: null,
-      });
-    } else {
-      const delta = lh.shares - ph.shares;
-      const deltaPct = ph.shares !== 0 ? delta / ph.shares : null;
-      if (delta !== 0) {
-        changes.push({
-          cusip: lh.cusip,
-          issuer: lh.issuer,
-          kind: delta > 0 ? "increased" : "decreased",
-          prevShares: ph.shares,
-          shares: lh.shares,
-          value: lh.value,
-          deltaPct,
-        });
-      }
-    }
-  }
-
-  // Exited
-  for (const [key, ph] of priorMap) {
-    if (!latestMap.has(key)) {
-      changes.push({
-        cusip: ph.cusip,
-        issuer: ph.issuer,
-        kind: "exited",
-        prevShares: ph.shares,
-        shares: 0,
-        value: 0,
-        deltaPct: -1,
-      });
-    }
-  }
-
-  return changes;
-}
-
 function buildFilingData(
   filingMeta: { accession: string; filedAt: string; period: string },
   rawHoldings: Holding[]
@@ -314,47 +261,44 @@ function buildFilingData(
   };
 }
 
+const QUARTERS_TO_FETCH = 8;
+
 async function ingestManager(seed: Omit<Manager, "name">): Promise<ManagerDetail | null> {
   const cikInt = seed.cik.replace(/^0+/, "");
   console.log(`\n[${seed.slug}] Fetching submissions...`);
 
-  const { name, formerNames, filings } = await getLatestFilings(seed.cik, 2);
+  const { name, formerNames, filings: metas } = await getLatestFilings(seed.cik, QUARTERS_TO_FETCH);
   if (formerNames.length) FORMER_NAMES[seed.slug] = formerNames;
-  console.log(`[${seed.slug}] Resolved name: ${name}, filings found: ${filings.length}`);
+  console.log(`[${seed.slug}] Resolved name: ${name}, filings found: ${metas.length}`);
 
-  if (filings.length === 0) {
+  if (metas.length === 0) {
     console.warn(`[${seed.slug}] No 13F-HR filings found, skipping.`);
     return null;
   }
 
   const manager: Manager = { cik: seed.cik, slug: seed.slug, name, person: seed.person };
 
-  // Parse latest
-  const latestMeta = filings[0];
-  console.log(`[${seed.slug}] Parsing latest filing ${latestMeta.accession} (${latestMeta.period})...`);
-  const latestRaw = await parseInfoTable(cikInt, latestMeta.accession);
-  await sleep(300);
-  const latest = buildFilingData(latestMeta, latestRaw);
-  console.log(`[${seed.slug}] Latest: ${latest.holdings.length} holdings, totalValue $${latest.totalValue.toLocaleString()}`);
-
-  // Parse prior (if exists)
-  let prior: FilingData | undefined;
-  if (filings.length >= 2) {
-    const priorMeta = filings[1];
-    console.log(`[${seed.slug}] Parsing prior filing ${priorMeta.accession} (${priorMeta.period})...`);
+  // 逐期解析（含礼貌限速）；单期解析失败仅跳过该期，不影响其余季度。
+  const filings: FilingData[] = [];
+  for (const meta of metas) {
+    console.log(`[${seed.slug}] Parsing filing ${meta.accession} (${meta.period})...`);
     try {
-      const priorRaw = await parseInfoTable(cikInt, priorMeta.accession);
+      const raw = await parseInfoTable(cikInt, meta.accession);
       await sleep(300);
-      prior = buildFilingData(priorMeta, priorRaw);
-      console.log(`[${seed.slug}] Prior: ${prior.holdings.length} holdings`);
+      const fd = buildFilingData(meta, raw);
+      filings.push(fd);
+      console.log(`[${seed.slug}] ${meta.period}: ${fd.holdings.length} holdings, $${fd.totalValue.toLocaleString()}`);
     } catch (err) {
-      console.warn(`[${seed.slug}] Failed to parse prior filing: ${err instanceof Error ? err.message : err}`);
+      console.warn(`[${seed.slug}] Failed to parse ${meta.period}: ${err instanceof Error ? err.message : err}`);
     }
   }
 
-  const changes = prior ? computeChanges(latest.holdings, prior.holdings) : [];
+  if (filings.length === 0) {
+    console.warn(`[${seed.slug}] No filings parsed, skipping.`);
+    return null;
+  }
 
-  return { manager, latest, prior, changes };
+  return assembleManagerDetail(manager, filings);
 }
 
 async function main() {
@@ -371,18 +315,19 @@ async function main() {
       allDetails.push(detail);
 
       const outPath = path.join(OUT_DIR, `${seed.slug}.json`);
-      fs.writeFileSync(outPath, JSON.stringify(detail, null, 2));
-      console.log(`[${seed.slug}] Written to ${outPath}`);
+      fs.writeFileSync(outPath, JSON.stringify({ manager: detail.manager, filings: detail.filings }, null, 2));
+      console.log(`[${seed.slug}] Written to ${outPath} (${detail.filings.length} quarters)`);
 
-      const topHolding = detail.latest.holdings[0]?.issuer ?? "";
+      const top = detail.filings[0];
+      const topHolding = top.holdings[0]?.issuer ?? "";
       summaries.push({
         cik: detail.manager.cik,
         slug: detail.manager.slug,
         name: detail.manager.name,
         person: detail.manager.person,
-        period: detail.latest.period,
-        totalValue: detail.latest.totalValue,
-        holdingCount: detail.latest.holdings.length,
+        period: top.period,
+        totalValue: top.totalValue,
+        holdingCount: top.holdings.length,
         topHolding,
       });
     } catch (err) {
