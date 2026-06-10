@@ -49,10 +49,10 @@ export async function generateMetadata({
     languages: { en: `/en/stocks/${ticker}`, "zh-CN": `/zh/stocks/${ticker}`, "x-default": `/en/stocks/${ticker}` },
   };
   return lang === "zh"
-    ? { title: `${issuer}（${ticker}）— 谁在持有 / 机构持仓 — Compounder · 复利`,
-        description: `查看持有 ${issuer}（${ticker}）的超级投资者，了解机构持仓分布。`, alternates }
-    : { title: `${issuer} (${ticker}) — Who's Holding — Compounder`,
-        description: `See which superinvestors hold ${issuer} (${ticker}) and their position sizes.`, alternates };
+    ? { title: `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
+        description: `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。`, alternates }
+    : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
+        description: `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.`, alternates };
 }
 
 // ── Holders table ─────────────────────────────────────────────────────────────
