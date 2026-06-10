@@ -32,6 +32,8 @@ export type EntityPageProps = {
   disclaimer?: string;
   /** 可选：标题行右侧操作（如分享按钮）。 */
   headerAction?: React.ReactNode;
+  /** 可选：页面正文最底部的行动号召（如文末订阅卡片）。 */
+  footerCta?: React.ReactNode;
 };
 
 export function EntityPage({
@@ -48,6 +50,7 @@ export function EntityPage({
   related,
   disclaimer,
   headerAction,
+  footerCta,
 }: EntityPageProps): React.ReactElement {
   return (
     <div className="space-y-7">
@@ -91,6 +94,9 @@ export function EntityPage({
 
       {/* ⑥ Related links */}
       <RelatedLinks lang={lang} items={related} />
+
+      {/* ⑦ 文末行动号召(可选,如订阅卡片) */}
+      {footerCta}
     </div>
   );
 }
