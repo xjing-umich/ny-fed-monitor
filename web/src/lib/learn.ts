@@ -274,6 +274,114 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       ],
     },
   },
+  "q1-2026-superinvestor-consensus": {
+    en: {
+      slug: "q1-2026-superinvestor-consensus",
+      title: "Q1 2026: What the Superinvestors Held, Bought, and Sold",
+      description:
+        "A read of the Q1 2026 13F filings: the most widely held stocks, the quarter's biggest buys and sells, and why overlap still isn't a signal.",
+      updated: "2026-06-11",
+      intro:
+        "Big institutional investors disclose their U.S. stock positions every quarter, and the Q1 2026 filings are in. They cover the quarter that ended March 31 and were filed through mid-May. Below is what the investors we track were holding, what most of them were buying, and what they were selling. It is one quarter's data, and the last section gets into why the overlap you're about to see proves less than it looks.",
+      sections: [
+        {
+          heading: "What we're reading",
+          paragraphs: [
+            "These figures come from Form 13F, the quarterly filing any manager running at least $100 million in U.S. stocks has to submit to the SEC. We line up the filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. If you want the mechanics of a single filing, How to Read a 13F covers them.",
+            "Everything below is as of the last day of the quarter, March 31, 2026. Some of these positions have surely changed since, and none of the figures tell you what anyone paid.",
+          ],
+        },
+        {
+          heading: "The most widely held stocks",
+          paragraphs: [
+            "Alphabet was the single most common holding, in 16 of the tracked portfolios through its C-share line (GOOG), with another 15 holding the A shares (GOOGL). Berkshire Hathaway came next at 14, then Microsoft at 13. Visa and Meta tied at 12. Moody's, Amazon, and Mastercard tied at 11, and Apple closed out the top ten at 10.",
+            "It is a familiar lineup: payment networks, a ratings business with few real competitors, a few of the big compounders. These are the companies long-term investors expect to still be around in ten years.",
+          ],
+        },
+        {
+          heading: "What they were buying",
+          paragraphs: [
+            "More funds added to Microsoft than to any other stock this quarter. Alphabet, Amazon, and Berkshire were close behind. In each of those, funds were topping up positions they already held rather than starting fresh ones. The money went to companies these investors already knew.",
+            "Sunbelt Rentals was the standout new buy. Several funds opened it from scratch, which rarely happens with a name this far outside the mega-caps. Some funds also started Alphabet positions through the A-share line, and managed care drew real money, with both Elevance and UnitedHealth among the more widely bought stocks.",
+          ],
+        },
+        {
+          heading: "What they were selling",
+          paragraphs: [
+            "The sell side ran through the same household names. Alphabet, Visa, Meta, and Microsoft were trimmed the most widely, and these were mostly reductions, not clean exits. Bank of America, Berkshire, Amazon, Capital One, Mastercard, and Charles Schwab also turned up among the stocks funds were cutting back.",
+            "UnitedHealth is the one worth slowing down on. More funds left it entirely than trimmed it, while a separate group kept adding. The investors we track pulled in opposite directions on UnitedHealth all quarter.",
+          ],
+        },
+        {
+          heading: "The names on both lists",
+          paragraphs: [
+            "Alphabet, Microsoft, Meta, Amazon, Berkshire, and UnitedHealth all sit near the top of the buy list and the sell list at once. The most heavily traded names had capable funds buying and capable funds selling in the same window.",
+            "This is what consensus looks like up close. A lot of serious investors studied the same company over the same three months and walked away with opposite answers. A high holder count means a stock is on a lot of screens. Whether those investors agree about it is a different question, and usually the answer is no.",
+          ],
+        },
+        {
+          heading: "Why none of this is a signal",
+          paragraphs: [
+            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is long-only, up to 45 days old, and says nothing about why a manager bought or what they paid. A name several investors you respect all own is worth your time. It is still not worth buying just because they did.",
+            "Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. The investor and stock pages on Compounder track how these positions move from one quarter to the next. None of this is investment advice.",
+          ],
+        },
+      ],
+    },
+    zh: {
+      slug: "q1-2026-superinvestor-consensus",
+      title: "2026 Q1：超级投资者持有、买入与卖出了什么",
+      description:
+        "一份对 2026 Q1 13F 申报的解读：被最多机构持有的股票、本季最大的买入与卖出，以及为什么「重合」依然不是信号。",
+      updated: "2026-06-11",
+      intro:
+        "每个季度,大型机构投资者都必须披露他们持有的美股仓位,2026 年 Q1 的申报如今已经出全。这一季截至 3 月 31 日,各家在 5 月中前报齐。下面是我们追踪的这些投资者当时持有什么、其中最多人在买什么、又在卖什么。这只是一个季度的数据;最后一节会讲清楚,你接下来看到的这些重合,为什么远没有它看上去那么有分量。",
+      sections: [
+        {
+          heading: "我们在读什么",
+          paragraphs: [
+            "这些数字来自 Form 13F,任何管理至少 1 亿美元美股的机构,每季度都得向 SEC 提交它。我们把 Compounder 超级投资者名单里这些人的申报排在一起,数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读,《如何读懂 13F》讲了机制。",
+            "下面所有数字,都是季度最后一天,也就是 2026 年 3 月 31 日的状态。其中一些仓位此后必定已经变了,而且没有一个数字告诉你任何人当初买在什么价位。",
+          ],
+        },
+        {
+          heading: "被最多机构持有的股票",
+          paragraphs: [
+            "Alphabet 是被持有得最广的单一标的:16 家追踪组合通过它的 C 类股(GOOG)持有,另有 15 家持有 A 类股(GOOGL)。其后是 Berkshire Hathaway,14 家持有;再是 Microsoft 的 13 家;Visa 和 Meta 各 12 家;Moody's、Amazon、Mastercard 并列 11 家。Apple 以 10 家收尾前十。",
+            "这个阵容很眼熟:支付网络、一家几乎没有对手的评级公司、几只大市值复利机器。都是长期投资者预期十年后还在的公司。",
+          ],
+        },
+        {
+          heading: "他们在买什么",
+          paragraphs: [
+            "Microsoft 是本季被买得最广的名字,加仓它的基金比加仓任何其他股都多。Alphabet、Amazon、Berkshire 紧随其后,而且每一个都是基金在给已有仓位加码,不是新开仓。钱流向的是这些投资者本就熟悉的公司。",
+            "最值得一提的新仓位是 Sunbelt Rentals,本季有好几家基金从零开仓;这种远离大市值的名字能冲到买入榜前列,并不常见。也有若干基金通过 A 类股新开 Alphabet;医疗保险吸引了真金白银,Elevance 和 UnitedHealth 都跻身被买得较广的名字之列。",
+          ],
+        },
+        {
+          heading: "他们在卖什么",
+          paragraphs: [
+            "卖出一侧,领头的还是那几个家喻户晓的名字。Alphabet、Visa、Meta、Microsoft 被减得最广,多数是减仓而非清仓。Bank of America、Berkshire、Amazon、Capital One、Mastercard、Charles Schwab 也都出现在被最多基金削减的股票里。",
+            "UnitedHealth 值得放慢看一眼。清仓它的基金比减仓它的还多,而另一拨人却在持续加仓。整个季度,我们追踪的这些投资者在 UnitedHealth 上方向相反。",
+          ],
+        },
+        {
+          heading: "同时出现在两张榜上的名字",
+          paragraphs: [
+            "Alphabet、Microsoft、Meta、Amazon、Berkshire、UnitedHealth,同时挤在买入榜和卖出榜的前列。被交易得最多的那些名字,在同一段时间里既有能干的基金在买,也有能干的基金在卖。",
+            "这就是共识凑近了看的样子。一群认真的投资者,研究同一家公司、看的是同样三个月,却走出了相反的结论。持有家数高,只说明一只股票出现在很多人的屏幕上;他们是否认同它,是另一个问题,而答案通常是否定的。",
+          ],
+        },
+        {
+          heading: "为什么这些都不是信号",
+          paragraphs: [
+            "一只股票被广泛持有、或被广泛买入,只是让你该看得更近的理由,谈不上结论。13F 只含多头、最多滞后 45 天,对一位经理为什么买、买在什么价位只字不提。一个被几位你尊重的投资者共同持有的名字,值得你花时间看;但它仍然不值得你因为别人买了就跟着买。",
+            "《读懂跨基金共识》更深入地讲了共识设下的陷阱。Compounder 的投资者页和个股页,逐季追踪这些仓位怎么变。这一切都不是投资建议。",
+          ],
+        },
+      ],
+    },
+  },
 };
 
 // Display order on the index page.
@@ -281,6 +389,7 @@ export const ARTICLE_SLUGS: string[] = [
   "how-to-read-a-13f",
   "what-is-a-superinvestor",
   "reading-cross-fund-consensus",
+  "q1-2026-superinvestor-consensus",
 ];
 
 export function getArticle(slug: string, lang: Lang): Article | undefined {
