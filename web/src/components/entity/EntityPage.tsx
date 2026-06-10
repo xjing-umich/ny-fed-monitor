@@ -30,6 +30,8 @@ export type EntityPageProps = {
   related?: RelatedItem[];
   /** Optional compliance/disclaimer line shown under the subtitle. */
   disclaimer?: string;
+  /** 可选：标题行右侧操作（如分享按钮）。 */
+  headerAction?: React.ReactNode;
 };
 
 export function EntityPage({
@@ -45,6 +47,7 @@ export function EntityPage({
   sources,
   related,
   disclaimer,
+  headerAction,
 }: EntityPageProps): React.ReactElement {
   return (
     <div className="space-y-7">
@@ -55,6 +58,7 @@ export function EntityPage({
             {title}
           </h1>
           {verdict && <VerdictChip label={verdict.label} tone={verdict.tone} />}
+          {headerAction && <div className="ml-auto self-center">{headerAction}</div>}
         </div>
         <p className="max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
           {subtitle}

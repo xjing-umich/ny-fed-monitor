@@ -6,6 +6,10 @@ export const investorPath = (lang: Lang, slug: string) => `/${lang}/investors/${
 export const stockPath = (lang: Lang, tickerOrCusip: string) => `/${lang}/stocks/${tickerOrCusip}`;
 export const macroPath = (lang: Lang, indicator: string) => `/${lang}/macro/${indicator}`;
 
+// 站点 canonical 源（与 layout.tsx metadataBase 一致）。分享/外链需绝对地址。
+export const SITE_ORIGIN = "https://thecompounder.fyi";
+export const absoluteUrl = (path: string) => `${SITE_ORIGIN}${path}`;
+
 const SECTION_KEYS = new Set(MACRO_GROUPS.flatMap((g) => g.indicators as readonly string[]));
 
 // 旧→新：/{lang}/managers → /{lang}/investors；/{lang}/{section} → /{lang}/macro/{section}
