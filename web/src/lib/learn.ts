@@ -382,6 +382,120 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       ],
     },
   },
+  "reading-business-quality": {
+    en: {
+      slug: "reading-business-quality",
+      title: "What Makes a Business High Quality: Reading the Numbers Behind Superinvestor Holdings",
+      description:
+        "How to judge whether a business is any good from a few numbers in its filings: profit margins, free cash flow, and returns on capital, worked through the stocks superinvestors actually own.",
+      updated: "2026-06-11",
+      intro:
+        "Compounder shows you which stocks the superinvestors own and how that ownership shifts each quarter. Knowing who holds a stock is a starting point. The harder and more useful question is whether the underlying business is any good. You can get a long way toward answering that from a handful of numbers in a company's financial statements, and every stock page on the site carries them. This is a guide to reading those numbers, worked through the businesses that turn up most often in superinvestor portfolios. None of it is a verdict on any stock. It is a way to look.",
+      sections: [
+        {
+          heading: "Quality comes before price",
+          paragraphs: [
+            "Value investors going back to Graham and Buffett keep two questions apart that beginners tend to blur: is this a good business, and is it trading at a good price. A wonderful company bought at too high a price is still a bad investment. A mediocre one bought cheaply enough can work out fine. This guide is only about the first question. Price is its own discipline, and the numbers here say nothing about it.",
+            "There is no single 'quality' number. You build a picture from a few angles: how profitable the business is, whether that profit turns into cash, how well it earns on the capital it uses, and how steady all of it looks over time. The figures on Compounder's stock pages come straight from SEC filings, so you can run this read on any holding you find on the site.",
+          ],
+        },
+        {
+          heading: "Profit margins: the first look at pricing power",
+          paragraphs: [
+            "Net margin is the share of each dollar of revenue that survives all the way down to profit. It is the quickest read on pricing power. A business that can charge well above what it costs to serve a customer, and keep doing it, posts a high and steady margin. One fighting on price cannot.",
+            "The businesses superinvestors cluster in tend to sit at the high end. On their most recent filings shown here, Alphabet runs around a 57% net margin, Visa about 54%, Meta near 48%, Mastercard 46%, and Moody's 32%. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. Apple, around 27%, and Amazon, near 17%, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
+            "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read the trend rather than one quarter. A margin that has slid for several years usually means something the latest figure hides.",
+          ],
+        },
+        {
+          heading: "Free cash flow: does the profit turn into cash?",
+          paragraphs: [
+            "Accounting profit and cash are not the same thing, and the gap between them tells you a lot about a business. Free cash flow is the cash left after a company pays to run its operations and reinvest in them. FCF margin is that cash as a share of revenue. Buffett's 'owner earnings' is the same instinct: what the owner could actually take out at the end of the year.",
+            "Put net margin and FCF margin side by side and the businesses separate. Visa turns revenue into free cash at about 80%, higher than its net margin, because it barely spends on physical assets. Apple is similar, near 70%. These are capital-light machines. Alphabet is a different case: a 57% net margin but an FCF margin around 9% on its latest filing, because it is pouring money into data centers and chips. Amazon's FCF margin was negative on the same basis, near minus 10%, as it reinvests faster than the cash comes in.",
+            "A low or negative FCF margin is not automatically a red flag. It can mean a weak business, or a strong one spending hard on its future. Telling those apart is the actual work, and it is why one number is never enough.",
+          ],
+        },
+        {
+          heading: "Return on capital, and why it misleads",
+          paragraphs: [
+            "Return on equity asks how much profit a company earns on the money shareholders have left in it. A business that earns high returns on capital and can reinvest at those returns is the closest thing investing has to a compounding machine, which is why the metric sits near the center of quality investing.",
+            "It is also the easiest of these numbers to misread, in two ways. Debt and buybacks flatter it: equity is the denominator, so a company that borrows heavily or buys back stock until its equity is thin can show a dazzling return on a shaky base. A high number earned that way is worth less than the same number earned on a fortress balance sheet. And returns have to be read over full years and across a cycle, not from a single quarter. Compounder shows a per-filing figure, so use it as a prompt to pull up the multi-year picture and the debt behind it, not as a verdict on its own.",
+          ],
+        },
+        {
+          heading: "Reading them together",
+          paragraphs: [
+            "No single number settles anything, and the interesting cases are the ones where the metrics seem to disagree. Alphabet's thin free cash flow next to its fat net margin is not a flaw. It is a company in a heavy building phase, and the question is whether that spending pays off later. Berkshire Hathaway shows a low headline return on equity, which mostly reflects an enormous equity base built over decades rather than a weak business. Amazon spent most of its life with little or no free cash flow, by choice.",
+            "The reason to look at several metrics is that each one checks the others. A fat margin with no cash behind it, a high return on capital sitting on a pile of debt, a number that looks fine this quarter but has fallen for three years: each of those only shows up when you line the figures up together. Where the site marks data as incomplete or leaves a field blank, that is part of the read too. Treat a gap as a question, not a pass.",
+          ],
+        },
+        {
+          heading: "What the numbers can't tell you",
+          paragraphs: [
+            "These figures describe a business as it was on its last filing, up to a few months ago. They say nothing about what comes next. A moat can erode, a new manager can change how capital gets spent, an industry can turn. They also say nothing about price, which is what actually decides your return. A great business is not automatically a great investment. What you pay decides that.",
+            "So treat all of this as a way to ask better questions about the companies superinvestors own, not a scorecard that picks them for you. A 13F tells you who holds a stock. These numbers help you judge the business underneath it. What you do with that judgment, and at what price, is yours alone, and none of this is investment advice. Every figure here lives on the stock pages, refreshed each filing, if you want to run the read yourself.",
+            "Margin figures cited above are from each company's most recent filing on Compounder, through Q1 2026 (periods ending 2026-03-31). Source: SEC filings via SEC EDGAR.",
+          ],
+        },
+      ],
+    },
+    zh: {
+      slug: "reading-business-quality",
+      title: "什么样的生意算优质:读懂超级投资者持仓背后的数字",
+      description:
+        "怎么从申报里的几个数字判断一门生意好不好:利润率、自由现金流、资本回报率,拿超级投资者真实持有的股票逐一做案例。",
+      updated: "2026-06-11",
+      intro:
+        "Compounder 让你看到超级投资者持有哪些股票、这份持有每季怎么变。知道谁在持有,只是起点。更难也更有用的问题是:底下那门生意到底好不好。这件事,你能从公司财报里的几个数字走出很远,而站上每个个股页都带着这些数字。这篇就讲怎么读它们,拿超级投资者持仓里最常出现的那些生意逐一做案例。它不是对任何一只股票的定论,而是一种看法的方法。",
+      sections: [
+        {
+          heading: "先看质量,再看价格",
+          paragraphs: [
+            "从格雷厄姆到巴菲特,价投始终把两个问题分开,而新手往往把它们混在一起:这是不是一门好生意,以及它现在的价格是否划算。一家好公司,买得太贵,仍是一笔糟糕的投资;一家平庸公司,买得足够便宜,也可能不错。这篇只谈第一个问题。价格是另一门功课,下面这些数字对它只字不提。",
+            "没有哪一个数字叫'质量'。你要从几个角度拼出一幅图:这门生意多赚钱、利润能不能变成现金、它用的资本回报如何、以及这一切常年看下来稳不稳。Compounder 个股页上的数字直接来自 SEC 申报,所以你能对站上任何一个持仓跑一遍这套读法。",
+          ],
+        },
+        {
+          heading: "利润率:对定价权的第一眼",
+          paragraphs: [
+            "净利率,是每一块钱营收里最终活到利润那一步的比例。它是对定价权最快的一眼。一门生意若能收得远高于服务一个客户的成本,还能一直收下去,就会有又高又稳的利润率;靠打价格战的,做不到。",
+            "超级投资者扎堆的生意,往往落在高端。按站上各家最近一期申报:Alphabet 净利率约 57%,Visa 约 54%,Meta 近 48%,Mastercard 46%,Moody's 32%。这些是惊人的数字,也并非偶然:一家支付网络或评级特许经营,只是从一笔它不必出资的庞大流水里抽一小道。Apple 约 27%、Amazon 近 17%,要低一些,这是卖实物、跑仓库而非守收费站的本性。",
+            "两点提醒。利润率要在同行业内比,别跨行业比,因为超市和软件公司活在两个世界。还要读趋势,而不是某一个季度:一个连跌几年的利润率,通常藏着最新数字看不出的东西。",
+          ],
+        },
+        {
+          heading: "自由现金流:利润变成现金了吗?",
+          paragraphs: [
+            "账面利润和现金不是一回事,而两者之间的缺口,能告诉你关于一门生意的很多事。自由现金流,是公司付完维持运营、再投资运营的钱之后剩下的现金。FCF 利润率,就是这笔现金占营收的比例。巴菲特的'股东盈余'(owner earnings)是同一个直觉:到年底,所有者真正能拿走多少。",
+            "把净利率和 FCF 利润率并排放,生意就分出来了。Visa 把营收转成自由现金的比例约 80%,高过它的净利率,因为它几乎不用花钱买实物资产。Apple 类似,近 70%,都是轻资本的机器。Alphabet 是另一种情形:净利率 57%,但最近一期 FCF 利润率只有约 9%,因为它正把钱砸进数据中心和芯片。Amazon 同口径下 FCF 利润率为负,约 -10%,因为它再投资的速度快过现金进账。",
+            "FCF 利润率低、甚至为负,不一定是坏信号。它可能意味着一门弱生意,也可能是一门强生意在为未来重金投入。把这两者分辨开,才是真正的功夫,也正是为什么一个数字永远不够。",
+          ],
+        },
+        {
+          heading: "资本回报率,以及它为什么骗人",
+          paragraphs: [
+            "净资产收益率(ROE)问的是:股东留在公司里的钱,公司从中赚出多少利润。一门能赚到高资本回报、又能按那个回报率把利润再投出去的生意,是投资里最接近'复利机器'的东西,这也是为什么这个指标处在质量投资的中心附近。",
+            "它也是这些数字里最容易读错的,有两种错法。债务和回购会美化它:股东权益是分母,所以一家大举借债、或回购股票直到权益所剩无几的公司,能在脆弱的底子上显出耀眼的回报;这样赚来的高数字,远不如同样的数字坐在稳如堡垒的资产负债表上值钱。还有,回报要按整年、跨周期来读,而不是看单一季度。Compounder 显示的是每期的值,所以请把它当成一个提示:去把多年的全貌和背后的债务调出来看,别凭它本身下定论。",
+          ],
+        },
+        {
+          heading: "把它们放在一起读",
+          paragraphs: [
+            "没有哪个数字能单独说了算,而真正有意思的,是那些指标看上去彼此矛盾的情形。Alphabet 单薄的自由现金流挨着它丰厚的净利率,这不是缺陷。它是一家正处在重投入期的公司,问题在于那些花费日后是否值回。Berkshire Hathaway 的账面 ROE 很低,这多半反映的是几十年攒下的庞大权益基数,并不说明它是一门弱生意。Amazon 大半生都靠主动选择,过着几乎没有自由现金流的日子。",
+            "看好几个指标的意义,在于每一个都在校验其他几个。一个有利润却没有现金垫底的高margin、一个坐在一堆债务上的高资本回报、一个这季看着还行却已连跌三年的数字:这些都只有在你把数字排在一起时才会现形。站上把数据标为不完整、或某个字段留空的地方,也是这套读法的一部分。把缺口当成一个问题,而不是一次放行。",
+          ],
+        },
+        {
+          heading: "数字读不出什么",
+          paragraphs: [
+            "这些数字描述的,是一门生意在它上一份申报时的样子,可能已是几个月前。它们对接下来会怎样只字不提:护城河会被侵蚀、一位新管理者会改变资本怎么花、一个行业会转向。它们对价格也只字不提,而价格才真正决定你的回报。一门好生意,并不自动等于一笔好投资。你付了多少,才决定这一点。",
+            "所以把这一切当作向超级投资者所持公司提出更好问题的方法,而不是一张替你挑好股票的评分表。一份 13F 告诉你谁在持有一只股票;这些数字帮你判断它底下那门生意。你拿这份判断去做什么、在什么价位做,只属于你自己,而这一切都不是投资建议。上面每个数字都在个股页上,每期申报刷新,你想自己跑一遍读法,随时可以。",
+            "上文引用的利润率数字,取自各公司在 Compounder 上的最近一期申报,截至 2026 Q1(period 截止 2026-03-31)。来源:SEC EDGAR 申报。",
+          ],
+        },
+      ],
+    },
+  },
 };
 
 // Display order on the index page.
@@ -390,6 +504,7 @@ export const ARTICLE_SLUGS: string[] = [
   "what-is-a-superinvestor",
   "reading-cross-fund-consensus",
   "q1-2026-superinvestor-consensus",
+  "reading-business-quality",
 ];
 
 export function getArticle(slug: string, lang: Lang): Article | undefined {
