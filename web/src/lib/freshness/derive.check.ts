@@ -6,6 +6,9 @@ import {
   filingFreshness,
   tradingDaysBetween,
   mostRecentDueQuarter,
+  globalLatestPeriod,
+  quarterLag,
+  freshness13F,
 } from "./derive";
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
@@ -55,4 +58,22 @@ assert.equal(filingFreshness("2025-12-31", d("2026-06-08")), "stale", "晚一季
 // 晚三季(Scion 场景): 报到 2025-06-30 → stale
 assert.equal(filingFreshness("2025-06-30", d("2026-06-08")), "stale", "晚三季=stale");
 
-console.log("derive.check.ts: all assertions passed ✓");
+// --- 13F 三档新鲜度 ---
+assert.equal(globalLatestPeriod(["2025-12-31", "2026-03-31", null]), "2026-03-31", "取最大季");
+assert.equal(globalLatestPeriod([]), null, "空=null");
+
+assert.equal(quarterLag("2026-03-31", "2026-03-31"), 0, "同季=0");
+assert.equal(quarterLag("2025-12-31", "2026-03-31"), 1, "跨年1季");
+assert.equal(quarterLag("2025-09-30", "2026-03-31"), 2, "2季");
+assert.equal(quarterLag("2022-06-30", "2026-03-31"), 15, "aquamarine 量级");
+assert.equal(quarterLag("2026-03-31", "2025-12-31"), 0, "超前夹到0");
+assert.equal(quarterLag(null, "2026-03-31"), null, "缺失=null");
+
+assert.equal(freshness13F("2026-03-31", "2026-03-31"), "current", "0季=current");
+assert.equal(freshness13F("2025-12-31", "2026-03-31"), "current", "1季=current(正常申报节奏)");
+assert.equal(freshness13F("2025-09-30", "2026-03-31"), "stale", "2季=stale(scion 现状)");
+assert.equal(freshness13F("2025-06-30", "2026-03-31"), "stale", "3季=stale");
+assert.equal(freshness13F("2025-03-31", "2026-03-31"), "inactive", "4季=inactive");
+assert.equal(freshness13F(null, "2026-03-31"), "inactive", "缺失按最严");
+
+console.log("derive.check.ts: all assertions passed ✓ (incl. freshness13F)");
