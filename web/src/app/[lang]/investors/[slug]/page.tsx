@@ -13,8 +13,8 @@ import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
 import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
-import { isPeriodStale } from "@/lib/ai/investorNarrative";
-import { filingFreshness } from "@/lib/freshness/derive";
+import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod } from "@/lib/freshness/derive";
+import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -274,21 +274,22 @@ export default async function InvestorSlugPage({
   for (const [cusip, info] of cusipMap)
     if (info.ticker && isLikelyTicker(info.ticker)) cusipToTicker.set(cusip, info.ticker);
 
+  // index 供全局最新季基准与 Related 共用（getManagerIndex 有 cache()，单次查询）
+  const idx = await getManagerIndex();
+
   // 信念精选：复用已加载的 d.filings，零新增 IO（spec §5）
   const picks = deriveConviction(d.filings);
 
   // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
   const narrative = await getInvestorNarrative(slug, lang);
 
-  // 数据新鲜度: 最近申报是否早于"应有最新季"(45天延迟后)。防旧申报冒充当前 → 顶部醒目标注。
-  const stale = isPeriodStale(latest.period, new Date());
-  const staleNotice = stale ? (
-    <div className="border-l-2 border-[var(--tt-warn)] bg-[var(--tt-surface)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
-      {lang === "zh"
-        ? `⚠ 该投资者在此申报主体下最近一次 SEC 13F 申报为 ${latest.period}，此后未再申报。以下持仓与解读反映该期数据，可能并非当前持仓。`
-        : `⚠ This manager's most recent SEC 13F filing under this filer is for ${latest.period}, with none since. Holdings and the summary below reflect that filing and may not be current.`}
-    </div>
-  ) : undefined;
+  // 三档新鲜度(全局最新季基准, spec freshness-guard §B/C1): 常显来源+截止日, stale/inactive 加警示。
+  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
+  const fresh = freshness13F(latest.period, globalLatest);
+  const lag = quarterLag(latest.period, globalLatest) ?? 0;
+  const freshnessNotice = (
+    <FreshnessBadge lang={lang} period={latest.period} filedAt={latest.filedAt} status={fresh} lagQuarters={lag} />
+  );
 
   // Verdict
   const buying = changes.filter((c) => c.kind === "new" || c.kind === "increased").length;
@@ -367,7 +368,6 @@ export default async function InvestorSlugPage({
       : `${manager.name} — managed by ${manager.person}; US equity positions disclosed quarterly via SEC 13F`;
 
   // Related: up to 6 other managers from the index
-  const idx = await getManagerIndex();
   const related = idx.managers
     .filter((m) => m.slug !== slug)
     .slice(0, 6)
@@ -440,15 +440,21 @@ export default async function InvestorSlugPage({
             meta={{ entity: slug, entityType: "investor", lang }}
           />
         }
-        notice={staleNotice}
+        notice={freshnessNotice}
         aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
         footerCta={<NewsletterCTA lang={lang} />}
       >
         <>
-          {picks.length > 0 && (
-            <ConvictionPicks picks={picks} lang={lang} investor={slug} cusipToTicker={cusipToTicker} />
+          {fresh !== "inactive" && picks.length > 0 && (
+            <ConvictionPicks
+              picks={picks}
+              lang={lang}
+              investor={slug}
+              cusipToTicker={cusipToTicker}
+              asOfPeriod={fresh === "stale" ? latest.period : undefined}
+            />
           )}
           <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} />
         </>

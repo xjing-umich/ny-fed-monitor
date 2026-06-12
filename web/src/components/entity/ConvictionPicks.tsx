@@ -8,6 +8,7 @@ import { TrackedLink } from "@/components/common/TrackedLink";
 const COPY = {
   zh: {
     title: "高信念持仓",
+    asOf: (period: string) => `基于 ${period} 数据`,
     chip: {
       accumulating: (p: ConvictionPick) => `连续加仓·${p.addStreak}季`,
       fresh_conviction: () => "重磅新建/加仓",
@@ -24,6 +25,7 @@ const COPY = {
   },
   en: {
     title: "High-conviction",
+    asOf: (period: string) => `Based on ${period} data`,
     chip: {
       accumulating: (p: ConvictionPick) => `Adding · ${p.addStreak}q`,
       fresh_conviction: () => "Big new buy",
@@ -82,11 +84,13 @@ export function ConvictionPicks({
   lang,
   investor,
   cusipToTicker,
+  asOfPeriod,
 }: {
   picks: ConvictionPick[];
   lang: Lang;
   investor: string; // manager slug，仅用于打点 payload（组件无其他业务知识）
   cusipToTicker: Map<string, string>; // 页面已算好，传入复用，不重算
+  asOfPeriod?: string; // stale 时传 latest.period，区块级 as-of 警示（spec freshness-guard §C3）
 }): React.ReactElement | null {
   if (picks.length === 0) return null;
   const t = COPY[lang];
@@ -96,6 +100,11 @@ export function ConvictionPicks({
         <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
           {t.title}
         </span>
+        {asOfPeriod && (
+          <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-warn)]">
+            {t.asOf(asOfPeriod)}
+          </span>
+        )}
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {picks.map((p) => {
