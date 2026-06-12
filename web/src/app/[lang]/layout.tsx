@@ -11,7 +11,6 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { mostHeld } from "@/lib/aggregations";
 import { cleanIssuer } from "@/lib/format";
 import { INVESTOR_ALIASES } from "@/lib/investorAliases";
-import { MACRO_GROUPS } from "@/lib/nav";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
 
@@ -33,9 +32,9 @@ const fraunces = Fraunces({
 // default metadata is English, English ranks higher in the sitemap). Chinese
 // (/zh) stays fully indexed as the secondary locale — both are crawlable and
 // paired via hreflang on each page.
-const TITLE = "Compounder — Smart-money holdings × valuation × macro";
+const TITLE = "Compounder — Smart-money holdings × valuation";
 const DESCRIPTION =
-  "Track top investors' SEC 13F holdings, cross-fund consensus, and single-stock valuation against the macro funding backdrop. Sources: SEC EDGAR / NY Fed.";
+  "Track top investors' SEC 13F holdings, cross-fund consensus, and single-stock valuation. Source: SEC EDGAR.";
 
 export async function generateMetadata({
   params,
@@ -60,10 +59,7 @@ export async function generateMetadata({
       "stock valuation",
       "intrinsic value",
       "Warren Buffett portfolio",
-      "macro liquidity",
-      "repo market",
       "SEC EDGAR",
-      "NY Fed",
       "Compounder",
     ],
     authors: [{ name: "Compounder" }],
@@ -122,7 +118,7 @@ export default async function LangLayout({
   const lang = rawLang as Lang;
   const htmlLang = lang === "zh" ? "zh-CN" : "en";
 
-  // Build search items: investors (+中文别名) + stocks (ticker) + macro indicators.
+  // Build search items: investors (+中文别名) + stocks (ticker).
   // 两个轻量读取并行;mostHeld 提供热门个股下拉建议(任意 ticker 仍可经搜索框回车直达)。
   const [managerIdx, held] = await Promise.all([getManagerIndex(), mostHeld(250)]);
 
@@ -145,14 +141,7 @@ export default async function LangLayout({
     }];
   });
 
-  const macroItems = MACRO_GROUPS.flatMap((group) =>
-    group.indicators.map((indicator) => ({
-      label: indicator,
-      href: `/${lang}/macro/${indicator}`,
-    }))
-  );
-
-  const items = [...managerItems, ...stockItems, ...macroItems];
+  const items = [...managerItems, ...stockItems];
 
   return (
     <html

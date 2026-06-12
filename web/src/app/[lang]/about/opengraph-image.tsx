@@ -15,7 +15,7 @@ export default async function Image({
     eyebrow: "Compounder",
     title: isEn ? "About Compounder" : "关于 Compounder",
     subtitle: isEn
-      ? "Smart-money holdings, valuation & macro — editorial, not advice"
-      : "超级投资者持仓、估值与宏观 — 编辑视角，不构成建议",
+      ? "Smart-money holdings & valuation — editorial, not advice"
+      : "超级投资者持仓与估值 — 编辑视角，不构成建议",
   });
 }

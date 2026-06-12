@@ -15,7 +15,7 @@ const ABOUT: Record<Lang, LegalDoc> = {
       {
         heading: "我们做什么",
         paragraphs: [
-          "我们把三类公开数据放到一起:超级投资者的 SEC 13F 持仓和基金之间的重叠、单只股票的估值框架,以及宏观流动性背景(资金面、供给面、政策面)。",
+          "我们把两类公开数据放到一起:超级投资者的 SEC 13F 持仓和基金之间的重叠,以及单只股票的估值框架。",
           "想法是把专业投资者会留意的信息,整理成普通人也读得懂的样子。它是你做研究的起点,不是终点。",
         ],
       },
@@ -36,7 +36,7 @@ const ABOUT: Record<Lang, LegalDoc> = {
       {
         heading: "数据与来源",
         paragraphs: [
-          "数据来源于公开渠道,主要包括美国证券交易委员会 EDGAR 系统(13F 等申报)、纽约联储(NY Fed)与美国财政部 Treasury.gov。",
+          "数据来源于公开渠道,主要为美国证券交易委员会 EDGAR 系统(13F 等申报)。",
           "请注意:13F 申报具有滞后性(通常在季度结束后最多 45 天披露),反映的是过去某一时点的持仓,不代表当前实际仓位。详见我们的免责声明。",
         ],
       },
@@ -56,7 +56,7 @@ const ABOUT: Record<Lang, LegalDoc> = {
       {
         heading: "What We Do",
         paragraphs: [
-          "We bring together three kinds of public data: superinvestors' SEC 13F holdings and where funds overlap, valuation frameworks for individual stocks, and the macro-liquidity backdrop (funding, supply, and policy).",
+          "We bring together two kinds of public data: superinvestors' SEC 13F holdings and where funds overlap, and valuation frameworks for individual stocks.",
           "The idea is to take the information professional investors pay attention to and put it in a form anyone can read. It's a place to start your own research, not a finish line.",
         ],
       },
@@ -77,7 +77,7 @@ const ABOUT: Record<Lang, LegalDoc> = {
       {
         heading: "Data & Sources",
         paragraphs: [
-          "Data is sourced from public channels, primarily the U.S. Securities and Exchange Commission's EDGAR system (13F and other filings), the Federal Reserve Bank of New York (NY Fed), and the U.S. Department of the Treasury (Treasury.gov).",
+          "Data is sourced from public channels, primarily the U.S. Securities and Exchange Commission's EDGAR system (13F and other filings).",
           "Note that 13F filings are lagging (typically disclosed up to 45 days after quarter-end) and reflect holdings as of a past point in time, not current positions. See our Disclaimer for details.",
         ],
       },

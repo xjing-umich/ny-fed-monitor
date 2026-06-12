@@ -14,12 +14,6 @@ export type StockRow = {
   issuer: string;
   holderCount: number;
   totalValue: number;
-  latestRevenue: number | null;
-  latestRevenueYoy: number | null;
-  latestNetMargin: number | null;
-  latestFcfMargin: number | null;
-  latestRoe: number | null;
-  secQuality: string | null;
   /** 持有人数条宽(px),服务端按榜首归一化预算 */
   barWidth: number;
   exchange: string | null;
@@ -27,16 +21,6 @@ export type StockRow = {
 };
 
 const PAGE_SIZE = 50;
-
-function formatCompact(value: number | null) {
-  if (value == null) return "—";
-  return Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
-}
-
-function formatPct(value: number | null) {
-  if (value == null) return "—";
-  return `${(value * 100).toFixed(1)}%`;
-}
 
 export function StocksTableClient({
   lang,
@@ -47,6 +31,9 @@ export function StocksTableClient({
 }) {
   const isZh = lang === "zh";
 
+  // 这是一张"被最多机构持有"的排序榜单——只回答规模问题。
+  // 收入/利润率/ROE 等基本面属于个股详情页,不在榜单堆砌(参考 Google Finance 列表);
+  // 但保留指向 Yahoo/Google/SEC 的第三方快速链接。
   const columns: Column<StockRow>[] = [
     {
       key: "security",
@@ -77,46 +64,6 @@ export function StocksTableClient({
       width: "w-24 sm:w-36",
       mobileLabel: isZh ? "市值" : "Value",
       cell: (r) => formatUSD(r.totalValue),
-    },
-    {
-      key: "secRevenue",
-      header: isZh ? "最新收入" : "Revenue",
-      align: "right",
-      width: "w-24",
-      mobileLabel: isZh ? "收入" : "Revenue",
-      cell: (r) => formatCompact(r.latestRevenue),
-    },
-    {
-      key: "secGrowth",
-      header: isZh ? "收入 YoY" : "Revenue YoY",
-      align: "right",
-      width: "w-24",
-      hideOnMobile: true,
-      cell: (r) => formatPct(r.latestRevenueYoy),
-    },
-    {
-      key: "secMargins",
-      header: isZh ? "利润率 / FCF" : "Margin / FCF",
-      align: "right",
-      width: "w-28",
-      hideOnMobile: true,
-      cell: (r) => `${formatPct(r.latestNetMargin)} / ${formatPct(r.latestFcfMargin)}`,
-    },
-    {
-      key: "secRoe",
-      header: "ROE",
-      align: "right",
-      width: "w-20",
-      hideOnMobile: true,
-      cell: (r) => formatPct(r.latestRoe),
-    },
-    {
-      key: "secQuality",
-      header: isZh ? "数据状态" : "Data",
-      align: "right",
-      width: "w-24",
-      mobileLabel: isZh ? "SEC" : "SEC",
-      cell: (r) => r.secQuality ?? (isZh ? "SEC 数据待同步" : "Pending"),
     },
     {
       key: "links",

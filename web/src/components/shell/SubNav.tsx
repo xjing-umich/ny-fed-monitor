@@ -5,7 +5,7 @@ import type { Lang } from "@/lib/nav";
 
 interface SubNavProps {
   lang: Lang;
-  section: "investors" | "stocks" | "macro";
+  section: "investors" | "stocks";
   active?: string;
 }
 

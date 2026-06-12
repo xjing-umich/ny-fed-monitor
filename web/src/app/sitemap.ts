@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { consensusHeld } from "@/lib/aggregations";
-import { MACRO_GROUPS } from "@/lib/nav";
 import { ARTICLE_SLUGS } from "@/lib/learn";
 
 const BASE = "https://thecompounder.fyi";
@@ -39,7 +38,6 @@ function entry(
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [idx, held] = await Promise.all([getManagerIndex(), consensusHeld()]);
-  const indicators = MACRO_GROUPS.flatMap((g) => g.indicators as readonly string[]);
 
   const urls: MetadataRoute.Sitemap = [
     entry("", "daily", 1),
@@ -48,7 +46,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/investors/buys", "weekly", 0.8),
     entry("/investors/sells", "weekly", 0.8),
     entry("/stocks", "weekly", 0.8),
-    entry("/macro", "daily", 0.7),
     entry("/about", "monthly", 0.4),
     entry("/learn", "weekly", 0.6),
   ];
@@ -70,10 +67,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!h.cusip || seenStocks.has(h.cusip)) continue;
     seenStocks.add(h.cusip);
     urls.push(entry(`/stocks/${h.cusip}`, "weekly", 0.6));
-  }
-
-  for (const ind of indicators) {
-    urls.push(entry(`/macro/${ind}`, "daily", 0.6));
   }
 
   return urls;

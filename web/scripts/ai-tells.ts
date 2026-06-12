@@ -2,7 +2,7 @@
  * AI-tell self-check for human-facing prose.
  *
  * Scans the editorial content that ships in the bundle (Learn articles, the
- * About page, macro indicator blurbs) for phrasing that makes writing read as
+ * About page) for phrasing that makes writing read as
  * machine-generated, plus structural signals (sentence-length variety). The
  * goal: keep the site's prose sounding like a person wrote it, and catch
  * regressions before they ship.
@@ -19,7 +19,6 @@
 
 import { ARTICLE_SLUGS, getArticle } from "../src/lib/learn.js";
 import { getAboutDoc } from "../src/lib/about.js";
-import { INDICATOR_BLURBS } from "../src/lib/indicatorBlurbs.js";
 
 type Lang = "en" | "zh";
 type Block = { source: string; lang: Lang; text: string };
@@ -116,11 +115,6 @@ function collect(): Block[] {
       push(blocks, "about", lang, s.heading);
       for (const p of s.paragraphs) push(blocks, "about", lang, p);
     }
-  }
-
-  for (const [key, blurb] of Object.entries(INDICATOR_BLURBS)) {
-    push(blocks, `blurb/${key}`, "en", blurb.en);
-    push(blocks, `blurb/${key}`, "zh", blurb.zh);
   }
 
   return blocks;

@@ -12,7 +12,6 @@ import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
-import { getSecCompanyData } from "@/lib/sec/read";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -149,162 +148,6 @@ function HoldersTable({
   );
 }
 
-function compact(value: number | string | null | undefined) {
-  if (value == null) return "—";
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "—";
-  return Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(num);
-}
-
-function pct(value: number | string | null | undefined) {
-  if (value == null) return "—";
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "—";
-  return `${(num * 100).toFixed(1)}%`;
-}
-
-function SecFinancialTable({ rows, lang }: { rows: any[]; lang: Lang }) {
-  if (!rows.length) {
-    return <p className="text-sm text-[var(--tt-muted)]">{lang === "zh" ? "暂无可展示的 SEC 财务期间。" : "No SEC financial periods available."}</p>;
-  }
-
-  return (
-    <div className="overflow-x-auto border border-[var(--tt-border)]">
-      <table className="min-w-full text-sm">
-        <thead className="bg-[var(--tt-surface)] text-[var(--tt-muted)]">
-          <tr>
-            <th className="px-3 py-2 text-left font-medium">Period</th>
-            <th className="px-3 py-2 text-right font-medium">Revenue</th>
-            <th className="px-3 py-2 text-right font-medium">Gross profit</th>
-            <th className="px-3 py-2 text-right font-medium">Operating income</th>
-            <th className="px-3 py-2 text-right font-medium">Net income</th>
-            <th className="px-3 py-2 text-right font-medium">OCF</th>
-            <th className="px-3 py-2 text-right font-medium">CapEx</th>
-            <th className="px-3 py-2 text-right font-medium">FCF</th>
-            <th className="px-3 py-2 text-right font-medium">Cash</th>
-            <th className="px-3 py-2 text-right font-medium">Debt</th>
-            <th className="px-3 py-2 text-right font-medium">Equity</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={`${row.form}-${row.period_end}-${row.fiscal_year}-${row.fiscal_period}`} className="border-t border-[var(--tt-border)]">
-              <td className="px-3 py-2">{row.fiscal_period} {row.fiscal_year}</td>
-              <td className="px-3 py-2 text-right">{compact(row.revenue)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.gross_profit)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.operating_income)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.net_income)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.operating_cash_flow)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.capex)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.free_cash_flow)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.cash_and_equivalents)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.total_debt)}</td>
-              <td className="px-3 py-2 text-right">{compact(row.shareholders_equity)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function SecFundamentalsPanel({ sec, lang }: { sec: Awaited<ReturnType<typeof getSecCompanyData>>; lang: Lang }) {
-  if (!sec.company) {
-    return (
-      <section id="sec-fundamentals" className="border-t border-[var(--tt-border)] pt-6">
-        <h2 className="font-display text-xl font-medium text-[var(--tt-text)]">SEC Fundamentals</h2>
-        <p className="mt-2 text-sm text-[var(--tt-muted)]">
-          {lang === "zh" ? "SEC 数据尚未同步。" : "SEC data has not been synced yet."}
-        </p>
-      </section>
-    );
-  }
-
-  const latest = sec.latest;
-  const missing = sec.annual[0]?.missing_fields ?? sec.quarterly[0]?.missing_fields ?? {};
-
-  return (
-    <section id="sec-fundamentals" className="space-y-6 border-t border-[var(--tt-border)] pt-6">
-      <div>
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-          SEC Fundamentals
-        </span>
-        <h2 className="mt-2 font-display text-2xl font-medium text-[var(--tt-text)]">
-          {lang === "zh" ? "公司概览" : "Company overview"}
-        </h2>
-        {sec.company.is_foreign_issuer ? (
-          <p className="mt-2 text-sm text-[var(--tt-muted)]">10-K/10-Q unavailable; use 20-F/6-K if available.</p>
-        ) : null}
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          ["Ticker", sec.company.ticker],
-          ["Company", sec.company.company_name ?? "—"],
-          ["CIK", sec.company.cik],
-          ["Quality", latest?.quality_status ?? "unknown"],
-          ["Revenue", compact(latest?.latest_revenue)],
-          ["Revenue YoY", pct(latest?.latest_revenue_yoy)],
-          ["Net margin", pct(latest?.latest_net_margin)],
-          ["FCF margin", pct(latest?.latest_fcf_margin)],
-        ].map(([label, value]) => (
-          <div key={label} className="border border-[var(--tt-border)] p-3">
-            <div className="text-[11px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{label}</div>
-            <div className="mt-1 text-sm text-[var(--tt-text)]">{value}</div>
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <h3 className="mb-3 font-display text-lg font-medium text-[var(--tt-text)]">{lang === "zh" ? "最新 10-K / 10-Q" : "Latest 10-K / 10-Q"}</h3>
-        <div className="overflow-x-auto border border-[var(--tt-border)]">
-          <table className="min-w-full text-sm">
-            <thead className="bg-[var(--tt-surface)] text-[var(--tt-muted)]">
-              <tr>
-                <th className="px-3 py-2 text-left font-medium">Form</th>
-                <th className="px-3 py-2 text-right font-medium">Report date</th>
-                <th className="px-3 py-2 text-right font-medium">Filing date</th>
-                <th className="px-3 py-2 text-right font-medium">Fiscal year</th>
-                <th className="px-3 py-2 text-right font-medium">Period</th>
-                <th className="px-3 py-2 text-right font-medium">SEC</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sec.filings.slice(0, 12).map((filing: any) => (
-                <tr key={filing.accession_number} className="border-t border-[var(--tt-border)]">
-                  <td className="px-3 py-2">{filing.form}</td>
-                  <td className="px-3 py-2 text-right">{filing.report_date ?? "—"}</td>
-                  <td className="px-3 py-2 text-right">{filing.filing_date ?? "—"}</td>
-                  <td className="px-3 py-2 text-right">{filing.fiscal_year ?? "—"}</td>
-                  <td className="px-3 py-2 text-right">{filing.fiscal_period ?? "—"}</td>
-                  <td className="px-3 py-2 text-right"><a className="underline" href={filing.filing_url}>Open</a></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="mb-3 font-display text-lg font-medium text-[var(--tt-text)]">{lang === "zh" ? "年度财务" : "Annual financials"}</h3>
-        <SecFinancialTable rows={sec.annual} lang={lang} />
-      </div>
-
-      <div>
-        <h3 className="mb-3 font-display text-lg font-medium text-[var(--tt-text)]">{lang === "zh" ? "季度财务" : "Quarterly financials"}</h3>
-        <SecFinancialTable rows={sec.quarterly} lang={lang} />
-      </div>
-
-      <div>
-        <h3 className="mb-2 font-display text-lg font-medium text-[var(--tt-text)]">{lang === "zh" ? "质量检查" : "Quality check"}</h3>
-        <p className="text-sm text-[var(--tt-muted)]">
-          missing fields: {Object.keys(missing).join(", ") || "—"} · foreign issuer: {String(sec.company.is_foreign_issuer)}
-        </p>
-      </div>
-    </section>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function StockTickerPage({
@@ -375,7 +218,6 @@ export default async function StockTickerPage({
       : "Educational data only — not investment advice. 13F positions are self-reported and can lag up to 45 days.";
 
   const exchange = (await getTickerExchangeMap()).get(ticker);
-  const sec = await getSecCompanyData(ticker);
 
   const keyFacts = [
     { label: lang === "zh" ? "代码" : "Ticker", value: ticker },
@@ -460,7 +302,6 @@ export default async function StockTickerPage({
         footerCta={<NewsletterCTA lang={lang} />}
       >
         <HoldersTable holders={holders} lang={lang} />
-        <SecFundamentalsPanel sec={sec} lang={lang} />
       </EntityPage>
     </>
   );

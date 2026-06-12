@@ -29,21 +29,21 @@ const CONTENT: Record<LegalSlug, Record<Lang, LegalDoc>> = {
         {
           heading: "非投资建议",
           paragraphs: [
-            "本站提供的所有内容,包括 13F 持仓、估值框架、宏观与流动性指标及任何衍生分析,仅供信息与教育之用,不构成、也不应被理解为投资建议、要约、招揽或任何买卖证券的推荐。",
+            "本站提供的所有内容,包括 13F 持仓、估值框架及任何衍生分析,仅供信息与教育之用,不构成、也不应被理解为投资建议、要约、招揽或任何买卖证券的推荐。",
             "本站不提供个性化的投资、法律、会计或税务意见。任何投资决策应基于你自己的独立判断,并在必要时咨询持牌专业人士。",
           ],
         },
         {
           heading: "数据来源与准确性",
           paragraphs: [
-            "本站数据来源于公开渠道,主要包括美国证券交易委员会 EDGAR 系统(13F 等监管申报)、纽约联储(NY Fed)、以及美国财政部 Treasury.gov 等。数据可能存在延迟、口径差异或第三方录入错误。",
+            "本站数据来源于公开渠道,主要为美国证券交易委员会 EDGAR 系统(13F 等监管申报)。数据可能存在延迟、口径差异或第三方录入错误。",
             "13F 申报本身具有滞后性(通常在季度结束后最多 45 天披露),反映的是过去某一时点的持仓,不代表当前或未来的实际仓位。本站不保证任何数据的准确性、完整性或时效性。",
           ],
         },
         {
           heading: "与监管机构无隶属关系",
           paragraphs: [
-            "本站与美国证券交易委员会(SEC)、EDGAR 系统、纽约联储、美国财政部或任何政府机构均无任何隶属、授权或背书关系。所有引用的数据归原始来源所有。",
+            "本站与美国证券交易委员会(SEC)、EDGAR 系统或任何政府机构均无任何隶属、授权或背书关系。所有引用的数据归原始来源所有。",
           ],
         },
         {
@@ -62,21 +62,21 @@ const CONTENT: Record<LegalSlug, Record<Lang, LegalDoc>> = {
         {
           heading: "Not Investment Advice",
           paragraphs: [
-            "All content on the Site — including 13F holdings, valuation frameworks, macro and liquidity indicators, and any derived analysis — is provided for informational and educational purposes only. It does not constitute, and must not be construed as, investment advice, an offer, a solicitation, or a recommendation to buy or sell any security.",
+            "All content on the Site — including 13F holdings, valuation frameworks, and any derived analysis — is provided for informational and educational purposes only. It does not constitute, and must not be construed as, investment advice, an offer, a solicitation, or a recommendation to buy or sell any security.",
             "The Site does not provide personalized investment, legal, accounting, or tax advice. Any investment decision should be based on your own independent judgment and, where appropriate, the advice of a licensed professional.",
           ],
         },
         {
           heading: "Data Sources & Accuracy",
           paragraphs: [
-            "Data on the Site is sourced from public channels, primarily the U.S. Securities and Exchange Commission's EDGAR system (13F and other regulatory filings), the Federal Reserve Bank of New York (NY Fed), and the U.S. Department of the Treasury (Treasury.gov). Data may be delayed, defined differently across sources, or contain third-party entry errors.",
+            "Data on the Site is sourced from public channels, primarily the U.S. Securities and Exchange Commission's EDGAR system (13F and other regulatory filings). Data may be delayed, defined differently across sources, or contain third-party entry errors.",
             "13F filings are inherently lagging (typically disclosed up to 45 days after quarter-end) and reflect holdings as of a past point in time — they do not represent current or future positions. The Site makes no warranty as to the accuracy, completeness, or timeliness of any data.",
           ],
         },
         {
           heading: "No Affiliation with Regulators",
           paragraphs: [
-            "The Site is not affiliated with, authorized by, or endorsed by the U.S. Securities and Exchange Commission (SEC), the EDGAR system, the NY Fed, the U.S. Treasury, or any government agency. All referenced data remains the property of its original source.",
+            "The Site is not affiliated with, authorized by, or endorsed by the U.S. Securities and Exchange Commission (SEC), the EDGAR system, or any government agency. All referenced data remains the property of its original source.",
           ],
         },
         {
