@@ -1,0 +1,2162 @@
+{
+  "manager": {
+    "cik": "0001553733",
+    "slug": "brave-warrior",
+    "name": "Brave Warrior Advisors, LLC",
+    "person": "Glenn Greenberg"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001172661-26-002294",
+      "holdings": [
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 515180279,
+          "shares": 3053644,
+          "weight": 0.12751487630714947
+        },
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 412049891,
+          "shares": 7703307,
+          "weight": 0.10198855240582574
+        },
+        {
+          "cusip": "G4705A100",
+          "issuer": "ICON PLC",
+          "titleOfClass": "SHS",
+          "value": 331627105,
+          "shares": 2996811,
+          "weight": 0.08208270191602787
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC FORMERLY",
+          "titleOfClass": "COM",
+          "value": 328555667,
+          "shares": 1122308,
+          "weight": 0.08132247476328183
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 302209369,
+          "shares": 1547728,
+          "weight": 0.07480136930260231
+        },
+        {
+          "cusip": "78442P106",
+          "issuer": "SLM CORP",
+          "titleOfClass": "COM",
+          "value": 290841319,
+          "shares": 13584368,
+          "weight": 0.07198760575478706
+        },
+        {
+          "cusip": "601137102",
+          "issuer": "MILLROSE PPTYS INC",
+          "titleOfClass": "COM CL A",
+          "value": 238445116,
+          "shares": 8515897,
+          "weight": 0.05901875656382396
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 220252825,
+          "shares": 879323,
+          "weight": 0.054515890613458906
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 209288742,
+          "shares": 2410050,
+          "weight": 0.051802114980819984
+        },
+        {
+          "cusip": "12008R107",
+          "issuer": "BUILDERS FIRSTSOURCE INC",
+          "titleOfClass": "COM",
+          "value": 195310800,
+          "shares": 2372292,
+          "weight": 0.04834236386492273
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 185678615,
+          "shares": 3253524,
+          "weight": 0.045958253042150767
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 183215179,
+          "shares": 1004304,
+          "weight": 0.045348515539309395
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 175675933,
+          "shares": 3039376,
+          "weight": 0.04348243863317229
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATL FINL INC",
+          "titleOfClass": "COM SHS",
+          "value": 162432639,
+          "shares": 3502213,
+          "weight": 0.04020452395913405
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 135541530,
+          "shares": 5353141,
+          "weight": 0.03354856957253946
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 95170440,
+          "shares": 693561,
+          "weight": 0.023556116915525394
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 41949241,
+          "shares": 1839879,
+          "weight": 0.010383068792300963
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 5825390,
+          "shares": 20258,
+          "weight": 0.001441871739991246
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO",
+          "titleOfClass": "COM",
+          "value": 1659945,
+          "shares": 5643,
+          "weight": 0.00041086138188855485
+        },
+        {
+          "cusip": "866966104",
+          "issuer": "SUNBELT RENTALS HOLDINGS INC",
+          "titleOfClass": "SHS",
+          "value": 1546669,
+          "shares": 23762,
+          "weight": 0.0003828238662511043
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 1087199,
+          "shares": 3790,
+          "weight": 0.0002690981228461515
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 892709,
+          "shares": 31094,
+          "weight": 0.0002209589193403094
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 749594,
+          "shares": 2025,
+          "weight": 0.0001855358019063098
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 708435,
+          "shares": 14532,
+          "weight": 0.0001753483296604516
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 630829,
+          "shares": 1333,
+          "weight": 0.0001561396761190131
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "CL A COM STK",
+          "value": 545500,
+          "shares": 5000,
+          "weight": 0.0001350194637895874
+        },
+        {
+          "cusip": "03769M106",
+          "issuer": "APOLLO GLOBAL MGMT INC",
+          "titleOfClass": "COM",
+          "value": 501390,
+          "shares": 4500,
+          "weight": 0.00012410157460946146
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 390522,
+          "shares": 1194,
+          "weight": 0.00009666007523013245
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 354651,
+          "shares": 1789,
+          "weight": 0.00008778146260759114
+        },
+        {
+          "cusip": "38222105",
+          "issuer": "APPLIED MATLS INC",
+          "titleOfClass": "COM",
+          "value": 328460,
+          "shares": 961,
+          "weight": 0.00008129879574028942
+        },
+        {
+          "cusip": "31847R102",
+          "issuer": "FIRST AMERN FINL CORP",
+          "titleOfClass": "COM",
+          "value": 301450,
+          "shares": 5000,
+          "weight": 0.00007461341404101031
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 291578,
+          "shares": 1400,
+          "weight": 0.00007216994539475768
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 289500,
+          "shares": 15000,
+          "weight": 0.00007165560910556472
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 213404,
+          "shares": 373,
+          "weight": 0.000052820703300738976
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 210857,
+          "shares": 422,
+          "weight": 0.00005219028244964442
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 205474,
+          "shares": 471,
+          "weight": 0.00005085790889587843
+        }
+      ],
+      "totalValue": 4040158246
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001172661-26-001068",
+      "holdings": [
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 522789242,
+          "shares": 7739293,
+          "weight": 0.12246795542085746
+        },
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 475213395,
+          "shares": 3163239,
+          "weight": 0.11132289687448145
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC FORMERLY",
+          "titleOfClass": "COM",
+          "value": 438819542,
+          "shares": 1251803,
+          "weight": 0.1027973182880781
+        },
+        {
+          "cusip": "78442P106",
+          "issuer": "SLM CORP",
+          "titleOfClass": "COM",
+          "value": 347232973,
+          "shares": 12831965,
+          "weight": 0.08134236292876089
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 320609962,
+          "shares": 1552741,
+          "weight": 0.07510568959584445
+        },
+        {
+          "cusip": "601137102",
+          "issuer": "MILLROSE PPTYS INC",
+          "titleOfClass": "COM CL A",
+          "value": 256888691,
+          "shares": 8600224,
+          "weight": 0.060178424171762945
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 247893359,
+          "shares": 2411414,
+          "weight": 0.0580711889230854
+        },
+        {
+          "cusip": "12008R107",
+          "issuer": "BUILDERS FIRSTSOURCE INC",
+          "titleOfClass": "COM",
+          "value": 244790229,
+          "shares": 2379145,
+          "weight": 0.05734425356180816
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 244507794,
+          "shares": 1008862,
+          "weight": 0.05727809069117034
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 238783518,
+          "shares": 4474115,
+          "weight": 0.05593712893896832
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 220663029,
+          "shares": 3056698,
+          "weight": 0.05169224579912717
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 201553095,
+          "shares": 780125,
+          "weight": 0.04721557650835487
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "COM SHS",
+          "value": 192107069,
+          "shares": 3519089,
+          "weight": 0.04500276224567679
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 165881338,
+          "shares": 5377029,
+          "weight": 0.038859155229778404
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 101083423,
+          "shares": 701822,
+          "weight": 0.023679676525844955
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 32875422,
+          "shares": 1847972,
+          "weight": 0.007701355331137202
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 6340754,
+          "shares": 20258,
+          "weight": 0.001485377119153924
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 1831492,
+          "shares": 3923,
+          "weight": 0.0004290430303262764
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO.",
+          "titleOfClass": "COM",
+          "value": 1818287,
+          "shares": 5643,
+          "weight": 0.00042594964350533567
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 1459260,
+          "shares": 26532,
+          "weight": 0.0003418444265298031
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 1189302,
+          "shares": 3790,
+          "weight": 0.00027860440234142505
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 929400,
+          "shares": 31094,
+          "weight": 0.00021772008416375354
+        },
+        {
+          "cusip": "902973304",
+          "issuer": "US BANCORP DEL",
+          "titleOfClass": "COM NEW",
+          "value": 800400,
+          "shares": 15000,
+          "weight": 0.00018750070514812604
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 397599,
+          "shares": 1746,
+          "weight": 0.00009314104555995722
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 370427,
+          "shares": 1194,
+          "weight": 0.00008677576674900661
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 323148,
+          "shares": 1400,
+          "weight": 0.00007570024721040309
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 253900,
+          "shares": 525,
+          "weight": 0.0000594782971478126
+        },
+        {
+          "cusip": "38222105",
+          "issuer": "APPLIED MATLS INC",
+          "titleOfClass": "COM",
+          "value": 246967,
+          "shares": 961,
+          "weight": 0.00005785418121978666
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 240911,
+          "shares": 422,
+          "weight": 0.00005643551021731658
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 240610,
+          "shares": 471,
+          "weight": 0.000056364998332946786
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 223110,
+          "shares": 338,
+          "weight": 0.000052265470171912046
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 216739,
+          "shares": 618,
+          "weight": 0.00005077300766254334
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 209559,
+          "shares": 401,
+          "weight": 0.0000490910298227588
+        }
+      ],
+      "totalValue": 4268783946
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001172661-25-005024",
+      "holdings": [
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC FORMERLY",
+          "titleOfClass": "COM",
+          "value": 592602726,
+          "shares": 1834002,
+          "weight": 0.13756483308078443
+        },
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 536329229,
+          "shares": 3275293,
+          "weight": 0.12450168996308467
+        },
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 440064484,
+          "shares": 7794270,
+          "weight": 0.10215511105536415
+        },
+        {
+          "cusip": "78442P106",
+          "issuer": "SLM CORP",
+          "titleOfClass": "COM",
+          "value": 322732690,
+          "shares": 11659418,
+          "weight": 0.07491809720355987
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 265596187,
+          "shares": 1214043,
+          "weight": 0.061654618732799774
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 252773976,
+          "shares": 2005506,
+          "weight": 0.05867811316076567
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 245953294,
+          "shares": 4084246,
+          "weight": 0.057094782643269684
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 223150326,
+          "shares": 4467474,
+          "weight": 0.05180137721491452
+        },
+        {
+          "cusip": "12008R107",
+          "issuer": "BUILDERS FIRSTSOURCE INC",
+          "titleOfClass": "COM",
+          "value": 218902446,
+          "shares": 1805381,
+          "weight": 0.05081528842809513
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "COM SHS",
+          "value": 211068604,
+          "shares": 3489314,
+          "weight": 0.048996766305550526
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 209022217,
+          "shares": 752989,
+          "weight": 0.04852172480857016
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 205082303,
+          "shares": 964730,
+          "weight": 0.04760712622847074
+        },
+        {
+          "cusip": "601137102",
+          "issuer": "MILLROSE PPTYS INC",
+          "titleOfClass": "COM CL A",
+          "value": 180673647,
+          "shares": 5375592,
+          "weight": 0.04194098170863218
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 163197411,
+          "shares": 5218977,
+          "weight": 0.037884106195338656
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 120100169,
+          "shares": 708681,
+          "weight": 0.027879655250622325
+        },
+        {
+          "cusip": "02215L209",
+          "issuer": "KINETIK HOLDINGS INC",
+          "titleOfClass": "COM NEW CL A",
+          "value": 68765583,
+          "shares": 1608928,
+          "weight": 0.015963014566183126
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 36262015,
+          "shares": 1865330,
+          "weight": 0.00841774399911873
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 5313680,
+          "shares": 21858,
+          "weight": 0.001233500067032602
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO.",
+          "titleOfClass": "COM",
+          "value": 1779971,
+          "shares": 5643,
+          "weight": 0.00041319656957439807
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 1671983,
+          "shares": 3923,
+          "weight": 0.00038812859309882624
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 1368786,
+          "shares": 26532,
+          "weight": 0.0003177454462356196
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 976973,
+          "shares": 31094,
+          "weight": 0.00022679127478302086
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 923054,
+          "shares": 3790,
+          "weight": 0.00021427469679670424
+        },
+        {
+          "cusip": "902973304",
+          "issuer": "US BANCORP DEL",
+          "titleOfClass": "COM NEW",
+          "value": 724950,
+          "shares": 15000,
+          "weight": 0.00016828749070235409
+        },
+        {
+          "cusip": "G4705A100",
+          "issuer": "ICON PLC",
+          "titleOfClass": "SHS",
+          "value": 525000,
+          "shares": 3000,
+          "weight": 0.00012187176028517263
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 431175,
+          "shares": 1746,
+          "weight": 0.00010009153569706535
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 310965,
+          "shares": 1194,
+          "weight": 0.00007218638464205467
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 307398,
+          "shares": 1400,
+          "weight": 0.00007135835308217427
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 271924,
+          "shares": 525,
+          "weight": 0.00006312353627387672
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 248220,
+          "shares": 338,
+          "weight": 0.000057620968262829616
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 240038,
+          "shares": 422,
+          "weight": 0.000055721625895870984
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 224422,
+          "shares": 471,
+          "weight": 0.000052096579403274305
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 210973,
+          "shares": 618,
+          "weight": 0.00004897457310979757
+        }
+      ],
+      "totalValue": 4307806819
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001172661-25-003464",
+      "holdings": [
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 511392371,
+          "shares": 3768551,
+          "weight": 0.11722370464984024
+        },
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 448594845,
+          "shares": 7870085,
+          "weight": 0.10282896773546288
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "COM",
+          "value": 431610631,
+          "shares": 1109653,
+          "weight": 0.09893576830866564
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 389987165,
+          "shares": 1832991,
+          "weight": 0.08939464653685363
+        },
+        {
+          "cusip": "78442P106",
+          "issuer": "SLM CORP",
+          "titleOfClass": "COM",
+          "value": 345636275,
+          "shares": 10540905,
+          "weight": 0.07922833212713484
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 310212063,
+          "shares": 5379089,
+          "weight": 0.0711082317884825
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 241262411,
+          "shares": 1214510,
+          "weight": 0.05530327633724588
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 238599817,
+          "shares": 2157127,
+          "weight": 0.05469294432926519
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 225501891,
+          "shares": 823992,
+          "weight": 0.051690577661285576
+        },
+        {
+          "cusip": "601137102",
+          "issuer": "MILLROSE PPTYS INC",
+          "titleOfClass": "COM CL A",
+          "value": 224136782,
+          "shares": 7861690,
+          "weight": 0.05137766111558521
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 220206950,
+          "shares": 4275033,
+          "weight": 0.05047684700138426
+        },
+        {
+          "cusip": "12008R107",
+          "issuer": "BUILDERS FIRSTSOURCE INC",
+          "titleOfClass": "COM",
+          "value": 213223086,
+          "shares": 1827261,
+          "weight": 0.04887597366561318
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "COM SHS",
+          "value": 195490077,
+          "shares": 3487158,
+          "weight": 0.044811132014760786
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 167024025,
+          "shares": 5222765,
+          "weight": 0.038286013023114754
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 149066586,
+          "shares": 1156272,
+          "weight": 0.03416972649837205
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 35962855,
+          "shares": 1897776,
+          "weight": 0.00824357055745955
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 3852035,
+          "shares": 21858,
+          "weight": 0.0008829811290650782
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO.",
+          "titleOfClass": "COM",
+          "value": 1635962,
+          "shares": 5643,
+          "weight": 0.0003750027125577944
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 1502901,
+          "shares": 3923,
+          "weight": 0.00034450185988783464
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 1255494,
+          "shares": 26532,
+          "weight": 0.000287790092679436
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 1109745,
+          "shares": 31094,
+          "weight": 0.0002543808384592365
+        },
+        {
+          "cusip": "G4705A100",
+          "issuer": "ICON PLC",
+          "titleOfClass": "SHS",
+          "value": 727250,
+          "shares": 5000,
+          "weight": 0.00016670358034456543
+        },
+        {
+          "cusip": "902973304",
+          "issuer": "US BANCORP DEL",
+          "titleOfClass": "COM NEW",
+          "value": 678750,
+          "shares": 15000,
+          "weight": 0.0001555861879118237
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 672308,
+          "shares": 3790,
+          "weight": 0.0001541095231272521
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 467643,
+          "shares": 1499,
+          "weight": 0.00010719527318401322
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 465938,
+          "shares": 1746,
+          "weight": 0.00010680444526447044
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 326213,
+          "shares": 1194,
+          "weight": 0.00007477603995179337
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 307146,
+          "shares": 1400,
+          "weight": 0.00007040541476591529
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 261140,
+          "shares": 525,
+          "weight": 0.00005985970845126135
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 249474,
+          "shares": 338,
+          "weight": 0.00005718557442816104
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 237139,
+          "shares": 422,
+          "weight": 0.00005435808915686477
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 236249,
+          "shares": 471,
+          "weight": 0.0000541540792751093
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 219421,
+          "shares": 618,
+          "weight": 0.00005029668793782728
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 211443,
+          "shares": 401,
+          "weight": 0.00004846793418878783
+        },
+        {
+          "cusip": "882508104",
+          "issuer": "TEXAS INSTRS INC",
+          "titleOfClass": "COM",
+          "value": 209696,
+          "shares": 1010,
+          "weight": 0.000048067478836622885
+        }
+      ],
+      "totalValue": 4362533777
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001172661-25-002393",
+      "holdings": [
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "COM",
+          "value": 686179847,
+          "shares": 1577570,
+          "weight": 0.15715119002893438
+        },
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 423789405,
+          "shares": 4076466,
+          "weight": 0.09705765858408259
+        },
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 358956928,
+          "shares": 7343636,
+          "weight": 0.08220950914102045
+        },
+        {
+          "cusip": "78442P106",
+          "issuer": "SLM CORP",
+          "titleOfClass": "COM",
+          "value": 277704334,
+          "shares": 9455374,
+          "weight": 0.06360076990761966
+        },
+        {
+          "cusip": "254709108",
+          "issuer": "DISCOVER FINL SVCS",
+          "titleOfClass": "COM",
+          "value": 274635816,
+          "shares": 1608880,
+          "weight": 0.06289800771279057
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 251323206,
+          "shares": 2189608,
+          "weight": 0.0575588762588462
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 237484103,
+          "shares": 834654,
+          "weight": 0.05438939887636196
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 233565883,
+          "shares": 4364086,
+          "weight": 0.05349203510433155
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 232055787,
+          "shares": 5476889,
+          "weight": 0.0531461878975162
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "FNF GROUP COM",
+          "value": 229990182,
+          "shares": 3533961,
+          "weight": 0.05267311617251738
+        },
+        {
+          "cusip": "601137102",
+          "issuer": "MILLROSE PPTYS INC",
+          "titleOfClass": "COM CL A",
+          "value": 210988133,
+          "shares": 7958813,
+          "weight": 0.04832120373091208
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 190674326,
+          "shares": 5289163,
+          "weight": 0.04366886811070244
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 182978506,
+          "shares": 1130055,
+          "weight": 0.04190634582658693
+        },
+        {
+          "cusip": "12008R107",
+          "issuer": "BUILDERS FIRSTSOURCE INC",
+          "titleOfClass": "COM",
+          "value": 155122755,
+          "shares": 1241578,
+          "weight": 0.035526729115401764
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 149377369,
+          "shares": 1174997,
+          "weight": 0.03421090171093476
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 113237453,
+          "shares": 631553,
+          "weight": 0.025934017987554688
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 112099697,
+          "shares": 381889,
+          "weight": 0.025673445325526973
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 34533504,
+          "shares": 1918528,
+          "weight": 0.007908977906005107
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 3380121,
+          "shares": 21858,
+          "weight": 0.0007741265499331863
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO.",
+          "titleOfClass": "COM",
+          "value": 1384228,
+          "shares": 5643,
+          "weight": 0.00031702049895873983
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 1147369,
+          "shares": 31094,
+          "weight": 0.0002627742632498334
+        },
+        {
+          "cusip": "G4705A100",
+          "issuer": "ICON PLC",
+          "titleOfClass": "SHS",
+          "value": 874950,
+          "shares": 5000,
+          "weight": 0.00020038395810802081
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 664493,
+          "shares": 1923,
+          "weight": 0.0001521843962227248
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 606420,
+          "shares": 14532,
+          "weight": 0.0001388843246766855
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 592112,
+          "shares": 3790,
+          "weight": 0.0001356074589442327
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 494135,
+          "shares": 1746,
+          "weight": 0.00011316844064198739
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 478622,
+          "shares": 1275,
+          "weight": 0.00010961560180304833
+        },
+        {
+          "cusip": "02005N100",
+          "issuer": "ALLY FINL INC",
+          "titleOfClass": "COM",
+          "value": 364700,
+          "shares": 10000,
+          "weight": 0.00008352480658551368
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 284411,
+          "shares": 1194,
+          "weight": 0.00006513675285383199
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 266364,
+          "shares": 1400,
+          "weight": 0.00006100356890963467
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 261351,
+          "shares": 499,
+          "weight": 0.000059855474981986795
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 231307,
+          "shares": 422,
+          "weight": 0.00005297469820914563
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 219340,
+          "shares": 471,
+          "weight": 0.00005023397608024834
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 216584,
+          "shares": 618,
+          "weight": 0.00004960278779686562
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 203748,
+          "shares": 401,
+          "weight": 0.000046663044398643376
+        }
+      ],
+      "totalValue": 4366367489
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001172661-25-001122",
+      "holdings": [
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "COM",
+          "value": 601298515,
+          "shares": 1629977,
+          "weight": 0.14960016340468382
+        },
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 486380332,
+          "shares": 4147172,
+          "weight": 0.12100907507483927
+        },
+        {
+          "cusip": "254709108",
+          "issuer": "DISCOVER FINL SVCS",
+          "titleOfClass": "COM",
+          "value": 437226457,
+          "shares": 2523965,
+          "weight": 0.1087798286214809
+        },
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 387725737,
+          "shares": 7437670,
+          "weight": 0.096464288809031
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "FNF GROUP COM",
+          "value": 335331574,
+          "shares": 5973131,
+          "weight": 0.08342887436725138
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 248172416,
+          "shares": 1461213,
+          "weight": 0.06174409724949207
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 244289606,
+          "shares": 5604258,
+          "weight": 0.060778072893903336
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 241973564,
+          "shares": 1774390,
+          "weight": 0.06020185284178478
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 231755767,
+          "shares": 853864,
+          "weight": 0.05765971434866728
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 223794275,
+          "shares": 5400441,
+          "weight": 0.055678933630881736
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 218949465,
+          "shares": 612566,
+          "weight": 0.05447356832632141
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 211452850,
+          "shares": 4418154,
+          "weight": 0.05260844675857231
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 109273105,
+          "shares": 781527,
+          "weight": 0.027186620215979035
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 29166556,
+          "shares": 1932840,
+          "weight": 0.007256498119826324
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 4137719,
+          "shares": 21858,
+          "weight": 0.0010294444823677387
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO.",
+          "titleOfClass": "COM",
+          "value": 1352684,
+          "shares": 5643,
+          "weight": 0.00033654123931255896
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 1166958,
+          "shares": 31094,
+          "weight": 0.00029033350845112765
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 1012406,
+          "shares": 3373,
+          "weight": 0.0002518817180712351
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 721768,
+          "shares": 3790,
+          "weight": 0.00017957238883297729
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 638681,
+          "shares": 14532,
+          "weight": 0.00015890074493775668
+        },
+        {
+          "cusip": "G4705A100",
+          "issuer": "ICON PLC",
+          "titleOfClass": "SHS",
+          "value": 629130,
+          "shares": 3000,
+          "weight": 0.00015652450231444314
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 537412,
+          "shares": 1275,
+          "weight": 0.00013370550734794005
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 418359,
+          "shares": 1746,
+          "weight": 0.00010408569653929731
+        },
+        {
+          "cusip": "02005N100",
+          "issuer": "ALLY FINL INC",
+          "titleOfClass": "COM",
+          "value": 360100,
+          "shares": 10000,
+          "weight": 0.00008959113900693176
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 333054,
+          "shares": 1194,
+          "weight": 0.00008286222496754971
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 307146,
+          "shares": 1400,
+          "weight": 0.00007641643982622344
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 267480,
+          "shares": 1500,
+          "weight": 0.00006654773080137213
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 252424,
+          "shares": 499,
+          "weight": 0.00006280187079335113
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 222957,
+          "shares": 471,
+          "weight": 0.000055470623658896094
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 222213,
+          "shares": 422,
+          "weight": 0.000055285520055949256
+        }
+      ],
+      "totalValue": 4019370710
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001172661-24-005173",
+      "holdings": [
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "COM",
+          "value": 853534760,
+          "shares": 1641413,
+          "weight": 0.17708133390162473
+        },
+        {
+          "cusip": "254709108",
+          "issuer": "DISCOVER FINL SVCS",
+          "titleOfClass": "COM",
+          "value": 484660705,
+          "shares": 3454706,
+          "weight": 0.1005516918035088
+        },
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 443769449,
+          "shares": 3695615,
+          "weight": 0.092068055873564
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 387164341,
+          "shares": 1460171,
+          "weight": 0.08032429510360363
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "FNF GROUP COM",
+          "value": 373002445,
+          "shares": 6010352,
+          "weight": 0.07738615180612846
+        },
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 348422590,
+          "shares": 7402222,
+          "weight": 0.07228661314116709
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 333874133,
+          "shares": 1780852,
+          "weight": 0.06926827072266918
+        },
+        {
+          "cusip": "03769M106",
+          "issuer": "APOLLO GLOBAL MGMT INC",
+          "titleOfClass": "COM",
+          "value": 284478278,
+          "shares": 2277466,
+          "weight": 0.05902020081089284
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 271439580,
+          "shares": 854551,
+          "weight": 0.05631508539862721
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 243999923,
+          "shares": 5456170,
+          "weight": 0.05062222871477868
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 230599578,
+          "shares": 5104019,
+          "weight": 0.04784208304462229
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 197089668,
+          "shares": 4432966,
+          "weight": 0.040889841800547604
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 173965526,
+          "shares": 972309,
+          "weight": 0.03609231731461971
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 153199947,
+          "shares": 803061,
+          "weight": 0.03178411968648847
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 28578927,
+          "shares": 1898932,
+          "weight": 0.005929218998224698
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 3625149,
+          "shares": 21858,
+          "weight": 0.0007521031955536773
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 1370888,
+          "shares": 3373,
+          "weight": 0.0002844156876162027
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 1298796,
+          "shares": 31094,
+          "weight": 0.00026945888899251695
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO.",
+          "titleOfClass": "COM",
+          "value": 1189883,
+          "shares": 5643,
+          "weight": 0.00024686290318963336
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 894070,
+          "shares": 22532,
+          "weight": 0.00018549110782720276
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 633650,
+          "shares": 3790,
+          "weight": 0.00013146223503160493
+        },
+        {
+          "cusip": "256746108",
+          "issuer": "DOLLAR TREE INC",
+          "titleOfClass": "COM",
+          "value": 501100,
+          "shares": 7126,
+          "weight": 0.00010396232300850191
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 443065,
+          "shares": 1746,
+          "weight": 0.00009192190509631191
+        },
+        {
+          "cusip": "02005N100",
+          "issuer": "ALLY FINL INC",
+          "titleOfClass": "COM",
+          "value": 355900,
+          "shares": 10000,
+          "weight": 0.00007383793805373345
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 296828,
+          "shares": 1194,
+          "weight": 0.00006158237560161167
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 291755,
+          "shares": 499,
+          "weight": 0.000060529889342138245
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 260862,
+          "shares": 1400,
+          "weight": 0.000054120573747044155
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 225907,
+          "shares": 525,
+          "weight": 0.000046868522258793936
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 223532,
+          "shares": 471,
+          "weight": 0.000046375785245931845
+        },
+        {
+          "cusip": "882508104",
+          "issuer": "TEXAS INSTRS INC",
+          "titleOfClass": "COM",
+          "value": 208636,
+          "shares": 1010,
+          "weight": 0.000043285338701260835
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 208384,
+          "shares": 422,
+          "weight": 0.00004323305671084347
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 207165,
+          "shares": 401,
+          "weight": 0.00004298015295561025
+        }
+      ],
+      "totalValue": 4820015420
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001172661-24-003514",
+      "holdings": [
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "COM",
+          "value": 884926196,
+          "shares": 1633127,
+          "weight": 0.19611100866011016
+        },
+        {
+          "cusip": "254709108",
+          "issuer": "DISCOVER FINL SVCS",
+          "titleOfClass": "COM",
+          "value": 452729747,
+          "shares": 3460972,
+          "weight": 0.10033072558585042
+        },
+        {
+          "cusip": "74164M108",
+          "issuer": "PRIMERICA INC",
+          "titleOfClass": "COM",
+          "value": 447139276,
+          "shares": 1890013,
+          "weight": 0.09909180542318513
+        },
+        {
+          "cusip": "03769M106",
+          "issuer": "APOLLO GLOBAL MGMT INC",
+          "titleOfClass": "COM",
+          "value": 446269297,
+          "shares": 3779701,
+          "weight": 0.09889900690510045
+        },
+        {
+          "cusip": "87162W100",
+          "issuer": "TD SYNNEX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 383364108,
+          "shares": 3322046,
+          "weight": 0.0849584092366087
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "FNF GROUP COM",
+          "value": 364103481,
+          "shares": 7367533,
+          "weight": 0.0806900069614023
+        },
+        {
+          "cusip": "68268W103",
+          "issuer": "ONEMAIN HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 352530883,
+          "shares": 7270177,
+          "weight": 0.07812537063708902
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 237590709,
+          "shares": 1585312,
+          "weight": 0.05265315209434789
+        },
+        {
+          "cusip": "30190A104",
+          "issuer": "F&G ANNUITIES & LIFE INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 230178300,
+          "shares": 6049364,
+          "weight": 0.05101046707478127
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 215888171,
+          "shares": 855172,
+          "weight": 0.04784359098416422
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 180389008,
+          "shares": 4235478,
+          "weight": 0.03997652060700967
+        },
+        {
+          "cusip": "05329W102",
+          "issuer": "AUTONATION INC",
+          "titleOfClass": "COM",
+          "value": 156070474,
+          "shares": 979235,
+          "weight": 0.03458722119036636
+        },
+        {
+          "cusip": "23331A109",
+          "issuer": "D R HORTON INC",
+          "titleOfClass": "COM",
+          "value": 113578728,
+          "shares": 805923,
+          "weight": 0.02517050462636807
+        },
+        {
+          "cusip": "03676B102",
+          "issuer": "ANTERO MIDSTREAM CORP",
+          "titleOfClass": "COM",
+          "value": 30810860,
+          "shares": 2090289,
+          "weight": 0.006828082228323413
+        },
+        {
+          "cusip": "783513203",
+          "issuer": "RYANAIR HOLDINGS PLC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 5780082,
+          "shares": 49640,
+          "weight": 0.0012809403951221112
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 3981435,
+          "shares": 21858,
+          "weight": 0.0008823371229081184
+        },
+        {
+          "cusip": "40412C101",
+          "issuer": "HCA HEALTHCARE INC",
+          "titleOfClass": "COM",
+          "value": 1244317,
+          "shares": 3873,
+          "weight": 0.00027575662588128684
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "COMCAST CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 1217641,
+          "shares": 31094,
+          "weight": 0.0002698448817260521
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "JPMORGAN CHASE & CO.",
+          "titleOfClass": "COM",
+          "value": 1141353,
+          "shares": 5643,
+          "weight": 0.0002529384812869103
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 896098,
+          "shares": 22532,
+          "weight": 0.00019858682388729668
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 695162,
+          "shares": 3790,
+          "weight": 0.0001540568260024472
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 425150,
+          "shares": 2200,
+          "weight": 0.00009421869949010509
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 362662,
+          "shares": 1746,
+          "weight": 0.00008037055626127365
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 310649,
+          "shares": 610,
+          "weight": 0.00006884380754534084
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "CL A",
+          "value": 288673,
+          "shares": 1194,
+          "weight": 0.00006397364374434225
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 234649,
+          "shares": 525,
+          "weight": 0.00005200123160450116
+        },
+        {
+          "cusip": "38222105",
+          "issuer": "APPLIED MATLS INC",
+          "titleOfClass": "COM",
+          "value": 226786,
+          "shares": 961,
+          "weight": 0.00005025868983314824
+        }
+      ],
+      "totalValue": 4512373895
+    }
+  ]
+}

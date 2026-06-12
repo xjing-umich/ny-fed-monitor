@@ -1,0 +1,802 @@
+{
+  "manager": {
+    "cik": "0001759760",
+    "slug": "hh-international",
+    "name": "H&H International Investment, LLC",
+    "person": "Duan Yongping"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-19",
+      "accession": "0001759760-26-000005",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 7346105601,
+          "shares": 28945607,
+          "weight": 0.3672319028192035
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 4383623843,
+          "shares": 9147796,
+          "weight": 0.21913740593238706
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 2414354360,
+          "shares": 13843775,
+          "weight": 0.12069360200620402
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 2017880681,
+          "shares": 19748294,
+          "weight": 0.1008738782688975
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 1267258575,
+          "shares": 3408900,
+          "weight": 0.06335027062473102
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 1063103160,
+          "shares": 3706000,
+          "weight": 0.05314453909929685
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 666997500,
+          "shares": 10261500,
+          "weight": 0.033343212635999736
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 376092720,
+          "shares": 1016000,
+          "weight": 0.018800879364332716
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 162732826,
+          "shares": 601400,
+          "weight": 0.008135015828657749
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 145707284,
+          "shares": 1511800,
+          "weight": 0.007283908789802064
+        },
+        {
+          "cusip": "G25457105",
+          "issuer": "CREDO TECHNOLOGY GROUP HOLDI",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 70515144,
+          "shares": 751200,
+          "weight": 0.003525052853196813
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MANUFAC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 51098040,
+          "shares": 151200,
+          "weight": 0.0025543916026714046
+        },
+        {
+          "cusip": "172573107",
+          "issuer": "CIRCLE INTERNET GROUP INC",
+          "titleOfClass": "COM CL A",
+          "value": 19082000,
+          "shares": 200000,
+          "weight": 0.0009539093977415913
+        },
+        {
+          "cusip": "69608A108",
+          "issuer": "PALANTIR TECHNOLOGIES INC",
+          "titleOfClass": "CL A",
+          "value": 8776800,
+          "shares": 60000,
+          "weight": 0.000438752332150634
+        },
+        {
+          "cusip": "871607107",
+          "issuer": "SYNOPSYS INC",
+          "titleOfClass": "COM",
+          "value": 3964800,
+          "shares": 10000,
+          "weight": 0.00019820039724168645
+        },
+        {
+          "cusip": "22788C105",
+          "issuer": "CROWDSTRIKE HLDGS INC",
+          "titleOfClass": "CL A",
+          "value": 3904100,
+          "shares": 10000,
+          "weight": 0.00019516600354904865
+        },
+        {
+          "cusip": "833445109",
+          "issuer": "SNOWFLAKE INC",
+          "titleOfClass": "COM SHS",
+          "value": 1508200,
+          "shares": 10000,
+          "weight": 0.00007539493520982434
+        },
+        {
+          "cusip": "88023B103",
+          "issuer": "TEMPUS AI INC",
+          "titleOfClass": "CL A",
+          "value": 904400,
+          "shares": 20000,
+          "weight": 0.00004521096631996097
+        },
+        {
+          "cusip": "457642205",
+          "issuer": "INNODATA INC",
+          "titleOfClass": "COM NEW",
+          "value": 386200,
+          "shares": 10000,
+          "weight": 0.000019306142406865242
+        }
+      ],
+      "totalValue": 20003996234
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001759760-26-000001",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 8796983713,
+          "shares": 32358507,
+          "weight": 0.503013325431299
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 3607114919,
+          "shares": 7176196,
+          "weight": 0.20625556779623433
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 1349719150,
+          "shares": 7237100,
+          "weight": 0.07717721666762921
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 1308145733,
+          "shares": 11536694,
+          "weight": 0.07480004019249162
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 582224520,
+          "shares": 1855400,
+          "weight": 0.033291716968857125
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 541657312,
+          "shares": 13172600,
+          "weight": 0.03097207572985064
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 415429580,
+          "shares": 859000,
+          "weight": 0.023754348232965503
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 375318090,
+          "shares": 2560500,
+          "weight": 0.02146076504227621
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 372078054,
+          "shares": 1224384,
+          "weight": 0.02127549912204168
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 81004240,
+          "shares": 712000,
+          "weight": 0.00463183898774544
+        },
+        {
+          "cusip": "21873S108",
+          "issuer": "COREWEAVE INC",
+          "titleOfClass": "COM CL A",
+          "value": 21475839,
+          "shares": 299900,
+          "weight": 0.0012279928603088437
+        },
+        {
+          "cusip": "G25457105",
+          "issuer": "CREDO TECHNOLOGY GROUP HOLDI",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 20331657,
+          "shares": 141300,
+          "weight": 0.0011625682998577297
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 10591614,
+          "shares": 9900,
+          "weight": 0.000605630651782554
+        },
+        {
+          "cusip": "88023B103",
+          "issuer": "TEMPUS AI INC",
+          "titleOfClass": "CL A",
+          "value": 6495500,
+          "shares": 110000,
+          "weight": 0.0003714140166601219
+        }
+      ],
+      "totalValue": 17488569921
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001759760-25-000002",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 8868535515,
+          "shares": 34829107,
+          "weight": 0.604184713284416
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 2609874162,
+          "shares": 5191300,
+          "weight": 0.17780230677425163
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 1133251221,
+          "shares": 8574194,
+          "weight": 0.07720474963211549
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 640525725,
+          "shares": 13556100,
+          "weight": 0.04363695120303273
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 496392191,
+          "shares": 2777330,
+          "weight": 0.03381759853007231
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 440947275,
+          "shares": 1810500,
+          "weight": 0.030040315277400066
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 144611640,
+          "shares": 279200,
+          "weight": 0.009851924492291915
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 111537524,
+          "shares": 597800,
+          "weight": 0.007598691671743694
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 82783500,
+          "shares": 723000,
+          "weight": 0.005639772781828958
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 77447200,
+          "shares": 80000,
+          "weight": 0.005276227878609429
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 72610931,
+          "shares": 259984,
+          "weight": 0.004946748474237746
+        }
+      ],
+      "totalValue": 14678516884
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001085146-25-005091",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 7205284598,
+          "shares": 35118607,
+          "weight": 0.6247130304162952
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 1642534101,
+          "shares": 3381300,
+          "weight": 0.1424110931138844
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 906637554,
+          "shares": 8662694,
+          "weight": 0.0786073452262763
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 569491761,
+          "shares": 13556100,
+          "weight": 0.04937610985000852
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 424859944,
+          "shares": 3746230,
+          "weight": 0.0368362331159563
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 345094506,
+          "shares": 1945400,
+          "weight": 0.02992040518192927
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 152428752,
+          "shares": 964800,
+          "weight": 0.013215887074179651
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 138876872,
+          "shares": 279200,
+          "weight": 0.012040911137075384
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 89659230,
+          "shares": 723000,
+          "weight": 0.007773640099329163
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 58883776,
+          "shares": 259984,
+          "weight": 0.005105344785065811
+        }
+      ],
+      "totalValue": 11533751094
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001085146-25-003301",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 7602217326,
+          "shares": 34224181,
+          "weight": 0.6332917204786
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 1800812754,
+          "shares": 3381300,
+          "weight": 0.15001410224620904
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 917674065,
+          "shares": 7753900,
+          "weight": 0.07644551090046549
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 682456296,
+          "shares": 13826100,
+          "weight": 0.056851034811536603
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 526557050,
+          "shares": 3982130,
+          "weight": 0.04386407357550413
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 173509038,
+          "shares": 1110600,
+          "weight": 0.014453919492383477
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 112316688,
+          "shares": 299200,
+          "weight": 0.009356379268284302
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 71360100,
+          "shares": 723000,
+          "weight": 0.005944549933868195
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 69915938,
+          "shares": 645100,
+          "weight": 0.005824246106917351
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 45117472,
+          "shares": 271792,
+          "weight": 0.003758445758819006
+        },
+        {
+          "cusip": "60770K107",
+          "issuer": "MODERNA INC",
+          "titleOfClass": "COM",
+          "value": 2353050,
+          "shares": 83000,
+          "weight": 0.0001960174274123573
+        }
+      ],
+      "totalValue": 12004289777
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001085146-25-001521",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 10233307372,
+          "shares": 40864577,
+          "putCall": "Put",
+          "weight": 0.7049701829237737
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 1641372208,
+          "shares": 3621100,
+          "putCall": "Put",
+          "weight": 0.11307375256662605
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 717292260,
+          "shares": 3766500,
+          "putCall": "Put",
+          "weight": 0.049414098234320775
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 701111613,
+          "shares": 7228700,
+          "putCall": "Put",
+          "weight": 0.04829941719712003
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 670839570,
+          "shares": 13577000,
+          "putCall": "Put",
+          "weight": 0.04621398314189185
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 462175876,
+          "shares": 5450830,
+          "putCall": "Put",
+          "weight": 0.03183918942356531
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 83067100,
+          "shares": 746000,
+          "putCall": "Put",
+          "weight": 0.005722473346415515
+        },
+        {
+          "cusip": "60770K107",
+          "issuer": "MODERNA INC",
+          "titleOfClass": "COM",
+          "value": 6777540,
+          "shares": 163000,
+          "putCall": "Put",
+          "weight": 0.0004669031662868333
+        }
+      ],
+      "totalValue": 14515943539
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001085146-24-005748",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 12295213115,
+          "shares": 52769155,
+          "weight": 0.74330003893375
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 1740749346,
+          "shares": 3782100,
+          "weight": 0.10523600075521747
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 847034697,
+          "shares": 5066300,
+          "weight": 0.051206995549368084
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 577688628,
+          "shares": 5443730,
+          "weight": 0.03492383382603813
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 526783556,
+          "shares": 3907600,
+          "weight": 0.03184639696946475
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 475389498,
+          "shares": 9223700,
+          "weight": 0.028739398745435723
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 71998215,
+          "shares": 748500,
+          "weight": 0.004352610687761999
+        },
+        {
+          "cusip": "60770K107",
+          "issuer": "MODERNA INC",
+          "titleOfClass": "COM",
+          "value": 6529291,
+          "shares": 97700,
+          "weight": 0.00039472453296388293
+        }
+      ],
+      "totalValue": 16541386346
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001085146-24-003861",
+      "holdings": [
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 13463726588,
+          "shares": 63924255,
+          "weight": 0.8095017933615619
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 1586153880,
+          "shares": 3899100,
+          "weight": 0.09536694035006646
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 921868920,
+          "shares": 5026000,
+          "weight": 0.05542704236503219
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 454091760,
+          "shares": 6306830,
+          "weight": 0.027302106268136287
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 97261719,
+          "shares": 1543102,
+          "weight": 0.0058478264127928906
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "DISNEY WALT CO",
+          "titleOfClass": "COM",
+          "value": 74318565,
+          "shares": 748500,
+          "weight": 0.004468377403116485
+        },
+        {
+          "cusip": "60770K107",
+          "issuer": "MODERNA INC",
+          "titleOfClass": "COM",
+          "value": 16708125,
+          "shares": 140700,
+          "weight": 0.0010045700989846295
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 13693850,
+          "shares": 103000,
+          "weight": 0.000823337882017322
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BANK AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 4291183,
+          "shares": 107900,
+          "weight": 0.0002580058582917688
+        }
+      ],
+      "totalValue": 16632114590
+    }
+  ]
+}

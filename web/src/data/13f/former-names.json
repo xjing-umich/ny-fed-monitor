@@ -1,1 +1,47 @@
-{}
+{
+  "berkshire-hathaway": [
+    "NBH INC"
+  ],
+  "markel": [
+    "MARKEL CORP",
+    "MARKEL HOLDINGS INC"
+  ],
+  "valley-forge-capital": [
+    "Valley Forge Advisors, L.P.",
+    "Valley Forge Advisors, LLC"
+  ],
+  "polen-capital": [
+    "POLEN CAPITAL MANAGEMENT INC"
+  ],
+  "weitz-investment": [
+    "WEITZ WALLACE R & CO"
+  ],
+  "yacktman": [
+    "YACKTMAN ASSET MANAGEMENT CO/IL"
+  ],
+  "tweedy-browne": [
+    "TWEEDY BROWNE CO LLC//",
+    "TWEEDY BROWNE CO L P"
+  ],
+  "third-point": [
+    "THIRD POINT MANAGEMENT CO LLC"
+  ],
+  "icahn-capital": [
+    "ICAHN CARL C ET AL"
+  ],
+  "fairfax": [
+    "FAIRFAX FINANCIAL HOLDINGS INC",
+    "FAIRFAX FINANCIAL HOLDINGS LTD"
+  ],
+  "oaktree": [
+    "OAKTREE CAPITAL MANAGEMENT LLC",
+    "OAKTREE CAPITAL MANAGEMENT L L C"
+  ],
+  "gates-foundation-trust": [
+    "BILL & MELINDA GATES FOUNDATION TRUST",
+    "GATES BILL & MELINDA FOUNDATION"
+  ],
+  "bridgewater-associates": [
+    "Bridgewater Associates, Inc."
+  ]
+}

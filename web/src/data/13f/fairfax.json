@@ -1,0 +1,2026 @@
+{
+  "manager": {
+    "cik": "0000915191",
+    "slug": "fairfax",
+    "name": "FAIRFAX FINANCIAL HOLDINGS LTD/ CAN",
+    "person": "Prem Watsa"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001104659-26-061601",
+      "holdings": [
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 501579333,
+          "shares": 31817229,
+          "weight": 0.2581907727767226
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 253705145,
+          "shares": 43000872,
+          "weight": 0.1305961452861146
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS HEALTH CORP",
+          "titleOfClass": "COM",
+          "value": 194775840,
+          "shares": 2712000,
+          "weight": 0.10026195526647681
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 144277357,
+          "shares": 13322009,
+          "weight": 0.07426757812210953
+        },
+        {
+          "cusip": "904311206",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL C",
+          "value": 126934969,
+          "shares": 21999128,
+          "weight": 0.06534048670322573
+        },
+        {
+          "cusip": "185899101",
+          "issuer": "CLEVELAND-CLIFFS INC",
+          "titleOfClass": "COM",
+          "value": 125749864,
+          "shares": 14899273,
+          "weight": 0.06473044726252261
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 118429136,
+          "shares": 5268200,
+          "weight": 0.06096206149530403
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 113335913,
+          "shares": 34980220,
+          "weight": 0.05834029641094762
+        },
+        {
+          "cusip": "00217Y104",
+          "issuer": "ATS CORP",
+          "titleOfClass": "COM",
+          "value": 69352987,
+          "shares": 2486400,
+          "weight": 0.035699838748946215
+        },
+        {
+          "cusip": "60871R209",
+          "issuer": "MOLSON COORS BEVERAGE CO",
+          "titleOfClass": "CL B",
+          "value": 61941810,
+          "shares": 1438500,
+          "weight": 0.03188489385205376
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 42303003,
+          "shares": 1174105,
+          "weight": 0.021775707882577402
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 31679970,
+          "shares": 93700,
+          "weight": 0.0163074421087509
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MOTORS CO",
+          "titleOfClass": "COM",
+          "value": 28009392,
+          "shares": 375965,
+          "weight": 0.014417991511396966
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 27814563,
+          "shares": 990900,
+          "weight": 0.014317702191722553
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 24822057,
+          "shares": 359100,
+          "weight": 0.01277729295664153
+        },
+        {
+          "cusip": "95058W100",
+          "issuer": "WENDYS CO",
+          "titleOfClass": "COM",
+          "value": 22751558,
+          "shares": 3268902,
+          "weight": 0.011711491992223742
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 20799870,
+          "shares": 172900,
+          "weight": 0.010706849655935423
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 17937492,
+          "shares": 73400,
+          "weight": 0.009233424538160307
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 3351638,
+          "shares": 184460,
+          "weight": 0.0017252744448460538
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 2606499,
+          "shares": 25000,
+          "weight": 0.0013417099684443232
+        },
+        {
+          "cusip": "136375102",
+          "issuer": "CANADIAN NATIONAL RAILWAY CO",
+          "titleOfClass": "COM",
+          "value": 2532690,
+          "shares": 24800,
+          "weight": 0.0013037163720297812
+        },
+        {
+          "cusip": "550021109",
+          "issuer": "LULULEMON ATHLETICA INC",
+          "titleOfClass": "COM",
+          "value": 1912125,
+          "shares": 12500,
+          "weight": 0.0009842770603064115
+        },
+        {
+          "cusip": "934423104",
+          "issuer": "WARNER BROS DISCOVERY INC",
+          "titleOfClass": "COM SER A",
+          "value": 1588776,
+          "shares": 57900,
+          "weight": 0.0008178313503381732
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 1377684,
+          "shares": 78100,
+          "weight": 0.0007091705602673352
+        },
+        {
+          "cusip": "G4863A108",
+          "issuer": "BRIGHTSTAR LOTTERY PLC",
+          "titleOfClass": "SHS USD",
+          "value": 874971,
+          "shares": 68733,
+          "weight": 0.00045039622604869516
+        },
+        {
+          "cusip": "707569109",
+          "issuer": "PENN ENTERTAINMENT INC",
+          "titleOfClass": "COM",
+          "value": 825147,
+          "shares": 54900,
+          "weight": 0.00042474904280873614
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 718176,
+          "shares": 1,
+          "weight": 0.00036968512103686604
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 348750,
+          "shares": 125000,
+          "weight": 0.00017952101707883168
+        },
+        {
+          "cusip": "74275G107",
+          "issuer": "PRIORITY TECH HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 332760,
+          "shares": 70500,
+          "weight": 0.00017129007496244312
+        }
+      ],
+      "totalValue": 1942669475
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001104659-26-015544",
+      "holdings": [
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 423610745,
+          "shares": 31817229,
+          "weight": 0.20332576236549973
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETROLEUM CORP",
+          "titleOfClass": "COM",
+          "value": 248732684,
+          "shares": 6050418,
+          "weight": 0.11938734603985773
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS HEALTH CORP",
+          "titleOfClass": "COM",
+          "value": 215197200,
+          "shares": 2712000,
+          "weight": 0.10329089916952158
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 208535847,
+          "shares": 41958923,
+          "weight": 0.10009356602087657
+        },
+        {
+          "cusip": "185899101",
+          "issuer": "CLEVELAND-CLIFFS INC",
+          "titleOfClass": "COM",
+          "value": 197713353,
+          "shares": 14899273,
+          "weight": 0.09489895783584093
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 132225232,
+          "shares": 34980220,
+          "weight": 0.06346580302243059
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 128823827,
+          "shares": 13322009,
+          "weight": 0.0618331880028592
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 124084560,
+          "shares": 5119000,
+          "weight": 0.05955842257917134
+        },
+        {
+          "cusip": "00217Y104",
+          "issuer": "ATS CORP",
+          "titleOfClass": "COM",
+          "value": 68282019,
+          "shares": 2486400,
+          "weight": 0.03277417707860677
+        },
+        {
+          "cusip": "60871R209",
+          "issuer": "MOLSON COORS BEVERAGE CO",
+          "titleOfClass": "CL B",
+          "value": 62494565,
+          "shares": 1338500,
+          "weight": 0.029996300193766985
+        },
+        {
+          "cusip": "904311206",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL C",
+          "value": 45395304,
+          "shares": 9457355,
+          "weight": 0.021788953426130915
+        },
+        {
+          "cusip": "922908363",
+          "issuer": "VANGUARD INDEX FUNDS",
+          "titleOfClass": "S&P 500 ETF SHS",
+          "value": 36524408,
+          "shares": 58248,
+          "weight": 0.017531078210843206
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 33661590,
+          "shares": 1174105,
+          "weight": 0.0161569755488258
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MOTORS CO",
+          "titleOfClass": "COM",
+          "value": 30577233,
+          "shares": 375965,
+          "weight": 0.014676538034351599
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 28465123,
+          "shares": 93700,
+          "weight": 0.01366276210676082
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK OF NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 26488048,
+          "shares": 359100,
+          "weight": 0.012713800621780617
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 22183410,
+          "shares": 890900,
+          "weight": 0.010647649530505772
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 18201183,
+          "shares": 172900,
+          "weight": 0.008736250090702901
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 15190130,
+          "shares": 73400,
+          "weight": 0.007290997216515479
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 4539818,
+          "shares": 260460,
+          "weight": 0.0021790333855922807
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 3191465,
+          "shares": 22000,
+          "weight": 0.0015318474846236717
+        },
+        {
+          "cusip": "550021109",
+          "issuer": "LULULEMON ATHLETICA INC",
+          "titleOfClass": "COM",
+          "value": 2596625,
+          "shares": 12500,
+          "weight": 0.0012463346691130692
+        },
+        {
+          "cusip": "136375102",
+          "issuer": "CANADIAN NATIONAL RAILWAY CO",
+          "titleOfClass": "COM",
+          "value": 1960139,
+          "shares": 19800,
+          "weight": 0.0009408325006424194
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 1905640,
+          "shares": 78100,
+          "weight": 0.0009146739320651342
+        },
+        {
+          "cusip": "707569109",
+          "issuer": "PENN ENTERTAINMENT INC",
+          "titleOfClass": "COM",
+          "value": 809226,
+          "shares": 54900,
+          "weight": 0.00038841435284174363
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 753250,
+          "shares": 1,
+          "weight": 0.00036154685004936
+        },
+        {
+          "cusip": "G4863A108",
+          "issuer": "BRIGHTSTAR LOTTERY PLC",
+          "titleOfClass": "SHS USD",
+          "value": 566713,
+          "shares": 36633,
+          "weight": 0.00027201234654101954
+        },
+        {
+          "cusip": "74275G107",
+          "issuer": "PRIORITY TECH HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 383520,
+          "shares": 70500,
+          "weight": 0.00018408290465440498
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 316250,
+          "shares": 125000,
+          "weight": 0.00015179447902835725
+        }
+      ],
+      "totalValue": 2083409107
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001104659-25-111826",
+      "holdings": [
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 610476911,
+          "shares": 56817229,
+          "weight": 0.2956883239196035
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETROLEUM CORP",
+          "titleOfClass": "COM",
+          "value": 285942755,
+          "shares": 6050418,
+          "weight": 0.13849816829993727
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS HEALTH CORP",
+          "titleOfClass": "COM",
+          "value": 204376320,
+          "shares": 2712000,
+          "weight": 0.09899095350005226
+        },
+        {
+          "cusip": "185899101",
+          "issuer": "CLEVELAND-CLIFFS INC",
+          "titleOfClass": "COM",
+          "value": 181771131,
+          "shares": 14899273,
+          "weight": 0.08804198831093987
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 172375208,
+          "shares": 35395320,
+          "weight": 0.08349101402593918
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 133247570,
+          "shares": 5119000,
+          "weight": 0.06453929694920114
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 110839115,
+          "shares": 13322009,
+          "weight": 0.05368562110792456
+        },
+        {
+          "cusip": "00217Y104",
+          "issuer": "ATS CORP",
+          "titleOfClass": "COM",
+          "value": 64134644,
+          "shares": 2486400,
+          "weight": 0.03106401740645103
+        },
+        {
+          "cusip": "60871R209",
+          "issuer": "MOLSON COORS BEVERAGE CO",
+          "titleOfClass": "CL B",
+          "value": 58362812,
+          "shares": 1290071,
+          "weight": 0.02826839434639146
+        },
+        {
+          "cusip": "922908363",
+          "issuer": "VANGUARD INDEX FUNDS",
+          "titleOfClass": "S&P 500 ETF SHS",
+          "value": 35666998,
+          "shares": 58248,
+          "weight": 0.01727553436965915
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 31495882,
+          "shares": 6311800,
+          "weight": 0.015255228152190688
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 26162914,
+          "shares": 93700,
+          "weight": 0.012672171625361814
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 25947721,
+          "shares": 1174105,
+          "weight": 0.012567941545005455
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK OF NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 23209184,
+          "shares": 359100,
+          "weight": 0.011241513958750978
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MOTORS CO",
+          "titleOfClass": "COM",
+          "value": 22915067,
+          "shares": 375965,
+          "weight": 0.01109905654357404
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 22691223,
+          "shares": 890900,
+          "weight": 0.01099063629706375
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 14508039,
+          "shares": 172900,
+          "weight": 0.007027059759300611
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 13607626,
+          "shares": 73400,
+          "weight": 0.006590939070691272
+        },
+        {
+          "cusip": "550021109",
+          "issuer": "LULULEMON ATHLETICA INC",
+          "titleOfClass": "COM",
+          "value": 4445500,
+          "shares": 25000,
+          "weight": 0.002153205830227701
+        },
+        {
+          "cusip": "256746108",
+          "issuer": "DOLLAR TREE INC",
+          "titleOfClass": "COM",
+          "value": 4185922,
+          "shares": 44380,
+          "weight": 0.002027477596508469
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 4108315,
+          "shares": 301860,
+          "weight": 0.0019898881589049417
+        },
+        {
+          "cusip": "351858105",
+          "issuer": "FRANCO-NEVADA CORP",
+          "titleOfClass": "COM",
+          "value": 3738767,
+          "shares": 16800,
+          "weight": 0.001810895265383631
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 3400244,
+          "shares": 22000,
+          "weight": 0.0016469295253619973
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "COM",
+          "value": 2598000,
+          "shares": 20000,
+          "weight": 0.0012583576081276722
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 1554971,
+          "shares": 78100,
+          "weight": 0.0007531599646912605
+        },
+        {
+          "cusip": "707569109",
+          "issuer": "PENN ENTERTAINMENT INC",
+          "titleOfClass": "COM",
+          "value": 1056825,
+          "shares": 54900,
+          "weight": 0.0005118798226364616
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 753100,
+          "shares": 1,
+          "weight": 0.00036476871234832563
+        },
+        {
+          "cusip": "G4863A108",
+          "issuer": "BRIGHTSTAR LOTTERY PLC",
+          "titleOfClass": "SHS USD",
+          "value": 631919,
+          "shares": 36633,
+          "weight": 0.00030607393432272154
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 391250,
+          "shares": 125000,
+          "weight": 0.0001895043934487882
+        }
+      ],
+      "totalValue": 2064595933
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001104659-25-077829",
+      "holdings": [
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 559636173,
+          "shares": 56817229,
+          "weight": 0.29902500963616074
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETROLEUM CORP",
+          "titleOfClass": "COM",
+          "value": 254117556,
+          "shares": 6050418,
+          "weight": 0.13578018773210646
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS HEALTH CORP",
+          "titleOfClass": "COM",
+          "value": 186965280,
+          "shares": 2712000,
+          "weight": 0.09989935845985333
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 186793926,
+          "shares": 40784700,
+          "weight": 0.09980780052637214
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 126056040,
+          "shares": 4884000,
+          "weight": 0.06735431052219754
+        },
+        {
+          "cusip": "185899101",
+          "issuer": "CLEVELAND-CLIFFS INC",
+          "titleOfClass": "COM",
+          "value": 113234475,
+          "shares": 14899273,
+          "weight": 0.06050348710754371
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 90456441,
+          "shares": 13322009,
+          "weight": 0.04833271944642114
+        },
+        {
+          "cusip": "00217Y104",
+          "issuer": "ATS CORP",
+          "titleOfClass": "COM",
+          "value": 79102548,
+          "shares": 2486400,
+          "weight": 0.04226610308469975
+        },
+        {
+          "cusip": "60871R209",
+          "issuer": "MOLSON COORS BEVERAGE CO",
+          "titleOfClass": "CL B",
+          "value": 58597665,
+          "shares": 1218500,
+          "weight": 0.03130992631757833
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 43046476,
+          "shares": 6311800,
+          "weight": 0.023000609184536686
+        },
+        {
+          "cusip": "922908363",
+          "issuer": "VANGUARD INDEX FUNDS",
+          "titleOfClass": "S&P 500 ETF SHS",
+          "value": 41403555,
+          "shares": 72900,
+          "weight": 0.02212276302026372
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 21208995,
+          "shares": 93700,
+          "weight": 0.011332398154770966
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK OF NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 19825117,
+          "shares": 359100,
+          "weight": 0.010592963943313603
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MOTORS CO",
+          "titleOfClass": "COM",
+          "value": 18493718,
+          "shares": 375965,
+          "weight": 0.00988157033079854
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 15771307,
+          "shares": 650900,
+          "weight": 0.008426930665273221
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 14767432,
+          "shares": 974105,
+          "weight": 0.007890539799151525
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 13676390,
+          "shares": 172900,
+          "weight": 0.007307573828930983
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 11203042,
+          "shares": 73400,
+          "weight": 0.00598601359888206
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 3192736,
+          "shares": 304360,
+          "weight": 0.0017059438957419168
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 2817516,
+          "shares": 22000,
+          "weight": 0.0015054562047582957
+        },
+        {
+          "cusip": "351858105",
+          "issuer": "FRANCO-NEVADA CORP",
+          "titleOfClass": "COM",
+          "value": 2752639,
+          "shares": 16800,
+          "weight": 0.0014707911018108399
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "COM",
+          "value": 2658200,
+          "shares": 20000,
+          "weight": 0.001420330419947394
+        },
+        {
+          "cusip": "05278C107",
+          "issuer": "AUTOHOME INC",
+          "titleOfClass": "SP ADS RP CL A",
+          "value": 1392660,
+          "shares": 54000,
+          "weight": 0.0007441266129877127
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 1381589,
+          "shares": 78100,
+          "weight": 0.0007382111521197427
+        },
+        {
+          "cusip": "707569109",
+          "issuer": "PENN ENTERTAINMENT INC",
+          "titleOfClass": "COM",
+          "value": 981063,
+          "shares": 54900,
+          "weight": 0.0005242019497347266
+        },
+        {
+          "cusip": "531914109",
+          "issuer": "LIFEWAY FOODS INC",
+          "titleOfClass": "COM",
+          "value": 779384,
+          "shares": 31618,
+          "weight": 0.000416440750891686
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 728170,
+          "shares": 1,
+          "weight": 0.0003890760672233443
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 496250,
+          "shares": 125000,
+          "weight": 0.0002651564859299128
+        }
+      ],
+      "totalValue": 1871536343
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001104659-25-048781",
+      "holdings": [
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 527017549,
+          "shares": 56817229,
+          "weight": 0.28567259849515764
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETROLEUM CORP",
+          "titleOfClass": "COM",
+          "value": 297408649,
+          "shares": 6020418,
+          "weight": 0.16121190221459641
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS HEALTH CORP",
+          "titleOfClass": "COM",
+          "value": 183765120,
+          "shares": 2712000,
+          "weight": 0.09961083732939312
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 175684872,
+          "shares": 46724700,
+          "weight": 0.09523089695164812
+        },
+        {
+          "cusip": "185899101",
+          "issuer": "CLEVELAND-CLIFFS INC",
+          "titleOfClass": "COM",
+          "value": 122472024,
+          "shares": 14899273,
+          "weight": 0.06638659643389087
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 115501818,
+          "shares": 13322009,
+          "weight": 0.06260836008513024
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 102180780,
+          "shares": 3359000,
+          "weight": 0.05538762227984563
+        },
+        {
+          "cusip": "60871R209",
+          "issuer": "MOLSON COORS BEVERAGE CO",
+          "titleOfClass": "CL B",
+          "value": 73463785,
+          "shares": 1206500,
+          "weight": 0.039821426053195025
+        },
+        {
+          "cusip": "00217Y104",
+          "issuer": "ATS CORP",
+          "titleOfClass": "COM",
+          "value": 60773850,
+          "shares": 2486400,
+          "weight": 0.03294278090548924
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 39385632,
+          "shares": 6311800,
+          "weight": 0.021349186299703338
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 23513698,
+          "shares": 141700,
+          "weight": 0.012745722074409313
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 20211882,
+          "shares": 774105,
+          "weight": 0.010955955569930185
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MOTORS CO",
+          "titleOfClass": "COM",
+          "value": 17674115,
+          "shares": 375965,
+          "weight": 0.009580345792531177
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK OF NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 17025732,
+          "shares": 359100,
+          "weight": 0.009228886421241653
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 16487297,
+          "shares": 650900,
+          "weight": 0.008937024934157206
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 15507401,
+          "shares": 172900,
+          "weight": 0.008405867220137685
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 12175592,
+          "shares": 73400,
+          "weight": 0.006599842854297161
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 6950400,
+          "shares": 80000,
+          "weight": 0.003767500403635978
+        },
+        {
+          "cusip": "351858105",
+          "issuer": "FRANCO-NEVADA CORP",
+          "titleOfClass": "COM",
+          "value": 2637457,
+          "shares": 16800,
+          "weight": 0.0014296472594487418
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 2590933,
+          "shares": 22000,
+          "weight": 0.0014044286837151495
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 2547493,
+          "shares": 304360,
+          "weight": 0.0013808818061924247
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "COM",
+          "value": 2312200,
+          "shares": 20000,
+          "weight": 0.0012533400139973395
+        },
+        {
+          "cusip": "371901109",
+          "issuer": "GENTEX CORP",
+          "titleOfClass": "COM",
+          "value": 1979650,
+          "shares": 85000,
+          "weight": 0.0010730795600336618
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 1540913,
+          "shares": 78100,
+          "weight": 0.000835259891440482
+        },
+        {
+          "cusip": "05278C107",
+          "issuer": "AUTOHOME INC",
+          "titleOfClass": "SP ADS RP CL A",
+          "value": 1495260,
+          "shares": 54000,
+          "weight": 0.0008105134457787656
+        },
+        {
+          "cusip": "552953101",
+          "issuer": "MGM RESORTS INTERNATIONAL",
+          "titleOfClass": "COM",
+          "value": 874675,
+          "shares": 29500,
+          "weight": 0.00047412212470509597
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 798442,
+          "shares": 1,
+          "weight": 0.0004327996312845185
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 428750,
+          "shares": 125000,
+          "weight": 0.00023240616339475793
+        },
+        {
+          "cusip": "531914109",
+          "issuer": "LIFEWAY FOODS INC",
+          "titleOfClass": "COM",
+          "value": 424623,
+          "shares": 17367,
+          "weight": 0.00023016910161906075
+        }
+      ],
+      "totalValue": 1844830592
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001104659-25-013269",
+      "holdings": [
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 310910577,
+          "shares": 56817229,
+          "weight": 0.19972100188586933
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETROLEUM CORP",
+          "titleOfClass": "COM",
+          "value": 297468853,
+          "shares": 6020418,
+          "weight": 0.19108638221401
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 176619366,
+          "shares": 46724700,
+          "weight": 0.11345576297318134
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 133220090,
+          "shares": 13322009,
+          "weight": 0.08557717818048269
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS HEALTH CORP",
+          "titleOfClass": "COM",
+          "value": 121741680,
+          "shares": 2712000,
+          "weight": 0.07820374120263172
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 101772940,
+          "shares": 3314000,
+          "weight": 0.06537633340685758
+        },
+        {
+          "cusip": "00217Y104",
+          "issuer": "ATS CORP",
+          "titleOfClass": "COM",
+          "value": 73870688,
+          "shares": 2486400,
+          "weight": 0.04745264043351753
+        },
+        {
+          "cusip": "60871R209",
+          "issuer": "MOLSON COORS BEVERAGE CO",
+          "titleOfClass": "CL B",
+          "value": 68010180,
+          "shares": 1186500,
+          "weight": 0.04368800000020042
+        },
+        {
+          "cusip": "185899101",
+          "issuer": "CLEVELAND-CLIFFS INC",
+          "titleOfClass": "COM",
+          "value": 55453166,
+          "shares": 5899273,
+          "weight": 0.03562169540235174
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 52261704,
+          "shares": 6311800,
+          "weight": 0.033571581847930326
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 27997086,
+          "shares": 141700,
+          "weight": 0.017984611909181995
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 24786842,
+          "shares": 774105,
+          "weight": 0.015922433278385204
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MTRS CO",
+          "titleOfClass": "COM",
+          "value": 20027656,
+          "shares": 375965,
+          "weight": 0.012865253927162286
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK OF NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 19271765,
+          "shares": 359100,
+          "weight": 0.012379688883691566
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 17274886,
+          "shares": 650900,
+          "weight": 0.011096944892242047
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 17201821,
+          "shares": 172900,
+          "weight": 0.011050009805171044
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 10615842,
+          "shares": 73400,
+          "weight": 0.006819345358270301
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 6732800,
+          "shares": 80000,
+          "weight": 0.0043249785017676675
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "COM",
+          "value": 3479175,
+          "shares": 23500,
+          "weight": 0.0022349330262130948
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 3299263,
+          "shares": 25000,
+          "weight": 0.00211936215938057
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 2745327,
+          "shares": 304360,
+          "weight": 0.0017635278421046705
+        },
+        {
+          "cusip": "371901109",
+          "issuer": "GENTEX CORP",
+          "titleOfClass": "COM",
+          "value": 2442050,
+          "shares": 85000,
+          "weight": 0.0015687104548244017
+        },
+        {
+          "cusip": "351858105",
+          "issuer": "FRANCO-NEVADA CORP",
+          "titleOfClass": "COM",
+          "value": 1950772,
+          "shares": 16800,
+          "weight": 0.0012531260340200685
+        },
+        {
+          "cusip": "87241L109",
+          "issuer": "TFI INTL INC",
+          "titleOfClass": "COM",
+          "value": 1787575,
+          "shares": 13300,
+          "weight": 0.0011482924556347044
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 1644005,
+          "shares": 78100,
+          "weight": 0.0010560667600104793
+        },
+        {
+          "cusip": "05278C107",
+          "issuer": "AUTOHOME INC",
+          "titleOfClass": "SP ADS RP CL A",
+          "value": 1399140,
+          "shares": 54000,
+          "weight": 0.0008987717474101733
+        },
+        {
+          "cusip": "552953101",
+          "issuer": "MGM RESORTS INTERNATIONAL",
+          "titleOfClass": "COM",
+          "value": 1021880,
+          "shares": 29500,
+          "weight": 0.0006564295733404147
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 679871,
+          "shares": 1,
+          "weight": 0.00043673173998563537
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 501250,
+          "shares": 125000,
+          "weight": 0.00032199017853063263
+        },
+        {
+          "cusip": "9.8422e+107",
+          "issuer": "XERIS BIOPHARMA HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 472142,
+          "shares": 139687,
+          "weight": 0.0003032919438839101
+        },
+        {
+          "cusip": "761330109",
+          "issuer": "REVANCE THERAPEUTICS INC",
+          "titleOfClass": "COM",
+          "value": 64109,
+          "shares": 21158,
+          "weight": 0.00004118198175644953
+        }
+      ],
+      "totalValue": 1556724501
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001104659-24-118059",
+      "holdings": [
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 310232140,
+          "shares": 6020418,
+          "weight": 0.28214794834696577
+        },
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 225847381,
+          "shares": 56817229,
+          "weight": 0.20540223585050055
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 147208199,
+          "shares": 13322009,
+          "weight": 0.13388197408463823
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 122418714,
+          "shares": 46724700,
+          "weight": 0.11133659134857522
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 56238138,
+          "shares": 6311800,
+          "weight": 0.05114710311946897
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 45559458,
+          "shares": 274620,
+          "weight": 0.041435125330662896
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 26317500,
+          "shares": 750000,
+          "weight": 0.023935072074161214
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 24607622,
+          "shares": 141700,
+          "weight": 0.02237998313455743
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 19634524,
+          "shares": 172900,
+          "weight": 0.01785708167880111
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 16880743,
+          "shares": 555105,
+          "weight": 0.015352590495692691
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MTRS CO",
+          "titleOfClass": "COM",
+          "value": 16854511,
+          "shares": 375965,
+          "weight": 0.015328733183613299
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK OF NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 15758783,
+          "shares": 289100,
+          "weight": 0.014332197469595003
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 13333837,
+          "shares": 460900,
+          "weight": 0.012126773045316522
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 11890800,
+          "shares": 73400,
+          "weight": 0.010814368956756385
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 8573082,
+          "shares": 202100,
+          "weight": 0.007796991947095817
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 8296000,
+          "shares": 80000,
+          "weight": 0.007544993176678691
+        },
+        {
+          "cusip": "458140100",
+          "issuer": "INTEL CORP",
+          "titleOfClass": "COM",
+          "value": 4457400,
+          "shares": 190000,
+          "weight": 0.004053887727305641
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 3798253,
+          "shares": 25000,
+          "weight": 0.0034544109171045522
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "COM",
+          "value": 3068395,
+          "shares": 23500,
+          "weight": 0.002790624317545204
+        },
+        {
+          "cusip": "76131D103",
+          "issuer": "RESTAURANT BRANDS INTL INC",
+          "titleOfClass": "COM",
+          "value": 3016277,
+          "shares": 42000,
+          "weight": 0.002743224371259989
+        },
+        {
+          "cusip": "371901109",
+          "issuer": "GENTEX CORP",
+          "titleOfClass": "COM",
+          "value": 2522800,
+          "shares": 85000,
+          "weight": 0.0022944200561867164
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 2331802,
+          "shares": 285760,
+          "weight": 0.0021207124131347303
+        },
+        {
+          "cusip": "351858105",
+          "issuer": "FRANCO NEV CORP",
+          "titleOfClass": "COM",
+          "value": 2065693,
+          "shares": 16800,
+          "weight": 0.0018786932967831407
+        },
+        {
+          "cusip": "87241L109",
+          "issuer": "TFI INTL INC",
+          "titleOfClass": "COM",
+          "value": 1818357,
+          "shares": 13300,
+          "weight": 0.0016537477287567424
+        },
+        {
+          "cusip": "05278C107",
+          "issuer": "AUTOHOME INC",
+          "titleOfClass": "SP ADS RP CL A",
+          "value": 1764180,
+          "shares": 54000,
+          "weight": 0.0016044751762817036
+        },
+        {
+          "cusip": "00217Y104",
+          "issuer": "ATS CORPORATION",
+          "titleOfClass": "COM",
+          "value": 1626775,
+          "shares": 56700,
+          "weight": 0.0014795089531089052
+        },
+        {
+          "cusip": "552953101",
+          "issuer": "MGM RESORTS INTERNATIONAL",
+          "titleOfClass": "COM",
+          "value": 1152860,
+          "shares": 29500,
+          "weight": 0.0010484957610493967
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 690286,
+          "shares": 1,
+          "weight": 0.0006277969093487014
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 582500,
+          "shares": 125000,
+          "weight": 0.0005297683854165064
+        },
+        {
+          "cusip": "87901J105",
+          "issuer": "TEGNA INC",
+          "titleOfClass": "COM",
+          "value": 504640,
+          "shares": 32000,
+          "weight": 0.00045895676912718593
+        },
+        {
+          "cusip": "9.8422e+107",
+          "issuer": "XERIS BIOPHARMA HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 485461,
+          "shares": 170937,
+          "weight": 0.00044151397451104314
+        }
+      ],
+      "totalValue": 1099537111
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001104659-24-089140",
+      "holdings": [
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 379165926,
+          "shares": 6020418,
+          "weight": 0.3205421647069282
+        },
+        {
+          "cusip": "68634K106",
+          "issuer": "ORLA MINING LTD",
+          "titleOfClass": "COM",
+          "value": 213127781,
+          "shares": 55655229,
+          "weight": 0.1801755790706893
+        },
+        {
+          "cusip": "489398107",
+          "issuer": "KENNEDY-WILSON HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 129356707,
+          "shares": 13322009,
+          "weight": 0.1093565535241156
+        },
+        {
+          "cusip": "09228F103",
+          "issuer": "BLACKBERRY LTD",
+          "titleOfClass": "COM",
+          "value": 116344503,
+          "shares": 46724700,
+          "weight": 0.09835619787040596
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 49997317,
+          "shares": 274620,
+          "weight": 0.04226711083927542
+        },
+        {
+          "cusip": "922908363",
+          "issuer": "VANGUARD INDEX FDS",
+          "titleOfClass": "S&P 500 ETF SHS",
+          "value": 47503800,
+          "shares": 95000,
+          "weight": 0.04015912253625073
+        },
+        {
+          "cusip": "904311107",
+          "issuer": "UNDER ARMOUR INC",
+          "titleOfClass": "CL A",
+          "value": 28172079,
+          "shares": 4223700,
+          "weight": 0.02381632569735339
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 24631711,
+          "shares": 141700,
+          "weight": 0.02082334256052179
+        },
+        {
+          "cusip": "354613101",
+          "issuer": "FRANKLIN RESOURCES INC",
+          "titleOfClass": "COM",
+          "value": 22380000,
+          "shares": 1000000,
+          "weight": 0.018919774046735026
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "MERCK & CO INC",
+          "titleOfClass": "COM",
+          "value": 21394646,
+          "shares": 172900,
+          "weight": 0.018086768012952784
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 21084528,
+          "shares": 292800,
+          "weight": 0.01782459810733056
+        },
+        {
+          "cusip": "423452101",
+          "issuer": "HELMERICH & PAYNE INC",
+          "titleOfClass": "COM",
+          "value": 20061495,
+          "shares": 555105,
+          "weight": 0.016959738714910834
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "GENERAL MOTORS CO",
+          "titleOfClass": "COM",
+          "value": 17459815,
+          "shares": 375965,
+          "weight": 0.014760310755039986
+        },
+        {
+          "cusip": "64149107",
+          "issuer": "BANK NOVA SCOTIA",
+          "titleOfClass": "COM",
+          "value": 13214427,
+          "shares": 289100,
+          "weight": 0.01117131246635722
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "PFIZER INC",
+          "titleOfClass": "COM",
+          "value": 12895982,
+          "shares": 460900,
+          "weight": 0.01090210301835398
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "JOHNSON & JOHNSON",
+          "titleOfClass": "COM",
+          "value": 10724474,
+          "shares": 73400,
+          "weight": 0.009066337124668658
+        },
+        {
+          "cusip": "G1890L107",
+          "issuer": "CAPRI HOLDINGS LTD",
+          "titleOfClass": "SHS",
+          "value": 6679405,
+          "shares": 202100,
+          "weight": 0.005646686030680615
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 6449792,
+          "shares": 12800,
+          "weight": 0.005452574052209079
+        },
+        {
+          "cusip": "458140100",
+          "issuer": "INTEL CORP",
+          "titleOfClass": "COM",
+          "value": 5878600,
+          "shares": 190000,
+          "weight": 0.004969695429452034
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 5273150,
+          "shares": 40100,
+          "weight": 0.004457855518969651
+        },
+        {
+          "cusip": "848574109",
+          "issuer": "SPIRIT AEROSYSTEMS HLDGS INC",
+          "titleOfClass": "COM CL A",
+          "value": 4994720,
+          "shares": 152000,
+          "weight": 0.004222474254991437
+        },
+        {
+          "cusip": "76131D103",
+          "issuer": "RESTAURANT BRANDS INTL INC",
+          "titleOfClass": "COM",
+          "value": 2945080,
+          "shares": 42000,
+          "weight": 0.0024897340549400533
+        },
+        {
+          "cusip": "371901109",
+          "issuer": "GENTEX CORP",
+          "titleOfClass": "COM",
+          "value": 2864500,
+          "shares": 85000,
+          "weight": 0.0024216127237208437
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "SUB VTG SHS",
+          "value": 2773779,
+          "shares": 25000,
+          "weight": 0.0023449183170499836
+        },
+        {
+          "cusip": "05278C107",
+          "issuer": "AUTOHOME INC",
+          "titleOfClass": "SP ADS RP CL A",
+          "value": 2552850,
+          "shares": 93000,
+          "weight": 0.002158147684325626
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "COM",
+          "value": 2476900,
+          "shares": 23500,
+          "weight": 0.002093940497603127
+        },
+        {
+          "cusip": "366505105",
+          "issuer": "GARRETT MOTION INC",
+          "titleOfClass": "COM",
+          "value": 2454678,
+          "shares": 285760,
+          "weight": 0.002075154294794077
+        },
+        {
+          "cusip": "87241L109",
+          "issuer": "TFI INTERNATIONAL INC",
+          "titleOfClass": "COM",
+          "value": 1919065,
+          "shares": 13300,
+          "weight": 0.0016223537167559228
+        },
+        {
+          "cusip": "351858105",
+          "issuer": "FRANCO NEV CORP",
+          "titleOfClass": "COM",
+          "value": 1630162,
+          "shares": 13800,
+          "weight": 0.0013781187086494041
+        },
+        {
+          "cusip": "05577W200",
+          "issuer": "BRP INC",
+          "titleOfClass": "COM SUN VTG",
+          "value": 1346351,
+          "shares": 21200,
+          "weight": 0.0011381884141016868
+        },
+        {
+          "cusip": "552953101",
+          "issuer": "MGM RESORTS INTERNATIONAL",
+          "titleOfClass": "COM",
+          "value": 1311275,
+          "shares": 29500,
+          "weight": 0.0011085355993356778
+        },
+        {
+          "cusip": "530307305",
+          "issuer": "LIBERTY BROADBAND CORP",
+          "titleOfClass": "COM SER C",
+          "value": 810092,
+          "shares": 14780,
+          "weight": 0.0006848417156866698
+        },
+        {
+          "cusip": "69349H107",
+          "issuer": "PNM RES INC",
+          "titleOfClass": "COM",
+          "value": 628150,
+          "shares": 17000,
+          "weight": 0.0005310302085548081
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC",
+          "titleOfClass": "CL A",
+          "value": 612000,
+          "shares": 1,
+          "weight": 0.0005173771991332367
+        },
+        {
+          "cusip": "55933J203",
+          "issuer": "MAGNACHIP SEMICONDUCTOR CORP",
+          "titleOfClass": "COM",
+          "value": 608750,
+          "shares": 125000,
+          "weight": 0.0005146296894973166
+        },
+        {
+          "cusip": "87901J105",
+          "issuer": "TEGNA INC",
+          "titleOfClass": "COM",
+          "value": 445760,
+          "shares": 32000,
+          "weight": 0.0003768399677869797
+        },
+        {
+          "cusip": "9.8422e+107",
+          "issuer": "XERIS BIOPHARMA HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 382899,
+          "shares": 170937,
+          "weight": 0.00032369805910280585
+        },
+        {
+          "cusip": "912909108",
+          "issuer": "UNITED STATES STL CORP",
+          "titleOfClass": "COM",
+          "value": 336242,
+          "shares": 8900,
+          "weight": 0.0002842548107695388
+        }
+      ],
+      "totalValue": 1182889391
+    }
+  ]
+}

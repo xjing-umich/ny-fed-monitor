@@ -1,0 +1,1267 @@
+{
+  "manager": {
+    "cik": "0001112520",
+    "slug": "akre-capital",
+    "name": "AKRE CAPITAL MANAGEMENT LLC",
+    "person": "Chuck Akre"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-14",
+      "accession": "0001112520-26-000009",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1139777424,
+          "shares": 2281106,
+          "weight": 0.18579678804083338
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 689085823,
+          "shares": 17027077,
+          "weight": 0.1123288897481042
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 621422174,
+          "shares": 6718078,
+          "weight": 0.10129893917476986
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 543617232,
+          "shares": 1246114,
+          "weight": 0.08861584156912423
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 495310308,
+          "shares": 1638798,
+          "weight": 0.08074125910210685
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 444884116,
+          "shares": 1257232,
+          "weight": 0.07252121165297404
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 417449333,
+          "shares": 10348273,
+          "weight": 0.06804902747502417
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 388333688,
+          "shares": 363765,
+          "weight": 0.0633028435194301
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 358699398,
+          "shares": 3885813,
+          "weight": 0.05847211448239786
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 265564742,
+          "shares": 7998938,
+          "weight": 0.04329009773446136
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 256913250,
+          "shares": 2034473,
+          "weight": 0.04187980534621612
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 189078420,
+          "shares": 31513070,
+          "weight": 0.030821950307234433
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 133991539,
+          "shares": 717799,
+          "weight": 0.02184215711474564
+        },
+        {
+          "cusip": "81762P102",
+          "issuer": "SERVICENOW INC",
+          "titleOfClass": "COM",
+          "value": 114597150,
+          "shares": 1096099,
+          "weight": 0.018680649344598343
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 18914804,
+          "shares": 443385,
+          "weight": 0.0030833299165450986
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 18667000,
+          "shares": 100000,
+          "putCall": "Call",
+          "weight": 0.0030429350233894758
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 18409743,
+          "shares": 3719140,
+          "weight": 0.0030009991828520515
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 8762232,
+          "shares": 50772,
+          "weight": 0.0014283442779163236
+        },
+        {
+          "cusip": "71385M107",
+          "issuer": "PERIMETER SOLUTIONS INC",
+          "titleOfClass": "COMMON STOCK",
+          "value": 6105000,
+          "shares": 250000,
+          "weight": 0.0009951849958639712
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 4954449,
+          "shares": 10339,
+          "weight": 0.0008076319914124908
+        }
+      ],
+      "totalValue": 6134537825
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-13",
+      "accession": "0001112520-26-000008",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1715654246,
+          "shares": 3005280,
+          "weight": 0.18810465908135587
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 1231854338,
+          "shares": 26843633,
+          "weight": 0.135060744801945
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 1033359070,
+          "shares": 8106049,
+          "weight": 0.11329768572203153
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 938720206,
+          "shares": 2676628,
+          "weight": 0.10292146260477367
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 886442756,
+          "shares": 1735231,
+          "weight": 0.09718975300604801
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 646701208,
+          "shares": 9617805,
+          "weight": 0.07090444391226192
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 612914691,
+          "shares": 6719819,
+          "weight": 0.0672000837379151
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 491936755,
+          "shares": 1105153,
+          "weight": 0.053936039737964486
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 471388540,
+          "shares": 3473243,
+          "weight": 0.05168312952233273
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 469054066,
+          "shares": 277445,
+          "weight": 0.051427177347278745
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 308030908,
+          "shares": 7867967,
+          "weight": 0.03377256756187954
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 197454023,
+          "shares": 24836984,
+          "weight": 0.021648896779320654
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 44817227,
+          "shares": 255267,
+          "weight": 0.004913769324712025
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 27331220,
+          "shares": 371096,
+          "weight": 0.0029966001788320324
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 17368384,
+          "shares": 3719140,
+          "weight": 0.0019042729377036008
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "DANAHER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 15913603,
+          "shares": 69516,
+          "weight": 0.0017447704711191804
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 5982540,
+          "shares": 11902,
+          "weight": 0.0006559268277767983
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "COM",
+          "value": 5819184,
+          "shares": 150600,
+          "weight": 0.0006380164447491368
+        }
+      ],
+      "totalValue": 9120742965
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-13",
+      "accession": "0001112520-25-000029",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1794933423,
+          "shares": 3155594,
+          "weight": 0.17894478379060036
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 1317829230,
+          "shares": 19215941,
+          "weight": 0.13138017467029103
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 1132288599,
+          "shares": 8713264,
+          "weight": 0.11288281556313569
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 1015182189,
+          "shares": 2973760,
+          "weight": 0.10120796403414759
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 1009636820,
+          "shares": 2118949,
+          "weight": 0.10065512188188236
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 928505863,
+          "shares": 8612428,
+          "weight": 0.092566821016202
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 785188139,
+          "shares": 9306485,
+          "weight": 0.07827884865693922
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 576821258,
+          "shares": 1156673,
+          "weight": 0.057505840593304346
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 421721165,
+          "shares": 3473243,
+          "weight": 0.042043232202292724
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 390368354,
+          "shares": 260849,
+          "weight": 0.038917532990426995
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 190527097,
+          "shares": 4236760,
+          "weight": 0.018994481768539524
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "DANAHER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 173443994,
+          "shares": 874831,
+          "weight": 0.017291392320409306
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 148220866,
+          "shares": 16270128,
+          "weight": 0.01477678808570804
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 85167566,
+          "shares": 442843,
+          "weight": 0.00849072811757525
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 27247022,
+          "shares": 366125,
+          "weight": 0.002716375102413886
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 17703106,
+          "shares": 3719140,
+          "weight": 0.001764900265937095
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 7030819,
+          "shares": 13985,
+          "weight": 0.0007009331765202999
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "COM",
+          "value": 6757422,
+          "shares": 150600,
+          "weight": 0.0006736770307339952
+        },
+        {
+          "cusip": "92345Y106",
+          "issuer": "VERISK ANALYTICS INC",
+          "titleOfClass": "CL A",
+          "value": 2082251,
+          "shares": 8279,
+          "weight": 0.0002075887329402977
+        }
+      ],
+      "totalValue": 10030655183
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001112520-25-000019",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1851753015,
+          "shares": 3295286,
+          "weight": 0.18135220720516548
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 1188713075,
+          "shares": 19219290,
+          "weight": 0.11641711294035043
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 1176991380,
+          "shares": 8847564,
+          "weight": 0.11526914383042258
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 1156377624,
+          "shares": 2305424,
+          "weight": 0.11325032700166278
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 1127368962,
+          "shares": 3175240,
+          "weight": 0.11040935153724933
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 848187653,
+          "shares": 9410714,
+          "weight": 0.08306761309402756
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 815948041,
+          "shares": 1439468,
+          "weight": 0.07991021318795091
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 748462253,
+          "shares": 9309232,
+          "weight": 0.07330096427103752
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 459648979,
+          "shares": 3473243,
+          "weight": 0.04501591530080525
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "DANAHER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 350712516,
+          "shares": 1775400,
+          "weight": 0.03434717716448644
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 202288334,
+          "shares": 915249,
+          "weight": 0.01981119272688519
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 138986904,
+          "shares": 14770128,
+          "weight": 0.013611740663488237
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 58884000,
+          "shares": 1200000,
+          "weight": 0.005766829205928937
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 38629849,
+          "shares": 366125,
+          "weight": 0.003783230443479124
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 16722178,
+          "shares": 9148,
+          "weight": 0.0016376935071860325
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 11529334,
+          "shares": 3719140,
+          "weight": 0.001129130154814712
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "COM",
+          "value": 10121826,
+          "shares": 150600,
+          "weight": 0.0009912852692434426
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 6793493,
+          "shares": 13985,
+          "weight": 0.0006653235826824569
+        },
+        {
+          "cusip": "92345Y106",
+          "issuer": "VERISK ANALYTICS INC",
+          "titleOfClass": "CL A",
+          "value": 2691048,
+          "shares": 8639,
+          "weight": 0.0002635489131335618
+        }
+      ],
+      "totalValue": 10210810464
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-13",
+      "accession": "0001112520-25-000015",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1825829377,
+          "shares": 3331076,
+          "weight": 0.17555118800966096
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 1237620188,
+          "shares": 863910,
+          "weight": 0.11899561757798353
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 1134168436,
+          "shares": 2435458,
+          "weight": 0.10904886231483782
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 1112794610,
+          "shares": 3175240,
+          "weight": 0.10699379594671038
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 1022866823,
+          "shares": 8847564,
+          "weight": 0.09834735283335162
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 1000717618,
+          "shares": 19094021,
+          "weight": 0.0962177347539184
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 854412261,
+          "shares": 1449188,
+          "weight": 0.0821506595074193
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 737915894,
+          "shares": 9313592,
+          "weight": 0.07094968099141886
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 563408179,
+          "shares": 2589192,
+          "weight": 0.0541709846515465
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "DANAHER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 363957000,
+          "shares": 1775400,
+          "weight": 0.034994005759406824
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 348552384,
+          "shares": 2917733,
+          "weight": 0.033512871391815455
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 119109168,
+          "shares": 13190384,
+          "weight": 0.011452196031372264
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 43224717,
+          "shares": 366125,
+          "weight": 0.0041560019333238
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "COM",
+          "value": 15995028,
+          "shares": 205275,
+          "weight": 0.001537901735517859
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 8081901,
+          "shares": 15175,
+          "weight": 0.000777064571201971
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 7428513,
+          "shares": 2237504,
+          "weight": 0.0007142421404337008
+        },
+        {
+          "cusip": "92345Y106",
+          "issuer": "VERISK ANALYTICS INC",
+          "titleOfClass": "CL A",
+          "value": 3017569,
+          "shares": 10139,
+          "weight": 0.00029013544722428057
+        },
+        {
+          "cusip": "25401T603",
+          "issuer": "DIGITALBRIDGE GROUP INC",
+          "titleOfClass": "CL A COM",
+          "value": 1453003,
+          "shares": 164740,
+          "weight": 0.00013970440285647863
+        }
+      ],
+      "totalValue": 10400552669
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-13",
+      "accession": "0001112520-25-000003",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1950277845,
+          "shares": 3703739,
+          "weight": 0.16869329237641903
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 1521041886,
+          "shares": 10283564,
+          "weight": 0.13156564550512945
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 1457471674,
+          "shares": 3078927,
+          "weight": 0.12606700930473363
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 1089779362,
+          "shares": 18969179,
+          "weight": 0.09426270672712964
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 1061623024,
+          "shares": 895280,
+          "weight": 0.09182726637658652
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 1034000710,
+          "shares": 3271740,
+          "weight": 0.08943801752998679
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 1009380978,
+          "shares": 5503413,
+          "weight": 0.0873084831874044
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 770380791,
+          "shares": 1481929,
+          "weight": 0.06663567057920404
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 666780669,
+          "shares": 9313880,
+          "weight": 0.05767456500361428
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "DANAHER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 407543070,
+          "shares": 1775400,
+          "weight": 0.03525127583218452
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 348157391,
+          "shares": 2649398,
+          "weight": 0.03011458941788586
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 125292799,
+          "shares": 10681398,
+          "weight": 0.010837458277318891
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "COM",
+          "value": 54569649,
+          "shares": 667437,
+          "weight": 0.0047201139966985385
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 39255922,
+          "shares": 366125,
+          "weight": 0.003395521691655119
+        },
+        {
+          "cusip": "25401T603",
+          "issuer": "DIGITALBRIDGE GROUP INC",
+          "titleOfClass": "CL A COM",
+          "value": 8626152,
+          "shares": 764730,
+          "weight": 0.0007461367543861073
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 6923399,
+          "shares": 15274,
+          "weight": 0.0005988536324400523
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 6869137,
+          "shares": 2237504,
+          "weight": 0.0005941601291761984
+        },
+        {
+          "cusip": "92345Y106",
+          "issuer": "VERISK ANALYTICS INC",
+          "titleOfClass": "CL A",
+          "value": 3112634,
+          "shares": 11301,
+          "weight": 0.000269233678046926
+        }
+      ],
+      "totalValue": 11561087092
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-13",
+      "accession": "0001112520-24-000025",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1935988330,
+          "shares": 3920592,
+          "weight": 0.16109085846583493
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 1595989219,
+          "shares": 3362880,
+          "weight": 0.13280001196646027
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 1487807047,
+          "shares": 11393836,
+          "weight": 0.12379832601199037
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 1407576842,
+          "shares": 6052532,
+          "weight": 0.11712248380877838
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 1058395254,
+          "shares": 919065,
+          "weight": 0.08806757634898832
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 1006577612,
+          "shares": 18938431,
+          "weight": 0.08375590344058019
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 899564913,
+          "shares": 3271740,
+          "weight": 0.07485152768504245
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 834342273,
+          "shares": 1499429,
+          "weight": 0.06942444379915555
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 673987976,
+          "shares": 8934093,
+          "weight": 0.056081588905802206
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "DANAHER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 493596708,
+          "shares": 1775400,
+          "weight": 0.04107148591522246
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 335970160,
+          "shares": 2649398,
+          "weight": 0.027955603169004594
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 118029448,
+          "shares": 10681398,
+          "weight": 0.009821063902058037
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "COM",
+          "value": 100373544,
+          "shares": 1297151,
+          "weight": 0.008351941031699428
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 32694962,
+          "shares": 366125,
+          "weight": 0.0027205016757966983
+        },
+        {
+          "cusip": "25401T603",
+          "issuer": "DIGITALBRIDGE GROUP INC",
+          "titleOfClass": "CL A COM",
+          "value": 18582026,
+          "shares": 1315076,
+          "weight": 0.0015461841757974154
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 8166890,
+          "shares": 2237504,
+          "weight": 0.0006795553985059624
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 7030011,
+          "shares": 15274,
+          "weight": 0.0005849573003439863
+        },
+        {
+          "cusip": "92345Y106",
+          "issuer": "VERISK ANALYTICS INC",
+          "titleOfClass": "CL A",
+          "value": 3316809,
+          "shares": 12378,
+          "weight": 0.0002759869989387836
+        }
+      ],
+      "totalValue": 12017990024
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-13",
+      "accession": "0001112520-24-000014",
+      "holdings": [
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 1781999205,
+          "shares": 4039349,
+          "weight": 0.1567821848182439
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 1776789307,
+          "shares": 4221104,
+          "weight": 0.15632381245262875
+        },
+        {
+          "cusip": "48251w104",
+          "issuer": "KKR & CO L P DEL",
+          "titleOfClass": "COM UNITS",
+          "value": 1440716189,
+          "shares": 13689816,
+          "weight": 0.1267557421914978
+        },
+        {
+          "cusip": "03027X100",
+          "issuer": "AMERICAN TOWER CORP NEW",
+          "titleOfClass": "COM",
+          "value": 1192386595,
+          "shares": 6134307,
+          "weight": 0.10490744046773384
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 1009676789,
+          "shares": 956079,
+          "weight": 0.08883243746435289
+        },
+        {
+          "cusip": "776696106",
+          "issuer": "ROPER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 870110105,
+          "shares": 1543679,
+          "weight": 0.0765532122077078
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 858733598,
+          "shares": 3271740,
+          "weight": 0.07555229502544675
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 767072738,
+          "shares": 18465882,
+          "weight": 0.06748787510157861
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "COM",
+          "value": 650239161,
+          "shares": 8770423,
+          "weight": 0.05720873277042896
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "DANAHER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 443583690,
+          "shares": 1775400,
+          "weight": 0.03902696469942511
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "COM",
+          "value": 157351630,
+          "shares": 2145509,
+          "weight": 0.013843963716084784
+        },
+        {
+          "cusip": "9066101",
+          "issuer": "AIRBNB INC",
+          "titleOfClass": "COM CL A",
+          "value": 141906878,
+          "shares": 935876,
+          "weight": 0.012485118013044225
+        },
+        {
+          "cusip": "78410G104",
+          "issuer": "SBA COMMUNICATIONS CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 98150000,
+          "shares": 500000,
+          "weight": 0.008635341360834468
+        },
+        {
+          "cusip": "12510Q100",
+          "issuer": "CCC INTELLIGENT SOLUTIONS HL",
+          "titleOfClass": "COM",
+          "value": 86832671,
+          "shares": 7815722,
+          "weight": 0.007639630721936135
+        },
+        {
+          "cusip": "25401T603",
+          "issuer": "DIGITALBRIDGE GROUP INC",
+          "titleOfClass": "CL A COM",
+          "value": 49910391,
+          "shares": 3643094,
+          "weight": 0.004391169268850946
+        },
+        {
+          "cusip": "38267D109",
+          "issuer": "GOOSEHEAD INS INC",
+          "titleOfClass": "COM CL A",
+          "value": 21030220,
+          "shares": 366125,
+          "weight": 0.0018502611165914238
+        },
+        {
+          "cusip": "H82027105",
+          "issuer": "SOPHIA GENETICS SA",
+          "titleOfClass": "ORDINARY SHARES",
+          "value": 8795579,
+          "shares": 1920432,
+          "weight": 0.0007738443925744988
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 6466086,
+          "shares": 15895,
+          "weight": 0.0005688931215334967
+        },
+        {
+          "cusip": "92345Y106",
+          "issuer": "VERISK ANALYTICS INC",
+          "titleOfClass": "CL A",
+          "value": 4331399,
+          "shares": 16069,
+          "weight": 0.00038108108950562456
+        }
+      ],
+      "totalValue": 11366082231
+    }
+  ]
+}
