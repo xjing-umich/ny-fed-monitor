@@ -20,7 +20,6 @@
   { "cik": "0001096343", "slug": "markel", "person": "Thomas Gayner" },
   { "cik": "0001549575", "slug": "pabrai-funds", "person": "Mohnish Pabrai" },
   { "cik": "0001709323", "slug": "himalaya-capital", "person": "Li Lu" },
-  { "cik": "0001404599", "slug": "aquamarine", "person": "Guy Spier" },
   { "cik": "0001697868", "slug": "valley-forge-capital", "person": "Dev Kantesaria" },
   { "cik": "0001641864", "slug": "giverny-capital", "person": "François Rochon" },
   { "cik": "0001034524", "slug": "polen-capital", "person": "Polen Capital" },
@@ -31,9 +30,9 @@
   { "cik": "0000905567", "slug": "yacktman", "person": "Donald Yacktman" },
   { "cik": "0000813917", "slug": "harris-associates", "person": "Bill Nygren" },
   { "cik": "0000200217", "slug": "dodge-and-cox", "person": "Dodge & Cox" },
-  { "cik": "0000728014", "slug": "ruane-cunniff", "person": "Ruane, Cunniff (Sequoia)" },
+  { "cik": "0001720792", "slug": "ruane-cunniff", "person": "Ruane, Cunniff (Sequoia)" },
   { "cik": "0000732905", "slug": "tweedy-browne", "person": "Tweedy, Browne" },
-  { "cik": "0001079114", "slug": "greenlight-capital", "person": "David Einhorn" },
+  { "cik": "0001489933", "slug": "greenlight-capital", "person": "David Einhorn" },
   { "cik": "0001040273", "slug": "third-point", "person": "Daniel Loeb" },
   { "cik": "0001656456", "slug": "appaloosa", "person": "David Tepper" },
   { "cik": "0000921669", "slug": "icahn-capital", "person": "Carl Icahn" },
@@ -42,5 +41,6 @@
   { "cik": "0000949509", "slug": "oaktree", "person": "Howard Marks" },
   { "cik": "0001166559", "slug": "gates-foundation-trust", "person": "Bill Gates" },
   { "cik": "0001671657", "slug": "dorsey-asset", "person": "Pat Dorsey" },
-  { "cik": "0001759760", "slug": "hh-international", "person": "Duan Yongping" }
+  { "cik": "0001759760", "slug": "hh-international", "person": "Duan Yongping" },
+  { "cik": "0001350694", "slug": "bridgewater-associates", "person": "Ray Dalio" }
 ]
