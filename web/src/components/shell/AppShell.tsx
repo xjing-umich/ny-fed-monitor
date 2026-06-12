@@ -30,7 +30,7 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
 
       {/* Page content */}
       <main className="flex-1">
-        <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5">
           {children}
         </div>
       </main>

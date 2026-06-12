@@ -24,12 +24,12 @@ export async function generateMetadata({
   const l = lang === "en" ? "en" : "zh";
   const title =
     l === "zh"
-      ? "Compounder · 复利 — 超级投资者持仓 × 个股估值 × 宏观"
-      : "Compounder — Smart-money holdings × valuation × macro";
+      ? "Compounder · 复利 — 超级投资者持仓 × 个股估值"
+      : "Compounder — Smart-money holdings × valuation";
   const description =
     l === "zh"
-      ? "追踪巴菲特等顶级投资者的 SEC 13F 季度持仓、跨机构共识与宏观流动性信号。数据来源 SEC EDGAR / NY Fed。"
-      : "Track top investors' SEC 13F holdings, cross-fund consensus, and macro funding signals. Sources: SEC EDGAR / NY Fed.";
+      ? "追踪巴菲特等顶级投资者的 SEC 13F 季度持仓与跨机构共识，以及单只股票的估值框架。数据来源 SEC EDGAR。"
+      : "Track top investors' SEC 13F holdings, cross-fund consensus, and single-stock valuation. Source: SEC EDGAR.";
   return {
     title,
     description,
@@ -70,8 +70,8 @@ export default async function HomePage({
         logo: "https://thecompounder.fyi/icon.png",
         image: "https://thecompounder.fyi/icon.png",
         description: isZh
-          ? "聚合超级投资者 13F 持仓、个股估值与宏观流动性。"
-          : "Smart-money 13F holdings, single-stock valuation, and the macro funding backdrop.",
+          ? "聚合超级投资者 13F 持仓与个股估值。"
+          : "Smart-money 13F holdings and single-stock valuation.",
       },
       {
         "@type": "WebSite",
@@ -171,22 +171,10 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* Macro / Liquidity — de-emphasized to a single link */}
-      <section className="mt-12 border-t border-[var(--tt-border)] pt-5">
-        <Link href={`/${lang}/macro`} className="group flex items-baseline justify-between no-underline">
-          <span className="font-display text-base font-medium text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
-            {isZh ? "宏观 / 流动性" : "Macro / Liquidity"}
-          </span>
-          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] group-hover:underline">
-            {isZh ? "资金面与流动性信号 →" : "Funding & liquidity signals →"}
-          </span>
-        </Link>
-      </section>
-
       <p className="mt-12 border-t border-[var(--tt-border)] pt-6 text-xs text-[var(--tt-faint)]">
         {isZh
-          ? "数据来源：SEC EDGAR 13F 季度报告、纽约联储。持仓数据存在 45 天延迟，仅供参考。"
-          : "Sources: SEC EDGAR 13F quarterly filings, NY Fed. Holdings data has a 45-day lag and is for reference only."}
+          ? "数据来源：SEC EDGAR 13F 季度报告。持仓数据存在 45 天延迟，仅供参考。"
+          : "Source: SEC EDGAR 13F quarterly filings. Holdings data has a 45-day lag and is for reference only."}
       </p>
     </div>
   );

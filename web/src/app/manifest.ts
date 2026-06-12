@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Compounder · 复利",
     short_name: "Compounder",
     description:
-      "Smart-money 13F holdings, single-stock valuation, and the macro funding backdrop.",
+      "Smart-money 13F holdings and single-stock valuation.",
     start_url: "/en",
     display: "standalone",
     background_color: "#FAF8F3",
