@@ -12,6 +12,7 @@ import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
 import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
+import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
 
 export const revalidate = 86400; // 季度级数据, 每日 ISR 足够
 
@@ -35,6 +36,8 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
 
   const [rows, deltas, idx] = await Promise.all([mostHeld(50), holderDeltas(), getManagerIndex()]);
   const managerCount = idx.managers.length;
+  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
+  const staleManagers = idx.managers.filter((m) => freshness13F(m.period, globalLatest) === "stale");
   const totalSum = rows.reduce((s, r) => s + r.totalValue, 0) || 1;
 
   const rankRows: RankRow[] = rows.map((r) => ({
@@ -84,6 +87,13 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
             {isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
           </p>
           <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
+          {staleManagers.length > 0 && (
+            <p className="mt-2 text-xs text-[var(--tt-faint)]">
+              {isZh
+                ? `注：${staleManagers.map((m) => `${m.person}（数据截至 ${m.period}）`).join("、")} 的持仓按其最新申报计入，环比变动不计。`
+                : `Note: ${staleManagers.map((m) => `${m.person} (as of ${m.period})`).join(", ")} counted per their latest filing; excluded from QoQ deltas.`}
+            </p>
+          )}
         </div>
         <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang)} />
         <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "持有" : "holders"} />

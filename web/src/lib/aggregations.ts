@@ -1,10 +1,12 @@
 import { cache } from "react";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange } from "@/lib/managers/types";
+import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
 
 export type ScanRow = {
   slug: string;
   person: string;
+  period: string; // latest.period，新鲜度口径用
   holdings: Holding[];
   changes: HoldingChange[];
 };
@@ -21,11 +23,23 @@ export const scanAllManagers = cache(async (): Promise<ScanRow[]> => {
     (idx.managers ?? []).map(async (m) => {
       const d = await getManagerDetail(m.slug);
       if (!d) return null;
-      return { slug: m.slug, person: m.person, holdings: d.latest.holdings ?? [], changes: d.changes ?? [] };
+      return { slug: m.slug, person: m.person, period: d.latest.period, holdings: d.latest.holdings ?? [], changes: d.changes ?? [] };
     })
   );
   return rows.filter((r): r is ScanRow => r !== null);
 });
+
+/** 剔除 inactive(≥4季停报 tripwire)；stale 保留。consensus 持仓口径(spec freshness-guard §C2)。 */
+export function excludeInactive(scan: ScanRow[]): ScanRow[] {
+  const gl = globalLatestPeriod(scan.map((r) => r.period));
+  return scan.filter((r) => freshness13F(r.period, gl) !== "inactive");
+}
+
+/** 只留全局最新季有申报者。季度变动(buys/sells/holderDeltas)口径(spec freshness-guard §C2)。 */
+export function currentQuarterOnly(scan: ScanRow[]): ScanRow[] {
+  const gl = globalLatestPeriod(scan.map((r) => r.period));
+  return scan.filter((r) => r.period === gl);
+}
 
 export function computeMostHeld(scan: ScanRow[], limit: number): HeldRow[] {
   const agg = new Map<string, { issuer: string; holders: Set<string>; totalValue: number }>();
@@ -91,7 +105,7 @@ export async function mostHeld(limit = 40): Promise<HeldRow[]> {
   const { readConsensusHeld } = await import("@/lib/managers/consensusRead");
   const fromDb = await readConsensusHeld(limit);
   if (fromDb && fromDb.length) return fromDb;
-  return tickerizeRows(computeMostHeld(await scanAllManagers(), limit)); // 回退: 无库/空表时请求时计算
+  return tickerizeRows(computeMostHeld(excludeInactive(await scanAllManagers()), limit)); // 回退: 无库/空表时请求时计算
 }
 
 // Minimum holders for a stock to count as "consensus". On a new, low-authority
@@ -110,7 +124,7 @@ export async function notableMoves(limit = 6): Promise<NotableMoves> {
   const { readConsensusMoves } = await import("@/lib/managers/consensusRead");
   const fromDb = await readConsensusMoves(limit);
   if (fromDb && (fromDb.mostBought.length || fromDb.mostSold.length)) return fromDb;
-  const m = computeNotableMoves(await scanAllManagers(), limit);
+  const m = computeNotableMoves(currentQuarterOnly(await scanAllManagers()), limit);
   const [mostBought, mostSold] = await Promise.all([
     tickerizeRows(m.mostBought),
     tickerizeRows(m.mostSold),
@@ -136,7 +150,7 @@ export function computeHolderDeltas(scan: ScanRow[]): Map<string, number> {
 
 /** 把 delta 的键从 cusip 映射为 ticker(与 mostHeld 行的 cusip 字段=ticker 对齐)。无库映射时原样返回。 */
 export async function holderDeltas(): Promise<Map<string, number>> {
-  const raw = computeHolderDeltas(await scanAllManagers());
+  const raw = computeHolderDeltas(currentQuarterOnly(await scanAllManagers()));
   const { getCusipMap } = await import("@/lib/managers/securities");
   const map = await getCusipMap();
   if (map.size === 0) return raw;
