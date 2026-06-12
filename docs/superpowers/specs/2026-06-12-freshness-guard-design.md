@@ -48,16 +48,19 @@
 
 ### B. 新鲜度判定（纯函数）
 
-新建 `web/src/lib/managers/freshness.ts`，零 IO、确定性（与 `conviction.ts` 同风格，ISR 静态渲染安全）：
+扩展既有纯函数模块 `web/src/lib/freshness/derive.ts`（计划阶段修订：原拟新建 `lib/managers/freshness.ts`，但 derive.ts 已是新鲜度纯逻辑的既定家——自带 parseUTC/季度算术/`derive.check.ts` 自检，DRY 起见扩展之）。零 IO、确定性、ISR 静态渲染安全：
 
 ```ts
-export type Freshness = "current" | "stale" | "inactive";
+export type Freshness13F = "current" | "stale" | "inactive";
 
-/** 两个季末日（YYYY-MM-DD）之间相差的季数，globalLatest >= period 时为非负 */
-export function quarterLag(period: string, globalLatest: string): number;
+/** periods（YYYY-MM-DD 季末日）中的最大值；空 → null */
+export function globalLatestPeriod(periods: Array<string | null | undefined>): string | null;
 
-/** 0–1 → current；2–3 → stale；>=4 → inactive */
-export function freshnessOf(period: string, globalLatest: string): Freshness;
+/** period 落后 globalLatest 的季数（非负）；非法入参 → null */
+export function quarterLag(period: string | null, globalLatest: string | null): number | null;
+
+/** 0–1 → current；2–3 → stale；>=4 → inactive；缺失/非法按最严（inactive） */
+export function freshness13F(period: string | null, globalLatest: string | null): Freshness13F;
 ```
 
 - 阈值具名常量（`STALE_MIN_LAG = 2`、`INACTIVE_MIN_LAG = 4`），便于日后调。
