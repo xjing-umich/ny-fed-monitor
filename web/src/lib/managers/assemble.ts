@@ -1,28 +1,29 @@
 import type { Manager, FilingData, Holding, HoldingChange, ManagerDetail } from "./types";
 
 // 13F 同一证券可多行(子账户),按 cusip + put/call 归并后再比对。
-function key(h: { cusip: string; putCall?: string }): string {
+// 同口径的归并键也供 UI 层复用(正股与 put/call 同 CUSIP,不可仅按 cusip 归并)。
+export function holdingKey(h: { cusip: string; putCall?: string }): string {
   return `${h.cusip}|${h.putCall ?? ""}`;
 }
 
 /** 最新一期 vs 上一期的持仓变化（new/increased/decreased/exited）。 */
 export function computeChanges(latest: Holding[], prior: Holding[]): HoldingChange[] {
-  const lm = new Map(latest.map((h) => [key(h), h]));
-  const pm = new Map(prior.map((h) => [key(h), h]));
+  const lm = new Map(latest.map((h) => [holdingKey(h), h]));
+  const pm = new Map(prior.map((h) => [holdingKey(h), h]));
   const out: HoldingChange[] = [];
   for (const [k, lh] of lm) {
     const ph = pm.get(k);
     if (!ph) {
-      out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", prevShares: 0, shares: lh.shares, value: lh.value, deltaPct: null });
+      out.push({ cusip: lh.cusip, putCall: lh.putCall, issuer: lh.issuer, kind: "new", prevShares: 0, shares: lh.shares, value: lh.value, deltaPct: null });
     } else {
       const delta = lh.shares - ph.shares;
       if (delta !== 0) {
-        out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: delta > 0 ? "increased" : "decreased", prevShares: ph.shares, shares: lh.shares, value: lh.value, deltaPct: ph.shares !== 0 ? delta / ph.shares : null });
+        out.push({ cusip: lh.cusip, putCall: lh.putCall, issuer: lh.issuer, kind: delta > 0 ? "increased" : "decreased", prevShares: ph.shares, shares: lh.shares, value: lh.value, deltaPct: ph.shares !== 0 ? delta / ph.shares : null });
       }
     }
   }
   for (const [k, ph] of pm) {
-    if (!lm.has(k)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", prevShares: ph.shares, shares: 0, value: 0, deltaPct: -1 });
+    if (!lm.has(k)) out.push({ cusip: ph.cusip, putCall: ph.putCall, issuer: ph.issuer, kind: "exited", prevShares: ph.shares, shares: 0, value: 0, deltaPct: -1 });
   }
   return out;
 }

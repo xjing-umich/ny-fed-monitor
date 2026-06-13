@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
+import { holdingKey } from "@/lib/managers/assemble";
 import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl } from "@/lib/urls";
@@ -158,8 +159,10 @@ function HoldingsTable({
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
 
-  const priorByCusip = new Map((prior?.holdings ?? []).map((h) => [h.cusip, h]));
-  const changeByCusip = new Map(changes.map((c) => [c.cusip, c]));
+  // 按 cusip+put/call 归并(同 assemble.ts holdingKey):同一 CUSIP 的正股与 put/call 不可互相覆盖,
+  // 否则权重对比错行、且 React 行 key 重复。
+  const priorByKey = new Map((prior?.holdings ?? []).map((h) => [holdingKey(h), h]));
+  const changeByKey = new Map(changes.map((c) => [holdingKey(c), c]));
   const exits = changes.filter((c) => c.kind === "exited");
   const EXIT_CAP = 12;
 
@@ -193,8 +196,8 @@ function HoldingsTable({
       cell: (h) => (
         <WeightQoQ
           cur={h.weight}
-          prior={priorByCusip.get(h.cusip)?.weight}
-          kind={changeByCusip.get(h.cusip)?.kind}
+          prior={priorByKey.get(holdingKey(h))?.weight}
+          kind={changeByKey.get(holdingKey(h))?.kind}
           lang={lang}
         />
       ),
@@ -211,7 +214,7 @@ function HoldingsTable({
       <DataTable
         columns={columns}
         rows={capped}
-        getKey={(h) => h.cusip}
+        getKey={(h) => holdingKey(h)}
         rowHref={(h) => {
           const tk = cusipToTicker.get(h.cusip);
           if (tk) return stockPath(lang, tk);
@@ -230,7 +233,7 @@ function HoldingsTable({
           </span>
           <span className="ml-2 text-sm text-[var(--tt-muted)]">
             {exits.slice(0, EXIT_CAP).map((c, i) => (
-              <React.Fragment key={c.cusip}>
+              <React.Fragment key={holdingKey(c)}>
                 {i > 0 && "、"}
                 <Link href={stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
               </React.Fragment>
