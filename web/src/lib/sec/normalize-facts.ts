@@ -185,12 +185,15 @@ function deriveFlowSeries(byKey: Map<string, PickedFact>, fyeMonth: number) {
     const [end, bucket] = key.split("|") as [string, FlowBucket];
     const fy = fyOfEnd(end, fyeMonth);
     const q = quarterOfEnd(end, fyeMonth);
+    // A cumulative fact only counts if its end lands on the expected fiscal
+    // quarter; otherwise it's a rolling/trailing-twelve-month period (a 365-day
+    // fact ending mid-year is a TTM, NOT the fiscal year) and is ignored.
     if (bucket === "Q") {
       direct.set(`${fy}|${q}`, p);
       if (q === 1) cum.set(`${fy}|1`, p); // 3-month YTD == Q1
-    } else if (bucket === "H1") cum.set(`${fy}|2`, p);
-    else if (bucket === "TQ") cum.set(`${fy}|3`, p);
-    else if (bucket === "FY") cum.set(`${fy}|4`, p);
+    } else if (bucket === "H1" && q === 2) cum.set(`${fy}|2`, p);
+    else if (bucket === "TQ" && q === 3) cum.set(`${fy}|3`, p);
+    else if (bucket === "FY" && q === 4) cum.set(`${fy}|4`, p);
   }
 
   const quarters = new Map<string, PickedFact>();
@@ -287,6 +290,12 @@ function emptyValues(): Record<FundamentalField, number | null> {
 
 function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: NormalizedFiling[]): FundamentalPeriod {
   const v = draft.values;
+  // Many filers (e.g. Amazon) never tag a `Liabilities` total, only its
+  // components. Fall back to the accounting identity: liabilities = assets −
+  // total equity (parent equity + any non-controlling interest).
+  if (v.total_liabilities === null && v.total_assets !== null && v.shareholders_equity !== null) {
+    v.total_liabilities = v.total_assets - v.shareholders_equity - (v.minority_interest ?? 0);
+  }
   const capex = v.capex === null ? null : -Math.abs(v.capex);
   const freeCashFlow = v.operating_cash_flow === null || capex === null ? null : v.operating_cash_flow + capex;
   const ebitda = v.operating_income !== null && v.d_and_a !== null ? v.operating_income + v.d_and_a : null;

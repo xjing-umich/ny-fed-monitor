@@ -185,6 +185,11 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     if (filingsError) throw filingsError;
 
     const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
+    // Replace (not merge) this company's periods: the normalizer is fully
+    // re-derived each run, so any period the new logic no longer produces must
+    // not linger as an orphan row (matches the 13F holdings delete+insert).
+    const { error: clearError } = await supabase.from("company_fundamentals_periods").delete().eq("ticker", ticker);
+    if (clearError) throw clearError;
     await upsertPeriods(supabase, normalized.annual);
     await upsertPeriods(supabase, normalized.quarterly);
     const latestSaved = await upsertLatest(
