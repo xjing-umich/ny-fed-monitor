@@ -67,8 +67,10 @@ export type FundamentalPeriod = {
   raw_facts: Record<string, unknown>;
 };
 
-type FlowClass = "Q" | "FY";
-type PickedFact = { val: number; filed: string; accn: string | null; tag: string; days: number | null };
+// Flow facts report over a duration: a single quarter (~90d), a half-year YTD
+// (~180d), a three-quarter YTD (~270d), or a full year (~365d).
+type FlowBucket = "Q" | "H1" | "TQ" | "FY";
+type PickedFact = { val: number; end: string; filed: string; accn: string | null; tag: string; days: number | null; derived?: boolean };
 
 const ALL_FIELDS = Object.keys(FUNDAMENTAL_TAGS) as FundamentalField[];
 const FLOW_FIELDS = ALL_FIELDS.filter((field) => !INSTANT_FIELDS.has(field));
@@ -99,15 +101,18 @@ function dayCount(start?: string, end?: string) {
 }
 
 // Classify a flow fact by its reporting duration. This is the fix for the
-// "same end date, different duration" trap: a 10-Q reports both a ~90-day
-// single quarter and a ~180/270-day year-to-date figure for the same `end`;
-// only the duration distinguishes them.
-function flowClass(unit: SecFactUnit): FlowClass | null {
+// "same end date, different duration" trap: a 10-Q reports a ~90-day single
+// quarter AND a ~180/270-day year-to-date figure for the same `end`; only the
+// duration distinguishes them. Capturing all four buckets lets us derive the
+// single quarters that 10-Qs only report cumulatively (e.g. cash-flow lines).
+function flowBucket(unit: SecFactUnit): FlowBucket | null {
   const d = dayCount(unit.start, unit.end);
   if (d === null) return null;
   if (d >= 80 && d <= 100) return "Q";
+  if (d >= 172 && d <= 190) return "H1";
+  if (d >= 260 && d <= 285) return "TQ";
   if (d >= 350 && d <= 380) return "FY";
-  return null; // 6-/9-month YTD, or otherwise non-standard — ignored
+  return null;
 }
 
 function getUnits(facts: CompanyFacts, tag: string): SecFactUnit[] {
@@ -127,6 +132,7 @@ function earlier(a: PickedFact, b: PickedFact) {
 function toPicked(unit: SecFactUnit, tag: string): PickedFact {
   return {
     val: Number(unit.val),
+    end: unit.end!,
     filed: unit.filed ?? "9999-99-99",
     accn: unit.accn ?? null,
     tag,
@@ -134,38 +140,89 @@ function toPicked(unit: SecFactUnit, tag: string): PickedFact {
   };
 }
 
-// Derive (fiscal_year, fiscal_period) from the period-end date and the
-// company's fiscal-year-end month — NOT from the XBRL fy/fp fields, which
-// reflect the filing context rather than the period the value describes.
-function fiscalLabels(end: string, fyeMonth: number, durClass: FlowClass) {
+// Fiscal year named for the calendar year in which the fiscal year ENDS. A
+// period whose end month is past the FYE month rolls into next year's fiscal
+// year (e.g. Apple FYE=Sep: a Dec quarter belongs to the next FY).
+function fyOfEnd(end: string, fyeMonth: number) {
   const [year, month] = end.split("-").map(Number);
-  // The fiscal year is named for the calendar year in which the fiscal year
-  // ENDS. A period whose end month is past the FYE month rolls into next year's
-  // fiscal year (e.g. Apple FYE=Sep: a Dec quarter belongs to the next FY).
-  const fiscalYear = month > fyeMonth ? year + 1 : year;
-  if (durClass === "FY") return { fiscal_year: fiscalYear, fiscal_period: "FY" };
-  const offset = (month - fyeMonth + 12) % 12; // months since fiscal-year start
-  const q = offset === 0 ? 4 : Math.min(4, Math.max(1, Math.round(offset / 3)));
-  return { fiscal_year: fiscalYear, fiscal_period: `Q${q}` };
+  return month > fyeMonth ? year + 1 : year;
 }
 
-// Collect the as-reported flow value per (period_end, FlowClass) for one field.
+// Quarter index (1..4) of a period-end relative to the fiscal-year-end month.
+function quarterOfEnd(end: string, fyeMonth: number) {
+  const month = Number(end.split("-")[1]);
+  const offset = (month - fyeMonth + 12) % 12; // months since fiscal-year start
+  return offset === 0 ? 4 : Math.min(4, Math.max(1, Math.round(offset / 3)));
+}
+
+// Collect the as-reported value per (period_end, bucket) for one flow field.
 function collectFlow(facts: CompanyFacts, field: FundamentalField) {
   const byKey = new Map<string, PickedFact>();
   for (const tag of FUNDAMENTAL_TAGS[field]) {
     for (const unit of getUnits(facts, tag)) {
-      const cls = flowClass(unit);
-      if (!cls || !unit.end || unit.val === undefined || unit.val === null) continue;
-      const key = `${unit.end}|${cls}`;
+      const bucket = flowBucket(unit);
+      if (!bucket || !unit.end || unit.val === undefined || unit.val === null) continue;
+      const key = `${unit.end}|${bucket}`;
       const picked = toPicked(unit, tag);
       const existing = byKey.get(key);
-      // The first concept in the fallback list wins for a period; for the same
-      // concept, the earliest-filed (as-reported) value wins.
+      // first concept in the fallback list wins per period; same concept ->
+      // earliest-filed (as-reported) wins.
       if (!existing) byKey.set(key, picked);
       else if (existing.tag === picked.tag) byKey.set(key, earlier(existing, picked));
     }
   }
-  return byKey; // key: `${end}|${cls}`
+  return byKey;
+}
+
+// Turn one field's bucketed facts into single-quarter values (Q1..Q4) and an
+// annual value per fiscal year. Single quarters are taken directly when the
+// filer reports a 90-day fact; otherwise derived from the YTD chain
+// (Qk = cumulative_k − cumulative_{k-1}). Q4 is always derived (never filed).
+function deriveFlowSeries(byKey: Map<string, PickedFact>, fyeMonth: number) {
+  const direct = new Map<string, PickedFact>(); // `${fy}|${q}` -> 90-day single
+  const cum = new Map<string, PickedFact>(); // `${fy}|${k}` -> cumulative-through-k
+  for (const [key, p] of byKey) {
+    const [end, bucket] = key.split("|") as [string, FlowBucket];
+    const fy = fyOfEnd(end, fyeMonth);
+    const q = quarterOfEnd(end, fyeMonth);
+    if (bucket === "Q") {
+      direct.set(`${fy}|${q}`, p);
+      if (q === 1) cum.set(`${fy}|1`, p); // 3-month YTD == Q1
+    } else if (bucket === "H1") cum.set(`${fy}|2`, p);
+    else if (bucket === "TQ") cum.set(`${fy}|3`, p);
+    else if (bucket === "FY") cum.set(`${fy}|4`, p);
+  }
+
+  const quarters = new Map<string, PickedFact>();
+  const annual = new Map<number, PickedFact>();
+  const fiscalYears = new Set<number>();
+  for (const k of [...direct.keys(), ...cum.keys()]) fiscalYears.add(Number(k.split("|")[0]));
+
+  for (const fy of fiscalYears) {
+    for (let q = 1; q <= 4; q += 1) {
+      const directQ = direct.get(`${fy}|${q}`);
+      if (directQ) {
+        quarters.set(`${fy}|${q}`, directQ);
+        continue;
+      }
+      const ck = cum.get(`${fy}|${q}`);
+      const cprev = q === 1 ? null : cum.get(`${fy}|${q - 1}`);
+      if (ck && (q === 1 || cprev)) {
+        quarters.set(`${fy}|${q}`, {
+          val: ck.val - (cprev?.val ?? 0),
+          end: ck.end,
+          filed: ck.filed,
+          accn: null,
+          tag: `derived(cum${q}-cum${q - 1})`,
+          days: 90,
+          derived: true
+        });
+      }
+    }
+    const c4 = cum.get(`${fy}|4`);
+    if (c4) annual.set(fy, c4);
+  }
+  return { quarters, annual };
 }
 
 // Collect the as-reported instant value per period_end for one field.
@@ -201,7 +258,7 @@ function collectTotalDebt(facts: CompanyFacts) {
   for (const [end, tagMap] of byEnd) {
     const total = Array.from(tagMap.values()).reduce((sum, p) => sum + p.val, 0);
     const earliestFiled = Array.from(tagMap.values()).reduce((min, p) => (p.filed < min ? p.filed : min), "9999-99-99");
-    summed.set(end, { val: total, filed: earliestFiled, accn: null, tag: Array.from(tagMap.keys()).join("+"), days: null });
+    summed.set(end, { val: total, end, filed: earliestFiled, accn: null, tag: Array.from(tagMap.keys()).join("+"), days: null });
   }
   return summed;
 }
@@ -216,7 +273,7 @@ function qualityStatus(ticker: string, values: Record<FundamentalField, number |
 
 type RowDraft = {
   period_end: string;
-  durClass: FlowClass;
+  isAnnual: boolean;
   fiscal_year: number;
   fiscal_period: string;
   is_derived: boolean;
@@ -236,7 +293,6 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
   const workingCapital =
     v.current_assets !== null && v.current_liabilities !== null ? v.current_assets - v.current_liabilities : null;
 
-  // earliest filing among this period's picks ≈ when the period was first reported
   const filedDates = Object.values(draft.picks)
     .map((p) => p.filed)
     .filter((f) => f !== "9999-99-99");
@@ -253,7 +309,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
   return {
     ticker,
     cik,
-    form: matchedFiling?.form ?? (draft.durClass === "FY" ? "10-K" : "10-Q"),
+    form: matchedFiling?.form ?? (draft.isAnnual ? "10-K" : "10-Q"),
     fiscal_year: draft.fiscal_year,
     fiscal_period: draft.fiscal_period,
     period_end: draft.period_end,
@@ -308,14 +364,14 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
     data_quality: dataQuality,
     missing_fields: missing,
     raw_facts: Object.fromEntries(
-      Object.entries(draft.picks).map(([k, p]) => [k, { tag: p.tag, val: p.val, filed: p.filed, days: p.days }])
+      Object.entries(draft.picks).map(([k, p]) => [k, { tag: p.tag, val: p.val, filed: p.filed, days: p.days, derived: p.derived ?? false }])
     )
   };
 }
 
 function withYearOverYear(rows: FundamentalPeriod[]) {
-  // rows must be ascending by period_end; compare to the most recent prior row
-  // sharing the same fiscal_period (prior FY for annual, same quarter a year ago).
+  // rows ascending by period_end; compare to the most recent prior row sharing
+  // the same fiscal_period (prior FY for annual, same quarter a year ago).
   return rows.map((row, index) => {
     const prior = rows
       .slice(0, index)
@@ -347,39 +403,27 @@ export function normalizeCompanyFacts(
   const ticker = tickerInput.toUpperCase();
   const fyeMonth = fiscalYearEnd && fiscalYearEnd.length >= 2 ? Number(fiscalYearEnd.slice(0, 2)) || 12 : 12;
 
-  // 1. Collect flow values keyed by `${end}|${class}` and instant values by end.
-  const flow = new Map<FundamentalField, Map<string, PickedFact>>();
-  for (const field of FLOW_FIELDS) flow.set(field, collectFlow(facts, field));
+  // 1. Per flow field: bucket facts, then resolve single-quarter + annual series.
+  const flowSeries = new Map<FundamentalField, ReturnType<typeof deriveFlowSeries>>();
+  for (const field of FLOW_FIELDS) flowSeries.set(field, deriveFlowSeries(collectFlow(facts, field), fyeMonth));
+
+  // 2. Instant fields keyed by period_end.
   const instant = new Map<FundamentalField, Map<string, PickedFact>>();
   for (const field of INSTANT_FIELD_LIST) {
     instant.set(field, field === "total_debt" ? collectTotalDebt(facts) : collectInstant(facts, field));
   }
 
-  // 2. Every (period_end, class) that has at least one flow fact becomes a row.
-  const drafts = new Map<string, RowDraft>();
-  for (const [field, byKey] of flow) {
-    for (const [key, picked] of byKey) {
-      const [end, cls] = key.split("|") as [string, FlowClass];
-      const { fiscal_year, fiscal_period } = fiscalLabels(end, fyeMonth, cls);
-      const draft =
-        drafts.get(key) ??
-        ({
-          period_end: end,
-          durClass: cls,
-          fiscal_year,
-          fiscal_period,
-          is_derived: false,
-          values: emptyValues(),
-          picks: {}
-        } satisfies RowDraft);
-      draft.values[field] = picked.val;
-      draft.picks[field] = picked;
-      drafts.set(key, draft);
-    }
+  // 3. Calendar of real periods (union across fields), with their end dates.
+  const quarterEnd = new Map<string, string>(); // `${fy}|${q}` -> end
+  const annualEnd = new Map<number, string>(); // fy -> end
+  for (const { quarters, annual } of flowSeries.values()) {
+    for (const [k, p] of quarters) if (!quarterEnd.has(k)) quarterEnd.set(k, p.end);
+    for (const [fy, p] of annual) if (!annualEnd.has(fy)) annualEnd.set(fy, p.end);
   }
 
-  // 3. Attach instant (balance-sheet) values to every row sharing that end date.
-  for (const draft of drafts.values()) {
+  // 4. Build quarterly + annual drafts; attach balance-sheet values by end date.
+  const drafts: RowDraft[] = [];
+  const attachInstant = (draft: RowDraft) => {
     for (const field of INSTANT_FIELD_LIST) {
       const picked = instant.get(field)?.get(draft.period_end);
       if (picked) {
@@ -387,45 +431,53 @@ export function normalizeCompanyFacts(
         draft.picks[field] = picked;
       }
     }
+  };
+
+  for (const [key, end] of quarterEnd) {
+    const [fy, q] = key.split("|").map(Number);
+    const draft: RowDraft = {
+      period_end: end,
+      isAnnual: false,
+      fiscal_year: fy,
+      fiscal_period: `Q${q}`,
+      is_derived: q === 4, // Q4 has no standalone filing; income-stmt Q2/Q3 are direct
+      values: emptyValues(),
+      picks: {}
+    };
+    for (const field of FLOW_FIELDS) {
+      const p = flowSeries.get(field)?.quarters.get(key);
+      if (p) {
+        draft.values[field] = p.val;
+        draft.picks[field] = p;
+      }
+    }
+    attachInstant(draft);
+    drafts.push(draft);
   }
 
-  // 4. Derive each fiscal year's Q4 = FY − (Q1+Q2+Q3). Q4 is never filed in a 10-Q.
-  const byFiscalYear = new Map<number, { fy?: RowDraft; quarters: Map<string, RowDraft> }>();
-  for (const draft of drafts.values()) {
-    const bucket = byFiscalYear.get(draft.fiscal_year) ?? { quarters: new Map<string, RowDraft>() };
-    if (draft.durClass === "FY") bucket.fy = draft;
-    else bucket.quarters.set(draft.fiscal_period, draft);
-    byFiscalYear.set(draft.fiscal_year, bucket);
-  }
-  for (const [, bucket] of byFiscalYear) {
-    const { fy } = bucket;
-    const q1 = bucket.quarters.get("Q1");
-    const q2 = bucket.quarters.get("Q2");
-    const q3 = bucket.quarters.get("Q3");
-    if (!fy || !q1 || !q2 || !q3 || bucket.quarters.has("Q4")) continue;
-    const values = emptyValues();
-    for (const field of FLOW_FIELDS) {
-      const a = fy.values[field];
-      const b = q1.values[field];
-      const c = q2.values[field];
-      const d = q3.values[field];
-      values[field] = a !== null && b !== null && c !== null && d !== null ? a - b - c - d : null;
-    }
-    // balance sheet at fiscal-year end == Q4 end
-    for (const field of INSTANT_FIELD_LIST) values[field] = fy.values[field];
-    drafts.set(`${fy.period_end}|Q4`, {
-      period_end: fy.period_end,
-      durClass: "Q",
-      fiscal_year: fy.fiscal_year,
-      fiscal_period: "Q4",
-      is_derived: true,
-      values,
+  for (const [fy, end] of annualEnd) {
+    const draft: RowDraft = {
+      period_end: end,
+      isAnnual: true,
+      fiscal_year: fy,
+      fiscal_period: "FY",
+      is_derived: false,
+      values: emptyValues(),
       picks: {}
-    });
+    };
+    for (const field of FLOW_FIELDS) {
+      const p = flowSeries.get(field)?.annual.get(fy);
+      if (p) {
+        draft.values[field] = p.val;
+        draft.picks[field] = p;
+      }
+    }
+    attachInstant(draft);
+    drafts.push(draft);
   }
 
   // 5. Finalize, split, sort, limit, then compute YoY within each series.
-  const finalized = Array.from(drafts.values()).map((d) => finalizeRow(ticker, cik, d, filings));
+  const finalized = drafts.map((d) => finalizeRow(ticker, cik, d, filings));
   const annual = finalized
     .filter((r) => r.fiscal_period === "FY")
     .sort((a, b) => b.period_end.localeCompare(a.period_end))
