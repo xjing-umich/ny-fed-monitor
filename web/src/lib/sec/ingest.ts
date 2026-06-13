@@ -67,12 +67,17 @@ async function finishRun(supabase: SupabaseClient, id: string, status: string, s
 }
 
 async function upsertPeriods(supabase: SupabaseClient, periods: FundamentalPeriod[]) {
+  // A reporting period is identified by its end date + fiscal period (Q1..Q4/FY).
+  // We do NOT key on fiscal_year/form: the XBRL fy/fp that used to feed those was
+  // unreliable (comparatives in later filings carry the new filing's fy/fp), and
+  // a derived Q4 shares its period_end with the FY row, so fiscal_period must be
+  // part of the key to keep them distinct.
   const uniquePeriods = Array.from(
-    new Map(periods.map((period) => [`${period.ticker}|${period.fiscal_year}|${period.fiscal_period}|${period.form}`, period])).values()
+    new Map(periods.map((period) => [`${period.ticker}|${period.period_end}|${period.fiscal_period}`, period])).values()
   );
   if (!uniquePeriods.length) return;
   const { error } = await supabase.from("company_fundamentals_periods").upsert(uniquePeriods, {
-    onConflict: "ticker,fiscal_year,fiscal_period,form"
+    onConflict: "ticker,period_end,fiscal_period"
   });
   if (error) throw error;
 }
@@ -179,7 +184,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     const { error: filingsError } = await supabase.from("sec_filings").upsert(filings, { onConflict: "accession_number" });
     if (filingsError) throw filingsError;
 
-    const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings);
+    const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
     await upsertPeriods(supabase, normalized.annual);
     await upsertPeriods(supabase, normalized.quarterly);
     const latestSaved = await upsertLatest(
