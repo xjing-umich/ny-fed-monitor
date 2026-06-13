@@ -15,7 +15,14 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const doc = getLegalDoc("privacy", lang);
-  return { title: `${doc.title} — Compounder`, description: doc.intro };
+  return {
+    title: `${doc.title} — Compounder`,
+    description: doc.intro,
+    alternates: {
+      canonical: `/${lang}/privacy`,
+      languages: { en: "/en/privacy", "zh-CN": "/zh/privacy", "x-default": "/en/privacy" },
+    },
+  };
 }
 
 export default async function PrivacyPage({

@@ -19,14 +19,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
+  const alternates = {
+    canonical: `/${lang}/stocks`,
+    languages: { en: "/en/stocks", "zh-CN": "/zh/stocks", "x-default": "/en/stocks" },
+  };
   return lang === "zh"
     ? {
         title: "个股 · 最多机构持有 — Compounder · 复利",
         description: "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。",
+        alternates,
       }
     : {
         title: "Stocks · Most held — Compounder",
         description: "Securities held by the most superinvestors simultaneously, derived from 13F filings.",
+        alternates,
       };
 }
 
