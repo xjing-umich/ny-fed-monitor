@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
+import { investorPath, stockPath } from "@/lib/urls";
 import ProseDoc from "@/components/legal/ProseDoc";
 
 export function generateStaticParams() {
@@ -107,6 +108,27 @@ export default async function ArticlePage({
         </Link>
       </div>
       <ProseDoc doc={article} updated={article.updated} updatedLabel={updatedLabel} />
+
+      {/* 文中点名实体的内链(SEO 内链: 把文章权重传给对应实体页) */}
+      {article.related && article.related.length > 0 && (
+        <nav className="mx-auto mt-8 max-w-[720px] border-t border-[var(--tt-border)] pt-5">
+          <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+            {lang === "zh" ? "相关" : "Related"}
+          </span>
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+            {article.related.map((r) => (
+              <li key={`${r.kind}:${r.id}`}>
+                <Link
+                  href={r.kind === "investor" ? investorPath(lang, r.id) : stockPath(lang, r.id)}
+                  className="text-sm text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                >
+                  {r.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </>
   );
 }

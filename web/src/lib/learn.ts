@@ -8,6 +8,9 @@ import type { LegalSection } from "@/lib/legal";
 // These are educational, non-advice explainers — the safe link targets for
 // outbound posts (Reddit / HN / X) and the SEO landing pages for the site.
 
+/** 文章正文里点名的实体 → 对应实体页内链(SEO 内链, 仅给"文中确有提及"的文章配)。 */
+export type ArticleEntityRef = { kind: "investor" | "stock"; id: string; label: string };
+
 export interface Article {
   slug: string;
   title: string;
@@ -17,6 +20,8 @@ export interface Article {
   updated: string;
   intro: string;
   sections: LegalSection[];
+  /** 可选:文中点名的投资人/个股, 渲染为文末"相关"内链。id = manager slug / ticker。 */
+  related?: ArticleEntityRef[];
 }
 
 const ARTICLES: Record<string, Record<Lang, Article>> = {
@@ -327,6 +332,16 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           ],
         },
       ],
+      related: [
+        { kind: "stock", id: "GOOGL", label: "Alphabet" },
+        { kind: "stock", id: "MSFT", label: "Microsoft" },
+        { kind: "stock", id: "AMZN", label: "Amazon" },
+        { kind: "stock", id: "AAPL", label: "Apple" },
+        { kind: "stock", id: "V", label: "Visa" },
+        { kind: "stock", id: "META", label: "Meta" },
+        { kind: "stock", id: "UNH", label: "UnitedHealth" },
+        { kind: "investor", id: "berkshire-hathaway", label: "Berkshire Hathaway" },
+      ],
     },
     zh: {
       slug: "q1-2026-superinvestor-consensus",
@@ -379,6 +394,16 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
             "《读懂跨基金共识》更深入地讲了共识设下的陷阱。Compounder 的投资者页和个股页,逐季追踪这些仓位怎么变。这一切都不是投资建议。",
           ],
         },
+      ],
+      related: [
+        { kind: "stock", id: "GOOGL", label: "Alphabet" },
+        { kind: "stock", id: "MSFT", label: "Microsoft" },
+        { kind: "stock", id: "AMZN", label: "Amazon" },
+        { kind: "stock", id: "AAPL", label: "Apple" },
+        { kind: "stock", id: "V", label: "Visa" },
+        { kind: "stock", id: "META", label: "Meta" },
+        { kind: "stock", id: "UNH", label: "UnitedHealth" },
+        { kind: "investor", id: "berkshire-hathaway", label: "Berkshire Hathaway" },
       ],
     },
   },
