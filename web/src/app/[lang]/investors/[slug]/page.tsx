@@ -12,8 +12,6 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
-import { InvestorNarrative } from "@/components/entity/InvestorNarrative";
-import { getInvestorNarrative } from "@/lib/ai/investorNarrativeServer";
 import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod } from "@/lib/freshness/derive";
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
@@ -24,6 +22,8 @@ import { isLikelyTicker } from "@/lib/externalLinks";
 import { getCusipMap } from "@/lib/managers/securities";
 import { deriveConviction } from "@/lib/managers/conviction";
 import { ConvictionPicks } from "@/components/entity/ConvictionPicks";
+import { buildInvestorProse, displayFundName } from "@/lib/managers/profileProse";
+import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
 
 const MAX_HOLDINGS = 25;
 
@@ -57,10 +57,17 @@ export async function generateMetadata({
   const d = await getManagerDetail(slug);
   if (!d) return {};
   const { person, name } = d.manager;
-  const nb = await getInvestorNarrative(slug, lang);
+  const fundName = displayFundName(name);
   const l = lang === "en" ? "en" : "zh";
   const q = d.latest?.period ? quarterLabel(d.latest.period) : "";
   const qSuffix = q ? ` ${q}` : "";
+  // 确定性 meta description：从已加载的 13F 数据派生，每位投资人各异（不再依赖已退役的 AI judgment_line）。
+  const posCount = d.latest?.holdings.length ?? 0;
+  const totalLabel = d.latest ? formatUSD(d.latest.totalValue) : "";
+  const topName =
+    d.latest && d.latest.holdings.length > 0
+      ? cleanIssuer([...d.latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
+      : "";
   const alternates = {
     canonical: `/${l}/investors/${slug}`,
     languages: {
@@ -72,12 +79,12 @@ export async function generateMetadata({
   return lang === "zh"
     ? {
         title: `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`,
-        description: nb?.judgment_line ?? `${person} 的最新 SEC 13F 季度持仓组合（${name}${q ? `，${q}` : ""}）：持仓明细与环比变动。`,
+        description: `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
         alternates,
       }
     : {
         title: `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`,
-        description: nb?.judgment_line ?? `${person}'s latest SEC 13F portfolio${q ? ` (${q})` : ""} — holdings for ${name}, with positions and quarter-over-quarter changes.`,
+        description: `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
         alternates,
       };
 }
@@ -268,6 +275,8 @@ export default async function InvestorSlugPage({
   }
 
   const { manager, latest, prior, changes } = d;
+  // 基金名展示化(全大写 EDGAR 名 → 标题化, 策展混合大小写名原样): 副标题/结构化数据/正文统一口径。
+  const fund = displayFundName(manager.name);
 
   // CUSIP→ticker 内链解析(spec §5.3)。无库(本地)→ 空 Map → 退回原 cusip 链接(行为不变)。
   // 仅收 ticker 形态的值:脊梁富化偶有脏 ticker(如数字 "9.2343e+106"),否则会生成坏内链;
@@ -283,8 +292,9 @@ export default async function InvestorSlugPage({
   // 信念精选：复用已加载的 d.filings，零新增 IO（spec §5）
   const picks = deriveConviction(d.filings);
 
-  // 服务端读已缓存的 AI 叙述(取该投资者该语言最新一条; 无缓存/无库 → null, 优雅降级)
-  const narrative = await getInvestorNarrative(slug, lang);
+  // 确定性服务端正文(SEO 支柱)：复用同一份已装配的 13F 数据派生 3~5 段唯一正文，零新增 IO。
+  // 取代了原先读缓存的「AI Read」叙述(时有时无、刻意无数字、带 AI 免责声明) —— 本正文每页必出、含真实数字、零幻觉。
+  const prose = buildInvestorProse(d, lang);
 
   // 三档新鲜度(全局最新季基准, spec freshness-guard §B/C1): 常显来源+截止日, stale/inactive 加警示。
   const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
@@ -367,8 +377,8 @@ export default async function InvestorSlugPage({
   // Subtitle
   const subtitle =
     lang === "zh"
-      ? `${manager.name} — ${manager.person} 掌管，美股持仓通过 SEC 13F 季度披露`
-      : `${manager.name} — managed by ${manager.person}; US equity positions disclosed quarterly via SEC 13F`;
+      ? `${fund} — ${manager.person} 掌管，美股持仓通过 SEC 13F 季度披露`
+      : `${fund} — managed by ${manager.person}; US equity positions disclosed quarterly via SEC 13F`;
 
   // Related: up to 6 other managers from the index
   const related = idx.managers
@@ -406,7 +416,7 @@ export default async function InvestorSlugPage({
     ...(aliasNames.length ? { alternateName: aliasNames } : {}),
     url: `https://thecompounder.fyi/${lang}/investors/${manager.slug}`,
     jobTitle: lang === "zh" ? "投资人" : "Investor",
-    worksFor: { "@type": "Organization", name: manager.name },
+    worksFor: { "@type": "Organization", name: fund },
     subjectOf: {
       "@type": "Dataset",
       name:
@@ -444,12 +454,12 @@ export default async function InvestorSlugPage({
           />
         }
         notice={freshnessNotice}
-        aiNarrative={narrative ? <InvestorNarrative data={narrative} lang={lang} /> : undefined}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
         footerCta={<NewsletterCTA lang={lang} />}
       >
         <>
+          <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
           {fresh !== "inactive" && picks.length > 0 && (
             <ConvictionPicks
               picks={picks}
