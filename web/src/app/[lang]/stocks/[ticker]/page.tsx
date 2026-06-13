@@ -12,6 +12,8 @@ import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
+import { buildStockProse } from "@/lib/stocks/stockProse";
+import { StockProse } from "@/components/entity/StockProse";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -207,6 +209,24 @@ export default async function StockTickerPage({
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
 
+  // 本季对本票的动作(按持有人计, 每人一次, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
+  const moves = { opened: 0, added: 0, trimmed: 0, exited: 0 };
+  for (const { detail: d } of details) {
+    if (!d) continue;
+    const ch = d.changes.find((c) => targetCusips.has(c.cusip));
+    if (!ch) continue;
+    if (ch.kind === "new") moves.opened++;
+    else if (ch.kind === "increased") moves.added++;
+    else if (ch.kind === "decreased") moves.trimmed++;
+    else if (ch.kind === "exited") moves.exited++;
+  }
+
+  // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
+  const stockProse = buildStockProse(
+    { issuer, ticker, holders, totalValue, latestPeriod, moves },
+    lang,
+  );
+
   const subtitle =
     lang === "zh"
       ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。股票估值数据即将上线。`
@@ -301,7 +321,10 @@ export default async function StockTickerPage({
         related={related}
         footerCta={<NewsletterCTA lang={lang} />}
       >
-        <HoldersTable holders={holders} lang={lang} />
+        <>
+          <StockProse paragraphs={stockProse} lang={lang} />
+          <HoldersTable holders={holders} lang={lang} />
+        </>
       </EntityPage>
     </>
   );
