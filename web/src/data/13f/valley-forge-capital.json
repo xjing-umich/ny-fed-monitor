@@ -1,0 +1,618 @@
+{
+  "manager": {
+    "cik": "0001697868",
+    "slug": "valley-forge-capital",
+    "name": "Valley Forge Capital Management, LP",
+    "person": "Dev Kantesaria"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001697868-26-000003",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 821303359,
+          "shares": 769342,
+          "weight": 0.24330317266066237
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 747779195,
+          "shares": 1758074,
+          "weight": 0.221522350541289
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 743242251,
+          "shares": 1487496,
+          "weight": 0.2201783247835863
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 574623265,
+          "shares": 1317188,
+          "weight": 0.17022658184346784
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 225971559,
+          "shares": 171083,
+          "weight": 0.06694188771213348
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 180967107,
+          "shares": 598753,
+          "weight": 0.053609754298255055
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 81750951,
+          "shares": 189072,
+          "weight": 0.02421792816060594
+        }
+      ],
+      "totalValue": 3375637687
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001697868-26-000001",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 1300803603,
+          "shares": 769424,
+          "weight": 0.2948793003427288
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 918806764,
+          "shares": 1758179,
+          "weight": 0.20828439827014125
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 849132050,
+          "shares": 1487409,
+          "weight": 0.19248983030575675
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 672938618,
+          "shares": 1317292,
+          "weight": 0.1525485233833895
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 321394151,
+          "shares": 916410,
+          "weight": 0.07285687259979501
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 146551151,
+          "shares": 221236,
+          "weight": 0.03322169524410642
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 135061266,
+          "shares": 126242,
+          "weight": 0.030617052051233582
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 34865572,
+          "shares": 60770,
+          "weight": 0.007903680043396246
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 31755457,
+          "shares": 146352,
+          "weight": 0.007198647759452438
+        }
+      ],
+      "totalValue": 4411308632
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001697868-25-000006",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 1149966576,
+          "shares": 768422,
+          "weight": 0.27663444256762915
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 854223748,
+          "shares": 1755098,
+          "weight": 0.20549093798706278
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 844553161,
+          "shares": 1484772,
+          "weight": 0.20316459433510017
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 626163333,
+          "shares": 1314144,
+          "weight": 0.15062902539590312
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 311344363,
+          "shares": 912017,
+          "weight": 0.07489658925972
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 178305752,
+          "shares": 261097,
+          "weight": 0.04289299649272756
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 121618242,
+          "shares": 125627,
+          "weight": 0.029256323865299038
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 36940320,
+          "shares": 144000,
+          "weight": 0.00888631465013105
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 33874377,
+          "shares": 59700,
+          "weight": 0.008148775446427165
+        }
+      ],
+      "totalValue": 4156989872
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001697868-25-000005",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 1404644679,
+          "shares": 768422,
+          "weight": 0.3102633750385354
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 925445624,
+          "shares": 1755098,
+          "weight": 0.20441602563952294
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 834352778,
+          "shares": 1484772,
+          "weight": 0.18429508383526072
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 659161489,
+          "shares": 1314144,
+          "weight": 0.14559815114108757
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 323811636,
+          "shares": 912017,
+          "weight": 0.07152477246675258
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 207392431,
+          "shares": 263312,
+          "weight": 0.04580964607029034
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 100676222,
+          "shares": 125627,
+          "weight": 0.022237755135403072
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 37349280,
+          "shares": 144000,
+          "weight": 0.00824985410282487
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 34431378,
+          "shares": 59700,
+          "weight": 0.007605336570322478
+        }
+      ],
+      "totalValue": 4527265517
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001697868-25-000004",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 1417093116,
+          "shares": 768422,
+          "weight": 0.32287717760556006
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 891765294,
+          "shares": 1755098,
+          "weight": 0.20318400954910326
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 813833229,
+          "shares": 1484772,
+          "weight": 0.18542760038440512
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 611983719,
+          "shares": 1314144,
+          "weight": 0.13943725623974745
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 319625478,
+          "shares": 912017,
+          "weight": 0.07282497604587053
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 182576066,
+          "shares": 297360,
+          "weight": 0.041598991783124616
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 83244219,
+          "shares": 125627,
+          "weight": 0.018966755380596414
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 35072640,
+          "shares": 144000,
+          "weight": 0.007991115676533898
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 33760350,
+          "shares": 59700,
+          "weight": 0.007692117335058644
+        }
+      ],
+      "totalValue": 4388954111
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001697868-25-000001",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 1561132013,
+          "shares": 784122,
+          "weight": 0.343877414414543
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 874091457,
+          "shares": 1755098,
+          "weight": 0.19253996951697938
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 781836392,
+          "shares": 1484772,
+          "weight": 0.1722185406085546
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 622076345,
+          "shares": 1314144,
+          "weight": 0.13702749242581141
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 288233853,
+          "shares": 912017,
+          "weight": 0.06349053846247753
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 252833609,
+          "shares": 402281,
+          "weight": 0.055692771025135285
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 87069561,
+          "shares": 125627,
+          "weight": 0.01917919513632402
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 36698400,
+          "shares": 144000,
+          "weight": 0.008083717968795931
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 35820597,
+          "shares": 59700,
+          "weight": 0.007890360441378851
+        }
+      ],
+      "totalValue": 4539792227
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001697868-24-000008",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 1571905371,
+          "shares": 808793,
+          "weight": 0.3493009680649369
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 881301025,
+          "shares": 1705898,
+          "weight": 0.19583831626790793
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 733180413,
+          "shares": 1484772,
+          "weight": 0.162923692960109
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 611482638,
+          "shares": 1288444,
+          "weight": 0.13588062064602574
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 276271101,
+          "shares": 444881,
+          "weight": 0.06139158552927036
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 250759074,
+          "shares": 912017,
+          "weight": 0.055722430189003504
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 104678698,
+          "shares": 125627,
+          "weight": 0.023261177944774118
+        },
+        {
+          "cusip": "29109X106",
+          "issuer": "ASPEN TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 70567728,
+          "shares": 295485,
+          "weight": 0.01568120839797242
+        }
+      ],
+      "totalValue": 4500146048
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001697868-24-000007",
+      "holdings": [
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 1306668338,
+          "shares": 877748,
+          "weight": 0.33783959217901616
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 738380206,
+          "shares": 1655561,
+          "weight": 0.19090848106866573
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 655022016,
+          "shares": 1484772,
+          "weight": 0.16935618956867768
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 512865321,
+          "shares": 1218410,
+          "weight": 0.13260152239902226
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 292380242,
+          "shares": 444881,
+          "weight": 0.07559502196989948
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 239377102,
+          "shares": 912017,
+          "weight": 0.06189104010927274
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 64332785,
+          "shares": 62903,
+          "weight": 0.016633265853373977
+        },
+        {
+          "cusip": "29109X106",
+          "issuer": "ASPEN TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 58692186,
+          "shares": 295485,
+          "weight": 0.015174886852071991
+        }
+      ],
+      "totalValue": 3867718196
+    }
+  ]
+}

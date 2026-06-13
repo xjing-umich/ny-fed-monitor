@@ -1,0 +1,754 @@
+{
+  "manager": {
+    "cik": "0001056831",
+    "slug": "fairholme",
+    "name": "FAIRHOLME CAPITAL MANAGEMENT LLC",
+    "person": "Bruce Berkowitz"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0000919574-26-003485",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 1206398488,
+          "shares": 19210167,
+          "weight": 0.7967274163739766
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 206447472,
+          "shares": 5455800,
+          "weight": 0.13634165047419958
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 42276263,
+          "shares": 921252,
+          "weight": 0.02792000995440301
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 24176598,
+          "shares": 50452,
+          "weight": 0.01596666329811601
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 16990878,
+          "shares": 256350,
+          "weight": 0.011221083634900443
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 13163136,
+          "shares": 66400,
+          "weight": 0.008693173475412446
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "KRAFT HEINZ CO",
+          "titleOfClass": "COM",
+          "value": 2368197,
+          "shares": 105300,
+          "weight": 0.0015640002006323819
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 1436280,
+          "shares": 2,
+          "weight": 0.0009485453313910446
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 609096,
+          "shares": 2400,
+          "weight": 0.00040225803267396305
+        },
+        {
+          "cusip": "436893200",
+          "issuer": "HOME BANCSHARES INC",
+          "titleOfClass": "COM",
+          "value": 325853,
+          "shares": 12100,
+          "weight": 0.00021519922429454288
+        }
+      ],
+      "totalValue": 1514192261
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0000919574-26-001186",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 1153111866,
+          "shares": 19422467,
+          "weight": 0.8043238198398919
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 174739824,
+          "shares": 5450400,
+          "weight": 0.1218853147399928
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 42046274,
+          "shares": 913652,
+          "weight": 0.029328307782511994
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 24133232,
+          "shares": 48012,
+          "weight": 0.016833521464536132
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 18241718,
+          "shares": 260150,
+          "weight": 0.01272404589252758
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 5829632,
+          "shares": 25600,
+          "weight": 0.00406631135864217
+        },
+        {
+          "cusip": "125269100",
+          "issuer": "CF INDS HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 4230498,
+          "shares": 54700,
+          "weight": 0.0029508761565246286
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 2841392,
+          "shares": 69100,
+          "weight": 0.0019819406377546635
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 2747234,
+          "shares": 166600,
+          "weight": 0.0019162631224488894
+        },
+        {
+          "cusip": "8.7612e+110",
+          "issuer": "TARGET CORP",
+          "titleOfClass": "COM",
+          "value": 2248250,
+          "shares": 23000,
+          "weight": 0.0015682095391385356
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 1252800,
+          "shares": 12000,
+          "weight": 0.0008738587393006816
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 754800,
+          "shares": 1,
+          "weight": 0.0005264915201342229
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 652464,
+          "shares": 2400,
+          "weight": 0.00045510964916912507
+        },
+        {
+          "cusip": "25278X109",
+          "issuer": "DIAMONDBACK ENERGY INC",
+          "titleOfClass": "COM",
+          "value": 601320,
+          "shares": 4000,
+          "weight": 0.0004194354542754517
+        },
+        {
+          "cusip": "26875P101",
+          "issuer": "EOG RES INC",
+          "titleOfClass": "COM",
+          "value": 210020,
+          "shares": 2000,
+          "weight": 0.00014649410315128444
+        }
+      ],
+      "totalValue": 1433641324
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0000919574-25-007000",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 968737599,
+          "shares": 19578367,
+          "weight": 0.7819095060552472
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 170434008,
+          "shares": 5450400,
+          "weight": 0.1375645697533167
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 46679949,
+          "shares": 915652,
+          "weight": 0.03767738126707533
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 24351217,
+          "shares": 48437,
+          "weight": 0.019654907661237727
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 20032299,
+          "shares": 261450,
+          "weight": 0.016168924415042783
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 3264975,
+          "shares": 69100,
+          "weight": 0.002635300820540084
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 2858856,
+          "shares": 166600,
+          "weight": 0.0023075048239591246
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 754200,
+          "shares": 1,
+          "weight": 0.0006087470436531157
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 611112,
+          "shares": 2400,
+          "weight": 0.0004932546053314013
+        },
+        {
+          "cusip": "25278X109",
+          "issuer": "DIAMONDBACK ENERGY INC",
+          "titleOfClass": "COM",
+          "value": 572400,
+          "shares": 4000,
+          "weight": 0.00046200849613768684
+        },
+        {
+          "cusip": "218937100",
+          "issuer": "CORE NATURAL RESOURCES INC",
+          "titleOfClass": "COM SHS",
+          "value": 417400,
+          "shares": 5000,
+          "weight": 0.00033690137366853683
+        },
+        {
+          "cusip": "26875P101",
+          "issuer": "EOG RES INC",
+          "titleOfClass": "COM",
+          "value": 224240,
+          "shares": 2000,
+          "weight": 0.00018099368479020773
+        }
+      ],
+      "totalValue": 1238938255
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0000919574-25-004911",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 963738766,
+          "shares": 20204167,
+          "weight": 0.7854440651817632
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 169016904,
+          "shares": 5450400,
+          "weight": 0.13774824552631498
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 43142358,
+          "shares": 916752,
+          "weight": 0.03516088617010864
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 23606965,
+          "shares": 48597,
+          "weight": 0.019239602276415642
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 19208731,
+          "shares": 261450,
+          "weight": 0.01565505539041786
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 3020458,
+          "shares": 166600,
+          "weight": 0.0024616637764582547
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 2902891,
+          "shares": 69100,
+          "weight": 0.0023658470409807647
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 728800,
+          "shares": 1,
+          "weight": 0.0005939697093231477
+        },
+        {
+          "cusip": "25278X109",
+          "issuer": "DIAMONDBACK ENERGY INC",
+          "titleOfClass": "COM",
+          "value": 549600,
+          "shares": 4000,
+          "weight": 0.00044792227256312014
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 495204,
+          "shares": 2400,
+          "weight": 0.0004035897035341109
+        },
+        {
+          "cusip": "218937100",
+          "issuer": "CORE NATURAL RESOURCES INC",
+          "titleOfClass": "COM SHS",
+          "value": 348700,
+          "shares": 5000,
+          "weight": 0.000284189404007933
+        },
+        {
+          "cusip": "26875P101",
+          "issuer": "EOG RES INC",
+          "titleOfClass": "COM",
+          "value": 239220,
+          "shares": 2000,
+          "weight": 0.00019496354811235372
+        }
+      ],
+      "totalValue": 1226998597
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0000919574-25-003250",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 948712406,
+          "shares": 20206867,
+          "weight": 0.7807222642490321
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 186076656,
+          "shares": 5450400,
+          "weight": 0.15312774163955462
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 27443115,
+          "shares": 631602,
+          "weight": 0.022583715302281582
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 25945700,
+          "shares": 48717,
+          "weight": 0.021351450158570092
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 18604782,
+          "shares": 261450,
+          "weight": 0.015310401167980126
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 3097094,
+          "shares": 166600,
+          "weight": 0.0025486862245923786
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 2680248,
+          "shares": 54300,
+          "weight": 0.0022056518646483684
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 798442,
+          "shares": 1,
+          "weight": 0.0006570604981753825
+        },
+        {
+          "cusip": "25278X109",
+          "issuer": "DIAMONDBACK ENERGY INC",
+          "titleOfClass": "COM",
+          "value": 639520,
+          "shares": 4000,
+          "weight": 0.0005262790907706766
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 532788,
+          "shares": 2400,
+          "weight": 0.000438446310066186
+        },
+        {
+          "cusip": "218937100",
+          "issuer": "CORE NATURAL RESOURCES INC",
+          "titleOfClass": "COM SHS",
+          "value": 385500,
+          "shares": 5000,
+          "weight": 0.00031723885021906406
+        },
+        {
+          "cusip": "26875P101",
+          "issuer": "EOG RES INC",
+          "titleOfClass": "COM",
+          "value": 256480,
+          "shares": 2000,
+          "weight": 0.00021106464410943073
+        }
+      ],
+      "totalValue": 1215172731
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0000919574-25-001521",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 926342792,
+          "shares": 20617467,
+          "weight": 0.7837519871463505
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 170877504,
+          "shares": 5448900,
+          "weight": 0.14457454030538672
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 28650699,
+          "shares": 643402,
+          "weight": 0.024240532196403118
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 22082442,
+          "shares": 48717,
+          "weight": 0.018683318905280615
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 16708311,
+          "shares": 852900,
+          "weight": 0.014136421269966795
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 15300054,
+          "shares": 261450,
+          "weight": 0.012944935535210025
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 680920,
+          "shares": 1,
+          "weight": 0.0005761068231939057
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 601008,
+          "shares": 2400,
+          "weight": 0.000508495578914003
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 444690,
+          "shares": 9000,
+          "weight": 0.00037623941609307693
+        },
+        {
+          "cusip": "26875P101",
+          "issuer": "EOG RES INC",
+          "titleOfClass": "COM",
+          "value": 245160,
+          "shares": 2000,
+          "weight": 0.00020742282320128345
+        }
+      ],
+      "totalValue": 1181933580
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0000919574-24-006738",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 1233027167,
+          "shares": 21146067,
+          "weight": 0.8452470139595919
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 158544704,
+          "shares": 5446400,
+          "weight": 0.1086832806459222
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 28076863,
+          "shares": 653102,
+          "weight": 0.01924684649880269
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 23046139,
+          "shares": 50072,
+          "weight": 0.015798257081749843
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 14832059,
+          "shares": 261450,
+          "weight": 0.010167459335973001
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 691180,
+          "shares": 1,
+          "weight": 0.00047380775277645665
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 559200,
+          "shares": 2400,
+          "weight": 0.00038333472518388054
+        }
+      ],
+      "totalValue": 1458777312
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0000919574-24-004743",
+      "holdings": [
+        {
+          "cusip": "790148100",
+          "issuer": "ST JOE CO",
+          "titleOfClass": "COM",
+          "value": 1177153135,
+          "shares": 21520167,
+          "weight": 0.847788575587506
+        },
+        {
+          "cusip": "293792107",
+          "issuer": "ENTERPRISE PRODS PARTNERS L",
+          "titleOfClass": "COM",
+          "value": 157601934,
+          "shares": 5438300,
+          "weight": 0.11350529949163847
+        },
+        {
+          "cusip": "06417N103",
+          "issuer": "BANK OZK",
+          "titleOfClass": "COM",
+          "value": 22490550,
+          "shares": 548550,
+          "weight": 0.016197749283214186
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 20320474,
+          "shares": 49952,
+          "weight": 0.014634855224441934
+        },
+        {
+          "cusip": "84423102",
+          "issuer": "WR BERKLEY CORP",
+          "titleOfClass": "COM",
+          "value": 9814642,
+          "shares": 124900,
+          "weight": 0.00706852924541658
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 612241,
+          "shares": 1,
+          "weight": 0.00044093747013320425
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 505488,
+          "shares": 2400,
+          "weight": 0.00036405369764960717
+        }
+      ],
+      "totalValue": 1388498464
+    }
+  ]
+}

@@ -11,6 +11,8 @@ import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
 import { movesBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
+import { getManagerIndex } from "@/lib/managers/source";
+import { globalLatestPeriod } from "@/lib/freshness/derive";
 
 const KIND_LABEL: Record<MoveKind, { zh: string; en: string; tone: "positive" | "warn" }> = {
   new: { zh: "新建仓", en: "Opened", tone: "positive" },
@@ -21,8 +23,11 @@ const KIND_LABEL: Record<MoveKind, { zh: string; en: string; tone: "positive" | 
 
 export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sell" }) {
   const isZh = lang === "zh";
-  const { mostBought, mostSold } = await notableMoves(30);
+  const [{ mostBought, mostSold }, idx] = await Promise.all([notableMoves(30), getManagerIndex()]);
   const data: MoveRow[] = side === "buy" ? mostBought : mostSold;
+  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
+  // 未计入名单 = period ≠ 全局最新季的所有人，与 currentQuarterOnly 口径精确互补。
+  const lagged = idx.managers.filter((m) => m.period !== globalLatest);
 
   const rankRows: RankRow[] = data.map((r) => {
     const k = KIND_LABEL[r.dominantKind];
@@ -77,6 +82,11 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
           </div>
           <p className="mt-2 text-sm text-[var(--tt-muted)]">{sub}</p>
           <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
+          <p className="mt-2 text-xs text-[var(--tt-faint)]">
+            {isZh
+              ? `统计基准季：${globalLatest ?? "—"}。${lagged.length > 0 ? `未计入（最新申报更早）：${lagged.map((m) => `${m.person}（${m.period}）`).join("、")}。` : ""}`
+              : `Baseline quarter: ${globalLatest ?? "—"}.${lagged.length > 0 ? ` Not counted (older latest filing): ${lagged.map((m) => `${m.person} (${m.period})`).join(", ")}.` : ""}`}
+          </p>
         </div>
         <AggregateBlurb text={movesBlurb(blurbRows, side, lang)} />
         <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "位投资者" : "managers"} />

@@ -78,3 +78,38 @@ export function filingFreshness(latestPeriod: string | null, today: Date): Fresh
   if (!p) return "empty";
   return p < mostRecentDueQuarter(today) ? "stale" : "fresh";
 }
+
+// ── 13F 三档新鲜度（以全局最新季为基准的落后季数）─────────────────────────────
+// 与上面 filingFreshness(挂钟基准)不同：这里的基准是"全体 manager 中最新的 period"，
+// 用于站内一致的相对落后标注与聚合口径(spec 2026-06-12-freshness-guard §B)。
+
+export type Freshness13F = "current" | "stale" | "inactive";
+
+export const STALE_MIN_LAG = 2;    // 落后 ≥2 季 → stale(偏旧)
+export const INACTIVE_MIN_LAG = 4; // 落后 ≥4 季(一年无申报) → inactive(停报 tripwire)
+
+/** periods(YYYY-MM-DD 季末日)中的最大值。空/全非法 → null。 */
+export function globalLatestPeriod(periods: Array<string | null | undefined>): string | null {
+  let max: string | null = null;
+  for (const p of periods) {
+    if (p && parseUTC(p) && (max === null || p > max)) max = p;
+  }
+  return max;
+}
+
+/** period 落后 globalLatest 的季数(非负)。任一非法 → null。 */
+export function quarterLag(period: string | null, globalLatest: string | null): number | null {
+  const p = parseUTC(period);
+  const g = parseUTC(globalLatest);
+  if (!p || !g) return null;
+  const qi = (d: Date) => d.getUTCFullYear() * 4 + Math.floor(d.getUTCMonth() / 3);
+  return Math.max(0, qi(g) - qi(p));
+}
+
+/** 三档判定：0–1 → current；2–3 → stale；≥4 → inactive。period 缺失/非法按最严(inactive)。 */
+export function freshness13F(period: string | null, globalLatest: string | null): Freshness13F {
+  const lag = quarterLag(period, globalLatest);
+  if (lag == null || lag >= INACTIVE_MIN_LAG) return "inactive";
+  if (lag >= STALE_MIN_LAG) return "stale";
+  return "current";
+}

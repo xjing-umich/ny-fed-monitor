@@ -14,7 +14,6 @@ export const INVESTOR_ALIASES: Record<string, string> = {
   "markel": "盖纳 托马斯盖纳 马克尔",
   "pabrai-funds": "帕伯莱 莫尼什帕伯莱",
   "himalaya-capital": "李录 喜马拉雅",
-  "aquamarine": "斯派尔 盖斯派尔",
   "valley-forge-capital": "坎特萨里亚",
   "giverny-capital": "罗琼 弗朗索瓦罗琼",
   "polen-capital": "普伦资本",
@@ -37,4 +36,5 @@ export const INVESTOR_ALIASES: Record<string, string> = {
   "gates-foundation-trust": "盖茨 比尔盖茨 盖茨基金会",
   "dorsey-asset": "多西 帕特多西",
   "hh-international": "段永平",
+  "bridgewater-associates": "达利欧 瑞达利欧 桥水 桥水基金",
 };

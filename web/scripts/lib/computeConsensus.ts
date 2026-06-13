@@ -1,4 +1,5 @@
 import { computeConsensus, type ScanInput, type CusipInfo } from "../../src/lib/consensus/compute";
+import { freshness13F, globalLatestPeriod } from "../../src/lib/freshness/derive";
 
 async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
   const out: any[] = [];
@@ -34,18 +35,25 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     cmap.set(r.cusip, { ticker: r.ticker, name: r.issuer });
 
   const managers = await readAll(db, "managers", "cik,slug");
-  const scan: ScanInput[] = [];
+  type Raw = { slug: string; period: string; latestH: any[]; priorH: any[] };
+  const raws: Raw[] = [];
   for (const m of managers) {
     const filings = await readAll(db, "filings", "id,period", (q) => q.eq("cik", m.cik).order("period", { ascending: false }).limit(2));
     if (!filings.length) continue;
     const latestH = await readAll(db, "holdings", "cusip,issuer,value,shares", (q) => q.eq("filing_id", filings[0].id));
     const priorH = filings[1] ? await readAll(db, "holdings", "cusip,issuer,value,shares", (q) => q.eq("filing_id", filings[1].id)) : [];
-    scan.push({
-      slug: m.slug,
-      holdings: latestH.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value) })),
-      changes: diff(latestH, priorH),
-    });
+    raws.push({ slug: m.slug, period: filings[0].period, latestH, priorH });
   }
+
+  // 新鲜度口径(与 src/lib/aggregations.ts 一致): inactive 全剔除; 非当季者 holdings 计入但 changes 清空。
+  const gl = globalLatestPeriod(raws.map((r) => r.period));
+  const scan: ScanInput[] = raws
+    .filter((r) => freshness13F(r.period, gl) !== "inactive")
+    .map((r) => ({
+      slug: r.slug,
+      holdings: r.latestH.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value) })),
+      changes: r.period === gl ? diff(r.latestH, r.priorH) : [],
+    }));
 
   const { holdings, moves } = computeConsensus(scan, cmap);
   await db.from("consensus_holdings").delete().neq("ticker", "");

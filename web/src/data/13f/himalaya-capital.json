@@ -1,0 +1,650 @@
+{
+  "manager": {
+    "cik": "0001709323",
+    "slug": "himalaya-capital",
+    "name": "Himalaya Capital Management LLC",
+    "person": "Li Lu"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0002043585-26-000013",
+      "holdings": [
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 731351348,
+          "shares": 2543300,
+          "weight": 0.22845970572694185
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 703179918,
+          "shares": 2451300,
+          "weight": 0.2196595078120716
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 470845440,
+          "shares": 4608000,
+          "weight": 0.1470828090485347
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 430201321,
+          "shares": 897749,
+          "weight": 0.13438638961666569
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 296403233,
+          "shares": 2776351,
+          "weight": 0.09259051148654501
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 146151866,
+          "shares": 2997987,
+          "weight": 0.04565495420103258
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 95322500,
+          "shares": 1466500,
+          "weight": 0.029776864920957817
+        },
+        {
+          "cusip": "227046109",
+          "issuer": "CROCS INC",
+          "titleOfClass": "COM",
+          "value": 73646461,
+          "shares": 887093,
+          "weight": 0.02300569877105183
+        },
+        {
+          "cusip": "88034P109",
+          "issuer": "TENCENT MUSIC ENTMT GROUP",
+          "titleOfClass": "SPON ADS",
+          "value": 61162958,
+          "shares": 6590836,
+          "weight": 0.019106099174195142
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 51663072,
+          "shares": 121463,
+          "weight": 0.01613852255601477
+        },
+        {
+          "cusip": "93671105",
+          "issuer": "BLOCK H & R INC",
+          "titleOfClass": "COM",
+          "value": 51637996,
+          "shares": 1626906,
+          "weight": 0.016130689309249758
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 51383270,
+          "shares": 117784,
+          "weight": 0.016051117941588863
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 28069174,
+          "shares": 110600,
+          "weight": 0.008768255161592083
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 10208310,
+          "shares": 18939,
+          "weight": 0.0031888742735583196
+        }
+      ],
+      "totalValue": 3201226867
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0002043585-26-000011",
+      "holdings": [
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 796052900,
+          "shares": 2543300,
+          "weight": 0.2230542193841728
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 769217940,
+          "shares": 2451300,
+          "weight": 0.21553505695789998
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 573726285,
+          "shares": 10431387,
+          "weight": 0.16075824689647691
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 522501120,
+          "shares": 4608000,
+          "weight": 0.14640494299933585
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 451253535,
+          "shares": 897749,
+          "weight": 0.12644135206815213
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 312034089,
+          "shares": 2776351,
+          "weight": 0.08743202888042553
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 60302480,
+          "shares": 1466500,
+          "weight": 0.016896769804280207
+        },
+        {
+          "cusip": "227046109",
+          "issuer": "CROCS INC",
+          "titleOfClass": "COM",
+          "value": 53720158,
+          "shares": 628159,
+          "weight": 0.015052401552565696
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 30067716,
+          "shares": 110600,
+          "weight": 0.008424981456690885
+        }
+      ],
+      "totalValue": 3568876223
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-12",
+      "accession": "0002043585-25-000015",
+      "holdings": [
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 618276230,
+          "shares": 2543300,
+          "weight": 0.1914010958282297
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 609039360,
+          "shares": 4608000,
+          "weight": 0.18854161821249976
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 597014115,
+          "shares": 2451300,
+          "weight": 0.18481893738001337
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 538155255,
+          "shares": 10431387,
+          "weight": 0.16659787411319435
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 451334332,
+          "shares": 897749,
+          "weight": 0.13972053515578634
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 295542564,
+          "shares": 2776351,
+          "weight": 0.09149174409225584
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 69292125,
+          "shares": 1466500,
+          "weight": 0.021450911443363547
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 28162078,
+          "shares": 110600,
+          "weight": 0.008718194762234479
+        },
+        {
+          "cusip": "78574H104",
+          "issuer": "SABLE OFFSHORE CORP",
+          "titleOfClass": "COM",
+          "value": 23448780,
+          "shares": 1343000,
+          "weight": 0.007259089012422613
+        }
+      ],
+      "totalValue": 3230264839
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0002043585-25-000010",
+      "holdings": [
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 493613233,
+          "shares": 10431387,
+          "weight": 0.18355376497162945
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 482273280,
+          "shares": 4608000,
+          "weight": 0.1793369188082866
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 448205759,
+          "shares": 2543300,
+          "weight": 0.16666865684781346
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 436099532,
+          "shares": 897749,
+          "weight": 0.1621668659781769
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 434836107,
+          "shares": 2451300,
+          "weight": 0.16169705196184705
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 280355924,
+          "shares": 2776351,
+          "weight": 0.10425244288841828
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 61607665,
+          "shares": 1466500,
+          "weight": 0.022909270063796856
+        },
+        {
+          "cusip": "78574H104",
+          "issuer": "SABLE OFFSHORE CORP",
+          "titleOfClass": "COM",
+          "value": 29519140,
+          "shares": 1343000,
+          "weight": 0.010976912536955074
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 22691802,
+          "shares": 110600,
+          "weight": 0.00843811594307633
+        }
+      ],
+      "totalValue": 2689202442
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0002043585-25-000004",
+      "holdings": [
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 577819995,
+          "shares": 13846633,
+          "weight": 0.2611690326284213
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 478123162,
+          "shares": 897749,
+          "weight": 0.2161070312161523
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 393295912,
+          "shares": 2543300,
+          "weight": 0.1777659370782984
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 382966599,
+          "shares": 2451300,
+          "weight": 0.17309718780123995
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 249205266,
+          "shares": 2776351,
+          "weight": 0.11263836282980898
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 72386440,
+          "shares": 1466500,
+          "weight": 0.032717968699257735
+        },
+        {
+          "cusip": "78574H104",
+          "issuer": "SABLE OFFSHORE CORP",
+          "titleOfClass": "COM",
+          "value": 34071910,
+          "shares": 1343000,
+          "weight": 0.015400172807281676
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 24567578,
+          "shares": 110600,
+          "weight": 0.011104306939539683
+        }
+      ],
+      "totalValue": 2212436862
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001709323-25-000001",
+      "holdings": [
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 794665795,
+          "shares": 18081133,
+          "weight": 0.2930853877359607
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 579699360,
+          "shares": 3044000,
+          "weight": 0.21380234655234942
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 481446690,
+          "shares": 2543300,
+          "weight": 0.17756519872966833
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 406931667,
+          "shares": 897749,
+          "weight": 0.15008287276884222
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 265863372,
+          "shares": 2776351,
+          "weight": 0.09805464128150873
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 79558434,
+          "shares": 317700,
+          "weight": 0.02934241617453264
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 72459765,
+          "shares": 1466500,
+          "weight": 0.02672431411280461
+        },
+        {
+          "cusip": "78574H104",
+          "issuer": "SABLE OFFSHORE CORP",
+          "titleOfClass": "COM",
+          "value": 30754700,
+          "shares": 1343000,
+          "weight": 0.011342822644333334
+        }
+      ],
+      "totalValue": 2711379783
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001709323-24-000009",
+      "holdings": [
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 717459357,
+          "shares": 18081133,
+          "weight": 0.29018179468916355
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 508926360,
+          "shares": 3044000,
+          "weight": 0.20583906679667618
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 421806305,
+          "shares": 2543300,
+          "weight": 0.17060270996800828
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 413197955,
+          "shares": 897749,
+          "weight": 0.16712099852618165
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 229715282,
+          "shares": 2776351,
+          "weight": 0.09291006124307513
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 75583410,
+          "shares": 1466500,
+          "weight": 0.030570274606547324
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 74024100,
+          "shares": 317700,
+          "weight": 0.029939600032633084
+        },
+        {
+          "cusip": "78574H104",
+          "issuer": "SABLE OFFSHORE CORP",
+          "titleOfClass": "COM",
+          "value": 31735090,
+          "shares": 1343000,
+          "weight": 0.012835494137714797
+        }
+      ],
+      "totalValue": 2472447859
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001709323-24-000005",
+      "holdings": [
+        {
+          "cusip": "60505104",
+          "issuer": "BK OF AMERICA CORP",
+          "titleOfClass": "COM",
+          "value": 719086659,
+          "shares": 18081133,
+          "weight": 0.2807160068670991
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 558330480,
+          "shares": 3044000,
+          "weight": 0.21796024289443913
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 463262095,
+          "shares": 2543300,
+          "weight": 0.18084758465987158
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL B NEW",
+          "value": 365204293,
+          "shares": 897749,
+          "weight": 0.14256792215315187
+        },
+        {
+          "cusip": "27579R104",
+          "issuer": "EAST WEST BANCORP INC",
+          "titleOfClass": "COM",
+          "value": 203312184,
+          "shares": 2776351,
+          "weight": 0.07936871547481861
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 159986952,
+          "shares": 759600,
+          "weight": 0.0624554742522045
+        },
+        {
+          "cusip": "674599105",
+          "issuer": "OCCIDENTAL PETE CORP",
+          "titleOfClass": "COM",
+          "value": 92433495,
+          "shares": 1466500,
+          "weight": 0.036084053698415185
+        }
+      ],
+      "totalValue": 2561616158
+    }
+  ]
+}

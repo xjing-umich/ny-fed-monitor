@@ -1,0 +1,2502 @@
+{
+  "manager": {
+    "cik": "0001656456",
+    "slug": "appaloosa",
+    "name": "Appaloosa LP",
+    "person": "David Tepper"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001656456-26-000002",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 899726400,
+          "shares": 4320000,
+          "weight": 0.1516355840744498
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 562503600,
+          "shares": 1665000,
+          "weight": 0.09480166629542122
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 497042322,
+          "shares": 1732700,
+          "weight": 0.08376913560187935
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 455512550,
+          "shares": 6332720,
+          "weight": 0.07676990646544551
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MANUFAC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 448628625,
+          "shares": 1327500,
+          "weight": 0.07560972267168364
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 434718900,
+          "shares": 3465000,
+          "weight": 0.07326544415024648
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "VISTRA CORP",
+          "titleOfClass": "COM",
+          "value": 304017170,
+          "shares": 2022332,
+          "weight": 0.0512375997209944
+        },
+        {
+          "cusip": "464286772",
+          "issuer": "ISHARES INC",
+          "titleOfClass": "MSCI STH KOR ETF",
+          "value": 295224000,
+          "shares": 2400000,
+          "weight": 0.049755640906830524
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 256629600,
+          "shares": 1471500,
+          "weight": 0.04325112532742445
+        },
+        {
+          "cusip": "629377508",
+          "issuer": "NRG ENERGY INC",
+          "titleOfClass": "COM NEW",
+          "value": 253471354,
+          "shares": 1734442,
+          "weight": 0.04271884965244059
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 249734745,
+          "shares": 436500,
+          "weight": 0.04208909944374065
+        },
+        {
+          "cusip": "80004C200",
+          "issuer": "SANDISK CORP",
+          "titleOfClass": "COM",
+          "value": 178689375,
+          "shares": 281250,
+          "weight": 0.030115452593169865
+        },
+        {
+          "cusip": "219350105",
+          "issuer": "CORNING INC",
+          "titleOfClass": "COM",
+          "value": 153578115,
+          "shares": 1129500,
+          "weight": 0.02588332093965234
+        },
+        {
+          "cusip": "963320106",
+          "issuer": "WHIRLPOOL CORP",
+          "titleOfClass": "COM",
+          "value": 105144000,
+          "shares": 1950000,
+          "weight": 0.017720466857395704
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 91962000,
+          "shares": 900000,
+          "weight": 0.015498835626757813
+        },
+        {
+          "cusip": "512807306",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM NEW",
+          "value": 81724950,
+          "shares": 382500,
+          "weight": 0.01377353218345622
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 77113782,
+          "shares": 692100,
+          "weight": 0.012996387983902432
+        },
+        {
+          "cusip": "502431109",
+          "issuer": "L3HARRIS TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 68339700,
+          "shares": 198000,
+          "weight": 0.011517646169960864
+        },
+        {
+          "cusip": "7.5513e+105",
+          "issuer": "RTX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 65971800,
+          "shares": 342000,
+          "weight": 0.011118571629600718
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HLDG NV",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 65381085,
+          "shares": 49500,
+          "weight": 0.011019015348884114
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 64211382,
+          "shares": 498613,
+          "weight": 0.010821879199940794
+        },
+        {
+          "cusip": "58498106",
+          "issuer": "BALL CORP",
+          "titleOfClass": "COM",
+          "value": 49475070,
+          "shares": 837000,
+          "weight": 0.008338291659080236
+        },
+        {
+          "cusip": "7903107",
+          "issuer": "ADVANCED MICRO DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 45039402,
+          "shares": 221400,
+          "weight": 0.0075907253901118625
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 38588850,
+          "shares": 1305000,
+          "weight": 0.006503580208951668
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 35910000,
+          "shares": 2700000,
+          "weight": 0.006052099642861976
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 33315300,
+          "shares": 90000,
+          "weight": 0.005614801315283754
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 30704400,
+          "shares": 1080000,
+          "weight": 0.005174772717189954
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 30419213,
+          "shares": 1576125,
+          "weight": 0.005126708664256263
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 28675392,
+          "shares": 502460,
+          "weight": 0.004832813413593071
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 24353100,
+          "shares": 90000,
+          "weight": 0.004104354993388527
+        },
+        {
+          "cusip": "D18190898",
+          "issuer": "DEUTSCHE BK AG",
+          "titleOfClass": "NAMEN AKT",
+          "value": 7671804,
+          "shares": 257616,
+          "weight": 0.0012929691520052098
+        }
+      ],
+      "totalValue": 5933477986
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001656456-26-000001",
+      "holdings": [
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 753117926,
+          "shares": 5137931,
+          "weight": 0.10875316682268665
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 560738948,
+          "shares": 1786931,
+          "weight": 0.08097289182812761
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 503047031,
+          "shares": 2179391,
+          "weight": 0.07264195392688107
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 428115000,
+          "shares": 1500000,
+          "weight": 0.06182147630130171
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 396054000,
+          "shares": 600000,
+          "weight": 0.05719174281451421
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 343395700,
+          "shares": 1130000,
+          "weight": 0.04958767884684936
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 317050000,
+          "shares": 1700000,
+          "weight": 0.0457832569784467
+        },
+        {
+          "cusip": "963320106",
+          "issuer": "WHIRLPOOL CORP",
+          "titleOfClass": "COM",
+          "value": 282067400,
+          "shares": 3910000,
+          "weight": 0.040731633052964254
+        },
+        {
+          "cusip": "629377508",
+          "issuer": "NRG ENERGY INC",
+          "titleOfClass": "COM NEW",
+          "value": 261153600,
+          "shares": 1640000,
+          "weight": 0.037711598737254305
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 241810000,
+          "shares": 500000,
+          "weight": 0.03491830742771865
+        },
+        {
+          "cusip": "02376R102",
+          "issuer": "AMERICAN AIRLS GROUP INC",
+          "titleOfClass": "COM",
+          "value": 216919500,
+          "shares": 14150000,
+          "weight": 0.03132402211681491
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 201267250,
+          "shares": 1775000,
+          "weight": 0.029063776149172927
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 195852250,
+          "shares": 1145000,
+          "weight": 0.028281829022415984
+        },
+        {
+          "cusip": "464286772",
+          "issuer": "ISHARES INC",
+          "titleOfClass": "MSCI STH KOR ETF",
+          "value": 182287500,
+          "shares": 1875000,
+          "weight": 0.026323026199207074
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 161737500,
+          "shares": 4750000,
+          "weight": 0.02335552602287186
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "VISTRA CORP",
+          "titleOfClass": "COM",
+          "value": 152456850,
+          "shares": 945000,
+          "weight": 0.022015363954185466
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 151163500,
+          "shares": 1850000,
+          "weight": 0.02182859916814833
+        },
+        {
+          "cusip": "219350105",
+          "issuer": "CORNING INC",
+          "titleOfClass": "COM",
+          "value": 137486712,
+          "shares": 1570200,
+          "weight": 0.019853617620620382
+        },
+        {
+          "cusip": "D18190898",
+          "issuer": "DEUTSCHE BANK A G",
+          "titleOfClass": "NAMEN AKT",
+          "value": 121464000,
+          "shares": 3150000,
+          "weight": 0.017539875494811702
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 119307220,
+          "shares": 4157046,
+          "weight": 0.017228428048080984
+        },
+        {
+          "cusip": "690742101",
+          "issuer": "OWENS CORNING NEW",
+          "titleOfClass": "COM",
+          "value": 106314500,
+          "shares": 950000,
+          "weight": 0.01535222858866132
+        },
+        {
+          "cusip": "7.5513e+105",
+          "issuer": "RTX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 91700000,
+          "shares": 500000,
+          "weight": 0.013241837769826723
+        },
+        {
+          "cusip": "502431109",
+          "issuer": "L3HARRIS TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 86603150,
+          "shares": 295000,
+          "weight": 0.012505832744339904
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 75129500,
+          "shares": 575000,
+          "weight": 0.01084899291960956
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "MOHAWK INDS INC",
+          "titleOfClass": "COM",
+          "value": 73777500,
+          "shares": 675000,
+          "weight": 0.010653758844747993
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 73606000,
+          "shares": 3800000,
+          "weight": 0.010628993575636486
+        },
+        {
+          "cusip": "512807306",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM NEW",
+          "value": 72751500,
+          "shares": 425000,
+          "weight": 0.01050560044178352
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 71352500,
+          "shares": 250000,
+          "putCall": "Call",
+          "weight": 0.010303579383550285
+        },
+        {
+          "cusip": "7903107",
+          "issuer": "ADVANCED MICRO DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 69602000,
+          "shares": 325000,
+          "weight": 0.010050800353931074
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 66866250,
+          "shares": 62500,
+          "weight": 0.009655747380334527
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 66022000,
+          "shares": 200000,
+          "weight": 0.00953383438647219
+        },
+        {
+          "cusip": "58498106",
+          "issuer": "BALL CORP",
+          "titleOfClass": "COM",
+          "value": 63564000,
+          "shares": 1200000,
+          "weight": 0.009178889596524164
+        },
+        {
+          "cusip": "46266C105",
+          "issuer": "IQVIA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 63114800,
+          "shares": 280000,
+          "weight": 0.00911402336395921
+        },
+        {
+          "cusip": "910047109",
+          "issuer": "UNITED AIRLS HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 51996300,
+          "shares": 465000,
+          "weight": 0.007508468584855411
+        },
+        {
+          "cusip": "464287184",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "CHINA LG-CAP ETF",
+          "value": 41640375,
+          "shares": 1087500,
+          "weight": 0.006013032610956907
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 36133713,
+          "shares": 2191250,
+          "weight": 0.005217849133778396
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 33489675,
+          "shares": 627500,
+          "weight": 0.004836039730798492
+        },
+        {
+          "cusip": "247361702",
+          "issuer": "DELTA AIR LINES INC DEL",
+          "titleOfClass": "COM NEW",
+          "value": 32965000,
+          "shares": 475000,
+          "weight": 0.004760274613765953
+        },
+        {
+          "cusip": "382550101",
+          "issuer": "GOODYEAR TIRE & RUBR CO",
+          "titleOfClass": "COM",
+          "value": 21900000,
+          "shares": 2500000,
+          "weight": 0.003162445443393732
+        }
+      ],
+      "totalValue": 6925020650
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-13",
+      "accession": "0001656456-25-000007",
+      "holdings": [
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 1152808500,
+          "shares": 6450000,
+          "weight": 0.15613118460272352
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 548925000,
+          "shares": 2500000,
+          "weight": 0.0743439266001682
+        },
+        {
+          "cusip": "963320106",
+          "issuer": "WHIRLPOOL CORP",
+          "titleOfClass": "COM",
+          "value": 432300000,
+          "shares": 5500000,
+          "weight": 0.05854876252539548
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 354502000,
+          "shares": 1900000,
+          "weight": 0.04801215223867163
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 337925625,
+          "shares": 1387500,
+          "weight": 0.04576712276051549
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 310874000,
+          "shares": 7400000,
+          "weight": 0.042103372660929436
+        },
+        {
+          "cusip": "629377508",
+          "issuer": "NRG ENERGY INC",
+          "titleOfClass": "COM NEW",
+          "value": 302846500,
+          "shares": 1870000,
+          "weight": 0.041016164261270374
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 296047400,
+          "shares": 1060000,
+          "weight": 0.04009532481809106
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 271720600,
+          "shares": 370000,
+          "weight": 0.03680061272879476
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "VISTRA CORP",
+          "titleOfClass": "COM",
+          "value": 243920400,
+          "shares": 1245000,
+          "weight": 0.033035479006938415
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 239551875,
+          "shares": 462500,
+          "weight": 0.032443825680981316
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 237906000,
+          "shares": 1800000,
+          "weight": 0.03222091579312222
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 235812125,
+          "shares": 2406983,
+          "weight": 0.03193733080553753
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 217750500,
+          "shares": 6225000,
+          "weight": 0.029491145765177258
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 207118200,
+          "shares": 1245000,
+          "weight": 0.028051154999970775
+        },
+        {
+          "cusip": "7903107",
+          "issuer": "ADVANCED MICRO DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 153700500,
+          "shares": 950000,
+          "weight": 0.020816502601282785
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 137699650,
+          "shares": 1045000,
+          "weight": 0.018649419633773014
+        },
+        {
+          "cusip": "D18190898",
+          "issuer": "DEUTSCHE BANK A G",
+          "titleOfClass": "NAMEN AKT",
+          "value": 134203900,
+          "shares": 3790000,
+          "weight": 0.018175971018001207
+        },
+        {
+          "cusip": "219350105",
+          "issuer": "CORNING INC",
+          "titleOfClass": "COM",
+          "value": 133298750,
+          "shares": 1625000,
+          "weight": 0.018053381583812308
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 123256000,
+          "shares": 5600000,
+          "weight": 0.016693236812005886
+        },
+        {
+          "cusip": "337738108",
+          "issuer": "FISERV INC",
+          "titleOfClass": "COM",
+          "value": 119260250,
+          "shares": 925000,
+          "weight": 0.016152070451004617
+        },
+        {
+          "cusip": "02376R102",
+          "issuer": "AMERICAN AIRLS GROUP INC",
+          "titleOfClass": "COM",
+          "value": 103970000,
+          "shares": 9250000,
+          "weight": 0.014081227943014961
+        },
+        {
+          "cusip": "502431109",
+          "issuer": "L3HARRIS TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 91623000,
+          "shares": 300000,
+          "weight": 0.012409005942318552
+        },
+        {
+          "cusip": "7.5513e+105",
+          "issuer": "RTX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 85254635,
+          "shares": 509500,
+          "weight": 0.011546503305122068
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 85066153,
+          "shares": 4957235,
+          "weight": 0.011520976153009387
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 83660000,
+          "shares": 500000,
+          "weight": 0.011330533131794092
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 70268550,
+          "shares": 203500,
+          "weight": 0.009516855533087853
+        },
+        {
+          "cusip": "89832Q109",
+          "issuer": "TRUIST FINL CORP",
+          "titleOfClass": "COM",
+          "value": 63436500,
+          "shares": 1387500,
+          "weight": 0.008591553490497918
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 61957760,
+          "shares": 64000,
+          "weight": 0.00839127961333668
+        },
+        {
+          "cusip": "12769G100",
+          "issuer": "CAESARS ENTERTAINMENT INC NE",
+          "titleOfClass": "COM",
+          "value": 56752500,
+          "shares": 2100000,
+          "weight": 0.00768630267227043
+        },
+        {
+          "cusip": "46266C105",
+          "issuer": "IQVIA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 54132900,
+          "shares": 285000,
+          "weight": 0.007331515861464217
+        },
+        {
+          "cusip": "512807306",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM NEW",
+          "value": 49543000,
+          "shares": 370000,
+          "weight": 0.006709880503806774
+        },
+        {
+          "cusip": "464287184",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "CHINA LG-CAP ETF",
+          "value": 45665400,
+          "shares": 1110000,
+          "weight": 0.006184715846003226
+        },
+        {
+          "cusip": "910047109",
+          "issuer": "UNITED AIRLS HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 44631250,
+          "shares": 462500,
+          "weight": 0.006044655233545124
+        },
+        {
+          "cusip": "382550101",
+          "issuer": "GOODYEAR TIRE & RUBR CO",
+          "titleOfClass": "COM",
+          "value": 38447200,
+          "shares": 5140000,
+          "weight": 0.005207115388772577
+        },
+        {
+          "cusip": "493267108",
+          "issuer": "KEYCORP",
+          "titleOfClass": "COM",
+          "value": 37753800,
+          "shares": 2020000,
+          "weight": 0.005113204419688355
+        },
+        {
+          "cusip": "174610105",
+          "issuer": "CITIZENS FINL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 31896000,
+          "shares": 600000,
+          "weight": 0.004319850403678034
+        },
+        {
+          "cusip": "200340107",
+          "issuer": "COMERICA INC",
+          "titleOfClass": "COM",
+          "value": 31690500,
+          "shares": 462500,
+          "weight": 0.004292018410388724
+        },
+        {
+          "cusip": "852234103",
+          "issuer": "BLOCK INC",
+          "titleOfClass": "CL A",
+          "value": 26739900,
+          "shares": 370000,
+          "weight": 0.0036215314713227446
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 26723250,
+          "shares": 535000,
+          "weight": 0.0036192764704066037
+        },
+        {
+          "cusip": "247361702",
+          "issuer": "DELTA AIR LINES INC DEL",
+          "titleOfClass": "COM NEW",
+          "value": 26246875,
+          "shares": 462500,
+          "weight": 0.003554758388639231
+        },
+        {
+          "cusip": "690742101",
+          "issuer": "OWENS CORNING NEW",
+          "titleOfClass": "COM",
+          "value": 22845790,
+          "shares": 161500,
+          "weight": 0.0030941307735717206
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "MOHAWK INDS INC",
+          "titleOfClass": "COM",
+          "value": 20820580,
+          "shares": 161500,
+          "weight": 0.002819845463939391
+        },
+        {
+          "cusip": "957638109",
+          "issuer": "WESTERN ALLIANCE BANCORP",
+          "titleOfClass": "COM",
+          "value": 16910400,
+          "shares": 195000,
+          "weight": 0.0022902683178566913
+        },
+        {
+          "cusip": "989701107",
+          "issuer": "ZIONS BANCORPORATION N A",
+          "titleOfClass": "COM",
+          "value": 16125300,
+          "shares": 285000,
+          "weight": 0.0021839379142973856
+        }
+      ],
+      "totalValue": 7383589018
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001656456-25-000006",
+      "holdings": [
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 801499204,
+          "shares": 7067271,
+          "weight": 0.12428348942673345
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 764326500,
+          "shares": 2450000,
+          "weight": 0.11851934974762893
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 592353000,
+          "shares": 2700000,
+          "weight": 0.09185249023952098
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "VISTRA CORP",
+          "titleOfClass": "COM",
+          "value": 348858000,
+          "shares": 1800000,
+          "weight": 0.05409523719805388
+        },
+        {
+          "cusip": "629377508",
+          "issuer": "NRG ENERGY INC",
+          "titleOfClass": "COM NEW",
+          "value": 317948400,
+          "shares": 1980000,
+          "weight": 0.04930227804648801
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 295236000,
+          "shares": 400000,
+          "weight": 0.04578040764266445
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 276482500,
+          "shares": 1750000,
+          "weight": 0.04287241920383346
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 266085000,
+          "shares": 1500000,
+          "weight": 0.04126014363965902
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 256575000,
+          "shares": 2750000,
+          "weight": 0.039785487172691106
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 248705000,
+          "shares": 500000,
+          "weight": 0.038565135290983696
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 232152250,
+          "shares": 1025000,
+          "weight": 0.035998403447282
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 228480000,
+          "shares": 7000000,
+          "weight": 0.03542897051239
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 209320000,
+          "shares": 2000000,
+          "weight": 0.03245794865044413
+        },
+        {
+          "cusip": "458140100",
+          "issuer": "INTEL CORP",
+          "titleOfClass": "COM",
+          "value": 179200000,
+          "shares": 8000000,
+          "weight": 0.0277874278528549
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 137320000,
+          "shares": 4000000,
+          "weight": 0.02129335710242207
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 126080000,
+          "shares": 8000000,
+          "weight": 0.01955044031075863
+        },
+        {
+          "cusip": "D18190898",
+          "issuer": "DEUTSCHE BANK A G",
+          "titleOfClass": "NAMEN AKT",
+          "value": 117120000,
+          "shares": 4000000,
+          "weight": 0.01816106891811588
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 101681250,
+          "shares": 825000,
+          "weight": 0.015767078115865526
+        },
+        {
+          "cusip": "219350105",
+          "issuer": "CORNING INC",
+          "titleOfClass": "COM",
+          "value": 92032500,
+          "shares": 1750000,
+          "weight": 0.014270906550601946
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 89874671,
+          "shares": 4957235,
+          "weight": 0.013936305447609211
+        },
+        {
+          "cusip": "502431109",
+          "issuer": "L3HARRIS TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 87794000,
+          "shares": 350000,
+          "weight": 0.013613668755097898
+        },
+        {
+          "cusip": "7.5513e+105",
+          "issuer": "RTX CORPORATION",
+          "titleOfClass": "COM",
+          "value": 85421700,
+          "shares": 585000,
+          "weight": 0.013245810969967721
+        },
+        {
+          "cusip": "12769G100",
+          "issuer": "CAESARS ENTERTAINMENT INC NE",
+          "titleOfClass": "COM",
+          "value": 59619000,
+          "shares": 2100000,
+          "weight": 0.009244746993076767
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 56097300,
+          "shares": 70000,
+          "weight": 0.008698658908984136
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 55741000,
+          "shares": 350000,
+          "weight": 0.008643409687198577
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 53600000,
+          "shares": 625000,
+          "weight": 0.008311418152416422
+        },
+        {
+          "cusip": "46266C105",
+          "issuer": "IQVIA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 47277000,
+          "shares": 300000,
+          "weight": 0.007330949925219985
+        },
+        {
+          "cusip": "910047109",
+          "issuer": "UNITED AIRLS HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 43796500,
+          "shares": 550000,
+          "weight": 0.006791250468513168
+        },
+        {
+          "cusip": "852234103",
+          "issuer": "BLOCK INC",
+          "titleOfClass": "CL A",
+          "value": 43597474,
+          "shares": 641800,
+          "weight": 0.006760388746326548
+        },
+        {
+          "cusip": "512807306",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM NEW",
+          "value": 38936000,
+          "shares": 400000,
+          "weight": 0.006037563007135929
+        },
+        {
+          "cusip": "464287184",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "CHINA LG-CAP ETF",
+          "value": 36760000,
+          "shares": 1000000,
+          "weight": 0.005700144240351262
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "ORACLE CORP",
+          "titleOfClass": "COM",
+          "value": 32794500,
+          "shares": 150000,
+          "weight": 0.005085238854466797
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 29798535,
+          "shares": 578500,
+          "weight": 0.004620673222283882
+        },
+        {
+          "cusip": "247361702",
+          "issuer": "DELTA AIR LINES INC DEL",
+          "titleOfClass": "COM NEW",
+          "value": 27049000,
+          "shares": 550000,
+          "weight": 0.004194319955311787
+        },
+        {
+          "cusip": "963320106",
+          "issuer": "WHIRLPOOL CORP",
+          "titleOfClass": "COM",
+          "value": 26987051,
+          "shares": 266092,
+          "weight": 0.004184713909731115
+        },
+        {
+          "cusip": "482497104",
+          "issuer": "KE HLDGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 26610000,
+          "shares": 1500000,
+          "weight": 0.004126246959623153
+        },
+        {
+          "cusip": "382550101",
+          "issuer": "GOODYEAR TIRE & RUBR CO",
+          "titleOfClass": "COM",
+          "value": 8936679,
+          "shares": 861782,
+          "weight": 0.0013857551504275864
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "MOHAWK INDS INC",
+          "titleOfClass": "COM",
+          "value": 6814600,
+          "shares": 65000,
+          "weight": 0.0010566975772659877
+        }
+      ],
+      "totalValue": 6448959614
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001656456-25-000005",
+      "holdings": [
+        {
+          "cusip": "78468R796",
+          "issuer": "SPDR SER TR",
+          "titleOfClass": "SPDR S&P 500 ETF",
+          "value": 2517255000,
+          "shares": 4500000,
+          "putCall": "Put",
+          "weight": 0.30028929516791825
+        },
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 1220482900,
+          "shares": 9230000,
+          "weight": 0.14559428814541905
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 517189500,
+          "shares": 4370000,
+          "weight": 0.06169675715143998
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 477552600,
+          "shares": 2510000,
+          "weight": 0.056968377720813666
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 331016000,
+          "shares": 8050000,
+          "weight": 0.039487680560492934
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 316998000,
+          "shares": 550000,
+          "weight": 0.03781544022740634
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 314022300,
+          "shares": 2010000,
+          "weight": 0.03746046194525727
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 277662500,
+          "shares": 1250000,
+          "putCall": "Put",
+          "weight": 0.033123015514742095
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "VISTRA CORP",
+          "titleOfClass": "COM",
+          "value": 270112000,
+          "shares": 2300000,
+          "weight": 0.0322222985340765
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 233152000,
+          "shares": 3200000,
+          "weight": 0.027813252827778863
+        },
+        {
+          "cusip": "464287184",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "CHINA LG-CAP ETF",
+          "value": 200704000,
+          "shares": 5600000,
+          "weight": 0.023942454259652624
+        },
+        {
+          "cusip": "629377508",
+          "issuer": "NRG ENERGY INC",
+          "titleOfClass": "COM NEW",
+          "value": 195693000,
+          "shares": 2050000,
+          "weight": 0.02334468023275172
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 191448900,
+          "shares": 510000,
+          "weight": 0.022838391518409246
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 139640000,
+          "shares": 4000000,
+          "weight": 0.016657985455286854
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 106830000,
+          "shares": 9000000,
+          "weight": 0.012744003052050232
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "ORACLE CORP",
+          "titleOfClass": "COM",
+          "value": 97867000,
+          "shares": 700000,
+          "weight": 0.011674785609800618
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 92154999,
+          "shares": 4957235,
+          "weight": 0.010993387517716804
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 91656250,
+          "shares": 175000,
+          "weight": 0.010933890571370206
+        },
+        {
+          "cusip": "D18190898",
+          "issuer": "DEUTSCHE BANK A G",
+          "titleOfClass": "NAMEN AKT",
+          "value": 89362500,
+          "shares": 3750000,
+          "weight": 0.010660263715612083
+        },
+        {
+          "cusip": "219350105",
+          "issuer": "CORNING INC",
+          "titleOfClass": "COM",
+          "value": 79823336,
+          "shares": 1743629,
+          "weight": 0.009522314308797446
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 71323250,
+          "shares": 775000,
+          "weight": 0.008508318971095588
+        },
+        {
+          "cusip": "502431109",
+          "issuer": "L3HARRIS TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 62793000,
+          "shares": 300000,
+          "weight": 0.007490725298580832
+        },
+        {
+          "cusip": "12769G100",
+          "issuer": "CAESARS ENTERTAINMENT INC NE",
+          "titleOfClass": "COM",
+          "value": 55000000,
+          "shares": 2200000,
+          "weight": 0.00656107992008577
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 53763500,
+          "shares": 350000,
+          "weight": 0.0064135749142460235
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 46384100,
+          "shares": 70000,
+          "weight": 0.005533268856750006
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 44820000,
+          "shares": 270000,
+          "weight": 0.005346683673058986
+        },
+        {
+          "cusip": "482497104",
+          "issuer": "KE HLDGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 38171000,
+          "shares": 1900000,
+          "weight": 0.0045535087569017075
+        },
+        {
+          "cusip": "512807306",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM NEW",
+          "value": 36350000,
+          "shares": 500000,
+          "weight": 0.004336277365365777
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 34756000,
+          "shares": 400000,
+          "weight": 0.004146125340045473
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 32514000,
+          "shares": 300000,
+          "weight": 0.0038786718640303405
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 30961320,
+          "shares": 578500,
+          "weight": 0.0036934489991154538
+        },
+        {
+          "cusip": "983134107",
+          "issuer": "WYNN RESORTS LTD",
+          "titleOfClass": "COM",
+          "value": 26720000,
+          "shares": 320000,
+          "weight": 0.0031874919175398503
+        },
+        {
+          "cusip": "517834107",
+          "issuer": "LAS VEGAS SANDS CORP",
+          "titleOfClass": "COM",
+          "value": 22791700,
+          "shares": 590000,
+          "weight": 0.002718875731174888
+        },
+        {
+          "cusip": "11135F101",
+          "issuer": "BROADCOM INC",
+          "titleOfClass": "COM",
+          "value": 21765900,
+          "shares": 130000,
+          "weight": 0.002596505626047179
+        },
+        {
+          "cusip": "92189F676",
+          "issuer": "VANECK ETF TRUST",
+          "titleOfClass": "SEMICONDUCTR ETF",
+          "value": 21147000,
+          "shares": 100000,
+          "putCall": "Put",
+          "weight": 0.0025226755830918867
+        },
+        {
+          "cusip": "165167172",
+          "issuer": "EXPAND ENERGY CORPORATION",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 12348035,
+          "shares": 117321,
+          "weight": 0.0014730262634730235
+        },
+        {
+          "cusip": "165167180",
+          "issuer": "EXPAND ENERGY CORPORATION",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 6460014,
+          "shares": 65398,
+          "weight": 0.00077063032979769
+        },
+        {
+          "cusip": "852234103",
+          "issuer": "BLOCK INC",
+          "titleOfClass": "CL A",
+          "value": 4074750,
+          "shares": 75000,
+          "weight": 0.000486086552806718
+        }
+      ],
+      "totalValue": 8382766354
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-10",
+      "accession": "0001656456-25-000001",
+      "holdings": [
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 1004181367,
+          "shares": 11843158,
+          "weight": 0.15535219789696256
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 570414000,
+          "shares": 2600000,
+          "weight": 0.08824607936705321
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 519491243,
+          "shares": 5356132,
+          "weight": 0.08036805804252198
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 408855000,
+          "shares": 970000,
+          "weight": 0.0632520428664383
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "VISTRA CORP",
+          "titleOfClass": "COM",
+          "value": 372249000,
+          "shares": 2700000,
+          "weight": 0.05758889998896625
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 362852233,
+          "shares": 10465885,
+          "weight": 0.056135170160323
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 358401034,
+          "shares": 1881963,
+          "weight": 0.05544654600272423
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 286899900,
+          "shares": 490000,
+          "weight": 0.04438494031668162
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "ORACLE CORP",
+          "titleOfClass": "COM",
+          "value": 233296000,
+          "shares": 1400000,
+          "weight": 0.03609213191123648
+        },
+        {
+          "cusip": "464287184",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "CHINA LG-CAP ETF",
+          "value": 202034176,
+          "shares": 6637128,
+          "weight": 0.03125576148227988
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 174150000,
+          "shares": 13500000,
+          "weight": 0.026941931161879474
+        },
+        {
+          "cusip": "629377508",
+          "issuer": "NRG ENERGY INC",
+          "titleOfClass": "COM NEW",
+          "value": 163749300,
+          "shares": 1815000,
+          "weight": 0.02533288755903503
+        },
+        {
+          "cusip": "7903107",
+          "issuer": "ADVANCED MICRO DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 144948000,
+          "shares": 1200000,
+          "weight": 0.022424226460247523
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 133793322,
+          "shares": 4575695,
+          "weight": 0.020698538451008754
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 128818008,
+          "shares": 1527909,
+          "weight": 0.019928830915569563
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 122896000,
+          "shares": 800000,
+          "weight": 0.019012664783636748
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 110892800,
+          "shares": 160000,
+          "weight": 0.017155705908401195
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 100992000,
+          "shares": 1200000,
+          "weight": 0.015623999494117323
+        },
+        {
+          "cusip": "31428X106",
+          "issuer": "FEDEX CORP",
+          "titleOfClass": "COM",
+          "value": 98465500,
+          "shares": 350000,
+          "weight": 0.015233136507723476
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 96279659,
+          "shares": 4914735,
+          "weight": 0.014894975280317137
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 91317334,
+          "shares": 680001,
+          "weight": 0.014127277212255847
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 90480000,
+          "shares": 1500000,
+          "weight": 0.013997737189358914
+        },
+        {
+          "cusip": "512807306",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM NEW",
+          "value": 90287500,
+          "shares": 1250000,
+          "weight": 0.013967956415608343
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 88272570,
+          "shares": 174500,
+          "weight": 0.013656236028838283
+        },
+        {
+          "cusip": "12769G100",
+          "issuer": "CAESARS ENTERTAINMENT INC NE",
+          "titleOfClass": "COM",
+          "value": 73524000,
+          "shares": 2200000,
+          "weight": 0.011374553814217779
+        },
+        {
+          "cusip": "219350105",
+          "issuer": "CORNING INC",
+          "titleOfClass": "COM",
+          "value": 71280000,
+          "shares": 1500000,
+          "weight": 0.011027395080211133
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 49372500,
+          "shares": 250000,
+          "weight": 0.007638188322078061
+        },
+        {
+          "cusip": "482497104",
+          "issuer": "KE HLDGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 47414443,
+          "shares": 2574074,
+          "weight": 0.007335266490869125
+        },
+        {
+          "cusip": "517834107",
+          "issuer": "LAS VEGAS SANDS CORP",
+          "titleOfClass": "COM",
+          "value": 46224000,
+          "shares": 900000,
+          "weight": 0.00715109862777328
+        },
+        {
+          "cusip": "983134107",
+          "issuer": "WYNN RESORTS LTD",
+          "titleOfClass": "COM",
+          "value": 43080000,
+          "shares": 500000,
+          "weight": 0.006664705107400332
+        },
+        {
+          "cusip": "26884L109",
+          "issuer": "EQT CORP",
+          "titleOfClass": "COM",
+          "value": 36888000,
+          "shares": 800000,
+          "weight": 0.005706769777200172
+        },
+        {
+          "cusip": "03674X106",
+          "issuer": "ANTERO RESOURCES CORP",
+          "titleOfClass": "COM",
+          "value": 29442000,
+          "shares": 840000,
+          "weight": 0.004554833977996299
+        },
+        {
+          "cusip": "165167735",
+          "issuer": "EXPAND ENERGY CORPORATION",
+          "titleOfClass": "COM",
+          "value": 29367250,
+          "shares": 295000,
+          "weight": 0.004543269755461986
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 27687010,
+          "shares": 578500,
+          "weight": 0.004283327691635192
+        },
+        {
+          "cusip": "165167172",
+          "issuer": "EXPAND ENERGY CORPORATION",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 22728750,
+          "shares": 250000,
+          "weight": 0.003516258500692323
+        },
+        {
+          "cusip": "458140100",
+          "issuer": "INTEL CORP",
+          "titleOfClass": "COM",
+          "value": 20050000,
+          "shares": 1000000,
+          "weight": 0.0031018416296048432
+        },
+        {
+          "cusip": "165167180",
+          "issuer": "EXPAND ENERGY CORPORATION",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 12828000,
+          "shares": 150000,
+          "weight": 0.0019845598216743604
+        }
+      ],
+      "totalValue": 6463901899
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001656456-24-000004",
+      "holdings": [
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 1061200000,
+          "shares": 10000000,
+          "weight": 0.15763673069219195
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 714645605,
+          "shares": 5301132,
+          "weight": 0.10615755444378401
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 596256000,
+          "shares": 3200000,
+          "weight": 0.08857128391971693
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 417391000,
+          "shares": 970000,
+          "weight": 0.06200165158343827
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 357775000,
+          "shares": 625000,
+          "weight": 0.05314594923049282
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 314645561,
+          "shares": 1881964,
+          "weight": 0.04673925514780499
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 292000000,
+          "shares": 7300000,
+          "weight": 0.04337535371477577
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "ORACLE CORP",
+          "titleOfClass": "COM",
+          "value": 268106338,
+          "shares": 1573394,
+          "weight": 0.03982605220521654
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 200812500,
+          "shares": 15750000,
+          "weight": 0.02982983978715209
+        },
+        {
+          "cusip": "7903107",
+          "issuer": "ADVANCED MICRO DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 186230800,
+          "shares": 1135000,
+          "weight": 0.02766379048830707
+        },
+        {
+          "cusip": "464287184",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "CHINA LG-CAP ETF",
+          "value": 185436300,
+          "shares": 5835000,
+          "weight": 0.027545770904312584
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "VISTRA CORP",
+          "titleOfClass": "COM",
+          "value": 150591794,
+          "shares": 1270388,
+          "weight": 0.022369768257851533
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 150038250,
+          "shares": 1425000,
+          "weight": 0.022287541659232725
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 136040000,
+          "shares": 800000,
+          "weight": 0.020208161367664713
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 128085300,
+          "shares": 3765000,
+          "weight": 0.019026524634120443
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 109589400,
+          "shares": 6828000,
+          "weight": 0.016279037631472766
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 108895500,
+          "shares": 1050000,
+          "weight": 0.016175961748107415
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 105975600,
+          "shares": 1410000,
+          "weight": 0.015742223065532846
+        },
+        {
+          "cusip": "00724F101",
+          "issuer": "ADOBE INC",
+          "titleOfClass": "COM",
+          "value": 103556000,
+          "shares": 200000,
+          "weight": 0.015382801812627809
+        },
+        {
+          "cusip": "31428X106",
+          "issuer": "FEDEX CORP",
+          "titleOfClass": "COM",
+          "value": 102630000,
+          "shares": 375000,
+          "weight": 0.015245248464888485
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 102026660,
+          "shares": 174500,
+          "weight": 0.015155624883003989
+        },
+        {
+          "cusip": "629377508",
+          "issuer": "NRG ENERGY INC",
+          "titleOfClass": "COM NEW",
+          "value": 91083602,
+          "shares": 999820,
+          "weight": 0.013530080323170747
+        },
+        {
+          "cusip": "12769G100",
+          "issuer": "CAESARS ENTERTAINMENT INC NE",
+          "titleOfClass": "COM",
+          "value": 89741000,
+          "shares": 2150000,
+          "weight": 0.013330642526430455
+        },
+        {
+          "cusip": "512807108",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM",
+          "value": 81608000,
+          "shares": 100000,
+          "weight": 0.012122520088888429
+        },
+        {
+          "cusip": "517834107",
+          "issuer": "LAS VEGAS SANDS CORP",
+          "titleOfClass": "COM",
+          "value": 76935780,
+          "shares": 1528323,
+          "weight": 0.011428481749390998
+        },
+        {
+          "cusip": "983134107",
+          "issuer": "WYNN RESORTS LTD",
+          "titleOfClass": "COM",
+          "value": 76704000,
+          "shares": 800000,
+          "weight": 0.011394051819651236
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 75900000,
+          "shares": 625000,
+          "weight": 0.011274621051203703
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 69468000,
+          "shares": 400000,
+          "weight": 0.010319174903623437
+        },
+        {
+          "cusip": "26884L109",
+          "issuer": "EQT CORP",
+          "titleOfClass": "COM",
+          "value": 65768800,
+          "shares": 1795000,
+          "weight": 0.009769674532179263
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 64576875,
+          "shares": 77500,
+          "weight": 0.009592619160684455
+        },
+        {
+          "cusip": "458140100",
+          "issuer": "INTEL CORP",
+          "titleOfClass": "COM",
+          "value": 58650000,
+          "shares": 2500000,
+          "weight": 0.008712207175930135
+        },
+        {
+          "cusip": "03674X106",
+          "issuer": "ANTERO RESOURCES CORP",
+          "titleOfClass": "COM",
+          "value": 49994250,
+          "shares": 1745000,
+          "weight": 0.007426432457037427
+        },
+        {
+          "cusip": "482497104",
+          "issuer": "KE HLDGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 43304250,
+          "shares": 2175000,
+          "weight": 0.006432661510626982
+        },
+        {
+          "cusip": "845467109",
+          "issuer": "SOUTHWESTRERN ENERGY CO",
+          "titleOfClass": "COM",
+          "value": 29719800,
+          "shares": 4180000,
+          "weight": 0.004414749442919154
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 25720110,
+          "shares": 578500,
+          "weight": 0.003820612564496375
+        },
+        {
+          "cusip": "165167172",
+          "issuer": "CHESAPEAKE ENERGY CORP",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 17396250,
+          "shares": 250000,
+          "weight": 0.0025841386885639317
+        },
+        {
+          "cusip": "165167735",
+          "issuer": "CHESAPEAKE ENERGY CORP",
+          "titleOfClass": "COM",
+          "value": 13571250,
+          "shares": 165000,
+          "weight": 0.002015951264046749
+        },
+        {
+          "cusip": "165167180",
+          "issuer": "CHESAPEAKE ENERGY CORP",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 9864000,
+          "shares": 150000,
+          "weight": 0.0014652550994607816
+        }
+      ],
+      "totalValue": 6731933575
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001656456-24-000003",
+      "holdings": [
+        {
+          "cusip": "01609W102",
+          "issuer": "ALIBABA GROUP HLDG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 756000000,
+          "shares": 10500000,
+          "weight": 0.12242181947640154
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 671543750,
+          "shares": 3475000,
+          "weight": 0.1087455128743462
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 528007064,
+          "shares": 1181356,
+          "weight": 0.08550209718422327
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 471445700,
+          "shares": 935000,
+          "weight": 0.07634291055334096
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 353083500,
+          "shares": 1925000,
+          "weight": 0.05717609060462437
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "ORACLE CORP",
+          "titleOfClass": "COM",
+          "value": 282400000,
+          "shares": 2000000,
+          "weight": 0.04573005531763994
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 257923000,
+          "shares": 1940000,
+          "weight": 0.041766406011655974
+        },
+        {
+          "cusip": "7903107",
+          "issuer": "ADVANCED MICRO DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 222227700,
+          "shares": 1370000,
+          "weight": 0.0359861367355237
+        },
+        {
+          "cusip": "00724F101",
+          "issuer": "ADOBE INC",
+          "titleOfClass": "COM",
+          "value": 199994400,
+          "shares": 360000,
+          "weight": 0.03238581790091434
+        },
+        {
+          "cusip": "464287184",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "CHINA LG-CAP ETF",
+          "value": 180370600,
+          "shares": 6940000,
+          "weight": 0.029208064857209302
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM INC",
+          "titleOfClass": "COM",
+          "value": 167311200,
+          "shares": 840000,
+          "weight": 0.027093308892566288
+        },
+        {
+          "cusip": "31428X106",
+          "issuer": "FEDEX CORP",
+          "titleOfClass": "COM",
+          "value": 164912000,
+          "shares": 550000,
+          "weight": 0.026704797742714722
+        },
+        {
+          "cusip": "595112103",
+          "issuer": "MICRON TECHNOLOGY INC",
+          "titleOfClass": "COM",
+          "value": 154547750,
+          "shares": 1175000,
+          "weight": 0.02502647718384132
+        },
+        {
+          "cusip": "56752108",
+          "issuer": "BAIDU INC",
+          "titleOfClass": "SPON ADR REP A",
+          "value": 143989200,
+          "shares": 1665000,
+          "weight": 0.02331669292189349
+        },
+        {
+          "cusip": "29273V100",
+          "issuer": "ENERGY TRANSFER L P",
+          "titleOfClass": "COM UT LTD PTN",
+          "value": 124965822,
+          "shares": 7704428,
+          "weight": 0.02023616838836525
+        },
+        {
+          "cusip": "500767306",
+          "issuer": "KRANESHARES TRUST",
+          "titleOfClass": "CSI CHI INTERNET",
+          "value": 121319800,
+          "shares": 4490000,
+          "weight": 0.01964575483401209
+        },
+        {
+          "cusip": "512807108",
+          "issuer": "LAM RESEARCH CORP",
+          "titleOfClass": "COM",
+          "value": 116068650,
+          "shares": 109000,
+          "weight": 0.01879541708620322
+        },
+        {
+          "cusip": "55087P104",
+          "issuer": "LYFT INC",
+          "titleOfClass": "CL A COM",
+          "value": 112253724,
+          "shares": 7961257,
+          "weight": 0.01817765229508175
+        },
+        {
+          "cusip": "47215P106",
+          "issuer": "JD.COM INC",
+          "titleOfClass": "SPON ADS CL A",
+          "value": 111385904,
+          "shares": 4310600,
+          "weight": 0.01803712305780925
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "UBER TECHNOLOGIES INC",
+          "titleOfClass": "COM",
+          "value": 109020000,
+          "shares": 1500000,
+          "weight": 0.017654003649890605
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 94213100,
+          "shares": 185000,
+          "weight": 0.015256268677926146
+        },
+        {
+          "cusip": "N07059210",
+          "issuer": "ASML HOLDING N V",
+          "titleOfClass": "N Y REGISTRY SHS",
+          "value": 89488875,
+          "shares": 87500,
+          "weight": 0.014491257804756961
+        },
+        {
+          "cusip": "12769G100",
+          "issuer": "CAESARS ENTERTAINMENT INC NE",
+          "titleOfClass": "COM",
+          "value": 87428000,
+          "shares": 2200000,
+          "weight": 0.014157532848125442
+        },
+        {
+          "cusip": "458140100",
+          "issuer": "INTEL CORP",
+          "titleOfClass": "COM",
+          "value": 86096600,
+          "shares": 2780000,
+          "weight": 0.013941934421603113
+        },
+        {
+          "cusip": "67066G104",
+          "issuer": "NVIDIA CORPORATION",
+          "titleOfClass": "COM",
+          "value": 85242600,
+          "shares": 690000,
+          "weight": 0.013803643107009399
+        },
+        {
+          "cusip": "911312106",
+          "issuer": "UNITED PARCEL SERVICE INC",
+          "titleOfClass": "CL B",
+          "value": 82794250,
+          "shares": 605000,
+          "weight": 0.013407172919555633
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 79952600,
+          "shares": 460000,
+          "weight": 0.012947014237921882
+        },
+        {
+          "cusip": "26884L109",
+          "issuer": "EQT CORP",
+          "titleOfClass": "COM",
+          "value": 70446900,
+          "shares": 1905000,
+          "weight": 0.011407721791629778
+        },
+        {
+          "cusip": "03674X106",
+          "issuer": "ANTERO RESOURCES CORP",
+          "titleOfClass": "COM",
+          "value": 60365500,
+          "shares": 1850000,
+          "weight": 0.009775204158204652
+        },
+        {
+          "cusip": "97023105",
+          "issuer": "BOEING CO",
+          "titleOfClass": "COM",
+          "value": 38222100,
+          "shares": 210000,
+          "weight": 0.0061894431563610675
+        },
+        {
+          "cusip": "845467109",
+          "issuer": "SOUTHWESTERN ENERGY CO",
+          "titleOfClass": "COM",
+          "value": 29881200,
+          "shares": 4440000,
+          "weight": 0.004838770994891865
+        },
+        {
+          "cusip": "482497104",
+          "issuer": "KE HLDGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 29502750,
+          "shares": 2085000,
+          "weight": 0.004777487215023023
+        },
+        {
+          "cusip": "55336V100",
+          "issuer": "MPLX LP",
+          "titleOfClass": "COM UNIT REP LTD",
+          "value": 26043785,
+          "shares": 611500,
+          "weight": 0.00421736447850822
+        },
+        {
+          "cusip": "55616P104",
+          "issuer": "MACYS INC",
+          "titleOfClass": "COM",
+          "value": 24288000,
+          "shares": 1265000,
+          "weight": 0.0039330438511148685
+        },
+        {
+          "cusip": "165167172",
+          "issuer": "CHESAPEAKE ENERGY CORP",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 17885000,
+          "shares": 250000,
+          "weight": 0.002896182858909314
+        },
+        {
+          "cusip": "165167735",
+          "issuer": "CHESAPEAKE ENERGY CORP",
+          "titleOfClass": "COM",
+          "value": 15451720,
+          "shares": 188000,
+          "weight": 0.002502153011163893
+        },
+        {
+          "cusip": "165167180",
+          "issuer": "CHESAPEAKE ENERGY CORP",
+          "titleOfClass": "*W EXP 02/09/202",
+          "value": 9297000,
+          "shares": 150000,
+          "weight": 0.0015054968990371761
+        }
+      ],
+      "totalValue": 6175369744
+    }
+  ]
+}

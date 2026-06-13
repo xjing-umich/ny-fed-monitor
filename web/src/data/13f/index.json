@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-08T16:02:22.716Z",
+  "generatedAt": "2026-06-12T16:21:35.036Z",
   "managers": [
     {
       "cik": "0001067983",
@@ -32,14 +32,14 @@
       "topHolding": "BROOKFIELD CORP"
     },
     {
-      "cik": "0001350694",
-      "slug": "bridgewater-associates",
-      "name": "Bridgewater Associates, LP",
-      "person": "Ray Dalio",
+      "cik": "0001061768",
+      "slug": "baupost-group",
+      "name": "BAUPOST GROUP LLC/MA",
+      "person": "Seth Klarman",
       "period": "2026-03-31",
-      "totalValue": 22404547213,
-      "holdingCount": 993,
-      "topHolding": "STATE STR SPDR S&P 500 ETF T"
+      "totalValue": 5115380000,
+      "holdingCount": 22,
+      "topHolding": "AMAZON COM INC"
     },
     {
       "cik": "0001536411",
@@ -52,14 +52,294 @@
       "topHolding": "Natera Inc"
     },
     {
-      "cik": "0001061768",
-      "slug": "baupost-group",
-      "name": "BAUPOST GROUP LLC/MA",
-      "person": "Seth Klarman",
+      "cik": "0000783412",
+      "slug": "daily-journal",
+      "name": "DAILY JOURNAL CORP",
+      "person": "Charlie Munger",
       "period": "2026-03-31",
-      "totalValue": 5115380000,
-      "holdingCount": 22,
+      "totalValue": 240668825,
+      "holdingCount": 4,
+      "topHolding": "Wells Fargo & Co"
+    },
+    {
+      "cik": "0001569205",
+      "slug": "fundsmith",
+      "name": "Fundsmith LLP",
+      "person": "Terry Smith",
+      "period": "2026-03-31",
+      "totalValue": 12827766987,
+      "holdingCount": 34,
+      "topHolding": "MARRIOTT INTL INC NEW"
+    },
+    {
+      "cik": "0001112520",
+      "slug": "akre-capital",
+      "name": "AKRE CAPITAL MANAGEMENT LLC",
+      "person": "Chuck Akre",
+      "period": "2026-03-31",
+      "totalValue": 6134537825,
+      "holdingCount": 20,
+      "topHolding": "MASTERCARD INCORPORATED"
+    },
+    {
+      "cik": "0001096343",
+      "slug": "markel",
+      "name": "MARKEL GROUP INC.",
+      "person": "Thomas Gayner",
+      "period": "2026-03-31",
+      "totalValue": 11938885174,
+      "holdingCount": 129,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001549575",
+      "slug": "pabrai-funds",
+      "name": "Dalal Street, LLC",
+      "person": "Mohnish Pabrai",
+      "period": "2026-03-31",
+      "totalValue": 422885142,
+      "holdingCount": 3,
+      "topHolding": "WARRIOR MET COAL INC"
+    },
+    {
+      "cik": "0001709323",
+      "slug": "himalaya-capital",
+      "name": "Himalaya Capital Management LLC",
+      "person": "Li Lu",
+      "period": "2026-03-31",
+      "totalValue": 3201226867,
+      "holdingCount": 14,
+      "topHolding": "ALPHABET INC"
+    },
+    {
+      "cik": "0001697868",
+      "slug": "valley-forge-capital",
+      "name": "Valley Forge Capital Management, LP",
+      "person": "Dev Kantesaria",
+      "period": "2026-03-31",
+      "totalValue": 3375637687,
+      "holdingCount": 7,
+      "topHolding": "FAIR ISAAC CORP"
+    },
+    {
+      "cik": "0001641864",
+      "slug": "giverny-capital",
+      "name": "Giverny Capital Inc.",
+      "person": "François Rochon",
+      "period": "2026-03-31",
+      "totalValue": 2731351278,
+      "holdingCount": 51,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001034524",
+      "slug": "polen-capital",
+      "name": "POLEN CAPITAL MANAGEMENT LLC",
+      "person": "Polen Capital",
+      "period": "2026-03-31",
+      "totalValue": 14456164077,
+      "holdingCount": 221,
+      "topHolding": "MICROSOFT CORP"
+    },
+    {
+      "cik": "0000883965",
+      "slug": "weitz-investment",
+      "name": "WEITZ INVESTMENT MANAGEMENT, INC.",
+      "person": "Wallace Weitz",
+      "period": "2026-03-31",
+      "totalValue": 1432543452,
+      "holdingCount": 49,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001115373",
+      "slug": "semper-augustus",
+      "name": "SEMPER AUGUSTUS INVESTMENTS GROUP LLC",
+      "person": "Chris Bloomstran",
+      "period": "2026-03-31",
+      "totalValue": 837339668,
+      "holdingCount": 44,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001553733",
+      "slug": "brave-warrior",
+      "name": "Brave Warrior Advisors, LLC",
+      "person": "Glenn Greenberg",
+      "period": "2026-03-31",
+      "totalValue": 4040158246,
+      "holdingCount": 36,
+      "topHolding": "TD SYNNEX CORPORATION"
+    },
+    {
+      "cik": "0001056831",
+      "slug": "fairholme",
+      "name": "FAIRHOLME CAPITAL MANAGEMENT LLC",
+      "person": "Bruce Berkowitz",
+      "period": "2026-03-31",
+      "totalValue": 1514192261,
+      "holdingCount": 10,
+      "topHolding": "ST JOE CO"
+    },
+    {
+      "cik": "0000905567",
+      "slug": "yacktman",
+      "name": "YACKTMAN ASSET MANAGEMENT LP",
+      "person": "Donald Yacktman",
+      "period": "2026-03-31",
+      "totalValue": 7499157453,
+      "holdingCount": 76,
+      "topHolding": "Canadian Natural Resources Limited"
+    },
+    {
+      "cik": "0000813917",
+      "slug": "harris-associates",
+      "name": "HARRIS ASSOCIATES L P",
+      "person": "Bill Nygren",
+      "period": "2026-03-31",
+      "totalValue": 75031782060,
+      "holdingCount": 158,
+      "topHolding": "SALESFORCE INC"
+    },
+    {
+      "cik": "0000200217",
+      "slug": "dodge-and-cox",
+      "name": "DODGE & COX",
+      "person": "Dodge & Cox",
+      "period": "2026-03-31",
+      "totalValue": 181976456224,
+      "holdingCount": 222,
+      "topHolding": "Johnson Controls International PLC"
+    },
+    {
+      "cik": "0001720792",
+      "slug": "ruane-cunniff",
+      "name": "Ruane, Cunniff & Goldfarb L.P.",
+      "person": "Ruane, Cunniff (Sequoia)",
+      "period": "2026-03-31",
+      "totalValue": 6028259104,
+      "holdingCount": 50,
+      "topHolding": "ALPHABET INC"
+    },
+    {
+      "cik": "0000732905",
+      "slug": "tweedy-browne",
+      "name": "Tweedy, Browne Co LLC",
+      "person": "Tweedy, Browne",
+      "period": "2026-03-31",
+      "totalValue": 1258817374,
+      "holdingCount": 93,
+      "topHolding": "CNH INDUSTRIAL NV"
+    },
+    {
+      "cik": "0001489933",
+      "slug": "greenlight-capital",
+      "name": "DME Capital Management, LP",
+      "person": "David Einhorn",
+      "period": "2026-03-31",
+      "totalValue": 3190735190,
+      "holdingCount": 45,
+      "topHolding": "GREEN BRICK PARTNERS INC"
+    },
+    {
+      "cik": "0001040273",
+      "slug": "third-point",
+      "name": "Third Point LLC",
+      "person": "Daniel Loeb",
+      "period": "2026-03-31",
+      "totalValue": 2082795760,
+      "holdingCount": 33,
       "topHolding": "AMAZON COM INC"
+    },
+    {
+      "cik": "0001656456",
+      "slug": "appaloosa",
+      "name": "Appaloosa LP",
+      "person": "David Tepper",
+      "period": "2026-03-31",
+      "totalValue": 5933477986,
+      "holdingCount": 31,
+      "topHolding": "AMAZON COM INC"
+    },
+    {
+      "cik": "0000921669",
+      "slug": "icahn-capital",
+      "name": "ICAHN CARL C",
+      "person": "Carl Icahn",
+      "period": "2026-03-31",
+      "totalValue": 8553640766,
+      "holdingCount": 12,
+      "topHolding": "Icahn Enterprises LP"
+    },
+    {
+      "cik": "0001647251",
+      "slug": "tci-fund",
+      "name": "TCI Fund Management Ltd",
+      "person": "Chris Hohn",
+      "period": "2026-03-31",
+      "totalValue": 45170870798,
+      "holdingCount": 10,
+      "topHolding": "GE AEROSPACE"
+    },
+    {
+      "cik": "0000915191",
+      "slug": "fairfax",
+      "name": "FAIRFAX FINANCIAL HOLDINGS LTD/ CAN",
+      "person": "Prem Watsa",
+      "period": "2026-03-31",
+      "totalValue": 1942669475,
+      "holdingCount": 29,
+      "topHolding": "ORLA MINING LTD"
+    },
+    {
+      "cik": "0000949509",
+      "slug": "oaktree",
+      "name": "OAKTREE CAPITAL MANAGEMENT LP",
+      "person": "Howard Marks",
+      "period": "2026-03-31",
+      "totalValue": 6284997721,
+      "holdingCount": 142,
+      "topHolding": "TORM PLC"
+    },
+    {
+      "cik": "0001166559",
+      "slug": "gates-foundation-trust",
+      "name": "GATES FOUNDATION TRUST",
+      "person": "Bill Gates",
+      "period": "2026-03-31",
+      "totalValue": 31665505891,
+      "holdingCount": 22,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001671657",
+      "slug": "dorsey-asset",
+      "name": "Dorsey Asset Management, LLC",
+      "person": "Pat Dorsey",
+      "period": "2026-03-31",
+      "totalValue": 1255861264,
+      "holdingCount": 11,
+      "topHolding": "ASML HLDG NV"
+    },
+    {
+      "cik": "0001759760",
+      "slug": "hh-international",
+      "name": "H&H International Investment, LLC",
+      "person": "Duan Yongping",
+      "period": "2026-03-31",
+      "totalValue": 20003996234,
+      "holdingCount": 19,
+      "topHolding": "APPLE INC"
+    },
+    {
+      "cik": "0001350694",
+      "slug": "bridgewater-associates",
+      "name": "Bridgewater Associates, LP",
+      "person": "Ray Dalio",
+      "period": "2026-03-31",
+      "totalValue": 22404547213,
+      "holdingCount": 993,
+      "topHolding": "STATE STR SPDR S&P 500 ETF T"
     }
   ]
 }
