@@ -23,9 +23,14 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const isZh = rawLang === "zh";
+  const lang = isZh ? "zh" : "en";
+  const alternates = {
+    canonical: `/${lang}/investors/consensus`,
+    languages: { en: "/en/investors/consensus", "zh-CN": "/zh/investors/consensus", "x-default": "/en/investors/consensus" },
+  };
   return isZh
-    ? { title: "共识持仓 · 超级投资者 — Compounder · 复利", description: "顶级价值投资者 13F 中被最多人同时持有的股票，含季度环比。" }
-    : { title: "Consensus holdings · Superinvestors — Compounder", description: "Stocks held by the most superinvestors (13F), with quarter-over-quarter change." };
+    ? { title: "共识持仓 · 超级投资者 — Compounder · 复利", description: "顶级价值投资者 13F 中被最多人同时持有的股票，含季度环比。", alternates }
+    : { title: "Consensus holdings · Superinvestors — Compounder", description: "Stocks held by the most superinvestors (13F), with quarter-over-quarter change.", alternates };
 }
 
 export default async function ConsensusPage({ params }: { params: Promise<{ lang: string }> }) {

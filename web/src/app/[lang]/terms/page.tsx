@@ -15,7 +15,14 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const doc = getLegalDoc("terms", lang);
-  return { title: `${doc.title} — Compounder`, description: doc.intro };
+  return {
+    title: `${doc.title} — Compounder`,
+    description: doc.intro,
+    alternates: {
+      canonical: `/${lang}/terms`,
+      languages: { en: "/en/terms", "zh-CN": "/zh/terms", "x-default": "/en/terms" },
+    },
+  };
 }
 
 export default async function TermsPage({

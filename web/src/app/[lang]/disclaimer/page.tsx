@@ -15,7 +15,14 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const doc = getLegalDoc("disclaimer", lang);
-  return { title: `${doc.title} — Compounder`, description: doc.intro };
+  return {
+    title: `${doc.title} — Compounder`,
+    description: doc.intro,
+    alternates: {
+      canonical: `/${lang}/disclaimer`,
+      languages: { en: "/en/disclaimer", "zh-CN": "/zh/disclaimer", "x-default": "/en/disclaimer" },
+    },
+  };
 }
 
 export default async function DisclaimerPage({
