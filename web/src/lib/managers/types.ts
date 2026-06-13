@@ -18,6 +18,7 @@ export type FilingData = {
 
 export type HoldingChange = {
   cusip: string;
+  putCall?: string;
   issuer: string;
   kind: "new" | "exited" | "increased" | "decreased";
   prevShares: number;
