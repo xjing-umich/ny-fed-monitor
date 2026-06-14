@@ -1,0 +1,57 @@
+import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
+import { databaseNotConfigured } from "@/lib/ingestion/routes";
+import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
+import { defaultProviders, resolveDaily, type DailyClose } from "@/lib/prices/providers";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
+function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
+
+export async function GET(request: Request): Promise<Response> {
+  if (!isAuthorizedIngestRequest(request)) return unauthorizedResponse();
+  if (!hasSupabaseEnv()) return databaseNotConfigured();
+
+  const db = getDb();
+  const { data: run } = await db.from("price_ingest_runs")
+    .insert({ run_type: "daily", status: "running" }).select("id").single();
+  const runId = run?.id;
+
+  try {
+    const tickers: string[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await db.from("securities").select("ticker").range(from, from + 999);
+      if (error) throw new Error(`securities read: ${error.message}`);
+      if (!data?.length) break;
+      tickers.push(...data.map((r: { ticker: string }) => r.ticker));
+      if (data.length < 1000) break;
+    }
+
+    const providers = defaultProviders();
+    let written = 0, skipped = 0, fallback = 0;
+    const rows: Array<{ ticker: string; date: string; close: number; currency: string; source: string; as_of: string }> = [];
+    for (const ticker of tickers) {
+      const d: DailyClose | null = await resolveDaily(ticker, providers);
+      if (!d) { skipped++; await sleep(120); continue; }
+      if (d.source !== "yahoo") fallback++;
+      rows.push({ ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: new Date().toISOString() });
+      written++;
+      if (rows.length >= 200) { await db.from("prices").upsert(rows.splice(0), { onConflict: "ticker,date" }); }
+      await sleep(120);
+    }
+    if (rows.length) await db.from("prices").upsert(rows.splice(0), { onConflict: "ticker,date" });
+
+    if (runId) await db.from("price_ingest_runs").update({
+      status: "success", rows_written: written, tickers_total: tickers.length,
+      tickers_filled_by_fallback: fallback, finished_at: new Date().toISOString(),
+    }).eq("id", runId);
+
+    return Response.json({ ok: true, total: tickers.length, written, skipped, fallback });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (runId) await db.from("price_ingest_runs").update({
+      status: "error", error_message: msg, finished_at: new Date().toISOString(),
+    }).eq("id", runId);
+    return Response.json({ ok: false, message: msg }, { status: 500 });
+  }
+}

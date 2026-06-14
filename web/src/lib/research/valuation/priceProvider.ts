@@ -1,25 +1,19 @@
-import { parseQuote } from "@/lib/prices/finnhub";
 import type { PriceData } from "./types";
 
-export async function fetchFinnhubPrice(ticker: string, fetchImpl: typeof fetch = fetch): Promise<PriceData | null> {
-  const apiKey = process.env.FINNHUB_API_KEY?.trim();
-  if (!apiKey) return null;
-  const normalizedTicker = ticker.trim().toUpperCase();
-  const response = await fetchImpl(
-    `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(normalizedTicker)}&token=${encodeURIComponent(apiKey)}`,
-    { headers: { Accept: "application/json" } },
-  );
-  if (!response.ok) {
-    throw new Error(`Finnhub quote request failed with HTTP ${response.status}`);
-  }
-  const parsed = parseQuote(await response.json());
-  if (!parsed) return null;
+// store-first：估值从 prices 表读最新收盘价（由 Yahoo/Eastmoney 摄取入库）。
+// 动态 import priceRead：它是 server-only，静态导入会让估值 barrel 在模块求值期
+// 触发 server-only（tsx 测试/脚本里会抛错）；延迟到实际调用时（服务端）再加载。
+export async function fetchStorePrice(ticker: string): Promise<PriceData | null> {
+  const T = ticker.trim().toUpperCase();
+  const { getLatestPrice } = await import("@/lib/managers/priceRead");
+  const p = await getLatestPrice(T);
+  if (!p) return null;
   return {
-    ticker: normalizedTicker,
-    latest_price: parsed.close,
-    price_date: parsed.date,
-    currency: "USD",
-    source: "FINNHUB_QUOTE",
+    ticker: T,
+    latest_price: p.close,
+    price_date: p.date,
+    currency: p.currency,
+    source: p.source ? `STORE_${p.source.toUpperCase()}` : "STORE",
   };
 }
 

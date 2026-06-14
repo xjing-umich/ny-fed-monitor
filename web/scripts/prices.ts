@@ -1,4 +1,4 @@
-/** 价格日更入口: 读仓库根 .env.local(或 process.env), 拉 Finnhub 写 prices。用法: npm run prices */
+/** 价格日更入口: 零 key 双源 [Yahoo, Eastmoney] 顺序降级 写 prices。用法: npm run prices */
 import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import * as fs from "fs";
@@ -21,11 +21,9 @@ async function main() {
   const env = loadEnv();
   const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
   const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
-  const fk = env.FINNHUB_API_KEY;
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
-  if (!fk) throw new Error("缺少 FINNHUB_API_KEY");
   const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
-  const s = await updatePrices(db, fk);
-  console.log(`价格完成: 拉取 ${s.total}, 写入 ${s.written}, 跳过 ${s.skipped}`);
+  const s = await updatePrices(db);
+  console.log(`价格日更完成: 拉取 ${s.total}, 写入 ${s.written}, 跳过 ${s.skipped}, 非主源补 ${s.fallback}`);
 }
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });

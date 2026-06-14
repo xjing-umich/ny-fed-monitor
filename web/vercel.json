@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/prices",
+      "schedule": "30 21 * * 1-5"
+    },
+    {
       "path": "/api/cron/market-ingest",
       "schedule": "0 10 * * 1-5"
     },
