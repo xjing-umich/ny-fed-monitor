@@ -58,13 +58,16 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const { holdings, moves } = computeConsensus(scan, cmap);
   await db.from("consensus_holdings").delete().neq("ticker", "");
   await db.from("consensus_moves").delete().neq("ticker", "");
+  // Write failures must throw, not warn: a swallowed moves-upsert error (e.g. a
+  // missing column / stale PostgREST cache) previously left consensus_moves
+  // silently empty while the run still reported success.
   for (let i = 0; i < holdings.length; i += 500) {
     const { error } = await db.from("consensus_holdings").upsert(holdings.slice(i, i + 500), { onConflict: "ticker" });
-    if (error) console.warn(`consensus_holdings upsert err: ${error.message}`);
+    if (error) throw new Error(`consensus_holdings upsert failed: ${error.message}`);
   }
   for (let i = 0; i < moves.length; i += 500) {
     const { error } = await db.from("consensus_moves").upsert(moves.slice(i, i + 500), { onConflict: "ticker,direction" });
-    if (error) console.warn(`consensus_moves upsert err: ${error.message}`);
+    if (error) throw new Error(`consensus_moves upsert failed: ${error.message}`);
   }
   return { holdings: holdings.length, moves: moves.length };
 }

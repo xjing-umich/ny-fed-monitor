@@ -385,7 +385,12 @@ async function main() {
       const c = await computeAndStoreConsensus(db);
       console.log(`Consensus: holdings ${c.holdings} 行, moves ${c.moves} 行`);
     } catch (e) {
-      console.warn(`Consensus 计算失败 (非致命): ${e instanceof Error ? e.message : e}`);
+      // Consensus is derived from the just-ingested 13F data. A write failure
+      // here (schema drift, missing column, stale cache) must NOT pass as green
+      // — it previously left consensus_moves silently empty. Mark the run failed
+      // while keeping the 13F source data already written above.
+      console.error(`Consensus 计算/写入失败:${e instanceof Error ? e.message : e}。标记本次运行失败。`);
+      process.exitCode = 1;
     }
   } else {
     console.log("No Supabase env — JSON only (set SUPABASE_URL / SUPABASE_SERVICE_KEY to write DB).");
