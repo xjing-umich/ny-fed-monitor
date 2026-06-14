@@ -1,4 +1,5 @@
-import type { DailyClose } from "./types";
+import type { DailyClose, PriceProvider } from "./types";
+import { toStooqSymbol } from "./symbol";
 
 // Stooq 历史与轻量 quote CSV 都含 Date / Close 列；按表头名定位，容忍列顺序。
 function parseStooqCsv(csv: string, ticker: string): DailyClose[] {
@@ -29,4 +30,37 @@ export function parseStooqHistory(csv: string, ticker: string): DailyClose[] {
 export function parseStooqQuote(csv: string, ticker: string): DailyClose | null {
   const rows = parseStooqCsv(csv, ticker);
   return rows.length ? rows[rows.length - 1] : null;
+}
+
+const HIST_URL = "https://stooq.com/q/d/l/";
+const QUOTE_URL = "https://stooq.com/q/l/";
+
+function ymd(d: Date): string {
+  return d.toISOString().slice(0, 10).replace(/-/g, "");
+}
+function yearsAgo(n: number): Date {
+  const d = new Date();
+  d.setUTCFullYear(d.getUTCFullYear() - n);
+  return d;
+}
+
+export class StooqProvider implements PriceProvider {
+  readonly name = "stooq" as const;
+  constructor(private fetchImpl: typeof fetch = fetch) {}
+
+  async fetchHistory(ticker: string, sinceYears: number): Promise<DailyClose[]> {
+    const sym = toStooqSymbol(ticker);
+    const url = `${HIST_URL}?s=${sym}&i=d&d1=${ymd(yearsAgo(sinceYears))}&d2=${ymd(new Date())}`;
+    const res = await this.fetchImpl(url);
+    if (!res.ok) return [];
+    return parseStooqHistory(await res.text(), ticker);
+  }
+
+  async fetchDaily(ticker: string): Promise<DailyClose | null> {
+    const sym = toStooqSymbol(ticker);
+    const url = `${QUOTE_URL}?s=${sym}&f=sd2t2ohlcv&h&e=csv`;
+    const res = await this.fetchImpl(url);
+    if (!res.ok) return null;
+    return parseStooqQuote(await res.text(), ticker);
+  }
 }

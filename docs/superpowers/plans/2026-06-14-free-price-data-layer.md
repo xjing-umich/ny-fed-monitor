@@ -6,7 +6,13 @@
 
 **Architecture:** `PriceProvider` 抽象后藏三个免费源；resolver 按优先级列表 `[Yahoo, Stooq, TwelveData]` 逐个降级（第一个新鲜结果即用），三家不同运营商分散 ToS/宕机风险。价格写入 `prices` 表；估值与未来走势图通过 `getLatestPrice` / `getPriceHistory` 只读库。沿用现有 store-first + Vercel cron + tsx 脚本模式。
 
-**源选型依据:** Yahoo v8 chart（`query2.finance.yahoo.com/v8/finance/chart`）返回结构化 JSON、`range=max/5y` 一次拿全历史、`range=5d` 做每日增量、零 key——比 Stooq CSV 更好用，故作主力（参考 simonlin1212/global-stock-data, Apache-2.0 验证的零 key 端点）。Stooq、Twelve Data 作降级兜底。中国主机源（Sina/Tencent/Eastmoney）不进生产热路径（美国节点访问不稳）。
+**源选型依据:** Yahoo v8 chart（`query2.finance.yahoo.com/v8/finance/chart`）返回结构化 JSON、`range=max/5y` 一次拿全历史、`range=5d` 做每日增量、零 key——比 Stooq CSV 更好用，故作主力（参考 simonlin1212/global-stock-data, Apache-2.0 验证的零 key 端点）。
+
+> **执行期变更（2026-06-14 实测，覆盖上文）：最终源链 = `[Yahoo v8 → Eastmoney]`，零 key 双源。**
+> - **Stooq 失效→休眠**：实测 Stooq 已上 SHA-256 工作量证明反爬墙，脚本拉不到 CSV。`stooq.ts`（解析+测试）保留为休眠模块，不进生产链。
+> - **Twelve Data 砍掉**：不再需要注册 key。抽象层仍可随时插回。
+> - **Eastmoney 提为兜底**：实测 `push2his.eastmoney.com/api/qt/stock/kline/get`（`klt=101&fqt=0` 不复权，与 Yahoo 可比；secid 用 `105.`/`106.` 探测 NASDAQ/NYSE）返回干净 JSON 历史日线、零 key，是非 Yahoo 的独立源。带 8s 超时；若 Vercel 美国节点不可达则优雅降级（返回空），Yahoo 独力承担。
+> - 故下文 Task 6 由 Twelve Data 改为 **Eastmoney**；所有 provider 链 `[Yahoo, Eastmoney]`；`PriceSource` 增 `'eastmoney'`。
 
 **Tech Stack:** TypeScript 5, Next.js 16 (app router), Supabase (Postgres), tsx 脚本, `@supabase/supabase-js`。
 

@@ -1,5 +1,5 @@
 // 价格源统一返回结构。日级收盘价（EOD）。
-export type PriceSource = "yahoo" | "stooq" | "twelvedata";
+export type PriceSource = "yahoo" | "eastmoney" | "stooq" | "twelvedata";
 
 export type DailyClose = {
   ticker: string;     // 大写 app ticker
