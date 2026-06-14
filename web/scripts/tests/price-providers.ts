@@ -2,6 +2,7 @@
 import { toStooqSymbol, toYahooSymbol } from "../../src/lib/prices/providers/symbol";
 import { parseStooqHistory, parseStooqQuote } from "../../src/lib/prices/providers/stooq";
 import { parseYahooChart, parseYahooLatest } from "../../src/lib/prices/providers/yahoo";
+import { parseEastmoneyKline } from "../../src/lib/prices/providers/eastmoney";
 
 let failed = 0;
 function eq(actual: unknown, expected: unknown, label: string) {
@@ -48,6 +49,14 @@ eq(yrows[1].source, "yahoo", "yahoo chart source");
 eq(/^\d{4}-\d{2}-\d{2}$/.test(yrows[1].date), true, "yahoo chart date 格式");
 eq(parseYahooLatest(yj, "AAPL")?.close, 188.25, "yahoo latest 取末行");
 eq(parseYahooChart({ chart: { result: [], error: "x" } }, "AAPL").length, 0, "yahoo 错误→空");
+
+// --- parseEastmoneyKline ---
+const ej = { data: { code: "AAPL", klines: ["2026-06-11,295.630", "2026-06-12,291.130"] } };
+const erows = parseEastmoneyKline(ej, "AAPL");
+eq(erows.length, 2, "eastmoney kline 行数");
+eq(erows[1], { ticker: "AAPL", date: "2026-06-12", close: 291.13, currency: "USD", source: "eastmoney" }, "eastmoney 末行映射");
+eq(parseEastmoneyKline({ data: null }, "AAPL").length, 0, "eastmoney 无 data→空");
+eq(parseEastmoneyKline({ data: { klines: [] } }, "AAPL").length, 0, "eastmoney 空 klines→空");
 
 if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
 console.log("\n全部通过");
