@@ -1,9 +1,10 @@
 name: Daily Prices
 on:
-  # 价格暂不在站内展示(改走 Yahoo / Google Finance 外链), 故停掉每日定时拉取。
-  # 保留 workflow_dispatch 以便需要时手动跑; 恢复展示后取消下面 schedule 的注释即可。
-  # schedule:
-  #   - cron: "0 22 * * 1-5"   # 工作日 22:00 UTC(美股收盘后, 兼顾夏令时)
+  # 零 key 双源 [Yahoo, Eastmoney] 每日 EOD 入库(npm run prices)。
+  # GitHub Actions 无 300s 限制, 顺序拉全 universe(~1884 票, ~17min)即可。
+  # 也可在 Actions 页手动 Run workflow 触发。
+  schedule:
+    - cron: "0 22 * * 1-5"   # 工作日 22:00 UTC(美股收盘后, 兼顾夏令时)
   workflow_dispatch: {}
 jobs:
   prices:
@@ -19,4 +20,3 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
