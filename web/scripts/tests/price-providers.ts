@@ -1,6 +1,7 @@
 /** 价格 provider 纯函数测试。用法: npm run test:price-providers */
-import { toStooqSymbol } from "../../src/lib/prices/providers/symbol";
+import { toStooqSymbol, toYahooSymbol } from "../../src/lib/prices/providers/symbol";
 import { parseStooqHistory, parseStooqQuote } from "../../src/lib/prices/providers/stooq";
+import { parseYahooChart, parseYahooLatest } from "../../src/lib/prices/providers/yahoo";
 
 let failed = 0;
 function eq(actual: unknown, expected: unknown, label: string) {
@@ -29,6 +30,24 @@ eq(parseStooqHistory("", "AAPL").length, 0, "hist 空输入");
 const quoteCsv = "Symbol,Date,Time,Open,High,Low,Close,Volume\nAAPL.US,2026-06-12,22:00:02,185.0,190.0,184.0,188.25,2000\n";
 eq(parseStooqQuote(quoteCsv, "AAPL"), { ticker: "AAPL", date: "2026-06-12", close: 188.25, currency: "USD", source: "stooq" }, "quote 解析");
 eq(parseStooqQuote("Symbol,Date,Time,Close\nAAPL.US,N/D,N/D,N/D\n", "AAPL"), null, "quote 无数据→null");
+
+// --- toYahooSymbol ---
+eq(toYahooSymbol("AAPL"), "AAPL", "yahoo symbol AAPL");
+eq(toYahooSymbol("BRK.B"), "BRK-B", "yahoo symbol BRK.B 点号转连字符");
+
+// --- parseYahooChart / parseYahooLatest ---
+const yj = { chart: { result: [ {
+  meta: { currency: "USD" },
+  timestamp: [1749600000, 1749686400],
+  indicators: { quote: [ { close: [185.5, 188.25] } ] },
+} ], error: null } };
+const yrows = parseYahooChart(yj, "AAPL");
+eq(yrows.length, 2, "yahoo chart 行数");
+eq(yrows[1].close, 188.25, "yahoo chart 末行 close");
+eq(yrows[1].source, "yahoo", "yahoo chart source");
+eq(/^\d{4}-\d{2}-\d{2}$/.test(yrows[1].date), true, "yahoo chart date 格式");
+eq(parseYahooLatest(yj, "AAPL")?.close, 188.25, "yahoo latest 取末行");
+eq(parseYahooChart({ chart: { result: [], error: "x" } }, "AAPL").length, 0, "yahoo 错误→空");
 
 if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
 console.log("\n全部通过");
