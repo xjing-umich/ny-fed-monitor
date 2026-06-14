@@ -2,7 +2,8 @@ import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
 
-export type LatestPrice = { close: number; date: string; currency: string };
+export type LatestPrice = { close: number; date: string; currency: string; source?: string };
+export type PricePoint = { date: string; close: number };
 
 /** 现价事实展示(纯函数, 单测)。无价→占位。 */
 export function fmtPriceFact(p: LatestPrice | null): string {
@@ -15,9 +16,20 @@ export function fmtPriceFact(p: LatestPrice | null): string {
 export const getLatestPrice = cache(async (ticker: string): Promise<LatestPrice | null> => {
   if (!hasSupabaseEnv()) return null;
   const { data, error } = await getDb()
-    .from("prices").select("close,date,currency").eq("ticker", ticker)
+    .from("prices").select("close,date,currency,source").eq("ticker", ticker)
     .order("date", { ascending: false }).limit(1);
   if (error) { console.error(`getLatestPrice(${ticker}) 失败: ${error.message}`); return null; }
   const r = data?.[0];
-  return r ? { close: Number(r.close), date: r.date, currency: r.currency ?? "USD" } : null;
+  return r ? { close: Number(r.close), date: r.date, currency: r.currency ?? "USD", source: r.source } : null;
+});
+
+/** 某 ticker 近 N 天价格历史(升序), 供走势图/历史估值带。无 env/数据→[]。 */
+export const getPriceHistory = cache(async (ticker: string, days = 365): Promise<PricePoint[]> => {
+  if (!hasSupabaseEnv()) return [];
+  const cutoff = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+  const { data, error } = await getDb()
+    .from("prices").select("date,close").eq("ticker", ticker)
+    .gte("date", cutoff).order("date", { ascending: true }).limit(5000);
+  if (error) { console.error(`getPriceHistory(${ticker}) 失败: ${error.message}`); return []; }
+  return (data ?? []).map((r: { date: string; close: number }) => ({ date: r.date, close: Number(r.close) }));
 });
