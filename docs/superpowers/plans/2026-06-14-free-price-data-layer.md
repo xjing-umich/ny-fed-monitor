@@ -1,10 +1,12 @@
-# 免费价格数据层实现计划（Stooq 主源 + Twelve Data 补源）
+# 免费价格数据层实现计划（Yahoo v8 主源 + Stooq + Twelve Data 三源降级）
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 用 Stooq（主）+ Twelve Data（补）替换 Finnhub，建成全量历史 + 每日入库的免费价格数据层，页面/估值只读库。
+**Goal:** 用三个零/免费源（Yahoo v8 chart 主、Stooq 次、Twelve Data 末）替换 Finnhub，建成全量历史 + 每日入库的免费价格数据层，页面/估值只读库。
 
-**Architecture:** `PriceProvider` 抽象后藏两个免费源（Stooq 优先，Twelve Data 补洞）；价格写入 `prices` 表；估值与未来走势图通过 `getLatestPrice` / `getPriceHistory` 只读库。沿用现有 store-first + Vercel cron + tsx 脚本模式。
+**Architecture:** `PriceProvider` 抽象后藏三个免费源；resolver 按优先级列表 `[Yahoo, Stooq, TwelveData]` 逐个降级（第一个新鲜结果即用），三家不同运营商分散 ToS/宕机风险。价格写入 `prices` 表；估值与未来走势图通过 `getLatestPrice` / `getPriceHistory` 只读库。沿用现有 store-first + Vercel cron + tsx 脚本模式。
+
+**源选型依据:** Yahoo v8 chart（`query2.finance.yahoo.com/v8/finance/chart`）返回结构化 JSON、`range=max/5y` 一次拿全历史、`range=5d` 做每日增量、零 key——比 Stooq CSV 更好用，故作主力（参考 simonlin1212/global-stock-data, Apache-2.0 验证的零 key 端点）。Stooq、Twelve Data 作降级兜底。中国主机源（Sina/Tencent/Eastmoney）不进生产热路径（美国节点访问不稳）。
 
 **Tech Stack:** TypeScript 5, Next.js 16 (app router), Supabase (Postgres), tsx 脚本, `@supabase/supabase-js`。
 
@@ -21,10 +23,11 @@
 | `web/supabase/migrations/20260614_create_prices.sql` | `prices` + `price_ingest_runs` DDL | 新建 |
 | `web/supabase/schema.sql` | 同步 DDL（源真相） | 追加 |
 | `web/src/lib/prices/providers/types.ts` | `DailyClose` / `PriceProvider` 接口 | 新建 |
-| `web/src/lib/prices/providers/symbol.ts` | ticker → Stooq 符号映射 | 新建 |
-| `web/src/lib/prices/providers/stooq.ts` | Stooq 解析（纯）+ provider（网络） | 新建 |
-| `web/src/lib/prices/providers/twelveData.ts` | Twelve Data 解析（纯）+ provider（带额度） | 新建 |
-| `web/src/lib/prices/providers/index.ts` | resolver：Stooq 先、Twelve Data 补 | 新建 |
+| `web/src/lib/prices/providers/symbol.ts` | ticker → Stooq / Yahoo 符号映射 | 新建 |
+| `web/src/lib/prices/providers/yahoo.ts` | Yahoo v8 chart 解析（纯）+ provider（网络，主源） | 新建 |
+| `web/src/lib/prices/providers/stooq.ts` | Stooq 解析（纯）+ provider（网络，次源） | 新建 |
+| `web/src/lib/prices/providers/twelveData.ts` | Twelve Data 解析（纯）+ provider（带额度，末源） | 新建 |
+| `web/src/lib/prices/providers/index.ts` | resolver：按 `[Yahoo, Stooq, TwelveData]` 顺序降级 | 新建 |
 | `web/scripts/tests/price-providers.ts` | 纯函数断言测试 | 新建 |
 | `web/src/lib/managers/priceRead.ts` | `getLatestPrice`(+source) / `getPriceHistory` | 改 |
 | `web/src/lib/research/valuation/priceProvider.ts` | 保留 `mockPrice`，加 `fetchStorePrice`，删 Finnhub | 改 |
@@ -50,7 +53,7 @@
 `web/supabase/migrations/20260614_create_prices.sql`:
 
 ```sql
--- 每日收盘价（多源：'stooq' | 'twelvedata'）。store-first：页面只读此表。
+-- 每日收盘价（多源：'yahoo' | 'stooq' | 'twelvedata'）。store-first：页面只读此表。
 create table if not exists prices (
   ticker text not null references securities(ticker),
   date date not null,
@@ -115,17 +118,19 @@ git commit -m "feat(db): prices + price_ingest_runs 表(多源价格入库)"
 
 ```ts
 // 价格源统一返回结构。日级收盘价（EOD）。
+export type PriceSource = "yahoo" | "stooq" | "twelvedata";
+
 export type DailyClose = {
   ticker: string;     // 大写 app ticker
   date: string;       // YYYY-MM-DD (UTC 交易日)
   close: number;      // > 0
   currency: string;   // 'USD'
-  source: "stooq" | "twelvedata";
+  source: PriceSource;
 };
 
 // 任一价格源实现此接口；网络细节藏在实现内。
 export interface PriceProvider {
-  name: "stooq" | "twelvedata";
+  name: PriceSource;
   fetchDaily(ticker: string): Promise<DailyClose | null>;
   fetchHistory(ticker: string, sinceYears: number): Promise<DailyClose[]>;
 }
@@ -494,7 +499,152 @@ git commit -m "feat(prices): TwelveDataProvider(解析纯函数 + 带额度网�
 
 ---
 
-## Task 7: Resolver（Stooq 先 → Twelve Data 补，TDD）
+## Task 6.5: Yahoo v8 Chart Provider（主源，TDD 解析 + 网络）
+
+零 key 端点 `query2.finance.yahoo.com/v8/finance/chart`：JSON OHLCV，`range=max/5y` 拿历史、`range=5d` 拿最新。US 票点号转连字符（BRK.B → BRK-B）。作三源里的优先主力。
+
+**Files:**
+- Modify: `web/src/lib/prices/providers/symbol.ts`（加 `toYahooSymbol`）
+- Create: `web/src/lib/prices/providers/yahoo.ts`
+- Test: `web/scripts/tests/price-providers.ts`（追加）
+
+- [ ] **Step 1: 加 toYahooSymbol + 追加失败测试**
+
+在 `web/src/lib/prices/providers/symbol.ts` 末尾追加：
+
+```ts
+// App ticker → Yahoo 符号。美股原样大写；点号转连字符（BRK.B → BRK-B）。
+export function toYahooSymbol(ticker: string): string {
+  return ticker.trim().toUpperCase().replace(/\./g, "-");
+}
+```
+
+在 `web/scripts/tests/price-providers.ts` import 区追加：
+
+```ts
+import { toYahooSymbol } from "../../src/lib/prices/providers/symbol";
+import { parseYahooChart, parseYahooLatest } from "../../src/lib/prices/providers/yahoo";
+```
+
+在 `if (failed)` 之前追加：
+
+```ts
+// --- toYahooSymbol ---
+eq(toYahooSymbol("AAPL"), "AAPL", "yahoo symbol AAPL");
+eq(toYahooSymbol("BRK.B"), "BRK-B", "yahoo symbol BRK.B 点号转连字符");
+
+// --- parseYahooChart / parseYahooLatest ---
+const yj = { chart: { result: [ {
+  meta: { currency: "USD" },
+  timestamp: [1749600000, 1749686400],
+  indicators: { quote: [ { close: [185.5, 188.25] } ] },
+} ], error: null } };
+const yrows = parseYahooChart(yj, "AAPL");
+eq(yrows.length, 2, "yahoo chart 行数");
+eq(yrows[1].close, 188.25, "yahoo chart 末行 close");
+eq(yrows[1].source, "yahoo", "yahoo chart source");
+eq(/^\d{4}-\d{2}-\d{2}$/.test(yrows[1].date), true, "yahoo chart date 格式");
+eq(parseYahooLatest(yj, "AAPL")?.close, 188.25, "yahoo latest 取末行");
+eq(parseYahooChart({ chart: { result: [], error: "x" } }, "AAPL").length, 0, "yahoo 错误→空");
+```
+
+- [ ] **Step 2: 跑测试确认失败**
+
+Run: `cd web && npm run test:price-providers`
+Expected: FAIL — `Cannot find module .../yahoo`。
+
+- [ ] **Step 3: 写实现**
+
+`web/src/lib/prices/providers/yahoo.ts`:
+
+```ts
+import type { DailyClose, PriceProvider } from "./types";
+import { toYahooSymbol } from "./symbol";
+
+type YahooChartJson = {
+  chart?: {
+    result?: Array<{
+      meta?: { currency?: string };
+      timestamp?: number[];
+      indicators?: { quote?: Array<{ close?: Array<number | null> }> };
+    }>;
+    error?: unknown;
+  };
+};
+
+// 用未复权 close（与 Stooq/Twelve 一致, 便于跨源比较 + 对齐当时市值）。
+export function parseYahooChart(json: YahooChartJson, ticker: string): DailyClose[] {
+  const r = json?.chart?.result?.[0];
+  const ts = r?.timestamp;
+  const closes = r?.indicators?.quote?.[0]?.close;
+  if (!Array.isArray(ts) || !Array.isArray(closes)) return [];
+  const T = ticker.trim().toUpperCase();
+  const currency = r?.meta?.currency ?? "USD";
+  const out: DailyClose[] = [];
+  for (let i = 0; i < ts.length; i++) {
+    const c = Number(closes[i]);
+    if (!Number.isFinite(c) || c <= 0) continue;
+    const date = new Date(ts[i] * 1000).toISOString().slice(0, 10);
+    out.push({ ticker: T, date, close: c, currency, source: "yahoo" });
+  }
+  return out;
+}
+
+export function parseYahooLatest(json: YahooChartJson, ticker: string): DailyClose | null {
+  const rows = parseYahooChart(json, ticker);
+  return rows.length ? rows[rows.length - 1] : null;
+}
+
+const CHART_URL = "https://query2.finance.yahoo.com/v8/finance/chart/";
+const UA = "Mozilla/5.0 (compatible; CompounderBot/1.0)";
+
+export class YahooChartProvider implements PriceProvider {
+  readonly name = "yahoo" as const;
+  constructor(private fetchImpl: typeof fetch = fetch) {}
+
+  private async fetchRange(ticker: string, range: string): Promise<DailyClose[]> {
+    const sym = toYahooSymbol(ticker);
+    const url = `${CHART_URL}${encodeURIComponent(sym)}?interval=1d&range=${range}`;
+    const res = await this.fetchImpl(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
+    if (!res.ok) return [];
+    return parseYahooChart(await res.json(), ticker);
+  }
+
+  async fetchHistory(ticker: string, sinceYears: number): Promise<DailyClose[]> {
+    const range = sinceYears >= 10 ? "max" : `${Math.max(1, Math.ceil(sinceYears))}y`;
+    return this.fetchRange(ticker, range);
+  }
+
+  async fetchDaily(ticker: string): Promise<DailyClose | null> {
+    const rows = await this.fetchRange(ticker, "5d");
+    return rows.length ? rows[rows.length - 1] : null;
+  }
+}
+```
+
+- [ ] **Step 4: 跑测试确认通过 + 抽样手测网络**
+
+Run: `cd web && npm run test:price-providers`
+Expected: PASS — 新增 8 条断言全 ok。
+
+抽样真拉（需联网，无 key）:
+
+```bash
+cd web && npx tsx -e "import {YahooChartProvider} from './src/lib/prices/providers/yahoo'; const p=new YahooChartProvider(); (async()=>{ console.log('AAPL daily', await p.fetchDaily('AAPL')); const h=await p.fetchHistory('BRK.B',5); console.log('BRK.B hist rows', h.length, h[h.length-1]); })()"
+```
+
+Expected: AAPL `{...,source:'yahoo',close>0}`；BRK.B（→BRK-B）历史 rows > 1000、末行 close > 0。
+
+- [ ] **Step 5: 提交**
+
+```bash
+git add web/src/lib/prices/providers/yahoo.ts web/src/lib/prices/providers/symbol.ts web/scripts/tests/price-providers.ts
+git commit -m "feat(prices): YahooChartProvider(v8 chart, 主源) + toYahooSymbol + 测试"
+```
+
+---
+
+## Task 7: Resolver（按 [Yahoo, Stooq, TwelveData] 顺序降级，TDD）
 
 **Files:**
 - Create: `web/src/lib/prices/providers/index.ts`
@@ -518,19 +668,21 @@ eq(isStale({ ticker: "X", date: todayIso, close: 1, currency: "USD", source: "st
 eq(isStale({ ticker: "X", date: "2000-01-01", close: 1, currency: "USD", source: "stooq" }), true, "isStale 远古→true");
 eq(isStale(null), true, "isStale null→true");
 
-// --- resolveDaily：假 provider ---
-const mk = (name: "stooq" | "twelvedata", row: DailyClose | null): PriceProvider => ({
+// --- resolveDaily：假 provider, 按列表顺序降级 ---
+const mk = (name: "yahoo" | "stooq" | "twelvedata", row: DailyClose | null): PriceProvider => ({
   name,
   fetchDaily: async () => row,
   fetchHistory: async () => (row ? [row] : []),
 });
-const freshStooq = { ticker: "X", date: todayIso, close: 10, currency: "USD", source: "stooq" } as DailyClose;
+const freshYahoo = { ticker: "X", date: todayIso, close: 10, currency: "USD", source: "yahoo" } as DailyClose;
 const twelveRow = { ticker: "X", date: todayIso, close: 20, currency: "USD", source: "twelvedata" } as DailyClose;
+const staleYahoo = { ticker: "X", date: "2000-01-01", close: 9, currency: "USD", source: "yahoo" } as DailyClose;
 
 (async () => {
-  eq((await resolveDaily("X", mk("stooq", freshStooq), mk("twelvedata", twelveRow)))?.source, "stooq", "resolve 新鲜 Stooq 直接用");
-  eq((await resolveDaily("X", mk("stooq", null), mk("twelvedata", twelveRow)))?.source, "twelvedata", "resolve Stooq 空→降级 Twelve");
-  eq(await resolveDaily("X", mk("stooq", null), null), null, "resolve 都没有→null");
+  eq((await resolveDaily("X", [mk("yahoo", freshYahoo), mk("stooq", twelveRow)]))?.source, "yahoo", "resolve 首个新鲜直接用");
+  eq((await resolveDaily("X", [mk("yahoo", null), mk("stooq", null), mk("twelvedata", twelveRow)]))?.source, "twelvedata", "resolve 顺延到末位");
+  eq(await resolveDaily("X", [mk("yahoo", null)]), null, "resolve 全空→null");
+  eq((await resolveDaily("X", [mk("yahoo", staleYahoo), mk("stooq", null)]))?.source, "yahoo", "resolve 都不新鲜→返回首个非空");
 
   if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
   console.log("\n全部通过");
@@ -558,7 +710,8 @@ Expected: FAIL — `Cannot find module .../providers`（index 还没建）。
 ```ts
 import type { DailyClose, PriceProvider } from "./types";
 
-export type { DailyClose, PriceProvider } from "./types";
+export type { DailyClose, PriceProvider, PriceSource } from "./types";
+export { YahooChartProvider } from "./yahoo";
 export { StooqProvider } from "./stooq";
 export { TwelveDataProvider } from "./twelveData";
 
@@ -569,31 +722,30 @@ export function isStale(d: DailyClose | null, maxAgeDays = 5): boolean {
   return ageMs > maxAgeDays * 86_400_000;
 }
 
-// 每日：Stooq 优先；空或陈旧则用 fallback 补；都不行返回 Stooq 原值（可能 null/陈旧）。
+// 每日：按 providers 顺序逐个尝试；返回第一个"新鲜"结果；都不新鲜则返回首个非空（尽力而为）。
 export async function resolveDaily(
   ticker: string,
-  stooq: PriceProvider,
-  fallback: PriceProvider | null,
+  providers: PriceProvider[],
 ): Promise<DailyClose | null> {
-  const s = await stooq.fetchDaily(ticker).catch(() => null);
-  if (s && !isStale(s)) return s;
-  if (fallback) {
-    const f = await fallback.fetchDaily(ticker).catch(() => null);
-    if (f) return f;
+  let best: DailyClose | null = null;
+  for (const p of providers) {
+    const d = await p.fetchDaily(ticker).catch(() => null);
+    if (d && !isStale(d)) return d;
+    if (d && !best) best = d;
   }
-  return s;
+  return best;
 }
 
-// 历史：Stooq 优先；空则 fallback。
+// 历史：按 providers 顺序，返回第一个非空。
 export async function resolveHistory(
   ticker: string,
   sinceYears: number,
-  stooq: PriceProvider,
-  fallback: PriceProvider | null,
+  providers: PriceProvider[],
 ): Promise<DailyClose[]> {
-  const s = await stooq.fetchHistory(ticker, sinceYears).catch(() => []);
-  if (s.length) return s;
-  if (fallback) return fallback.fetchHistory(ticker, sinceYears).catch(() => []);
+  for (const p of providers) {
+    const rows = await p.fetchHistory(ticker, sinceYears).catch(() => []);
+    if (rows.length) return rows;
+  }
   return [];
 }
 ```
@@ -601,13 +753,13 @@ export async function resolveHistory(
 - [ ] **Step 4: 跑测试确认通过**
 
 Run: `cd web && npm run test:price-providers`
-Expected: PASS — `全部通过`，含 isStale/resolveDaily 6 条。
+Expected: PASS — `全部通过`，含 isStale 3 条 + resolveDaily 4 条。
 
 - [ ] **Step 5: 提交**
 
 ```bash
 git add web/src/lib/prices/providers/index.ts web/scripts/tests/price-providers.ts
-git commit -m "feat(prices): resolver(Stooq 优先→TwelveData 补) + isStale + 测试"
+git commit -m "feat(prices): resolver(按 [Yahoo,Stooq,TwelveData] 顺序降级) + isStale + 测试"
 ```
 
 ---
@@ -690,7 +842,7 @@ import "server-only";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import type { PriceData } from "./types";
 
-// store-first：估值从 prices 表读最新收盘价（由 Stooq/TwelveData 摄取入库）。
+// store-first：估值从 prices 表读最新收盘价（由 Yahoo/Stooq/TwelveData 摄取入库）。
 export async function fetchStorePrice(ticker: string): Promise<PriceData | null> {
   const T = ticker.trim().toUpperCase();
   const p = await getLatestPrice(T);
@@ -749,15 +901,15 @@ git rm web/src/lib/prices/finnhub.ts
 把 `web/scripts/lib/updatePrices.ts` 整体替换为：
 
 ```ts
-import { StooqProvider, TwelveDataProvider, resolveDaily, type DailyClose } from "../../src/lib/prices/providers/index.js";
+import { YahooChartProvider, StooqProvider, TwelveDataProvider, resolveDaily, type DailyClose } from "../../src/lib/prices/providers/index.js";
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
 
 type PriceRow = { ticker: string; date: string; close: number; currency: string; source: string; as_of: string };
 
 /**
- * 读 securities 全部 ticker, Stooq 轻量 quote 取最新 EOD（缺/陈旧→TwelveData 补）, upsert prices。
- * Stooq 无硬限速, 用小间隔礼貌拉取。返回统计。
+ * 读 securities 全部 ticker, 按 [Yahoo, Stooq, TwelveData] 顺序取最新 EOD, upsert prices。
+ * 小间隔礼貌拉取。返回统计（fallback = 非主源 Yahoo 命中的票数）。
  */
 export async function updatePrices(
   db: any,
@@ -772,16 +924,19 @@ export async function updatePrices(
     if (data.length < 1000) break;
   }
 
-  const stooq = new StooqProvider();
-  const twelve = opts.twelveKey ? new TwelveDataProvider(opts.twelveKey, opts.twelveBudget ?? 800) : null;
+  const providers = [
+    new YahooChartProvider(),
+    new StooqProvider(),
+    ...(opts.twelveKey ? [new TwelveDataProvider(opts.twelveKey, opts.twelveBudget ?? 800)] : []),
+  ];
   const throttle = opts.throttleMs ?? 150;
 
   let written = 0, skipped = 0, fallback = 0;
   const rows: PriceRow[] = [];
   for (const ticker of tickers) {
-    const d: DailyClose | null = await resolveDaily(ticker, stooq, twelve);
+    const d: DailyClose | null = await resolveDaily(ticker, providers);
     if (!d) { skipped++; await sleep(throttle); continue; }
-    if (d.source === "twelvedata") fallback++;
+    if (d.source !== "yahoo") fallback++;
     rows.push({ ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: new Date().toISOString() });
     written++;
     if (rows.length >= 200) await flush(db, rows.splice(0));
@@ -823,7 +978,7 @@ git commit -m "refactor(prices): 估值改读库取价, 每日摄取改用 Stooq
 把 `web/scripts/prices.ts` 整体替换为：
 
 ```ts
-/** 价格日更入口: Stooq 主源(缺则 TwelveData 补) 写 prices。用法: npm run prices */
+/** 价格日更入口: 三源 [Yahoo, Stooq, TwelveData] 顺序降级 写 prices。用法: npm run prices */
 import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import * as fs from "fs";
@@ -849,7 +1004,7 @@ async function main() {
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
   const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
   const s = await updatePrices(db, { twelveKey: env.TWELVE_DATA_API_KEY });
-  console.log(`价格日更完成: 拉取 ${s.total}, 写入 ${s.written}, 跳过 ${s.skipped}, TwelveData 补 ${s.fallback}`);
+  console.log(`价格日更完成: 拉取 ${s.total}, 写入 ${s.written}, 跳过 ${s.skipped}, 非主源补 ${s.fallback}`);
 }
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
 ```
@@ -859,7 +1014,7 @@ main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
 `web/scripts/prices-backfill.ts`:
 
 ```ts
-/** 一次性历史回填: 全 securities, Stooq 拉近 N 年日线(缺则 TwelveData 补) upsert prices。
+/** 一次性历史回填: 全 securities, 按 [Yahoo, Stooq, TwelveData] 顺序拉近 N 年日线 upsert prices。
  *  用法: npm run prices:backfill [-- 年数 单只ticker]
  *  例:   npm run prices:backfill            (全量, 默认 5 年)
  *        npm run prices:backfill -- 5 AAPL  (只回填 AAPL, 5 年) */
@@ -868,7 +1023,7 @@ import WebSocket from "ws";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { StooqProvider, TwelveDataProvider, resolveHistory } from "../src/lib/prices/providers/index.js";
+import { YahooChartProvider, StooqProvider, TwelveDataProvider, resolveHistory } from "../src/lib/prices/providers/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 function loadEnv(): Record<string, string> {
@@ -901,11 +1056,14 @@ async function main() {
     if (data.length < 1000) break;
   }
 
-  const stooq = new StooqProvider();
-  const twelve = env.TWELVE_DATA_API_KEY ? new TwelveDataProvider(env.TWELVE_DATA_API_KEY, 800) : null;
+  const providers = [
+    new YahooChartProvider(),
+    new StooqProvider(),
+    ...(env.TWELVE_DATA_API_KEY ? [new TwelveDataProvider(env.TWELVE_DATA_API_KEY, 800)] : []),
+  ];
   let totalRows = 0, done = 0, empty = 0;
   for (const ticker of tickers) {
-    const hist = await resolveHistory(ticker, years, stooq, twelve);
+    const hist = await resolveHistory(ticker, years, providers);
     if (hist.length) {
       const asOf = new Date().toISOString();
       const rows = hist.map((d) => ({ ticker: d.ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: asOf }));
@@ -972,7 +1130,7 @@ git commit -m "feat(prices): 每日脚本改 Stooq+TwelveData + 新增历史回�
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
 import { databaseNotConfigured } from "@/lib/ingestion/routes";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
-import { StooqProvider, TwelveDataProvider, resolveDaily, type DailyClose } from "@/lib/prices/providers";
+import { YahooChartProvider, StooqProvider, TwelveDataProvider, resolveDaily, type DailyClose } from "@/lib/prices/providers";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -998,14 +1156,17 @@ export async function GET(request: Request): Promise<Response> {
       if (data.length < 1000) break;
     }
 
-    const stooq = new StooqProvider();
-    const twelve = process.env.TWELVE_DATA_API_KEY ? new TwelveDataProvider(process.env.TWELVE_DATA_API_KEY, 800) : null;
+    const providers = [
+      new YahooChartProvider(),
+      new StooqProvider(),
+      ...(process.env.TWELVE_DATA_API_KEY ? [new TwelveDataProvider(process.env.TWELVE_DATA_API_KEY, 800)] : []),
+    ];
     let written = 0, skipped = 0, fallback = 0;
     const rows: Array<{ ticker: string; date: string; close: number; currency: string; source: string; as_of: string }> = [];
     for (const ticker of tickers) {
-      const d: DailyClose | null = await resolveDaily(ticker, stooq, twelve);
+      const d: DailyClose | null = await resolveDaily(ticker, providers);
       if (!d) { skipped++; await sleep(120); continue; }
-      if (d.source === "twelvedata") fallback++;
+      if (d.source !== "yahoo") fallback++;
       rows.push({ ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: new Date().toISOString() });
       written++;
       if (rows.length >= 200) { await db.from("prices").upsert(rows.splice(0), { onConflict: "ticker,date" }); }

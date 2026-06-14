@@ -1,4 +1,4 @@
-# 免费价格数据层设计（Stooq 主源 + Twelve Data 补源）
+# 免费价格数据层设计（Yahoo v8 主源 + Stooq + Twelve Data 三源降级）
 
 **日期**: 2026-06-14
 **状态**: 设计已确认，待写实现计划
@@ -15,25 +15,27 @@
 - Stooq 免费、无硬性限速、按符号 CSV 返回完整日线历史且含最新 EOD，能同时干"历史 + 每日"。
 - Twelve Data 免费档 8 次/分、800 次/天，限速紧，不足以扛全量每日，但适合补缺口。
 
-**决策**：Stooq 当主力（全量历史 + 每日 EOD），Twelve Data 当兜底/补洞，两者藏在同一 provider 抽象后；退役旧 Finnhub 代码。
+**决策**：三个零/免费源藏在同一 provider 抽象后，resolver 按 `[Yahoo, Stooq, TwelveData]` 顺序降级（第一个新鲜结果即用）；Yahoo v8 chart 作主力（结构化 JSON、`range=max/5y` 一次拿全历史、`range=5d` 拿每日），Stooq/Twelve Data 兜底；退役旧 Finnhub 代码。三家不同运营商分散 ToS/宕机风险。
+
+> **更新（源选型）**：原计划 Stooq 主、Twelve Data 补；调研 simonlin1212/global-stock-data（Apache-2.0）后确认 Yahoo v8 chart 零 key 端点返回干净 JSON、一次拿全历史，比 Stooq CSV 更优，故提为主力，Stooq 降为次源。中国主机源（Sina/Tencent/Eastmoney）不进生产热路径（美国节点访问不稳）。
 
 ## 已确认的关键决策
 
 | 决策点 | 选择 |
 |---|---|
 | 每日价格覆盖范围 | 全 `securities` ~1545 票（方案 A） |
-| 主源 / 补源 | Stooq 主，Twelve Data 补洞 + 交叉校验 |
+| 源优先级 | Yahoo v8 chart 主 → Stooq 次 → Twelve Data 末（逐个降级，互为兜底）|
 | 历史深度 | 默认近 5 年（可配，约 200 万行） |
-| 每日 runner | Vercel cron（实测 Stooq 轻量 quote 1545 票 < 300s） |
+| 每日 runner | Vercel cron（轻量 1545 票 < 300s） |
 | 旧 Finnhub 代码 | 退役删除，不留为 provider 备选 |
 
 ## 架构
 
 ```
-                ┌─────────────────────────────┐
-  Stooq ───────▶│   PriceProvider 抽象层       │
-  TwelveData ──▶│  (Stooq 优先 → TwelveData 补) │
-                └──────────────┬──────────────┘
+  Yahoo v8 ────▶┌─────────────────────────────────┐
+  Stooq ───────▶│   PriceProvider 抽象层           │
+  TwelveData ──▶│ ([Yahoo, Stooq, TwelveData] 降级) │
+                └──────────────┬──────────────────┘
                                ▼
                         prices 表 (入库)
                                ▼
@@ -47,16 +49,18 @@
 ### 1. Provider 抽象 — 新增 `web/src/lib/prices/providers/`
 
 ```ts
+type PriceSource = 'yahoo' | 'stooq' | 'twelvedata';
+
 interface DailyClose {
   ticker: string;
   date: string;       // YYYY-MM-DD (UTC)
   close: number;
   currency: string;   // 'USD'
-  source: 'stooq' | 'twelvedata';
+  source: PriceSource;
 }
 
 interface PriceProvider {
-  name: 'stooq' | 'twelvedata';
+  name: PriceSource;
   fetchDaily(ticker: string): Promise<DailyClose | null>;            // 最新 EOD
   fetchHistory(ticker: string, sinceYears: number): Promise<DailyClose[]>;
 }
@@ -64,16 +68,19 @@ interface PriceProvider {
 
 文件：
 
-- `providers/stooq.ts`
-  - 历史：`https://stooq.com/q/d/l/?s={sym}&i=d`（返回完整日线 CSV）
+- `providers/yahoo.ts`（**主源**）
+  - 历史：`https://query2.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=5y`（或 `max`，JSON OHLCV）
+  - 每日：同端点 `range=5d` 取末行收盘
+  - 符号：US 原样大写，点号转连字符（`BRK.B` → `BRK-B`）；带 `User-Agent` 头
+- `providers/stooq.ts`（次源）
+  - 历史：`https://stooq.com/q/d/l/?s={sym}&i=d`（完整日线 CSV）
   - 每日轻量 quote：`https://stooq.com/q/l/?s={sym}&f=sd2t2ohlcv&h&e=csv`
-- `providers/twelveData.ts`
-  - 历史：`/time_series?symbol={ticker}&interval=1day&outputsize=...`
-  - 每日：`/quote?symbol={ticker}`
-  - 仅用于补 Stooq 缺口，受 800/天额度约束（按天计数并限额）
-- `providers/index.ts` — resolver：Stooq 先试；返回空或陈旧（latest date 落后于预期交易日）则降级 Twelve Data；记录实际命中源到 `DailyClose.source`
-- `symbol.ts` — 符号映射：US 票转小写 + `.us`，点号转连字符（`BRK.B` → `brk-b.us`）；映射不中或 Stooq 无数据则交给 Twelve Data
-- 纯解析函数 `parseStooqCsv` / `parseTwelveData` 与网络 IO 分离（沿用现有 `parseQuote` 风格，便于手测/单测）
+- `providers/twelveData.ts`（末源）
+  - 历史：`/time_series?symbol={ticker}&interval=1day&outputsize=...`；每日：`/quote?symbol={ticker}`
+  - 仅用于补前两源缺口，受 800/天额度约束（按天计数并限额）
+- `providers/index.ts` — resolver：按 `[Yahoo, Stooq, TwelveData]` 顺序逐个尝试，返回第一个非陈旧结果；都陈旧则返回首个非空；记录实际命中源到 `DailyClose.source`
+- `symbol.ts` — `toYahooSymbol`（点号转连字符）+ `toStooqSymbol`（小写 + `.us`，点号转连字符）
+- 纯解析函数 `parseYahooChart` / `parseStooqCsv` / `parseTwelve*` 与网络 IO 分离（沿用现有 `parseQuote` 风格，便于手测/单测）
 
 ### 2. 数据库 — 新增 migration `web/supabase/migrations/20260614_create_prices.sql`
 
@@ -83,7 +90,7 @@ create table if not exists prices (
   date date not null,
   close numeric not null,
   currency text not null default 'USD',
-  source text not null,           -- 'stooq' | 'twelvedata'
+  source text not null,           -- 'yahoo' | 'stooq' | 'twelvedata'
   as_of timestamptz not null default now(),
   primary key (ticker, date)
 );
