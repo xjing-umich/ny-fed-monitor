@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { msftResearchMock } from "@/lib/research/mock/msftResearchMock";
 import { buildSecResearchDataForTicker, emptySecResearchData } from "@/lib/research/sec/buildSecResearchData";
+import { buildResearchDataFromStore } from "@/lib/research/sec/buildResearchDataFromStore";
 import { buildValuationForResearchData } from "@/lib/research/valuation/buildValuationData";
 import { generateRiskSignals } from "@/lib/research/risk/generateRiskSignals";
 import { runResearchWorkflow } from "@/lib/research/workflow/runResearchWorkflow";
@@ -42,7 +43,9 @@ export async function GET(request: Request, context: RouteContext) {
   }
 
   try {
-    const result = await buildSecResearchDataForTicker(ticker);
+    // Prefer our hardened stored fundamentals; fall back to a live SEC fetch
+    // for tickers outside the stored universe.
+    const result = (await buildResearchDataFromStore(ticker)) ?? (await buildSecResearchDataForTicker(ticker));
     const valuation = await buildValuationForResearchData(result.normalizedData);
     const withValuation = { ...result.normalizedData, valuation_metrics: valuation.valuation_metrics };
     const riskSignals = generateRiskSignals(withValuation);
