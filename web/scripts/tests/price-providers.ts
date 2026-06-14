@@ -3,6 +3,8 @@ import { toStooqSymbol, toYahooSymbol } from "../../src/lib/prices/providers/sym
 import { parseStooqHistory, parseStooqQuote } from "../../src/lib/prices/providers/stooq";
 import { parseYahooChart, parseYahooLatest } from "../../src/lib/prices/providers/yahoo";
 import { parseEastmoneyKline } from "../../src/lib/prices/providers/eastmoney";
+import { isStale, resolveDaily } from "../../src/lib/prices/providers";
+import type { DailyClose, PriceProvider } from "../../src/lib/prices/providers/types";
 
 let failed = 0;
 function eq(actual: unknown, expected: unknown, label: string) {
@@ -58,5 +60,28 @@ eq(erows[1], { ticker: "AAPL", date: "2026-06-12", close: 291.13, currency: "USD
 eq(parseEastmoneyKline({ data: null }, "AAPL").length, 0, "eastmoney 无 data→空");
 eq(parseEastmoneyKline({ data: { klines: [] } }, "AAPL").length, 0, "eastmoney 空 klines→空");
 
-if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
-console.log("\n全部通过");
+// --- isStale ---
+const todayIso = new Date().toISOString().slice(0, 10);
+eq(isStale({ ticker: "X", date: todayIso, close: 1, currency: "USD", source: "yahoo" }), false, "isStale 今日→false");
+eq(isStale({ ticker: "X", date: "2000-01-01", close: 1, currency: "USD", source: "yahoo" }), true, "isStale 远古→true");
+eq(isStale(null), true, "isStale null→true");
+
+// --- resolveDaily：假 provider, 按列表顺序降级 ---
+const mk = (name: "yahoo" | "eastmoney", row: DailyClose | null): PriceProvider => ({
+  name,
+  fetchDaily: async () => row,
+  fetchHistory: async () => (row ? [row] : []),
+});
+const freshYahoo = { ticker: "X", date: todayIso, close: 10, currency: "USD", source: "yahoo" } as DailyClose;
+const emRow = { ticker: "X", date: todayIso, close: 20, currency: "USD", source: "eastmoney" } as DailyClose;
+const staleYahoo = { ticker: "X", date: "2000-01-01", close: 9, currency: "USD", source: "yahoo" } as DailyClose;
+
+(async () => {
+  eq((await resolveDaily("X", [mk("yahoo", freshYahoo), mk("eastmoney", emRow)]))?.source, "yahoo", "resolve 首个新鲜直接用");
+  eq((await resolveDaily("X", [mk("yahoo", null), mk("eastmoney", emRow)]))?.source, "eastmoney", "resolve 顺延到兜底");
+  eq(await resolveDaily("X", [mk("yahoo", null)]), null, "resolve 全空→null");
+  eq((await resolveDaily("X", [mk("yahoo", staleYahoo), mk("eastmoney", null)]))?.source, "yahoo", "resolve 都不新鲜→返回首个非空");
+
+  if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
+  console.log("\n全部通过");
+})();
