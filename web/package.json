@@ -11,6 +11,7 @@
     "test:sec-data-layer": "tsx scripts/tests/sec-data-layer.ts",
     "test:valuation-data-layer": "tsx scripts/tests/valuation-data-layer.ts",
     "test:risk-signal-table": "tsx scripts/tests/risk-signal-table.ts",
+    "test:price-providers": "tsx scripts/tests/price-providers.ts",
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
     "consensus": "tsx scripts/consensus.ts",
