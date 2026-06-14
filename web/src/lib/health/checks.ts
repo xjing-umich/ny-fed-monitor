@@ -4,7 +4,7 @@
 import { mostRecentDueQuarter, parseUTC } from "../freshness/derive";
 
 export type HealthProblem = {
-  pipeline: "13f" | "macro";
+  pipeline: "13f" | "macro" | "prices";
   source: string;
   message: string;
   asOf: string | null;
