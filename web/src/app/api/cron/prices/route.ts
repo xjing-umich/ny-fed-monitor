@@ -6,7 +6,9 @@ import { defaultProviders, resolveDaily, type DailyClose } from "@/lib/prices/pr
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
+// 有界并发：1884 票顺序拉会超 300s；5 路并发约 ~120s 稳落上限内。
+// Yahoo 不官方, 并发保守取 5 以免触发 429（保守优于丢数据）。
+const CONCURRENCY = 5;
 
 export async function GET(request: Request): Promise<Response> {
   if (!isAuthorizedIngestRequest(request)) return unauthorizedResponse();
@@ -28,18 +30,33 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const providers = defaultProviders();
-    let written = 0, skipped = 0, fallback = 0;
-    const rows: Array<{ ticker: string; date: string; close: number; currency: string; source: string; as_of: string }> = [];
-    for (const ticker of tickers) {
-      const d: DailyClose | null = await resolveDaily(ticker, providers);
-      if (!d) { skipped++; await sleep(120); continue; }
-      if (d.source !== "yahoo") fallback++;
-      rows.push({ ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: new Date().toISOString() });
-      written++;
-      if (rows.length >= 200) { await db.from("prices").upsert(rows.splice(0), { onConflict: "ticker,date" }); }
-      await sleep(120);
+    let skipped = 0, fallback = 0;
+    const collected: DailyClose[] = [];
+
+    // 工作池：CONCURRENCY 个 worker 抢同一游标(idx++ 单线程原子, 不会重号)。
+    let idx = 0;
+    async function worker() {
+      while (idx < tickers.length) {
+        const ticker = tickers[idx++];
+        const d = await resolveDaily(ticker, providers).catch(() => null);
+        if (!d) { skipped++; continue; }
+        if (d.source !== "yahoo") fallback++;
+        collected.push(d);
+      }
     }
-    if (rows.length) await db.from("prices").upsert(rows.splice(0), { onConflict: "ticker,date" });
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, tickers.length) }, () => worker()));
+
+    // 收尾批量 upsert（避免并发期共享数组 flush 竞态）。
+    const asOf = new Date().toISOString();
+    let written = 0;
+    for (let i = 0; i < collected.length; i += 500) {
+      const chunk = collected.slice(i, i + 500).map((d) => ({
+        ticker: d.ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: asOf,
+      }));
+      const { error } = await db.from("prices").upsert(chunk, { onConflict: "ticker,date" });
+      if (error) { console.warn(`prices upsert err: ${error.message}`); continue; }
+      written += chunk.length;
+    }
 
     if (runId) await db.from("price_ingest_runs").update({
       status: "success", rows_written: written, tickers_total: tickers.length,
