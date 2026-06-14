@@ -423,9 +423,15 @@ export default async function InvestorSlugPage({
         lang === "zh"
           ? `${manager.person} 的 SEC 13F 持仓`
           : `${manager.person}'s SEC 13F holdings`,
+      description:
+        lang === "zh"
+          ? `${fund} 向美国证券交易委员会（SEC）申报的 13F 季度持仓数据，包含个股、持股数量与申报市值。`
+          : `Quarterly 13F holdings disclosed by ${fund} to the U.S. Securities and Exchange Commission (SEC), including positions, share counts, and reported market values.`,
       isAccessibleForFree: true,
       ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
+      creator: { "@type": "Organization", name: fund },
       sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
+      license: "https://creativecommons.org/publicdomain/mark/1.0/",
     },
   };
 
