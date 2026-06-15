@@ -72,6 +72,10 @@ export function EarningsPowerFloorCard({ floor }: { floor: ValuationFloor | unde
           <p className="text-xs text-[var(--tt-warn)]">High leverage — ranges are a degraded approximation (see method).</p>
         ) : null}
 
+        <p className="text-xs text-[var(--tt-muted)]">
+          Two independent zero-growth lenses — together they bracket a conservative earnings-power range.
+        </p>
+
         <div className="grid gap-3 sm:grid-cols-2">
           <LampSummary lamp={graham_epv} />
           <LampSummary lamp={buffett_epv} />
