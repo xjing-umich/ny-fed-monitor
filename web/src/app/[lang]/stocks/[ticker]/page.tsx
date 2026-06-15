@@ -330,8 +330,19 @@ export default async function StockTickerPage({
       >
         <>
           <StockProse paragraphs={stockProse} lang={lang} />
+          {valuationFloor && (
+            <section>
+              {/* Section eyebrow — matches HoldersTable rhythm so the boxed
+                  card reads as a deliberate "computed" section, not a stray box. */}
+              <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
+                <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                  {lang === "zh" ? "估值 · 地基层" : "Valuation"}
+                </span>
+              </div>
+              <EarningsPowerFloorCard floor={valuationFloor} />
+            </section>
+          )}
           <HoldersTable holders={holders} lang={lang} />
-          <EarningsPowerFloorCard floor={valuationFloor} />
         </>
       </EntityPage>
     </>
