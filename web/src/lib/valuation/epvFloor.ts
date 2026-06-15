@@ -65,6 +65,7 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   const shares = input.years.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
   if (shares == null) return { kind: "per_share_unavailable", reason: MULTI_CLASS_REASON };
 
+  // Full path uses the margin-qualified year subset for BOTH lamps so years_used is consistent.
   const marginYears = selectYears(input.years);
   if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares);
   return buildSingleLampFloor(earningsYears, shares);
@@ -74,43 +75,31 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number): ValuationF
   const latest = years[0];
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
-  const equity = latest.shareholders_equity;
-  const netDebt = latest.net_debt ?? totalDebt - cash;
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
-
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
-  const assetFloor = buildAssetFloor(latest, shares);
-  const moatReading = buildMoatReading(grahamEpv, assetFloor);
-
-  const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
-  const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
-
-  return {
-    kind: "floor",
-    graham_epv: grahamEpv,
-    buffett_epv: buffettEpv,
-    asset_floor: assetFloor,
-    moat_reading: moatReading,
-    high_leverage_warning: highLeverage,
-    high_leverage_note: highLeverage
-      ? "High leverage (net debt / shareholders' equity above 1.0): the single 8–10% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
-      : undefined,
-    net_debt_to_equity: netDebtToEquity,
-    provenance: {
-      years_used: yearsUsed,
-      as_of_fiscal_year: latest.fiscal_year,
-      discount_rate_band: [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH],
-      normalized_tax_rate: tax.rate,
-      normalized_tax_rate_basis: tax.basis,
-      maintenance_capex_rule: MAINT_CAPEX_RULE,
-      share_count_basis: "diluted",
-    },
-  };
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined);
 }
 
 function buildSingleLampFloor(years: ValuationFloorYear[], shares: number): ValuationFloor {
+  const yearsUsed = years.map((y) => y.fiscal_year);
+  const grahamEpv = grahamNotApplicableLamp(yearsUsed);
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE);
+}
+
+// Shared scaffold: asset floor, moat (off the supplied reference lamp), leverage
+// flagging, and provenance — assembled identically for both the full two-lamp and
+// the single-lamp paths so the leverage threshold/prose and provenance keys live once.
+function assembleFloor(
+  years: ValuationFloorYear[],
+  shares: number,
+  grahamEpv: EpvLamp,
+  buffettEpv: EpvLamp,
+  moatRefLamp: EpvLamp,
+  earningsBasisNote: string | undefined,
+): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
@@ -118,15 +107,10 @@ function buildSingleLampFloor(years: ValuationFloorYear[], shares: number): Valu
   const netDebt = latest.net_debt ?? totalDebt - cash;
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
-
-  const grahamEpv = grahamNotApplicableLamp(yearsUsed);
-  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
   const assetFloor = buildAssetFloor(latest, shares);
-  const moatReading = buildMoatReading(buffettEpv, assetFloor);
-
+  const moatReading = buildMoatReading(moatRefLamp, assetFloor);
   const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
   const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
-
   return {
     kind: "floor",
     graham_epv: grahamEpv,
@@ -146,7 +130,7 @@ function buildSingleLampFloor(years: ValuationFloorYear[], shares: number): Valu
       normalized_tax_rate_basis: tax.basis,
       maintenance_capex_rule: MAINT_CAPEX_RULE,
       share_count_basis: "diluted",
-      earnings_basis_note: SINGLE_LAMP_BASIS_NOTE,
+      earnings_basis_note: earningsBasisNote,
     },
   };
 }
