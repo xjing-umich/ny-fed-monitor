@@ -1,6 +1,6 @@
 import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { EpvLamp, MoatSignal, ValuationFloor } from "@/lib/valuation";
+import type { EpvLamp, MoatSignal, PerShareUnavailable, ValuationFloor } from "@/lib/valuation";
 
 function perShare(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
@@ -52,8 +52,23 @@ function LampMethod({ lamp }: { lamp: EpvLamp }) {
   );
 }
 
-export function EarningsPowerFloorCard({ floor }: { floor: ValuationFloor | undefined }) {
+export function EarningsPowerFloorCard({ floor }: { floor: ValuationFloor | PerShareUnavailable | undefined }) {
   if (!floor) return null;
+  if (floor.kind === "per_share_unavailable") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="size-4 text-[var(--tt-accent)]" />
+            Earnings Power &amp; Asset Floor
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-[var(--tt-muted)]">{floor.reason}</p>
+        </CardContent>
+      </Card>
+    );
+  }
   const { graham_epv, buffett_epv, asset_floor, moat_reading, provenance } = floor;
   return (
     <Card>
@@ -72,9 +87,13 @@ export function EarningsPowerFloorCard({ floor }: { floor: ValuationFloor | unde
           <p className="text-xs text-[var(--tt-warn)]">High leverage — ranges are a degraded approximation (see method).</p>
         ) : null}
 
-        <p className="text-xs text-[var(--tt-muted)]">
-          Two independent zero-growth lenses — together they bracket a conservative earnings-power range.
-        </p>
+        {graham_epv.assessable && buffett_epv.assessable ? (
+          <p className="text-xs text-[var(--tt-muted)]">
+            Two independent zero-growth lenses — together they bracket a conservative earnings-power range.
+          </p>
+        ) : provenance.earnings_basis_note ? (
+          <p className="text-xs text-[var(--tt-muted)]">{provenance.earnings_basis_note}</p>
+        ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <LampSummary lamp={graham_epv} />
