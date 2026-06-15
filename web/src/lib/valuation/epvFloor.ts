@@ -1,4 +1,4 @@
-import type { AssetFloor, EpvLamp, MoatReading, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
+import type { AssetFloor, EpvLamp, MoatReading, PerShareUnavailable, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 
 export const DISCOUNT_RATE_LOW = 0.08;
 export const DISCOUNT_RATE_HIGH = 0.1;
@@ -11,6 +11,12 @@ export const MOAT_COMMODITY_FLOOR = 0.75;
 
 const MAINT_CAPEX_RULE =
   "v1: maintenance capex set equal to D&A, so the depreciation add-back nets to zero (Buffett lamp = avg net income). Sales-driven maintenance-capex estimation deferred to v2.";
+
+const MULTI_CLASS_REASON =
+  "This issuer has a multi-share-class structure; a blended per-share count is not available from the current data source, so a per-share floor is not computed here.";
+
+const SINGLE_LAMP_BASIS_NOTE =
+  "Operating income is not reported separately (e.g. banks, insurers, and some diversified issuers), so earnings power is shown via the owner-earnings lens only; the unlevered NOPAT lens does not apply.";
 
 function avg(values: number[]): number {
   return values.reduce((s, v) => s + v, 0) / values.length;
@@ -25,6 +31,14 @@ function marginOf(y: ValuationFloorYear): number | undefined {
 function selectYears(years: ValuationFloorYear[]): ValuationFloorYear[] {
   return years
     .filter((y) => y.revenue != null && marginOf(y) != null && y.net_income != null)
+    .sort((a, b) => b.fiscal_year - a.fiscal_year)
+    .slice(0, TARGET_YEARS);
+}
+
+/** Years carrying a net-income signal (the minimum needed for the owner-earnings lens). */
+function selectEarningsYears(years: ValuationFloorYear[]): ValuationFloorYear[] {
+  return years
+    .filter((y) => y.net_income != null)
     .sort((a, b) => b.fiscal_year - a.fiscal_year)
     .slice(0, TARGET_YEARS);
 }
@@ -44,17 +58,23 @@ function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; basis: 
   return { rate: clamped, basis: `Average effective tax rate over ${rates.length} year(s), capped at the statutory 21%.` };
 }
 
-export function computeValuationFloor(input: ValuationFloorInput): ValuationFloor | undefined {
-  const years = selectYears(input.years);
-  if (years.length < MIN_YEARS) return undefined;
+export function computeValuationFloor(input: ValuationFloorInput): ValuationFloor | PerShareUnavailable | undefined {
+  const earningsYears = selectEarningsYears(input.years);
+  if (earningsYears.length < MIN_YEARS) return undefined;
 
+  const shares = input.years.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
+  if (shares == null) return { kind: "per_share_unavailable", reason: MULTI_CLASS_REASON };
+
+  const marginYears = selectYears(input.years);
+  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares);
+  return buildSingleLampFloor(earningsYears, shares);
+}
+
+function buildFullFloor(years: ValuationFloorYear[], shares: number): ValuationFloor {
   const latest = years[0];
-  const shares = years.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
-  if (shares == null) return undefined;
-
-  const equity = latest.shareholders_equity;
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
+  const equity = latest.shareholders_equity;
   const netDebt = latest.net_debt ?? totalDebt - cash;
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
@@ -68,6 +88,7 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
 
   return {
+    kind: "floor",
     graham_epv: grahamEpv,
     buffett_epv: buffettEpv,
     asset_floor: assetFloor,
@@ -85,6 +106,47 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
       normalized_tax_rate_basis: tax.basis,
       maintenance_capex_rule: MAINT_CAPEX_RULE,
       share_count_basis: "diluted",
+    },
+  };
+}
+
+function buildSingleLampFloor(years: ValuationFloorYear[], shares: number): ValuationFloor {
+  const latest = years[0];
+  const cash = latest.cash ?? 0;
+  const totalDebt = latest.total_debt ?? 0;
+  const equity = latest.shareholders_equity;
+  const netDebt = latest.net_debt ?? totalDebt - cash;
+  const yearsUsed = years.map((y) => y.fiscal_year);
+  const tax = normalizedTaxRate(years);
+
+  const grahamEpv = grahamNotApplicableLamp(yearsUsed);
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
+  const assetFloor = buildAssetFloor(latest, shares);
+  const moatReading = buildMoatReading(buffettEpv, assetFloor);
+
+  const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
+  const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
+
+  return {
+    kind: "floor",
+    graham_epv: grahamEpv,
+    buffett_epv: buffettEpv,
+    asset_floor: assetFloor,
+    moat_reading: moatReading,
+    high_leverage_warning: highLeverage,
+    high_leverage_note: highLeverage
+      ? "High leverage (net debt / shareholders' equity above 1.0): the single 8–10% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
+      : undefined,
+    net_debt_to_equity: netDebtToEquity,
+    provenance: {
+      years_used: yearsUsed,
+      as_of_fiscal_year: latest.fiscal_year,
+      discount_rate_band: [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH],
+      normalized_tax_rate: tax.rate,
+      normalized_tax_rate_basis: tax.basis,
+      maintenance_capex_rule: MAINT_CAPEX_RULE,
+      share_count_basis: "diluted",
+      earnings_basis_note: SINGLE_LAMP_BASIS_NOTE,
     },
   };
 }
@@ -133,6 +195,25 @@ function buildGrahamLamp(
     per_share_low: equityLow / shares,
     per_share_high: equityHigh / shares,
     method,
+  };
+}
+
+/** Single-lamp mode: operating income absent, so the unlevered NOPAT lens cannot be applied. */
+function grahamNotApplicableLamp(yearsUsed: number[]): EpvLamp {
+  return {
+    label: "Graham earnings-power value (normalized NOPAT)",
+    assessable: false,
+    not_assessable_reason: SINGLE_LAMP_BASIS_NOTE,
+    method: {
+      earnings_basis: "Normalized NOPAT from operating margin — not applicable when operating income is not reported separately.",
+      leverage_treatment: "Unlevered (pre-interest, attributable to all capital).",
+      denominator: "Capitalized at the 8–10% rate band (read as a WACC proxy).",
+      bridge: "Enterprise → equity bridge (+ cash − total debt) — not applied (lens not assessable).",
+      discount_rate_low: DISCOUNT_RATE_LOW,
+      discount_rate_high: DISCOUNT_RATE_HIGH,
+      years_used: yearsUsed,
+      simplifications: [],
+    },
   };
 }
 
