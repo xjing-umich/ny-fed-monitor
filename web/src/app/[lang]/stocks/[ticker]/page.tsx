@@ -14,6 +14,9 @@ import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
+import { getSecCompanyData } from "@/lib/sec/read";
+import { fundamentalsToFloorInput, computeValuationFloor } from "@/lib/valuation";
+import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -76,7 +79,6 @@ const TABLE_COPY = {
       shares: "持股",
       weight: "组合权重",
     },
-    coming: "股票估值（内在价值 / DCF）数据即将上线",
   },
   en: {
     title: "Superinvestors Holding This Security",
@@ -86,7 +88,6 @@ const TABLE_COPY = {
       shares: "Shares",
       weight: "Weight",
     },
-    coming: "Stock valuation (intrinsic value / DCF) coming soon.",
   },
 } as const;
 
@@ -145,7 +146,6 @@ function HoldersTable({
         rowHref={(r) => investorPath(lang, r.slug)}
         breakpoint="lg"
       />
-      <p className="mt-3 text-xs text-[var(--tt-faint)]">{t.coming}</p>
     </section>
   );
 }
@@ -227,10 +227,17 @@ export default async function StockTickerPage({
     lang,
   );
 
+  // 确定性估值地基(零价格依赖): 读入库基本面 → 两盏零增长 EPV + 有形资产地板 + 护城河读数。
+  // 缺库/薄数据(<3 FY)时 computeValuationFloor 返回 undefined, 卡片自渲染为零空盒。
+  const sec = await getSecCompanyData(ticker);
+  const valuationFloor = computeValuationFloor(
+    fundamentalsToFloorInput(ticker, issuer, sec.annual),
+  );
+
   const subtitle =
     lang === "zh"
-      ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。股票估值数据即将上线。`
-      : `Held by ${n} superinvestor${n === 1 ? "" : "s"} (${ticker}). Valuation data coming soon.`;
+      ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。`
+      : `Held by ${n} superinvestor${n === 1 ? "" : "s"} (${ticker}).`;
 
   const disclaimer =
     lang === "zh"
@@ -324,6 +331,7 @@ export default async function StockTickerPage({
         <>
           <StockProse paragraphs={stockProse} lang={lang} />
           <HoldersTable holders={holders} lang={lang} />
+          <EarningsPowerFloorCard floor={valuationFloor} />
         </>
       </EntityPage>
     </>
