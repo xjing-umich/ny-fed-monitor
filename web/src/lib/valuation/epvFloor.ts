@@ -62,6 +62,7 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   const earningsYears = selectEarningsYears(input.years);
   if (earningsYears.length < MIN_YEARS) return undefined;
 
+  // Scan all input years (not just the margin-qualified subset) for any usable diluted count.
   const shares = input.years.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
   if (shares == null) return { kind: "per_share_unavailable", reason: MULTI_CLASS_REASON };
 

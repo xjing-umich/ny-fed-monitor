@@ -75,8 +75,6 @@ export type PerShareUnavailable = {
   reason: string;
 };
 
-export type ValuationFloorResult = ValuationFloor | PerShareUnavailable;
-
 // ── Input contract (mapped from stored FundamentalPeriod rows) ───────────────
 export type ValuationFloorYear = {
   fiscal_year: number;
