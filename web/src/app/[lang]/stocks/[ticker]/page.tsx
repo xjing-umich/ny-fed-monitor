@@ -228,7 +228,8 @@ export default async function StockTickerPage({
   );
 
   // 确定性估值地基(零价格依赖): 读入库基本面 → 两盏零增长 EPV + 有形资产地板 + 护城河读数。
-  // 缺库/薄数据(<3 FY)时 computeValuationFloor 返回 undefined, 卡片自渲染为零空盒。
+  // 薄数据(<3 盈利年)→ undefined 不渲染; 多股权无股数 → per_share_unavailable, 卡片诚实标注;
+  // 无营业利润(金融) → 单灯档。卡片按 kind 自行分支。
   const sec = await getSecCompanyData(ticker);
   const valuationFloor = computeValuationFloor(
     fundamentalsToFloorInput(ticker, issuer, sec.annual),

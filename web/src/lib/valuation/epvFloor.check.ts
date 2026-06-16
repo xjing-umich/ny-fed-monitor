@@ -9,11 +9,17 @@
  * high-leverage, N<3 degradation, negative-earnings / negative-book branches.
  */
 import assert from "node:assert";
-import type { ValuationFloorInput, ValuationFloorYear } from "./types";
+import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW } from "./epvFloor";
 
 function year(fy: number, o: Partial<ValuationFloorYear>): ValuationFloorYear {
   return { fiscal_year: fy, ...o };
+}
+
+// computeValuationFloor 现返回联合类型；这个助手在断言里收窄到完整 floor。
+function floorOf(r: ReturnType<typeof computeValuationFloor>): ValuationFloor {
+  assert.ok(r && "kind" in r && r.kind === "floor", "expected a full floor result");
+  return r;
 }
 
 // Net-cash compounder: ~43% op margin, effective tax 15%/yr, intangibles present.
@@ -32,7 +38,7 @@ const compounder: ValuationFloorInput = {
 assert.strictEqual(computeValuationFloor({ ticker: "EMPTY", years: [] }), undefined, "no years → undefined");
 assert.strictEqual(computeValuationFloor({ ticker: "THIN", years: compounder.years.slice(0, 2) }), undefined, "N<3 → undefined");
 
-const floor = computeValuationFloor(compounder)!;
+const floor = floorOf(computeValuationFloor(compounder));
 assert.ok(floor, "compounder produces a floor");
 assert.strictEqual(floor.provenance.years_used.length, 5, "5 years used");
 assert.deepStrictEqual(floor.provenance.discount_rate_band, [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH], "band recorded");
@@ -69,7 +75,7 @@ const levered: ValuationFloorInput = {
     year(2023, { revenue: 9_000, operating_margin: 0.2, net_income: 900, effective_tax_rate: 0.21, shareholders_equity: 1_800, cash: 460, total_debt: 8_000, net_debt: 7_540, shares_diluted: 1_000 }),
   ],
 };
-const lf = computeValuationFloor(levered)!;
+const lf = floorOf(computeValuationFloor(levered));
 // avg NI 950 → buffett eq_high 950/0.08 = 11_875 (debt NOT subtracted)
 assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 11_875) < 1, `levered buffett eq_high≈11875 got ${lf.buffett_epv.equity_value_high}`);
 // graham bridges: nopat 0.2×10000×(1−0.21)=1580; /0.08 +500 −8000 = 12_250
@@ -89,7 +95,7 @@ const loss: ValuationFloorInput = {
     year(2023, { revenue: 8_000, operating_margin: -0.08, net_income: -600, shareholders_equity: 4_400, goodwill: 100, intangibles: 100, cash: 500, total_debt: 0, net_debt: -500, shares_diluted: 1_000 }),
   ],
 };
-const lm = computeValuationFloor(loss)!;
+const lm = floorOf(computeValuationFloor(loss));
 assert.strictEqual(lm.graham_epv.assessable, false, "neg NOPAT → graham not assessable");
 assert.strictEqual(lm.buffett_epv.assessable, false, "neg owner earnings → buffett not assessable");
 assert.strictEqual(lm.asset_floor.assessable, true, "asset floor still emitted on losses");
@@ -98,11 +104,11 @@ assert.strictEqual(lm.moat_reading.signal, "value_destruction", "losses → valu
 // ── real averaged effective tax rate: cap / floor / fallback ─────────────────
 assert.ok(Math.abs(floor.provenance.normalized_tax_rate - 0.15) < 1e-9, `prov tax 0.15 got ${floor.provenance.normalized_tax_rate}`);
 assert.ok(/effective/i.test(floor.provenance.normalized_tax_rate_basis), "tax basis says effective");
-const highTax = computeValuationFloor({ ticker: "HI", years: compounder.years.map((y) => ({ ...y, effective_tax_rate: 0.3 })) })!;
+const highTax = floorOf(computeValuationFloor({ ticker: "HI", years: compounder.years.map((y) => ({ ...y, effective_tax_rate: 0.3 })) }));
 assert.ok(Math.abs(highTax.provenance.normalized_tax_rate - 0.21) < 1e-9, "eff tax capped at 21%");
-const negTax = computeValuationFloor({ ticker: "NEG", years: compounder.years.map((y) => ({ ...y, effective_tax_rate: -0.1 })) })!;
+const negTax = floorOf(computeValuationFloor({ ticker: "NEG", years: compounder.years.map((y) => ({ ...y, effective_tax_rate: -0.1 })) }));
 assert.ok(Math.abs(negTax.provenance.normalized_tax_rate - 0) < 1e-9, "eff tax floored at 0");
-const noTax = computeValuationFloor({ ticker: "NOTAX", years: compounder.years.map(({ effective_tax_rate, ...rest }) => rest) })!;
+const noTax = floorOf(computeValuationFloor({ ticker: "NOTAX", years: compounder.years.map(({ effective_tax_rate, ...rest }) => rest) }));
 assert.ok(Math.abs(noTax.provenance.normalized_tax_rate - 0.21) < 1e-9, "missing tax → fallback 0.21");
 assert.ok(/fallback|statutory/i.test(noTax.provenance.normalized_tax_rate_basis), "fallback basis labeled");
 
@@ -113,12 +119,49 @@ assert.ok(af.assessable, "asset floor assessable");
 assert.strictEqual(af.intangibles_separated, true, "intangibles separated when present");
 assert.ok(Math.abs(af.per_share! - 4.2) < 1e-9, `tangible per share 4.2 got ${af.per_share}`);
 assert.ok(/tangible/i.test(af.basis), "basis says tangible");
-const noIntang = computeValuationFloor({ ticker: "NOINT", years: compounder.years.map(({ goodwill, intangibles, ...rest }) => rest) })!;
+const noIntang = floorOf(computeValuationFloor({ ticker: "NOINT", years: compounder.years.map(({ goodwill, intangibles, ...rest }) => rest) }));
 assert.strictEqual(noIntang.asset_floor.intangibles_separated, false, "no separation when both missing");
 assert.ok(Math.abs(noIntang.asset_floor.per_share! - 5.0) < 1e-9, `total-book fallback 5.0 got ${noIntang.asset_floor.per_share}`);
 assert.ok(/intangibles not separated|total book/i.test(noIntang.asset_floor.basis), "fallback basis labeled");
-const negTangible = computeValuationFloor({ ticker: "NEGT", years: compounder.years.map((y) => ({ ...y, goodwill: 4_900, intangibles: 300 })) })!;
+const negTangible = floorOf(computeValuationFloor({ ticker: "NEGT", years: compounder.years.map((y) => ({ ...y, goodwill: 4_900, intangibles: 300 })) }));
 assert.strictEqual(negTangible.asset_floor.assessable, false, "negative tangible book → not assessable");
 assert.strictEqual(negTangible.asset_floor.per_share, undefined, "no negative per-share floor");
+
+// ── 单灯回退：金融股（有净利+股数、无营业利润率）─────────────────────────────
+// 银行式 fixture：无 operating_margin / operating_income，但有 net_income、shares、equity。
+const financial: ValuationFloorInput = {
+  ticker: "BANKX",
+  years: [
+    year(2025, { net_income: 3_000, pretax_income: 3_800, income_tax_expense: 800, shareholders_equity: 20_000, cash: 5_000, total_debt: 1_000, net_debt: -4_000, shares_diluted: 1_000 }),
+    year(2024, { net_income: 2_800, pretax_income: 3_500, income_tax_expense: 700, shareholders_equity: 18_000, cash: 4_500, total_debt: 1_000, net_debt: -3_500, shares_diluted: 1_000 }),
+    year(2023, { net_income: 2_600, pretax_income: 3_200, income_tax_expense: 600, shareholders_equity: 16_000, cash: 4_000, total_debt: 1_000, net_debt: -3_000, shares_diluted: 1_000 }),
+  ],
+};
+const fin = floorOf(computeValuationFloor(financial));
+assert.strictEqual(fin.graham_epv.assessable, false, "financial: graham not assessable (no operating income)");
+assert.ok(/operating income is not reported/i.test(fin.graham_epv.not_assessable_reason ?? ""), "financial: graham reason names missing operating income");
+assert.ok(fin.buffett_epv.assessable, "financial: buffett lamp assessable");
+// avg NI 2800 → eq_high 2800/0.08 = 35_000 (no bridge), per share /1000 = 35
+assert.ok(Math.abs(fin.buffett_epv.equity_value_high! - 35_000) < 1, `financial buffett eq_high≈35000 got ${fin.buffett_epv.equity_value_high}`);
+assert.ok(Math.abs(fin.buffett_epv.per_share_high! - 35) < 1e-9, `financial buffett ps_high≈35 got ${fin.buffett_epv.per_share_high}`);
+assert.strictEqual(fin.asset_floor.assessable, true, "financial: asset floor still emitted");
+assert.ok(fin.provenance.earnings_basis_note && /owner[- ]earnings/i.test(fin.provenance.earnings_basis_note), "financial: provenance carries single-lamp basis note");
+assert.notStrictEqual(fin.moat_reading.signal, "not_assessable", "financial: moat reads off buffett lamp, not stuck unassessable");
+
+// ── 多股权：有盈利、无任何股数 → per_share_unavailable（不再 undefined）──────────
+const multiClass: ValuationFloorInput = {
+  ticker: "MULTI",
+  years: [
+    year(2025, { revenue: 30_000, operating_margin: 0.6, net_income: 18_000, shareholders_equity: 40_000, cash: 10_000, total_debt: 5_000 }),
+    year(2024, { revenue: 28_000, operating_margin: 0.6, net_income: 16_000, shareholders_equity: 38_000, cash: 9_000, total_debt: 5_000 }),
+    year(2023, { revenue: 25_000, operating_margin: 0.6, net_income: 14_000, shareholders_equity: 35_000, cash: 8_000, total_debt: 5_000 }),
+  ],
+};
+const mc = computeValuationFloor(multiClass);
+assert.ok(mc && "kind" in mc && mc.kind === "per_share_unavailable", "multi-class (no shares) → per_share_unavailable");
+assert.ok(/multi-share-class/i.test((mc as { reason: string }).reason), "per_share_unavailable carries multi-class reason");
+
+// 真薄数据（<3 盈利年）仍 undefined（回归）
+assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.years.slice(0, 2) }), undefined, "N<3 net-income years → undefined");
 
 console.log("epvFloor.check.ts: all assertions passed.");

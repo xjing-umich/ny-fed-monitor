@@ -50,7 +50,11 @@ export const FUNDAMENTAL_TAGS: Record<FundamentalField, string[]> = {
   operating_income: ["OperatingIncomeLoss"],
   net_income: ["NetIncomeLoss", "ProfitLoss"],
   eps_diluted: ["EarningsPerShareDiluted"],
-  shares_diluted: ["WeightedAverageNumberOfDilutedSharesOutstanding"],
+  shares_diluted: [
+    "WeightedAverageNumberOfDilutedSharesOutstanding",
+    "WeightedAverageNumberOfShareOutstandingBasicAndDiluted",
+    "WeightedAverageNumberOfSharesOutstandingBasic",
+  ],
   operating_cash_flow: [
     "NetCashProvidedByUsedInOperatingActivities",
     "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"

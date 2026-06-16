@@ -53,9 +53,12 @@ export type ValuationFloorProvenance = {
   normalized_tax_rate_basis: string;
   maintenance_capex_rule: string;
   share_count_basis: string;
+  /** 单灯档说明：为何只用 owner-earnings 灯。完整两灯档为 undefined。 */
+  earnings_basis_note?: string;
 };
 
 export type ValuationFloor = {
+  kind: "floor";
   graham_epv: EpvLamp;
   buffett_epv: EpvLamp;
   asset_floor: AssetFloor;
@@ -64,6 +67,12 @@ export type ValuationFloor = {
   high_leverage_note?: string;
   net_debt_to_equity?: number;
   provenance: ValuationFloorProvenance;
+};
+
+/** 盈利数据齐备但无法取得每股股数（如多股权结构）时返回，供卡片诚实标注。 */
+export type PerShareUnavailable = {
+  kind: "per_share_unavailable";
+  reason: string;
 };
 
 // ── Input contract (mapped from stored FundamentalPeriod rows) ───────────────

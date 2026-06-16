@@ -41,8 +41,8 @@ assert.strictEqual(input.company_name, "Zed Co");
 
 // End-to-end: mapped input drives the engine
 const floor = computeValuationFloor(input);
-assert.ok(floor, "mapped input produces a floor");
-assert.strictEqual(floor!.provenance.years_used[0], 2025, "engine sees 2025 latest");
+assert.ok(floor && "kind" in floor && floor.kind === "floor", "mapped input produces a floor");
+assert.strictEqual(floor.provenance.years_used[0], 2025, "engine sees 2025 latest");
 
 // Empty / undefined-safe
 assert.strictEqual(fundamentalsToFloorInput("X", undefined, []).years.length, 0, "empty rows → empty years");
