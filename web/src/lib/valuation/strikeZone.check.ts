@@ -78,6 +78,17 @@ assert.ok(atBoundary!.epv!.mosHigh > atBoundary!.epv!.mosLow, "MoS range: high >
 // ── GRAHAM_MOS is one third ──────────────────────────────────────────────────
 assert.ok(Math.abs(GRAHAM_MOS - 1 / 3) < 1e-12, "GRAHAM_MOS = 1/3");
 
+// ── high-leverage straddle: a lamp with negative low (still assessable) must NOT
+//    contribute its positive high to the ceiling, so the engine's reference values
+//    match the lamp bands the card actually draws (both-ends-positive only).
+const straddle = makeFloor({
+  graham: { per_share_low: -5, per_share_high: 200 }, // low straddles zero
+  buffett: { per_share_low: 100, per_share_high: 130 },
+});
+const st = deriveStrikeZone(straddle, px(60), NOW);
+assert.strictEqual(st!.epv!.floorConservative, 100, "straddle lamp excluded → floor = buffett low");
+assert.strictEqual(st!.epv!.ceiling, 130, "straddle lamp excluded → ceiling = buffett high, not 200");
+
 // ── both lamps not assessable → no EPV zone; asset lamp still independent ─────
 const assetOnly = makeFloor({
   graham: { assessable: false, not_assessable_reason: "x" },

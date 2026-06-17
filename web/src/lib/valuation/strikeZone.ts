@@ -35,12 +35,19 @@ export function deriveStrikeZone(
   if (!price || !finitePositive(price.close)) return undefined;
 
   // Conservative reference = global-min assessable per_share_low; ceiling = global-max per_share_high.
+  // Require BOTH ends positive for a lamp to contribute: a lamp whose low straddles
+  // zero (e.g. a high-leverage Graham equity bridge → negative low, positive high) is
+  // degenerate for margin-of-safety AND the card won't draw its band, so it must not
+  // supply the ceiling either — otherwise the number (ceiling) and the visual (no band)
+  // would contradict each other.
   const lows: number[] = [];
   const highs: number[] = [];
   for (const lamp of [floor.graham_epv, floor.buffett_epv]) {
     if (!lamp.assessable) continue;
-    if (finitePositive(lamp.per_share_low)) lows.push(lamp.per_share_low);
-    if (finitePositive(lamp.per_share_high)) highs.push(lamp.per_share_high);
+    if (finitePositive(lamp.per_share_low) && finitePositive(lamp.per_share_high)) {
+      lows.push(lamp.per_share_low);
+      highs.push(lamp.per_share_high);
+    }
   }
   const hasEpv = lows.length > 0 && highs.length > 0;
   const hasAsset = floor.asset_floor.assessable && finitePositive(floor.asset_floor.per_share);
