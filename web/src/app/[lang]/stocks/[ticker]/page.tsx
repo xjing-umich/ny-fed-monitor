@@ -15,8 +15,9 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
 import { getSecCompanyData } from "@/lib/sec/read";
-import { fundamentalsToFloorInput, computeValuationFloor } from "@/lib/valuation";
+import { fundamentalsToFloorInput, computeValuationFloor, deriveStrikeZone } from "@/lib/valuation";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
+import { getLatestPrice } from "@/lib/managers/priceRead";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -235,6 +236,13 @@ export default async function StockTickerPage({
     fundamentalsToFloorInput(ticker, issuer, sec.annual),
   );
 
+  // Strike zone (price vs floor): only when a real per-share floor exists.
+  // Multi-class (per_share_unavailable) / thin (undefined) skip the price hit.
+  // No env / no price row → getLatestPrice returns null → deriveStrikeZone → undefined → price-vs-floor sub-block omitted (the floor card/section still render).
+  const latestPrice = valuationFloor?.kind === "floor" ? await getLatestPrice(ticker) : null;
+  const strikeZone =
+    valuationFloor?.kind === "floor" ? deriveStrikeZone(valuationFloor, latestPrice) : undefined;
+
   const subtitle =
     lang === "zh"
       ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。`
@@ -340,7 +348,7 @@ export default async function StockTickerPage({
                   {lang === "zh" ? "估值 · 地基层" : "Valuation"}
                 </span>
               </div>
-              <EarningsPowerFloorCard floor={valuationFloor} />
+              <EarningsPowerFloorCard floor={valuationFloor} strikeZone={strikeZone} />
             </section>
           )}
           <HoldersTable holders={holders} lang={lang} />
