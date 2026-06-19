@@ -75,6 +75,43 @@ export type PerShareUnavailable = {
   reason: string;
 };
 
+// ── Strike zone (price vs. floor) ────────────────────────────────────────────
+export type StrikeZone = "in_strike_zone" | "approaching" | "outside";
+
+/**
+ * Deterministic price-vs-floor assessment. The ONLY place price enters the
+ * valuation card. Observation, never a recommendation: no BUY/SELL/HOLD, no
+ * target price. `undefined` from the engine means "no meaningful comparison".
+ */
+export type StrikeZoneAssessment = {
+  /** The price the comparison was made against (in-store latest). */
+  price: { close: number; date: string; currency: string; source?: string };
+  /** price.date older than STALE_PRICE_DAYS — shown as a degraded "as of" note, NOT hidden. */
+  stale: boolean;
+  /** price.currency !== "USD" — EPV/asset comparison suppressed (per-share floors are USD). */
+  currencyMismatch: boolean;
+  /** Human reason shown when the comparison is suppressed (currency mismatch). */
+  suppressedReason?: string;
+  /** EPV strike zone — present only when ≥1 EPV lamp is assessable with a positive per_share_low AND currency matches. */
+  epv?: {
+    zone: StrikeZone;
+    /** Global-minimum assessable per_share_low across lamps — the conservative reference. */
+    floorConservative: number;
+    /** Global-maximum assessable per_share_high across lamps. */
+    ceiling: number;
+    /** Margin of safety vs floorConservative — the conservative end; drives the zone. */
+    mosLow: number;
+    /** Margin of safety vs ceiling — the optimistic end of the range. */
+    mosHigh: number;
+  };
+  /** Asset-floor second lamp — present only when asset_floor is assessable AND currency matches. */
+  assetFloor?: {
+    perShare: number;
+    /** price.close <= asset_floor.per_share — a rarer, harder signal. */
+    priceBelow: boolean;
+  };
+};
+
 // ── Input contract (mapped from stored FundamentalPeriod rows) ───────────────
 export type ValuationFloorYear = {
   fiscal_year: number;
