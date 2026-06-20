@@ -4,6 +4,7 @@ import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
 import { EntityName } from "@/components/common/EntityName";
 import { TrackedLink } from "@/components/common/TrackedLink";
+import { Sparkline } from "@/components/common/Sparkline";
 
 const COPY = {
   zh: {
@@ -51,29 +52,6 @@ const SIGNAL_COLOR: Record<ConvictionSignal, string> = {
 };
 
 const fmtWeight = (w: number | null): string => (w != null ? `${(w * 100).toFixed(1)}%` : "—");
-
-/** 纯内联 SVG sparkline：X=季序(升序)，Y=按该证券自己的 [min,max] 归一化；未持有季=0。 */
-function Sparkline({ series, color }: { series: readonly number[]; color: string }): React.ReactElement {
-  const W = 120;
-  const H = 28;
-  const PAD = 2;
-  const min = Math.min(...series);
-  const max = Math.max(...series);
-  const span = max - min || 1; // 全平序列 → 画一条水平线
-  const step = series.length > 1 ? (W - PAD * 2) / (series.length - 1) : 0;
-  const points = series
-    .map((v, i) => {
-      const x = PAD + i * step;
-      const y = H - PAD - ((v - min) / span) * (H - PAD * 2);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true" className="shrink-0">
-      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 /**
  * 「高信念持仓」精选区块（服务端组件：静态 SVG + 确定性文案全部渲进 HTML，零 client JS）。

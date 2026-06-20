@@ -1,7 +1,9 @@
 import React from "react";
+import Link from "next/link";
 import { notFound, redirect, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
+import type { HoldingChange } from "@/lib/managers/types";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
@@ -18,6 +20,9 @@ import { getSecCompanyData } from "@/lib/sec/read";
 import { fundamentalsToFloorInput, computeValuationFloor, deriveStrikeZone } from "@/lib/valuation";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice } from "@/lib/managers/priceRead";
+import { WeightQoQ } from "@/components/common/qoqDirection";
+import { QuarterMovesPill } from "@/components/entity/QuarterMovesPill";
+import { HolderTrend } from "@/components/entity/HolderTrend";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -69,7 +74,13 @@ type HolderRow = {
   value: number;
   shares: number;
   weight: number | undefined;
+  /** 上季该持有人对本票的组合权重（无 prior / 本季新进 → undefined）。 */
+  priorWeight: number | undefined;
+  /** 本季对本票的动作口径（持股变动）；持平/无 prior → undefined。 */
+  kind: HoldingChange["kind"] | undefined;
 };
+
+type ExitedHolder = { person: string; slug: string };
 
 const TABLE_COPY = {
   zh: {
@@ -78,8 +89,10 @@ const TABLE_COPY = {
       investor: "投资人",
       value: "市值",
       shares: "持股",
-      weight: "组合权重",
+      weight: "权重(上季→本季)",
     },
+    exitedTitle: (n: number) => `本季清仓 (${n})`,
+    more: (n: number) => `… 等 ${n} 位`,
   },
   en: {
     title: "Superinvestors Holding This Security",
@@ -87,16 +100,22 @@ const TABLE_COPY = {
       investor: "Investor",
       value: "Value",
       shares: "Shares",
-      weight: "Weight",
+      weight: "Weight (prev→now)",
     },
+    exitedTitle: (n: number) => `Exited this quarter (${n})`,
+    more: (n: number) => `… +${n} more`,
   },
 } as const;
 
+const EXIT_CAP = 12;
+
 function HoldersTable({
   holders,
+  exited,
   lang,
 }: {
   holders: HolderRow[];
+  exited: ExitedHolder[];
   lang: Lang;
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
@@ -121,14 +140,15 @@ function HoldersTable({
       header: t.cols.shares,
       align: "right",
       width: "w-32",
+      hideOnMobile: true,
       cell: (r) => r.shares.toLocaleString(),
     },
     {
       key: "weight",
       header: t.cols.weight,
       align: "right",
-      width: "w-24",
-      cell: (r) => (r.weight != null ? `${(r.weight * 100).toFixed(2)}%` : "—"),
+      width: "w-40",
+      cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={r.kind} lang={lang} />,
     },
   ];
 
@@ -147,6 +167,29 @@ function HoldersTable({
         rowHref={(r) => investorPath(lang, r.slug)}
         breakpoint="lg"
       />
+
+      {/* 本季清仓：表底 rounded-full chip 列表，mobile 自动 wrap；空 → 不渲染 */}
+      {exited.length > 0 && (
+        <div className="mt-4 border-t border-[var(--tt-border)] pt-3">
+          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-negative)]">
+            {t.exitedTitle(exited.length)}
+          </span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {exited.slice(0, EXIT_CAP).map((e) => (
+              <Link
+                key={e.slug}
+                href={investorPath(lang, e.slug)}
+                className="inline-flex items-center rounded-full border border-[var(--tt-border)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
+              >
+                {e.person}
+              </Link>
+            ))}
+            {exited.length > EXIT_CAP && (
+              <span className="self-center text-[var(--tt-faint)] text-xs">{t.more(exited.length - EXIT_CAP)}</span>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -200,7 +243,10 @@ export default async function StockTickerPage({
     issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
     if (!latestFiledAt || d.latest.filedAt > latestFiledAt) latestFiledAt = d.latest.filedAt;
     if (!latestPeriod || d.latest.period > latestPeriod) latestPeriod = d.latest.period;
-    holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight });
+    // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
+    const priorWeight = d.prior?.holdings.find((p) => targetCusips.has(p.cusip))?.weight;
+    const kind = d.changes.find((c) => targetCusips.has(c.cusip))?.kind;
+    holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind });
   }
 
   if (holders.length === 0) notFound();
@@ -212,15 +258,36 @@ export default async function StockTickerPage({
 
   // 本季对本票的动作(按持有人计, 每人一次, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
   const moves = { opened: 0, added: 0, trimmed: 0, exited: 0 };
-  for (const { detail: d } of details) {
+  // 本季清仓者(已不在 holders 中, 单独收集供表底 chip 列表)。
+  const exitedHolders: ExitedHolder[] = [];
+  for (const { summary, detail: d } of details) {
     if (!d) continue;
     const ch = d.changes.find((c) => targetCusips.has(c.cusip));
     if (!ch) continue;
     if (ch.kind === "new") moves.opened++;
     else if (ch.kind === "increased") moves.added++;
     else if (ch.kind === "decreased") moves.trimmed++;
-    else if (ch.kind === "exited") moves.exited++;
+    else if (ch.kind === "exited") {
+      moves.exited++;
+      exitedHolders.push({ person: summary.person, slug: summary.slug });
+    }
   }
+
+  // 持有人数趋势(零新增 IO): 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数。
+  // 升序取最近 8 季; <2 季 → 趋势区块退化不渲染(HolderTrend 内部再次自守)。
+  const periodCounts = new Map<string, number>();
+  for (const { detail: d } of details) {
+    if (!d) continue;
+    for (const f of d.filings) {
+      if (f.holdings.some((h) => targetCusips.has(h.cusip))) {
+        periodCounts.set(f.period, (periodCounts.get(f.period) ?? 0) + 1);
+      }
+    }
+  }
+  const trendSeries = [...periodCounts.keys()]
+    .sort()
+    .slice(-8)
+    .map((p) => periodCounts.get(p)!);
 
   // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
   const stockProse = buildStockProse(
@@ -332,6 +399,7 @@ export default async function StockTickerPage({
         title={issuer}
         subtitle={subtitle}
         disclaimer={disclaimer}
+        notice={<QuarterMovesPill moves={moves} lang={lang} />}
         keyFacts={keyFacts}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         related={related}
@@ -351,7 +419,9 @@ export default async function StockTickerPage({
               <EarningsPowerFloorCard floor={valuationFloor} strikeZone={strikeZone} />
             </section>
           )}
-          <HoldersTable holders={holders} lang={lang} />
+          {/* 持有人趋势：自带 border-t 与上方估值带分隔；<2 季内部返回 null 不渲染 */}
+          <HolderTrend series={trendSeries} lang={lang} />
+          <HoldersTable holders={holders} exited={exitedHolders} lang={lang} />
         </>
       </EntityPage>
     </>

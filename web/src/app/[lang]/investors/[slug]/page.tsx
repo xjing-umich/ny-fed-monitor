@@ -22,6 +22,7 @@ import { isLikelyTicker } from "@/lib/externalLinks";
 import { getCusipMap } from "@/lib/managers/securities";
 import { deriveConviction } from "@/lib/managers/conviction";
 import { ConvictionPicks } from "@/components/entity/ConvictionPicks";
+import { WeightQoQ } from "@/components/common/qoqDirection";
 import { buildInvestorProse, displayFundName } from "@/lib/managers/profileProse";
 import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
 
@@ -96,7 +97,6 @@ const HOLD_COPY = {
     title: "持仓明细",
     cols: { issuer: "标的", value: "市值", shares: "持股数", weight: "权重(上季→本季)" },
     truncated: (n: number, total: number) => `显示前 ${n} 条，共 ${total} 个持仓`,
-    newPos: "新建",
     exitedTitle: (n: number) => `本季清仓 (${n})`,
     more: (n: number) => `… 等 ${n} 只`,
   },
@@ -104,49 +104,10 @@ const HOLD_COPY = {
     title: "Holdings",
     cols: { issuer: "Security", value: "Value", shares: "Shares", weight: "Weight (prev→now)" },
     truncated: (n: number, total: number) => `Showing top ${n} of ${total} positions`,
-    newPos: "New",
     exitedTitle: (n: number) => `Exited this quarter (${n})`,
     more: (n: number) => `… +${n} more`,
   },
 } as const;
-
-const fmtPct1 = (w: number | undefined): string =>
-  w != null ? `${(w * 100).toFixed(1)}%` : "—";
-
-/** QoQ 权重单元格: 数字取权重, 箭头/色取自 change.kind(持股口径)。 */
-function WeightQoQ({
-  cur,
-  prior,
-  kind,
-  lang,
-}: {
-  cur?: number;
-  prior?: number;
-  kind?: HoldingChange["kind"];
-  lang: Lang;
-}): React.ReactElement {
-  const t = HOLD_COPY[lang];
-  // 新建: prior 不存在该持仓
-  if (prior == null) {
-    return (
-      <span className="font-mono tabular-nums text-[var(--tt-positive)]">
-        {t.newPos} · {fmtPct1(cur)}
-      </span>
-    );
-  }
-  const arrow = kind === "increased" ? "▲" : kind === "decreased" ? "▼" : "";
-  const colorClass =
-    kind === "increased"
-      ? "text-[var(--tt-positive)]"
-      : kind === "decreased"
-      ? "text-[var(--tt-warn)]"
-      : "text-[var(--tt-faint)]";
-  return (
-    <span className="font-mono tabular-nums text-[var(--tt-muted)]">
-      {fmtPct1(prior)} <span className={colorClass}>→ {fmtPct1(cur)} {arrow}</span>
-    </span>
-  );
-}
 
 function HoldingsTable({
   holdings,
