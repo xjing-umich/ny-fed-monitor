@@ -3,7 +3,7 @@ import type {
   ManagerIndex, ManagerSummary, ManagerDetail, Manager, FilingData, Holding, ManagerQoQ,
 } from "@/lib/managers/types";
 import { assembleManagerDetail } from "@/lib/managers/assemble";
-import { getDb } from "@/lib/managers/db";
+import { getDb, withRetry } from "@/lib/managers/db";
 
 type IndexRow = ManagerSummary & { top_holding: string; total_value: number; holding_count: number };
 
@@ -46,15 +46,15 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
   // 注:理想是建 manager_index SQL 函数一次返回(见 README),那条更快路径仍优先生效。
   // 同上:出错 THROW,不能把"查询失败"误当成"该户无 filing"而静默从索引里丢掉
   // (一次抖动 → 索引少几户 → 列表页/个股页"谁在持有"残缺)。RPC 路径仍优先。
-  const { data: mgrs, error: mErr } = await db.from("managers").select("*");
+  const { data: mgrs, error: mErr } = await withRetry(() => db.from("managers").select("*"));
   if (mErr) throw new Error(`getManagerIndex managers query failed: ${mErr.message}`);
   const rows = await Promise.all(
     (mgrs ?? []).map(async (m): Promise<IndexRow | null> => {
-      const { data: f, error: fErr } = await db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(1);
+      const { data: f, error: fErr } = await withRetry(() => db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(1));
       if (fErr) throw new Error(`getManagerIndex filings query failed (${m.cik}): ${fErr.message}`);
       const latest = f?.[0];
       if (!latest) return null;
-      const { data: h, error: hErr } = await db.from("holdings").select("issuer,value").eq("filing_id", latest.id).order("value", { ascending: false }).limit(1);
+      const { data: h, error: hErr } = await withRetry(() => db.from("holdings").select("issuer,value").eq("filing_id", latest.id).order("value", { ascending: false }).limit(1));
       if (hErr) throw new Error(`getManagerIndex holdings query failed (${m.cik}): ${hErr.message}`);
       return { ...m, period: latest.period, total_value: latest.total_value, holding_count: latest.holding_count, top_holding: h?.[0]?.issuer ?? "", totalValue: latest.total_value, holdingCount: latest.holding_count, topHolding: h?.[0]?.issuer ?? "" } as IndexRow;
     })
@@ -100,14 +100,14 @@ export async function getManagerDetail(cikOrSlug: string): Promise<ManagerDetail
   // 吞成 null → 页面 notFound() → ISR 把 404 缓存 revalidate(1h),一次后端抖动 = 招牌页死链一小时,
   // 还会让 Google 据 404 取消收录。THROW 则 ISR 走 stale-while-revalidate / 500 并下次重试,绝不缓存假 404。
   // null 仅在「查询成功但确实查无此户/无 filing」时返回(真正的 404)。
-  const { data: mgrs, error: mErr } = await db.from("managers").select("*").or(`cik.eq.${cikOrSlug},slug.eq.${cikOrSlug}`).limit(1);
+  const { data: mgrs, error: mErr } = await withRetry(() => db.from("managers").select("*").or(`cik.eq.${cikOrSlug},slug.eq.${cikOrSlug}`).limit(1));
   if (mErr) throw new Error(`getManagerDetail managers query failed (${cikOrSlug}): ${mErr.message}`);
   const m = mgrs?.[0];
   if (!m) return null;
-  const { data: filings, error: fErr } = await db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(8);
+  const { data: filings, error: fErr } = await withRetry(() => db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(8));
   if (fErr) throw new Error(`getManagerDetail filings query failed (${m.cik}): ${fErr.message}`);
   const ids = (filings ?? []).map((f: any) => f.id);
-  const { data: holdings, error: hErr } = await db.from("holdings").select("*").in("filing_id", ids);
+  const { data: holdings, error: hErr } = await withRetry(() => db.from("holdings").select("*").in("filing_id", ids));
   if (hErr) throw new Error(`getManagerDetail holdings query failed (${m.cik}): ${hErr.message}`);
   if (!filings?.length) return null;
   return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? []);
