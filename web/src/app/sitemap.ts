@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { consensusHeld } from "@/lib/aggregations";
 import { ARTICLE_SLUGS } from "@/lib/learn";
+import { isLikelyTicker } from "@/lib/externalLinks";
 
 const BASE = "https://thecompounder.fyi";
 
@@ -62,9 +63,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // (via the consensus table / tickerize fallback), so these are the canonical
   // /stocks/[ticker] URLs — no 301 hop. Dedupe in case dual-class CUSIPs map to
   // the same ticker.
+  // Only emit clean ticker URLs. consensusHeld()'s `cusip` field is the tickerized
+  // identifier, but spine enrichment occasionally leaves a raw CUSIP/CINS (e.g.
+  // 81211K100, G0378L100) or a corrupt numeric value (e.g. "9.2343e+106"). The
+  // corrupt ones 404, and the raw CUSIPs render non-semantic URLs with unresolved
+  // titles ("81211K100 (81211K100) Stock") — feeding Google 404s/low-value pages
+  // from our own sitemap drags crawl quality. isLikelyTicker is the same predicate
+  // the on-page internal links use, so the sitemap stays ⊆ the linked ticker pages.
+  // Excluded securities remain crawlable (robots allows all); they re-enter the
+  // sitemap once enrichment resolves them to a real ticker.
   const seenStocks = new Set<string>();
   for (const h of held) {
-    if (!h.cusip || seenStocks.has(h.cusip)) continue;
+    if (!h.cusip || !isLikelyTicker(h.cusip) || seenStocks.has(h.cusip)) continue;
     seenStocks.add(h.cusip);
     urls.push(entry(`/stocks/${h.cusip}`, "weekly", 0.6));
   }
