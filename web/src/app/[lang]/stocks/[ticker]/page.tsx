@@ -4,6 +4,7 @@ import { notFound, redirect, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { HoldingChange } from "@/lib/managers/types";
+import { readStockHolders, readStockTrend } from "@/lib/managers/consensusRead";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
@@ -222,31 +223,72 @@ export default async function StockTickerPage({
   const ticker = rawTicker;
   // 该 ticker 下的全部 cusip(含历史)；若库为空(本地)或未解析, 回退把入参当作单个 cusip
   const cusipsForTicker = await tickerToCusips(ticker);
-  const targetCusips = new Set(cusipsForTicker.length ? cusipsForTicker : [ticker]);
-
-  const idx = await getManagerIndex();
   const holders: HolderRow[] = [];
   const issuerFreq: Record<string, number> = {};
+  const moves = { opened: 0, added: 0, trimmed: 0, exited: 0 };
+  const exitedHolders: ExitedHolder[] = [];
+  let trendSeries: number[] = [];
   let latestFiledAt = "";
   let latestPeriod = "";
 
-  // 并行读取全部 manager 详情(此前为串行 for-await,34 位投资者 × 每位 3 个查询
-  // = ~100 次首尾相接的 DB 往返,是个股页"等几秒"的主因)。Promise.all 后等待时间
-  // 由"累加"变为"取最慢一个",数量级下降。
-  const details = await Promise.all(
-    idx.managers.map(async (summary) => ({ summary, detail: await getManagerDetail(summary.slug) }))
-  );
-  for (const { summary, detail: d } of details) {
-    if (!d) continue;
-    const h = d.latest.holdings.find((holding) => targetCusips.has(holding.cusip));
-    if (!h) continue;
-    issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
-    if (!latestFiledAt || d.latest.filedAt > latestFiledAt) latestFiledAt = d.latest.filedAt;
-    if (!latestPeriod || d.latest.period > latestPeriod) latestPeriod = d.latest.period;
-    // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
-    const priorWeight = d.prior?.holdings.find((p) => targetCusips.has(p.cusip))?.weight;
-    const kind = d.changes.find((c) => targetCusips.has(c.cusip))?.kind;
-    holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind });
+  // 快路径: ticker-keyed 快照(consensus_stock_holders + consensus_stock_trend),取代对 34 户
+  // 逐个 getManagerDetail 的 ~100 次/页往返。快照未部署/未填充(空)→ 回退逐户扫描(行为不变)。
+  const snap = await readStockHolders(ticker);
+
+  if (snap && snap.length > 0) {
+    for (const r of snap) {
+      if (r.filedAt && r.filedAt > latestFiledAt) latestFiledAt = r.filedAt;
+      if (r.period && r.period > latestPeriod) latestPeriod = r.period;
+      // 清仓行: 仅计数 + 收进表底 chip 列表, 不进持有人表。
+      if (r.kind === "exited") { moves.exited++; exitedHolders.push({ person: r.person, slug: r.slug }); continue; }
+      issuerFreq[r.issuer] = (issuerFreq[r.issuer] ?? 0) + 1;
+      if (r.kind === "new") moves.opened++;
+      else if (r.kind === "increased") moves.added++;
+      else if (r.kind === "decreased") moves.trimmed++;
+      holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined });
+    }
+    trendSeries = (await readStockTrend(ticker)) ?? [];
+  } else {
+    // 回退: 逐户扫描(快照不可用时, 行为与 PR#72 逐户版完全一致)。
+    // targetCusips: 该 ticker 下全部 cusip(含历史); 库为空/未解析则把入参当单个 cusip。
+    const targetCusips = new Set(cusipsForTicker.length ? cusipsForTicker : [ticker]);
+    const idx = await getManagerIndex();
+    const details = await Promise.all(
+      idx.managers.map(async (summary) => ({ summary, detail: await getManagerDetail(summary.slug) }))
+    );
+    for (const { summary, detail: d } of details) {
+      if (!d) continue;
+      const h = d.latest.holdings.find((holding) => targetCusips.has(holding.cusip));
+      if (!h) continue;
+      issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
+      if (!latestFiledAt || d.latest.filedAt > latestFiledAt) latestFiledAt = d.latest.filedAt;
+      if (!latestPeriod || d.latest.period > latestPeriod) latestPeriod = d.latest.period;
+      // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
+      const priorWeight = d.prior?.holdings.find((p) => targetCusips.has(p.cusip))?.weight;
+      const kind = d.changes.find((c) => targetCusips.has(c.cusip))?.kind;
+      holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind });
+    }
+    // 本季动作 + 清仓 chip(按持有人计, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
+    for (const { summary, detail: d } of details) {
+      if (!d) continue;
+      const ch = d.changes.find((c) => targetCusips.has(c.cusip));
+      if (!ch) continue;
+      if (ch.kind === "new") moves.opened++;
+      else if (ch.kind === "increased") moves.added++;
+      else if (ch.kind === "decreased") moves.trimmed++;
+      else if (ch.kind === "exited") { moves.exited++; exitedHolders.push({ person: summary.person, slug: summary.slug }); }
+    }
+    // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数; 升序取最近 8 季。
+    const periodCounts = new Map<string, number>();
+    for (const { detail: d } of details) {
+      if (!d) continue;
+      for (const f of d.filings) {
+        if (f.holdings.some((h) => targetCusips.has(h.cusip))) {
+          periodCounts.set(f.period, (periodCounts.get(f.period) ?? 0) + 1);
+        }
+      }
+    }
+    trendSeries = [...periodCounts.keys()].sort().slice(-8).map((p) => periodCounts.get(p)!);
   }
 
   if (holders.length === 0) notFound();
@@ -255,39 +297,6 @@ export default async function StockTickerPage({
   const n = holders.length;
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
-
-  // 本季对本票的动作(按持有人计, 每人一次, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
-  const moves = { opened: 0, added: 0, trimmed: 0, exited: 0 };
-  // 本季清仓者(已不在 holders 中, 单独收集供表底 chip 列表)。
-  const exitedHolders: ExitedHolder[] = [];
-  for (const { summary, detail: d } of details) {
-    if (!d) continue;
-    const ch = d.changes.find((c) => targetCusips.has(c.cusip));
-    if (!ch) continue;
-    if (ch.kind === "new") moves.opened++;
-    else if (ch.kind === "increased") moves.added++;
-    else if (ch.kind === "decreased") moves.trimmed++;
-    else if (ch.kind === "exited") {
-      moves.exited++;
-      exitedHolders.push({ person: summary.person, slug: summary.slug });
-    }
-  }
-
-  // 持有人数趋势(零新增 IO): 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数。
-  // 升序取最近 8 季; <2 季 → 趋势区块退化不渲染(HolderTrend 内部再次自守)。
-  const periodCounts = new Map<string, number>();
-  for (const { detail: d } of details) {
-    if (!d) continue;
-    for (const f of d.filings) {
-      if (f.holdings.some((h) => targetCusips.has(h.cusip))) {
-        periodCounts.set(f.period, (periodCounts.get(f.period) ?? 0) + 1);
-      }
-    }
-  }
-  const trendSeries = [...periodCounts.keys()]
-    .sort()
-    .slice(-8)
-    .map((p) => periodCounts.get(p)!);
 
   // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
   const stockProse = buildStockProse(

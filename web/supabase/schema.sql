@@ -320,6 +320,41 @@ create index if not exists consensus_moves_rank_idx
   on consensus_moves (direction, manager_count desc, net_value desc);
 alter table consensus_moves add column if not exists dominant_kind text;
 
+-- 个股页持有人快照(ticker-keyed,每经理一行): 替代个股页对 34 户逐个 getManagerDetail 的
+-- ~100 次/页往返。当前持有人行带 value/shares/weight + 本季 kind; 清仓者发 kind='exited' 零值行
+-- (不进持有人表,仅供"本季清仓 N 人"计数)。每次摄取后 npm run consensus 整体重算。
+create table if not exists consensus_stock_holders (
+  ticker text not null,
+  cik text not null,
+  slug text not null,
+  person text not null,
+  issuer text,
+  value bigint not null default 0,
+  shares numeric not null default 0,
+  weight numeric not null default 0,
+  prior_weight numeric,               -- 上季同 ticker 组合权重(QoQ 箭头); null=无上季持仓
+  kind text,                          -- 'new'|'increased'|'decreased'|'exited'|null(持有未变)
+  period date,
+  filed_at date,
+  computed_at timestamptz not null default now(),
+  primary key (ticker, cik)
+);
+create index if not exists consensus_stock_holders_ticker_idx
+  on consensus_stock_holders (ticker, value desc);
+alter table consensus_stock_holders add column if not exists prior_weight numeric;
+
+-- 个股页持有人数趋势快照: 每 (ticker, period) 一行 = 该季持有本票的 superinvestor 人数。
+-- 供 8 季趋势图,取代逐户拉完整 filings 历史统计。每次摄取后 npm run consensus 整体重算。
+create table if not exists consensus_stock_trend (
+  ticker text not null,
+  period date not null,
+  holder_count int not null default 0,
+  computed_at timestamptz not null default now(),
+  primary key (ticker, period)
+);
+create index if not exists consensus_stock_trend_ticker_idx
+  on consensus_stock_trend (ticker, period);
+
 -- ── manager_index() ────────────────────────────────────────────────────────────
 -- 经理人索引快路径:每位经理人返回其最新 filing 的概要 + 最大持仓 issuer,一次查询
 -- 取代应用层对 34 户逐个查 filings+holdings 的扇出(getManagerIndex 的回退)。

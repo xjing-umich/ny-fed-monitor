@@ -35,6 +35,58 @@ export const readConsensusHeld = cache(async (limit: number): Promise<HeldRow[] 
   return mapHeldRows((data ?? []) as HeldDbRow[]);
 });
 
+export type StockHolderApp = {
+  cik: string; slug: string; person: string; issuer: string;
+  value: number; shares: number; weight: number; priorWeight: number | undefined;
+  kind: "new" | "increased" | "decreased" | "exited" | null;
+  period: string | null; filedAt: string | null;
+};
+type StockHolderDbRow = { cik: string; slug: string; person: string; issuer: string | null; value: number; shares: number; weight: number; prior_weight: number | null; kind: string | null; period: string | null; filed_at: string | null };
+
+/**
+ * 读某 ticker 的持有人快照(consensus_stock_holders),取代个股页对 34 户的逐户扇出。
+ * 无 env / 出错 / 表未迁移(42P01)→ null;表存在但该 ticker 无行 → []。
+ * 调用方:仅当返回非空数组才走快路径,null/[] 一律回退逐户扫描(故部署前/空表零回归)。
+ */
+export const readStockHolders = cache(async (ticker: string): Promise<StockHolderApp[] | null> => {
+  if (!hasSupabaseEnv()) return null;
+  const { data, error } = await getDb()
+    .from("consensus_stock_holders")
+    .select("cik,slug,person,issuer,value,shares,weight,prior_weight,kind,period,filed_at")
+    .eq("ticker", ticker);
+  if (error) {
+    // 42P01 = undefined_table: 尚未跑 migration → 静默回退(逐户扫描)。
+    if (error.code !== "42P01") console.error(`readStockHolders 失败: ${error.message}`);
+    return null;
+  }
+  const VALID = new Set(["new", "increased", "decreased", "exited"]);
+  return (data ?? []).map((r: StockHolderDbRow) => ({
+    cik: r.cik, slug: r.slug, person: r.person, issuer: r.issuer ?? "",
+    value: Number(r.value), shares: Number(r.shares), weight: Number(r.weight),
+    priorWeight: r.prior_weight == null ? undefined : Number(r.prior_weight),
+    kind: (r.kind && VALID.has(r.kind) ? r.kind : null) as StockHolderApp["kind"],
+    period: r.period, filedAt: r.filed_at,
+  }));
+});
+
+/**
+ * 读某 ticker 的持有人数趋势(consensus_stock_trend),按 period 升序、取最近 8 季的人数数组。
+ * 无 env / 出错 / 表未迁移(42P01)→ null;调用方回退到逐户扫描历史。
+ */
+export const readStockTrend = cache(async (ticker: string): Promise<number[] | null> => {
+  if (!hasSupabaseEnv()) return null;
+  const { data, error } = await getDb()
+    .from("consensus_stock_trend")
+    .select("period,holder_count")
+    .eq("ticker", ticker)
+    .order("period", { ascending: true });
+  if (error) {
+    if (error.code !== "42P01") console.error(`readStockTrend 失败: ${error.message}`);
+    return null;
+  }
+  return ((data ?? []) as { period: string; holder_count: number }[]).slice(-8).map((r) => Number(r.holder_count));
+});
+
 /** 读 notable-moves 快照。无 env → null。 */
 export const readConsensusMoves = cache(async (limit: number): Promise<NotableMoves | null> => {
   if (!hasSupabaseEnv()) return null;
