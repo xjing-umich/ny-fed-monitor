@@ -22,6 +22,7 @@ Copy verbatim into every task's working context:
 - **Maintenance capex = median of available methods; divergence > 50% → degraded.** AI-hog rule: `capex_t / capex_{t−2} ≥ 2` → maintenance-capex floor = `capex_t × 0.5` + warning. Never use full capex as maintenance.
 - **Compliance floor:** no BUY/SELL/target/rating. Output = conservative intrinsic-value range + moat direction + provenance. Every conclusion carries source (SEC XBRL-derived) + as-of + fiscal years used + degradation/simplification notes.
 - **Do NOT touch:** ingest (data already stored), `/research` (island), the price layer, Finnhub.
+- **`capex` is stored NEGATIVE** (SEC XBRL cash-outflow convention; confirmed live in Task 0 — e.g. GOOG FY2025 capex = −$91.4B). The engine treats capex as a **positive outflow magnitude**, so `fundamentalsToFloorInput` maps it via `Math.abs(...)`. All downstream code (maintenanceCapex, growthValue) assumes positive capex. Other fields (`d_and_a`, `ppe_net`, `working_capital`, `rd_expense`) are stored positive.
 - **Worktree build needs real packages:** `cd web && npm ci` already run. Never symlink `node_modules` (Turbopack crashes).
 - **This is a customized Next.js** — read `web/node_modules/next/dist/docs/` before editing any Next.js code (`web/AGENTS.md`). (Only Task 9 touches a Next-adjacent file, and only its types.)
 
@@ -156,7 +157,7 @@ In `web/src/lib/valuation/fundamentalsToFloorInput.check.ts`, extend the 2025 FY
 ```ts
 // New v2 rich fields map through (spec §0.5 / Task 1).
 assert.strictEqual(input.years[0].d_and_a, 1_200, "d_and_a maps");
-assert.strictEqual(input.years[0].capex, 900, "capex maps");
+assert.strictEqual(input.years[0].capex, 900, "capex maps as POSITIVE magnitude (stored negative)");
 assert.strictEqual(input.years[0].rd_expense, 700, "rd_expense maps");
 assert.strictEqual(input.years[0].working_capital, 1_500, "working_capital maps");
 assert.strictEqual(input.years[0].ppe_net, 4_000, "ppe_net maps");
@@ -167,7 +168,7 @@ assert.strictEqual(input.years[0].stock_based_comp, 300, "stock_based_comp maps"
 And add these keys to the 2025 FY object literal (line ~31), inside its `{…}`:
 
 ```ts
-d_and_a: 1_200, capex: 900, rd_expense: 700, working_capital: 1_500, ppe_net: 4_000, operating_cash_flow: 3_500, stock_based_comp: 300,
+d_and_a: 1_200, capex: -900, rd_expense: 700, working_capital: 1_500, ppe_net: 4_000, operating_cash_flow: 3_500, stock_based_comp: 300,
 ```
 
 - [ ] **Step 2: Run the check to verify it fails**
@@ -296,7 +297,8 @@ In `web/src/lib/valuation/fundamentalsToFloorInput.ts`, inside the `.map((r) => 
 
 ```ts
       d_and_a: u(r.d_and_a),
-      capex: u(r.capex),
+      // capex is stored NEGATIVE (XBRL cash-outflow); the engine wants a positive outflow magnitude.
+      capex: r.capex == null ? undefined : Math.abs(r.capex),
       rd_expense: u(r.rd_expense),
       sga_expense: u(r.sga_expense),
       stock_based_comp: u(r.stock_based_comp),
