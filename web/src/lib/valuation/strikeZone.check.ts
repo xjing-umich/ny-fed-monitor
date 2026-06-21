@@ -10,7 +10,7 @@
  * stale-price flag, currency mismatch degradation, negative MoS = outside.
  */
 import assert from "node:assert";
-import type { AssetFloor, EpvLamp, MoatReading, PerShareUnavailable, ValuationFloor } from "./types";
+import type { AssetFloor, EpvLamp, GrowthValue, MoatReading, PerShareUnavailable, ValuationFloor } from "./types";
 import type { LatestPrice } from "@/lib/managers/priceRead";
 import { deriveStrikeZone, GRAHAM_MOS, STALE_PRICE_DAYS } from "./strikeZone";
 
@@ -25,6 +25,7 @@ function asset(o: Partial<AssetFloor>): AssetFloor {
   return { assessable: false, basis: "tangible book", intangibles_separated: true, ...o };
 }
 const MOAT: MoatReading = { signal: "not_assessable", label: "—", basis_note: "—" };
+const STUB_GROWTH_VALUE: GrowthValue = { assessable: false, gated_to_zero: false, wacc_band: [0.08, 0.1], scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 }, notes: [] };
 function makeFloor(o: { graham?: Partial<EpvLamp>; buffett?: Partial<EpvLamp>; asset?: Partial<AssetFloor> }): ValuationFloor {
   return {
     kind: "floor",
@@ -32,6 +33,7 @@ function makeFloor(o: { graham?: Partial<EpvLamp>; buffett?: Partial<EpvLamp>; a
     buffett_epv: lamp(o.buffett ?? {}),
     asset_floor: asset(o.asset ?? {}),
     moat_reading: MOAT,
+    growth_value: STUB_GROWTH_VALUE,
     high_leverage_warning: false,
     provenance: {
       years_used: [2023, 2024, 2025], discount_rate_band: [0.08, 0.1],

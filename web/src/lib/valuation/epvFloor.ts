@@ -1,4 +1,4 @@
-import type { AssetFloor, EpvLamp, MoatReading, PerShareUnavailable, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
+import type { AssetFloor, EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 
 export const DISCOUNT_RATE_LOW = 0.08;
 export const DISCOUNT_RATE_HIGH = 0.1;
@@ -118,6 +118,7 @@ function assembleFloor(
     buffett_epv: buffettEpv,
     asset_floor: assetFloor,
     moat_reading: moatReading,
+    growth_value: { assessable: false, gated_to_zero: false, wacc_band: [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH], scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 }, notes: ["Growth value not yet wired (engine v2 in progress)."] },
     high_leverage_warning: highLeverage,
     high_leverage_note: highLeverage
       ? "High leverage (net debt / shareholders' equity above 1.0): the single 8–10% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
@@ -242,7 +243,7 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
 }
 
 /** Tangible book = equity − goodwill − intangibles; total-book fallback when both intangible fields are missing. */
-function buildAssetFloor(latest: ValuationFloorYear, shares: number): AssetFloor {
+function buildAssetFloor(latest: ValuationFloorYear, shares: number): ReproductionValue {
   const equity = latest.shareholders_equity;
   if (equity == null) {
     return { assessable: false, not_assessable_reason: "Shareholders' equity is unavailable, so no asset floor is shown.", basis: "Unavailable.", intangibles_separated: false };
@@ -261,7 +262,7 @@ function buildAssetFloor(latest: ValuationFloorYear, shares: number): AssetFloor
   return { assessable: true, basis, intangibles_separated: true, total_value: tangible, per_share: tangible / shares };
 }
 
-function buildMoatReading(graham: EpvLamp, asset: AssetFloor): MoatReading {
+function buildMoatReading(graham: EpvLamp, asset: ReproductionValue): MoatReading {
   const basisNote =
     "Directional only, based on book value. A true franchise test compares earnings power against reproduction value (deferred to v2); against book value this reads systematically more franchise-like.";
   if (!graham.assessable) {

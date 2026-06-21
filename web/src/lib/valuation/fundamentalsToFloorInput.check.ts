@@ -28,7 +28,7 @@ function fy(year: number, periodEnd: string, fiscalPeriod: string, o: Partial<Fu
 const rows: FundamentalPeriod[] = [
   fy(2024, "2024-12-31", "FY", { revenue: 9_000, operating_margin: 0.44, net_income: 2_700, effective_tax_rate: 0.15, shareholders_equity: 4_500, goodwill: 500, intangibles: 300, cash_and_equivalents: 1_800, total_debt: 1_000, net_debt: -800, shares_diluted: 1_000 }),
   fy(2025, "2025-03-31", "Q1", { revenue: 2_500 }), // non-FY → dropped
-  fy(2025, "2025-12-31", "FY", { revenue: 10_000, operating_margin: 0.45, net_income: 3_000, effective_tax_rate: 0.15, shareholders_equity: 5_000, goodwill: 500, intangibles: 300, cash_and_equivalents: 2_000, total_debt: 1_000, net_debt: -1_000, shares_diluted: 1_000 }),
+  fy(2025, "2025-12-31", "FY", { revenue: 10_000, operating_margin: 0.45, net_income: 3_000, effective_tax_rate: 0.15, shareholders_equity: 5_000, goodwill: 500, intangibles: 300, cash_and_equivalents: 2_000, total_debt: 1_000, net_debt: -1_000, shares_diluted: 1_000, d_and_a: 1_200, capex: -900, rd_expense: 700, working_capital: 1_500, ppe_net: 4_000, operating_cash_flow: 3_500, stock_based_comp: 300 }),
   fy(2023, "2023-12-31", "FY", { revenue: 8_000, operating_margin: 0.42, net_income: 2_400, effective_tax_rate: 0.15, shareholders_equity: 4_000, goodwill: 500, intangibles: 300, cash_and_equivalents: 1_600, total_debt: 1_000, net_debt: -600, shares_diluted: 1_000 }),
 ];
 
@@ -38,6 +38,15 @@ assert.strictEqual(input.years[0].fiscal_year, 2025, "most-recent-first");
 assert.strictEqual(input.years[0].cash, 2_000, "cash_and_equivalents → cash");
 assert.strictEqual(input.ticker, "ZZ");
 assert.strictEqual(input.company_name, "Zed Co");
+
+// New v2 rich fields map through (spec §0.5 / Task 1).
+assert.strictEqual(input.years[0].d_and_a, 1_200, "d_and_a maps");
+assert.strictEqual(input.years[0].capex, 900, "capex maps as POSITIVE magnitude (stored negative)");
+assert.strictEqual(input.years[0].rd_expense, 700, "rd_expense maps");
+assert.strictEqual(input.years[0].working_capital, 1_500, "working_capital maps");
+assert.strictEqual(input.years[0].ppe_net, 4_000, "ppe_net maps");
+assert.strictEqual(input.years[0].operating_cash_flow, 3_500, "operating_cash_flow maps");
+assert.strictEqual(input.years[0].stock_based_comp, 300, "stock_based_comp maps");
 
 // End-to-end: mapped input drives the engine
 const floor = computeValuationFloor(input);

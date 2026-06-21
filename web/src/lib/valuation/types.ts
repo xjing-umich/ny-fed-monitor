@@ -23,17 +23,26 @@ export type EpvLamp = {
   equity_value_high?: number;
   per_share_low?: number;
   per_share_high?: number;
+  /** Buffett lamp only: average SBC / owner earnings — real dilution cost, disclosed not added back (spec §1.3). */
+  sbc_to_oe_pct?: number;
   method: EpvLampMethod;
 };
 
-export type AssetFloor = {
+/** Greenwald reproduction value (spec §1.4): tangible net assets + capitalized R&D.
+ *  Field name `asset_floor` on ValuationFloor is kept for backward-compat; this is a superset of the old AssetFloor. */
+export type ReproductionValue = {
   assessable: boolean;
   not_assessable_reason?: string;
   basis: string;
   intangibles_separated: boolean;
-  total_value?: number;
+  total_value?: number;            // AV = tangible net assets + capitalized R&D
   per_share?: number;
+  tangible_net_assets?: number;
+  capitalized_rd?: number;         // undefined when rd_expense fully absent (degraded to tangible book)
+  rd_years_used?: number[];
 };
+/** @deprecated use ReproductionValue */
+export type AssetFloor = ReproductionValue;
 
 export type MoatSignal = "franchise" | "commodity" | "value_destruction" | "not_assessable";
 
@@ -43,6 +52,8 @@ export type MoatReading = {
   basis_note: string;
   epv_per_share_compared?: number;
   asset_per_share_compared?: number;
+  /** EPV − AV (×shares) when franchise; the dollar moat premium over reproduction value. */
+  franchise_value?: number;
 };
 
 export type ValuationFloorProvenance = {
@@ -61,8 +72,9 @@ export type ValuationFloor = {
   kind: "floor";
   graham_epv: EpvLamp;
   buffett_epv: EpvLamp;
-  asset_floor: AssetFloor;
+  asset_floor: ReproductionValue;
   moat_reading: MoatReading;
+  growth_value: GrowthValue;
   high_leverage_warning: boolean;
   high_leverage_note?: string;
   net_debt_to_equity?: number;
@@ -129,10 +141,55 @@ export type ValuationFloorYear = {
   total_debt?: number;
   net_debt?: number;
   shares_diluted?: number;
+  // v2 rich fields (spec §1) — all optional; absence degrades only the dependent layer.
+  d_and_a?: number;
+  capex?: number;
+  rd_expense?: number;
+  sga_expense?: number;
+  stock_based_comp?: number;
+  working_capital?: number;
+  ppe_net?: number;
+  operating_cash_flow?: number;
+  share_repurchases?: number;
+  current_assets?: number;
+  current_liabilities?: number;
 };
 
 export type ValuationFloorInput = {
   ticker: string;
   company_name?: string;
   years: ValuationFloorYear[]; // most-recent-first
+};
+
+// ── Maintenance capex (spec §1.1) ────────────────────────────────────────────
+export type MaintCapex = {
+  assessable: boolean;
+  not_assessable_reason?: string;
+  /** Chosen maintenance capex: median of available methods, raised to the AI-hog floor when triggered. */
+  value?: number;
+  methods: { da_proxy?: number; greenwald_sales?: number; ppe_life?: number };
+  confidence: "ok" | "degraded";
+  /** (max − min)/median across methods; present when ≥2 methods available. */
+  divergence_pct?: number;
+  ai_capex_distortion_warning: boolean;
+  notes: string[];
+};
+
+// ── Growth value (spec §1.6) ─────────────────────────────────────────────────
+export type GrowthScenarioSet = { pessimistic: number; neutral: number; optimistic: number };
+
+export type GrowthValue = {
+  assessable: boolean;
+  not_assessable_reason?: string;
+  /** true when GV was forced to 0 by the franchise gate or ROIIC ≤ WACC (a real reading, not missing data). */
+  gated_to_zero: boolean;
+  roiic?: number;
+  wacc_band: [number, number];
+  annual_growth_reinvestment?: number;
+  duration_years?: number;
+  /** Enterprise-level GV per scenario (USD). */
+  scenarios: GrowthScenarioSet;
+  /** Per-diluted-share GV per scenario. */
+  per_share: GrowthScenarioSet;
+  notes: string[];
 };
