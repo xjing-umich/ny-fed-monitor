@@ -214,4 +214,25 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   }
 }
 
+// ── Reproduction value as asset floor + moat EPV vs AV (spec §1.4/§1.5) ───────
+{
+  // R&D-heavy franchise: capitalized R&D should lift AV above tangible book; EPV well above AV → franchise.
+  const years = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 900, ppe_net: 6_000 },
+    { fiscal_year: 2024, revenue: 18_000, operating_margin: 0.40, net_income: 5_400, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 850, ppe_net: 5_500 },
+    { fiscal_year: 2023, revenue: 16_000, operating_margin: 0.40, net_income: 4_800, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 800, ppe_net: 5_000 },
+  ];
+  const floor = computeValuationFloor({ ticker: "MOAT", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    // AV includes capitalized R&D, so it exceeds tangible book (10000−1000−500 = 8500).
+    assert.ok(floor.asset_floor.capitalized_rd != null && floor.asset_floor.capitalized_rd > 0, "AV carries capitalized R&D");
+    assert.ok(floor.asset_floor.total_value! > 8_500, "AV > tangible book (R&D capitalized)");
+    // Moat compares EPV to AV (reproduction value), and franchise_value is set when franchise.
+    assert.strictEqual(floor.moat_reading.signal, "franchise", "high-margin R&D franchise reads franchise vs reproduction value");
+    assert.ok(floor.moat_reading.franchise_value != null && floor.moat_reading.franchise_value > 0, "franchise value (EPV − AV) set");
+    assert.ok(floor.moat_reading.basis_note.toLowerCase().includes("reproduction"), "moat basis cites reproduction value");
+  }
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");

@@ -1,5 +1,6 @@
-import type { AssetFloor, EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
+import type { EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { maintenanceCapex } from "./maintenanceCapex";
+import { buildReproductionValue } from "./reproductionValue";
 
 export const DISCOUNT_RATE_LOW = 0.08;
 export const DISCOUNT_RATE_HIGH = 0.1;
@@ -11,7 +12,7 @@ export const MOAT_FRANCHISE_MULTIPLE = 1.25;
 export const MOAT_COMMODITY_FLOOR = 0.75;
 
 const MAINT_CAPEX_RULE =
-  "v1: maintenance capex set equal to D&A, so the depreciation add-back nets to zero (Buffett lamp = avg net income). Sales-driven maintenance-capex estimation deferred to v2.";
+  "Maintenance capex estimated by the four-method median (D&A proxy / Greenwald sales method / PP&E useful life), with the AI-hog 50%-of-capex floor; degrades to D&A when inputs are missing.";
 
 const MULTI_CLASS_REASON =
   "This issuer has a multi-share-class structure; a blended per-share count is not available from the current data source, so a per-share floor is not computed here.";
@@ -109,8 +110,8 @@ function assembleFloor(
   const netDebt = latest.net_debt ?? totalDebt - cash;
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
-  const assetFloor = buildAssetFloor(latest, shares);
-  const moatReading = buildMoatReading(moatRefLamp, assetFloor);
+  const assetFloor = buildReproductionValue(years, shares);
+  const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares);
   const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
   const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
   return {
@@ -281,42 +282,29 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
   };
 }
 
-/** Tangible book = equity − goodwill − intangibles; total-book fallback when both intangible fields are missing. */
-function buildAssetFloor(latest: ValuationFloorYear, shares: number): ReproductionValue {
-  const equity = latest.shareholders_equity;
-  if (equity == null) {
-    return { assessable: false, not_assessable_reason: "Shareholders' equity is unavailable, so no asset floor is shown.", basis: "Unavailable.", intangibles_separated: false };
-  }
-  const hasIntangibleData = latest.goodwill != null || latest.intangibles != null;
-  if (!hasIntangibleData) {
-    const basis = "Total book value (shareholders' equity ÷ diluted shares); intangibles not separated — goodwill/intangibles unavailable this period.";
-    if (equity <= 0) return { assessable: false, not_assessable_reason: "Book value is negative or unavailable, so no asset floor is shown.", basis, intangibles_separated: false };
-    return { assessable: true, basis, intangibles_separated: false, total_value: equity, per_share: equity / shares };
-  }
-  const tangible = equity - (latest.goodwill ?? 0) - (latest.intangibles ?? 0);
-  const basis = "Tangible book value = shareholders' equity − goodwill − intangibles, ÷ diluted shares.";
-  if (tangible <= 0) {
-    return { assessable: false, not_assessable_reason: "Tangible book value is negative, so no asset floor is shown.", basis, intangibles_separated: true };
-  }
-  return { assessable: true, basis, intangibles_separated: true, total_value: tangible, per_share: tangible / shares };
-}
-
-function buildMoatReading(graham: EpvLamp, asset: ReproductionValue): MoatReading {
+function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, shares: number): MoatReading {
   const basisNote =
-    "Directional only, based on book value. A true franchise test compares earnings power against reproduction value (deferred to v2); against book value this reads systematically more franchise-like.";
-  if (!graham.assessable) {
-    return { signal: "value_destruction", label: "Normalized earnings are non-positive, so earnings power sits below the asset base — a value-destruction signal (not a verdict).", basis_note: basisNote };
+    "Franchise test compares earnings power (EPV) against reproduction value (tangible net assets + capitalized R&D). EPV well above reproduction value signals a moat; near it, a commodity; below it, value destruction. A directional reading, not a verdict.";
+  if (!epvLamp.assessable) {
+    return { signal: "value_destruction", label: "Normalized earnings are non-positive, so earnings power sits below the reproduction-value base — a value-destruction signal (not a verdict).", basis_note: basisNote };
   }
-  if (!asset.assessable || asset.per_share == null) {
-    return { signal: "not_assessable", label: "The earnings-power vs asset-base comparison is unavailable because there is no positive book-value floor.", basis_note: basisNote };
+  if (!reproduction.assessable || reproduction.per_share == null) {
+    return { signal: "not_assessable", label: "The earnings-power vs reproduction-value comparison is unavailable because there is no positive asset base.", basis_note: basisNote };
   }
-  const epvMid = (graham.per_share_low! + graham.per_share_high!) / 2;
-  const ratio = epvMid / asset.per_share;
+  const epvMid = (epvLamp.per_share_low! + epvLamp.per_share_high!) / 2;
+  const ratio = epvMid / reproduction.per_share;
   if (ratio >= MOAT_FRANCHISE_MULTIPLE) {
-    return { signal: "franchise", label: "Earnings power sits well above the asset base — a franchise (moat) signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: asset.per_share };
+    return {
+      signal: "franchise",
+      label: "Earnings power sits well above reproduction value — a franchise (moat) signal, not a verdict.",
+      basis_note: basisNote,
+      epv_per_share_compared: epvMid,
+      asset_per_share_compared: reproduction.per_share,
+      franchise_value: (epvMid - reproduction.per_share) * shares,
+    };
   }
   if (ratio >= MOAT_COMMODITY_FLOOR) {
-    return { signal: "commodity", label: "Earnings power sits near the asset base — a commodity-like profile with no clear moat signal.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: asset.per_share };
+    return { signal: "commodity", label: "Earnings power sits near reproduction value — a commodity-like profile with no clear moat signal.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: reproduction.per_share };
   }
-  return { signal: "value_destruction", label: "Earnings power sits below the asset base — a value-destruction signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: asset.per_share };
+  return { signal: "value_destruction", label: "Earnings power sits below reproduction value — a value-destruction signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: reproduction.per_share };
 }
