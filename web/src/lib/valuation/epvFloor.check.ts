@@ -11,6 +11,7 @@
 import assert from "node:assert";
 import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW } from "./epvFloor";
+import { maintenanceCapex } from "./maintenanceCapex";
 
 function year(fy: number, o: Partial<ValuationFloorYear>): ValuationFloorYear {
   return { fiscal_year: fy, ...o };
@@ -163,5 +164,30 @@ assert.ok(/multi-share-class/i.test((mc as { reason: string }).reason), "per_sha
 
 // 真薄数据（<3 盈利年）仍 undefined（回归）
 assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.years.slice(0, 2) }), undefined, "N<3 net-income years → undefined");
+
+// ── EPV 写法 A (spec §1.2) ───────────────────────────────────────────────────
+{
+  // capex high vs D&A → maintenance capex > D&A → EPV below NOPAT/WACC.
+  const years = [
+    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 2_000, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 1_000, total_debt: 0, shares_diluted: 1_000, capex: 2_500, d_and_a: 1_000, ppe_net: 12_000 },
+    { fiscal_year: 2024, revenue: 9_500, operating_margin: 0.30, net_income: 1_900, effective_tax_rate: 0.20, shareholders_equity: 4_800, cash: 900, total_debt: 0, shares_diluted: 1_000, capex: 2_300, d_and_a: 950, ppe_net: 11_000 },
+    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 800, total_debt: 0, shares_diluted: 1_000, capex: 2_100, d_and_a: 900, ppe_net: 10_000 },
+  ];
+  const floor = computeValuationFloor({ ticker: "EPVA", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor", "EPVA produces a floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    const g = floor.graham_epv;
+    assert.ok(g.assessable, "graham lamp assessable");
+    // Reconstruct NOPAT and the maintenance-capex deduction.
+    const taxRate = floor.provenance.normalized_tax_rate;
+    const nopat = 0.30 * 10_000 * (1 - taxRate);
+    const mc = maintenanceCapex(years as any).value!;
+    const da = 1_000;
+    // write A: EPV(Biz) = (NOPAT + D&A − maintCapex)/r. With maintCapex > D&A, < NOPAT/r.
+    const expectedHigh = (nopat + da - mc) / 0.08 + 1_000 - 0; // +cash −debt
+    assert.ok(Math.abs(g.equity_value_high! - expectedHigh) < 1e-6, "EPV write A: full-cash maintenance-capex deduction, no tax shield");
+    assert.ok(g.equity_value_high! < nopat / 0.08 + 1_000, "maintCapex > D&A presses EPV below NOPAT/WACC");
+  }
+}
 
 console.log("epvFloor.check.ts: all assertions passed.");

@@ -1,4 +1,5 @@
 import type { AssetFloor, EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
+import { maintenanceCapex } from "./maintenanceCapex";
 
 export const DISCOUNT_RATE_LOW = 0.08;
 export const DISCOUNT_RATE_HIGH = 0.1;
@@ -145,37 +146,53 @@ function buildGrahamLamp(
   yearsUsed: number[],
   taxRate: number,
 ): EpvLamp {
+  const mc = maintenanceCapex(years);
+  const latestDa = years[0].d_and_a;
+  // write A: deduct (maintCapex − D&A) in full cash from after-tax NOPAT. When maintCapex == D&A
+  // (or either is missing → degrade), this collapses to NOPAT/WACC (v1 parity).
+  const canCorrect = mc.assessable && mc.value != null && latestDa != null;
+  const capexDrag = canCorrect ? mc.value! - latestDa! : 0;
+  const simplifications: string[] = [];
+  if (canCorrect) {
+    simplifications.push(
+      `Maintenance capex (${mc.confidence}) deducted in full cash (write A): EPV = (NOPAT + D&A − maintenance capex) / WACC; no tax shield on the capex term.`,
+    );
+    if (mc.ai_capex_distortion_warning) simplifications.push("Capex doubled within two years (AI-hog rule): maintenance capex floored at 50% of current capex; EPV is correspondingly pressed down.");
+    for (const n of mc.notes) simplifications.push(n);
+  } else {
+    simplifications.push("Maintenance capex unavailable → degraded to the v1 simplification (maintenance capex = D&A, so the depreciation add-back nets to zero).");
+  }
+  simplifications.push("Share-based compensation is left as a real expense (not added back).");
+
   const method = {
-    earnings_basis: "Normalized NOPAT = average operating margin over the years shown × latest-year revenue × (1 − normalized tax).",
+    earnings_basis: "Normalized NOPAT = average operating margin over the years shown × latest-year revenue × (1 − normalized tax); then + D&A − maintenance capex (write A).",
     leverage_treatment: "Unlevered (pre-interest, attributable to all capital).",
     denominator: "Capitalized at the 8–10% rate band (read as a WACC proxy).",
     bridge: "Enterprise → equity bridge applied: + cash − total debt.",
     discount_rate_low: DISCOUNT_RATE_LOW,
     discount_rate_high: DISCOUNT_RATE_HIGH,
     years_used: yearsUsed,
-    simplifications: [
-      "No depreciation add-back (maintenance capex = D&A by construction in v1).",
-      "Share-based compensation is left as a real expense (not added back).",
-    ],
+    simplifications,
   };
   const latestRevenue = years[0].revenue!;
   const avgMargin = avg(years.map((y) => marginOf(y)!));
   const nopat = avgMargin * latestRevenue * (1 - taxRate);
-  if (nopat <= 0) {
+  const ownerStream = nopat - capexDrag; // = NOPAT + D&A − maintCapex when canCorrect, else NOPAT
+  if (ownerStream <= 0) {
     return {
       label: "Graham earnings-power value (normalized NOPAT)",
       assessable: false,
-      not_assessable_reason: "Normalized operating earnings are non-positive over the years shown; earnings power cannot be capitalized.",
-      normalized_earnings: nopat,
+      not_assessable_reason: "Normalized operating earnings net of maintenance capex are non-positive over the years shown; earnings power cannot be capitalized.",
+      normalized_earnings: ownerStream,
       method,
     };
   }
-  const equityLow = nopat / DISCOUNT_RATE_HIGH + cash - totalDebt;
-  const equityHigh = nopat / DISCOUNT_RATE_LOW + cash - totalDebt;
+  const equityLow = ownerStream / DISCOUNT_RATE_HIGH + cash - totalDebt;
+  const equityHigh = ownerStream / DISCOUNT_RATE_LOW + cash - totalDebt;
   return {
     label: "Graham earnings-power value (normalized NOPAT)",
     assessable: true,
-    normalized_earnings: nopat,
+    normalized_earnings: ownerStream,
     equity_value_low: equityLow,
     equity_value_high: equityHigh,
     per_share_low: equityLow / shares,
