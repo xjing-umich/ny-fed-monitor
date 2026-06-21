@@ -52,12 +52,22 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   const sorted = [...years].sort((a, b) => b.fiscal_year - a.fiscal_year);
   const window = sorted.slice(0, GV_WINDOW);
 
+  // Guard: need at least 3 years before touching window[0] / window[N-1].
+  if (window.length < 3) {
+    return {
+      assessable: false,
+      not_assessable_reason: "Insufficient operating-income history (fewer than 3 years in window), so ROIIC / growth value cannot be computed.",
+      gated_to_zero: false, wacc_band: waccBand, scenarios: { ...ZERO }, per_share: { ...ZERO },
+      notes: ["Insufficient operating-income history for a growth read."],
+    };
+  }
+
   // NOPAT series for the increment (needs operating income).
   const nopat = (y: ValuationFloorYear): number | undefined =>
     y.operating_income != null ? y.operating_income * (1 - taxRate) : undefined;
   const nopatLatest = nopat(window[0]);
-  const nopatOldest = window.length >= 2 ? nopat(window[window.length - 1]) : undefined;
-  if (nopatLatest == null || nopatOldest == null || window.length < 3) {
+  const nopatOldest = nopat(window[window.length - 1]);
+  if (nopatLatest == null || nopatOldest == null) {
     return {
       assessable: false,
       not_assessable_reason: "Operating income is not available across the window, so ROIIC / growth value cannot be computed.",

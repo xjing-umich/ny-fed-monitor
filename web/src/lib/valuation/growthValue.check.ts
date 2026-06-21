@@ -58,4 +58,17 @@ const noi = computeGrowthValue({ years: noOpInc, shares: 1_000, taxRate: 0.21, m
 assert.strictEqual(noi.assessable, false, "no operating income → GV not assessable");
 assert.strictEqual(noi.scenarios.neutral, 0, "not assessable → GV 0");
 
+// Empty / too-short window → not assessable, no crash.
+const empty = computeGrowthValue({ years: [], shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40 });
+assert.strictEqual(empty.assessable, false, "empty years → not assessable, no crash");
+assert.strictEqual(empty.scenarios.neutral, 0, "empty years → GV 0");
+
+// Single-year window → not assessable, no crash.
+const oneYear: ValuationFloorYear[] = [
+  { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000 },
+];
+const single = computeGrowthValue({ years: oneYear, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40 });
+assert.strictEqual(single.assessable, false, "single year → not assessable, no crash");
+assert.strictEqual(single.scenarios.neutral, 0, "single year → GV 0");
+
 console.log("growthValue.check.ts: OK");
