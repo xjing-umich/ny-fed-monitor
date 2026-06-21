@@ -50,23 +50,31 @@ function asFloor(input: ReturnType<typeof base>) {
   assert.strictEqual(f.asset_floor.capitalized_rd, undefined, "no R&D: no capitalized R&D");
 }
 
-// working_capital absent → GV still computes (ΔNWC term drops to 0), no crash.
+// working_capital absent → GV still computes (ΔNWC term drops to 0; franchise gate + ROIIC
+// still compute), no crash. Base is a 40%-margin franchise grower so GV stays assessable,
+// NOT gated_to_zero.
 {
   const f = asFloor(strip("working_capital"));
-  assert.ok(f.growth_value.assessable || f.growth_value.gated_to_zero, "no WC: GV degrades gracefully, no crash");
+  assert.strictEqual(f.growth_value.assessable, true, "no WC: GV remains assessable (ΔNWC drops to 0, franchise still valid)");
+  assert.strictEqual(f.growth_value.gated_to_zero, false, "no WC: 40%-margin franchise is NOT gated to zero");
 }
 
-// ppe_net absent → maintenance capex loses two methods but D&A proxy survives; floor intact.
+// ppe_net absent → maintenance capex loses PP&E/life and Greenwald-sales methods; only D&A
+// proxy survives → single method → confidence "degraded" → EPV lamp emits a degraded note.
 {
   const f = asFloor(strip("ppe_net"));
   assert.ok(f.graham_epv.assessable, "no PP&E: EPV survives on D&A-proxy maintenance");
+  assert.ok(
+    f.graham_epv.method.simplifications.some((s) => s.toLowerCase().includes("degraded")),
+    "no PP&E: EPV notes degraded maintenance-capex confidence",
+  );
 }
 
 // d_and_a absent → EPV/OE degrade to v1 parity; floor intact.
 {
   const f = asFloor(strip("d_and_a"));
   assert.ok(f.graham_epv.assessable && f.buffett_epv.assessable, "no D&A: EPV/OE survive via v1 fallback");
-  assert.strictEqual(f.buffett_epv.sbc_to_oe_pct != null, true, "no D&A: SBC disclosure still computed");
+  assert.ok(f.buffett_epv.sbc_to_oe_pct != null, "no D&A: SBC disclosure still computed");
 }
 
 // operating_income absent (bank-like) → single-lamp; GV not assessable; floor intact.
