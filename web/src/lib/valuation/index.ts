@@ -4,3 +4,4 @@ export * from "./fundamentalsToFloorInput";
 export * from "./strikeZone";
 export * from "./maintenanceCapex";
 export * from "./reproductionValue";
+export * from "./growthValue";
