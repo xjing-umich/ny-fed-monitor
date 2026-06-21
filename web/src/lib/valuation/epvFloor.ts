@@ -1,6 +1,7 @@
 import type { EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
+import { computeGrowthValue } from "./growthValue";
 
 export const DISCOUNT_RATE_LOW = 0.08;
 export const DISCOUNT_RATE_HIGH = 0.1;
@@ -112,6 +113,17 @@ function assembleFloor(
   const tax = normalizedTaxRate(years);
   const assetFloor = buildReproductionValue(years, shares);
   const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares);
+  const epvMid = moatRefLamp.assessable && moatRefLamp.per_share_low != null && moatRefLamp.per_share_high != null
+    ? (moatRefLamp.per_share_low + moatRefLamp.per_share_high) / 2
+    : undefined;
+  const growthValue = computeGrowthValue({
+    years,
+    shares,
+    taxRate: tax.rate,
+    moatSignal: moatReading.signal,
+    epvPerShare: epvMid,
+    avPerShare: assetFloor.per_share,
+  });
   const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
   const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
   return {
@@ -120,7 +132,7 @@ function assembleFloor(
     buffett_epv: buffettEpv,
     asset_floor: assetFloor,
     moat_reading: moatReading,
-    growth_value: { assessable: false, gated_to_zero: false, wacc_band: [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH], scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 }, notes: ["Growth value not yet wired (engine v2 in progress)."] },
+    growth_value: growthValue,
     high_leverage_warning: highLeverage,
     high_leverage_note: highLeverage
       ? "High leverage (net debt / shareholders' equity above 1.0): the single 8–10% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."

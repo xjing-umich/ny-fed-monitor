@@ -235,4 +235,39 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   }
 }
 
+// ── Growth value wired into the floor (spec §1.6) ────────────────────────────
+{
+  // Same R&D franchise grower as the moat test but with a rising operating-income series.
+  const years = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 1_800, ppe_net: 6_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 1_600, ppe_net: 5_500, working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 1_400, ppe_net: 5_000, working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 650, capex: 1_200, ppe_net: 4_500, working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 600, capex: 1_000, ppe_net: 4_000, working_capital: 1_000 },
+  ];
+  const floor = computeValuationFloor({ ticker: "GROW", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    assert.strictEqual(floor.moat_reading.signal, "franchise", "grower reads franchise");
+    assert.ok(floor.growth_value.assessable, "GV assessable for the franchise grower");
+    assert.strictEqual(floor.growth_value.gated_to_zero, false, "franchise → GV not gated");
+    assert.ok(floor.growth_value.scenarios.neutral > 0, "franchise grower → positive neutral GV");
+    assert.ok(floor.growth_value.per_share.pessimistic <= floor.growth_value.per_share.optimistic + 1e-9, "GV scenarios ordered");
+  }
+
+  // A commodity (low margin, EPV ≈ AV) → GV gated to zero.
+  const commodityYears = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.05, operating_income: 1_000, net_income: 700, effective_tax_rate: 0.21, shareholders_equity: 9_000, cash: 200, total_debt: 0, shares_diluted: 1_000, d_and_a: 800, capex: 1_200, ppe_net: 9_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 18_000, operating_margin: 0.05, operating_income: 900, net_income: 650, effective_tax_rate: 0.21, shareholders_equity: 8_500, cash: 180, total_debt: 0, shares_diluted: 1_000, d_and_a: 750, capex: 1_100, ppe_net: 8_500, working_capital: 1_800 },
+    { fiscal_year: 2023, revenue: 16_000, operating_margin: 0.05, operating_income: 800, net_income: 600, effective_tax_rate: 0.21, shareholders_equity: 8_000, cash: 160, total_debt: 0, shares_diluted: 1_000, d_and_a: 700, capex: 1_000, ppe_net: 8_000, working_capital: 1_600 },
+  ];
+  const cFloor = computeValuationFloor({ ticker: "COMM", years: commodityYears });
+  assert.ok(cFloor && "kind" in cFloor && cFloor.kind === "floor");
+  if (cFloor && "kind" in cFloor && cFloor.kind === "floor") {
+    assert.notStrictEqual(cFloor.moat_reading.signal, "franchise", "low-margin commodity is not a franchise");
+    assert.strictEqual(cFloor.growth_value.gated_to_zero, true, "non-franchise → GV gated to zero");
+    assert.strictEqual(cFloor.growth_value.scenarios.neutral, 0, "gated → GV 0");
+  }
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");
