@@ -1751,3 +1751,58 @@ git commit -m "docs(valuation): engine v2 real-data QA findings"
 ## Handoff / merge
 
 Clean commits on `feat/valuation-engine-v2`. `gh` auth in this repo ≠ push identity — the PR is opened manually by the user (from `feat/valuation-engine-v2` into `db-foundation`). Presentation layer (valuation band + price position + historical anchor + three-scenario viz) is a separate downstream spec layered on this faithful engine.
+
+---
+
+## Task 0 findings (2026-06-21)
+
+Script: `web/scripts/valuation-fillrate.ts`. Run against live Supabase on 2026-06-21.
+
+### Fill-rate table
+
+```
+FY rows: 204  |  distinct tickers: 34
+
+field                  non-null %  populated/total
+d_and_a                    95.1    194/204
+capex                      85.3    174/204
+rd_expense                 37.7    77/204
+working_capital            67.6    138/204
+ppe_net                    75.0    153/204
+operating_cash_flow        97.1    198/204
+stock_based_comp           85.3    174/204
+current_assets             67.6    138/204
+current_liabilities        67.6    138/204
+share_repurchases          86.8    177/204
+operating_income           64.7    132/204
+```
+
+### Sparse fields — degradation branches MUST be tested
+
+- **`rd_expense` (37.7%)**: Only 21 of 34 distinct tickers report R&D. The majority of the 13F universe (financials, consumer staples, industrials) report no R&D. AV capitalized-R&D branch is null for ~62% of rows — the "degrade to tangible book" path must work.
+- **`operating_income` (64.7%)**: Missing for financials (JPM, BAC, WFC, BNY, COF, AXP, SCHW) where SEC does not report a clean operating-income line. EPV's NOPAT derivation must degrade gracefully.
+- **`working_capital` / `current_assets` / `current_liabilities` (67.6%)**: All missing together (same rows). Financials have no meaningful working capital concept — GV's ΔNWC path degrades correctly.
+- **`ppe_net` (75.0%)**: Missing for ~25% of rows, primarily financials. AV tangible-net-assets path must handle null PPE.
+- **`capex` (85.3%)**: Missing for JPM, BAC, WFC, PDD (14.7%). maintenanceCapex must return not-assessable when capex is null.
+
+### Note on capex sign convention
+
+Capex is stored as a **negative number** (cash outflow, per SEC XBRL convention). The AI-hog rule compares `abs(capex) > d_and_a`, i.e. `capex < -d_and_a`. Engine code must account for this.
+
+### Three QA tickers for Task 10
+
+**(a) AI-hog with |capex| >> D&A: `GOOG`**
+- FY 2025: D&A $21.1B, capex −$91.4B → |capex|/D&A ≈ 4.3× (largest ratio in universe)
+- Also has rd_expense $61.1B → exercises AV capitalized-R&D path
+- Has all fields populated (working_capital $103B, ppe_net populated)
+- Expected: maintenance-capex pressed far below capex; EPV lower than naive; franchise + GV three scenarios; R&D capitalizes into AV
+
+**(b) No-R&D / no-moat name: `MA` (Mastercard)**
+- FY 2025: rd_expense NULL, capex −$489M, D&A $1.14B (capex < D&A: maintenance ≈ capex)
+- working_capital $796M, operating_income populated, stock_based_comp populated
+- Expected: AV = tangible book only (no capitalized R&D); light capex → maintenance ≈ capex; GV may still open if ROIIC > WACC (payments network has franchise), which is a good stress test of the GV franchise gate
+
+**(c) Thin name missing working_capital and capex: `ASML`**
+- FY 2025: ALL key fields NULL — d_and_a NULL, capex NULL, rd_expense NULL, working_capital NULL, ppe_net NULL
+- Foreign filer (Dutch, IFRS); SEC XBRL tagging gaps cause full field dropout
+- Expected: engine degrades every dependent layer; page returns assessable=false with clear not_assessable_reason; no crash; degradation matrix fully exercised
