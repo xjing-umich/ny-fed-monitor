@@ -190,4 +190,28 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   }
 }
 
+// ── Owner Earnings (spec §1.3) ───────────────────────────────────────────────
+{
+  const years = [
+    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 2_000, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 500, total_debt: 0, shares_diluted: 1_000, capex: 1_500, d_and_a: 1_000, ppe_net: 9_000, stock_based_comp: 200, working_capital: 1_000 },
+    { fiscal_year: 2024, revenue: 9_500, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_800, cash: 450, total_debt: 0, shares_diluted: 1_000, capex: 1_400, d_and_a: 950, ppe_net: 8_500, stock_based_comp: 180, working_capital: 800 },
+    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_600, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 400, total_debt: 0, shares_diluted: 1_000, capex: 1_300, d_and_a: 900, ppe_net: 8_000, stock_based_comp: 160, working_capital: 600 },
+  ];
+  const floor = computeValuationFloor({ ticker: "OE", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    const b = floor.buffett_epv;
+    assert.ok(b.assessable, "buffett lamp assessable");
+    const avgNi = (2_000 + 1_800 + 1_600) / 3;
+    const avgDa = (1_000 + 950 + 900) / 3;
+    const mc = maintenanceCapex(years as any).value!;
+    const oe = avgNi + avgDa - mc; // NO ΔNWC term (audit fix #3)
+    assert.ok(Math.abs(b.normalized_earnings! - oe) < 1e-6, "owner earnings = net income + D&A − maintenance capex, no ΔNWC");
+    // SBC is NOT added back (audit fix #6) but disclosed.
+    assert.ok(b.sbc_to_oe_pct != null && b.sbc_to_oe_pct > 0, "SBC/OE disclosed");
+    const avgSbc = (200 + 180 + 160) / 3;
+    assert.ok(Math.abs(b.sbc_to_oe_pct! - avgSbc / oe) < 1e-6, "SBC/OE% = avg SBC / owner earnings");
+  }
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");

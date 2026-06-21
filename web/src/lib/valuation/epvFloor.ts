@@ -221,27 +221,48 @@ function grahamNotApplicableLamp(yearsUsed: number[]): EpvLamp {
 }
 
 function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed: number[]): EpvLamp {
+  const mc = maintenanceCapex(years);
+  const avgNi = avg(years.map((y) => y.net_income!));
+  const daVals = years.map((y) => y.d_and_a).filter((v): v is number => v != null);
+  const avgDa = daVals.length ? avg(daVals) : undefined;
+  // Real owner earnings = net income + D&A − maintenance capex, WITHOUT ΔNWC (maintenance ΔNWC ≈ 0;
+  // the growth portion of ΔNWC lives in GV — audit fix #3). Degrade to avg net income when inputs missing.
+  const canCorrect = mc.assessable && mc.value != null && avgDa != null;
+  const ownerEarnings = canCorrect ? avgNi + avgDa! - mc.value! : avgNi;
+
+  const simplifications: string[] = [];
+  if (canCorrect) {
+    simplifications.push(`Owner earnings = net income + D&A − maintenance capex (${mc.confidence}); the working-capital change is excluded (maintenance ΔNWC ≈ 0; growth ΔNWC is carried in growth value, not double-counted).`);
+    if (mc.ai_capex_distortion_warning) simplifications.push("Capex doubled within two years (AI-hog rule): maintenance capex floored at 50% of current capex.");
+  } else {
+    simplifications.push("Maintenance capex or D&A unavailable → degraded to normalized net income (= average net income over the years shown).");
+  }
+  simplifications.push("One-time items are not separately normalized (multi-year averaging smooths them partially).");
+  simplifications.push("Share-based compensation is left as a real expense (not added back); see the SBC/OE disclosure.");
+  simplifications.push("Capitalized at the same 8–10% band as a cost-of-equity proxy (theoretically the cost of equity is higher; v2 simplification, v3 to refine).");
+
   const method = {
-    earnings_basis: "Owner earnings = average net income over the years shown (= net income + D&A − maintenance capex, with D&A − maintenance capex = 0 in v1).",
+    earnings_basis: "Owner earnings = average net income + average D&A − maintenance capex (zero-growth floor; no ΔNWC).",
     leverage_treatment: "Levered (starts from net income, already after interest — an equity-holder stream).",
     denominator: "Capitalized at the 8–10% rate band (read as a cost-of-equity proxy).",
     bridge: "No enterprise→equity bridge: the capitalized result is already equity value (subtracting debt would double-count interest).",
     discount_rate_low: DISCOUNT_RATE_LOW,
     discount_rate_high: DISCOUNT_RATE_HIGH,
     years_used: yearsUsed,
-    simplifications: [
-      "Buffett's ± working-capital term is omitted in v1.",
-      "One-time items are not separately normalized (multi-year averaging smooths them partially).",
-      "Share-based compensation is left as a real expense (not added back).",
-    ],
+    simplifications,
   };
-  const ownerEarnings = avg(years.map((y) => y.net_income!));
+
+  // SBC disclosure (not added back): average SBC / owner earnings.
+  const sbcVals = years.map((y) => y.stock_based_comp).filter((v): v is number => v != null);
+  const sbcToOe = sbcVals.length && ownerEarnings > 0 ? avg(sbcVals) / ownerEarnings : undefined;
+
   if (ownerEarnings <= 0) {
     return {
       label: "Buffett owner-earnings value",
       assessable: false,
       not_assessable_reason: "Normalized owner earnings are non-positive over the years shown; earnings power cannot be capitalized.",
       normalized_earnings: ownerEarnings,
+      sbc_to_oe_pct: sbcToOe,
       method,
     };
   }
@@ -255,6 +276,7 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
     equity_value_high: equityHigh,
     per_share_low: equityLow / shares,
     per_share_high: equityHigh / shares,
+    sbc_to_oe_pct: sbcToOe,
     method,
   };
 }
