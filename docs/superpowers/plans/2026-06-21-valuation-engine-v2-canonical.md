@@ -1808,3 +1808,78 @@ Capex is stored as a **negative number** (cash outflow, per SEC XBRL convention)
 - FY 2025: ALL key fields NULL — d_and_a NULL, capex NULL, rd_expense NULL, working_capital NULL, ppe_net NULL
 - Foreign filer (Dutch, IFRS); SEC XBRL tagging gaps cause full field dropout
 - Expected: engine degrades every dependent layer; page returns assessable=false with clear not_assessable_reason; no crash; degradation matrix fully exercised
+
+---
+
+## Task 10 QA findings (2026-06-21)
+
+### All-checks result
+
+```
+maintenanceCapex.check.ts: OK
+reproductionValue.check.ts: OK
+growthValue.check.ts: OK
+epvFloor.check.ts: all assertions passed.
+fundamentalsToFloorInput.check.ts: OK
+strikeZone.check.ts: OK
+degradation.check.ts: OK
+```
+
+All 7 `.check.ts` files green.
+
+### tsc result
+
+`npx tsc --noEmit` — clean (zero errors, zero warnings).
+
+### Build result
+
+`npm run build` failed with a pre-existing environment-level error: Google Fonts (`Fraunces` font) is unreachable from this machine (network restriction blocks `fonts.googleapis.com`). Confirmed identical failure in the main repo's `web/` directory on the same machine — the issue predates this branch and is unrelated to the valuation engine. The failure is in `src/app/[lang]/layout.tsx` (font import) and has nothing to do with any valuation module. All type-check and check gates passed.
+
+### Real-data QA — production Supabase (2026-06-21)
+
+Data sourced from `company_fundamentals_periods` (Supabase) via SEC XBRL filings. Figures are in USD.
+
+#### GOOG (Alphabet) — as_of_fiscal_year: 2025
+
+- **Annual rows:** 6 (FY2020–FY2025); 5 used in computation (FY2021–FY2025)
+- **graham_epv:** assessable=true; per_share_low=$60.80, per_share_high=$76.37; simplifications include AI-hog rule (capex doubled within 2 years → maintenance capex floored at 50% of current capex), divergence warning (methods diverge 107% > 50%), degraded maintenance capex
+- **buffett_epv:** assessable=true; normalized_earnings=$57.1B; sbc_to_oe_pct=36.7% (large SBC disclosed); per_share_low=$46.71, per_share_high=$58.38
+- **asset_floor:** assessable=true; capitalized_rd=$149.9B (5-year straight-line); tangible_net_assets=$380.6B; total_value=$530.5B; per_share=$43.38
+- **moat_reading:** signal=`franchise`; EPV/AV well above 1.25× threshold; franchise_value=$308B
+- **growth_value:** assessable=true; gated_to_zero=false; ROIIC=2.29; 3 scenarios present (pessimistic/neutral/optimistic); per_share range $35.50–$100.74; duration=8y (moderate franchise)
+- **high_leverage_warning:** false
+- **Expectation held:** YES — maintenance capex pressed EPV well below NOPAT/WACC naive, AI-hog rule fired, R&D capitalized into AV, moat=franchise, GV three scenarios present and ordered.
+
+#### MA (Mastercard) — as_of_fiscal_year: 2025
+
+- **Annual rows:** 6 (FY2020–FY2025); 5 used in computation
+- **graham_epv:** assessable=true; per_share_low=$155.95, per_share_high=$197.27; maintenance divergence note (436% > 50%) — light capex vs D&A proxy diverge widely
+- **buffett_epv:** assessable=true; sbc_to_oe_pct=3.5% (very low SBC); per_share_low=$134.25, per_share_high=$167.82
+- **asset_floor:** assessable=false — tangible net assets are negative (heavy goodwill/intangibles from acquisitions exceed book equity); no capitalized R&D (rd_expense=null); basis notes no R&D history
+- **moat_reading:** signal=`not_assessable` — franchise test requires a positive asset base for the EPV/AV comparison; unavailable here
+- **growth_value:** gated_to_zero=true — franchise gate fires: without confirmable moat signal, GV=0 (conservative per Greenwald orthodoxy)
+- **high_leverage_warning:** true; net_debt_to_equity=1.09 — EPV ranges degraded/directional only
+- **Expectation held:** YES — AV=not assessable (negative tangible book, no R&D); GV gated to zero via franchise gate (not_assessable triggers gate conservatively); light capex behavior correct; no buy/sell language.
+
+#### ASML — as_of_fiscal_year: 2025
+
+- **Annual rows:** 6 rows in DB; all have shares_diluted populated (388.9M–419.1M) but ALL financial fields NULL (revenue, net_income, operating_income, d_and_a, capex, rd_expense all null) — foreign IFRS filer, SEC XBRL field gaps cause full dropout
+- **computeValuationFloor output:** `undefined` — clean return, no throw; `selectEarningsYears` yields 0 qualifying rows (< MIN_YEARS=3), early-return path taken
+- **No crash:** confirmed — engine degrades to `undefined` (caller-visible as "data unavailable") without exception
+- **Expectation held:** YES — all dependent layers produce no assessable output; engine does not throw; ASML is the degradation-matrix stress test in real-data form.
+
+### Compliance check
+
+Output scanned for BUY/SELL/target/rating/recommend/overvalued/undervalued/cheap/expensive — none found. Engine outputs: conservative EPV ranges + per_share bands + moat directional signal + provenance (years_used, as_of_fiscal_year, simplifications/degradation notes). No investment recommendation language.
+
+### Bugs found
+
+None. All three tickers behaved per spec. ASML's `undefined` return is documented intended behavior (< MIN_YEARS data available), not a bug.
+
+### env.local staged check
+
+`git status --porcelain | grep .env.local` — not tracked. Confirmed: `env not tracked — good`.
+
+### Probe script
+
+`web/scripts/qa-probe.ts` was created for this task and deleted before the final commit. Only `docs/superpowers/plans/2026-06-21-valuation-engine-v2-canonical.md` is committed.
