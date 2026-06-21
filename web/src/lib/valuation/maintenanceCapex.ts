@@ -19,7 +19,7 @@ function median(values: number[]): number {
 
 /**
  * Maintenance capex — spec §1.1. Median of available methods, AI-hog floor applied.
- * `years` most-recent-first. Never returns full capex as maintenance (reverse-trap guard).
+ * `years` most-recent-first. Maintenance capex may legitimately equal or exceed reported capex (steady-state) or D&A (underinvestment); the median-of-methods plus the AI-hog floor prevent naively treating growth-era capex as maintenance.
  */
 export function maintenanceCapex(years: ValuationFloorYear[]): MaintCapex {
   const notes: string[] = [];
