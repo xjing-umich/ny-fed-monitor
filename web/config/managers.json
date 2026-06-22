@@ -42,5 +42,15 @@
   { "cik": "0001166559", "slug": "gates-foundation-trust", "person": "Bill Gates" },
   { "cik": "0001671657", "slug": "dorsey-asset", "person": "Pat Dorsey" },
   { "cik": "0001759760", "slug": "hh-international", "person": "Duan Yongping" },
-  { "cik": "0001350694", "slug": "bridgewater-associates", "person": "Ray Dalio" }
+  { "cik": "0001350694", "slug": "bridgewater-associates", "person": "Ray Dalio" },
+  { "cik": "0000860643", "slug": "gardner-russo", "person": "Thomas Russo" },
+  { "cik": "0000807985", "slug": "southeastern-asset", "person": "Mason Hawkins" },
+  { "cik": "0001377581", "slug": "first-pacific-advisors", "person": "Steven Romick" },
+  { "cik": "0001036325", "slug": "davis-advisors", "person": "Christopher Davis" },
+  { "cik": "0000936753", "slug": "ariel-investments", "person": "John Rogers" },
+  { "cik": "0001953324", "slug": "aquamarine-capital", "person": "Guy Spier" },
+  { "cik": "0001358706", "slug": "abrams-capital", "person": "David Abrams" },
+  { "cik": "0001556785", "slug": "vulcan-value-partners", "person": "C.T. Fitzpatrick" },
+  { "cik": "0001484150", "slug": "lindsell-train", "person": "Nick Train" },
+  { "cik": "0001027796", "slug": "pzena-investment", "person": "Richard Pzena" }
 ]
