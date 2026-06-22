@@ -90,16 +90,89 @@ cd web && npm run ingest    # = tsx scripts/ingest-13f.ts，需 SUPABASE_URL / S
 - investor↔macro 互链、板块浏览页、tertiary 互链（另条线，见三腿互链审计）。
 - 全员中文补全（按 §6 选项 b 只补知名 ~15 位）。
 
-## 附录 A：净新增候选清单（实施期填充）
+## 附录 A：净新增候选清单（已校验）
 
-| # | 基金法定名 | person | slug | CIK | 最近 13F reportDate | 中文(b) | 状态 |
-|---|---|---|---|---|---|---|---|
-| _实施 §4 时逐行填充_ | | | | | | | 收/剔 |
+> 解析来源：SEC EDGAR `data.sec.gov/submissions/CIK##########.json`（官方 name + 13F-HR + reportDate）。校验日期 2026-06-22，校验脚本 `web/scripts/validate-13f-filers.ts`。全部 42 条 PASS（最近 13F-HR reportDate 均为 2026-03-31，≥ 2024-06-30）。Dataroma 仅作「哪些 filer 算价值 guru」的选择参照，未抄任何派生数据。
 
-## 附录 B：剔除清单（实施期填充）
+| # | 官方名（SEC submissions.name） | person | slug | CIK | 最近 13F reportDate | 状态 |
+|---|---|---|---|---|---|---|
+| 1 | TRIAN FUND MANAGEMENT, L.P. | Nelson Peltz | trian-partners | 0001345471 | 2026-03-31 | 收 |
+| 2 | MAVERICK CAPITAL LTD | Lee Ainslie | maverick-capital | 0000934639 | 2026-03-31 | 收 |
+| 3 | VIKING GLOBAL INVESTORS LP | Andreas Halvorsen | viking-global | 0001103804 | 2026-03-31 | 收 |
+| 4 | ValueAct Holdings, L.P. | Mason Morfit | valueact-capital | 0001418814 | 2026-03-31 | 收 |
+| 5 | Punch Card Management L.P. | Norbert Lou | punch-card-management | 0001631664 | 2026-03-31 | 收 |
+| 6 | Durable Capital Partners LP | Henry Ellenbogen | durable-capital | 0001798849 | 2026-03-31 | 收 |
+| 7 | SOUTHEASTERN ASSET MANAGEMENT INC/TN/ | Mason Hawkins | southeastern-asset | 0000807985 | 2026-03-31 | 收 |
+| 8 | LONE PINE CAPITAL LLC | Stephen Mandel | lone-pine-capital | 0001061165 | 2026-03-31 | 收 |
+| 9 | ATLANTIC INVESTMENT MANAGEMENT, INC. | Alex Roepers | atlantic-investment | 0001063296 | 2026-03-31 | 收 |
+| 10 | WEDGEWOOD PARTNERS INC | David Rolfe | wedgewood-partners | 0000859804 | 2026-03-31 | 收 |
+| 11 | TIGER GLOBAL MANAGEMENT LLC | Chase Coleman | tiger-global | 0001167483 | 2026-03-31 | 收 |
+| 12 | Engaged Capital LLC | Glenn Welling | engaged-capital | 0001559771 | 2026-03-31 | 收 |
+| 13 | CAS Investment Partners, LLC | Clifford Sosin | cas-investment-partners | 0001697591 | 2026-03-31 | 收 |
+| 14 | Oakcliff Capital Partners, LP | Bryan Lawrence | oakcliff-capital | 0001657335 | 2026-03-31 | 收 |
+| 15 | MILLER VALUE PARTNERS, LLC | Bill Miller | miller-value-partners | 0001135778 | 2026-03-31 | 收 |
+| 16 | Makaira Partners LLC | Tom Bancroft | makaira-partners | 0001540866 | 2026-03-31 | 收 |
+| 17 | Conifer Management, L.L.C. | Greg Alexander | conifer-management | 0001773994 | 2026-03-31 | 收 |
+| 18 | ARIEL INVESTMENTS, LLC | John Rogers | ariel-investments | 0000936753 | 2026-03-31 | 收 |
+| 19 | ABRAMS CAPITAL MANAGEMENT, L.P. | David Abrams | abrams-capital | 0001358706 | 2026-03-31 | 收 |
+| 20 | ShawSpring Partners LLC | Dennis Hong | shawspring-partners | 0001766908 | 2026-03-31 | 收 |
+| 21 | CAUSEWAY CAPITAL MANAGEMENT LLC | Sarah Ketterer | causeway-capital | 0001165797 | 2026-03-31 | 收 |
+| 22 | Chou Associates Management Inc. | Francis Chou | chou-associates | 0001389403 | 2026-03-31 | 收 |
+| 23 | Patient Capital Management, LLC | Samantha McLemore | patient-capital | 0001854794 | 2026-03-31 | 收 |
+| 24 | Egerton Capital (UK) LLP | John Armitage | egerton-capital | 0001581811 | 2026-03-31 | 收 |
+| 25 | GARDNER RUSSO & QUINN LLC | Thomas Russo | gardner-russo | 0000860643 | 2026-03-31 | 收 |
+| 26 | RV Capital AG | Robert Vinall | rv-capital | 0001766596 | 2026-03-31 | 收 |
+| 27 | GREENLEA LANE CAPITAL MANAGEMENT, LLC | Josh Tarasoff | greenlea-lane-capital | 0001766504 | 2026-03-31 | 收 |
+| 28 | SOUND SHORE MANAGEMENT INC /CT/ | Harry Burn | sound-shore | 0000820124 | 2026-03-31 | 收 |
+| 29 | CANTILLON CAPITAL MANAGEMENT LLC | William von Mueffling | cantillon-capital | 0001279936 | 2026-03-31 | 收 |
+| 30 | DAVIS SELECTED ADVISERS | Christopher Davis | davis-advisors | 0001036325 | 2026-03-31 | 收 |
+| 31 | PZENA INVESTMENT MANAGEMENT LLC | Richard Pzena | pzena-investment | 0001027796 | 2026-03-31 | 收 |
+| 32 | MATRIX ASSET ADVISORS INC/NY | David Katz | matrix-asset-advisors | 0001016287 | 2026-03-31 | 收 |
+| 33 | Olstein Capital Management, L.P. | Robert Olstein | olstein-capital | 0000947996 | 2026-03-31 | 收 |
+| 34 | Aquamarine Zurich AG | Guy Spier | aquamarine-capital | 0001953324 | 2026-03-31 | 收 |
+| 35 | First Pacific Advisors, LP | Steven Romick | first-pacific-advisors | 0001377581 | 2026-03-31 | 收 |
+| 36 | Vulcan Value Partners, LLC | C.T. Fitzpatrick | vulcan-value-partners | 0001556785 | 2026-03-31 | 收 |
+| 37 | KAHN BROTHERS GROUP INC | Thomas Kahn | kahn-brothers | 0001039565 | 2026-03-31 | 收 |
+| 38 | GREENHAVEN ASSOCIATES INC | Edgar Wachenheim | greenhaven-associates | 0000846222 | 2026-03-31 | 收 |
+| 39 | Lindsell Train Ltd | Nick Train | lindsell-train | 0001484150 | 2026-03-31 | 收 |
+| 40 | AKO CAPITAL LLP | Nicolai Tangen | ako-capital | 0001376879 | 2026-03-31 | 收 |
+| 41 | VAN DEN BERG MANAGEMENT I, INC | Arnold Van Den Berg | century-management | 0001142062 | 2026-03-31 | 收 |
+| 42 | COOPERMAN LEON G | Leon Cooperman | cooperman-family-office | 0000898382 | 2026-03-31 | 收 |
 
-| 基金 | 原因（无CIK/无13F-HR/已停更/无法归人名） |
+> 中文补全（§6 选项 b）：长尾以英文 `person` 为主；知名 ~15 位的 `people[].zh` + 中文 `aliases` 由 Task 2/3 灌种子表时补，非本 Task 范畴。
+
+### 解析期辨歧记录（同名机构选「有近期 13F-HR」者）
+
+- **Trian**：取 0001345471 `TRIAN FUND MANAGEMENT, L.P.`（活跃）；弃 0001345472 `Trian Fund Management GP, LLC`（停于 2010）。
+- **Maverick**：取 0000934639（活跃）；弃 0000928617 `/ADV`（停于 2002）。
+- **Viking**：取 0001103804 `VIKING GLOBAL INVESTORS LP`（活跃）；弃 0001101785 `Viking Global Equities LP`（停于 2002）。
+- **ValueAct**：取 0001418814 `ValueAct Holdings, L.P.`（活跃报送实体）；弃 0001351069 / 0001395267（停报）与 0001464912（无 13F）。
+- **Abrams Capital**：取 0001358706 `L.P.`（活跃）；弃两个旧 `LLC`（停于 2010 / 2005）。
+- **Chou**：取 0001389403 `Chou Associates Management Inc.`（活跃管理人）；弃 0001389402 `Chou Associates Fund`（停于 2011）。
+- **Egerton**：取 0001581811 `Egerton Capital (UK) LLP`（活跃）；弃 0001083657 `EGERTON CAPITAL LTD`（停于 2013）。
+- **Greenlea Lane**：取 0001766504 `MANAGEMENT, LLC`（活跃）；弃 0001413048 `PARTNERS LP`（停于 2021）。
+- **Cantillon**：取 0001279936 `LLC`（活跃）；弃 0001352269 `LLP`（停于 2013）。
+- **Pzena**：取 0001027796（活跃）；弃 0001004781 `/ADV`（停于 2001）。
+- **First Pacific**：取 0001377581 `First Pacific Advisors, LP`（活跃）；弃两个旧 `INC`（停于 2006 / 2001）。
+- **Punch Card**：取 0001631664 `Management L.P.`（活跃，Norbert Lou）；弃 0001419050 `Punch Card Capital, L.P.`（停于 2014）。
+- **Aquamarine（Guy Spier）**：取 0001953324 `Aquamarine Zurich AG`（活跃，Spier 现驻苏黎世）；旧 0001404599 `Aquamarine Capital Management, LLC` 停于 2022。
+- **Cooperman（Leon Cooperman）**：取个人 filer 0000898382 `COOPERMAN LEON G`（活跃，家族办公室）；旧机构 0000898202 `Omega Advisors Inc.` 停于 2018。
+- **Century Management**：SEC 实体名为 0001142062 `VAN DEN BERG MANAGEMENT I, INC`（Arnold Van Den Berg）。
+
+## 附录 B：剔除清单
+
+> Dataroma 全集 82 条；其中 ~32 条按主理人/基金身份已在现有 34 种子表内（见正文 §1 去重清单，不重复列出）。下表为「净新增池里被剔除」者，原因明确。
+
+| 基金（Dataroma 名） | 原因（无CIK/无13F-HR/已停更/无法归人名） |
 |---|---|
-| _实施 §4 时逐行填充_ | |
+| Abrams Bison Investments | 无法归人名：Dataroma 未列主理人，与已收的 Abrams Capital/David Abrams 非同一实体，无公认人脸 → 不收（守品牌人名准则） |
+| AltaRock Partners | 无法归人名：Dataroma 未列主理人；无公认 principal 人脸，避免臆测 → 不收 |
+| Triple Frond Partners | 无法归人名：Dataroma 未列主理人；无公认 principal 人脸 → 不收 |
+| Hillman Capital Management | 无法归人名：Dataroma 未列主理人；纯机构 filer 无公认人脸 → 不收 |
+| First Eagle Investment Management | 无法归人名：Dataroma 未列主理人；大型机构无单一公认人脸（与 WhaleWisdom 式分界线）→ 不收 |
+| Mairs & Power Funds | 无法归人名：Dataroma 未列主理人；机构基金无单一公认人脸 → 不收 |
+| Third Avenue Management | 无法归人名：创始人 Marty Whitman 已故，现为机构化基金，无在世公认人脸 → 不收 |
+| Jensen Investment Management | 无法归人名：Dataroma 未列主理人；委员会制机构无单一公认人脸 → 不收 |
+| Torray Funds | 无法归人名：创始人 Robert Torray 已故，机构化基金，无公认在世人脸 → 不收 |
 
 相关：[[product-direction]] [[valuation-philosophy-constraint]] [[seo-english-first]] [[seo-indexing-404-rootcause]] [[data-layer-state]] [[no-tests-solo-dev]] [[prd-roadmap]]
