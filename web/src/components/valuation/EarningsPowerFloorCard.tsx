@@ -1,6 +1,6 @@
 import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZone, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
+import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor, ValuePosition } from "@/lib/valuation";
 import { GRAHAM_MOS } from "@/lib/valuation";
 
 function perShare(value: number | undefined): string {
@@ -14,6 +14,13 @@ function range(low: number | undefined, high: number | undefined): string {
 function pct(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `${(value * 100).toFixed(0)}%`;
+}
+function usd(value: number | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  const abs = Math.abs(value);
+  if (abs >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+  if (abs >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+  return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 }
 function finitePositive(n: number | undefined): n is number {
   return n != null && Number.isFinite(n) && n > 0;
@@ -56,53 +63,58 @@ function LampMethod({ lamp }: { lamp: EpvLamp }) {
   );
 }
 
-// Signed margin-of-safety percentage, e.g. "33%" or "−12%" (real minus glyph).
-function mosPct(value: number): string {
-  const p = Math.round(value * 100);
-  return p < 0 ? `−${Math.abs(p)}%` : `${p}%`;
-}
 
-const ZONE_LABEL: Record<StrikeZone, string> = {
+const POSITION_LABEL: Record<ValuePosition, string> = {
   in_strike_zone: "In strike zone",
   approaching: "Approaching",
-  outside: "Above floor",
+  zero_growth_zone: "Zero-growth value range",
+  moat_band: "Moat-adjusted value band",
+  upper_band: "Upper band",
+  above_optimistic: "Above optimistic upper bound",
+  above_zero_growth: "Above zero-growth value",
 };
 
-// Zone badge color via tokens (no opacity modifiers): accent / warn / faint.
-const ZONE_TONE: Record<StrikeZone, string> = {
+const POSITION_TONE: Record<ValuePosition, string> = {
   in_strike_zone: "var(--tt-accent)",
   approaching: "var(--tt-warn)",
-  outside: "var(--tt-faint)",
+  zero_growth_zone: "var(--tt-text)",
+  moat_band: "var(--tt-text)",
+  upper_band: "var(--tt-warn)",
+  above_optimistic: "var(--tt-faint)",
+  above_zero_growth: "var(--tt-faint)",
 };
 
-function ZoneBadge({ zone }: { zone: StrikeZone }) {
-  const tone = ZONE_TONE[zone];
+function PositionBadge({ position }: { position: ValuePosition }) {
+  const tone = POSITION_TONE[position];
   return (
     <span
       className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em]"
       style={{ color: tone, borderColor: tone }}
     >
-      {ZONE_LABEL[zone]}
+      {POSITION_LABEL[position]}
     </span>
   );
 }
 
-// Static number-line band: shaded strike-zone segment + two EPV lamp ranges +
-// asset-floor tick + current-price marker. RSC, no hydration — geometry is
-// emitted as inline percent styles.
+// Static value-band number line (spec §5): shaded strike segment (≤ valueFloor×⅔),
+// two EPV lamp ranges, AV tick, zero-growth base line, three GV ceiling ticks
+// (pess/neut/opt), current-price marker. RSC, no hydration — geometry is inline %.
 function StrikeBand({ floor, sz }: { floor: ValuationFloor; sz: StrikeZoneAssessment }) {
   const { graham_epv, buffett_epv } = floor;
   const epv = sz.epv;
+  if (!epv) return null;
   const candidates = [
     sz.price.close,
+    epv.valueFloor,
+    epv.base,
+    epv.ceilings?.optimistic,
     sz.assetFloor?.perShare,
     graham_epv.assessable ? graham_epv.per_share_high : undefined,
     buffett_epv.assessable ? buffett_epv.per_share_high : undefined,
-    epv?.ceiling,
   ].filter((n): n is number => typeof n === "number" && Number.isFinite(n));
   const domainMax = (candidates.length ? Math.max(...candidates) : sz.price.close) * 1.08 || 1;
   const xPct = (v: number) => Math.max(0, Math.min(100, (v / domainMax) * 100));
-  const strikeMax = epv ? epv.floorConservative * (1 - GRAHAM_MOS) : 0;
+  const strikeMax = epv.valueFloor * (1 - GRAHAM_MOS);
   const lampBand = (lamp: EpvLamp, top: string) =>
     lamp.assessable && finitePositive(lamp.per_share_low) && finitePositive(lamp.per_share_high) ? (
       <div
@@ -111,34 +123,53 @@ function StrikeBand({ floor, sz }: { floor: ValuationFloor; sz: StrikeZoneAssess
         title={`${lamp.label}: ${range(lamp.per_share_low, lamp.per_share_high)}`}
       />
     ) : null;
+  const ceilingTick = (value: number, label: string, tone: string) => (
+    <div
+      className="absolute top-1/4 h-1/2 w-px"
+      style={{ left: `${xPct(value)}%`, backgroundColor: tone }}
+      title={`${label} ${perShare(value)}`}
+    />
+  );
 
   return (
     <div className="mt-2">
       <div className="relative h-14 w-full">
         {/* baseline */}
         <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-[var(--tt-border)]" />
-        {/* shaded strike-zone segment: price <= floorConservative × (1 − 1/3) */}
-        {epv ? (
-          <div
-            className="absolute top-1/2 h-9 -translate-y-1/2 rounded-sm border"
-            style={{
-              left: 0,
-              width: `${xPct(strikeMax)}%`,
-              backgroundColor: "color-mix(in srgb, var(--tt-accent) 12%, transparent)",
-              borderColor: "color-mix(in srgb, var(--tt-accent) 35%, transparent)",
-            }}
-            aria-hidden
-          />
-        ) : null}
+        {/* shaded strike-zone segment: price <= valueFloor × (1 − 1/3) */}
+        <div
+          className="absolute top-1/2 h-9 -translate-y-1/2 rounded-sm border"
+          style={{
+            left: 0,
+            width: `${xPct(strikeMax)}%`,
+            backgroundColor: "color-mix(in srgb, var(--tt-accent) 12%, transparent)",
+            borderColor: "color-mix(in srgb, var(--tt-accent) 35%, transparent)",
+          }}
+          aria-hidden
+        />
         {/* two EPV lamp ranges */}
         {lampBand(graham_epv, "30%")}
         {lampBand(buffett_epv, "60%")}
+        {/* zero-growth base line */}
+        <div
+          className="absolute inset-y-0 w-px bg-[var(--tt-muted)]"
+          style={{ left: `${xPct(epv.base)}%` }}
+          title={`Zero-growth base ${perShare(epv.base)}`}
+        />
+        {/* three GV ceiling ticks (pess/neut/opt) — only when growth value assessable */}
+        {epv.ceilings ? (
+          <>
+            {ceilingTick(epv.ceilings.pessimistic, "Growth value (pessimistic)", "var(--tt-faint)")}
+            {ceilingTick(epv.ceilings.neutral, "Growth value (neutral)", "var(--tt-accent)")}
+            {ceilingTick(epv.ceilings.optimistic, "Growth value (optimistic)", "var(--tt-faint)")}
+          </>
+        ) : null}
         {/* asset-floor tick */}
         {sz.assetFloor ? (
           <div
             className="absolute top-1/4 h-1/2 w-px bg-[var(--tt-muted)]"
             style={{ left: `${xPct(sz.assetFloor.perShare)}%` }}
-            title={`Asset floor ${perShare(sz.assetFloor.perShare)}`}
+            title={`Reproduction value ${perShare(sz.assetFloor.perShare)}`}
           />
         ) : null}
         {/* current-price marker (full height) */}
@@ -151,12 +182,41 @@ function StrikeBand({ floor, sz }: { floor: ValuationFloor; sz: StrikeZoneAssess
       {/* legend */}
       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] text-[var(--tt-faint)]">
         <span style={{ color: "var(--tt-accent)" }}>▏Price {perShare(sz.price.close)}</span>
-        {epv ? <span>▢ Strike zone ≤ {perShare(strikeMax)}</span> : null}
+        <span>▢ Strike zone ≤ {perShare(strikeMax)}</span>
         <span>EPV ranges (two lenses)</span>
-        {sz.assetFloor ? <span>Asset floor {perShare(sz.assetFloor.perShare)}</span> : null}
+        <span>Zero-growth base {perShare(epv.base)}</span>
+        {epv.ceilings ? <span>Growth ceilings {perShare(epv.ceilings.pessimistic)}–{perShare(epv.ceilings.optimistic)}</span> : null}
+        {sz.assetFloor ? <span>Reproduction value {perShare(sz.assetFloor.perShare)}</span> : null}
       </div>
     </div>
   );
+}
+
+const POSITION_SENTENCE: Record<ValuePosition, (sz: StrikeZoneAssessment) => string> = {
+  in_strike_zone: (sz) =>
+    `At ${perShare(sz.price.close)}, the price sits inside the strike zone — at least a one-third margin of safety below the conservative value floor (max of reproduction value and zero-growth earnings power).`,
+  approaching: (sz) =>
+    `At ${perShare(sz.price.close)}, the price is approaching the strike zone, but the margin of safety is still under one-third of the conservative value floor.`,
+  zero_growth_zone: (sz) =>
+    `At ${perShare(sz.price.close)}, the price is within the zero-growth value range — above the conservative floor but at or below what the business is worth assuming no growth at all.`,
+  moat_band: (sz) =>
+    `At ${perShare(sz.price.close)}, the price is within the moat-adjusted value band — above zero-growth value but at or below the neutral growth-value upper bound. A quality compounder finally has a place to sit here, rather than reading simply "too expensive".`,
+  upper_band: (sz) =>
+    `At ${perShare(sz.price.close)}, the price is in the upper band — only the optimistic growth scenario supports today's price.`,
+  above_optimistic: (sz) =>
+    `At ${perShare(sz.price.close)}, the price is above the optimistic upper bound — beyond even the optimistic moat-driven growth value. This is "expensive" with a basis.`,
+  above_zero_growth: (sz) =>
+    `At ${perShare(sz.price.close)}, the price is above the zero-growth value. Growth value is not credited here, so there is no moat-adjusted band above this point.`,
+};
+
+// One-line three-scenario growth-value summary (spec §4). All assumptions externalized.
+function growthSummary(floor: ValuationFloor): string {
+  const gv = floor.growth_value;
+  if (!gv.assessable) return `Growth value not assessable${gv.not_assessable_reason ? ` — ${gv.not_assessable_reason}` : "."}`;
+  if (gv.gated_to_zero) return "Growth value gated to zero — no moat / ROIIC ≤ WACC, so no growth value is credited.";
+  const dur = gv.duration_years != null ? `${gv.duration_years} yr` : "the modeled window";
+  const roiic = gv.roiic != null ? `ROIIC ≈ ${pct(gv.roiic)}` : "the modeled ROIIC";
+  return `If the moat holds for ${dur} at ${roiic}: growth value ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / share (neutral ${perShare(gv.per_share.neutral)}). Conservative, not a forecast or target price.`;
 }
 
 function StrikeZoneSection({ floor, sz }: { floor: ValuationFloor; sz: StrikeZoneAssessment }) {
@@ -164,7 +224,7 @@ function StrikeZoneSection({ floor, sz }: { floor: ValuationFloor; sz: StrikeZon
   if (sz.currencyMismatch) {
     return (
       <div className="border-t border-[var(--tt-border)] pt-3">
-        <h4 className="text-xs uppercase tracking-[0.08em] text-[var(--tt-faint)]">Price vs. floor</h4>
+        <h4 className="text-xs uppercase tracking-[0.08em] text-[var(--tt-faint)]">Price vs. value band</h4>
         <p className="mt-1 text-sm text-[var(--tt-muted)]">{sz.suppressedReason}</p>
       </div>
     );
@@ -172,18 +232,14 @@ function StrikeZoneSection({ floor, sz }: { floor: ValuationFloor; sz: StrikeZon
 
   const epv = sz.epv;
   const sentence = epv
-    ? epv.zone === "in_strike_zone"
-      ? `At ${perShare(sz.price.close)}, the price sits inside the Graham strike zone — at least a one-third margin of safety below the most conservative zero-growth earnings-power floor.`
-      : epv.zone === "approaching"
-        ? `At ${perShare(sz.price.close)}, the price is approaching the strike zone, but the margin of safety is still under one-third of the conservative floor.`
-        : `At ${perShare(sz.price.close)}, the price is above the conservative zero-growth floor — no margin of safety on this lens.`
+    ? POSITION_SENTENCE[epv.position](sz)
     : `At ${perShare(sz.price.close)}, compared against the tangible asset floor below.`;
 
   return (
     <div className="space-y-2 border-t border-[var(--tt-border)] pt-3">
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-xs uppercase tracking-[0.08em] text-[var(--tt-faint)]">Price vs. floor</h4>
-        {epv ? <ZoneBadge zone={epv.zone} /> : null}
+        <h4 className="text-xs uppercase tracking-[0.08em] text-[var(--tt-faint)]">Price vs. value band</h4>
+        {epv ? <PositionBadge position={epv.position} /> : null}
       </div>
 
       <StrikeBand floor={floor} sz={sz} />
@@ -192,10 +248,12 @@ function StrikeZoneSection({ floor, sz }: { floor: ValuationFloor; sz: StrikeZon
 
       {epv ? (
         <p className="text-sm text-[var(--tt-muted)]">
-          Margin of safety {mosPct(epv.mosLow)} to {mosPct(epv.mosHigh)} (conservative floor {perShare(epv.floorConservative)} →
-          ceiling {perShare(epv.ceiling)}).
+          Conservative floor {perShare(epv.valueFloor)} → zero-growth base {perShare(epv.base)}
+          {epv.ceilings ? ` → growth ceilings ${perShare(epv.ceilings.pessimistic)}–${perShare(epv.ceilings.optimistic)}` : " · no growth value credited"}.
         </p>
       ) : null}
+
+      {epv ? <p className="text-sm text-[var(--tt-muted)]">{growthSummary(floor)}</p> : null}
 
       {sz.assetFloor?.priceBelow ? (
         <p className="text-sm text-[var(--tt-text)]">
@@ -205,14 +263,16 @@ function StrikeZoneSection({ floor, sz }: { floor: ValuationFloor; sz: StrikeZon
       ) : null}
 
       <p className="text-xs text-[var(--tt-muted)]">
-        Mechanical, zero-growth, deliberately conservative estimate — not investment advice, not a buy/sell signal, and not a
-        price target. Whether to act is your judgment. See method below.
+        These are positions of price within a conservative→optimistic value band — not investment advice, not a buy/sell signal,
+        and not a price target. Growth value means the moat gate is open and is a deliberately conservative estimate, never a
+        prediction. Whether to act is your judgment. See method below.
       </p>
 
       <p className="text-[10px] text-[var(--tt-faint)]">
         Price as of {sz.price.date}
         {sz.price.source ? ` · ${sz.price.source}` : ""}
-        {sz.stale ? " · may be stale" : ""}.
+        {sz.stale ? " · may be stale" : ""}
+        {epv?.growthCollapsed ? " · growth value not credited" : ""}.
       </p>
     </div>
   );
@@ -274,14 +334,27 @@ export function EarningsPowerFloorCard({
 
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-[var(--tt-text)]">
           <span>
-            <span className="text-[var(--tt-faint)]">Asset floor </span>
+            <span className="text-[var(--tt-faint)]">Reproduction value </span>
             {asset_floor.assessable ? `${perShare(asset_floor.per_share)} / sh` : "—"}
           </span>
           <span>
             <span className="text-[var(--tt-faint)]">Moat </span>
-            {MOAT_SHORT[moat_reading.signal]} <span className="text-[var(--tt-faint)]">(directional)</span>
+            {MOAT_SHORT[moat_reading.signal]}
+            {moat_reading.signal === "franchise" && finitePositive(moat_reading.franchise_value)
+              ? ` · franchise premium ${usd(moat_reading.franchise_value)} over reproduction value`
+              : ""}{" "}
+            <span className="text-[var(--tt-faint)]">(directional)</span>
           </span>
         </div>
+        {asset_floor.assessable && (finitePositive(asset_floor.tangible_net_assets) || finitePositive(asset_floor.capitalized_rd)) ? (
+          <p className="text-xs text-[var(--tt-muted)]">
+            Reproduction value = tangible net assets {usd(asset_floor.tangible_net_assets)}
+            {finitePositive(asset_floor.capitalized_rd)
+              ? ` + capitalized R&D ${usd(asset_floor.capitalized_rd)}${asset_floor.rd_years_used?.length ? ` (FY ${asset_floor.rd_years_used.join(", ")})` : ""}`
+              : ""}
+            {asset_floor.assessable ? ` = ${perShare(asset_floor.per_share)} / sh` : ""}. This is why the floor can sit reasonably above book.
+          </p>
+        ) : null}
 
         {strikeZone ? <StrikeZoneSection floor={floor} sz={strikeZone} /> : null}
 
