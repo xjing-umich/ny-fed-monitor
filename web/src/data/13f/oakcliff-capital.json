@@ -1,0 +1,634 @@
+{
+  "manager": {
+    "cik": "0001657335",
+    "slug": "oakcliff-capital",
+    "name": "Oakcliff Capital Partners, LP",
+    "person": "Bryan Lawrence"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001172661-26-002106",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 69131732,
+          "shares": 1030740,
+          "weight": 0.30503671748332806
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 37935993,
+          "shares": 681689,
+          "weight": 0.16738870044787119
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 33895664,
+          "shares": 118161,
+          "weight": 0.1495611607630171
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 28012063,
+          "shares": 24170,
+          "weight": 0.12360037135271235
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 21564009,
+          "shares": 144183,
+          "weight": 0.09514899064211127
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP LP",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 13498655,
+          "shares": 1099239,
+          "weight": 0.0595614386117205
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS LP",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 12348897,
+          "shares": 102057,
+          "weight": 0.05448824868758847
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 10247120,
+          "shares": 118000,
+          "weight": 0.045214372011651044
+        }
+      ],
+      "totalValue": 226634133
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001172661-26-001030",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 66286889,
+          "shares": 1030740,
+          "weight": 0.28419056315288066
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 42578295,
+          "shares": 681689,
+          "weight": 0.1825451430393646
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 37078922,
+          "shares": 118161,
+          "weight": 0.15896778206444015
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 32142475,
+          "shares": 24170,
+          "weight": 0.1378038434022358
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 16720615,
+          "shares": 83183,
+          "weight": 0.07168598594380411
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 13295444,
+          "shares": 127351,
+          "weight": 0.057001313151498
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP L P",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 13014990,
+          "shares": 1099239,
+          "weight": 0.0557989278623275
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 12130400,
+          "shares": 118000,
+          "weight": 0.052006441383449196
+        }
+      ],
+      "totalValue": 233248030
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001172661-25-004906",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 70925219,
+          "shares": 1030740,
+          "weight": 0.3061250317205843
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 39401624,
+          "shares": 681689,
+          "weight": 0.17006395703681276
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 31856543,
+          "shares": 24170,
+          "weight": 0.13749813358183863
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 28778112,
+          "shares": 118161,
+          "weight": 0.12421111380507022
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 17750985,
+          "shares": 169057,
+          "weight": 0.07661620115965545
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 15097894,
+          "shares": 65683,
+          "weight": 0.0651650195068699
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 14872720,
+          "shares": 118000,
+          "weight": 0.0641931311029349
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP L P",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 13003997,
+          "shares": 1099239,
+          "weight": 0.056127412086233855
+        }
+      ],
+      "totalValue": 231687094
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001172661-25-003336",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 57113303,
+          "shares": 1030740,
+          "weight": 0.28542490286156974
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 33566366,
+          "shares": 681689,
+          "weight": 0.16774860236967729
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 32378988,
+          "shares": 21293,
+          "weight": 0.16181465646726706
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 20960580,
+          "shares": 118161,
+          "weight": 0.10475092835065347
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 15465062,
+          "shares": 65683,
+          "weight": 0.07728696445901848
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 14701854,
+          "shares": 153930,
+          "weight": 0.07347281682929423
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 13051980,
+          "shares": 118000,
+          "weight": 0.06522753768331611
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP L P",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 12861096,
+          "shares": 1099239,
+          "weight": 0.06427359097920363
+        }
+      ],
+      "totalValue": 200099229
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001172661-25-001957",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 42670059,
+          "shares": 257685,
+          "weight": 0.22484685997684054
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 29454394,
+          "shares": 21293,
+          "weight": 0.15520784734374735
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 27048888,
+          "shares": 611689,
+          "weight": 0.14253220349813067
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 18460293,
+          "shares": 118161,
+          "weight": 0.09727520918830812
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 15993327,
+          "shares": 153930,
+          "weight": 0.08427570621668987
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP L P",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 14487970,
+          "shares": 1099239,
+          "weight": 0.07634333390395984
+        },
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS INC N",
+          "titleOfClass": "CL A",
+          "value": 14092219,
+          "shares": 38239,
+          "weight": 0.07425795198117659
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 12306367,
+          "shares": 65683,
+          "weight": 0.06484753109135873
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "LENNAR CORP",
+          "titleOfClass": "CL A",
+          "value": 11937120,
+          "shares": 104000,
+          "weight": 0.06290181012327034
+        },
+        {
+          "cusip": "50187T106",
+          "issuer": "LGI HOMES INC",
+          "titleOfClass": "COM",
+          "value": 3323234,
+          "shares": 49996,
+          "weight": 0.01751154667651797
+        }
+      ],
+      "totalValue": 189773871
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001172661-25-000895",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 52945349,
+          "shares": 299685,
+          "weight": 0.27072612804434626
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 28779967,
+          "shares": 611689,
+          "weight": 0.14716097217819943
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 26984193,
+          "shares": 21293,
+          "weight": 0.13797861808959558
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 22502581,
+          "shares": 118161,
+          "weight": 0.11506273431372174
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 17086230,
+          "shares": 153930,
+          "weight": 0.08736723769211815
+        },
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS INC N",
+          "titleOfClass": "CL A",
+          "value": 13107182,
+          "shares": 38239,
+          "weight": 0.06702112082465544
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP L P",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 12685218,
+          "shares": 1099239,
+          "weight": 0.06486348692381734
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 11072840,
+          "shares": 65683,
+          "weight": 0.05661889394013738
+        },
+        {
+          "cusip": "50187T106",
+          "issuer": "LGI HOMES INC",
+          "titleOfClass": "COM",
+          "value": 10404372,
+          "shares": 116380,
+          "weight": 0.05320080799340866
+        }
+      ],
+      "totalValue": 195567932
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001172661-24-004818",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 42176886,
+          "shares": 302647,
+          "weight": 0.21209521263800626
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 30574833,
+          "shares": 21424,
+          "weight": 0.1537518845394734
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 28991447,
+          "shares": 615399,
+          "weight": 0.14578949987318857
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 22764139,
+          "shares": 124435,
+          "weight": 0.1144741909520331
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 19875547,
+          "shares": 118880,
+          "weight": 0.0999483074037682
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 15145895,
+          "shares": 154866,
+          "weight": 0.07616427207589285
+        },
+        {
+          "cusip": "50187T106",
+          "issuer": "LGI HOMES INC",
+          "titleOfClass": "COM",
+          "value": 13877269,
+          "shares": 117088,
+          "weight": 0.06978472330531497
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP L P",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 12983595,
+          "shares": 1105928,
+          "weight": 0.06529069837756052
+        },
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS INC N",
+          "titleOfClass": "CL A",
+          "value": 12468654,
+          "shares": 38474,
+          "weight": 0.06270121083476214
+        }
+      ],
+      "totalValue": 198858265
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001172661-24-003474",
+      "holdings": [
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 37104522,
+          "shares": 302647,
+          "weight": 0.19843279763060967
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 27371517,
+          "shares": 21424,
+          "weight": 0.14638126031387205
+        },
+        {
+          "cusip": "375916103",
+          "issuer": "GILDAN ACTIVEWEAR INC",
+          "titleOfClass": "COM",
+          "value": 23335930,
+          "shares": 615399,
+          "weight": 0.12479917879583716
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL C",
+          "value": 21804970,
+          "shares": 118880,
+          "weight": 0.11661169491286036
+        },
+        {
+          "cusip": "40171V100",
+          "issuer": "GUIDEWIRE SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 17158342,
+          "shares": 124435,
+          "weight": 0.09176180212651144
+        },
+        {
+          "cusip": "63900P608",
+          "issuer": "NATURAL RESOURCE PARTNERS L",
+          "titleOfClass": "COM UNIT LTD PAR",
+          "value": 13882188,
+          "shares": 154866,
+          "weight": 0.07424112355022598
+        },
+        {
+          "cusip": "31620R303",
+          "issuer": "FIDELITY NATIONAL FINANCIAL",
+          "titleOfClass": "FNF GROUP COM",
+          "value": 13343400,
+          "shares": 270000,
+          "weight": 0.07135971706910217
+        },
+        {
+          "cusip": "85512C105",
+          "issuer": "STAR GROUP L P",
+          "titleOfClass": "UNIT LTD PARTNR",
+          "value": 11767074,
+          "shares": 1105928,
+          "weight": 0.06292961849087851
+        },
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS INC N",
+          "titleOfClass": "CL A",
+          "value": 11502187,
+          "shares": 38474,
+          "weight": 0.061513018420785194
+        },
+        {
+          "cusip": "50187T106",
+          "issuer": "LGI HOMES INC",
+          "titleOfClass": "COM",
+          "value": 9717719,
+          "shares": 108590,
+          "weight": 0.05196978868931745
+        }
+      ],
+      "totalValue": 186987849
+    }
+  ]
+}

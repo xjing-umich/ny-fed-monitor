@@ -1,0 +1,5282 @@
+{
+  "manager": {
+    "cik": "0000860643",
+    "slug": "gardner-russo",
+    "name": "GARDNER RUSSO & QUINN LLC",
+    "person": "Thomas Russo"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-13",
+      "accession": "0000860643-26-000003",
+      "holdings": [
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1048484400,
+          "shares": 1460,
+          "weight": 0.12340513851736949
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 961077672,
+          "shares": 3350337,
+          "weight": 0.11311748962513032
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 777041820,
+          "shares": 1555141,
+          "weight": 0.0914567288086393
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 761402140,
+          "shares": 4605069,
+          "weight": 0.08961596047983314
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 643363987,
+          "shares": 9101528,
+          "weight": 0.07572303596774745
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 594389414,
+          "shares": 3447287,
+          "weight": 0.06995879763964831
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 543237880,
+          "shares": 5481714,
+          "weight": 0.06393833406513454
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 539465536,
+          "shares": 5610666,
+          "weight": 0.06349433448454453
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 532117577,
+          "shares": 1110429,
+          "weight": 0.06262949004983959
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 421148042,
+          "shares": 715411,
+          "weight": 0.04956853192983028
+        },
+        {
+          "cusip": "866966104",
+          "issuer": "Sunbelt Rentals Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 393738067,
+          "shares": 6049133,
+          "weight": 0.04634241644195785
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 372122950,
+          "shares": 5173404,
+          "weight": 0.04379834758651837
+        },
+        {
+          "cusip": "L31839134",
+          "issuer": "Eurofins Scientific",
+          "titleOfClass": "COM",
+          "value": 223550621,
+          "shares": 3096404,
+          "weight": 0.026311593525043357
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 183480370,
+          "shares": 2479656,
+          "weight": 0.02159538136673107
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 150329429,
+          "shares": 1001195,
+          "weight": 0.01769356225899218
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 64686661,
+          "shares": 2253106,
+          "weight": 0.0076135289766172225
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 44146665,
+          "shares": 1647878,
+          "weight": 0.005196000350033732
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 43770420,
+          "shares": 148798,
+          "weight": 0.005151716842962509
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 32905526,
+          "shares": 193950,
+          "weight": 0.003872934107571751
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 28353739,
+          "shares": 93812,
+          "weight": 0.0033371951826658953
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 17442308,
+          "shares": 659694,
+          "weight": 0.0020529351078591366
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 12661615,
+          "shares": 184010,
+          "weight": 0.001490254268855696
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 10852779,
+          "shares": 164461,
+          "weight": 0.0012773568169382383
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 9482303,
+          "shares": 4954,
+          "weight": 0.0011160537201876043
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 7973046,
+          "shares": 46626,
+          "weight": 0.0009384162950210406
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 6705519,
+          "shares": 27638,
+          "weight": 0.0007892301507069184
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 4607417,
+          "shares": 4624,
+          "weight": 0.0005422864976267486
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 3986815,
+          "shares": 19126,
+          "weight": 0.0004692425154996359
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 3338572,
+          "shares": 11610,
+          "weight": 0.0003929452265672348
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2699051,
+          "shares": 12410,
+          "weight": 0.00031767450476177296
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 2131790,
+          "shares": 15,
+          "weight": 0.00025090868327649234
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 1977715,
+          "shares": 7263,
+          "weight": 0.00023277427258133683
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 1961583,
+          "shares": 6485,
+          "weight": 0.00023087555888129304
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 1946026,
+          "shares": 38581,
+          "weight": 0.00022904452187214467
+        },
+        {
+          "cusip": "x4550j108",
+          "issuer": "Konecranes",
+          "titleOfClass": "COM",
+          "value": 1690105,
+          "shares": 52500,
+          "weight": 0.00019892298028840368
+        },
+        {
+          "cusip": "93403j106",
+          "issuer": "Warby Parker Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1685600,
+          "shares": 80000,
+          "weight": 0.00019839274812756205
+        },
+        {
+          "cusip": "d2617n114",
+          "issuer": "Fielmann",
+          "titleOfClass": "COM",
+          "value": 1655884,
+          "shares": 33000,
+          "weight": 0.00019489521674208586
+        },
+        {
+          "cusip": "g8402n125",
+          "issuer": "SSP Group",
+          "titleOfClass": "COM",
+          "value": 1614484,
+          "shares": 700000,
+          "weight": 0.00019002249499761444
+        },
+        {
+          "cusip": "e52619108",
+          "issuer": "Fluidra",
+          "titleOfClass": "COM",
+          "value": 1594530,
+          "shares": 70000,
+          "weight": 0.00018767393727565348
+        },
+        {
+          "cusip": "d6349p107",
+          "issuer": "Rational AG",
+          "titleOfClass": "COM",
+          "value": 1576670,
+          "shares": 2200,
+          "weight": 0.00018557184040714477
+        },
+        {
+          "cusip": "k03294137",
+          "issuer": "ALK Abello A/S",
+          "titleOfClass": "COM",
+          "value": 1558886,
+          "shares": 50000,
+          "weight": 0.00018347868863169357
+        },
+        {
+          "cusip": "52736r102",
+          "issuer": "Levi Strauss & Co Cl A",
+          "titleOfClass": "COM",
+          "value": 1529585,
+          "shares": 82725,
+          "weight": 0.00018003000216225496
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 1491341,
+          "shares": 3705,
+          "weight": 0.00017552873717685484
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 1429383,
+          "shares": 9205,
+          "weight": 0.000168236367760334
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 1426815,
+          "shares": 202013,
+          "weight": 0.00016793411777386535
+        },
+        {
+          "cusip": "x4s8se108",
+          "issuer": "Kalmar Oyj B",
+          "titleOfClass": "COM",
+          "value": 1348904,
+          "shares": 27000,
+          "weight": 0.00015876410270542296
+        },
+        {
+          "cusip": "t3508h102",
+          "issuer": "De'Longhi",
+          "titleOfClass": "COM",
+          "value": 1347175,
+          "shares": 39000,
+          "weight": 0.0001585606018383652
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 1333037,
+          "shares": 9229,
+          "weight": 0.0001568965791324875
+        },
+        {
+          "cusip": "e8s64t107",
+          "issuer": "Puig Brands",
+          "titleOfClass": "COM",
+          "value": 1323325,
+          "shares": 68000,
+          "weight": 0.00015575349039861536
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 1311882,
+          "shares": 3544,
+          "weight": 0.00015440666540049973
+        },
+        {
+          "cusip": "b5783h102",
+          "issuer": "Lotus Bakeries",
+          "titleOfClass": "COM",
+          "value": 1290579,
+          "shares": 115,
+          "weight": 0.00015189933227676845
+        },
+        {
+          "cusip": "k3008m105",
+          "issuer": "Demant A/S",
+          "titleOfClass": "COM",
+          "value": 1225815,
+          "shares": 41000,
+          "weight": 0.00014427670060867788
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 1222622,
+          "shares": 9872,
+          "weight": 0.0001439008890016707
+        },
+        {
+          "cusip": "w2457w116",
+          "issuer": "Electrolux Professional",
+          "titleOfClass": "COM",
+          "value": 1216848,
+          "shares": 230000,
+          "weight": 0.00014322129732648767
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 1210487,
+          "shares": 9740,
+          "weight": 0.00014247261657729485
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1205756,
+          "shares": 4751,
+          "weight": 0.00014191578453446647
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1181732,
+          "shares": 11510,
+          "weight": 0.0001390881935395587
+        },
+        {
+          "cusip": "w41422101",
+          "issuer": "H&M",
+          "titleOfClass": "COM",
+          "value": 1176706,
+          "shares": 64000,
+          "weight": 0.00013849664041183616
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 1155870,
+          "shares": 15131,
+          "weight": 0.00013604427253097125
+        },
+        {
+          "cusip": "crest6610",
+          "issuer": "Sunbelt Rentals Holdings ORD",
+          "titleOfClass": "COM",
+          "value": 1138638,
+          "shares": 18178,
+          "weight": 0.00013401609037877967
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 1086198,
+          "shares": 11130,
+          "weight": 0.00012784397616911583
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 995643,
+          "shares": 48950,
+          "weight": 0.000117185780092531
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 990551,
+          "shares": 13025,
+          "weight": 0.00011658645885767958
+        },
+        {
+          "cusip": "477839104",
+          "issuer": "JBT Marel Corp",
+          "titleOfClass": "COM",
+          "value": 927058,
+          "shares": 7250,
+          "weight": 0.00010911342210111617
+        },
+        {
+          "cusip": "98585x104",
+          "issuer": "Yeti Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 878160,
+          "shares": 24000,
+          "weight": 0.00010335819630736822
+        },
+        {
+          "cusip": "31425A109",
+          "issuer": "FB Bancorp Inc",
+          "titleOfClass": "COM",
+          "value": 687000,
+          "shares": 50000,
+          "weight": 0.0000808589332959392
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 679911,
+          "shares": 5368,
+          "weight": 0.00008002456797114312
+        },
+        {
+          "cusip": "d98423102",
+          "issuer": "Zalando SE",
+          "titleOfClass": "COM",
+          "value": 662976,
+          "shares": 28000,
+          "weight": 0.00007803134230103143
+        },
+        {
+          "cusip": "42704l104",
+          "issuer": "Herc Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 642098,
+          "shares": 6450,
+          "weight": 0.00007557403107926634
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 593115,
+          "shares": 7450,
+          "weight": 0.00006980880090512516
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Total Return Securities Fund",
+          "titleOfClass": "COM",
+          "value": 579163,
+          "shares": 97667,
+          "weight": 0.0000681666701375197
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 529596,
+          "shares": 3600,
+          "weight": 0.00006233270398514733
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 511043,
+          "shares": 2470,
+          "weight": 0.000060149041991785526
+        },
+        {
+          "cusip": "368736104",
+          "issuer": "Generac Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 439493,
+          "shares": 2250,
+          "weight": 0.00005172770767253596
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 430350,
+          "shares": 19000,
+          "weight": 0.00005065158943800209
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 428337,
+          "shares": 1775000,
+          "weight": 0.00005041466217057163
+        },
+        {
+          "cusip": "69007J304",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 360082,
+          "shares": 13588,
+          "weight": 0.000042381144714801137
+        },
+        {
+          "cusip": "149123101",
+          "issuer": "Caterpillar Inc",
+          "titleOfClass": "COM",
+          "value": 318807,
+          "shares": 450,
+          "weight": 0.000037523135294437396
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "Johnson & Johnson",
+          "titleOfClass": "COM",
+          "value": 318750,
+          "shares": 1304,
+          "weight": 0.00003751642647464428
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 294318,
+          "shares": 947,
+          "weight": 0.00003464081445384896
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 277514,
+          "shares": 3800,
+          "weight": 0.00003266300729940214
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "Merck Inc",
+          "titleOfClass": "COM",
+          "value": 257536,
+          "shares": 2141,
+          "weight": 0.000030311624811212515
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 242592,
+          "shares": 2517,
+          "weight": 0.00002855273703948833
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "Amazon.com Inc",
+          "titleOfClass": "COM",
+          "value": 216601,
+          "shares": 1040,
+          "weight": 0.00002549363291242173
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 213305,
+          "shares": 5000000,
+          "weight": 0.0000251056983503498
+        },
+        {
+          "cusip": "T19404101",
+          "issuer": "Cofide SPA",
+          "titleOfClass": "COM",
+          "value": 195985,
+          "shares": 251250,
+          "weight": 0.00002306715872198638
+        }
+      ],
+      "totalValue": 8496278296
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-12",
+      "accession": "0000860643-26-000001",
+      "holdings": [
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 1233609619,
+          "shares": 3931197,
+          "weight": 0.13317012986904783
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1123142400,
+          "shares": 1488,
+          "weight": 0.12124501703438328
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 905414977,
+          "shares": 1585999,
+          "weight": 0.09774099375960764
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 760539180,
+          "shares": 3502105,
+          "weight": 0.08210141993964068
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 753480359,
+          "shares": 4697508,
+          "weight": 0.08133940893160851
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 674248483,
+          "shares": 9200276,
+          "weight": 0.07278620129267854
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 565679797,
+          "shares": 1125395,
+          "weight": 0.06106603812951187
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 554863285,
+          "shares": 5617162,
+          "weight": 0.059898378372661265
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 469246766,
+          "shares": 5004765,
+          "weight": 0.050655938318239314
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 452432234,
+          "shares": 726612,
+          "weight": 0.04884078271662977
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 420402853,
+          "shares": 5145060,
+          "weight": 0.045383159849800285
+        },
+        {
+          "cusip": "G05320109",
+          "issuer": "Ashtead Group PLC",
+          "titleOfClass": "COM",
+          "value": 418100738,
+          "shares": 6111758,
+          "weight": 0.04513464285641627
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 219256459,
+          "shares": 2553880,
+          "weight": 0.023669085154610456
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 210732166,
+          "shares": 930467,
+          "weight": 0.022748874102128534
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 170395414,
+          "shares": 528817,
+          "weight": 0.018394457259391855
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 68752881,
+          "shares": 2300197,
+          "weight": 0.007421983381633465
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 43887565,
+          "shares": 1668094,
+          "weight": 0.004737732780832247
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 38163561,
+          "shares": 108818,
+          "weight": 0.004119817401193051
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 23229624,
+          "shares": 193033,
+          "weight": 0.0025076750353137042
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 18455144,
+          "shares": 708179,
+          "weight": 0.001992262288959972
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 17120336,
+          "shares": 265525,
+          "weight": 0.0018481676321313889
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 13497652,
+          "shares": 6279,
+          "weight": 0.0014570931047249017
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 10033176,
+          "shares": 54401,
+          "weight": 0.0010830973837591435
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 9500738,
+          "shares": 164772,
+          "weight": 0.0010256198507412886
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 5779216,
+          "shares": 24984,
+          "weight": 0.0006238756032764682
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 4668708,
+          "shares": 14916,
+          "weight": 0.0005039944899138003
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 4498592,
+          "shares": 12160,
+          "weight": 0.00048563019584225503
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 3987295,
+          "shares": 4624,
+          "weight": 0.00043043486756097113
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 3812256,
+          "shares": 19526,
+          "weight": 0.0004115391277717143
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 3032518,
+          "shares": 23091,
+          "weight": 0.00032736516453040496
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2835561,
+          "shares": 12410,
+          "weight": 0.0003061033416128114
+        },
+        {
+          "cusip": "G42089113",
+          "issuer": "Diageo PLC",
+          "titleOfClass": "COM",
+          "value": 2799618,
+          "shares": 129805,
+          "weight": 0.00030222323732036655
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 2769761,
+          "shares": 40666,
+          "weight": 0.0002990001264542862
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 2256661,
+          "shares": 7912,
+          "weight": 0.00024361016144153083
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 2203850,
+          "shares": 15,
+          "weight": 0.00023790912959142634
+        },
+        {
+          "cusip": "x4550j108",
+          "issuer": "Konecranes",
+          "titleOfClass": "COM",
+          "value": 2034682,
+          "shares": 18450,
+          "weight": 0.00021964717363493093
+        },
+        {
+          "cusip": "g8402n125",
+          "issuer": "SSP Group",
+          "titleOfClass": "COM",
+          "value": 1828730,
+          "shares": 660000,
+          "weight": 0.00019741432609194322
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 1791812,
+          "shares": 3705,
+          "weight": 0.00019342896899129832
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 1712698,
+          "shares": 11951,
+          "weight": 0.00018488848625495234
+        },
+        {
+          "cusip": "e52619108",
+          "issuer": "Fluidra",
+          "titleOfClass": "COM",
+          "value": 1604815,
+          "shares": 59000,
+          "weight": 0.0001732423439913174
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 1595200,
+          "shares": 3705,
+          "weight": 0.00017220438937506785
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 1574663,
+          "shares": 242103,
+          "weight": 0.00016998738740378163
+        },
+        {
+          "cusip": "t3508h102",
+          "issuer": "De'Longhi",
+          "titleOfClass": "COM",
+          "value": 1511077,
+          "shares": 35250,
+          "weight": 0.00016312317708356907
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1442088,
+          "shares": 11510,
+          "weight": 0.0001556757042785311
+        },
+        {
+          "cusip": "93403j106",
+          "issuer": "Warby Parker Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1416350,
+          "shares": 65000,
+          "weight": 0.00015289724604524658
+        },
+        {
+          "cusip": "w2457w116",
+          "issuer": "Electrolux Professional",
+          "titleOfClass": "COM",
+          "value": 1414501,
+          "shares": 200000,
+          "weight": 0.00015269764354026007
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 1405630,
+          "shares": 9794,
+          "weight": 0.000151740004913037
+        },
+        {
+          "cusip": "448579102",
+          "issuer": "Hyatt Hotels Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 1390776,
+          "shares": 8675,
+          "weight": 0.0001501364918740593
+        },
+        {
+          "cusip": "k3008m105",
+          "issuer": "Demant A/S",
+          "titleOfClass": "COM",
+          "value": 1387383,
+          "shares": 41000,
+          "weight": 0.00014977021210152316
+        },
+        {
+          "cusip": "d2617n114",
+          "issuer": "Fielmann",
+          "titleOfClass": "COM",
+          "value": 1314486,
+          "shares": 25700,
+          "weight": 0.00014190086445089984
+        },
+        {
+          "cusip": "w41422101",
+          "issuer": "H&M",
+          "titleOfClass": "COM",
+          "value": 1290580,
+          "shares": 64000,
+          "weight": 0.00013932017354543322
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1270674,
+          "shares": 4674,
+          "weight": 0.0001371712890325821
+        },
+        {
+          "cusip": "k03294137",
+          "issuer": "ALK Abello A/S",
+          "titleOfClass": "COM",
+          "value": 1258098,
+          "shares": 35000,
+          "weight": 0.0001358136897341989
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 1239322,
+          "shares": 15131,
+          "weight": 0.00013378679052726168
+        },
+        {
+          "cusip": "e8s64t107",
+          "issuer": "Puig Brands",
+          "titleOfClass": "COM",
+          "value": 1187557,
+          "shares": 68000,
+          "weight": 0.00012819867604882613
+        },
+        {
+          "cusip": "x4s8se108",
+          "issuer": "Kalmar Oyj B",
+          "titleOfClass": "COM",
+          "value": 1142693,
+          "shares": 24000,
+          "weight": 0.0001233555355492505
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 1132483,
+          "shares": 10165,
+          "weight": 0.0001222533497320994
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 1106186,
+          "shares": 11130,
+          "weight": 0.00011941454655544685
+        },
+        {
+          "cusip": "477839104",
+          "issuer": "JBT Marel Corp",
+          "titleOfClass": "COM",
+          "value": 1092358,
+          "shares": 7250,
+          "weight": 0.000117921791856175
+        },
+        {
+          "cusip": "b5783h102",
+          "issuer": "Lotus Bakeries",
+          "titleOfClass": "COM",
+          "value": 1060235,
+          "shares": 115,
+          "weight": 0.00011445406266867794
+        },
+        {
+          "cusip": "98585x104",
+          "issuer": "Yeti Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 1060080,
+          "shares": 24000,
+          "weight": 0.0001144373301709641
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 1045753,
+          "shares": 54100,
+          "weight": 0.00011289070762421347
+        },
+        {
+          "cusip": "52736r102",
+          "issuer": "Levi Strauss & Co Cl A",
+          "titleOfClass": "COM",
+          "value": 989817,
+          "shares": 47725,
+          "weight": 0.0001068523270298781
+        },
+        {
+          "cusip": "42704l104",
+          "issuer": "Herc Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 957051,
+          "shares": 6450,
+          "weight": 0.0001033151849647681
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 953572,
+          "shares": 13640,
+          "weight": 0.00010293962135479075
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Swiss Helvetia FD Inc",
+          "titleOfClass": "COM",
+          "value": 909884,
+          "shares": 146284,
+          "weight": 0.00009822343193464408
+        },
+        {
+          "cusip": "d98423102",
+          "issuer": "Zalando SE",
+          "titleOfClass": "COM",
+          "value": 833296,
+          "shares": 28000,
+          "weight": 0.00008995563493523479
+        },
+        {
+          "cusip": "693475105",
+          "issuer": "PNC Bank Corp",
+          "titleOfClass": "COM",
+          "value": 782738,
+          "shares": 3750,
+          "weight": 0.00008449781803577097
+        },
+        {
+          "cusip": "d6349p107",
+          "issuer": "Rational AG",
+          "titleOfClass": "COM",
+          "value": 757476,
+          "shares": 975,
+          "weight": 0.00008177074476320769
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 756189,
+          "shares": 5974,
+          "weight": 0.00008163181105638364
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 742287,
+          "shares": 7964,
+          "weight": 0.00008013106793884842
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 677312,
+          "shares": 3475,
+          "weight": 0.00007311691284880013
+        },
+        {
+          "cusip": "31425A109",
+          "issuer": "FB Bancorp Inc",
+          "titleOfClass": "COM",
+          "value": 642500,
+          "shares": 50000,
+          "weight": 0.00006935890181386728
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 470090,
+          "shares": 19835,
+          "weight": 0.000050746966776157
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 445919,
+          "shares": 1775000,
+          "weight": 0.00004813766869717959
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 406935,
+          "shares": 2670,
+          "weight": 0.00004392928359474877
+        },
+        {
+          "cusip": "69007J304",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 377816,
+          "shares": 15677,
+          "weight": 0.00004078584100810597
+        },
+        {
+          "cusip": "149123101",
+          "issuer": "Caterpillar Inc",
+          "titleOfClass": "COM",
+          "value": 315079,
+          "shares": 550,
+          "weight": 0.000034013281594726054
+        },
+        {
+          "cusip": "368736104",
+          "issuer": "Generac Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 306833,
+          "shares": 2250,
+          "weight": 0.00003312311271634917
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 294500,
+          "shares": 3800,
+          "weight": 0.00003179174565631738
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 285528,
+          "shares": 2510,
+          "weight": 0.000030823203917680775
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 276595,
+          "shares": 905,
+          "weight": 0.000029858872291372174
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "Amazon.com Inc",
+          "titleOfClass": "COM",
+          "value": 240053,
+          "shares": 1040,
+          "weight": 0.000025914104991633127
+        },
+        {
+          "cusip": "459200101",
+          "issuer": "I B M",
+          "titleOfClass": "COM",
+          "value": 222158,
+          "shares": 750,
+          "weight": 0.00002398231114266946
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 217392,
+          "shares": 5000000,
+          "weight": 0.000023467813825868072
+        },
+        {
+          "cusip": "T19404101",
+          "issuer": "Cofide SPA",
+          "titleOfClass": "COM",
+          "value": 207442,
+          "shares": 251250,
+          "weight": 0.000022393695424236975
+        },
+        {
+          "cusip": "478160104",
+          "issuer": "Johnson & Johnson",
+          "titleOfClass": "COM",
+          "value": 201983,
+          "shares": 976,
+          "weight": 0.000021804387649914952
+        }
+      ],
+      "totalValue": 9263410798
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-12",
+      "accession": "0000860643-25-000007",
+      "holdings": [
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1162222200,
+          "shares": 1541,
+          "weight": 0.12459649986023798
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 1132488747,
+          "shares": 4649923,
+          "weight": 0.12140891303513784
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 921626733,
+          "shares": 1620272,
+          "weight": 0.09880336575004856
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 756209051,
+          "shares": 4662201,
+          "weight": 0.08106969641195307
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 686690363,
+          "shares": 3603992,
+          "weight": 0.07361691741695887
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 636653323,
+          "shares": 9285906,
+          "weight": 0.0682526763558548
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 616754421,
+          "shares": 514425,
+          "weight": 0.06611940653854974
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 583879220,
+          "shares": 1161394,
+          "weight": 0.06259500735154247
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 530307649,
+          "shares": 5778660,
+          "weight": 0.05685184546854434
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 461521093,
+          "shares": 4710841,
+          "weight": 0.04947755497999554
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 433340748,
+          "shares": 687537,
+          "weight": 0.046456469724651124
+        },
+        {
+          "cusip": "G05320109",
+          "issuer": "Ashtead Group PLC",
+          "titleOfClass": "COM",
+          "value": 372779347,
+          "shares": 5577080,
+          "weight": 0.03996396029639178
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 265093570,
+          "shares": 2700641,
+          "weight": 0.028419463126289436
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 251961472,
+          "shares": 926363,
+          "weight": 0.027011631261933695
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 171918813,
+          "shares": 545030,
+          "weight": 0.018430625709891603
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 76844225,
+          "shares": 2445711,
+          "weight": 0.008238116144634473
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 46233323,
+          "shares": 1718072,
+          "weight": 0.004956462045474469
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 41738484,
+          "shares": 122264,
+          "weight": 0.004474591016995326
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 21618892,
+          "shares": 191742,
+          "weight": 0.0023176620392008516
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 20736988,
+          "shares": 765768,
+          "weight": 0.00222311716506857
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 16845413,
+          "shares": 282215,
+          "weight": 0.0018059192971018373
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 14627638,
+          "shares": 7653,
+          "weight": 0.001568161833445112
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 10945679,
+          "shares": 165693,
+          "weight": 0.0011734359333298828
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 10399491,
+          "shares": 56476,
+          "weight": 0.00111488162842531
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 5872227,
+          "shares": 24843,
+          "weight": 0.0006295344647390023
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 4528005,
+          "shares": 13632,
+          "weight": 0.00048542660289027076
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 4279820,
+          "shares": 4624,
+          "weight": 0.00045881982983274946
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 3764647,
+          "shares": 15486,
+          "weight": 0.00040359050051646346
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 3261693,
+          "shares": 19551,
+          "weight": 0.00034967111402504545
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 3044515,
+          "shares": 9897,
+          "weight": 0.00032638845891258355
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2873411,
+          "shares": 12410,
+          "weight": 0.0003080451855591007
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 2782854,
+          "shares": 41591,
+          "weight": 0.00029833698583804603
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Swiss Helvetia FD Inc",
+          "titleOfClass": "COM",
+          "value": 2640159,
+          "shares": 434237,
+          "weight": 0.0002830393107914356
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 2254760,
+          "shares": 15,
+          "weight": 0.00024172245550366375
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 1815415,
+          "shares": 3505,
+          "weight": 0.0001946222975208819
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 1753599,
+          "shares": 4050,
+          "weight": 0.00018799528830064808
+        },
+        {
+          "cusip": "93403j106",
+          "issuer": "Warby Parker Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1682380,
+          "shares": 61000,
+          "weight": 0.00018036022667168738
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 1677858,
+          "shares": 10920,
+          "weight": 0.00017987544383724486
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1541649,
+          "shares": 11510,
+          "weight": 0.00016527310303747082
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 1539218,
+          "shares": 10960,
+          "weight": 0.0001650124867016615
+        },
+        {
+          "cusip": "g8402n125",
+          "issuer": "SSP Group",
+          "titleOfClass": "COM",
+          "value": 1522043,
+          "shares": 660000,
+          "weight": 0.00016317123389724975
+        },
+        {
+          "cusip": "x4550j108",
+          "issuer": "Konecranes",
+          "titleOfClass": "COM",
+          "value": 1521848,
+          "shares": 18450,
+          "weight": 0.0001631503288435752
+        },
+        {
+          "cusip": "d2617n114",
+          "issuer": "Fielmann",
+          "titleOfClass": "COM",
+          "value": 1509875,
+          "shares": 25000,
+          "weight": 0.00016186675854795824
+        },
+        {
+          "cusip": "e52619108",
+          "issuer": "Fluidra",
+          "titleOfClass": "COM",
+          "value": 1436062,
+          "shares": 53000,
+          "weight": 0.00015395360610242437
+        },
+        {
+          "cusip": "k3008m105",
+          "issuer": "Demant A/S",
+          "titleOfClass": "COM",
+          "value": 1421137,
+          "shares": 41000,
+          "weight": 0.00015235356545579583
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 1401938,
+          "shares": 12055,
+          "weight": 0.00015029532891478264
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 1327275,
+          "shares": 210353,
+          "weight": 0.00014229105187630846
+        },
+        {
+          "cusip": "w2457w116",
+          "issuer": "Electrolux Professional",
+          "titleOfClass": "COM",
+          "value": 1288663,
+          "shares": 200000,
+          "weight": 0.00013815163683794188
+        },
+        {
+          "cusip": "t3508h102",
+          "issuer": "De'Longhi",
+          "titleOfClass": "COM",
+          "value": 1274869,
+          "shares": 35250,
+          "weight": 0.00013667284550262569
+        },
+        {
+          "cusip": "448579102",
+          "issuer": "Hyatt Hotels Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 1231243,
+          "shares": 8675,
+          "weight": 0.00013199590257131466
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 1203498,
+          "shares": 64600,
+          "weight": 0.00012902148865233918
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1196506,
+          "shares": 4699,
+          "weight": 0.00012827190847135246
+        },
+        {
+          "cusip": "w41422101",
+          "issuer": "H&M",
+          "titleOfClass": "COM",
+          "value": 1192544,
+          "shares": 64000,
+          "weight": 0.00012784716066284712
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 1180876,
+          "shares": 15131,
+          "weight": 0.00012659628801528518
+        },
+        {
+          "cusip": "52736r102",
+          "issuer": "Levi Strauss & Co Cl A",
+          "titleOfClass": "COM",
+          "value": 1111993,
+          "shares": 47725,
+          "weight": 0.00011921165820880518
+        },
+        {
+          "cusip": "e8s64t107",
+          "issuer": "Puig Brands",
+          "titleOfClass": "COM",
+          "value": 1093032,
+          "shares": 68000,
+          "weight": 0.0001171789365538153
+        },
+        {
+          "cusip": "b5783h102",
+          "issuer": "Lotus Bakeries",
+          "titleOfClass": "COM",
+          "value": 1083703,
+          "shares": 115,
+          "weight": 0.00011617881734494444
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 1047605,
+          "shares": 10165,
+          "weight": 0.00011230891669087426
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 1025818,
+          "shares": 11170,
+          "weight": 0.00010997323256570869
+        },
+        {
+          "cusip": "477839104",
+          "issuer": "JBT Marel Corp",
+          "titleOfClass": "COM",
+          "value": 1018263,
+          "shares": 7250,
+          "weight": 0.00010916329574257444
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 977309,
+          "shares": 3475,
+          "weight": 0.0001047728056493064
+        },
+        {
+          "cusip": "g27035107",
+          "issuer": "Deliveroo PLC",
+          "titleOfClass": "COM",
+          "value": 943492,
+          "shares": 390000,
+          "weight": 0.00010114744052052667
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 904605,
+          "shares": 13640,
+          "weight": 0.00009697854399620879
+        },
+        {
+          "cusip": "d98423102",
+          "issuer": "Zalando SE",
+          "titleOfClass": "COM",
+          "value": 855729,
+          "shares": 28000,
+          "weight": 0.00009173877269673698
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 850662,
+          "shares": 10149,
+          "weight": 0.00009119556291740922
+        },
+        {
+          "cusip": "98585x104",
+          "issuer": "Yeti Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 796320,
+          "shares": 24000,
+          "weight": 0.00008536980688262943
+        },
+        {
+          "cusip": "x4s8se108",
+          "issuer": "Kalmar Oyj B",
+          "titleOfClass": "COM",
+          "value": 792420,
+          "shares": 20000,
+          "weight": 0.00008495170580913855
+        },
+        {
+          "cusip": "693475105",
+          "issuer": "PNC Bank Corp",
+          "titleOfClass": "COM",
+          "value": 753488,
+          "shares": 3750,
+          "weight": 0.000080777985041665
+        },
+        {
+          "cusip": "42704l104",
+          "issuer": "Herc Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 752457,
+          "shares": 6450,
+          "weight": 0.00008066745627069857
+        },
+        {
+          "cusip": "d6349p107",
+          "issuer": "Rational AG",
+          "titleOfClass": "COM",
+          "value": 743511,
+          "shares": 975,
+          "weight": 0.00007970839673135258
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 731337,
+          "shares": 5974,
+          "weight": 0.00007840327814964028
+        },
+        {
+          "cusip": "31425A109",
+          "issuer": "FB Bancorp Inc",
+          "titleOfClass": "COM",
+          "value": 601000,
+          "shares": 50000,
+          "weight": 0.00006443044747897865
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 490718,
+          "shares": 19835,
+          "weight": 0.00005260762117469126
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 464794,
+          "shares": 1775000,
+          "weight": 0.00004982842829541498
+        },
+        {
+          "cusip": "89832Q109",
+          "issuer": "Truist Financial Corp",
+          "titleOfClass": "COM",
+          "value": 427727,
+          "shares": 9355,
+          "weight": 0.00004585464560539285
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 414624,
+          "shares": 2670,
+          "weight": 0.000044449933203866966
+        },
+        {
+          "cusip": "368736104",
+          "issuer": "Generac Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 376650,
+          "shares": 2250,
+          "weight": 0.00004037891521290734
+        },
+        {
+          "cusip": "149123101",
+          "issuer": "Caterpillar Inc",
+          "titleOfClass": "COM",
+          "value": 334005,
+          "shares": 700,
+          "weight": 0.00003580714078238979
+        },
+        {
+          "cusip": "344419106",
+          "issuer": "Fomento Economico Mex Sponsore",
+          "titleOfClass": "COM",
+          "value": 317391,
+          "shares": 3218,
+          "weight": 0.00003402603020931866
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 295564,
+          "shares": 3800,
+          "weight": 0.00003168605786801472
+        },
+        {
+          "cusip": "69007J304",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 287441,
+          "shares": 15690,
+          "weight": 0.000030815228375715646
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 287360,
+          "shares": 2510,
+          "weight": 0.00003080654473803545
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 244525,
+          "shares": 5000000,
+          "weight": 0.00002621440128086066
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 214242,
+          "shares": 705,
+          "weight": 0.00002296790004790573
+        },
+        {
+          "cusip": "T19404101",
+          "issuer": "Cofide SPA",
+          "titleOfClass": "COM",
+          "value": 192778,
+          "shares": 251250,
+          "weight": 0.000020666843268057482
+        }
+      ],
+      "totalValue": 9327888033
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-13",
+      "accession": "0000860643-25-000004",
+      "holdings": [
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1183571200,
+          "shares": 1624,
+          "weight": 0.12579506815659894
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 945773656,
+          "shares": 1683051,
+          "weight": 0.10052091628897
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 902971333,
+          "shares": 5090317,
+          "weight": 0.09597170020543758
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 887578954,
+          "shares": 4873326,
+          "weight": 0.0943357315662909
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 726255729,
+          "shares": 542334,
+          "weight": 0.07718960120749428
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 699995825,
+          "shares": 3728315,
+          "weight": 0.07439858499024792
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 625941848,
+          "shares": 8430646,
+          "weight": 0.06652780790139833
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 597393236,
+          "shares": 6014833,
+          "weight": 0.06349353789523705
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 560853526,
+          "shares": 1154566,
+          "weight": 0.059609939418126125
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 456864163,
+          "shares": 4896722,
+          "weight": 0.04855749998216629
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 391286919,
+          "shares": 712779,
+          "weight": 0.04158766675328921
+        },
+        {
+          "cusip": "G05320109",
+          "issuer": "Ashtead Group PLC",
+          "titleOfClass": "COM",
+          "value": 371777229,
+          "shares": 5810686,
+          "weight": 0.03951409248647356
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 280466225,
+          "shares": 2824214,
+          "weight": 0.029809163901165402
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 238316008,
+          "shares": 966760,
+          "weight": 0.025329256464814775
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 166321367,
+          "shares": 573700,
+          "weight": 0.01767735451628403
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 91293790,
+          "shares": 2557966,
+          "weight": 0.009703099006907428
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 50191769,
+          "shares": 1827148,
+          "weight": 0.005334598376722305
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 45071467,
+          "shares": 126944,
+          "weight": 0.004790390525878714
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 20950005,
+          "shares": 778521,
+          "weight": 0.0022266571769033318
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 20514478,
+          "shares": 190301,
+          "weight": 0.002180367482925446
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 20256557,
+          "shares": 296300,
+          "weight": 0.0021529545230849073
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 16264502,
+          "shares": 8143,
+          "weight": 0.0017286616450477503
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 11270921,
+          "shares": 59355,
+          "weight": 0.0011979222503746647
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 11224152,
+          "shares": 191440,
+          "weight": 0.0011929514386967396
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 5686491,
+          "shares": 24715,
+          "weight": 0.0006043848675237168
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 4585964,
+          "shares": 4633,
+          "weight": 0.0004874160962548845
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 4348973,
+          "shares": 13634,
+          "weight": 0.00046222766737329243
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 3948790,
+          "shares": 21551,
+          "weight": 0.0004196944866401754
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 3182620,
+          "shares": 41976,
+          "weight": 0.0003382626240115972
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 2771922,
+          "shares": 15729,
+          "weight": 0.0002946118635826692
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Swiss Helvetia FD Inc",
+          "titleOfClass": "COM",
+          "value": 2753060,
+          "shares": 434237,
+          "weight": 0.0002926071286114484
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 2650453,
+          "shares": 10162,
+          "weight": 0.0002817016126962722
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 2491206,
+          "shares": 15,
+          "weight": 0.00026477615251378897
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2303544,
+          "shares": 12410,
+          "weight": 0.00024483062318661063
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 2109018,
+          "shares": 4240,
+          "weight": 0.0002241555582405976
+        },
+        {
+          "cusip": "x4550j108",
+          "issuer": "Konecranes",
+          "titleOfClass": "COM",
+          "value": 1869741,
+          "shares": 23650,
+          "weight": 0.00019872416338804753
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 1830571,
+          "shares": 22848,
+          "weight": 0.00019456100630912065
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 1739774,
+          "shares": 10920,
+          "weight": 0.000184910708292901
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 1726211,
+          "shares": 4050,
+          "weight": 0.00018346917396914593
+        },
+        {
+          "cusip": "k3008m105",
+          "issuer": "Demant A/S",
+          "titleOfClass": "COM",
+          "value": 1704302,
+          "shares": 41000,
+          "weight": 0.00018114059065430782
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 1689667,
+          "shares": 11967,
+          "weight": 0.00017958511953227325
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 1571062,
+          "shares": 234393,
+          "weight": 0.00016697926695769774
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1565475,
+          "shares": 11510,
+          "weight": 0.00016638545642412702
+        },
+        {
+          "cusip": "d2617n114",
+          "issuer": "Fielmann",
+          "titleOfClass": "COM",
+          "value": 1530818,
+          "shares": 23000,
+          "weight": 0.0001627019605118378
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 1447133,
+          "shares": 10960,
+          "weight": 0.00015380755662748765
+        },
+        {
+          "cusip": "e8s64t107",
+          "issuer": "Puig Brands",
+          "titleOfClass": "COM",
+          "value": 1337813,
+          "shares": 68000,
+          "weight": 0.00014218855402681657
+        },
+        {
+          "cusip": "e52619108",
+          "issuer": "Fluidra",
+          "titleOfClass": "COM",
+          "value": 1318938,
+          "shares": 53000,
+          "weight": 0.00014018243735934796
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 1314708,
+          "shares": 15131,
+          "weight": 0.0001397328546571815
+        },
+        {
+          "cusip": "g8402n125",
+          "issuer": "SSP Group",
+          "titleOfClass": "COM",
+          "value": 1293890,
+          "shares": 548000,
+          "weight": 0.00013752022754283123
+        },
+        {
+          "cusip": "93403j106",
+          "issuer": "Warby Parker Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1271940,
+          "shares": 58000,
+          "weight": 0.00013518728657059624
+        },
+        {
+          "cusip": "w2457w116",
+          "issuer": "Electrolux Professional",
+          "titleOfClass": "COM",
+          "value": 1233789,
+          "shares": 175500,
+          "weight": 0.00013113243322063098
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 1230328,
+          "shares": 68200,
+          "weight": 0.0001307645831657378
+        },
+        {
+          "cusip": "448579102",
+          "issuer": "Hyatt Hotels Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 1211464,
+          "shares": 8675,
+          "weight": 0.00012875963562586349
+        },
+        {
+          "cusip": "t3508h102",
+          "issuer": "De'Longhi",
+          "titleOfClass": "COM",
+          "value": 1179279,
+          "shares": 35250,
+          "weight": 0.00012533887456930842
+        },
+        {
+          "cusip": "751212101",
+          "issuer": "Ralph Lauren Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 1124548,
+          "shares": 4100,
+          "weight": 0.0001195218270817734
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 1117584,
+          "shares": 11285,
+          "weight": 0.0001187816630302634
+        },
+        {
+          "cusip": "42704l104",
+          "issuer": "Herc Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 1112781,
+          "shares": 8450,
+          "weight": 0.00011827117940886727
+        },
+        {
+          "cusip": "b5783h102",
+          "issuer": "Lotus Bakeries",
+          "titleOfClass": "COM",
+          "value": 1102891,
+          "shares": 115,
+          "weight": 0.00011722002741727711
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 1076325,
+          "shares": 35581,
+          "weight": 0.00011439647799274886
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1056420,
+          "shares": 5149,
+          "weight": 0.00011228088846872436
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 993934,
+          "shares": 10165,
+          "weight": 0.00010563960602721747
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 965030,
+          "shares": 13640,
+          "weight": 0.00010256756384674
+        },
+        {
+          "cusip": "g27035107",
+          "issuer": "Deliveroo PLC",
+          "titleOfClass": "COM",
+          "value": 940074,
+          "shares": 390000,
+          "weight": 0.00009991513218828458
+        },
+        {
+          "cusip": "w41422101",
+          "issuer": "H&M",
+          "titleOfClass": "COM",
+          "value": 892470,
+          "shares": 64000,
+          "weight": 0.00009485557309752034
+        },
+        {
+          "cusip": "52736r102",
+          "issuer": "Levi Strauss & Co Cl A",
+          "titleOfClass": "COM",
+          "value": 882435,
+          "shares": 47725,
+          "weight": 0.00009378900987855095
+        },
+        {
+          "cusip": "477839104",
+          "issuer": "JBT Marel Corp",
+          "titleOfClass": "COM",
+          "value": 871885,
+          "shares": 7250,
+          "weight": 0.00009266771023130359
+        },
+        {
+          "cusip": "d98423102",
+          "issuer": "Zalando SE",
+          "titleOfClass": "COM",
+          "value": 853037,
+          "shares": 26000,
+          "weight": 0.00009066446324065734
+        },
+        {
+          "cusip": "d6349p107",
+          "issuer": "Rational AG",
+          "titleOfClass": "COM",
+          "value": 814887,
+          "shares": 975,
+          "weight": 0.00008660971617501884
+        },
+        {
+          "cusip": "368736104",
+          "issuer": "Generac Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 809137,
+          "shares": 5650,
+          "weight": 0.00008599858129618733
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 759739,
+          "shares": 3475,
+          "weight": 0.00008074834812322768
+        },
+        {
+          "cusip": "98585x104",
+          "issuer": "Yeti Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 756480,
+          "shares": 24000,
+          "weight": 0.00008040196750233867
+        },
+        {
+          "cusip": "693475105",
+          "issuer": "PNC Bank Corp",
+          "titleOfClass": "COM",
+          "value": 736359,
+          "shares": 3950,
+          "weight": 0.00007826342056373545
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 725005,
+          "shares": 5974,
+          "weight": 0.00007705666831777845
+        },
+        {
+          "cusip": "31425A109",
+          "issuer": "FB Bancorp Inc",
+          "titleOfClass": "COM",
+          "value": 618750,
+          "shares": 55000,
+          "weight": 0.00006576342717860624
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 405228,
+          "shares": 1775000,
+          "weight": 0.00004306938516158747
+        },
+        {
+          "cusip": "89832Q109",
+          "issuer": "Truist Financial Corp",
+          "titleOfClass": "COM",
+          "value": 398967,
+          "shares": 9280,
+          "weight": 0.00004240393899178504
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 382317,
+          "shares": 2670,
+          "weight": 0.00004063430495134255
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 349478,
+          "shares": 2818,
+          "weight": 0.00003714403394509083
+        },
+        {
+          "cusip": "344419106",
+          "issuer": "Fomento Economico Mex Sponsore",
+          "titleOfClass": "COM",
+          "value": 346837,
+          "shares": 3368,
+          "weight": 0.00003686333703813536
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 306888,
+          "shares": 3800,
+          "weight": 0.00003261738446866765
+        },
+        {
+          "cusip": "69007J304",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 256061,
+          "shares": 15690,
+          "weight": 0.000027215270992777524
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 205980,
+          "shares": 705,
+          "weight": 0.000021892445624645355
+        },
+        {
+          "cusip": "G42089113",
+          "issuer": "Diageo PLC",
+          "titleOfClass": "COM",
+          "value": 202329,
+          "shares": 8077,
+          "weight": 0.000021504401547669043
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 184786,
+          "shares": 5000000,
+          "weight": 0.00001963985560343585
+        },
+        {
+          "cusip": "T19404101",
+          "issuer": "Cofide SPA",
+          "titleOfClass": "COM",
+          "value": 172534,
+          "shares": 251250,
+          "weight": 0.000018337660032054383
+        }
+      ],
+      "totalValue": 9408724979
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-13",
+      "accession": "0000860643-25-000003",
+      "holdings": [
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1323017731,
+          "shares": 1657,
+          "weight": 0.14832586168691722
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 940779026,
+          "shares": 1716374,
+          "weight": 0.10547240329345872
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 797804899,
+          "shares": 5106605,
+          "weight": 0.08944332062184505
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 796289881,
+          "shares": 5016631,
+          "weight": 0.08927346926985195
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 654957744,
+          "shares": 3788649,
+          "weight": 0.07342847300609559
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 628768209,
+          "shares": 1180608,
+          "weight": 0.07049231783974076
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 621562097,
+          "shares": 6143739,
+          "weight": 0.06968442785703846
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 588228486,
+          "shares": 8139838,
+          "weight": 0.06594733767384461
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 520735942,
+          "shares": 558412,
+          "weight": 0.058380628995892525
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 341505138,
+          "shares": 714252,
+          "weight": 0.038286746033307374
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 322891841,
+          "shares": 4431675,
+          "weight": 0.03619997633123185
+        },
+        {
+          "cusip": "G05320109",
+          "issuer": "Ashtead Group PLC",
+          "titleOfClass": "COM",
+          "value": 295095461,
+          "shares": 5514309,
+          "weight": 0.03308367492523278
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 284129177,
+          "shares": 2882247,
+          "weight": 0.03185422539807187
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 255934794,
+          "shares": 1043354,
+          "weight": 0.028693303170638798
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 145058152,
+          "shares": 793665,
+          "weight": 0.016262726406432275
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 96560333,
+          "shares": 2616811,
+          "weight": 0.01082554999937538
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 62619772,
+          "shares": 1870922,
+          "weight": 0.007020413576406022
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 45805472,
+          "shares": 130701,
+          "weight": 0.0051353326151121394
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 27857831,
+          "shares": 820796,
+          "weight": 0.0031231907864759482
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 22533582,
+          "shares": 189469,
+          "weight": 0.002526279798621087
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 20821890,
+          "shares": 338650,
+          "weight": 0.0023343789760593954
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 15472892,
+          "shares": 8276,
+          "weight": 0.0017346933339690879
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 14803820,
+          "shares": 246648,
+          "weight": 0.0016596824867179491
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 9237520,
+          "shares": 60305,
+          "weight": 0.0010356347324343845
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 5808558,
+          "shares": 24588,
+          "weight": 0.0006512077278489902
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 4515657,
+          "shares": 62901,
+          "weight": 0.0005062583062294269
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 4386010,
+          "shares": 4637,
+          "weight": 0.0004917233513761848
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 4371342,
+          "shares": 18737,
+          "weight": 0.0004900788959102862
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 3856352,
+          "shares": 21951,
+          "weight": 0.00043234245465155187
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 3674685,
+          "shares": 13658,
+          "weight": 0.00041197544543943027
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 3508546,
+          "shares": 42626,
+          "weight": 0.0003933493078167874
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Swiss Helvetia FD Inc",
+          "titleOfClass": "COM",
+          "value": 2705177,
+          "shares": 293403,
+          "weight": 0.00030328218597444454
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2600143,
+          "shares": 12410,
+          "weight": 0.0002915066381557104
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 2414085,
+          "shares": 15611,
+          "weight": 0.0002706473461544723
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 2094151,
+          "shares": 16,
+          "weight": 0.00023477897861787564
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 1874620,
+          "shares": 11000,
+          "weight": 0.0002101669692857115
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 1734302,
+          "shares": 4620,
+          "weight": 0.00019443566971767508
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 1646173,
+          "shares": 10979,
+          "weight": 0.00018455537139791935
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1526802,
+          "shares": 11510,
+          "weight": 0.00017117247710968778
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 1513236,
+          "shares": 4086,
+          "weight": 0.00016965156881609762
+        },
+        {
+          "cusip": "x4550j108",
+          "issuer": "Konecranes",
+          "titleOfClass": "COM",
+          "value": 1502148,
+          "shares": 23650,
+          "weight": 0.00016840847349254407
+        },
+        {
+          "cusip": "448579102",
+          "issuer": "Hyatt Hotels Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 1430188,
+          "shares": 11675,
+          "weight": 0.00016034091040786569
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 1425746,
+          "shares": 46081,
+          "weight": 0.00015984290991839735
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 1375211,
+          "shares": 235151,
+          "weight": 0.0001541773415403509
+        },
+        {
+          "cusip": "k3008m105",
+          "issuer": "Demant A/S",
+          "titleOfClass": "COM",
+          "value": 1347358,
+          "shares": 40250,
+          "weight": 0.00015105469236584358
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 1308465,
+          "shares": 10307,
+          "weight": 0.00014669432923281972
+        },
+        {
+          "cusip": "42704l104",
+          "issuer": "Herc Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 1268852,
+          "shares": 9450,
+          "weight": 0.00014225324562424044
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 1260873,
+          "shares": 69700,
+          "weight": 0.0001413587057986061
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 1232049,
+          "shares": 15131,
+          "weight": 0.00013812719609387054
+        },
+        {
+          "cusip": "e52619108",
+          "issuer": "Fluidra",
+          "titleOfClass": "COM",
+          "value": 1181555,
+          "shares": 50500,
+          "weight": 0.00013246622429845988
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1165960,
+          "shares": 5249,
+          "weight": 0.00013071784122028367
+        },
+        {
+          "cusip": "t3508h102",
+          "issuer": "De'Longhi",
+          "titleOfClass": "COM",
+          "value": 1159827,
+          "shares": 35250,
+          "weight": 0.0001300302597250317
+        },
+        {
+          "cusip": "e8s64t107",
+          "issuer": "Puig Brands",
+          "titleOfClass": "COM",
+          "value": 1156160,
+          "shares": 68000,
+          "weight": 0.00012961914585855706
+        },
+        {
+          "cusip": "w41422101",
+          "issuer": "H&M",
+          "titleOfClass": "COM",
+          "value": 1155071,
+          "shares": 88000,
+          "weight": 0.00012949705613927946
+        },
+        {
+          "cusip": "b5783h102",
+          "issuer": "Lotus Bakeries",
+          "titleOfClass": "COM",
+          "value": 1152897,
+          "shares": 130,
+          "weight": 0.00012925332514781074
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 1139533,
+          "shares": 11285,
+          "weight": 0.00012775506343208474
+        },
+        {
+          "cusip": "w2457w116",
+          "issuer": "Electrolux Professional",
+          "titleOfClass": "COM",
+          "value": 1091950,
+          "shares": 175500,
+          "weight": 0.00012242044900381553
+        },
+        {
+          "cusip": "98585x104",
+          "issuer": "Yeti Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 1075750,
+          "shares": 32500,
+          "weight": 0.00012060423830381846
+        },
+        {
+          "cusip": "g8402n125",
+          "issuer": "SSP Group",
+          "titleOfClass": "COM",
+          "value": 1060289,
+          "shares": 548000,
+          "weight": 0.0001188708782030373
+        },
+        {
+          "cusip": "52736r102",
+          "issuer": "Levi Strauss & Co Cl A",
+          "titleOfClass": "COM",
+          "value": 1055833,
+          "shares": 67725,
+          "weight": 0.0001183713081487665
+        },
+        {
+          "cusip": "368736104",
+          "issuer": "Generac Holdings Inc",
+          "titleOfClass": "COM",
+          "value": 1044863,
+          "shares": 8250,
+          "weight": 0.00011714144201426229
+        },
+        {
+          "cusip": "d2617n114",
+          "issuer": "Fielmann",
+          "titleOfClass": "COM",
+          "value": 1008102,
+          "shares": 22300,
+          "weight": 0.00011302010117829979
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 976897,
+          "shares": 13640,
+          "weight": 0.00010952165334537331
+        },
+        {
+          "cusip": "93403j106",
+          "issuer": "Warby Parker Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 941580,
+          "shares": 51650,
+          "weight": 0.00010556220190760807
+        },
+        {
+          "cusip": "751212101",
+          "issuer": "Ralph Lauren Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 905034,
+          "shares": 4100,
+          "weight": 0.00010146496510254058
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 898970,
+          "shares": 10240,
+          "weight": 0.00010078511931952933
+        },
+        {
+          "cusip": "477839104",
+          "issuer": "JBT Marel Corp",
+          "titleOfClass": "COM",
+          "value": 885950,
+          "shares": 7250,
+          "weight": 0.00009932542405323539
+        },
+        {
+          "cusip": "693475105",
+          "issuer": "PNC Bank Corp",
+          "titleOfClass": "COM",
+          "value": 870062,
+          "shares": 4950,
+          "weight": 0.00009754419222597899
+        },
+        {
+          "cusip": "d6349p107",
+          "issuer": "Rational AG",
+          "titleOfClass": "COM",
+          "value": 805694,
+          "shares": 975,
+          "weight": 0.00009032778171132392
+        },
+        {
+          "cusip": "31425A109",
+          "issuer": "FB Bancorp Inc",
+          "titleOfClass": "COM",
+          "value": 788200,
+          "shares": 70000,
+          "weight": 0.00008836649837887029
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 705390,
+          "shares": 4217,
+          "weight": 0.00007908252257228027
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 679722,
+          "shares": 5974,
+          "weight": 0.00007620483761872935
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 485840,
+          "shares": 3475,
+          "weight": 0.00005446838311645565
+        },
+        {
+          "cusip": "89832Q109",
+          "issuer": "Truist Financial Corp",
+          "titleOfClass": "COM",
+          "value": 398826,
+          "shares": 9692,
+          "weight": 0.00004471308942203923
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 377798,
+          "shares": 1775000,
+          "weight": 0.00004235560308873438
+        },
+        {
+          "cusip": "344419106",
+          "issuer": "Fomento Economico Mex Sponsore",
+          "titleOfClass": "COM",
+          "value": 331577,
+          "shares": 3398,
+          "weight": 0.00003717368489339085
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 309548,
+          "shares": 3800,
+          "weight": 0.00003470397467670964
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 290488,
+          "shares": 2943,
+          "weight": 0.00003256712430992295
+        },
+        {
+          "cusip": "69007J304",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 285775,
+          "shares": 17706,
+          "weight": 0.00003203874153034973
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "Merck Inc",
+          "titleOfClass": "COM",
+          "value": 248013,
+          "shares": 2763,
+          "weight": 0.000027805176811010856
+        },
+        {
+          "cusip": "423008101",
+          "issuer": "Heineken Holding NV ADR",
+          "titleOfClass": "COM",
+          "value": 226192,
+          "shares": 6260,
+          "weight": 0.00002535878584282343
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 220221,
+          "shares": 705,
+          "weight": 0.00002468936645457142
+        },
+        {
+          "cusip": "55622104",
+          "issuer": "BP PLC ADR",
+          "titleOfClass": "COM",
+          "value": 212881,
+          "shares": 6300,
+          "weight": 0.000023866466050992494
+        },
+        {
+          "cusip": "G42089113",
+          "issuer": "Diageo PLC",
+          "titleOfClass": "COM",
+          "value": 210019,
+          "shares": 8077,
+          "weight": 0.00002354560216065968
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 166063,
+          "shares": 5000000,
+          "weight": 0.000018617617128000935
+        },
+        {
+          "cusip": "T19404101",
+          "issuer": "Cofide SPA",
+          "titleOfClass": "COM",
+          "value": 148999,
+          "shares": 251250,
+          "weight": 0.00001670454185733734
+        }
+      ],
+      "totalValue": 8919669948
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-12",
+      "accession": "0000860643-25-000001",
+      "holdings": [
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1272639480,
+          "shares": 1869,
+          "weight": 0.14386819722615876
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 1073307461,
+          "shares": 5635935,
+          "weight": 0.12133429137642004
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 992407733,
+          "shares": 1884664,
+          "weight": 0.11218881207426402
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 642373122,
+          "shares": 4221542,
+          "weight": 0.0726184158680032
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 624640534,
+          "shares": 5190200,
+          "weight": 0.07061379829342174
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 583335551,
+          "shares": 1286921,
+          "weight": 0.06594438992282244
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 564003230,
+          "shares": 632773,
+          "weight": 0.0637589271785208
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 516949333,
+          "shares": 6327409,
+          "weight": 0.058439620776164526
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 470852590,
+          "shares": 7860162,
+          "weight": 0.05322851785375043
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 365170539,
+          "shares": 707010,
+          "weight": 0.04128146890903832
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 342935239,
+          "shares": 3038334,
+          "weight": 0.03876783281959152
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 302444298,
+          "shares": 1261709,
+          "weight": 0.03419044953295896
+        },
+        {
+          "cusip": "G05320109",
+          "issuer": "Ashtead Group PLC",
+          "titleOfClass": "COM",
+          "value": 293352303,
+          "shares": 4717666,
+          "weight": 0.03316262590309699
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 250380297,
+          "shares": 4150867,
+          "weight": 0.028304765423700515
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 112414475,
+          "shares": 670131,
+          "weight": 0.012708129925668417
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 104485322,
+          "shares": 2784048,
+          "weight": 0.011811762206791435
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 75942342,
+          "shares": 2014920,
+          "weight": 0.00858506121205072
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 64692124,
+          "shares": 204696,
+          "weight": 0.007313256739930085
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 31918236,
+          "shares": 840396,
+          "weight": 0.003608263883153366
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 20325640,
+          "shares": 188953,
+          "weight": 0.0022977545724637595
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 18889714,
+          "shares": 378075,
+          "weight": 0.0021354273083668066
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 14881829,
+          "shares": 8621,
+          "weight": 0.0016823475487794618
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 14109198,
+          "shares": 269826,
+          "weight": 0.0015950038580972866
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 13595349,
+          "shares": 193556,
+          "weight": 0.0015369147209628137
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 9215778,
+          "shares": 60730,
+          "weight": 0.0010418169385225224
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 5595166,
+          "shares": 24536,
+          "weight": 0.0006325172668705027
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 5447102,
+          "shares": 21176,
+          "weight": 0.000615779061676606
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 4945436,
+          "shares": 5397,
+          "weight": 0.0005590671773103767
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 4397241,
+          "shares": 14816,
+          "weight": 0.0004970953246232401
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 4211808,
+          "shares": 22451,
+          "weight": 0.00047613266250604865
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 3982358,
+          "shares": 23754,
+          "weight": 0.0004501940063726226
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 3874214,
+          "shares": 20466,
+          "weight": 0.00043796864124343005
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 3611428,
+          "shares": 579531,
+          "weight": 0.0004082614471241078
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 3260785,
+          "shares": 42770,
+          "weight": 0.0003686222743082747
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2205257,
+          "shares": 12410,
+          "weight": 0.00024929789936295796
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Swiss Helvetia FD Inc",
+          "titleOfClass": "COM",
+          "value": 2163119,
+          "shares": 288801,
+          "weight": 0.00024453432083974895
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 2088533,
+          "shares": 4955,
+          "weight": 0.00023610259015172233
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 2021612,
+          "shares": 5711,
+          "weight": 0.00022853736545307336
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 1765517,
+          "shares": 16,
+          "weight": 0.0001995865694518106
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 1752987,
+          "shares": 11528,
+          "weight": 0.00019817008934132105
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 1737839,
+          "shares": 18138,
+          "weight": 0.00019645765193400294
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 1579323,
+          "shares": 50345,
+          "weight": 0.00017853787849470828
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1453438,
+          "shares": 5804,
+          "weight": 0.00016430694483876432
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 1440216,
+          "shares": 74700,
+          "weight": 0.0001628122361379748
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1301896,
+          "shares": 11510,
+          "weight": 0.00014717556184564318
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 1076402,
+          "shares": 15131,
+          "weight": 0.00012168412002323843
+        },
+        {
+          "cusip": "693475105",
+          "issuer": "PNC Bank Corp",
+          "titleOfClass": "COM",
+          "value": 954608,
+          "shares": 4950,
+          "weight": 0.00010791566203625001
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 931057,
+          "shares": 10305,
+          "weight": 0.00010525328988284702
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 878177,
+          "shares": 14105,
+          "weight": 0.00009927535945645535
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 864270,
+          "shares": 10460,
+          "weight": 0.00009770321349503649
+        },
+        {
+          "cusip": "31425A109",
+          "issuer": "FB Bancorp Inc",
+          "titleOfClass": "COM",
+          "value": 834400,
+          "shares": 70000,
+          "weight": 0.00009432649674321502
+        },
+        {
+          "cusip": "69007J304",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 794992,
+          "shares": 44814,
+          "weight": 0.0000898715367915652
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 727275,
+          "shares": 5974,
+          "weight": 0.0000822163266046521
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 646654,
+          "shares": 4465,
+          "weight": 0.00007310235669341679
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 579074,
+          "shares": 3475,
+          "weight": 0.00006546263395862955
+        },
+        {
+          "cusip": "89832Q109",
+          "issuer": "Truist Financial Corp",
+          "titleOfClass": "COM",
+          "value": 417200,
+          "shares": 9617,
+          "weight": 0.00004716324837160751
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 397646,
+          "shares": 3571,
+          "weight": 0.00004495272546015398
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 322197,
+          "shares": 1775000,
+          "weight": 0.00003642343512844397
+        },
+        {
+          "cusip": "344419106",
+          "issuer": "Fomento Economico Mex Sponsore",
+          "titleOfClass": "COM",
+          "value": 296308,
+          "shares": 3466,
+          "weight": 0.00003349675886503902
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "Merck Inc",
+          "titleOfClass": "COM",
+          "value": 291104,
+          "shares": 2926,
+          "weight": 0.00003290846177844783
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 277514,
+          "shares": 3800,
+          "weight": 0.0000313721517464005
+        },
+        {
+          "cusip": "609207105",
+          "issuer": "Mondelez International Inc",
+          "titleOfClass": "COM",
+          "value": 262812,
+          "shares": 4400,
+          "weight": 0.00002971013334381331
+        },
+        {
+          "cusip": "G42089113",
+          "issuer": "Diageo PLC",
+          "titleOfClass": "COM",
+          "value": 262246,
+          "shares": 8252,
+          "weight": 0.000029646148687585292
+        },
+        {
+          "cusip": "423008101",
+          "issuer": "Heineken Holding NV ADR",
+          "titleOfClass": "COM",
+          "value": 217629,
+          "shares": 7266,
+          "weight": 0.000024602326413865225
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 204372,
+          "shares": 705,
+          "weight": 0.000023103661064722364
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 197266,
+          "shares": 5000000,
+          "weight": 0.00002230034840190203
+        },
+        {
+          "cusip": "204319107",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 184730,
+          "shares": 12140,
+          "weight": 0.000020883190008837623
+        },
+        {
+          "cusip": "T19404101",
+          "issuer": "Cofide SPA",
+          "titleOfClass": "COM",
+          "value": 155841,
+          "shares": 251250,
+          "weight": 0.000017617372458005
+        }
+      ],
+      "totalValue": 8845870766
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-13",
+      "accession": "0000860643-24-000007",
+      "holdings": [
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1413463100,
+          "shares": 2045,
+          "weight": 0.14510117264709213
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 1002127832,
+          "shares": 5993946,
+          "weight": 0.1028749343123907
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 993184093,
+          "shares": 2011308,
+          "weight": 0.10195680138288618
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 715200694,
+          "shares": 4509025,
+          "weight": 0.07341999899213082
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 700292958,
+          "shares": 6956322,
+          "weight": 0.071889623013364
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 653921061,
+          "shares": 5386500,
+          "weight": 0.06712924643715895
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 618084995,
+          "shares": 1342904,
+          "weight": 0.06345044138051575
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 617638801,
+          "shares": 8162463,
+          "weight": 0.06340463666681073
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 519070738,
+          "shares": 731838,
+          "weight": 0.05328598445236492
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 491906191,
+          "shares": 3250416,
+          "weight": 0.05049736717319644
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 403726015,
+          "shares": 750072,
+          "weight": 0.04144509906529396
+        },
+        {
+          "cusip": "G05320109",
+          "issuer": "Ashtead Group PLC",
+          "titleOfClass": "COM",
+          "value": 383854835,
+          "shares": 4945913,
+          "weight": 0.03940519330483835
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 303787481,
+          "shares": 1440707,
+          "weight": 0.031185759096651493
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 285411006,
+          "shares": 3797379,
+          "weight": 0.029299294517830882
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 124053844,
+          "shares": 2969927,
+          "weight": 0.012734933254203405
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 102254911,
+          "shares": 2126766,
+          "weight": 0.010497131120737456
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 100662759,
+          "shares": 705267,
+          "weight": 0.01033368637129022
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 72988502,
+          "shares": 265461,
+          "weight": 0.007492744048256108
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 43191946,
+          "shares": 877885,
+          "weight": 0.004433933941048677
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 26417297,
+          "shares": 398625,
+          "weight": 0.002711907210642081
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 22727053,
+          "shares": 402320,
+          "weight": 0.0023330796828814368
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 22064621,
+          "shares": 188233,
+          "weight": 0.0022650767332473374
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 14755559,
+          "shares": 289098,
+          "weight": 0.0015147540207900397
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 14142317,
+          "shares": 9016,
+          "weight": 0.0014518007443186213
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 9869708,
+          "shares": 62356,
+          "weight": 0.001013189664791664
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 6019036,
+          "shares": 24420,
+          "weight": 0.0006178931602848796
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 5966030,
+          "shares": 703377,
+          "weight": 0.0006124517499238083
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 5880347,
+          "shares": 23481,
+          "weight": 0.0006036558331602786
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 5417176,
+          "shares": 31277,
+          "weight": 0.0005561083200797275
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 4806931,
+          "shares": 5422,
+          "weight": 0.000493462705134403
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 4429386,
+          "shares": 23101,
+          "weight": 0.00045470525739696547
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 4160479,
+          "shares": 15341,
+          "weight": 0.00042710020634680957
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 4036846,
+          "shares": 40081,
+          "weight": 0.00041440847546407345
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 3524086,
+          "shares": 42820,
+          "weight": 0.0003617703292779276
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 3389311,
+          "shares": 20436,
+          "weight": 0.0003479347996885723
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 2800168,
+          "shares": 23450,
+          "weight": 0.00028745544217522384
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 2588596,
+          "shares": 5769,
+          "weight": 0.00026573620146827466
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Swiss Helvetia FD Inc",
+          "titleOfClass": "COM",
+          "value": 2535982,
+          "shares": 283350,
+          "weight": 0.0002603350324546272
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2470475,
+          "shares": 12510,
+          "weight": 0.0002536103132054349
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 2261253,
+          "shares": 25441,
+          "weight": 0.00023213231527003075
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 2172485,
+          "shares": 17,
+          "weight": 0.00022301970320853649
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 2153652,
+          "shares": 5005,
+          "weight": 0.00022108637337172455
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 2081796,
+          "shares": 12242,
+          "weight": 0.00021370988801336645
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 1682985,
+          "shares": 53091,
+          "weight": 0.000172769347178194
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 1472664,
+          "shares": 81228,
+          "weight": 0.0001511785297509056
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1461842,
+          "shares": 6274,
+          "weight": 0.000150067581123816
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1312255,
+          "shares": 11510,
+          "weight": 0.00013471150347823716
+        },
+        {
+          "cusip": "204319107",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 1052252,
+          "shares": 66340,
+          "weight": 0.00010802050589099069
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 1044126,
+          "shares": 14530,
+          "weight": 0.00010718631918393746
+        },
+        {
+          "cusip": "693475105",
+          "issuer": "PNC Bank Corp",
+          "titleOfClass": "COM",
+          "value": 988948,
+          "shares": 5350,
+          "weight": 0.00010152193890805954
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 836974,
+          "shares": 10365,
+          "weight": 0.00008592082020049005
+        },
+        {
+          "cusip": "69007J106",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 827229,
+          "shares": 45007,
+          "weight": 0.00008492043262231703
+        },
+        {
+          "cusip": "423008101",
+          "issuer": "Heineken Holding NV ADR",
+          "titleOfClass": "COM",
+          "value": 804162,
+          "shares": 21255,
+          "weight": 0.00008255245517072989
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 798126,
+          "shares": 5974,
+          "weight": 0.00008193282054560394
+        },
+        {
+          "cusip": "714264306",
+          "issuer": "Pernod-Ricard SA Unsponsored A",
+          "titleOfClass": "COM",
+          "value": 697871,
+          "shares": 23057,
+          "weight": 0.00007164099328549774
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 655190,
+          "shares": 4449,
+          "weight": 0.00006725951127174688
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 592140,
+          "shares": 3475,
+          "weight": 0.00006078701903944229
+        },
+        {
+          "cusip": "89832Q109",
+          "issuer": "Truist Financial Corp",
+          "titleOfClass": "COM",
+          "value": 408300,
+          "shares": 9546,
+          "weight": 0.000041914648349721836
+        },
+        {
+          "cusip": "45055100",
+          "issuer": "Ashtead Group PLC ADR",
+          "titleOfClass": "COM",
+          "value": 388983,
+          "shares": 1253,
+          "weight": 0.00003993163276762148
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 373711,
+          "shares": 3885,
+          "weight": 0.000038363862722074205
+        },
+        {
+          "cusip": "344419106",
+          "issuer": "Fomento Economico Mex Sponsore",
+          "titleOfClass": "COM",
+          "value": 359403,
+          "shares": 3641,
+          "weight": 0.00003689505354110967
+        },
+        {
+          "cusip": "22052L104",
+          "issuer": "Corteva Inc",
+          "titleOfClass": "COM",
+          "value": 356857,
+          "shares": 6070,
+          "weight": 0.00003663369009585277
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "Merck Inc",
+          "titleOfClass": "COM",
+          "value": 350548,
+          "shares": 3087,
+          "weight": 0.00003598603024662819
+        },
+        {
+          "cusip": "609207105",
+          "issuer": "Mondelez International Inc",
+          "titleOfClass": "COM",
+          "value": 324148,
+          "shares": 4400,
+          "weight": 0.00003327589868544118
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 317386,
+          "shares": 1775000,
+          "weight": 0.0000325817354423826
+        },
+        {
+          "cusip": "G42089113",
+          "issuer": "Diageo PLC",
+          "titleOfClass": "COM",
+          "value": 295104,
+          "shares": 8452,
+          "weight": 0.00003029434334214135
+        },
+        {
+          "cusip": "G74079107",
+          "issuer": "Reckitt Benckiser Group PLC",
+          "titleOfClass": "COM",
+          "value": 259695,
+          "shares": 4230,
+          "weight": 0.00002665937938569927
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 250991,
+          "shares": 5000000,
+          "weight": 0.000025765857222495795
+        },
+        {
+          "cusip": "423012301",
+          "issuer": "Heineken NV Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 233537,
+          "shares": 5255,
+          "weight": 0.000023974090697156475
+        },
+        {
+          "cusip": "235851102",
+          "issuer": "Danaher Corp",
+          "titleOfClass": "COM",
+          "value": 227698,
+          "shares": 819,
+          "weight": 0.000023374679402240908
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 225872,
+          "shares": 3800,
+          "weight": 0.000023187228635925473
+        },
+        {
+          "cusip": "142339100",
+          "issuer": "Carlisle Inc",
+          "titleOfClass": "COM",
+          "value": 224875,
+          "shares": 500,
+          "weight": 0.00002308488010689125
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 214680,
+          "shares": 705,
+          "weight": 0.00002203829710437983
+        },
+        {
+          "cusip": "G8994E103",
+          "issuer": "Trane Technologies PLC",
+          "titleOfClass": "COM",
+          "value": 209914,
+          "shares": 540,
+          "weight": 0.00002154903623238675
+        },
+        {
+          "cusip": "55622104",
+          "issuer": "BP PLC ADR",
+          "titleOfClass": "COM",
+          "value": 207243,
+          "shares": 6602,
+          "weight": 0.000021274840724813623
+        },
+        {
+          "cusip": "T2R765103",
+          "issuer": "Cir SPA",
+          "titleOfClass": "COM",
+          "value": 160674,
+          "shares": 251250,
+          "weight": 0.000016494230244778855
+        },
+        {
+          "cusip": "23857X103",
+          "issuer": "Davide Campari-Milano ADR",
+          "titleOfClass": "COM",
+          "value": 115779,
+          "shares": 13650,
+          "weight": 0.000011885466743282989
+        }
+      ],
+      "totalValue": 9741224514
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-13",
+      "accession": "0000860643-24-000004",
+      "holdings": [
+        {
+          "cusip": "84670108",
+          "issuer": "Berkshire Hathaway Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 1294277474,
+          "shares": 2114,
+          "weight": 0.13672335636532987
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "Alphabet Inc Cl C",
+          "titleOfClass": "COM",
+          "value": 1139011788,
+          "shares": 6209856,
+          "weight": 0.12032158306344405
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "Mastercard Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 907179509,
+          "shares": 2056350,
+          "weight": 0.09583155836978739
+        },
+        {
+          "cusip": "641069406",
+          "issuer": "Nestle SA Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 743850951,
+          "shares": 7260624,
+          "weight": 0.07857804891091115
+        },
+        {
+          "cusip": "H25662182",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 728818349,
+          "shares": 4669634,
+          "weight": 0.07699005264146191
+        },
+        {
+          "cusip": "N39338194",
+          "issuer": "Heineken Holding NV",
+          "titleOfClass": "COM",
+          "value": 630080961,
+          "shares": 7982338,
+          "weight": 0.06655974897219953
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc Cl B",
+          "titleOfClass": "COM",
+          "value": 565578108,
+          "shares": 1390310,
+          "weight": 0.05974587270960494
+        },
+        {
+          "cusip": "718172109",
+          "issuer": "Philip Morris International In",
+          "titleOfClass": "COM",
+          "value": 553906063,
+          "shares": 5466358,
+          "weight": 0.05851287499458239
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "Netflix Inc",
+          "titleOfClass": "COM",
+          "value": 527798003,
+          "shares": 782062,
+          "weight": 0.05575490256355836
+        },
+        {
+          "cusip": "F72027109",
+          "issuer": "Pernod Ricard",
+          "titleOfClass": "COM",
+          "value": 448828268,
+          "shares": 3305294,
+          "weight": 0.047412790893243795
+        },
+        {
+          "cusip": "573284106",
+          "issuer": "Martin Marietta Materials",
+          "titleOfClass": "COM",
+          "value": 413966956,
+          "shares": 764059,
+          "weight": 0.04373015275753678
+        },
+        {
+          "cusip": "G05320109",
+          "issuer": "Ashtead Group PLC",
+          "titleOfClass": "COM",
+          "value": 337732273,
+          "shares": 5058162,
+          "weight": 0.035676963282644504
+        },
+        {
+          "cusip": "46625H100",
+          "issuer": "J.P. Morgan Chase",
+          "titleOfClass": "COM",
+          "value": 301940754,
+          "shares": 1492835,
+          "weight": 0.03189606103764918
+        },
+        {
+          "cusip": "90353T100",
+          "issuer": "Uber Technologies Inc",
+          "titleOfClass": "COM",
+          "value": 264897668,
+          "shares": 3644712,
+          "weight": 0.027982947234936453
+        },
+        {
+          "cusip": "20030N101",
+          "issuer": "Comcast Corp New Cl A",
+          "titleOfClass": "COM",
+          "value": 120018420,
+          "shares": 3064822,
+          "weight": 0.012678364213007878
+        },
+        {
+          "cusip": "115637100",
+          "issuer": "Brown-Forman Corp Cl A",
+          "titleOfClass": "COM",
+          "value": 95792246,
+          "shares": 2170683,
+          "weight": 0.010119188234356417
+        },
+        {
+          "cusip": "25809K105",
+          "issuer": "Doordash Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 77928687,
+          "shares": 716388,
+          "weight": 0.008232138670276548
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "Visa Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 74203944,
+          "shares": 282714,
+          "weight": 0.007838668664973599
+        },
+        {
+          "cusip": "115637209",
+          "issuer": "Brown-Forman Corp Cl B",
+          "titleOfClass": "COM",
+          "value": 38516221,
+          "shares": 891786,
+          "weight": 0.004068731099332107
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo",
+          "titleOfClass": "COM",
+          "value": 28426531,
+          "shares": 478642,
+          "weight": 0.0030028883343936625
+        },
+        {
+          "cusip": "B639CJ108",
+          "issuer": "Anheuser-Busch InBev SA",
+          "titleOfClass": "COM",
+          "value": 25615623,
+          "shares": 441625,
+          "weight": 0.0027059529523643243
+        },
+        {
+          "cusip": "30231G102",
+          "issuer": "Exxon Mobil Corp",
+          "titleOfClass": "COM",
+          "value": 20782576,
+          "shares": 180530,
+          "weight": 0.0021954052370670805
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "Markel Corp",
+          "titleOfClass": "COM",
+          "value": 15156274,
+          "shares": 9619,
+          "weight": 0.0016010605862345276
+        },
+        {
+          "cusip": "02209S103",
+          "issuer": "Altria Group Inc",
+          "titleOfClass": "COM",
+          "value": 13040514,
+          "shares": 286290,
+          "weight": 0.0013775584282548314
+        },
+        {
+          "cusip": "224408104",
+          "issuer": "Crane Company",
+          "titleOfClass": "COM",
+          "value": 9410072,
+          "shares": 64906,
+          "weight": 0.0009940500807011745
+        },
+        {
+          "cusip": "929160109",
+          "issuer": "Vulcan Materials",
+          "titleOfClass": "COM",
+          "value": 8361119,
+          "shares": 33622,
+          "weight": 0.0008832420216021859
+        },
+        {
+          "cusip": "N24565108",
+          "issuer": "Davide Campari-Milano NV",
+          "titleOfClass": "COM",
+          "value": 6403673,
+          "shares": 677127,
+          "weight": 0.0006764636511212595
+        },
+        {
+          "cusip": "907818108",
+          "issuer": "Union Pac Corp",
+          "titleOfClass": "COM",
+          "value": 5496692,
+          "shares": 24294,
+          "weight": 0.0005806530626109451
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "Procter & Gamble",
+          "titleOfClass": "COM",
+          "value": 5278430,
+          "shares": 32006,
+          "weight": 0.0005575965590354145
+        },
+        {
+          "cusip": "22160K105",
+          "issuer": "Costco Whsl Corp",
+          "titleOfClass": "COM",
+          "value": 4655501,
+          "shares": 5477,
+          "weight": 0.0004917923204789931
+        },
+        {
+          "cusip": "260003108",
+          "issuer": "Dover Corp",
+          "titleOfClass": "COM",
+          "value": 4227222,
+          "shares": 23426,
+          "weight": 0.00044655028890764925
+        },
+        {
+          "cusip": "H57312649",
+          "issuer": "Nestle SA-REG",
+          "titleOfClass": "COM",
+          "value": 4096677,
+          "shares": 40136,
+          "weight": 0.0004327599302594758
+        },
+        {
+          "cusip": "25816109",
+          "issuer": "American Express",
+          "titleOfClass": "COM",
+          "value": 3722166,
+          "shares": 16075,
+          "weight": 0.000393197779218179
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc Cl A",
+          "titleOfClass": "COM",
+          "value": 3707845,
+          "shares": 20356,
+          "weight": 0.0003916849543210133
+        },
+        {
+          "cusip": "579780206",
+          "issuer": "McCormick Inc",
+          "titleOfClass": "COM",
+          "value": 3073121,
+          "shares": 43320,
+          "weight": 0.00032463472947438386
+        },
+        {
+          "cusip": "K36628137",
+          "issuer": "Carlsberg B A/S",
+          "titleOfClass": "COM",
+          "value": 2928959,
+          "shares": 24390,
+          "weight": 0.00030940591425022377
+        },
+        {
+          "cusip": "F58149133",
+          "issuer": "Loreal SA",
+          "titleOfClass": "COM",
+          "value": 2566951,
+          "shares": 5841,
+          "weight": 0.00027116454036759345
+        },
+        {
+          "cusip": "N39427211",
+          "issuer": "Heineken NV",
+          "titleOfClass": "COM",
+          "value": 2462155,
+          "shares": 25441,
+          "weight": 0.0002600942241939063
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "Microsoft Corp",
+          "titleOfClass": "COM",
+          "value": 2326375,
+          "shares": 5205,
+          "weight": 0.00024575085679378385
+        },
+        {
+          "cusip": "870875101",
+          "issuer": "Swiss Helvetia FD Inc",
+          "titleOfClass": "COM",
+          "value": 2254498,
+          "shares": 279368,
+          "weight": 0.00023815799909295452
+        },
+        {
+          "cusip": "H49983176",
+          "issuer": "Lindt & Spruengli AG - Reg",
+          "titleOfClass": "COM",
+          "value": 2194747,
+          "shares": 19,
+          "weight": 0.00023184609346970573
+        },
+        {
+          "cusip": "00287Y109",
+          "issuer": "AbbVie Inc",
+          "titleOfClass": "COM",
+          "value": 2145715,
+          "shares": 12510,
+          "weight": 0.00022666650891849932
+        },
+        {
+          "cusip": "713448108",
+          "issuer": "Pepsico Inc",
+          "titleOfClass": "COM",
+          "value": 2039452,
+          "shares": 12366,
+          "weight": 0.00021544122353008265
+        },
+        {
+          "cusip": "360271100",
+          "issuer": "Fulton Finl Corp",
+          "titleOfClass": "COM",
+          "value": 1940899,
+          "shares": 114305,
+          "weight": 0.00020503039802275997
+        },
+        {
+          "cusip": "440452100",
+          "issuer": "Hormel Foods Corp",
+          "titleOfClass": "COM",
+          "value": 1758999,
+          "shares": 57691,
+          "weight": 0.00018581506049085336
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "Apple Inc",
+          "titleOfClass": "COM",
+          "value": 1432005,
+          "shares": 6799,
+          "weight": 0.0001512724542186803
+        },
+        {
+          "cusip": "26614N102",
+          "issuer": "Dupont De Nemours Inc",
+          "titleOfClass": "COM",
+          "value": 1252057,
+          "shares": 15555,
+          "weight": 0.00013226331975913367
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "Abbott Labs",
+          "titleOfClass": "COM",
+          "value": 1196004,
+          "shares": 11510,
+          "weight": 0.00012634205909571442
+        },
+        {
+          "cusip": "693475105",
+          "issuer": "PNC Bank Corp",
+          "titleOfClass": "COM",
+          "value": 1091936,
+          "shares": 7023,
+          "weight": 0.00011534864652688287
+        },
+        {
+          "cusip": "204319107",
+          "issuer": "Compagnie Financiere Richemont",
+          "titleOfClass": "COM",
+          "value": 1032287,
+          "shares": 66140,
+          "weight": 0.00010904751585925946
+        },
+        {
+          "cusip": "260557103",
+          "issuer": "Dow Inc",
+          "titleOfClass": "COM",
+          "value": 960061,
+          "shares": 18097,
+          "weight": 0.0001014177909083002
+        },
+        {
+          "cusip": "191216100",
+          "issuer": "Coca-Cola",
+          "titleOfClass": "COM",
+          "value": 928017,
+          "shares": 14580,
+          "weight": 0.0000980327646528169
+        },
+        {
+          "cusip": "423008101",
+          "issuer": "Heineken Holding NV ADR",
+          "titleOfClass": "COM",
+          "value": 801423,
+          "shares": 20306,
+          "weight": 0.00008465977707989668
+        },
+        {
+          "cusip": "69007J106",
+          "issuer": "Outfront Media Inc",
+          "titleOfClass": "COM",
+          "value": 757099,
+          "shares": 52944,
+          "weight": 0.0000799775306765749
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corp",
+          "titleOfClass": "COM",
+          "value": 727560,
+          "shares": 4651,
+          "weight": 0.00007685712465483225
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "Lamar Advertising Co-A",
+          "titleOfClass": "COM",
+          "value": 714192,
+          "shares": 5975,
+          "weight": 0.00007544497164698987
+        },
+        {
+          "cusip": "931142103",
+          "issuer": "Wal Mart Stores Inc",
+          "titleOfClass": "COM",
+          "value": 701814,
+          "shares": 10365,
+          "weight": 0.00007413739909080549
+        },
+        {
+          "cusip": "714264306",
+          "issuer": "Pernod-Ricard SA Unsponsored A",
+          "titleOfClass": "COM",
+          "value": 626187,
+          "shares": 23057,
+          "weight": 0.0000661484033155141
+        },
+        {
+          "cusip": "344419106",
+          "issuer": "Fomento Economico Mex Sponsore",
+          "titleOfClass": "COM",
+          "value": 535559,
+          "shares": 4975,
+          "weight": 0.000056574749605554594
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corp",
+          "titleOfClass": "COM",
+          "value": 490670,
+          "shares": 3475,
+          "weight": 0.000051832818399013876
+        },
+        {
+          "cusip": "89832Q109",
+          "issuer": "Truist Financial Corp",
+          "titleOfClass": "COM",
+          "value": 445620,
+          "shares": 11470,
+          "weight": 0.00004707387966447626
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "Merck Inc",
+          "titleOfClass": "COM",
+          "value": 426592,
+          "shares": 3446,
+          "weight": 0.000045063822256245804
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "Disney Walt Productions",
+          "titleOfClass": "COM",
+          "value": 405670,
+          "shares": 4086,
+          "weight": 0.00004285368871120705
+        },
+        {
+          "cusip": "45055100",
+          "issuer": "Ashtead Group PLC ADR",
+          "titleOfClass": "COM",
+          "value": 334649,
+          "shares": 1253,
+          "weight": 0.00003535125612817494
+        },
+        {
+          "cusip": "22052L104",
+          "issuer": "Corteva Inc",
+          "titleOfClass": "COM",
+          "value": 326444,
+          "shares": 6052,
+          "weight": 0.000034484506021251936
+        },
+        {
+          "cusip": "580135101",
+          "issuer": "McDonalds Corp",
+          "titleOfClass": "COM",
+          "value": 305043,
+          "shares": 1197,
+          "weight": 0.00003222377243950189
+        },
+        {
+          "cusip": "Y5342M100",
+          "issuer": "LT Group Inc",
+          "titleOfClass": "COM",
+          "value": 295283,
+          "shares": 1775000,
+          "weight": 0.00003119275707770195
+        },
+        {
+          "cusip": "609207105",
+          "issuer": "Mondelez International Inc",
+          "titleOfClass": "COM",
+          "value": 287936,
+          "shares": 4400,
+          "weight": 0.00003041664336221587
+        },
+        {
+          "cusip": "G42089113",
+          "issuer": "Diageo PLC",
+          "titleOfClass": "COM",
+          "value": 265982,
+          "shares": 8452,
+          "weight": 0.000028097492619085147
+        },
+        {
+          "cusip": "423012301",
+          "issuer": "Heineken NV Sponsored ADR",
+          "titleOfClass": "COM",
+          "value": 254288,
+          "shares": 5255,
+          "weight": 0.000026862175647682642
+        },
+        {
+          "cusip": "G74079107",
+          "issuer": "Reckitt Benckiser Group PLC",
+          "titleOfClass": "COM",
+          "value": 250616,
+          "shares": 4630,
+          "weight": 0.000026474277245169386
+        },
+        {
+          "cusip": "55622104",
+          "issuer": "BP PLC ADR",
+          "titleOfClass": "COM",
+          "value": 236165,
+          "shares": 6542,
+          "weight": 0.000024947719561422366
+        },
+        {
+          "cusip": "Y7121Z146",
+          "issuer": "Hanjaya Mandala Sampoerna",
+          "titleOfClass": "COM",
+          "value": 216794,
+          "shares": 5000000,
+          "weight": 0.000022901428723981117
+        },
+        {
+          "cusip": "91529Y106",
+          "issuer": "Unum Group",
+          "titleOfClass": "COM",
+          "value": 206996,
+          "shares": 4050,
+          "weight": 0.00002186639916302663
+        },
+        {
+          "cusip": "142339100",
+          "issuer": "Carlisle Inc",
+          "titleOfClass": "COM",
+          "value": 202605,
+          "shares": 500,
+          "weight": 0.000021402547887036517
+        },
+        {
+          "cusip": "T2R765103",
+          "issuer": "Cir SPA",
+          "titleOfClass": "COM",
+          "value": 160220,
+          "shares": 251250,
+          "weight": 0.000016925131277416602
+        },
+        {
+          "cusip": "23857X103",
+          "issuer": "Davide Campari-Milano ADR",
+          "titleOfClass": "COM",
+          "value": 129091,
+          "shares": 13650,
+          "weight": 0.000013636762712102026
+        }
+      ],
+      "totalValue": 9466396294
+    }
+  ]
+}

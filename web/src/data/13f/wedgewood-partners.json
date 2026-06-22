@@ -1,0 +1,1338 @@
+{
+  "manager": {
+    "cik": "0000859804",
+    "slug": "wedgewood-partners",
+    "name": "WEDGEWOOD PARTNERS INC",
+    "person": "David Rolfe"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0000859804-26-000004",
+      "holdings": [
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 44773244,
+          "shares": 155701,
+          "weight": 0.09245215246209985
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MANUFAC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 43714939,
+          "shares": 129353,
+          "weight": 0.09026686128213973
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 37649078,
+          "shares": 65805,
+          "weight": 0.0777414810352694
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 34294145,
+          "shares": 135128,
+          "weight": 0.07081388880594311
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 29484333,
+          "shares": 67941,
+          "weight": 0.0608821207987369
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 27362706,
+          "shares": 73919,
+          "weight": 0.05650117884885925
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 25088996,
+          "shares": 83010,
+          "weight": 0.051806201116743146
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 23229839,
+          "shares": 5517,
+          "weight": 0.04796723277183206
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 22264162,
+          "shares": 113941,
+          "weight": 0.04597320890272972
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 20807631,
+          "shares": 99907,
+          "weight": 0.04296562191444326
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 20661063,
+          "shares": 456094,
+          "weight": 0.04266297404103778
+        },
+        {
+          "cusip": "911363109",
+          "issuer": "UNITED RENTALS INC",
+          "titleOfClass": "COM",
+          "value": 18353536,
+          "shares": 25192,
+          "weight": 0.037898167675557266
+        },
+        {
+          "cusip": "H1467J104",
+          "issuer": "CHUBB LTD SWITZ",
+          "titleOfClass": "COM",
+          "value": 17563173,
+          "shares": 53886,
+          "weight": 0.03626614921881103
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 17532222,
+          "shares": 144870,
+          "weight": 0.036202238581224566
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE CORP",
+          "titleOfClass": "COM",
+          "value": 16523700,
+          "shares": 83352,
+          "weight": 0.034119744185567596
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 16467827,
+          "shares": 178397,
+          "weight": 0.03400437217646067
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 15363267,
+          "shares": 462749,
+          "weight": 0.03172356917001474
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 13768529,
+          "shares": 32371,
+          "weight": 0.02843059891498689
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 13691198,
+          "shares": 170969,
+          "weight": 0.028270918338747057
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 13421666,
+          "shares": 113541,
+          "weight": 0.027714362428761737
+        },
+        {
+          "cusip": "889478103",
+          "issuer": "TOLL BROTHERS INC",
+          "titleOfClass": "COM",
+          "value": 12046889,
+          "shares": 88275,
+          "weight": 0.024875589057652237
+        },
+        {
+          "cusip": "464287614",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "RUS 1000 GRW ETF",
+          "value": 223434,
+          "shares": 524,
+          "weight": 0.00046136827238197925
+        }
+      ],
+      "totalValue": 484285577
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0000859804-26-000002",
+      "holdings": [
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 56116508,
+          "shares": 184661,
+          "weight": 0.1047944692072888
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 51304869,
+          "shares": 163913,
+          "weight": 0.09580899999345087
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 45635319,
+          "shares": 69135,
+          "weight": 0.08522142952498579
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 38854173,
+          "shares": 142920,
+          "weight": 0.07255801512138232
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 37478601,
+          "shares": 77496,
+          "weight": 0.06998921063346927
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 31153711,
+          "shares": 5817,
+          "weight": 0.058177829028176066
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 30564667,
+          "shares": 87151,
+          "weight": 0.05707782199780742
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 27493065,
+          "shares": 71724,
+          "weight": 0.051341775463941725
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 24055944,
+          "shares": 481023,
+          "weight": 0.04492314245142025
+        },
+        {
+          "cusip": "911363109",
+          "issuer": "UNITED RENTALS INC",
+          "titleOfClass": "COM",
+          "value": 21458648,
+          "shares": 26514,
+          "weight": 0.040072836090692766
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 20684818,
+          "shares": 151871,
+          "weight": 0.03862775144453702
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 19030228,
+          "shares": 486085,
+          "weight": 0.035537896302344496
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 18824014,
+          "shares": 120051,
+          "weight": 0.03515280308390845
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 17644469,
+          "shares": 33764,
+          "weight": 0.03295006815640528
+        },
+        {
+          "cusip": "H1467J104",
+          "issuer": "CHUBB LIMITED",
+          "titleOfClass": "COM",
+          "value": 17642895,
+          "shares": 56526,
+          "weight": 0.032947128798622494
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 17213698,
+          "shares": 188726,
+          "weight": 0.032145627183440724
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 15420191,
+          "shares": 180882,
+          "weight": 0.028796352241305036
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 13448958,
+          "shares": 58266,
+          "weight": 0.02511518384217921
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 13173480,
+          "shares": 104701,
+          "weight": 0.02460074394174411
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PAYPAL HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 12604246,
+          "shares": 215900,
+          "weight": 0.023537730988679714
+        },
+        {
+          "cusip": "464287614",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "RUS 1000 GRW ETF",
+          "value": 5688621,
+          "shares": 12019,
+          "weight": 0.010623184504218196
+        }
+      ],
+      "totalValue": 535491123
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0000859804-25-000009",
+      "holdings": [
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 52864505,
+          "shares": 189282,
+          "weight": 0.0964860705260882
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 51842742,
+          "shares": 70594,
+          "weight": 0.09462119168386793
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 50378126,
+          "shares": 207232,
+          "weight": 0.09194803617679116
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 42495326,
+          "shares": 166890,
+          "weight": 0.07756068124472383
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 41025625,
+          "shares": 79208,
+          "weight": 0.07487824480957207
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PAYPAL HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 32500696,
+          "shares": 484651,
+          "weight": 0.059318903040952574
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 31857356,
+          "shares": 5900,
+          "weight": 0.05814470593814695
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 30423956,
+          "shares": 89120,
+          "weight": 0.05552852456101885
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 27861167,
+          "shares": 489910,
+          "weight": 0.05085102989427634
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 26320370,
+          "shares": 57557,
+          "weight": 0.0480388320309201
+        },
+        {
+          "cusip": "911363109",
+          "issuer": "UNITED RENTALS INC",
+          "titleOfClass": "COM",
+          "value": 25704517,
+          "shares": 26925,
+          "weight": 0.04691480304414149
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 22350989,
+          "shares": 497020,
+          "weight": 0.04079408482084192
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 20663727,
+          "shares": 191668,
+          "weight": 0.037714565201241036
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 19197010,
+          "shares": 120524,
+          "weight": 0.035037575037352955
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 18658986,
+          "shares": 127522,
+          "weight": 0.034055596267122755
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 16900703,
+          "shares": 34724,
+          "weight": 0.030846452106162166
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 14364197,
+          "shares": 184701,
+          "weight": 0.02621692806529872
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 12465604,
+          "shares": 88547,
+          "weight": 0.02275169599515378
+        },
+        {
+          "cusip": "73278L105",
+          "issuer": "POOL CORP",
+          "titleOfClass": "COM",
+          "value": 10022190,
+          "shares": 32322,
+          "weight": 0.018292079556327178
+        }
+      ],
+      "totalValue": 547897792
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0000859804-25-000006",
+      "holdings": [
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 53049206,
+          "shares": 68330,
+          "weight": 0.10297025414248497
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 47202444,
+          "shares": 197500,
+          "weight": 0.09162149674448312
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 41032945,
+          "shares": 76605,
+          "weight": 0.07964629621157021
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 39262093,
+          "shares": 201303,
+          "weight": 0.0762090142192869
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 32913651,
+          "shares": 161857,
+          "weight": 0.06388647943622482
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PAYPAL HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 31681846,
+          "shares": 465841,
+          "weight": 0.06149550540536027
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 30968872,
+          "shares": 5655,
+          "weight": 0.06011159941481663
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 29289143,
+          "shares": 85603,
+          "weight": 0.05685119016344155
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 28129559,
+          "shares": 472766,
+          "weight": 0.054600399469617415
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 24458277,
+          "shares": 55591,
+          "weight": 0.047474320323989294
+        },
+        {
+          "cusip": "911363109",
+          "issuer": "UNITED RENTALS INC",
+          "titleOfClass": "COM",
+          "value": 22637730,
+          "shares": 26063,
+          "weight": 0.043940578701761455
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 21968510,
+          "shares": 480291,
+          "weight": 0.04264160066470594
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 19989385,
+          "shares": 116123,
+          "weight": 0.03880005392732884
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 18851188,
+          "shares": 33482,
+          "weight": 0.03659077610412798
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 18774738,
+          "shares": 185210,
+          "weight": 0.03644238413895525
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 18724701,
+          "shares": 123343,
+          "weight": 0.03634526067575907
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 14258743,
+          "shares": 178034,
+          "weight": 0.027676689269625986
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 12316851,
+          "shares": 85320,
+          "weight": 0.023907413010198872
+        },
+        {
+          "cusip": "73278L105",
+          "issuer": "POOL CORP",
+          "titleOfClass": "COM",
+          "value": 9679737,
+          "shares": 31244,
+          "weight": 0.018788687976261417
+        }
+      ],
+      "totalValue": 515189619
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0000859804-25-000004",
+      "holdings": [
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 46121612,
+          "shares": 236813,
+          "weight": 0.09290092838542718
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 45860270,
+          "shares": 69553,
+          "weight": 0.09237451759071982
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 40999889,
+          "shares": 247928,
+          "weight": 0.0825844454829433
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 35054147,
+          "shares": 165093,
+          "weight": 0.07060817388731419
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 34949393,
+          "shares": 77161,
+          "weight": 0.07039717207211123
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PAYPAL HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 34433967,
+          "shares": 473775,
+          "weight": 0.06935896998338138
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 31970169,
+          "shares": 89688,
+          "weight": 0.06439623967911191
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 30486365,
+          "shares": 488407,
+          "weight": 0.061407472305976506
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 30314781,
+          "shares": 5811,
+          "weight": 0.061061857480196234
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 24665742,
+          "shares": 480065,
+          "weight": 0.04968322293495343
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 23495755,
+          "shares": 56589,
+          "weight": 0.04732656466162853
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 21826401,
+          "shares": 115264,
+          "weight": 0.04396405130446473
+        },
+        {
+          "cusip": "911363109",
+          "issuer": "UNITED RENTALS INC",
+          "titleOfClass": "COM",
+          "value": 17711838,
+          "shares": 24829,
+          "weight": 0.035676250726281805
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 17452625,
+          "shares": 34091,
+          "weight": 0.035154128291585214
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 16694918,
+          "shares": 12593,
+          "weight": 0.033627909222222745
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 14722032,
+          "shares": 191818,
+          "weight": 0.029654003431622625
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 14138999,
+          "shares": 82371,
+          "weight": 0.02847962325212368
+        },
+        {
+          "cusip": "73278L105",
+          "issuer": "POOL CORP",
+          "titleOfClass": "COM",
+          "value": 9355845,
+          "shares": 30276,
+          "weight": 0.018845106418443416
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 3173119,
+          "shares": 10302,
+          "weight": 0.006391487378572941
+        },
+        {
+          "cusip": "464287614",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "RUS 1000 GRW ETF",
+          "value": 3032317,
+          "shares": 7588,
+          "weight": 0.006107875510919119
+        }
+      ],
+      "totalValue": 496460184
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0000859804-25-000002",
+      "holdings": [
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 46771149,
+          "shares": 236828,
+          "weight": 0.09208135800999027
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 46763659,
+          "shares": 247035,
+          "weight": 0.09206661196705054
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 46581181,
+          "shares": 79557,
+          "weight": 0.09170735583573449
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 41033180,
+          "shares": 163857,
+          "weight": 0.08078465076554722
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PAYPAL HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 40099905,
+          "shares": 469829,
+          "weight": 0.07894725247121039
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 38303600,
+          "shares": 121199,
+          "weight": 0.0754107517151538
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 28897558,
+          "shares": 5816,
+          "weight": 0.0568924741150246
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 28031170,
+          "shares": 488433,
+          "weight": 0.05518676054353292
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 28016781,
+          "shares": 55384,
+          "weight": 0.055158431997223194
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 27489780,
+          "shares": 65219,
+          "weight": 0.054120891359668556
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 26111596,
+          "shares": 56490,
+          "weight": 0.05140757220841913
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 25447390,
+          "shares": 479596,
+          "weight": 0.05009990729562463
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 25128447,
+          "shares": 339436,
+          "weight": 0.04947198377448598
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 15741469,
+          "shares": 90447,
+          "weight": 0.03099123869272837
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 11633995,
+          "shares": 23360,
+          "weight": 0.022904591432667966
+        },
+        {
+          "cusip": "73278L105",
+          "issuer": "POOL CORP",
+          "titleOfClass": "COM",
+          "value": 10163297,
+          "shares": 29810,
+          "weight": 0.02000913404156182
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 10126387,
+          "shares": 57406,
+          "weight": 0.019936466959464934
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 10036611,
+          "shares": 8464,
+          "weight": 0.019759719195652142
+        },
+        {
+          "cusip": "464287614",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "RUS 1000 GRW ETF",
+          "value": 1555721,
+          "shares": 3874,
+          "weight": 0.0030628476192590456
+        }
+      ],
+      "totalValue": 507932876
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0000859804-24-000009",
+      "holdings": [
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 48052112,
+          "shares": 82848,
+          "weight": 0.08723530963542013
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 46065743,
+          "shares": 257523,
+          "weight": 0.08362919311831053
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 45942988,
+          "shares": 246132,
+          "weight": 0.08340633984529944
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PAYPAL HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 43251977,
+          "shares": 495384,
+          "weight": 0.07852099416439946
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 39191977,
+          "shares": 126638,
+          "weight": 0.07115034296139292
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 38671585,
+          "shares": 171782,
+          "weight": 0.07020560702030056
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 35161684,
+          "shares": 58035,
+          "weight": 0.06383362277693012
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 30359684,
+          "shares": 6087,
+          "weight": 0.05511592152647755
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 29540766,
+          "shares": 509939,
+          "weight": 0.053629232131929834
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 29359680,
+          "shares": 59109,
+          "weight": 0.05330048293396243
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 28864152,
+          "shares": 67884,
+          "weight": 0.052400885877478834
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 27863011,
+          "shares": 99957,
+          "weight": 0.05058338313954061
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 23897776,
+          "shares": 359257,
+          "weight": 0.043384771286596346
+        },
+        {
+          "cusip": "88262P102",
+          "issuer": "TEXAS PACIFIC LAND CORPORATI",
+          "titleOfClass": "COM",
+          "value": 18024367,
+          "shares": 13191,
+          "weight": 0.03272200056945361
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 17829213,
+          "shares": 95851,
+          "weight": 0.03236771188352466
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 13609925,
+          "shares": 60328,
+          "weight": 0.024707884254699258
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 12441866,
+          "shares": 24382,
+          "weight": 0.022587353349888265
+        },
+        {
+          "cusip": "73278L105",
+          "issuer": "POOL CORP",
+          "titleOfClass": "COM",
+          "value": 11776260,
+          "shares": 33532,
+          "weight": 0.021378991363526594
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 10928517,
+          "shares": 8822,
+          "weight": 0.019839972160868864
+        }
+      ],
+      "totalValue": 550833283
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-13",
+      "accession": "0000859804-24-000006",
+      "holdings": [
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 43230593,
+          "shares": 83788,
+          "weight": 0.08821396358221663
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 42334088,
+          "shares": 260855,
+          "weight": 0.08638460492823576
+        },
+        {
+          "cusip": "874039100",
+          "issuer": "TAIWAN SEMICONDUCTOR MFG LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 41536659,
+          "shares": 247788,
+          "weight": 0.08475741529506547
+        },
+        {
+          "cusip": "37833100",
+          "issuer": "APPLE INC",
+          "titleOfClass": "COM",
+          "value": 37750102,
+          "shares": 173540,
+          "weight": 0.07703077593807152
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 33358890,
+          "shares": 128358,
+          "weight": 0.0680703109393658
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "COM",
+          "value": 33306692,
+          "shares": 58920,
+          "weight": 0.06796379857967957
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PAYPAL HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 31933834,
+          "shares": 503212,
+          "weight": 0.06516242026836298
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 28057884,
+          "shares": 68970,
+          "weight": 0.05725337048626788
+        },
+        {
+          "cusip": "892356106",
+          "issuer": "TRACTOR SUPPLY CO",
+          "titleOfClass": "COM",
+          "value": 26639491,
+          "shares": 101588,
+          "weight": 0.05435907596555031
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 25943157,
+          "shares": 516179,
+          "weight": 0.05293817521322755
+        },
+        {
+          "cusip": "620076307",
+          "issuer": "MOTOROLA SOLUTIONS INC",
+          "titleOfClass": "COM NEW",
+          "value": 24906460,
+          "shares": 60341,
+          "weight": 0.05082274849669388
+        },
+        {
+          "cusip": "2.8176e+112",
+          "issuer": "EDWARDS LIFESCIENCES CORP",
+          "titleOfClass": "COM",
+          "value": 23229146,
+          "shares": 354427,
+          "weight": 0.04740011406482426
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 21134466,
+          "shares": 6145,
+          "weight": 0.04312582559424053
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 20463267,
+          "shares": 96479,
+          "weight": 0.041756213936532754
+        },
+        {
+          "cusip": "78409V104",
+          "issuer": "S&P GLOBAL INC",
+          "titleOfClass": "COM",
+          "value": 11939219,
+          "shares": 24644,
+          "weight": 0.02436251175333424
+        },
+        {
+          "cusip": "73278L105",
+          "issuer": "POOL CORP",
+          "titleOfClass": "COM",
+          "value": 11615542,
+          "shares": 33759,
+          "weight": 0.023702034320364464
+        },
+        {
+          "cusip": "679580100",
+          "issuer": "OLD DOMINION FREIGHT LINE IN",
+          "titleOfClass": "COM",
+          "value": 11595327,
+          "shares": 60830,
+          "weight": 0.02366078470637433
+        },
+        {
+          "cusip": "88262P102",
+          "issuer": "TEXAS PACIFIC LAND CORPORATI",
+          "titleOfClass": "COM",
+          "value": 11127426,
+          "shares": 13363,
+          "weight": 0.02270601173404701
+        },
+        {
+          "cusip": "67103H107",
+          "issuer": "OREILLY AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 9962949,
+          "shares": 8887,
+          "weight": 0.02032984419754505
+        }
+      ],
+      "totalValue": 490065192
+    }
+  ]
+}

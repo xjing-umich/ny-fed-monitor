@@ -1,0 +1,370 @@
+{
+  "manager": {
+    "cik": "0001697591",
+    "slug": "cas-investment-partners",
+    "name": "CAS Investment Partners, LLC",
+    "person": "Clifford Sosin"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001697591-26-000003",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 1427691065,
+          "shares": 4541291,
+          "weight": 0.8167021999464704
+        },
+        {
+          "cusip": "43283X105",
+          "issuer": "HILTON GRAND VACATIONS INC",
+          "titleOfClass": "COM",
+          "value": 204984536,
+          "shares": 5239891,
+          "weight": 0.11726018717236034
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 104997222,
+          "shares": 575548,
+          "weight": 0.060063037654205634
+        },
+        {
+          "cusip": "14161W105",
+          "issuer": "CARDLYTICS INC",
+          "titleOfClass": "COM",
+          "value": 5457970,
+          "shares": 5198067,
+          "weight": 0.003122199343764778
+        },
+        {
+          "cusip": "51819L107",
+          "issuer": "LATHAM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 4986287,
+          "shares": 928545,
+          "weight": 0.002852375883198853
+        }
+      ],
+      "totalValue": 1748117080
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001697591-26-000002",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO CL A",
+          "titleOfClass": "COM",
+          "value": 1945596604,
+          "shares": 4610200,
+          "weight": 0.8324904127838861
+        },
+        {
+          "cusip": "43283x105",
+          "issuer": "HILTON GRAND VACATIONS",
+          "titleOfClass": "COM",
+          "value": 237952755,
+          "shares": 5317380,
+          "weight": 0.10181626901781585
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINANCIAL CORP",
+          "titleOfClass": "COM",
+          "value": 141568535,
+          "shares": 584125,
+          "weight": 0.060574966001205065
+        },
+        {
+          "cusip": "51819L107",
+          "issuer": "LATHAM GROUP",
+          "titleOfClass": "COM",
+          "value": 5984221,
+          "shares": 942397,
+          "weight": 0.002560554742045592
+        },
+        {
+          "cusip": "14161w105",
+          "issuer": "CARDLYTICS, INC.",
+          "titleOfClass": "COM",
+          "value": 5977777,
+          "shares": 5198067,
+          "weight": 0.0025577974550473775
+        }
+      ],
+      "totalValue": 2337079892
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001420506-25-003281",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 1844580620,
+          "shares": 4889674,
+          "weight": 0.8226457731729104
+        },
+        {
+          "cusip": "43283X105",
+          "issuer": "HILTON GRAND VACATIONS INC",
+          "titleOfClass": "COM",
+          "value": 235966275,
+          "shares": 5643776,
+          "weight": 0.10523620200460884
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 141465613,
+          "shares": 665470,
+          "weight": 0.06309081171185932
+        },
+        {
+          "cusip": "14161W105",
+          "issuer": "CARDLYTICS INC",
+          "titleOfClass": "COM",
+          "value": 12631303,
+          "shares": 5198067,
+          "weight": 0.00563330651420175
+        },
+        {
+          "cusip": "51819L107",
+          "issuer": "LATHAM GROUP INC",
+          "titleOfClass": "COM",
+          "value": 7610000,
+          "shares": 1000000,
+          "weight": 0.0033939065964196506
+        }
+      ],
+      "totalValue": 2242253811
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001420506-25-002046",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 1658607425,
+          "shares": 4922268,
+          "weight": 0.8081740126376761
+        },
+        {
+          "cusip": "43283X105",
+          "issuer": "HILTON GRAND VACATIONS INC",
+          "titleOfClass": "COM",
+          "value": 235051619,
+          "shares": 5659803,
+          "weight": 0.11453138774186558
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 149396030,
+          "shares": 702181,
+          "weight": 0.07279479593384712
+        },
+        {
+          "cusip": "14161W105",
+          "issuer": "CARDLYTICS INC",
+          "titleOfClass": "COM",
+          "value": 9234902,
+          "shares": 5613922,
+          "weight": 0.004499803686611194
+        }
+      ],
+      "totalValue": 2052289976
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001420506-25-001269",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 1188625863,
+          "shares": 5685029,
+          "weight": 0.7718954574917362
+        },
+        {
+          "cusip": "43283X105",
+          "issuer": "HILTON GRAND VACATIONS INC",
+          "titleOfClass": "COM",
+          "value": 213859540,
+          "shares": 5716641,
+          "weight": 0.13888071310397884
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 127176593,
+          "shares": 709295,
+          "weight": 0.08258867444479906
+        },
+        {
+          "cusip": "14161W105",
+          "issuer": "CARDLYTICS INC",
+          "titleOfClass": "COM",
+          "value": 10217338,
+          "shares": 5613922,
+          "weight": 0.006635154959485936
+        }
+      ],
+      "totalValue": 1539879334
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001420506-25-000470",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 1296988798,
+          "shares": 6377797,
+          "weight": 0.7552534203144645
+        },
+        {
+          "cusip": "43283X105",
+          "issuer": "HILTON GRAND VACATIONS INC",
+          "titleOfClass": "COM",
+          "value": 252876799,
+          "shares": 6492344,
+          "weight": 0.14725344402159082
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 143795286,
+          "shares": 806389,
+          "weight": 0.08373386242353392
+        },
+        {
+          "cusip": "14161W105",
+          "issuer": "CARDLYTICS INC",
+          "titleOfClass": "COM",
+          "value": 23628656,
+          "shares": 6368910,
+          "weight": 0.013759273240410742
+        }
+      ],
+      "totalValue": 1717289539
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001420506-24-002470",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 1123635251,
+          "shares": 6453594,
+          "weight": 0.7452168940805581
+        },
+        {
+          "cusip": "43283X105",
+          "issuer": "HILTON GRAND VACATIONS INC",
+          "titleOfClass": "COM",
+          "value": 231104559,
+          "shares": 6363011,
+          "weight": 0.15327306749460204
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 121505895,
+          "shares": 811500,
+          "weight": 0.08058508809134755
+        },
+        {
+          "cusip": "14161W105",
+          "issuer": "CARDLYTICS INC",
+          "titleOfClass": "COM",
+          "value": 20543146,
+          "shares": 6419733,
+          "weight": 0.013624616567644016
+        },
+        {
+          "cusip": "981419104",
+          "issuer": "WORLD ACCEP CORPORATION",
+          "titleOfClass": "COM",
+          "value": 11007416,
+          "shares": 93299,
+          "weight": 0.007300333765848221
+        }
+      ],
+      "totalValue": 1507796267
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001420506-24-001459",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 840656676,
+          "shares": 6530894,
+          "weight": 0.6565221896275386
+        },
+        {
+          "cusip": "43283X105",
+          "issuer": "HILTON GRAND VACATIONS INC",
+          "titleOfClass": "COM",
+          "value": 260638504,
+          "shares": 6446661,
+          "weight": 0.20354916130747053
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "CAPITAL ONE FINL CORP",
+          "titleOfClass": "COM",
+          "value": 94983899,
+          "shares": 686052,
+          "weight": 0.07417895929591235
+        },
+        {
+          "cusip": "14161W105",
+          "issuer": "CARDLYTICS INC",
+          "titleOfClass": "COM",
+          "value": 53076492,
+          "shares": 6464859,
+          "weight": 0.04145080356869555
+        },
+        {
+          "cusip": "981419104",
+          "issuer": "WORLD ACCEP CORPORATION",
+          "titleOfClass": "COM",
+          "value": 31113984,
+          "shares": 251772,
+          "weight": 0.024298886200382952
+        }
+      ],
+      "totalValue": 1280469555
+    }
+  ]
+}

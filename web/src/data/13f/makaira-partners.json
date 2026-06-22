@@ -1,0 +1,754 @@
+{
+  "manager": {
+    "cik": "0001540866",
+    "slug": "makaira-partners",
+    "name": "Makaira Partners LLC",
+    "person": "Tom Bancroft"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001540866-26-000002",
+      "holdings": [
+        {
+          "cusip": "0",
+          "issuer": "NONE",
+          "titleOfClass": "NONE",
+          "value": 0,
+          "shares": 0,
+          "weight": 0
+        }
+      ],
+      "totalValue": 0
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-11",
+      "accession": "0001420506-26-000298",
+      "holdings": [
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS INC N",
+          "titleOfClass": "CL A",
+          "value": 34235000,
+          "shares": 164000,
+          "weight": 0.2676759398337984
+        },
+        {
+          "cusip": "25754A201",
+          "issuer": "DOMINOS PIZZA INC",
+          "titleOfClass": "COM",
+          "value": 15422340,
+          "shares": 37000,
+          "weight": 0.1205838864885755
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "LAMAR ADVERTISING CO NEW",
+          "titleOfClass": "CL A",
+          "value": 15189600,
+          "shares": 120000,
+          "weight": 0.11876414358695674
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH & BODY WORKS INC",
+          "titleOfClass": "COM",
+          "value": 14745848,
+          "shares": 734355,
+          "weight": 0.11529454423970603
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW CORP",
+          "titleOfClass": "COM",
+          "value": 13620000,
+          "shares": 100000,
+          "weight": 0.10649178619939635
+        },
+        {
+          "cusip": "77347300",
+          "issuer": "BEL FUSE INC",
+          "titleOfClass": "CL B",
+          "value": 9329650,
+          "shares": 55000,
+          "weight": 0.07294648260757695
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTMT PLC",
+          "titleOfClass": "SHS",
+          "value": 8907387,
+          "shares": 41422,
+          "weight": 0.06964490102784746
+        },
+        {
+          "cusip": "53263P105",
+          "issuer": "LIMBACH HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 7959306,
+          "shares": 102239,
+          "weight": 0.062232064085724854
+        },
+        {
+          "cusip": "127203107",
+          "issuer": "CACTUS INC",
+          "titleOfClass": "CL A",
+          "value": 6453944,
+          "shares": 141286,
+          "weight": 0.05046196950006438
+        },
+        {
+          "cusip": "80517M109",
+          "issuer": "SAVERS VALUE VLG INC",
+          "titleOfClass": "COM",
+          "value": 1486087,
+          "shares": 159110,
+          "weight": 0.011619387597481814
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "CL A",
+          "value": 548026,
+          "shares": 2171,
+          "weight": 0.004284894832871541
+        }
+      ],
+      "totalValue": 127897188
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-17",
+      "accession": "0001540866-25-000008",
+      "holdings": [
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 45117220,
+          "shares": 164000,
+          "weight": 0.23169517422137048
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH AND BODY WORKS ORD",
+          "titleOfClass": "COM",
+          "value": 35291200,
+          "shares": 1370000,
+          "weight": 0.18123458698211525
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "LAMAR ADVERTISING CL A REIT",
+          "titleOfClass": "CL A",
+          "value": 20811400,
+          "shares": 170000,
+          "weight": 0.10687495702950292
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTERTAINMENT ORD",
+          "titleOfClass": "COM",
+          "value": 20681188,
+          "shares": 81422,
+          "weight": 0.10620626573988638
+        },
+        {
+          "cusip": "25754A201",
+          "issuer": "DOMINOS PIZZA ORD",
+          "titleOfClass": "COM",
+          "value": 15973270,
+          "shares": 37000,
+          "weight": 0.0820292024981812
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW ORD",
+          "titleOfClass": "COM",
+          "value": 15928000,
+          "shares": 100000,
+          "weight": 0.08179672273686164
+        },
+        {
+          "cusip": "77347300",
+          "issuer": "BEL FUSE CL B ORD",
+          "titleOfClass": "CL B",
+          "value": 14102000,
+          "shares": 100000,
+          "weight": 0.0724194741358126
+        },
+        {
+          "cusip": "127203107",
+          "issuer": "CACTUS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 10396753,
+          "shares": 263409,
+          "weight": 0.05339153205076812
+        },
+        {
+          "cusip": "80517M109",
+          "issuer": "SAVERS VALUE VILLAGE ORD",
+          "titleOfClass": "COM",
+          "value": 10335000,
+          "shares": 780000,
+          "weight": 0.053074405417219056
+        },
+        {
+          "cusip": "53263P105",
+          "issuer": "LIMBACH HOLDINGS ORD",
+          "titleOfClass": "COM",
+          "value": 5073452,
+          "shares": 52239,
+          "weight": 0.02605422818701508
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 551629,
+          "shares": 2171,
+          "weight": 0.0028328380441117688
+        },
+        {
+          "cusip": "77347201",
+          "issuer": "BEL FUSE CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 465516,
+          "shares": 4001,
+          "weight": 0.0023906129571555053
+        }
+      ],
+      "totalValue": 194726628
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001540866-25-000007",
+      "holdings": [
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 81828227,
+          "shares": 200162,
+          "weight": 0.2489165333204509
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH AND BODY WORKS ORD",
+          "titleOfClass": "COM",
+          "value": 55097608,
+          "shares": 1839039,
+          "weight": 0.1676036018427864
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTERTAINMENT ORD",
+          "titleOfClass": "COM",
+          "value": 30411151,
+          "shares": 106422,
+          "weight": 0.09250888793184733
+        },
+        {
+          "cusip": "25754A201",
+          "issuer": "DOMINOS PIZZA ORD",
+          "titleOfClass": "COM",
+          "value": 29272778,
+          "shares": 64964,
+          "weight": 0.08904602589543047
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW ORD",
+          "titleOfClass": "COM",
+          "value": 27735920,
+          "shares": 155305,
+          "weight": 0.08437099651265034
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "LAMAR ADVERTISING CL A REIT",
+          "titleOfClass": "CL A",
+          "value": 27216194,
+          "shares": 224260,
+          "weight": 0.08279002135359546
+        },
+        {
+          "cusip": "77347300",
+          "issuer": "BEL FUSE CL B ORD",
+          "titleOfClass": "CL B",
+          "value": 24031642,
+          "shares": 245999,
+          "weight": 0.07310280615805287
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX ORD",
+          "titleOfClass": "COM",
+          "value": 18294764,
+          "shares": 272203,
+          "weight": 0.05565156914368664
+        },
+        {
+          "cusip": "127203107",
+          "issuer": "CACTUS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 15609352,
+          "shares": 357030,
+          "weight": 0.047482707736275984
+        },
+        {
+          "cusip": "80517M109",
+          "issuer": "SAVERS VALUE VILLAGE ORD",
+          "titleOfClass": "COM",
+          "value": 11000057,
+          "shares": 1078437,
+          "weight": 0.033461510228828
+        },
+        {
+          "cusip": "53263P105",
+          "issuer": "LIMBACH HOLDINGS ORD",
+          "titleOfClass": "COM",
+          "value": 7318684,
+          "shares": 52239,
+          "weight": 0.02226299550334692
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 561746,
+          "shares": 2171,
+          "weight": 0.0017087974657770603
+        },
+        {
+          "cusip": "77347201",
+          "issuer": "BEL FUSE CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 359490,
+          "shares": 4001,
+          "weight": 0.0010935469072716056
+        }
+      ],
+      "totalValue": 328737613
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-14",
+      "accession": "0001540866-25-000005",
+      "holdings": [
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 73765702,
+          "shares": 200162,
+          "weight": 0.24734553719983635
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH AND BODY WORKS ORD",
+          "titleOfClass": "COM",
+          "value": 49695662,
+          "shares": 1639039,
+          "weight": 0.1666357111858231
+        },
+        {
+          "cusip": "25754A201",
+          "issuer": "DOMINOS PIZZA ORD",
+          "titleOfClass": "COM",
+          "value": 29847710,
+          "shares": 64964,
+          "weight": 0.10008306928516626
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "LAMAR ADVERTISING CL A REIT",
+          "titleOfClass": "CL A",
+          "value": 25516303,
+          "shares": 224260,
+          "weight": 0.08555932502192952
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW ORD",
+          "titleOfClass": "COM",
+          "value": 24889179,
+          "shares": 155305,
+          "weight": 0.0834565005592692
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTERTAINMENT ORD",
+          "titleOfClass": "COM",
+          "value": 23577794,
+          "shares": 106422,
+          "weight": 0.0790592641945857
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX ORD",
+          "titleOfClass": "COM",
+          "value": 21210058,
+          "shares": 272203,
+          "weight": 0.07111995206186321
+        },
+        {
+          "cusip": "77347300",
+          "issuer": "BEL FUSE CL B ORD",
+          "titleOfClass": "CL B",
+          "value": 18415485,
+          "shares": 245999,
+          "weight": 0.06174940258984492
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE ORD",
+          "titleOfClass": "COM",
+          "value": 12260842,
+          "shares": 43323,
+          "weight": 0.041112122148750326
+        },
+        {
+          "cusip": "127203107",
+          "issuer": "CACTUS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 10863085,
+          "shares": 237030,
+          "weight": 0.03642526976795373
+        },
+        {
+          "cusip": "80517M109",
+          "issuer": "SAVERS VALUE VILLAGE ORD",
+          "titleOfClass": "COM",
+          "value": 7441215,
+          "shares": 1078437,
+          "weight": 0.024951315742843202
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 458016,
+          "shares": 2171,
+          "weight": 0.0015357843888765574
+        },
+        {
+          "cusip": "77347201",
+          "issuer": "BEL FUSE CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 288312,
+          "shares": 4001,
+          "weight": 0.0009667458532579168
+        }
+      ],
+      "totalValue": 298229363
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001540866-25-000002",
+      "holdings": [
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 127918679,
+          "shares": 373191,
+          "weight": 0.218091343159192
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH AND BODY WORKS ORD",
+          "titleOfClass": "COM",
+          "value": 87717358,
+          "shares": 2262506,
+          "weight": 0.1495512350045117
+        },
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE ORD",
+          "titleOfClass": "COM",
+          "value": 78889915,
+          "shares": 329243,
+          "weight": 0.1345011350849276
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW ORD",
+          "titleOfClass": "COM",
+          "value": 66622164,
+          "shares": 382798,
+          "weight": 0.11358557909226039
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "LAMAR ADVERTISING CL A REIT",
+          "titleOfClass": "CL A",
+          "value": 64581000,
+          "shares": 530483,
+          "weight": 0.11010555411195092
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTERTAINMENT ORD",
+          "titleOfClass": "COM",
+          "value": 51285526,
+          "shares": 198435,
+          "weight": 0.08743781078262748
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX ORD",
+          "titleOfClass": "COM",
+          "value": 45735236,
+          "shares": 559384,
+          "weight": 0.07797500042149928
+        },
+        {
+          "cusip": "127203107",
+          "issuer": "CACTUS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 25793019,
+          "shares": 441964,
+          "weight": 0.04397508011977328
+        },
+        {
+          "cusip": "80517M109",
+          "issuer": "SAVERS VALUE VILLAGE ORD",
+          "titleOfClass": "COM",
+          "value": 21052783,
+          "shares": 2053930,
+          "weight": 0.035893348474220904
+        },
+        {
+          "cusip": "530307305",
+          "issuer": "LIBERTY BROADBAND SRS C ORD",
+          "titleOfClass": "COM SER C",
+          "value": 12535832,
+          "shares": 1244270,
+          "weight": 0.021372613131018812
+        },
+        {
+          "cusip": "25754A201",
+          "issuer": "DOMINOS PIZZA ORD",
+          "titleOfClass": "COM",
+          "value": 3572577,
+          "shares": 138439,
+          "weight": 0.0060909643733081135
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 833080,
+          "shares": 4477,
+          "weight": 0.0014203362447094976
+        }
+      ],
+      "totalValue": 586537169
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001540866-24-000006",
+      "holdings": [
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE ORD",
+          "titleOfClass": "COM",
+          "value": 153170297,
+          "shares": 603603,
+          "weight": 0.196957024374365
+        },
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 116241338,
+          "shares": 358681,
+          "weight": 0.1494711996398022
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "LAMAR ADVERTISING CL A REIT",
+          "titleOfClass": "CL A",
+          "value": 96044773,
+          "shares": 718898,
+          "weight": 0.12350105123052253
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW ORD",
+          "titleOfClass": "COM",
+          "value": 87025928,
+          "shares": 384560,
+          "weight": 0.11190399286290953
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH AND BODY WORKS ORD",
+          "titleOfClass": "COM",
+          "value": 73502376,
+          "shares": 2302706,
+          "weight": 0.09451446882946071
+        },
+        {
+          "cusip": "25754A201",
+          "issuer": "DOMINOS PIZZA ORD",
+          "titleOfClass": "COM",
+          "value": 68447748,
+          "shares": 159129,
+          "weight": 0.08801487648226204
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX ORD",
+          "titleOfClass": "COM",
+          "value": 52164489,
+          "shares": 674134,
+          "weight": 0.0670767291875741
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTERTAINMENT ORD",
+          "titleOfClass": "COM",
+          "value": 47294650,
+          "shares": 199320,
+          "weight": 0.060814751392869994
+        },
+        {
+          "cusip": "530307305",
+          "issuer": "LIBERTY BROADBAND SRS C ORD",
+          "titleOfClass": "COM SER C",
+          "value": 30090234,
+          "shares": 389316,
+          "weight": 0.0386921163400783
+        },
+        {
+          "cusip": "127203107",
+          "issuer": "CACTUS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 28699719,
+          "shares": 480974,
+          "weight": 0.036904095411007955
+        },
+        {
+          "cusip": "80517M109",
+          "issuer": "SAVERS VALUE VILLAGE ORD",
+          "titleOfClass": "COM",
+          "value": 24090064,
+          "shares": 2289930,
+          "weight": 0.03097668030524229
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 912234,
+          "shares": 4477,
+          "weight": 0.0011730139439053544
+        }
+      ],
+      "totalValue": 777683850
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-15",
+      "accession": "0001540866-24-000004",
+      "holdings": [
+        {
+          "cusip": "743315103",
+          "issuer": "PROGRESSIVE ORD",
+          "titleOfClass": "COM",
+          "value": 151094693,
+          "shares": 727431,
+          "weight": 0.19597973670597105
+        },
+        {
+          "cusip": "16119P108",
+          "issuer": "CHARTER COMMUNICATIONS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 111443020,
+          "shares": 372769,
+          "weight": 0.14454891355660165
+        },
+        {
+          "cusip": "512816109",
+          "issuer": "LAMAR ADVERTISING CL A REIT",
+          "titleOfClass": "CL A",
+          "value": 107740876,
+          "shares": 901371,
+          "weight": 0.13974698973014674
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH AND BODY WORKS ORD",
+          "titleOfClass": "COM",
+          "value": 94553835,
+          "shares": 2421353,
+          "weight": 0.12264253177866301
+        },
+        {
+          "cusip": "12514G108",
+          "issuer": "CDW ORD",
+          "titleOfClass": "COM",
+          "value": 90520448,
+          "shares": 404398,
+          "weight": 0.11741096403396871
+        },
+        {
+          "cusip": "25754A201",
+          "issuer": "DOMINOS PIZZA ORD",
+          "titleOfClass": "COM",
+          "value": 86396983,
+          "shares": 167329,
+          "weight": 0.11206255920934469
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX ORD",
+          "titleOfClass": "COM",
+          "value": 51720395,
+          "shares": 705214,
+          "weight": 0.06708474793637406
+        },
+        {
+          "cusip": "80517M109",
+          "issuer": "SAVERS VALUE VILLAGE ORD",
+          "titleOfClass": "COM",
+          "value": 27417600,
+          "shares": 2240000,
+          "weight": 0.03556242725950429
+        },
+        {
+          "cusip": "127203107",
+          "issuer": "CACTUS CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 26347902,
+          "shares": 499581,
+          "weight": 0.03417495872416067
+        },
+        {
+          "cusip": "530307305",
+          "issuer": "LIBERTY BROADBAND SRS C ORD",
+          "titleOfClass": "COM SER C",
+          "value": 22911197,
+          "shares": 417935,
+          "weight": 0.029717326707686776
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CL A ORD",
+          "titleOfClass": "CL A",
+          "value": 824048,
+          "shares": 4642,
+          "weight": 0.0010688443575783435
+        }
+      ],
+      "totalValue": 770970997
+    }
+  ]
+}

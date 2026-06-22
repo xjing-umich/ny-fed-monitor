@@ -1,0 +1,802 @@
+{
+  "manager": {
+    "cik": "0001766596",
+    "slug": "rv-capital",
+    "name": "RV Capital AG",
+    "person": "Robert Vinall"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-11",
+      "accession": "0001766596-26-000005",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 118818309,
+          "shares": 377298,
+          "weight": 0.31053176978092006
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 83313117,
+          "shares": 145534,
+          "weight": 0.21773891486685654
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 52697453,
+          "shares": 124160,
+          "weight": 0.1377248462864158
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 51111227,
+          "shares": 757919,
+          "weight": 0.13357924304396845
+        },
+        {
+          "cusip": "44332N106",
+          "issuer": "H WORLD GROUP LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 28080930,
+          "shares": 558380,
+          "weight": 0.07338953872836325
+        },
+        {
+          "cusip": "98850P109",
+          "issuer": "YUM CHINA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 20562673,
+          "shares": 421539,
+          "weight": 0.053740566515858595
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 9407607,
+          "shares": 25220,
+          "weight": 0.024586790333073767
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 9351451,
+          "shares": 32520,
+          "weight": 0.02444002657073292
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 2895439,
+          "shares": 15511,
+          "weight": 0.007567232731469839
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 2817063,
+          "shares": 5001,
+          "weight": 0.00736239697683585
+        },
+        {
+          "cusip": "70432V102",
+          "issuer": "PAYCOM SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 2676998,
+          "shares": 21395,
+          "weight": 0.006996336958809802
+        },
+        {
+          "cusip": "617700109",
+          "issuer": "MORNINGSTAR INC",
+          "titleOfClass": "COM",
+          "value": 653790,
+          "shares": 3700,
+          "weight": 0.001708680820942063
+        },
+        {
+          "cusip": "L8681T102",
+          "issuer": "SPOTIFY TECHNOLOGY S A",
+          "titleOfClass": "SHS",
+          "value": 242455,
+          "shares": 500,
+          "weight": 0.0006336563857530826
+        }
+      ],
+      "totalValue": 382628512
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-01-30",
+      "accession": "0001172661-26-000401",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 128042134,
+          "shares": 303403,
+          "weight": 0.2980963730163675
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 89977528,
+          "shares": 136311,
+          "weight": 0.2094777235576115
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 57840931,
+          "shares": 130431,
+          "weight": 0.13466014041120225
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 48391860,
+          "shares": 752478,
+          "weight": 0.11266164893437212
+        },
+        {
+          "cusip": "M98068105",
+          "issuer": "WIX COM LTD",
+          "titleOfClass": "SHS",
+          "value": 32724934,
+          "shares": 314996,
+          "weight": 0.0761872973204274
+        },
+        {
+          "cusip": "44332N106",
+          "issuer": "H WORLD GROUP LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 28390723,
+          "shares": 603416,
+          "weight": 0.06609677056469836
+        },
+        {
+          "cusip": "98850P109",
+          "issuer": "YUM CHINA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 21211885,
+          "shares": 444321,
+          "weight": 0.049383634791187486
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 10178760,
+          "shares": 32520,
+          "weight": 0.023697288876832374
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 5561630,
+          "shares": 11500,
+          "weight": 0.012948095125148568
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 2908712,
+          "shares": 10980,
+          "weight": 0.006771806047446727
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 2328316,
+          "shares": 5001,
+          "weight": 0.005420579407368957
+        },
+        {
+          "cusip": "70432V102",
+          "issuer": "PAYCOM SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 1975267,
+          "shares": 12395,
+          "weight": 0.004598641947336813
+        }
+      ],
+      "totalValue": 429532680
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-10-22",
+      "accession": "0001172661-25-004353",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 167967996,
+          "shares": 445255,
+          "weight": 0.3075003396603929
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 102601699,
+          "shares": 139712,
+          "weight": 0.18783374240074519
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 60902147,
+          "shares": 130431,
+          "weight": 0.11149404252311958
+        },
+        {
+          "cusip": "M98068105",
+          "issuer": "WIX COM LTD",
+          "titleOfClass": "SHS",
+          "value": 55952739,
+          "shares": 314996,
+          "weight": 0.10243312212541557
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 54997562,
+          "shares": 799267,
+          "weight": 0.10068447203176442
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 39813833,
+          "shares": 301232,
+          "weight": 0.07288749917979709
+        },
+        {
+          "cusip": "44332N106",
+          "issuer": "H WORLD GROUP LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 23599600,
+          "shares": 603416,
+          "weight": 0.04320397449910285
+        },
+        {
+          "cusip": "98850P109",
+          "issuer": "YUM CHINA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 19070257,
+          "shares": 444321,
+          "weight": 0.034912070421504494
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 7905612,
+          "shares": 32520,
+          "weight": 0.014472866457389169
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 5956425,
+          "shares": 11500,
+          "weight": 0.010904474389642989
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 2602260,
+          "shares": 10980,
+          "weight": 0.00476397797759434
+        },
+        {
+          "cusip": "70432V102",
+          "issuer": "PAYCOM SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 2579895,
+          "shares": 12395,
+          "weight": 0.004723034195086482
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 2286757,
+          "shares": 5001,
+          "weight": 0.004186384138444928
+        }
+      ],
+      "totalValue": 546236782
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-07-08",
+      "accession": "0001172661-25-002493",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 171968210,
+          "shares": 510352,
+          "weight": 0.3183372286193157
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 105538013,
+          "shares": 142988,
+          "weight": 0.1953656351508765
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 65680300,
+          "shares": 128929,
+          "weight": 0.1215834291517324
+        },
+        {
+          "cusip": "M98068105",
+          "issuer": "WIX COM LTD",
+          "titleOfClass": "SHS",
+          "value": 53559480,
+          "shares": 338000,
+          "weight": 0.09914609467349614
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 47094067,
+          "shares": 849920,
+          "weight": 0.08717771018953079
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 35120652,
+          "shares": 335569,
+          "weight": 0.06501324299987438
+        },
+        {
+          "cusip": "44332N106",
+          "issuer": "H WORLD GROUP LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 22375396,
+          "shares": 659652,
+          "weight": 0.04141999007781567
+        },
+        {
+          "cusip": "98850P109",
+          "issuer": "YUM CHINA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 22009168,
+          "shares": 492265,
+          "weight": 0.04074205078564769
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 5731000,
+          "shares": 32520,
+          "weight": 0.010608883218690815
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 5720215,
+          "shares": 11500,
+          "weight": 0.010588918674019104
+        },
+        {
+          "cusip": "70432V102",
+          "issuer": "PAYCOM SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 2868203,
+          "shares": 12395,
+          "weight": 0.005309445240708192
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 2542958,
+          "shares": 5001,
+          "weight": 0.0047073712182927165
+        }
+      ],
+      "totalValue": 540207662
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-04-14",
+      "accession": "0001172661-25-001492",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 114474227,
+          "shares": 547514,
+          "weight": 0.25270573733094914
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 82412564,
+          "shares": 142988,
+          "weight": 0.18192852921342753
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 66572489,
+          "shares": 128929,
+          "weight": 0.14696102659598217
+        },
+        {
+          "cusip": "M98068105",
+          "issuer": "WIX COM LTD",
+          "titleOfClass": "SHS",
+          "value": 55222440,
+          "shares": 338000,
+          "weight": 0.12190540860707536
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 39714591,
+          "shares": 335569,
+          "weight": 0.08767130614869385
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 35184563,
+          "shares": 212480,
+          "weight": 0.07767111574889457
+        },
+        {
+          "cusip": "98850P109",
+          "issuer": "YUM CHINA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 25627316,
+          "shares": 492265,
+          "weight": 0.05657316895962294
+        },
+        {
+          "cusip": "44332N106",
+          "issuer": "H WORLD GROUP LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 24413721,
+          "shares": 659652,
+          "weight": 0.05389411685039879
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 4316985,
+          "shares": 11500,
+          "weight": 0.009529890754114001
+        },
+        {
+          "cusip": "70432V102",
+          "issuer": "PAYCOM SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 2708060,
+          "shares": 12395,
+          "weight": 0.005978134266296029
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 2347219,
+          "shares": 5001,
+          "weight": 0.0051815655245456525
+        }
+      ],
+      "totalValue": 452994175
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-01-22",
+      "accession": "0001172661-25-000291",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 111342447,
+          "shares": 547514,
+          "weight": 0.23862964585892749
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 87582342,
+          "shares": 149583,
+          "weight": 0.18770687925473267
+        },
+        {
+          "cusip": "M98068105",
+          "issuer": "WIX COM LTD",
+          "titleOfClass": "SHS",
+          "value": 77190799,
+          "shares": 359780,
+          "weight": 0.165435676377201
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 61775302,
+          "shares": 131588,
+          "weight": 0.13239711211922883
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 40146896,
+          "shares": 224347,
+          "weight": 0.08604301264202674
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 33508978,
+          "shares": 345489,
+          "weight": 0.07181659617409515
+        },
+        {
+          "cusip": "98850P109",
+          "issuer": "YUM CHINA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 25179856,
+          "shares": 522729,
+          "weight": 0.05396558349448517
+        },
+        {
+          "cusip": "44332N106",
+          "issuer": "H WORLD GROUP LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 20357611,
+          "shares": 616337,
+          "weight": 0.043630525773012754
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 4847250,
+          "shares": 11500,
+          "weight": 0.010388648552781368
+        },
+        {
+          "cusip": "70432V102",
+          "issuer": "PAYCOM SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 2540603,
+          "shares": 12395,
+          "weight": 0.005445032065427202
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 2118924,
+          "shares": 5001,
+          "weight": 0.004541287688081636
+        }
+      ],
+      "totalValue": 466591008
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-12",
+      "accession": "0001172661-24-004554",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 132624984,
+          "shares": 761731,
+          "weight": 0.27353690475080417
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 85627293,
+          "shares": 149583,
+          "weight": 0.17660492000067046
+        },
+        {
+          "cusip": "M98068105",
+          "issuer": "WIX COM LTD",
+          "titleOfClass": "SHS",
+          "value": 66246128,
+          "shares": 396280,
+          "weight": 0.13663157768860187
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 59501643,
+          "shares": 134188,
+          "weight": 0.12272118542768197
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 43974630,
+          "shares": 315547,
+          "weight": 0.09069696986928086
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 43056831,
+          "shares": 319389,
+          "weight": 0.08880402413559177
+        },
+        {
+          "cusip": "98850P109",
+          "issuer": "YUM CHINA HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 24825334,
+          "shares": 551429,
+          "weight": 0.051201853655001385
+        },
+        {
+          "cusip": "44332N106",
+          "issuer": "H WORLD GROUP LTD",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 22927736,
+          "shares": 616337,
+          "weight": 0.04728808818090854
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 2087067,
+          "shares": 5001,
+          "weight": 0.004304542251160962
+        },
+        {
+          "cusip": "70432V102",
+          "issuer": "PAYCOM SOFTWARE INC",
+          "titleOfClass": "COM",
+          "value": 2064635,
+          "shares": 12395,
+          "weight": 0.0042582766105380004
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 1915970,
+          "shares": 7000,
+          "weight": 0.003951657429759978
+        }
+      ],
+      "totalValue": 484852251
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-07",
+      "accession": "0001172661-24-003132",
+      "holdings": [
+        {
+          "cusip": "146869102",
+          "issuer": "CARVANA CO",
+          "titleOfClass": "CL A",
+          "value": 105502902,
+          "shares": 819631,
+          "weight": 0.253842783502668
+        },
+        {
+          "cusip": "30303M102",
+          "issuer": "META PLATFORMS INC",
+          "titleOfClass": "CL A",
+          "value": 92314110,
+          "shares": 183083,
+          "weight": 0.22211019976466126
+        },
+        {
+          "cusip": "225310101",
+          "issuer": "CREDIT ACCEP CORP MICH",
+          "titleOfClass": "COM",
+          "value": 70865260,
+          "shares": 137688,
+          "weight": 0.17050369715934713
+        },
+        {
+          "cusip": "M98068105",
+          "issuer": "WIX COM LTD",
+          "titleOfClass": "SHS",
+          "value": 63036260,
+          "shares": 396280,
+          "weight": 0.1516669152854003
+        },
+        {
+          "cusip": "722304102",
+          "issuer": "PDD HOLDINGS INC",
+          "titleOfClass": "SPONSORED ADS",
+          "value": 42236753,
+          "shares": 317689,
+          "weight": 0.10162274917930374
+        },
+        {
+          "cusip": "45841N107",
+          "issuer": "INTERACTIVE BROKERS GROUP IN",
+          "titleOfClass": "COM CL A",
+          "value": 37999502,
+          "shares": 309947,
+          "weight": 0.09142781076671426
+        },
+        {
+          "cusip": "244199105",
+          "issuer": "DEERE & CO",
+          "titleOfClass": "COM",
+          "value": 1868524,
+          "shares": 5001,
+          "weight": 0.0044957183566527795
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 1799700,
+          "shares": 7000,
+          "weight": 0.004330125985252535
+        }
+      ],
+      "totalValue": 415623011
+    }
+  ]
+}

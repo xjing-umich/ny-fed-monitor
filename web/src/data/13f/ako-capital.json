@@ -1,0 +1,1682 @@
+{
+  "manager": {
+    "cik": "0001376879",
+    "slug": "ako-capital",
+    "name": "AKO CAPITAL LLP",
+    "person": "Nicolai Tangen"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001376879-26-000003",
+      "holdings": [
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON AG",
+          "titleOfClass": "ORD SHS",
+          "value": 695604000,
+          "shares": 9324656,
+          "weight": 0.13616911652865496
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 360551000,
+          "shares": 1731170,
+          "weight": 0.07058025993744009
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 358738000,
+          "shares": 1186931,
+          "weight": 0.07022535311075931
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 327532000,
+          "shares": 1029523,
+          "weight": 0.06411657074264009
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 310801000,
+          "shares": 926523,
+          "weight": 0.060841366044793434
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE IN",
+          "titleOfClass": "COM",
+          "value": 293728000,
+          "shares": 1867549,
+          "weight": 0.05749921256883049
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GE AEROSPACE",
+          "titleOfClass": "COM NEW",
+          "value": 282875000,
+          "shares": 996847,
+          "weight": 0.05537466552527483
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 272154000,
+          "shares": 735214,
+          "weight": 0.053275958360992116
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WATERS CORP",
+          "titleOfClass": "COM",
+          "value": 243281000,
+          "shares": 816929,
+          "weight": 0.0476238762833562
+        },
+        {
+          "cusip": "17275R102",
+          "issuer": "CISCO SYS INC",
+          "titleOfClass": "COM",
+          "value": 236156000,
+          "shares": 3043637,
+          "weight": 0.04622911007260027
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 222847000,
+          "shares": 510824,
+          "weight": 0.04362378466923878
+        },
+        {
+          "cusip": "13646K108",
+          "issuer": "CANADIAN PACIFIC KANSAS CITY",
+          "titleOfClass": "COM",
+          "value": 216142000,
+          "shares": 2747795,
+          "weight": 0.04231123625616952
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 210192000,
+          "shares": 49923,
+          "weight": 0.04114648412227509
+        },
+        {
+          "cusip": "866966104",
+          "issuer": "SUNBELT RENTALS HOLDINGS INC",
+          "titleOfClass": "SHS",
+          "value": 207330000,
+          "shares": 3185284,
+          "weight": 0.04058622855803882
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 135804000,
+          "shares": 127212,
+          "weight": 0.026584537611999727
+        },
+        {
+          "cusip": "969457100",
+          "issuer": "WILLIAMS COS INC",
+          "titleOfClass": "COM",
+          "value": 129251000,
+          "shares": 1775909,
+          "weight": 0.02530174421142659
+        },
+        {
+          "cusip": "863667101",
+          "issuer": "STRYKER CORPORATION",
+          "titleOfClass": "COM",
+          "value": 82109000,
+          "shares": 249883,
+          "weight": 0.016073383691081893
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 77743000,
+          "shares": 155592,
+          "weight": 0.015218710108462893
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 72708000,
+          "shares": 403774,
+          "weight": 0.014233075319528703
+        },
+        {
+          "cusip": "9158106",
+          "issuer": "AIR PRODUCTS AND CHEMICALS I",
+          "titleOfClass": "COM",
+          "value": 67788000,
+          "shares": 233356,
+          "weight": 0.013269952546627769
+        },
+        {
+          "cusip": "142339100",
+          "issuer": "CARLISLE COS INC",
+          "titleOfClass": "COM",
+          "value": 67183000,
+          "shares": 201377,
+          "weight": 0.013151519766626738
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "SHS",
+          "value": 66745000,
+          "shares": 134631,
+          "weight": 0.013065778349039216
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 66231000,
+          "shares": 354805,
+          "weight": 0.012965159425203631
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTMT PLC",
+          "titleOfClass": "SHS",
+          "value": 49652000,
+          "shares": 487027,
+          "weight": 0.0097197097398531
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS INC",
+          "titleOfClass": "COM",
+          "value": 45362000,
+          "shares": 261527,
+          "weight": 0.008879913663482163
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 9099000,
+          "shares": 274058,
+          "weight": 0.0017811898598832547
+        },
+        {
+          "cusip": "759530108",
+          "issuer": "RELX PLC",
+          "titleOfClass": "SPONSORED ADR",
+          "value": 777000,
+          "shares": 23447,
+          "weight": 0.00015210292572033067
+        }
+      ],
+      "totalValue": 5108383000
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001376879-26-000002",
+      "holdings": [
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTMT PLC",
+          "titleOfClass": "SHS",
+          "value": 669888000,
+          "shares": 3109426,
+          "weight": 0.10198649625273982
+        },
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON AG",
+          "titleOfClass": "ORD SHS",
+          "value": 609351000,
+          "shares": 7686700,
+          "weight": 0.09277009511754691
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 504309000,
+          "shares": 1437967,
+          "weight": 0.0767780702725276
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 493638000,
+          "shares": 1020715,
+          "weight": 0.07515347347199827
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 401074000,
+          "shares": 1737603,
+          "weight": 0.06106115051780502
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 376276000,
+          "shares": 736568,
+          "weight": 0.05728580130409252
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 351539000,
+          "shares": 944867,
+          "weight": 0.053519738980533915
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GE AEROSPACE",
+          "titleOfClass": "COM NEW",
+          "value": 341725000,
+          "shares": 1109389,
+          "weight": 0.052025615374461875
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 338460000,
+          "shares": 1248009,
+          "weight": 0.05152853838507679
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE IN",
+          "titleOfClass": "COM",
+          "value": 337555000,
+          "shares": 2084185,
+          "weight": 0.051390757473777096
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WATERS CORP",
+          "titleOfClass": "COM",
+          "value": 286185000,
+          "shares": 753455,
+          "weight": 0.04356997801138451
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS INC",
+          "titleOfClass": "COM",
+          "value": 275471000,
+          "shares": 1484860,
+          "weight": 0.04193883471451719
+        },
+        {
+          "cusip": "17275R102",
+          "issuer": "CISCO SYS INC",
+          "titleOfClass": "COM",
+          "value": 239849000,
+          "shares": 3113706,
+          "weight": 0.036515595352840165
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 235297000,
+          "shares": 6010134,
+          "weight": 0.035822580205617835
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 229213000,
+          "shares": 42801,
+          "weight": 0.03489632709584177
+        },
+        {
+          "cusip": "13646K108",
+          "issuer": "CANADIAN PACIFIC KANSAS CITY",
+          "titleOfClass": "COM",
+          "value": 217750000,
+          "shares": 2957361,
+          "weight": 0.033151152967412605
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 190677000,
+          "shares": 112785,
+          "weight": 0.02902944842418982
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 166197000,
+          "shares": 765955,
+          "weight": 0.025302512834558314
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 158236000,
+          "shares": 238876,
+          "weight": 0.024090497547423657
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 82813000,
+          "shares": 312608,
+          "weight": 0.012607790726476878
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "CL A",
+          "value": 57150000,
+          "shares": 100109,
+          "weight": 0.008700750365500024
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "SHS",
+          "value": 5746000,
+          "shares": 13476,
+          "weight": 0.0008747946036773953
+        }
+      ],
+      "totalValue": 6568399000
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-13",
+      "accession": "0001376879-25-000008",
+      "holdings": [
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTMT PLC",
+          "titleOfClass": "SHS",
+          "value": 796701000,
+          "shares": 3120116,
+          "weight": 0.11326832959208524
+        },
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON AG",
+          "titleOfClass": "ORD SHS",
+          "value": 593771000,
+          "shares": 7974364,
+          "weight": 0.08441742803162297
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 553686000,
+          "shares": 1068996,
+          "weight": 0.07871847573747656
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 541038000,
+          "shares": 1584857,
+          "weight": 0.07692028817064697
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 460572000,
+          "shares": 674425,
+          "weight": 0.06548030076137207
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GE AEROSPACE",
+          "titleOfClass": "COM NEW",
+          "value": 397346000,
+          "shares": 1320876,
+          "weight": 0.05649135333091926
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 396990000,
+          "shares": 1808033,
+          "weight": 0.056440740208386735
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 365528000,
+          "shares": 767143,
+          "weight": 0.0519677344187289
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS INC",
+          "titleOfClass": "COM",
+          "value": 362704000,
+          "shares": 1799753,
+          "weight": 0.0515662415590889
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE IN",
+          "titleOfClass": "COM",
+          "value": 351112000,
+          "shares": 2084001,
+          "weight": 0.0499181872995468
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 348890000,
+          "shares": 64618,
+          "weight": 0.04960228179879606
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 306220000,
+          "shares": 632960,
+          "weight": 0.04353581567951884
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 300527000,
+          "shares": 1223147,
+          "weight": 0.042726432234076024
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 248560000,
+          "shares": 5527245,
+          "weight": 0.03533819588956046
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WATERS CORP",
+          "titleOfClass": "COM",
+          "value": 241931000,
+          "shares": 806948,
+          "weight": 0.03439573973993101
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 240714000,
+          "shares": 938348,
+          "weight": 0.03422271679014989
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 185040000,
+          "shares": 123646,
+          "weight": 0.02630744998151057
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 100040000,
+          "shares": 683704,
+          "weight": 0.014222856118408548
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 77292000,
+          "shares": 326128,
+          "weight": 0.010988734457257432
+        },
+        {
+          "cusip": "13646K108",
+          "issuer": "CANADIAN PACIFIC KANSAS CITY",
+          "titleOfClass": "COM",
+          "value": 59559000,
+          "shares": 799560,
+          "weight": 0.008467603834029334
+        },
+        {
+          "cusip": "127387108",
+          "issuer": "CADENCE DESIGN SYSTEM INC",
+          "titleOfClass": "COM",
+          "value": 59281000,
+          "shares": 168767,
+          "weight": 0.008428080103512366
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "SHS",
+          "value": 37565000,
+          "shares": 79085,
+          "weight": 0.005340679629028559
+        },
+        {
+          "cusip": "99502106",
+          "issuer": "BOOZ ALLEN HAMILTON HLDG COR",
+          "titleOfClass": "CL A",
+          "value": 8682000,
+          "shares": 86866,
+          "weight": 0.0012343346343464915
+        }
+      ],
+      "totalValue": 7033749000
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-13",
+      "accession": "0001376879-25-000006",
+      "holdings": [
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTMT PLC",
+          "titleOfClass": "SHS",
+          "value": 847503000,
+          "shares": 2973210,
+          "weight": 0.10695774382682473
+        },
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON AG",
+          "titleOfClass": "ORD SHS",
+          "value": 681452000,
+          "shares": 7713406,
+          "weight": 0.08600154624382139
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 632983000,
+          "shares": 1272557,
+          "weight": 0.07988459458047346
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 583480000,
+          "shares": 1643373,
+          "weight": 0.07363714862139213
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 532267000,
+          "shares": 675783,
+          "weight": 0.06717389488116564
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GE AEROSPACE",
+          "titleOfClass": "COM NEW",
+          "value": 530997000,
+          "shares": 2063006,
+          "weight": 0.06701361658756659
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 415093000,
+          "shares": 827554,
+          "weight": 0.05238613994087119
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE IN",
+          "titleOfClass": "COM",
+          "value": 402103000,
+          "shares": 2191657,
+          "weight": 0.050746758024452665
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 400077000,
+          "shares": 69107,
+          "weight": 0.05049106997497892
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS INC",
+          "titleOfClass": "COM",
+          "value": 389660000,
+          "shares": 1782200,
+          "weight": 0.049176409357324424
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 320452000,
+          "shares": 1460648,
+          "weight": 0.04044212577984224
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 316595000,
+          "shares": 646106,
+          "weight": 0.03995535934014815
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 301807000,
+          "shares": 1267990,
+          "weight": 0.03808906374507523
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 280177000,
+          "shares": 153273,
+          "weight": 0.03535928461866008
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WATERS CORP",
+          "titleOfClass": "COM",
+          "value": 274815000,
+          "shares": 787346,
+          "weight": 0.03468258209088208
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 262082000,
+          "shares": 5340975,
+          "weight": 0.03307563444332572
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 236499000,
+          "shares": 911820,
+          "weight": 0.029846973352660962
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 235629000,
+          "shares": 1510926,
+          "weight": 0.02973717641137658
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 127961000,
+          "shares": 469254,
+          "weight": 0.016149110808839993
+        },
+        {
+          "cusip": "452327109",
+          "issuer": "ILLUMINA INC",
+          "titleOfClass": "COM",
+          "value": 50945000,
+          "shares": 533954,
+          "weight": 0.006429431234175674
+        },
+        {
+          "cusip": "127387108",
+          "issuer": "CADENCE DESIGN SYSTEM INC",
+          "titleOfClass": "COM",
+          "value": 40616000,
+          "shares": 131807,
+          "weight": 0.005125876514030408
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "SHS",
+          "value": 38451000,
+          "shares": 81953,
+          "weight": 0.00485264619462732
+        },
+        {
+          "cusip": "883556102",
+          "issuer": "THERMO FISHER SCIENTIFIC INC",
+          "titleOfClass": "COM",
+          "value": 10715000,
+          "shares": 26427,
+          "weight": 0.0013522692251289104
+        },
+        {
+          "cusip": "99502106",
+          "issuer": "BOOZ ALLEN HAMILTON HLDG COR",
+          "titleOfClass": "CL A",
+          "value": 9375000,
+          "shares": 90033,
+          "weight": 0.001183156694874805
+        },
+        {
+          "cusip": "136375102",
+          "issuer": "CANADIAN NATL RY CO",
+          "titleOfClass": "COM",
+          "value": 1984000,
+          "shares": 19073,
+          "weight": 0.0002503875074807054
+        }
+      ],
+      "totalValue": 7923718000
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-14",
+      "accession": "0001376879-25-000005",
+      "holdings": [
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON AG",
+          "titleOfClass": "ORD SHS",
+          "value": 672562000,
+          "shares": 7115571,
+          "weight": 0.08726390154477251
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 622407000,
+          "shares": 1775973,
+          "weight": 0.0807563662067991
+        },
+        {
+          "cusip": "G3643J108",
+          "issuer": "FLUTTER ENTMT PLC",
+          "titleOfClass": "SHS",
+          "value": 571764000,
+          "shares": 2590673,
+          "weight": 0.07418551360743739
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS INC",
+          "titleOfClass": "COM",
+          "value": 517766000,
+          "shares": 2121730,
+          "weight": 0.067179354836031
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GE AEROSPACE",
+          "titleOfClass": "COM NEW",
+          "value": 493623000,
+          "shares": 2466267,
+          "weight": 0.06404683712763319
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 469507000,
+          "shares": 1250718,
+          "weight": 0.06091782262836958
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE IN",
+          "titleOfClass": "COM",
+          "value": 393719000,
+          "shares": 2282427,
+          "weight": 0.051084444337185696
+        },
+        {
+          "cusip": "G1151C101",
+          "issuer": "ACCENTURE PLC IRELAND",
+          "titleOfClass": "SHS CLASS A",
+          "value": 386505000,
+          "shares": 1238638,
+          "weight": 0.050148438755924805
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 385002000,
+          "shares": 826734,
+          "weight": 0.04995342678078825
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 341262000,
+          "shares": 555811,
+          "weight": 0.04427822798340102
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 331937000,
+          "shares": 72052,
+          "weight": 0.043068323347241075
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WATERS CORP",
+          "titleOfClass": "COM",
+          "value": 327001000,
+          "shares": 887215,
+          "weight": 0.04242788481811662
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 287542000,
+          "shares": 5081145,
+          "weight": 0.037308139291228136
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 277841000,
+          "shares": 150660,
+          "weight": 0.036049449224162436
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 273576000,
+          "shares": 1437908,
+          "weight": 0.035496071929446926
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 250920000,
+          "shares": 1523960,
+          "weight": 0.032556490220402454
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 250847000,
+          "shares": 1243847,
+          "weight": 0.0325470185808915
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 248670000,
+          "shares": 585118,
+          "weight": 0.032264556125886655
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 185813000,
+          "shares": 762905,
+          "weight": 0.0241089555130067
+        },
+        {
+          "cusip": "883556102",
+          "issuer": "THERMO FISHER SCIENTIFIC INC",
+          "titleOfClass": "COM",
+          "value": 165624000,
+          "shares": 332845,
+          "weight": 0.021489463320038007
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "COM",
+          "value": 96585000,
+          "shares": 359908,
+          "weight": 0.012531757563915077
+        },
+        {
+          "cusip": "452327109",
+          "issuer": "ILLUMINA INC",
+          "titleOfClass": "COM",
+          "value": 70590000,
+          "shares": 889714,
+          "weight": 0.009158945658609157
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "SHS",
+          "value": 39575000,
+          "shares": 84991,
+          "weight": 0.005134796351316862
+        },
+        {
+          "cusip": "127387108",
+          "issuer": "CADENCE DESIGN SYSTEM INC",
+          "titleOfClass": "COM",
+          "value": 34947000,
+          "shares": 137409,
+          "weight": 0.004534320356019467
+        },
+        {
+          "cusip": "99502106",
+          "issuer": "BOOZ ALLEN HAMILTON HLDG COR",
+          "titleOfClass": "CL A",
+          "value": 9775000,
+          "shares": 93472,
+          "weight": 0.001268291455063104
+        },
+        {
+          "cusip": "136375102",
+          "issuer": "CANADIAN NATL RY CO",
+          "titleOfClass": "COM",
+          "value": 1859000,
+          "shares": 19073,
+          "weight": 0.0002412024363132798
+        }
+      ],
+      "totalValue": 7707219000
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-12",
+      "accession": "0001376879-25-000002",
+      "holdings": [
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 555328000,
+          "shares": 1757145,
+          "weight": 0.07673737904419314
+        },
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON AG",
+          "titleOfClass": "ORD SHS",
+          "value": 498585000,
+          "shares": 5876280,
+          "weight": 0.06889641100529603
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 481663000,
+          "shares": 1142735,
+          "weight": 0.06655806334736084
+        },
+        {
+          "cusip": "G1151C101",
+          "issuer": "ACCENTURE PLC IRELAND",
+          "titleOfClass": "SHS CLASS A",
+          "value": 461360000,
+          "shares": 1311465,
+          "weight": 0.06375251598303876
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GE AEROSPACE",
+          "titleOfClass": "COM NEW",
+          "value": 449175000,
+          "shares": 2693057,
+          "weight": 0.06206874537602183
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS INC",
+          "titleOfClass": "COM",
+          "value": 438165000,
+          "shares": 2062828,
+          "weight": 0.060547340830822305
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE IN",
+          "titleOfClass": "COM",
+          "value": 388269000,
+          "shares": 2605657,
+          "weight": 0.05365251783470278
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 373630000,
+          "shares": 594479,
+          "weight": 0.05162964398028171
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HOLDINGS INC",
+          "titleOfClass": "COM",
+          "value": 360061000,
+          "shares": 72470,
+          "weight": 0.04975462688002626
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 309294000,
+          "shares": 653387,
+          "weight": 0.04273944572233828
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 308970000,
+          "shares": 1408315,
+          "weight": 0.0426946741444414
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WATERS CORP",
+          "titleOfClass": "COM",
+          "value": 302489000,
+          "shares": 815379,
+          "weight": 0.041799104402621405
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 295856000,
+          "shares": 148602,
+          "weight": 0.04088253071067694
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 264138000,
+          "shares": 619722,
+          "weight": 0.03649961432878423
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 252026000,
+          "shares": 4391462,
+          "weight": 0.03482593114518234
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 247988000,
+          "shares": 1167224,
+          "weight": 0.03426794462806012
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 245362000,
+          "shares": 1505938,
+          "weight": 0.033905073752883555
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "PROCTER AND GAMBLE CO",
+          "titleOfClass": "COM",
+          "value": 196557000,
+          "shares": 1172423,
+          "weight": 0.027161009372460007
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 185084000,
+          "shares": 726246,
+          "weight": 0.025575625689710304
+        },
+        {
+          "cusip": "883556102",
+          "issuer": "THERMO FISHER SCIENTIFIC INC",
+          "titleOfClass": "COM",
+          "value": 163240000,
+          "shares": 313784,
+          "weight": 0.022557136962613245
+        },
+        {
+          "cusip": "934550203",
+          "issuer": "WARNER MUSIC GROUP CORP",
+          "titleOfClass": "COM CL A",
+          "value": 134044000,
+          "shares": 4323994,
+          "weight": 0.018522720332127724
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 125344000,
+          "shares": 208903,
+          "weight": 0.017320520555267057
+        },
+        {
+          "cusip": "127387108",
+          "issuer": "CADENCE DESIGN SYSTEM INC",
+          "titleOfClass": "COM",
+          "value": 67286000,
+          "shares": 223944,
+          "weight": 0.009297840711016876
+        },
+        {
+          "cusip": "452327109",
+          "issuer": "ILLUMINA INC",
+          "titleOfClass": "COM",
+          "value": 66185000,
+          "shares": 495286,
+          "weight": 0.009145700256496922
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "SHS",
+          "value": 53616000,
+          "shares": 128062,
+          "weight": 0.007408867038639254
+        },
+        {
+          "cusip": "99502106",
+          "issuer": "BOOZ ALLEN HAMILTON HLDG COR",
+          "titleOfClass": "CL A",
+          "value": 11903000,
+          "shares": 92490,
+          "weight": 0.001644802752180749
+        },
+        {
+          "cusip": "136375102",
+          "issuer": "CANADIAN NATL RY CO",
+          "titleOfClass": "COM",
+          "value": 1116000,
+          "shares": 10992,
+          "weight": 0.00015421321275592
+        }
+      ],
+      "totalValue": 7236734000
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-13",
+      "accession": "0001376879-24-000006",
+      "holdings": [
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON INC",
+          "titleOfClass": "ORD SHS",
+          "value": 615634000,
+          "shares": 6157815,
+          "weight": 0.08023212337131985
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 544441000,
+          "shares": 1265260,
+          "weight": 0.07095393932174758
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GENERAL ELECTRIC CO",
+          "titleOfClass": "COM NEW",
+          "value": 499406000,
+          "shares": 2648246,
+          "weight": 0.06508478057478528
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 492374000,
+          "shares": 1790775,
+          "weight": 0.06416833948877132
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE INC",
+          "titleOfClass": "COM",
+          "value": 478641000,
+          "shares": 2979588,
+          "weight": 0.06237859468868176
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS INC",
+          "titleOfClass": "COM",
+          "value": 440209000,
+          "shares": 1973234,
+          "weight": 0.05736996786591601
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 431803000,
+          "shares": 222176,
+          "weight": 0.05627446107282253
+        },
+        {
+          "cusip": "G1151C101",
+          "issuer": "ACCENTURE PLC IRELAND",
+          "titleOfClass": "SHS CLASS A",
+          "value": 415420000,
+          "shares": 1175229,
+          "weight": 0.054139356648452965
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 340852000,
+          "shares": 548876,
+          "weight": 0.04442132779437314
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 324363000,
+          "shares": 683460,
+          "weight": 0.04227240898503237
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 318348000,
+          "shares": 75579,
+          "weight": 0.04148850780011002
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 304375000,
+          "shares": 649656,
+          "weight": 0.03966748514725548
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 291534000,
+          "shares": 1492138,
+          "weight": 0.037993989699942436
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WATERS CORP",
+          "titleOfClass": "COM",
+          "value": 284388000,
+          "shares": 790207,
+          "weight": 0.03706269163386511
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 277311000,
+          "shares": 1488281,
+          "weight": 0.0361403859504577
+        },
+        {
+          "cusip": "883556102",
+          "issuer": "THERMO FISHER SCIENTIFIC INC",
+          "titleOfClass": "COM",
+          "value": 261948000,
+          "shares": 423473,
+          "weight": 0.03413821240033931
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 258777000,
+          "shares": 1124286,
+          "weight": 0.03372495377068199
+        },
+        {
+          "cusip": "934550203",
+          "issuer": "WARNER MUSIC GROUP CORP",
+          "titleOfClass": "COM CL A",
+          "value": 214785000,
+          "shares": 6862125,
+          "weight": 0.02799172335886084
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 189990000,
+          "shares": 3625764,
+          "weight": 0.024760330195078666
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "PROCTER AND GAMBLE CO",
+          "titleOfClass": "COM",
+          "value": 183250000,
+          "shares": 1058026,
+          "weight": 0.02388194382992876
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "SHS",
+          "value": 168622000,
+          "shares": 353609,
+          "weight": 0.021975558703903122
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 161568000,
+          "shares": 549812,
+          "weight": 0.021056250481385704
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 120140000,
+          "shares": 206096,
+          "weight": 0.015657171796603774
+        },
+        {
+          "cusip": "127387108",
+          "issuer": "CADENCE DESIGN SYSTEM INC",
+          "titleOfClass": "COM",
+          "value": 53821000,
+          "shares": 198578,
+          "weight": 0.007014188806933675
+        },
+        {
+          "cusip": "136375102",
+          "issuer": "CANADIAN NATL RY CO",
+          "titleOfClass": "COM",
+          "value": 1161000,
+          "shares": 9911,
+          "weight": 0.00015130661275059913
+        }
+      ],
+      "totalValue": 7673161000
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-13",
+      "accession": "0001376879-24-000005",
+      "holdings": [
+        {
+          "cusip": "H01301128",
+          "issuer": "ALCON INC",
+          "titleOfClass": "ORD SHS",
+          "value": 568071000,
+          "shares": 6371303,
+          "weight": 0.07807556247580201
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 541302000,
+          "shares": 1211103,
+          "weight": 0.07439643657091556
+        },
+        {
+          "cusip": "303250104",
+          "issuer": "FAIR ISAAC CORP",
+          "titleOfClass": "COM",
+          "value": 472996000,
+          "shares": 317733,
+          "weight": 0.06500847385063566
+        },
+        {
+          "cusip": "369604301",
+          "issuer": "GENERAL ELECTRIC CO",
+          "titleOfClass": "COM NEW",
+          "value": 452919000,
+          "shares": 2849084,
+          "weight": 0.06224909506202177
+        },
+        {
+          "cusip": "461202103",
+          "issuer": "INTUIT",
+          "titleOfClass": "COM",
+          "value": 390716000,
+          "shares": 594507,
+          "weight": 0.05369992741804362
+        },
+        {
+          "cusip": "G1151C101",
+          "issuer": "ACCENTURE PLC IRELAND",
+          "titleOfClass": "SHS CLASS A",
+          "value": 370141000,
+          "shares": 1219936,
+          "weight": 0.050872103610914536
+        },
+        {
+          "cusip": "45866F104",
+          "issuer": "INTERCONTINENTAL EXCHANGE INC",
+          "titleOfClass": "COM",
+          "value": 365604000,
+          "shares": 2670788,
+          "weight": 0.05024853925548588
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "COM CL A",
+          "value": 349073000,
+          "shares": 1329954,
+          "weight": 0.04797652198425132
+        },
+        {
+          "cusip": "09857L108",
+          "issuer": "BOOKING HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 341501000,
+          "shares": 86205,
+          "weight": 0.04693582784730933
+        },
+        {
+          "cusip": "615369105",
+          "issuer": "MOODYS CORP",
+          "titleOfClass": "COM",
+          "value": 314342000,
+          "shares": 746780,
+          "weight": 0.04320310042189894
+        },
+        {
+          "cusip": "571748102",
+          "issuer": "MARSH & MCLENNAN COS",
+          "titleOfClass": "COM",
+          "value": 313337000,
+          "shares": 1486981,
+          "weight": 0.0430649734267026
+        },
+        {
+          "cusip": "883556102",
+          "issuer": "THERMO FISHER SCIENTIFIC INC",
+          "titleOfClass": "COM",
+          "value": 289909000,
+          "shares": 524248,
+          "weight": 0.03984503388097137
+        },
+        {
+          "cusip": "N3167Y103",
+          "issuer": "FERRARI N V",
+          "titleOfClass": "COM",
+          "value": 275450000,
+          "shares": 675090,
+          "weight": 0.03785779186749484
+        },
+        {
+          "cusip": "98978V103",
+          "issuer": "ZOETIS INC",
+          "titleOfClass": "CL A",
+          "value": 259206000,
+          "shares": 1495188,
+          "weight": 0.03562521981777407
+        },
+        {
+          "cusip": "941848103",
+          "issuer": "WARTERS CORP",
+          "titleOfClass": "COM",
+          "value": 254915000,
+          "shares": 878652,
+          "weight": 0.03503546565221437
+        },
+        {
+          "cusip": "934550203",
+          "issuer": "WARNER MUSIC GROUP CORP",
+          "titleOfClass": "COM CL A",
+          "value": 228766000,
+          "shares": 7463807,
+          "weight": 0.03144155242098139
+        },
+        {
+          "cusip": "55354G100",
+          "issuer": "MSCI INC",
+          "titleOfClass": "COM",
+          "value": 222415000,
+          "shares": 461682,
+          "weight": 0.030568672275218246
+        },
+        {
+          "cusip": "32654105",
+          "issuer": "ANALOG DEVICES INC",
+          "titleOfClass": "COM",
+          "value": 212035000,
+          "shares": 928920,
+          "weight": 0.02914204719050379
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 181076000,
+          "shares": 937004,
+          "weight": 0.02488704853947539
+        },
+        {
+          "cusip": "742718109",
+          "issuer": "PROCTER AND GAMBLE CO",
+          "titleOfClass": "COM",
+          "value": 174961000,
+          "shares": 1060884,
+          "weight": 0.02404660418561904
+        },
+        {
+          "cusip": "294429105",
+          "issuer": "EQUIFAX INC",
+          "titleOfClass": "COM",
+          "value": 168744000,
+          "shares": 695966,
+          "weight": 0.023192140972548736
+        },
+        {
+          "cusip": "G54950103",
+          "issuer": "LINDE PLC",
+          "titleOfClass": "COM",
+          "value": 155576000,
+          "shares": 354541,
+          "weight": 0.021382333735986123
+        },
+        {
+          "cusip": "518439104",
+          "issuer": "LAUDER ESTEE COS INC",
+          "titleOfClass": "CL A",
+          "value": 150011000,
+          "shares": 1409881,
+          "weight": 0.02061748127004817
+        },
+        {
+          "cusip": "217204106",
+          "issuer": "COPART INC",
+          "titleOfClass": "COM",
+          "value": 128332000,
+          "shares": 2369500,
+          "weight": 0.017637923927897432
+        },
+        {
+          "cusip": "127387108",
+          "issuer": "CADENCE DESIGN SYSTEM INC",
+          "titleOfClass": "COM",
+          "value": 93374000,
+          "shares": 303409,
+          "weight": 0.012833303531804187
+        },
+        {
+          "cusip": "136375102",
+          "issuer": "CANADIAN NATL RY CO",
+          "titleOfClass": "COM",
+          "value": 1141000,
+          "shares": 9658,
+          "weight": 0.00015681880748161776
+        }
+      ],
+      "totalValue": 7275913000
+    }
+  ]
+}

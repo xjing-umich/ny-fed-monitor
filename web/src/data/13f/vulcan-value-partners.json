@@ -1,0 +1,2682 @@
+{
+  "manager": {
+    "cik": "0001556785",
+    "slug": "vulcan-value-partners",
+    "name": "Vulcan Value Partners, LLC",
+    "person": "C.T. Fitzpatrick"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-11",
+      "accession": "0001556785-26-000008",
+      "holdings": [
+        {
+          "cusip": "G3223R108",
+          "issuer": "EVEREST GROUP LTD",
+          "titleOfClass": "Equity",
+          "value": 445125711,
+          "shares": 1361865,
+          "weight": 0.1179986135505151
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 410515198,
+          "shares": 1108991,
+          "weight": 0.10882369408990439
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 332371428,
+          "shares": 1595868,
+          "weight": 0.08810852017443865
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 246960458,
+          "shares": 912674,
+          "weight": 0.06546688031193106
+        },
+        {
+          "cusip": "78351F107",
+          "issuer": "RYAN SPECIALTY HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 222526615,
+          "shares": 6595335,
+          "weight": 0.058989699761668575
+        },
+        {
+          "cusip": "89400J107",
+          "issuer": "TRANSUNION",
+          "titleOfClass": "Equity",
+          "value": 221920381,
+          "shares": 3207405,
+          "weight": 0.05882899286534826
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 213512883,
+          "shares": 184228,
+          "weight": 0.056600244709686845
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 194076854,
+          "shares": 676556,
+          "weight": 0.051447937354141604
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 193268577,
+          "shares": 639454,
+          "weight": 0.051233670770549966
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 191459219,
+          "shares": 383179,
+          "weight": 0.05075402708756232
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 184507302,
+          "shares": 1691176,
+          "weight": 0.04891113968014798
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 97511223,
+          "shares": 203068,
+          "weight": 0.025849302422378158
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 91678744,
+          "shares": 2204876,
+          "weight": 0.024303167434991425
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC FORMERLY",
+          "titleOfClass": "Equity",
+          "value": 86879710,
+          "shares": 296771,
+          "weight": 0.023030988937124824
+        },
+        {
+          "cusip": "872657101",
+          "issuer": "TPG INC",
+          "titleOfClass": "Equity",
+          "value": 80453913,
+          "shares": 1986026,
+          "weight": 0.021327570962787548
+        },
+        {
+          "cusip": "653656108",
+          "issuer": "NICE LTD",
+          "titleOfClass": "Equity",
+          "value": 63103011,
+          "shares": 572311,
+          "weight": 0.016728011042397198
+        },
+        {
+          "cusip": "337738108",
+          "issuer": "FISERV INC",
+          "titleOfClass": "Equity",
+          "value": 61081972,
+          "shares": 1094659,
+          "weight": 0.01619225272954719
+        },
+        {
+          "cusip": "81762P102",
+          "issuer": "SERVICENOW INC",
+          "titleOfClass": "Equity",
+          "value": 55810567,
+          "shares": 533817,
+          "weight": 0.014794853149851258
+        },
+        {
+          "cusip": "46266C105",
+          "issuer": "IQVIA HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 42311145,
+          "shares": 248101,
+          "weight": 0.01121628412908013
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 37670277,
+          "shares": 178456,
+          "weight": 0.009986033941013705
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 36737216,
+          "shares": 196803,
+          "weight": 0.009738688299912202
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 33337952,
+          "shares": 109549,
+          "weight": 0.008837575582358625
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 27291208,
+          "shares": 255321,
+          "weight": 0.007234640971163146
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 26505664,
+          "shares": 78107,
+          "weight": 0.007026400690738352
+        },
+        {
+          "cusip": "G3922B107",
+          "issuer": "GENPACT LIMITED",
+          "titleOfClass": "Equity",
+          "value": 26459142,
+          "shares": 710313,
+          "weight": 0.0070140681487980885
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 24278999,
+          "shares": 630296,
+          "weight": 0.006436132871224647
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 24203098,
+          "shares": 493840,
+          "weight": 0.006416012234411786
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 20806126,
+          "shares": 268813,
+          "weight": 0.005515507104367927
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 19153851,
+          "shares": 1324609,
+          "weight": 0.005077504638129401
+        },
+        {
+          "cusip": "85423L103",
+          "issuer": "STANDARDAERO INC",
+          "titleOfClass": "Equity",
+          "value": 18549315,
+          "shares": 716983,
+          "weight": 0.004917247865540108
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 16247546,
+          "shares": 566314,
+          "weight": 0.004307070686371152
+        },
+        {
+          "cusip": "34964C106",
+          "issuer": "FORTUNE BRANDS INNOVATIONS I",
+          "titleOfClass": "Equity",
+          "value": 13388664,
+          "shares": 343563,
+          "weight": 0.0035492081231265783
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 12592142,
+          "shares": 1195835,
+          "weight": 0.0033380576787918016
+        }
+      ],
+      "totalValue": 3772296111
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-09",
+      "accession": "0001556785-26-000004",
+      "holdings": [
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 551996000,
+          "shares": 1141578,
+          "weight": 0.10137976658241556
+        },
+        {
+          "cusip": "G3223R108",
+          "issuer": "EVEREST GROUP LTD",
+          "titleOfClass": "Equity",
+          "value": 512288000,
+          "shares": 1509740,
+          "weight": 0.09408698226612602
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 411064000,
+          "shares": 1549871,
+          "weight": 0.07549614919389645
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 406173000,
+          "shares": 1759935,
+          "weight": 0.07459786652816229
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 357665000,
+          "shares": 1083267,
+          "weight": 0.06568887132279883
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 320028000,
+          "shares": 240620,
+          "weight": 0.05877644754642657
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 301527000,
+          "shares": 4485021,
+          "weight": 0.055378547812476926
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 292437000,
+          "shares": 931879,
+          "weight": 0.05370907542819487
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 274344000,
+          "shares": 1696856,
+          "weight": 0.050386109108193196
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 256409000,
+          "shares": 449194,
+          "weight": 0.04709216112006353
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 255183000,
+          "shares": 727685,
+          "weight": 0.046866993557563005
+        },
+        {
+          "cusip": "78351F107",
+          "issuer": "RYAN SPECIALTY HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 238536000,
+          "shares": 4621079,
+          "weight": 0.04380960007228871
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "Equity",
+          "value": 135424000,
+          "shares": 386214,
+          "weight": 0.02487201630022146
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 113210000,
+          "shares": 2928832,
+          "weight": 0.020792185767279592
+        },
+        {
+          "cusip": "872657101",
+          "issuer": "TPG INC",
+          "titleOfClass": "Equity",
+          "value": 110024000,
+          "shares": 1721916,
+          "weight": 0.020207043961303503
+        },
+        {
+          "cusip": "337738108",
+          "issuer": "FISERV INC",
+          "titleOfClass": "Equity",
+          "value": 96507000,
+          "shares": 1437643,
+          "weight": 0.017724507303620275
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 93291000,
+          "shares": 1103354,
+          "weight": 0.017133855687795074
+        },
+        {
+          "cusip": "89400J107",
+          "issuer": "TRANSUNION",
+          "titleOfClass": "Equity",
+          "value": 91043000,
+          "shares": 1062584,
+          "weight": 0.016720987269768003
+        },
+        {
+          "cusip": "854502101",
+          "issuer": "STANLEY BLACK & DECKER INC",
+          "titleOfClass": "Equity",
+          "value": 78777000,
+          "shares": 1059558,
+          "weight": 0.014468209682792901
+        },
+        {
+          "cusip": "46266C105",
+          "issuer": "IQVIA HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 72852000,
+          "shares": 323201,
+          "weight": 0.013380022237592552
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 63159000,
+          "shares": 250065,
+          "weight": 0.01159980267534327
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 50678000,
+          "shares": 150625,
+          "weight": 0.009307538117782838
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 48614000,
+          "shares": 192212,
+          "weight": 0.008928463200163678
+        },
+        {
+          "cusip": "228368106",
+          "issuer": "CROWN HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 41232000,
+          "shares": 400303,
+          "weight": 0.00757268265662461
+        },
+        {
+          "cusip": "G3922B107",
+          "issuer": "GENPACT LIMITED",
+          "titleOfClass": "Equity",
+          "value": 34925000,
+          "shares": 746570,
+          "weight": 0.0064143369660121866
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 27866000,
+          "shares": 658777,
+          "weight": 0.005117878708515264
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 27133000,
+          "shares": 184403,
+          "weight": 0.004983255687868537
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 26580000,
+          "shares": 47306,
+          "weight": 0.004881691526316505
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 25668000,
+          "shares": 1389715,
+          "weight": 0.0047141933069033875
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 23430000,
+          "shares": 540059,
+          "weight": 0.004303161492159357
+        },
+        {
+          "cusip": "34964C106",
+          "issuer": "FORTUNE BRANDS INNOVATIONS I",
+          "titleOfClass": "Equity",
+          "value": 17683000,
+          "shares": 353520,
+          "weight": 0.003247665585397094
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 17668000,
+          "shares": 599125,
+          "weight": 0.003244910680472536
+        },
+        {
+          "cusip": "85423L103",
+          "issuer": "STANDARDAERO INC",
+          "titleOfClass": "Equity",
+          "value": 13618000,
+          "shares": 473415,
+          "weight": 0.002501086350841917
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 13473000,
+          "shares": 1257968,
+          "weight": 0.002474455603237858
+        },
+        {
+          "cusip": "92828Q109",
+          "issuer": "VIRTUS INVT PARTNERS INC",
+          "titleOfClass": "Equity",
+          "value": 12616000,
+          "shares": 77326,
+          "weight": 0.002317058701881453
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "Equity",
+          "value": 11646000,
+          "shares": 138434,
+          "weight": 0.0021389081834267123
+        },
+        {
+          "cusip": "596278101",
+          "issuer": "MIDDLEBY CORP",
+          "titleOfClass": "Equity",
+          "value": 10381000,
+          "shares": 69825,
+          "weight": 0.001906577868122334
+        },
+        {
+          "cusip": "81211K100",
+          "issuer": "SEALED AIR CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 4906000,
+          "shares": 118417,
+          "weight": 0.0009010375706587198
+        },
+        {
+          "cusip": "78462F103",
+          "issuer": "SPDR S&P 500 ETF TR",
+          "titleOfClass": "Equity",
+          "value": 4144000,
+          "shares": 6023,
+          "weight": 0.0007610884004911812
+        },
+        {
+          "cusip": "464287598",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "Equity",
+          "value": 636000,
+          "shares": 2748,
+          "weight": 0.00011680796880125272
+        }
+      ],
+      "totalValue": 5444834000
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-10",
+      "accession": "0001556785-25-000034",
+      "holdings": [
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 614016194,
+          "shares": 1185402,
+          "weight": 0.11130214137426234
+        },
+        {
+          "cusip": "G3223R108",
+          "issuer": "EVEREST GROUP LTD",
+          "titleOfClass": "Equity",
+          "value": 496513768,
+          "shares": 1417466,
+          "weight": 0.09000258647934567
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 413875841,
+          "shares": 1198338,
+          "weight": 0.07502288671945632
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 412948056,
+          "shares": 1880565,
+          "weight": 0.07485470799999584
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 371212314,
+          "shares": 1564357,
+          "weight": 0.0672893090710488
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 328976562,
+          "shares": 249643,
+          "weight": 0.0596332737969168
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 323203808,
+          "shares": 3831609,
+          "weight": 0.058586852076927376
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 268035163,
+          "shares": 1100358,
+          "weight": 0.04858648338108726
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 265233364,
+          "shares": 466222,
+          "weight": 0.04807860389607116
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 256638515,
+          "shares": 751516,
+          "weight": 0.04652062365412262
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 215784516,
+          "shares": 1350249,
+          "weight": 0.03911505745434586
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "Equity",
+          "value": 135706495,
+          "shares": 419195,
+          "weight": 0.024599389461535316
+        },
+        {
+          "cusip": "46266C105",
+          "issuer": "IQVIA HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 129913613,
+          "shares": 680933,
+          "weight": 0.023549319157805806
+        },
+        {
+          "cusip": "872657101",
+          "issuer": "TPG INC",
+          "titleOfClass": "Equity",
+          "value": 112338556,
+          "shares": 1958438,
+          "weight": 0.020363505008293783
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 109011740,
+          "shares": 1197365,
+          "weight": 0.01976045618258454
+        },
+        {
+          "cusip": "653656108",
+          "issuer": "NICE LTD",
+          "titleOfClass": "Equity",
+          "value": 108785216,
+          "shares": 753316,
+          "weight": 0.019719394388907054
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 104568556,
+          "shares": 2328120,
+          "weight": 0.018955044373332064
+        },
+        {
+          "cusip": "337738108",
+          "issuer": "FISERV INC",
+          "titleOfClass": "Equity",
+          "value": 103397911,
+          "shares": 803160,
+          "weight": 0.01874284264874844
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 103241211,
+          "shares": 200172,
+          "weight": 0.018714437786264717
+        },
+        {
+          "cusip": "854502101",
+          "issuer": "STANLEY BLACK & DECKER INC",
+          "titleOfClass": "Equity",
+          "value": 86268728,
+          "shares": 1161466,
+          "weight": 0.01563785166231916
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 68671792,
+          "shares": 270379,
+          "weight": 0.012448071526934251
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 58947836,
+          "shares": 197663,
+          "weight": 0.010685419114823591
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 50999929,
+          "shares": 196903,
+          "weight": 0.00924470944431694
+        },
+        {
+          "cusip": "228368106",
+          "issuer": "CROWN HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 41526166,
+          "shares": 429884,
+          "weight": 0.007527409283382982
+        },
+        {
+          "cusip": "78351F107",
+          "issuer": "RYAN SPECIALTY HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 35595680,
+          "shares": 631577,
+          "weight": 0.0064523956312347724
+        },
+        {
+          "cusip": "78467J100",
+          "issuer": "SS&C TECHNOLOGIES HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 35015129,
+          "shares": 394720,
+          "weight": 0.006347159694286553
+        },
+        {
+          "cusip": "G3922B107",
+          "issuer": "GENPACT LIMITED",
+          "titleOfClass": "Equity",
+          "value": 31426897,
+          "shares": 750224,
+          "weight": 0.005696724234684242
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 30626184,
+          "shares": 664054,
+          "weight": 0.005551579737849994
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 29065627,
+          "shares": 186068,
+          "weight": 0.00526869902959852
+        },
+        {
+          "cusip": "83088M102",
+          "issuer": "SKYWORKS SOLUTIONS INC",
+          "titleOfClass": "Equity",
+          "value": 23954487,
+          "shares": 311645,
+          "weight": 0.004342207460772491
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 21742317,
+          "shares": 602364,
+          "weight": 0.003941209473276575
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 20026879,
+          "shares": 1116932,
+          "weight": 0.0036302536309705956
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 19508914,
+          "shares": 602871,
+          "weight": 0.0035363625997237554
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "Equity",
+          "value": 18689780,
+          "shares": 248600,
+          "weight": 0.003387878945443352
+        },
+        {
+          "cusip": "81211K100",
+          "issuer": "SEALED AIR CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 16328862,
+          "shares": 461920,
+          "weight": 0.0029599175470685062
+        },
+        {
+          "cusip": "34964C106",
+          "issuer": "FORTUNE BRANDS INNOVATIONS I",
+          "titleOfClass": "Equity",
+          "value": 15965115,
+          "shares": 299028,
+          "weight": 0.002893981468486084
+        },
+        {
+          "cusip": "92828Q109",
+          "issuer": "VIRTUS INVT PARTNERS INC",
+          "titleOfClass": "Equity",
+          "value": 15063148,
+          "shares": 79267,
+          "weight": 0.002730482753745477
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 14245091,
+          "shares": 1257290,
+          "weight": 0.0025821943262480662
+        },
+        {
+          "cusip": "596278101",
+          "issuer": "MIDDLEBY CORP",
+          "titleOfClass": "Equity",
+          "value": 9388048,
+          "shares": 70624,
+          "weight": 0.0017017626830284557
+        },
+        {
+          "cusip": "78462F103",
+          "issuer": "SPDR S&P 500 ETF TR",
+          "titleOfClass": "Equity",
+          "value": 203095,
+          "shares": 303,
+          "weight": 0.0000368148407538675
+        }
+      ],
+      "totalValue": 5516661103
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-13",
+      "accession": "0001556785-25-000025",
+      "holdings": [
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 623705520,
+          "shares": 1218494,
+          "weight": 0.1099485424979211
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 439226528,
+          "shares": 1939874,
+          "weight": 0.07742807307529094
+        },
+        {
+          "cusip": "G3223R108",
+          "issuer": "EVEREST GROUP LTD",
+          "titleOfClass": "Equity",
+          "value": 435661452,
+          "shares": 1244987,
+          "weight": 0.07679961156978057
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 395120333,
+          "shares": 1222825,
+          "weight": 0.06965291043863654
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 361014620,
+          "shares": 231595,
+          "weight": 0.0636406605627618
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 320176889,
+          "shares": 1750416,
+          "weight": 0.05644167184389945
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 309132636,
+          "shares": 3716484,
+          "weight": 0.05449476023034135
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 300013720,
+          "shares": 1068324,
+          "weight": 0.05288725237413227
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 253801820,
+          "shares": 437891,
+          "weight": 0.04474089020780146
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 245076292,
+          "shares": 668397,
+          "weight": 0.04320272988155519
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 217265923,
+          "shares": 1220881,
+          "weight": 0.03830024074232268
+        },
+        {
+          "cusip": "12504L109",
+          "issuer": "CBRE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 215378613,
+          "shares": 1491792,
+          "weight": 0.03796754049022013
+        },
+        {
+          "cusip": "653656108",
+          "issuer": "NICE LTD",
+          "titleOfClass": "Equity",
+          "value": 152886514,
+          "shares": 841142,
+          "weight": 0.026951259597458765
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 131287772,
+          "shares": 480292,
+          "weight": 0.023143773329438188
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "Equity",
+          "value": 123827013,
+          "shares": 293731,
+          "weight": 0.021828569997618633
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 120253610,
+          "shares": 1320608,
+          "weight": 0.02119864058540548
+        },
+        {
+          "cusip": "46266C105",
+          "issuer": "IQVIA HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 114246838,
+          "shares": 668756,
+          "weight": 0.02013975012293639
+        },
+        {
+          "cusip": "872657101",
+          "issuer": "TPG INC",
+          "titleOfClass": "Equity",
+          "value": 113467094,
+          "shares": 1984910,
+          "weight": 0.020002294683514436
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 96855802,
+          "shares": 287459,
+          "weight": 0.017074009962854315
+        },
+        {
+          "cusip": "854502101",
+          "issuer": "STANLEY BLACK & DECKER INC",
+          "titleOfClass": "Equity",
+          "value": 85478988,
+          "shares": 1142185,
+          "weight": 0.015068473571946722
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 73141432,
+          "shares": 261596,
+          "weight": 0.012893574911138843
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 72272227,
+          "shares": 989986,
+          "weight": 0.012740349038002583
+        },
+        {
+          "cusip": "83088M102",
+          "issuer": "SKYWORKS SOLUTIONS INC",
+          "titleOfClass": "Equity",
+          "value": 65768721,
+          "shares": 806785,
+          "weight": 0.011593892925466517
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 58215289,
+          "shares": 256760,
+          "weight": 0.010262352939645714
+        },
+        {
+          "cusip": "228368106",
+          "issuer": "CROWN HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 48166970,
+          "shares": 434676,
+          "weight": 0.008491007339555197
+        },
+        {
+          "cusip": "78467J100",
+          "issuer": "SS&C TECHNOLOGIES HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 43409447,
+          "shares": 474715,
+          "weight": 0.007652337962778899
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 33604374,
+          "shares": 257173,
+          "weight": 0.005923872443609341
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 33045309,
+          "shares": 699964,
+          "weight": 0.0058253189116290564
+        },
+        {
+          "cusip": "G3922B107",
+          "issuer": "GENPACT LIMITED",
+          "titleOfClass": "Equity",
+          "value": 31059561,
+          "shares": 705739,
+          "weight": 0.005475265735302892
+        },
+        {
+          "cusip": "81211K100",
+          "issuer": "SEALED AIR CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 25482084,
+          "shares": 821208,
+          "weight": 0.004492052588551077
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 25444682,
+          "shares": 650676,
+          "weight": 0.0044854592600416425
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 21979381,
+          "shares": 1120968,
+          "weight": 0.0038745863688307578
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "Equity",
+          "value": 20206315,
+          "shares": 278516,
+          "weight": 0.0035620253665606173
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 19915439,
+          "shares": 678550,
+          "weight": 0.003510748936864075
+        },
+        {
+          "cusip": "34964C106",
+          "issuer": "FORTUNE BRANDS INNOVATIONS I",
+          "titleOfClass": "Equity",
+          "value": 16715139,
+          "shares": 324692,
+          "weight": 0.0029465911584366906
+        },
+        {
+          "cusip": "92828Q109",
+          "issuer": "VIRTUS INVT PARTNERS INC",
+          "titleOfClass": "Equity",
+          "value": 15680256,
+          "shares": 86440,
+          "weight": 0.002764159107000179
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 10507100,
+          "shares": 1002586,
+          "weight": 0.0018522207898366953
+        },
+        {
+          "cusip": "596278101",
+          "issuer": "MIDDLEBY CORP",
+          "titleOfClass": "Equity",
+          "value": 4212144,
+          "shares": 29251,
+          "weight": 0.0007425284509128016
+        }
+      ],
+      "totalValue": 5672703847
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-08",
+      "accession": "0001556785-25-000022",
+      "holdings": [
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 523166505,
+          "shares": 1393139,
+          "weight": 0.09825453492359104
+        },
+        {
+          "cusip": "G3223R108",
+          "issuer": "EVEREST GROUP LTD",
+          "titleOfClass": "Equity",
+          "value": 482832099,
+          "shares": 1328732,
+          "weight": 0.09067943547614209
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 382949626,
+          "shares": 4833477,
+          "weight": 0.07192076909012576
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 344543060,
+          "shares": 249026,
+          "weight": 0.06470773223803944
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 334036411,
+          "shares": 1755372,
+          "weight": 0.06273450593009679
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 316017697,
+          "shares": 902016,
+          "weight": 0.05935045831414477
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 314815950,
+          "shares": 574345,
+          "weight": 0.05912476134873828
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 290930794,
+          "shares": 1861409,
+          "weight": 0.05463895258244996
+        },
+        {
+          "cusip": "14316J108",
+          "issuer": "CARLYLE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 225906736,
+          "shares": 5180438,
+          "weight": 0.04242695407609564
+        },
+        {
+          "cusip": "12504L109",
+          "issuer": "CBRE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 205702320,
+          "shares": 1572823,
+          "weight": 0.038632415476032245
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 194199611,
+          "shares": 723562,
+          "weight": 0.036472121740949937
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 172160357,
+          "shares": 2377959,
+          "weight": 0.03233298700824588
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "Equity",
+          "value": 164734177,
+          "shares": 378874,
+          "weight": 0.03093829553777631
+        },
+        {
+          "cusip": "653656108",
+          "issuer": "NICE LTD",
+          "titleOfClass": "Equity",
+          "value": 161339811,
+          "shares": 1046090,
+          "weight": 0.030300808524553913
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 132827690,
+          "shares": 536063,
+          "weight": 0.02494602154609444
+        },
+        {
+          "cusip": "83088M102",
+          "issuer": "SKYWORKS SOLUTIONS INC",
+          "titleOfClass": "Equity",
+          "value": 115121364,
+          "shares": 1781258,
+          "weight": 0.02162064270454286
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 99158947,
+          "shares": 325916,
+          "weight": 0.018622782857625822
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 97039092,
+          "shares": 459739,
+          "weight": 0.018224658426608493
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 95004237,
+          "shares": 1218127,
+          "weight": 0.01784249762359236
+        },
+        {
+          "cusip": "872657101",
+          "issuer": "TPG INC",
+          "titleOfClass": "Equity",
+          "value": 86332362,
+          "shares": 1819376,
+          "weight": 0.01621385542861752
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 80431929,
+          "shares": 153586,
+          "weight": 0.015105710517347236
+        },
+        {
+          "cusip": "854502101",
+          "issuer": "STANLEY BLACK & DECKER INC",
+          "titleOfClass": "Equity",
+          "value": 72062993,
+          "shares": 938140,
+          "weight": 0.013533962504761264
+        },
+        {
+          "cusip": "228368106",
+          "issuer": "CROWN HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 66746628,
+          "shares": 745171,
+          "weight": 0.012535509879131004
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 44769078,
+          "shares": 227555,
+          "weight": 0.008407963613511479
+        },
+        {
+          "cusip": "G3922B107",
+          "issuer": "GENPACT LIMITED",
+          "titleOfClass": "Equity",
+          "value": 38571670,
+          "shares": 765615,
+          "weight": 0.007244044603115845
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 38070165,
+          "shares": 803846,
+          "weight": 0.007149858258871855
+        },
+        {
+          "cusip": "26484T106",
+          "issuer": "DUN & BRADSTREET HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 36684041,
+          "shares": 4103360,
+          "weight": 0.006889533930642111
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 33760577,
+          "shares": 278323,
+          "weight": 0.00634048579216111
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 27918669,
+          "shares": 764017,
+          "weight": 0.005243332308288121
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 21727125,
+          "shares": 1124156,
+          "weight": 0.004080514600417181
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 20358622,
+          "shares": 138622,
+          "weight": 0.003823499626175779
+        },
+        {
+          "cusip": "81211K100",
+          "issuer": "SEALED AIR CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 19319575,
+          "shares": 668497,
+          "weight": 0.0036283589228374557
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 18134456,
+          "shares": 681746,
+          "weight": 0.0034057848186827733
+        },
+        {
+          "cusip": "92828Q109",
+          "issuer": "VIRTUS INVT PARTNERS INC",
+          "titleOfClass": "Equity",
+          "value": 14943627,
+          "shares": 86700,
+          "weight": 0.0028065235578424844
+        },
+        {
+          "cusip": "G2717B108",
+          "issuer": "CUSHMAN WAKEFIELD PLC",
+          "titleOfClass": "Equity",
+          "value": 13228952,
+          "shares": 1294418,
+          "weight": 0.0024844949243960288
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "Equity",
+          "value": 12822308,
+          "shares": 178410,
+          "weight": 0.0024081241768087597
+        },
+        {
+          "cusip": "34964C106",
+          "issuer": "FORTUNE BRANDS INNOVATIONS I",
+          "titleOfClass": "Equity",
+          "value": 11114534,
+          "shares": 182565,
+          "weight": 0.0020873916021486123
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 10659748,
+          "shares": 975274,
+          "weight": 0.002001979431276243
+        },
+        {
+          "cusip": "596278101",
+          "issuer": "MIDDLEBY CORP",
+          "titleOfClass": "Equity",
+          "value": 4460613,
+          "shares": 29350,
+          "weight": 0.0008377360775211024
+        }
+      ],
+      "totalValue": 5324604156
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001556785-25-000002",
+      "holdings": [
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 500765996,
+          "shares": 1188258,
+          "weight": 0.08375557353438465
+        },
+        {
+          "cusip": "83088M102",
+          "issuer": "SKYWORKS SOLUTIONS INC",
+          "titleOfClass": "Equity",
+          "value": 469161567,
+          "shares": 5290813,
+          "weight": 0.07846957748380269
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 424914702,
+          "shares": 1936676,
+          "weight": 0.07106907188882318
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 368896847,
+          "shares": 1937027,
+          "weight": 0.06169981037512608
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 364962559,
+          "shares": 5099438,
+          "weight": 0.06104178137451189
+        },
+        {
+          "cusip": "G3223R108",
+          "issuer": "EVEREST GROUP LTD",
+          "titleOfClass": "Equity",
+          "value": 354767720,
+          "shares": 978713,
+          "weight": 0.05933664445555921
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 344911629,
+          "shares": 655145,
+          "weight": 0.05768816480417312
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 317109774,
+          "shares": 1003524,
+          "weight": 0.05303816794047873
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 298681017,
+          "shares": 235740,
+          "weight": 0.04995586777555138
+        },
+        {
+          "cusip": "14316J108",
+          "issuer": "CARLYLE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 269327699,
+          "shares": 5333596,
+          "weight": 0.04504638110140592
+        },
+        {
+          "cusip": "12504L109",
+          "issuer": "CBRE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 266900751,
+          "shares": 2033328,
+          "weight": 0.04464046212267773
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 250550542,
+          "shares": 749566,
+          "weight": 0.04190580932448323
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 180486640,
+          "shares": 2581296,
+          "weight": 0.0301872774294643
+        },
+        {
+          "cusip": "653656108",
+          "issuer": "NICE LTD",
+          "titleOfClass": "Equity",
+          "value": 162044394,
+          "shares": 954161,
+          "weight": 0.027102721163003645
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "Equity",
+          "value": 145233542,
+          "shares": 393892,
+          "weight": 0.024291023559515294
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 110281843,
+          "shares": 436226,
+          "weight": 0.01844518015335443
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 108445939,
+          "shares": 1327037,
+          "weight": 0.01813811618794478
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 94034602,
+          "shares": 505373,
+          "weight": 0.01572774925913219
+        },
+        {
+          "cusip": "78467J100",
+          "issuer": "SS&C TECHNOLOGIES HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 91887914,
+          "shares": 1213072,
+          "weight": 0.015368705142567654
+        },
+        {
+          "cusip": "228368106",
+          "issuer": "CROWN HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 68026907,
+          "shares": 823691,
+          "weight": 0.011377834471722489
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 63617299,
+          "shares": 359079,
+          "weight": 0.010640305865443457
+        },
+        {
+          "cusip": "538034109",
+          "issuer": "LIVE NATION ENTERTAINMENT IN",
+          "titleOfClass": "Equity",
+          "value": 59750310,
+          "shares": 461474,
+          "weight": 0.009993532953278398
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 57397067,
+          "shares": 113489,
+          "weight": 0.009599941497977636
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 47151889,
+          "shares": 200093,
+          "weight": 0.007886385133915208
+        },
+        {
+          "cusip": "G2717B108",
+          "issuer": "CUSHMAN WAKEFIELD PLC",
+          "titleOfClass": "Equity",
+          "value": 47017015,
+          "shares": 3594573,
+          "weight": 0.007863826794660727
+        },
+        {
+          "cusip": "G3922B107",
+          "issuer": "GENPACT LIMITED",
+          "titleOfClass": "Equity",
+          "value": 46692840,
+          "shares": 1087144,
+          "weight": 0.007809606932954084
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 43630679,
+          "shares": 852495,
+          "weight": 0.007297445458616228
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "ABBOTT LABS",
+          "titleOfClass": "Equity",
+          "value": 41919956,
+          "shares": 370518,
+          "weight": 0.0070113186305808374
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 40816596,
+          "shares": 300188,
+          "weight": 0.006826776248803583
+        },
+        {
+          "cusip": "26484T106",
+          "issuer": "DUN & BRADSTREET HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 34014361,
+          "shares": 2729884,
+          "weight": 0.0056890690196955895
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 33667524,
+          "shares": 101338,
+          "weight": 0.0056310588271306266
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 32115673,
+          "shares": 1031001,
+          "weight": 0.00537150412177298
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "Equity",
+          "value": 30449301,
+          "shares": 109320,
+          "weight": 0.005092795216423026
+        },
+        {
+          "cusip": "337738108",
+          "issuer": "FISERV INC",
+          "titleOfClass": "Equity",
+          "value": 29999221,
+          "shares": 146008,
+          "weight": 0.00501751712478448
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 28284785,
+          "shares": 1252093,
+          "weight": 0.004730769279253857
+        },
+        {
+          "cusip": "81211K100",
+          "issuer": "SEALED AIR CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 24342581,
+          "shares": 719556,
+          "weight": 0.004071416288741408
+        },
+        {
+          "cusip": "92828Q109",
+          "issuer": "VIRTUS INVT PARTNERS INC",
+          "titleOfClass": "Equity",
+          "value": 21755259,
+          "shares": 98628,
+          "weight": 0.003638673970454822
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 16557757,
+          "shares": 1176813,
+          "weight": 0.0027693662210602097
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 15628975,
+          "shares": 369829,
+          "weight": 0.00261402286763808
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "Equity",
+          "value": 14825361,
+          "shares": 207725,
+          "weight": 0.002479614477276325
+        },
+        {
+          "cusip": "25243Q205",
+          "issuer": "DIAGEO PLC",
+          "titleOfClass": "Equity",
+          "value": 11623329,
+          "shares": 91776,
+          "weight": 0.0019440588908793352
+        },
+        {
+          "cusip": "596278101",
+          "issuer": "MIDDLEBY CORP",
+          "titleOfClass": "Equity",
+          "value": 11131146,
+          "shares": 82179,
+          "weight": 0.001861738865601752
+        },
+        {
+          "cusip": "34964C106",
+          "issuer": "FORTUNE BRANDS INNOVATIONS I",
+          "titleOfClass": "Equity",
+          "value": 10378935,
+          "shares": 151894,
+          "weight": 0.0017359278795781065
+        },
+        {
+          "cusip": "29275Y102",
+          "issuer": "ENERSYS",
+          "titleOfClass": "Equity",
+          "value": 10118537,
+          "shares": 109472,
+          "weight": 0.0016923750345139087
+        },
+        {
+          "cusip": "78462F103",
+          "issuer": "SPDR S&P 500 ETF TR",
+          "titleOfClass": "Equity",
+          "value": 7903164,
+          "shares": 13518,
+          "weight": 0.0013218430141896088
+        },
+        {
+          "cusip": "760125104",
+          "issuer": "RENTOKIL INITIAL PLC",
+          "titleOfClass": "Equity",
+          "value": 5416429,
+          "shares": 215880,
+          "weight": 0.0009059243659253443
+        },
+        {
+          "cusip": "464287598",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "Equity",
+          "value": 617594,
+          "shares": 3336,
+          "weight": 0.00010329563128203048
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "Equity",
+          "value": 342560,
+          "shares": 2316,
+          "weight": 0.00005729484329830336
+        },
+        {
+          "cusip": "45857P806",
+          "issuer": "INTERCONTINENTAL HOTELS GROU",
+          "titleOfClass": "Equity",
+          "value": 338854,
+          "shares": 2736,
+          "weight": 0.000056674996587468724
+        }
+      ],
+      "totalValue": 5978897581
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-13",
+      "accession": "0001556785-24-000020",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 425276594,
+          "shares": 2282384,
+          "weight": 0.07118845902541981
+        },
+        {
+          "cusip": "83088M102",
+          "issuer": "SKYWORKS SOLUTIONS INC",
+          "titleOfClass": "Equity",
+          "value": 404564966,
+          "shares": 4096031,
+          "weight": 0.06772147094747322
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 380494008,
+          "shares": 1388214,
+          "weight": 0.06369215348335337
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 353781027,
+          "shares": 822173,
+          "weight": 0.05922057902993938
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 334190810,
+          "shares": 4429889,
+          "weight": 0.055941307657192296
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 317848679,
+          "shares": 643679,
+          "weight": 0.05320574416864173
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 315277024,
+          "shares": 1885741,
+          "weight": 0.052775266312164594
+        },
+        {
+          "cusip": "14316J108",
+          "issuer": "CARLYLE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 292264057,
+          "shares": 6787368,
+          "weight": 0.04892304946918255
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 278455887,
+          "shares": 195116,
+          "weight": 0.04661165411347898
+        },
+        {
+          "cusip": "538034109",
+          "issuer": "LIVE NATION ENTERTAINMENT IN",
+          "titleOfClass": "Equity",
+          "value": 269693676,
+          "shares": 2463181,
+          "weight": 0.04514491856408361
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 262114223,
+          "shares": 953316,
+          "weight": 0.0438761687976067
+        },
+        {
+          "cusip": "12504L109",
+          "issuer": "CBRE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 244413977,
+          "shares": 1963480,
+          "weight": 0.040913265936531655
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "Equity",
+          "value": 242109805,
+          "shares": 1854111,
+          "weight": 0.04052756294623372
+        },
+        {
+          "cusip": "653656108",
+          "issuer": "NICE LTD",
+          "titleOfClass": "Equity",
+          "value": 174381179,
+          "shares": 1004095,
+          "weight": 0.029190243693604023
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 173434812,
+          "shares": 1678943,
+          "weight": 0.029031828183902802
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "Equity",
+          "value": 145228200,
+          "shares": 279285,
+          "weight": 0.02431022988543657
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 126307235,
+          "shares": 468134,
+          "weight": 0.02114298682379772
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 114159189,
+          "shares": 560263,
+          "weight": 0.019109485128404824
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 111086419,
+          "shares": 1435596,
+          "weight": 0.018595123970688396
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 106351761,
+          "shares": 682442,
+          "weight": 0.017802573870852958
+        },
+        {
+          "cusip": "G3223R108",
+          "issuer": "EVEREST GROUP LTD",
+          "titleOfClass": "Equity",
+          "value": 101147388,
+          "shares": 258141,
+          "weight": 0.016931396619881318
+        },
+        {
+          "cusip": "78467J100",
+          "issuer": "SS&C TECHNOLOGIES HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 99134913,
+          "shares": 1335870,
+          "weight": 0.016594521757501327
+        },
+        {
+          "cusip": "337738108",
+          "issuer": "FISERV INC",
+          "titleOfClass": "Equity",
+          "value": 79806279,
+          "shares": 444232,
+          "weight": 0.013359037630372675
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 58735934,
+          "shares": 386904,
+          "weight": 0.00983200272451101
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 57544428,
+          "shares": 216944,
+          "weight": 0.009632552584869556
+        },
+        {
+          "cusip": "G2717B108",
+          "issuer": "CUSHMAN WAKEFIELD PLC",
+          "titleOfClass": "Equity",
+          "value": 55555635,
+          "shares": 4075982,
+          "weight": 0.009299641930984518
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 55369695,
+          "shares": 1049464,
+          "weight": 0.00926851681792178
+        },
+        {
+          "cusip": "G3922B107",
+          "issuer": "GENPACT LIMITED",
+          "titleOfClass": "Equity",
+          "value": 54232925,
+          "shares": 1383140,
+          "weight": 0.009078229118791255
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "ABBOTT LABS",
+          "titleOfClass": "Equity",
+          "value": 44249789,
+          "shares": 388122,
+          "weight": 0.007407118885809108
+        },
+        {
+          "cusip": "26484T106",
+          "issuer": "DUN & BRADSTREET HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 34655975,
+          "shares": 3010945,
+          "weight": 0.00580117855315939
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 32730401,
+          "shares": 1219621,
+          "weight": 0.005478850337279695
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "Equity",
+          "value": 30297379,
+          "shares": 121872,
+          "weight": 0.0050715787182943695
+        },
+        {
+          "cusip": "81211K100",
+          "issuer": "SEALED AIR CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 28880097,
+          "shares": 795595,
+          "weight": 0.004834335185478488
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 27689925,
+          "shares": 1110157,
+          "weight": 0.004635108348519759
+        },
+        {
+          "cusip": "92828Q109",
+          "issuer": "VIRTUS INVT PARTNERS INC",
+          "titleOfClass": "Equity",
+          "value": 24102928,
+          "shares": 115077,
+          "weight": 0.004034669028412704
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 22454077,
+          "shares": 463066,
+          "weight": 0.0037586623929463693
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "Equity",
+          "value": 18997810,
+          "shares": 225386,
+          "weight": 0.0031801064009596325
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 18807563,
+          "shares": 1310632,
+          "weight": 0.003148260324887529
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 15388514,
+          "shares": 46101,
+          "weight": 0.002575934377312802
+        },
+        {
+          "cusip": "228368106",
+          "issuer": "CROWN HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 14345458,
+          "shares": 149619,
+          "weight": 0.0024013337753402927
+        },
+        {
+          "cusip": "00508Y102",
+          "issuer": "ACUITY BRANDS INC",
+          "titleOfClass": "Equity",
+          "value": 12708792,
+          "shares": 46148,
+          "weight": 0.0021273668274219277
+        },
+        {
+          "cusip": "29275Y102",
+          "issuer": "ENERSYS",
+          "titleOfClass": "Equity",
+          "value": 12300350,
+          "shares": 120533,
+          "weight": 0.002058996366899333
+        },
+        {
+          "cusip": "83193G107",
+          "issuer": "SMARTRENT INC",
+          "titleOfClass": "Equity",
+          "value": 3384420,
+          "shares": 1956312,
+          "weight": 0.0005665292844562504
+        }
+      ],
+      "totalValue": 5973954203
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001556785-24-000014",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "Equity",
+          "value": 481612000,
+          "shares": 2490807,
+          "weight": 0.07353277073615218
+        },
+        {
+          "cusip": "83088M102",
+          "issuer": "SKYWORKS SOLUTIONS INC",
+          "titleOfClass": "Equity",
+          "value": 481552000,
+          "shares": 4518451,
+          "weight": 0.073523609904935
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "SALESFORCE INC",
+          "titleOfClass": "Equity",
+          "value": 379469000,
+          "shares": 1476111,
+          "weight": 0.057937524352542985
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "Equity",
+          "value": 369745000,
+          "shares": 826752,
+          "weight": 0.056452858973278466
+        },
+        {
+          "cusip": "02079K107",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "Equity",
+          "value": 363396000,
+          "shares": 1980905,
+          "weight": 0.055483490349980395
+        },
+        {
+          "cusip": "48251W104",
+          "issuer": "KKR & CO INC",
+          "titleOfClass": "Equity",
+          "value": 307700000,
+          "shares": 2924461,
+          "weight": 0.046979796092111545
+        },
+        {
+          "cusip": "22160N109",
+          "issuer": "COSTAR GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 306831000,
+          "shares": 4138987,
+          "weight": 0.04684711671998271
+        },
+        {
+          "cusip": "57636Q104",
+          "issuer": "MASTERCARD INCORPORATED",
+          "titleOfClass": "Equity",
+          "value": 303894000,
+          "shares": 688998,
+          "weight": 0.04639869403190168
+        },
+        {
+          "cusip": "14316J108",
+          "issuer": "CARLYLE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 300767000,
+          "shares": 7495229,
+          "weight": 0.04592126204496624
+        },
+        {
+          "cusip": "893641100",
+          "issuer": "TRANSDIGM GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 281634000,
+          "shares": 220570,
+          "weight": 0.04300002565032741
+        },
+        {
+          "cusip": "92826C839",
+          "issuer": "VISA INC",
+          "titleOfClass": "Equity",
+          "value": 267841000,
+          "shares": 1020377,
+          "weight": 0.04089410323401771
+        },
+        {
+          "cusip": "538034109",
+          "issuer": "LIVE NATION ENTERTAINMENT IN",
+          "titleOfClass": "Equity",
+          "value": 252663000,
+          "shares": 2694463,
+          "weight": 0.03857671829711141
+        },
+        {
+          "cusip": "74736K101",
+          "issuer": "QORVO INC",
+          "titleOfClass": "Equity",
+          "value": 246665000,
+          "shares": 2123936,
+          "weight": 0.037660940536433846
+        },
+        {
+          "cusip": "12504L109",
+          "issuer": "CBRE GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 237323000,
+          "shares": 2666141,
+          "weight": 0.03623459911591872
+        },
+        {
+          "cusip": "653656108",
+          "issuer": "NICE LTD",
+          "titleOfClass": "Equity",
+          "value": 204168000,
+          "shares": 1188371,
+          "weight": 0.031172476465824602
+        },
+        {
+          "cusip": "48020Q107",
+          "issuer": "JONES LANG LASALLE INC",
+          "titleOfClass": "Equity",
+          "value": 193217000,
+          "shares": 943391,
+          "weight": 0.029500472088168726
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "ELEVANCE HEALTH INC",
+          "titleOfClass": "Equity",
+          "value": 186745000,
+          "shares": 344938,
+          "weight": 0.028512323760875435
+        },
+        {
+          "cusip": "03990B101",
+          "issuer": "ARES MANAGEMENT CORPORATION",
+          "titleOfClass": "Equity",
+          "value": 152638000,
+          "shares": 1143671,
+          "weight": 0.02330484925546871
+        },
+        {
+          "cusip": "143130102",
+          "issuer": "CARMAX INC",
+          "titleOfClass": "Equity",
+          "value": 133773000,
+          "shares": 1827139,
+          "weight": 0.02042453124026662
+        },
+        {
+          "cusip": "422806208",
+          "issuer": "HEICO CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 130210000,
+          "shares": 734063,
+          "weight": 0.019880530546486332
+        },
+        {
+          "cusip": "78467J100",
+          "issuer": "SS&C TECHNOLOGIES HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 120179000,
+          "shares": 1918399,
+          "weight": 0.018348992247493902
+        },
+        {
+          "cusip": "337738108",
+          "issuer": "FISERV INC",
+          "titleOfClass": "Equity",
+          "value": 89391000,
+          "shares": 600318,
+          "weight": 0.013648264388917593
+        },
+        {
+          "cusip": "91324P102",
+          "issuer": "UNITEDHEALTH GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 85117000,
+          "shares": 167470,
+          "weight": 0.01299570784521371
+        },
+        {
+          "cusip": "537008104",
+          "issuer": "LITTELFUSE INC",
+          "titleOfClass": "Equity",
+          "value": 61690000,
+          "shares": 241365,
+          "weight": 0.009418861296465263
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "Equity",
+          "value": 59068000,
+          "shares": 1168048,
+          "weight": 0.009018532972274439
+        },
+        {
+          "cusip": "2824100",
+          "issuer": "ABBOTT LABS",
+          "titleOfClass": "Equity",
+          "value": 51978000,
+          "shares": 500469,
+          "weight": 0.00793602808344418
+        },
+        {
+          "cusip": "194693107",
+          "issuer": "COLLIERS INTL GROUP INC",
+          "titleOfClass": "Equity",
+          "value": 50767000,
+          "shares": 454181,
+          "weight": 0.007751131973377403
+        },
+        {
+          "cusip": "855244109",
+          "issuer": "STARBUCKS CORP",
+          "titleOfClass": "Equity",
+          "value": 50677000,
+          "shares": 651366,
+          "weight": 0.007737390726551631
+        },
+        {
+          "cusip": "G2717B108",
+          "issuer": "CUSHMAN WAKEFIELD PLC",
+          "titleOfClass": "Equity",
+          "value": 49564000,
+          "shares": 4765752,
+          "weight": 0.0075674573074729174
+        },
+        {
+          "cusip": "26484T106",
+          "issuer": "DUN & BRADSTREET HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 48210000,
+          "shares": 5206280,
+          "weight": 0.0073607278830051925
+        },
+        {
+          "cusip": "M6158M104",
+          "issuer": "ITURAN LOCATION AND CONTROL",
+          "titleOfClass": "Equity",
+          "value": 35178000,
+          "shares": 1410937,
+          "weight": 0.005370995342633409
+        },
+        {
+          "cusip": "571903202",
+          "issuer": "MARRIOTT INTL INC NEW",
+          "titleOfClass": "Equity",
+          "value": 33941000,
+          "shares": 140475,
+          "weight": 0.005182129539039188
+        },
+        {
+          "cusip": "600544100",
+          "issuer": "MILLERKNOLL INC",
+          "titleOfClass": "Equity",
+          "value": 31056000,
+          "shares": 1164023,
+          "weight": 0.004741646238013052
+        },
+        {
+          "cusip": "81211K100",
+          "issuer": "SEALED AIR CORP NEW",
+          "titleOfClass": "Equity",
+          "value": 30578000,
+          "shares": 878918,
+          "weight": 0.004668664949316175
+        },
+        {
+          "cusip": "92828Q109",
+          "issuer": "VIRTUS INVT PARTNERS INC",
+          "titleOfClass": "Equity",
+          "value": 29110000,
+          "shares": 128890,
+          "weight": 0.004444529945535805
+        },
+        {
+          "cusip": "74319R101",
+          "issuer": "PROG HOLDINGS INC",
+          "titleOfClass": "Equity",
+          "value": 27394000,
+          "shares": 789920,
+          "weight": 0.004182530172724419
+        },
+        {
+          "cusip": "83193G107",
+          "issuer": "SMARTRENT INC",
+          "titleOfClass": "Equity",
+          "value": 21499000,
+          "shares": 8995284,
+          "weight": 0.003282478505636354
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "Equity",
+          "value": 20604000,
+          "shares": 257129,
+          "weight": 0.003145829439980066
+        },
+        {
+          "cusip": "58506Q109",
+          "issuer": "MEDPACE HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 15897000,
+          "shares": 38600,
+          "weight": 0.002427162230992191
+        },
+        {
+          "cusip": "29275Y102",
+          "issuer": "ENERSYS",
+          "titleOfClass": "Equity",
+          "value": 14338000,
+          "shares": 138507,
+          "weight": 0.002189133299865763
+        },
+        {
+          "cusip": "700517105",
+          "issuer": "PARK HOTELS & RESORTS INC",
+          "titleOfClass": "Equity",
+          "value": 14018000,
+          "shares": 920427,
+          "weight": 0.0021402755333741297
+        },
+        {
+          "cusip": "228368106",
+          "issuer": "CROWN HLDGS INC",
+          "titleOfClass": "Equity",
+          "value": 13641000,
+          "shares": 183368,
+          "weight": 0.0020827149772261735
+        },
+        {
+          "cusip": "72703H101",
+          "issuer": "PLANET FITNESS INC",
+          "titleOfClass": "Equity",
+          "value": 7167000,
+          "shares": 97386,
+          "weight": 0.001094261288892309
+        },
+        {
+          "cusip": "00508Y102",
+          "issuer": "ACUITY BRANDS INC",
+          "titleOfClass": "Equity",
+          "value": 6719000,
+          "shares": 27828,
+          "weight": 0.0010258604158040218
+        }
+      ],
+      "totalValue": 6549624000
+    }
+  ]
+}
