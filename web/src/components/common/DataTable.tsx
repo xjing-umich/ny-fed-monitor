@@ -40,6 +40,11 @@ export type DataTableProps<T> = {
    * 否则在平板/大屏手机(640–1024px)区间表格仍会挤。默认 "md"。
    */
   breakpoint?: "sm" | "md" | "lg";
+  /**
+   * "加载更多"渐进披露:全部行照常渲染(SSR 即含全部 <a>),但索引 ≥ visibleCount
+   * 的行用 CSS 隐藏,由外层(Paginated)递增 visibleCount 逐步揭示。不传则全显。
+   */
+  visibleCount?: number;
   emptyText?: string;
 };
 
@@ -61,9 +66,11 @@ export function DataTable<T>({
   showRank,
   hideHeader,
   breakpoint = "md",
+  visibleCount,
   emptyText,
 }: DataTableProps<T>) {
   const bp = BP[breakpoint];
+  const isOverflow = (i: number) => visibleCount != null && i >= visibleCount;
   if (rows.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-[var(--tt-muted)]">
@@ -115,7 +122,10 @@ export function DataTable<T>({
               return (
                 <tr
                   key={getKey(row, i)}
-                  className="group border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]"
+                  className={cn(
+                    "group border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]",
+                    isOverflow(i) && "hidden"
+                  )}
                 >
                   {showRank && (
                     <td className="py-3 pr-3 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
@@ -181,7 +191,10 @@ export function DataTable<T>({
           return (
             <li
               key={getKey(row, i)}
-              className="border-b border-[var(--tt-border)] py-3"
+              className={cn(
+                "border-b border-[var(--tt-border)] py-3",
+                isOverflow(i) && "hidden"
+              )}
             >
               <div className="flex items-start justify-between gap-3">
                 {href ? (

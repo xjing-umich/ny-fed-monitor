@@ -3,8 +3,9 @@
 import { useState } from "react";
 
 /**
- * 客户端"加载更多"分页岛。把长列表切到 pageSize,点击逐步揭示。
- * render 接收当前可见项,内部可渲染 DataTable 等(client→client,函数列可用)。
+ * 客户端"加载更多"分页岛。所有项始终交给 render 全量渲染(SSR 即含全部 <a>,
+ * 利于抓取),仅 visibleCount 之后的行用 CSS 视觉隐藏,点击逐步揭示。
+ * render 接收全量项与当前可见数,内部按 visibleCount 把溢出行标 hidden。
  */
 export function Paginated<T>({
   items,
@@ -14,16 +15,15 @@ export function Paginated<T>({
 }: {
   items: T[];
   pageSize: number;
-  render: (visible: T[]) => React.ReactNode;
+  render: (items: T[], visibleCount: number) => React.ReactNode;
   moreLabel?: string;
 }) {
   const [count, setCount] = useState(pageSize);
-  const visible = items.slice(0, count);
   const remaining = items.length - count;
 
   return (
     <>
-      {render(visible)}
+      {render(items, count)}
       {remaining > 0 && (
         <div className="mt-6 flex justify-center">
           <button

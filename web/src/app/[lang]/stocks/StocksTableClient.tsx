@@ -90,13 +90,14 @@ export function StocksTableClient({
       items={rows}
       pageSize={PAGE_SIZE}
       moreLabel={isZh ? "加载更多" : "Load more"}
-      render={(visible) => (
+      render={(rows, visibleCount) => (
         <DataTable
           columns={columns}
-          rows={visible}
+          rows={rows}
           getKey={(r) => r.ticker}
           rowHref={(r) => stockPath(lang, r.ticker)}
           showRank
+          visibleCount={visibleCount}
         />
       )}
     />
