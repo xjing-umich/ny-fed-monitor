@@ -1,4 +1,7 @@
-import type { AssetFloor, EpvLamp, MoatReading, PerShareUnavailable, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
+import type { EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
+import { maintenanceCapex } from "./maintenanceCapex";
+import { buildReproductionValue } from "./reproductionValue";
+import { computeGrowthValue } from "./growthValue";
 
 export const DISCOUNT_RATE_LOW = 0.08;
 export const DISCOUNT_RATE_HIGH = 0.1;
@@ -10,7 +13,7 @@ export const MOAT_FRANCHISE_MULTIPLE = 1.25;
 export const MOAT_COMMODITY_FLOOR = 0.75;
 
 const MAINT_CAPEX_RULE =
-  "v1: maintenance capex set equal to D&A, so the depreciation add-back nets to zero (Buffett lamp = avg net income). Sales-driven maintenance-capex estimation deferred to v2.";
+  "Maintenance capex estimated by the four-method median (D&A proxy / Greenwald sales method / PP&E useful life), with the AI-hog 50%-of-capex floor; degrades to D&A when inputs are missing.";
 
 const MULTI_CLASS_REASON =
   "This issuer has a multi-share-class structure; a blended per-share count is not available from the current data source, so a per-share floor is not computed here.";
@@ -108,8 +111,19 @@ function assembleFloor(
   const netDebt = latest.net_debt ?? totalDebt - cash;
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
-  const assetFloor = buildAssetFloor(latest, shares);
-  const moatReading = buildMoatReading(moatRefLamp, assetFloor);
+  const assetFloor = buildReproductionValue(years, shares);
+  const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares);
+  const epvMid = moatRefLamp.assessable && moatRefLamp.per_share_low != null && moatRefLamp.per_share_high != null
+    ? (moatRefLamp.per_share_low + moatRefLamp.per_share_high) / 2
+    : undefined;
+  const growthValue = computeGrowthValue({
+    years,
+    shares,
+    taxRate: tax.rate,
+    moatSignal: moatReading.signal,
+    epvPerShare: epvMid,
+    avPerShare: assetFloor.per_share,
+  });
   const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
   const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
   return {
@@ -118,6 +132,7 @@ function assembleFloor(
     buffett_epv: buffettEpv,
     asset_floor: assetFloor,
     moat_reading: moatReading,
+    growth_value: growthValue,
     high_leverage_warning: highLeverage,
     high_leverage_note: highLeverage
       ? "High leverage (net debt / shareholders' equity above 1.0): the single 8–10% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
@@ -144,37 +159,53 @@ function buildGrahamLamp(
   yearsUsed: number[],
   taxRate: number,
 ): EpvLamp {
+  const mc = maintenanceCapex(years);
+  const latestDa = years[0].d_and_a;
+  // write A: deduct (maintCapex − D&A) in full cash from after-tax NOPAT. When maintCapex == D&A
+  // (or either is missing → degrade), this collapses to NOPAT/WACC (v1 parity).
+  const canCorrect = mc.assessable && mc.value != null && latestDa != null;
+  const capexDrag = canCorrect ? mc.value! - latestDa! : 0;
+  const simplifications: string[] = [];
+  if (canCorrect) {
+    simplifications.push(
+      `Maintenance capex (${mc.confidence}) deducted in full cash (write A): EPV = (NOPAT + D&A − maintenance capex) / WACC; no tax shield on the capex term.`,
+    );
+    if (mc.ai_capex_distortion_warning) simplifications.push("Capex doubled within two years (AI-hog rule): maintenance capex floored at 50% of current capex; EPV is correspondingly pressed down.");
+    for (const n of mc.notes) simplifications.push(n);
+  } else {
+    simplifications.push("Maintenance capex unavailable → degraded to the v1 simplification (maintenance capex = D&A, so the depreciation add-back nets to zero).");
+  }
+  simplifications.push("Share-based compensation is left as a real expense (not added back).");
+
   const method = {
-    earnings_basis: "Normalized NOPAT = average operating margin over the years shown × latest-year revenue × (1 − normalized tax).",
+    earnings_basis: "Normalized NOPAT = average operating margin over the years shown × latest-year revenue × (1 − normalized tax); then + D&A − maintenance capex (write A).",
     leverage_treatment: "Unlevered (pre-interest, attributable to all capital).",
     denominator: "Capitalized at the 8–10% rate band (read as a WACC proxy).",
     bridge: "Enterprise → equity bridge applied: + cash − total debt.",
     discount_rate_low: DISCOUNT_RATE_LOW,
     discount_rate_high: DISCOUNT_RATE_HIGH,
     years_used: yearsUsed,
-    simplifications: [
-      "No depreciation add-back (maintenance capex = D&A by construction in v1).",
-      "Share-based compensation is left as a real expense (not added back).",
-    ],
+    simplifications,
   };
   const latestRevenue = years[0].revenue!;
   const avgMargin = avg(years.map((y) => marginOf(y)!));
   const nopat = avgMargin * latestRevenue * (1 - taxRate);
-  if (nopat <= 0) {
+  const ownerStream = nopat - capexDrag; // = NOPAT + D&A − maintCapex when canCorrect, else NOPAT
+  if (ownerStream <= 0) {
     return {
       label: "Graham earnings-power value (normalized NOPAT)",
       assessable: false,
-      not_assessable_reason: "Normalized operating earnings are non-positive over the years shown; earnings power cannot be capitalized.",
-      normalized_earnings: nopat,
+      not_assessable_reason: "Normalized operating earnings net of maintenance capex are non-positive over the years shown; earnings power cannot be capitalized.",
+      normalized_earnings: ownerStream,
       method,
     };
   }
-  const equityLow = nopat / DISCOUNT_RATE_HIGH + cash - totalDebt;
-  const equityHigh = nopat / DISCOUNT_RATE_LOW + cash - totalDebt;
+  const equityLow = ownerStream / DISCOUNT_RATE_HIGH + cash - totalDebt;
+  const equityHigh = ownerStream / DISCOUNT_RATE_LOW + cash - totalDebt;
   return {
     label: "Graham earnings-power value (normalized NOPAT)",
     assessable: true,
-    normalized_earnings: nopat,
+    normalized_earnings: ownerStream,
     equity_value_low: equityLow,
     equity_value_high: equityHigh,
     per_share_low: equityLow / shares,
@@ -203,27 +234,48 @@ function grahamNotApplicableLamp(yearsUsed: number[]): EpvLamp {
 }
 
 function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed: number[]): EpvLamp {
+  const mc = maintenanceCapex(years);
+  const avgNi = avg(years.map((y) => y.net_income!));
+  const daVals = years.map((y) => y.d_and_a).filter((v): v is number => v != null);
+  const avgDa = daVals.length ? avg(daVals) : undefined;
+  // Real owner earnings = net income + D&A − maintenance capex, WITHOUT ΔNWC (maintenance ΔNWC ≈ 0;
+  // the growth portion of ΔNWC lives in GV — audit fix #3). Degrade to avg net income when inputs missing.
+  const canCorrect = mc.assessable && mc.value != null && avgDa != null;
+  const ownerEarnings = canCorrect ? avgNi + avgDa! - mc.value! : avgNi;
+
+  const simplifications: string[] = [];
+  if (canCorrect) {
+    simplifications.push(`Owner earnings = net income + D&A − maintenance capex (${mc.confidence}); the working-capital change is excluded (maintenance ΔNWC ≈ 0; growth ΔNWC is carried in growth value, not double-counted).`);
+    if (mc.ai_capex_distortion_warning) simplifications.push("Capex doubled within two years (AI-hog rule): maintenance capex floored at 50% of current capex.");
+  } else {
+    simplifications.push("Maintenance capex or D&A unavailable → degraded to normalized net income (= average net income over the years shown).");
+  }
+  simplifications.push("One-time items are not separately normalized (multi-year averaging smooths them partially).");
+  simplifications.push("Share-based compensation is left as a real expense (not added back); see the SBC/OE disclosure.");
+  simplifications.push("Capitalized at the same 8–10% band as a cost-of-equity proxy (theoretically the cost of equity is higher; v2 simplification, v3 to refine).");
+
   const method = {
-    earnings_basis: "Owner earnings = average net income over the years shown (= net income + D&A − maintenance capex, with D&A − maintenance capex = 0 in v1).",
+    earnings_basis: "Owner earnings = average net income + average D&A − maintenance capex (zero-growth floor; no ΔNWC).",
     leverage_treatment: "Levered (starts from net income, already after interest — an equity-holder stream).",
     denominator: "Capitalized at the 8–10% rate band (read as a cost-of-equity proxy).",
     bridge: "No enterprise→equity bridge: the capitalized result is already equity value (subtracting debt would double-count interest).",
     discount_rate_low: DISCOUNT_RATE_LOW,
     discount_rate_high: DISCOUNT_RATE_HIGH,
     years_used: yearsUsed,
-    simplifications: [
-      "Buffett's ± working-capital term is omitted in v1.",
-      "One-time items are not separately normalized (multi-year averaging smooths them partially).",
-      "Share-based compensation is left as a real expense (not added back).",
-    ],
+    simplifications,
   };
-  const ownerEarnings = avg(years.map((y) => y.net_income!));
+
+  // SBC disclosure (not added back): average SBC / owner earnings.
+  const sbcVals = years.map((y) => y.stock_based_comp).filter((v): v is number => v != null);
+  const sbcToOe = sbcVals.length && ownerEarnings > 0 ? avg(sbcVals) / ownerEarnings : undefined;
+
   if (ownerEarnings <= 0) {
     return {
       label: "Buffett owner-earnings value",
       assessable: false,
       not_assessable_reason: "Normalized owner earnings are non-positive over the years shown; earnings power cannot be capitalized.",
       normalized_earnings: ownerEarnings,
+      sbc_to_oe_pct: sbcToOe,
       method,
     };
   }
@@ -237,46 +289,34 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
     equity_value_high: equityHigh,
     per_share_low: equityLow / shares,
     per_share_high: equityHigh / shares,
+    sbc_to_oe_pct: sbcToOe,
     method,
   };
 }
 
-/** Tangible book = equity − goodwill − intangibles; total-book fallback when both intangible fields are missing. */
-function buildAssetFloor(latest: ValuationFloorYear, shares: number): AssetFloor {
-  const equity = latest.shareholders_equity;
-  if (equity == null) {
-    return { assessable: false, not_assessable_reason: "Shareholders' equity is unavailable, so no asset floor is shown.", basis: "Unavailable.", intangibles_separated: false };
-  }
-  const hasIntangibleData = latest.goodwill != null || latest.intangibles != null;
-  if (!hasIntangibleData) {
-    const basis = "Total book value (shareholders' equity ÷ diluted shares); intangibles not separated — goodwill/intangibles unavailable this period.";
-    if (equity <= 0) return { assessable: false, not_assessable_reason: "Book value is negative or unavailable, so no asset floor is shown.", basis, intangibles_separated: false };
-    return { assessable: true, basis, intangibles_separated: false, total_value: equity, per_share: equity / shares };
-  }
-  const tangible = equity - (latest.goodwill ?? 0) - (latest.intangibles ?? 0);
-  const basis = "Tangible book value = shareholders' equity − goodwill − intangibles, ÷ diluted shares.";
-  if (tangible <= 0) {
-    return { assessable: false, not_assessable_reason: "Tangible book value is negative, so no asset floor is shown.", basis, intangibles_separated: true };
-  }
-  return { assessable: true, basis, intangibles_separated: true, total_value: tangible, per_share: tangible / shares };
-}
-
-function buildMoatReading(graham: EpvLamp, asset: AssetFloor): MoatReading {
+function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, shares: number): MoatReading {
   const basisNote =
-    "Directional only, based on book value. A true franchise test compares earnings power against reproduction value (deferred to v2); against book value this reads systematically more franchise-like.";
-  if (!graham.assessable) {
-    return { signal: "value_destruction", label: "Normalized earnings are non-positive, so earnings power sits below the asset base — a value-destruction signal (not a verdict).", basis_note: basisNote };
+    "Franchise test compares earnings power (EPV) against reproduction value (tangible net assets + capitalized R&D). EPV well above reproduction value signals a moat; near it, a commodity; below it, value destruction. A directional reading, not a verdict.";
+  if (!epvLamp.assessable) {
+    return { signal: "value_destruction", label: "Normalized earnings are non-positive, so earnings power sits below the reproduction-value base — a value-destruction signal (not a verdict).", basis_note: basisNote };
   }
-  if (!asset.assessable || asset.per_share == null) {
-    return { signal: "not_assessable", label: "The earnings-power vs asset-base comparison is unavailable because there is no positive book-value floor.", basis_note: basisNote };
+  if (!reproduction.assessable || reproduction.per_share == null) {
+    return { signal: "not_assessable", label: "The earnings-power vs reproduction-value comparison is unavailable because there is no positive asset base.", basis_note: basisNote };
   }
-  const epvMid = (graham.per_share_low! + graham.per_share_high!) / 2;
-  const ratio = epvMid / asset.per_share;
+  const epvMid = (epvLamp.per_share_low! + epvLamp.per_share_high!) / 2;
+  const ratio = epvMid / reproduction.per_share;
   if (ratio >= MOAT_FRANCHISE_MULTIPLE) {
-    return { signal: "franchise", label: "Earnings power sits well above the asset base — a franchise (moat) signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: asset.per_share };
+    return {
+      signal: "franchise",
+      label: "Earnings power sits well above reproduction value — a franchise (moat) signal, not a verdict.",
+      basis_note: basisNote,
+      epv_per_share_compared: epvMid,
+      asset_per_share_compared: reproduction.per_share,
+      franchise_value: (epvMid - reproduction.per_share) * shares,
+    };
   }
   if (ratio >= MOAT_COMMODITY_FLOOR) {
-    return { signal: "commodity", label: "Earnings power sits near the asset base — a commodity-like profile with no clear moat signal.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: asset.per_share };
+    return { signal: "commodity", label: "Earnings power sits near reproduction value — a commodity-like profile with no clear moat signal.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: reproduction.per_share };
   }
-  return { signal: "value_destruction", label: "Earnings power sits below the asset base — a value-destruction signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: asset.per_share };
+  return { signal: "value_destruction", label: "Earnings power sits below reproduction value — a value-destruction signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: reproduction.per_share };
 }

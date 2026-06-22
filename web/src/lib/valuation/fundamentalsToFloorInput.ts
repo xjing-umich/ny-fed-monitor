@@ -28,6 +28,18 @@ export function fundamentalsToFloorInput(
       total_debt: u(r.total_debt),
       net_debt: u(r.net_debt),
       shares_diluted: u(r.shares_diluted),
+      d_and_a: u(r.d_and_a),
+      // capex is stored NEGATIVE (XBRL cash-outflow); the engine wants a positive outflow magnitude.
+      capex: r.capex == null ? undefined : Math.abs(r.capex),
+      rd_expense: u(r.rd_expense),
+      sga_expense: u(r.sga_expense),
+      stock_based_comp: u(r.stock_based_comp),
+      working_capital: u(r.working_capital),
+      ppe_net: u(r.ppe_net),
+      operating_cash_flow: u(r.operating_cash_flow),
+      share_repurchases: u(r.share_repurchases),
+      current_assets: u(r.current_assets),
+      current_liabilities: u(r.current_liabilities),
     }));
   return { ticker, company_name: companyName ?? undefined, years };
 }

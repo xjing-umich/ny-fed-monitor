@@ -11,6 +11,7 @@
 import assert from "node:assert";
 import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW } from "./epvFloor";
+import { maintenanceCapex } from "./maintenanceCapex";
 
 function year(fy: number, o: Partial<ValuationFloorYear>): ValuationFloorYear {
   return { fiscal_year: fy, ...o };
@@ -163,5 +164,110 @@ assert.ok(/multi-share-class/i.test((mc as { reason: string }).reason), "per_sha
 
 // 真薄数据（<3 盈利年）仍 undefined（回归）
 assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.years.slice(0, 2) }), undefined, "N<3 net-income years → undefined");
+
+// ── EPV 写法 A (spec §1.2) ───────────────────────────────────────────────────
+{
+  // capex high vs D&A → maintenance capex > D&A → EPV below NOPAT/WACC.
+  const years = [
+    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 2_000, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 1_000, total_debt: 0, shares_diluted: 1_000, capex: 2_500, d_and_a: 1_000, ppe_net: 12_000 },
+    { fiscal_year: 2024, revenue: 9_500, operating_margin: 0.30, net_income: 1_900, effective_tax_rate: 0.20, shareholders_equity: 4_800, cash: 900, total_debt: 0, shares_diluted: 1_000, capex: 2_300, d_and_a: 950, ppe_net: 11_000 },
+    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 800, total_debt: 0, shares_diluted: 1_000, capex: 2_100, d_and_a: 900, ppe_net: 10_000 },
+  ];
+  const floor = computeValuationFloor({ ticker: "EPVA", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor", "EPVA produces a floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    const g = floor.graham_epv;
+    assert.ok(g.assessable, "graham lamp assessable");
+    // Reconstruct NOPAT and the maintenance-capex deduction.
+    const taxRate = floor.provenance.normalized_tax_rate;
+    const nopat = 0.30 * 10_000 * (1 - taxRate);
+    const mc = maintenanceCapex(years as any).value!;
+    const da = 1_000;
+    // write A: EPV(Biz) = (NOPAT + D&A − maintCapex)/r. With maintCapex > D&A, < NOPAT/r.
+    const expectedHigh = (nopat + da - mc) / 0.08 + 1_000 - 0; // +cash −debt
+    assert.ok(Math.abs(g.equity_value_high! - expectedHigh) < 1e-6, "EPV write A: full-cash maintenance-capex deduction, no tax shield");
+    assert.ok(g.equity_value_high! < nopat / 0.08 + 1_000, "maintCapex > D&A presses EPV below NOPAT/WACC");
+  }
+}
+
+// ── Owner Earnings (spec §1.3) ───────────────────────────────────────────────
+{
+  const years = [
+    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 2_000, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 500, total_debt: 0, shares_diluted: 1_000, capex: 1_500, d_and_a: 1_000, ppe_net: 9_000, stock_based_comp: 200, working_capital: 1_000 },
+    { fiscal_year: 2024, revenue: 9_500, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_800, cash: 450, total_debt: 0, shares_diluted: 1_000, capex: 1_400, d_and_a: 950, ppe_net: 8_500, stock_based_comp: 180, working_capital: 800 },
+    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_600, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 400, total_debt: 0, shares_diluted: 1_000, capex: 1_300, d_and_a: 900, ppe_net: 8_000, stock_based_comp: 160, working_capital: 600 },
+  ];
+  const floor = computeValuationFloor({ ticker: "OE", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    const b = floor.buffett_epv;
+    assert.ok(b.assessable, "buffett lamp assessable");
+    const avgNi = (2_000 + 1_800 + 1_600) / 3;
+    const avgDa = (1_000 + 950 + 900) / 3;
+    const mc = maintenanceCapex(years as any).value!;
+    const oe = avgNi + avgDa - mc; // NO ΔNWC term (audit fix #3)
+    assert.ok(Math.abs(b.normalized_earnings! - oe) < 1e-6, "owner earnings = net income + D&A − maintenance capex, no ΔNWC");
+    // SBC is NOT added back (audit fix #6) but disclosed.
+    assert.ok(b.sbc_to_oe_pct != null && b.sbc_to_oe_pct > 0, "SBC/OE disclosed");
+    const avgSbc = (200 + 180 + 160) / 3;
+    assert.ok(Math.abs(b.sbc_to_oe_pct! - avgSbc / oe) < 1e-6, "SBC/OE% = avg SBC / owner earnings");
+  }
+}
+
+// ── Reproduction value as asset floor + moat EPV vs AV (spec §1.4/§1.5) ───────
+{
+  // R&D-heavy franchise: capitalized R&D should lift AV above tangible book; EPV well above AV → franchise.
+  const years = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 900, ppe_net: 6_000 },
+    { fiscal_year: 2024, revenue: 18_000, operating_margin: 0.40, net_income: 5_400, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 850, ppe_net: 5_500 },
+    { fiscal_year: 2023, revenue: 16_000, operating_margin: 0.40, net_income: 4_800, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 800, ppe_net: 5_000 },
+  ];
+  const floor = computeValuationFloor({ ticker: "MOAT", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    // AV includes capitalized R&D, so it exceeds tangible book (10000−1000−500 = 8500).
+    assert.ok(floor.asset_floor.capitalized_rd != null && floor.asset_floor.capitalized_rd > 0, "AV carries capitalized R&D");
+    assert.ok(floor.asset_floor.total_value! > 8_500, "AV > tangible book (R&D capitalized)");
+    // Moat compares EPV to AV (reproduction value), and franchise_value is set when franchise.
+    assert.strictEqual(floor.moat_reading.signal, "franchise", "high-margin R&D franchise reads franchise vs reproduction value");
+    assert.ok(floor.moat_reading.franchise_value != null && floor.moat_reading.franchise_value > 0, "franchise value (EPV − AV) set");
+    assert.ok(floor.moat_reading.basis_note.toLowerCase().includes("reproduction"), "moat basis cites reproduction value");
+  }
+}
+
+// ── Growth value wired into the floor (spec §1.6) ────────────────────────────
+{
+  // Same R&D franchise grower as the moat test but with a rising operating-income series.
+  const years = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 1_800, ppe_net: 6_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 1_600, ppe_net: 5_500, working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 1_400, ppe_net: 5_000, working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 650, capex: 1_200, ppe_net: 4_500, working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 600, capex: 1_000, ppe_net: 4_000, working_capital: 1_000 },
+  ];
+  const floor = computeValuationFloor({ ticker: "GROW", years });
+  assert.ok(floor && "kind" in floor && floor.kind === "floor");
+  if (floor && "kind" in floor && floor.kind === "floor") {
+    assert.strictEqual(floor.moat_reading.signal, "franchise", "grower reads franchise");
+    assert.ok(floor.growth_value.assessable, "GV assessable for the franchise grower");
+    assert.strictEqual(floor.growth_value.gated_to_zero, false, "franchise → GV not gated");
+    assert.ok(floor.growth_value.scenarios.neutral > 0, "franchise grower → positive neutral GV");
+    assert.ok(floor.growth_value.per_share.pessimistic <= floor.growth_value.per_share.optimistic + 1e-9, "GV scenarios ordered");
+  }
+
+  // A commodity (low margin, EPV ≈ AV) → GV gated to zero.
+  const commodityYears = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.05, operating_income: 1_000, net_income: 700, effective_tax_rate: 0.21, shareholders_equity: 9_000, cash: 200, total_debt: 0, shares_diluted: 1_000, d_and_a: 800, capex: 1_200, ppe_net: 9_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 18_000, operating_margin: 0.05, operating_income: 900, net_income: 650, effective_tax_rate: 0.21, shareholders_equity: 8_500, cash: 180, total_debt: 0, shares_diluted: 1_000, d_and_a: 750, capex: 1_100, ppe_net: 8_500, working_capital: 1_800 },
+    { fiscal_year: 2023, revenue: 16_000, operating_margin: 0.05, operating_income: 800, net_income: 600, effective_tax_rate: 0.21, shareholders_equity: 8_000, cash: 160, total_debt: 0, shares_diluted: 1_000, d_and_a: 700, capex: 1_000, ppe_net: 8_000, working_capital: 1_600 },
+  ];
+  const cFloor = computeValuationFloor({ ticker: "COMM", years: commodityYears });
+  assert.ok(cFloor && "kind" in cFloor && cFloor.kind === "floor");
+  if (cFloor && "kind" in cFloor && cFloor.kind === "floor") {
+    assert.notStrictEqual(cFloor.moat_reading.signal, "franchise", "low-margin commodity is not a franchise");
+    assert.strictEqual(cFloor.growth_value.gated_to_zero, true, "non-franchise → GV gated to zero");
+    assert.strictEqual(cFloor.growth_value.scenarios.neutral, 0, "gated → GV 0");
+  }
+}
 
 console.log("epvFloor.check.ts: all assertions passed.");
