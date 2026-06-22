@@ -144,7 +144,7 @@ assert.ok(eur!.suppressedReason?.includes("EUR"), "suppressed reason names the c
 
 // Reference v2 floor: EPV_low=90, EPV_high=130 (from `floor` above), assessable GV
 // per_share pess=10 / neut=30 / opt=70, AV not assessable.
-// → valueFloor=90, base=130, ceilings = {100, 160, 200}.
+// → valueFloor=90, base=130, ceilings = {140, 160, 200}.
 const gvFloor = makeFloor({
   graham: { per_share_low: 90, per_share_high: 110 },
   buffett: { per_share_low: 100, per_share_high: 130 },
