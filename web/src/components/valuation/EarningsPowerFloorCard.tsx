@@ -219,6 +219,49 @@ function growthSummary(floor: ValuationFloor): string {
   return `If the moat holds for ${dur} at ${roiic}: growth value ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / share (neutral ${perShare(gv.per_share.neutral)}). Conservative, not a forecast or target price.`;
 }
 
+// Spec A: full Greenwald fair value (max(AV,EPV) + growth value) as a first-class
+// headline. The range IS the v2 value-band upper edges (epv.ceilings) — no new math.
+// GV collapsed → honest zero-growth-only reading. RSC, no hydration.
+function FairValueHeadline({ floor, sz }: { floor: ValuationFloor; sz: StrikeZoneAssessment }) {
+  const epv = sz.epv;
+  if (!epv) return null;
+
+  if (!epv.ceilings) {
+    const gv = floor.growth_value;
+    const reason = !gv.assessable
+      ? (gv.not_assessable_reason ?? "not assessable")
+      : gv.gated_to_zero
+        ? "no moat / ROIIC ≤ WACC"
+        : "growth value not credited";
+    return (
+      <div className="rounded-lg border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-accent)_5%,transparent)] p-4">
+        <h4 className="text-xs uppercase tracking-[0.08em] text-[var(--tt-faint)]">Greenwald fair value</h4>
+        <p className="mt-1 font-mono text-2xl tabular-nums text-[var(--tt-text)]">≈ {perShare(epv.base)}<span className="ml-1 text-sm text-[var(--tt-faint)]">/ sh</span></p>
+        <p className="mt-1 text-sm text-[var(--tt-muted)]">
+          Zero-growth value — no growth value credited ({reason}). The honest reading for a business whose moat is being harvested, not compounded.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-accent)_5%,transparent)] p-4">
+      <h4 className="text-xs uppercase tracking-[0.08em] text-[var(--tt-faint)]">Greenwald fair value</h4>
+      <p className="mt-1 font-mono text-2xl tabular-nums text-[var(--tt-text)]">
+        {perShare(epv.ceilings.pessimistic)} – {perShare(epv.ceilings.optimistic)}
+        <span className="ml-1 text-sm text-[var(--tt-faint)]">/ sh</span>
+      </p>
+      <p className="mt-1 text-sm text-[var(--tt-muted)]">
+        Floor {perShare(epv.valueFloor)} → zero-growth value {perShare(epv.base)} → fair value incl. moat-driven growth (neutral{" "}
+        <strong className="font-mono tabular-nums text-[var(--tt-text)]">{perShare(epv.ceilings.neutral)}</strong>).
+      </p>
+      <p className="mt-1 text-xs text-[var(--tt-faint)]">
+        A conservative→optimistic range, not a price target or recommendation.
+      </p>
+    </div>
+  );
+}
+
 function StrikeZoneSection({ floor, sz }: { floor: ValuationFloor; sz: StrikeZoneAssessment }) {
   // Currency mismatch: suppress the whole comparison, state the reason only.
   if (sz.currencyMismatch) {
@@ -356,6 +399,7 @@ export function EarningsPowerFloorCard({
           </p>
         ) : null}
 
+        {strikeZone?.epv ? <FairValueHeadline floor={floor} sz={strikeZone} /> : null}
         {strikeZone ? <StrikeZoneSection floor={floor} sz={strikeZone} /> : null}
 
         <details className="text-xs text-[var(--tt-muted)]">
