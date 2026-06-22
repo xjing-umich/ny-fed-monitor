@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T16:21:35.036Z",
+  "generatedAt": "2026-06-22T13:08:26.804Z",
   "managers": [
     {
       "cik": "0001067983",
@@ -340,6 +340,426 @@
       "totalValue": 22404547213,
       "holdingCount": 993,
       "topHolding": "STATE STR SPDR S&P 500 ETF T"
+    },
+    {
+      "cik": "0000860643",
+      "slug": "gardner-russo",
+      "name": "GARDNER RUSSO & QUINN LLC",
+      "person": "Thomas Russo",
+      "period": "2026-03-31",
+      "totalValue": 8496278296,
+      "holdingCount": 86,
+      "topHolding": "Berkshire Hathaway Inc Cl A"
+    },
+    {
+      "cik": "0000807985",
+      "slug": "southeastern-asset",
+      "name": "SOUTHEASTERN ASSET MANAGEMENT INC/TN/",
+      "person": "Mason Hawkins",
+      "period": "2026-03-31",
+      "totalValue": 2032773449,
+      "holdingCount": 49,
+      "topHolding": "RAYONIER INC"
+    },
+    {
+      "cik": "0001377581",
+      "slug": "first-pacific-advisors",
+      "name": "First Pacific Advisors, LP",
+      "person": "Steven Romick",
+      "period": "2026-03-31",
+      "totalValue": 7139533673,
+      "holdingCount": 86,
+      "topHolding": "ANALOG DEVICES INC"
+    },
+    {
+      "cik": "0001036325",
+      "slug": "davis-advisors",
+      "name": "DAVIS SELECTED ADVISERS",
+      "person": "Christopher Davis",
+      "period": "2026-03-31",
+      "totalValue": 21781443023,
+      "holdingCount": 112,
+      "topHolding": "Capital One Financial Corp."
+    },
+    {
+      "cik": "0000936753",
+      "slug": "ariel-investments",
+      "name": "ARIEL INVESTMENTS, LLC",
+      "person": "John Rogers",
+      "period": "2026-03-31",
+      "totalValue": 8934260435,
+      "holdingCount": 106,
+      "topHolding": "MADISON SQUARE GARDEN ENTMT"
+    },
+    {
+      "cik": "0001953324",
+      "slug": "aquamarine-capital",
+      "name": "Aquamarine Zurich AG",
+      "person": "Guy Spier",
+      "period": "2026-03-31",
+      "totalValue": 135303000,
+      "holdingCount": 7,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001358706",
+      "slug": "abrams-capital",
+      "name": "ABRAMS CAPITAL MANAGEMENT, L.P.",
+      "person": "David Abrams",
+      "period": "2026-03-31",
+      "totalValue": 4638238227,
+      "holdingCount": 11,
+      "topHolding": "LOAR HOLDINGS INC"
+    },
+    {
+      "cik": "0001556785",
+      "slug": "vulcan-value-partners",
+      "name": "Vulcan Value Partners, LLC",
+      "person": "C.T. Fitzpatrick",
+      "period": "2026-03-31",
+      "totalValue": 3772296111,
+      "holdingCount": 33,
+      "topHolding": "EVEREST GROUP LTD"
+    },
+    {
+      "cik": "0001484150",
+      "slug": "lindsell-train",
+      "name": "Lindsell Train Ltd",
+      "person": "Nick Train",
+      "period": "2026-03-31",
+      "totalValue": 3136812519,
+      "holdingCount": 27,
+      "topHolding": "TKO GROUP HOLDINGS INC"
+    },
+    {
+      "cik": "0001027796",
+      "slug": "pzena-investment",
+      "name": "PZENA INVESTMENT MANAGEMENT LLC",
+      "person": "Richard Pzena",
+      "period": "2026-03-31",
+      "totalValue": 30796447662,
+      "holdingCount": 158,
+      "topHolding": "MAGNA INTL INC"
+    },
+    {
+      "cik": "0001345471",
+      "slug": "trian-partners",
+      "name": "TRIAN FUND MANAGEMENT, L.P.",
+      "person": "Nelson Peltz",
+      "period": "2026-03-31",
+      "totalValue": 3859778188,
+      "holdingCount": 8,
+      "topHolding": "Janus Henderson Group plc"
+    },
+    {
+      "cik": "0000934639",
+      "slug": "maverick-capital",
+      "name": "MAVERICK CAPITAL LTD",
+      "person": "Lee Ainslie",
+      "period": "2026-03-31",
+      "totalValue": 8670232588,
+      "holdingCount": 241,
+      "topHolding": "NVIDIA CORPORATION"
+    },
+    {
+      "cik": "0001103804",
+      "slug": "viking-global",
+      "name": "VIKING GLOBAL INVESTORS LP",
+      "person": "Andreas Halvorsen",
+      "period": "2026-03-31",
+      "totalValue": 35748670967,
+      "holdingCount": 77,
+      "topHolding": "VISA INC"
+    },
+    {
+      "cik": "0001418814",
+      "slug": "valueact-capital",
+      "name": "ValueAct Holdings, L.P.",
+      "person": "Mason Morfit",
+      "period": "2026-03-31",
+      "totalValue": 5712466529,
+      "holdingCount": 18,
+      "topHolding": "VISA INC"
+    },
+    {
+      "cik": "0001631664",
+      "slug": "punch-card-management",
+      "name": "Punch Card Management L.P.",
+      "person": "Norbert Lou",
+      "period": "2026-03-31",
+      "totalValue": 270645674,
+      "holdingCount": 5,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001798849",
+      "slug": "durable-capital",
+      "name": "Durable Capital Partners LP",
+      "person": "Henry Ellenbogen",
+      "period": "2026-03-31",
+      "totalValue": 9713928029,
+      "holdingCount": 37,
+      "topHolding": "RBC BEARINGS INC"
+    },
+    {
+      "cik": "0001061165",
+      "slug": "lone-pine-capital",
+      "name": "LONE PINE CAPITAL LLC",
+      "person": "Stephen Mandel",
+      "period": "2026-03-31",
+      "totalValue": 12543849391,
+      "holdingCount": 36,
+      "topHolding": "VISTRA CORP"
+    },
+    {
+      "cik": "0001063296",
+      "slug": "atlantic-investment",
+      "name": "ATLANTIC INVESTMENT MANAGEMENT, INC.",
+      "person": "Alex Roepers",
+      "period": "2026-03-31",
+      "totalValue": 171658756,
+      "holdingCount": 12,
+      "topHolding": "KIRBY CORP"
+    },
+    {
+      "cik": "0000859804",
+      "slug": "wedgewood-partners",
+      "name": "WEDGEWOOD PARTNERS INC",
+      "person": "David Rolfe",
+      "period": "2026-03-31",
+      "totalValue": 484285577,
+      "holdingCount": 22,
+      "topHolding": "ALPHABET INC"
+    },
+    {
+      "cik": "0001167483",
+      "slug": "tiger-global",
+      "name": "TIGER GLOBAL MANAGEMENT LLC",
+      "person": "Chase Coleman",
+      "period": "2026-03-31",
+      "totalValue": 22845413829,
+      "holdingCount": 54,
+      "topHolding": "ALPHABET INC"
+    },
+    {
+      "cik": "0001559771",
+      "slug": "engaged-capital",
+      "name": "Engaged Capital LLC",
+      "person": "Glenn Welling",
+      "period": "2026-03-31",
+      "totalValue": 303413763,
+      "holdingCount": 8,
+      "topHolding": "V F CORP"
+    },
+    {
+      "cik": "0001697591",
+      "slug": "cas-investment-partners",
+      "name": "CAS Investment Partners, LLC",
+      "person": "Clifford Sosin",
+      "period": "2026-03-31",
+      "totalValue": 1748117080,
+      "holdingCount": 5,
+      "topHolding": "CARVANA CO"
+    },
+    {
+      "cik": "0001657335",
+      "slug": "oakcliff-capital",
+      "name": "Oakcliff Capital Partners, LP",
+      "person": "Bryan Lawrence",
+      "period": "2026-03-31",
+      "totalValue": 226634133,
+      "holdingCount": 8,
+      "topHolding": "INTERACTIVE BROKERS GROUP IN"
+    },
+    {
+      "cik": "0001135778",
+      "slug": "miller-value-partners",
+      "name": "MILLER VALUE PARTNERS, LLC",
+      "person": "Bill Miller",
+      "period": "2026-03-31",
+      "totalValue": 383178520,
+      "holdingCount": 55,
+      "topHolding": "NABORS INDUSTRIES LTD"
+    },
+    {
+      "cik": "0001540866",
+      "slug": "makaira-partners",
+      "name": "Makaira Partners LLC",
+      "person": "Tom Bancroft",
+      "period": "2026-03-31",
+      "totalValue": 0,
+      "holdingCount": 1,
+      "topHolding": "NONE"
+    },
+    {
+      "cik": "0001773994",
+      "slug": "conifer-management",
+      "name": "Conifer Management, L.L.C.",
+      "person": "Greg Alexander",
+      "period": "2026-03-31",
+      "totalValue": 523825043,
+      "holdingCount": 6,
+      "topHolding": "GROUP 1 AUTOMOTIVE INC"
+    },
+    {
+      "cik": "0001766908",
+      "slug": "shawspring-partners",
+      "name": "ShawSpring Partners LLC",
+      "person": "Dennis Hong",
+      "period": "2026-03-31",
+      "totalValue": 267608814,
+      "holdingCount": 12,
+      "topHolding": "OKTA INC"
+    },
+    {
+      "cik": "0001165797",
+      "slug": "causeway-capital",
+      "name": "CAUSEWAY CAPITAL MANAGEMENT LLC",
+      "person": "Sarah Ketterer",
+      "period": "2026-03-31",
+      "totalValue": 8146199181,
+      "holdingCount": 107,
+      "topHolding": "ASTRAZENECA PLC"
+    },
+    {
+      "cik": "0001389403",
+      "slug": "chou-associates",
+      "name": "Chou Associates Management Inc.",
+      "person": "Francis Chou",
+      "period": "2026-03-31",
+      "totalValue": 210266544,
+      "holdingCount": 31,
+      "topHolding": "BERKSHIRE HATHAWAY INC DEL"
+    },
+    {
+      "cik": "0001854794",
+      "slug": "patient-capital",
+      "name": "Patient Capital Management, LLC",
+      "person": "Samantha McLemore",
+      "period": "2026-03-31",
+      "totalValue": 2735137666,
+      "holdingCount": 40,
+      "topHolding": "ROYALTY PHARMA PLC"
+    },
+    {
+      "cik": "0001581811",
+      "slug": "egerton-capital",
+      "name": "Egerton Capital (UK) LLP",
+      "person": "John Armitage",
+      "period": "2026-03-31",
+      "totalValue": 9010197462,
+      "holdingCount": 24,
+      "topHolding": "VISA INC"
+    },
+    {
+      "cik": "0001766596",
+      "slug": "rv-capital",
+      "name": "RV Capital AG",
+      "person": "Robert Vinall",
+      "period": "2026-03-31",
+      "totalValue": 382628512,
+      "holdingCount": 13,
+      "topHolding": "CARVANA CO"
+    },
+    {
+      "cik": "0001766504",
+      "slug": "greenlea-lane-capital",
+      "name": "GREENLEA LANE CAPITAL MANAGEMENT, LLC",
+      "person": "Josh Tarasoff",
+      "period": "2026-03-31",
+      "totalValue": 344294052,
+      "holdingCount": 9,
+      "topHolding": "AMAZON COM INC"
+    },
+    {
+      "cik": "0000820124",
+      "slug": "sound-shore",
+      "name": "SOUND SHORE MANAGEMENT INC /CT/",
+      "person": "Harry Burn",
+      "period": "2026-03-31",
+      "totalValue": 2984059912,
+      "holdingCount": 40,
+      "topHolding": "Teva Pharmaceutical Industries Ltd. - ADR"
+    },
+    {
+      "cik": "0001279936",
+      "slug": "cantillon-capital",
+      "name": "CANTILLON CAPITAL MANAGEMENT LLC",
+      "person": "William von Mueffling",
+      "period": "2026-03-31",
+      "totalValue": 15050978966,
+      "holdingCount": 38,
+      "topHolding": "BROADCOM INC"
+    },
+    {
+      "cik": "0001016287",
+      "slug": "matrix-asset-advisors",
+      "name": "MATRIX ASSET ADVISORS INC/NY",
+      "person": "David Katz",
+      "period": "2026-03-31",
+      "totalValue": 1090209468,
+      "holdingCount": 105,
+      "topHolding": "MICROSOFT CORP"
+    },
+    {
+      "cik": "0000947996",
+      "slug": "olstein-capital",
+      "name": "Olstein Capital Management, L.P.",
+      "person": "Robert Olstein",
+      "period": "2026-03-31",
+      "totalValue": 458067000,
+      "holdingCount": 99,
+      "topHolding": "DISNEY WALT CO"
+    },
+    {
+      "cik": "0001039565",
+      "slug": "kahn-brothers",
+      "name": "KAHN BROTHERS GROUP INC",
+      "person": "Thomas Kahn",
+      "period": "2026-03-31",
+      "totalValue": 564065307,
+      "holdingCount": 48,
+      "topHolding": "Citigroup Inc"
+    },
+    {
+      "cik": "0000846222",
+      "slug": "greenhaven-associates",
+      "name": "GREENHAVEN ASSOCIATES INC",
+      "person": "Edgar Wachenheim",
+      "period": "2026-03-31",
+      "totalValue": 6071579036,
+      "holdingCount": 27,
+      "topHolding": "General Motors Co (GM)"
+    },
+    {
+      "cik": "0001376879",
+      "slug": "ako-capital",
+      "name": "AKO CAPITAL LLP",
+      "person": "Nicolai Tangen",
+      "period": "2026-03-31",
+      "totalValue": 5108383000,
+      "holdingCount": 27,
+      "topHolding": "ALCON AG"
+    },
+    {
+      "cik": "0001142062",
+      "slug": "century-management",
+      "name": "VAN DEN BERG MANAGEMENT I, INC",
+      "person": "Arnold Van Den Berg",
+      "period": "2026-03-31",
+      "totalValue": 436153108,
+      "holdingCount": 133,
+      "topHolding": "SPROTT ASSET MANAGEMENT LP"
+    },
+    {
+      "cik": "0000898382",
+      "slug": "cooperman-family-office",
+      "name": "COOPERMAN LEON G",
+      "person": "Leon Cooperman",
+      "period": "2026-03-31",
+      "totalValue": 3048029695,
+      "holdingCount": 41,
+      "topHolding": "VERTIV HOLDINGS CO"
     }
   ]
 }

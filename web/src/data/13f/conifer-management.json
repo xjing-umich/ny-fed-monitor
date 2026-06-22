@@ -1,0 +1,434 @@
+{
+  "manager": {
+    "cik": "0001773994",
+    "slug": "conifer-management",
+    "name": "Conifer Management, L.L.C.",
+    "person": "Greg Alexander"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0000919574-26-003138",
+      "holdings": [
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 249636230,
+          "shares": 755032,
+          "weight": 0.4765641378470712
+        },
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 155862000,
+          "shares": 4200000,
+          "weight": 0.29754591171770306
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 52940640,
+          "shares": 212000,
+          "weight": 0.1010655002227528
+        },
+        {
+          "cusip": "M7S64H106",
+          "issuer": "MONDAY COM LTD",
+          "titleOfClass": "SHS",
+          "value": 27644000,
+          "shares": 400000,
+          "weight": 0.052773345546215135
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 19395293,
+          "shares": 5913199,
+          "weight": 0.037026280547644605
+        },
+        {
+          "cusip": "83207R107",
+          "issuer": "SMITH DOUGLAS HOMES CORP",
+          "titleOfClass": "COM SHS CL A",
+          "value": 18346880,
+          "shares": 1433350,
+          "weight": 0.035024824118613206
+        }
+      ],
+      "totalValue": 523825043
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-13",
+      "accession": "0000919574-26-000772",
+      "holdings": [
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 223561159,
+          "shares": 568424,
+          "weight": 0.37037741343946906
+        },
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 200130000,
+          "shares": 4200000,
+          "weight": 0.33155863068164243
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 132932000,
+          "shares": 400000,
+          "weight": 0.22023060957263826
+        },
+        {
+          "cusip": "83207R107",
+          "issuer": "SMITH DOUGLAS HOMES CORP",
+          "titleOfClass": "COM SHS CL A",
+          "value": 24037280,
+          "shares": 1433350,
+          "weight": 0.039822953290917056
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 22943212,
+          "shares": 5913199,
+          "weight": 0.03801039301533317
+        }
+      ],
+      "totalValue": 603603651
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0000919574-25-006771",
+      "holdings": [
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 248691184,
+          "shares": 568424,
+          "weight": 0.3940727119305872
+        },
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 213276000,
+          "shares": 4200000,
+          "weight": 0.3379542867498991
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 126400000,
+          "shares": 400000,
+          "weight": 0.2002917433053285
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 27673771,
+          "shares": 5913199,
+          "weight": 0.04385148605555731
+        },
+        {
+          "cusip": "83207R107",
+          "issuer": "SMITH DOUGLAS HOMES CORP",
+          "titleOfClass": "COM SHS CL A",
+          "value": 15038479,
+          "shares": 851556,
+          "weight": 0.023829771958627954
+        }
+      ],
+      "totalValue": 631079434
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0000919574-25-004637",
+      "holdings": [
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 280500000,
+          "shares": 5000000,
+          "weight": 0.36505365205237167
+        },
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 248236445,
+          "shares": 568424,
+          "weight": 0.32306460185293295
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 168910000,
+          "shares": 500000,
+          "weight": 0.21982606904872048
+        },
+        {
+          "cusip": "N97284108",
+          "issuer": "NEBIUS GROUP N.V.",
+          "titleOfClass": "SHS CLASS A",
+          "value": 38731000,
+          "shares": 700000,
+          "weight": 0.050406035642211786
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 22292760,
+          "shares": 5913199,
+          "weight": 0.029012668279240744
+        },
+        {
+          "cusip": "83207R107",
+          "issuer": "SMITH DOUGLAS HOMES CORP",
+          "titleOfClass": "COM SHS CL A",
+          "value": 9710000,
+          "shares": 500000,
+          "weight": 0.012636973124522385
+        }
+      ],
+      "totalValue": 768380205
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0000919574-25-003046",
+      "holdings": [
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 260450000,
+          "shares": 5000000,
+          "weight": 0.3948099552076775
+        },
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 217109547,
+          "shares": 568424,
+          "weight": 0.3291111941878639
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 146770000,
+          "shares": 500000,
+          "weight": 0.22248514926408455
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 20577933,
+          "shares": 5913199,
+          "weight": 0.031193598794381217
+        },
+        {
+          "cusip": "N97284108",
+          "issuer": "NEBIUS GROUP N.V.",
+          "titleOfClass": "COM",
+          "value": 14777000,
+          "shares": 700000,
+          "weight": 0.022400102545992895
+        }
+      ],
+      "totalValue": 659684480
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0000919574-25-001156",
+      "holdings": [
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 239579348,
+          "shares": 568424,
+          "weight": 0.30880636348556795
+        },
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 235850000,
+          "shares": 5000000,
+          "weight": 0.30399941161903155
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 178715000,
+          "shares": 500000,
+          "weight": 0.23035511913290319
+        },
+        {
+          "cusip": "N97284108",
+          "issuer": "NEBIUS GROUP N.V.",
+          "titleOfClass": "SHS CLASS A",
+          "value": 69250000,
+          "shares": 2500000,
+          "weight": 0.08925995019977924
+        },
+        {
+          "cusip": "N82405106",
+          "issuer": "STELLANTIS N.V",
+          "titleOfClass": "SHS",
+          "value": 36641281,
+          "shares": 2807761,
+          "weight": 0.04722886523200169
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 15788241,
+          "shares": 5913199,
+          "weight": 0.02035029033071643
+        }
+      ],
+      "totalValue": 775823870
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0000919574-24-006475",
+      "holdings": [
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 252180000,
+          "shares": 6000000,
+          "weight": 0.2886522025022094
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 222348000,
+          "shares": 700000,
+          "weight": 0.25450567024332327
+        },
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 217729129,
+          "shares": 568424,
+          "weight": 0.24921878275334156
+        },
+        {
+          "cusip": "N82405106",
+          "issuer": "STELLANTIS N.V",
+          "titleOfClass": "SHS",
+          "value": 126450000,
+          "shares": 9000000,
+          "weight": 0.14473816720756752
+        },
+        {
+          "cusip": "N97284108",
+          "issuer": "NEBIUS GROUP N.V.",
+          "titleOfClass": "SHS CLASS A",
+          "value": 44000000,
+          "shares": 5500000,
+          "weight": 0.05036361690101203
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 10939418,
+          "shares": 5913199,
+          "weight": 0.012521560392546255
+        }
+      ],
+      "totalValue": 873646547
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0000919574-24-004562",
+      "holdings": [
+        {
+          "cusip": "2.9452e+105",
+          "issuer": "EQUITABLE HLDGS INC",
+          "titleOfClass": "COM",
+          "value": 245160000,
+          "shares": 6000000,
+          "weight": 0.30057254619575735
+        },
+        {
+          "cusip": "536797103",
+          "issuer": "LITHIA MTRS INC",
+          "titleOfClass": "COM",
+          "value": 176715000,
+          "shares": 700000,
+          "weight": 0.21665719326555416
+        },
+        {
+          "cusip": "398905109",
+          "issuer": "GROUP 1 AUTOMOTIVE INC",
+          "titleOfClass": "COM",
+          "value": 168981087,
+          "shares": 568424,
+          "weight": 0.20717521446613146
+        },
+        {
+          "cusip": "N82405106",
+          "issuer": "STELLANTIS N.V",
+          "titleOfClass": "SHS",
+          "value": 141332000,
+          "shares": 7120000,
+          "weight": 0.17327671357047958
+        },
+        {
+          "cusip": "N97284108",
+          "issuer": "YANDEX N V",
+          "titleOfClass": "SHS CLASS A",
+          "value": 65301747,
+          "shares": 5500000,
+          "weight": 0.08006164287331195
+        },
+        {
+          "cusip": "76674Q107",
+          "issuer": "RIMINI STR INC DEL",
+          "titleOfClass": "COM",
+          "value": 18153521,
+          "shares": 5913199,
+          "weight": 0.022256689628765505
+        }
+      ],
+      "totalValue": 815643355
+    }
+  ]
+}

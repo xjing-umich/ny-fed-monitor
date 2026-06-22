@@ -1,0 +1,2530 @@
+{
+  "manager": {
+    "cik": "0000820124",
+    "slug": "sound-shore",
+    "name": "SOUND SHORE MANAGEMENT INC /CT/",
+    "person": "Harry Burn"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-07",
+      "accession": "0001193125-26-211648",
+      "holdings": [
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical Industries Ltd. - ADR",
+          "titleOfClass": "COMMON",
+          "value": 117036772,
+          "shares": 3885683,
+          "weight": 0.039220650875457355
+        },
+        {
+          "cusip": "75886F107",
+          "issuer": "Regeneron Pharmaceuticals, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 116637734,
+          "shares": 150960,
+          "weight": 0.03908692768900412
+        },
+        {
+          "cusip": "573874104",
+          "issuer": "Marvell Technology, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 113767840,
+          "shares": 1148590,
+          "weight": 0.03812518627474528
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "Bank of America Corporation",
+          "titleOfClass": "COMMON",
+          "value": 100697123,
+          "shares": 2065582,
+          "weight": 0.033745007127725525
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway Inc. - Class B",
+          "titleOfClass": "COMMON",
+          "value": 95593212,
+          "shares": 199485,
+          "weight": 0.03203461553019918
+        },
+        {
+          "cusip": "98956P102",
+          "issuer": "Zimmer Biomet Holdings Inc.",
+          "titleOfClass": "COMMON",
+          "value": 95140105,
+          "shares": 1052202,
+          "weight": 0.03188277306947046
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 93530622,
+          "shares": 970436,
+          "weight": 0.03134341292005534
+        },
+        {
+          "cusip": "172967424",
+          "issuer": "Citigroup Inc.",
+          "titleOfClass": "COMMON",
+          "value": 87733863,
+          "shares": 773599,
+          "weight": 0.029400838316680552
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies Inc.",
+          "titleOfClass": "COMMON",
+          "value": 84899304,
+          "shares": 1192741,
+          "weight": 0.02845093815261173
+        },
+        {
+          "cusip": "126408103",
+          "issuer": "CSX Corporation",
+          "titleOfClass": "COMMON",
+          "value": 82188627,
+          "shares": 2002159,
+          "weight": 0.027542552570573187
+        },
+        {
+          "cusip": "N6596X109",
+          "issuer": "NXP Semiconductors NV",
+          "titleOfClass": "COMMON",
+          "value": 80841150,
+          "shares": 410653,
+          "weight": 0.027090994277597466
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "Pfizer Inc",
+          "titleOfClass": "COMMON",
+          "value": 80601422,
+          "shares": 2870421,
+          "weight": 0.02701065808895864
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise Group Incorporated",
+          "titleOfClass": "COMMON",
+          "value": 79708065,
+          "shares": 984658,
+          "weight": 0.026711281727107627
+        },
+        {
+          "cusip": "23135106",
+          "issuer": "Amazon.com, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 78908296,
+          "shares": 378875,
+          "weight": 0.026443268006342897
+        },
+        {
+          "cusip": "26884L109",
+          "issuer": "EQT Corporation",
+          "titleOfClass": "COMMON",
+          "value": 78631357,
+          "shares": 1235565,
+          "weight": 0.026350461893809324
+        },
+        {
+          "cusip": "55622104",
+          "issuer": "BP PLC Sponsored ADR",
+          "titleOfClass": "COMMON",
+          "value": 78569101,
+          "shares": 1671683,
+          "weight": 0.026329599041910925
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 77283469,
+          "shares": 1037362,
+          "weight": 0.025898765869014496
+        },
+        {
+          "cusip": "82846H405",
+          "issuer": "QXO, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 76316910,
+          "shares": 3929810,
+          "weight": 0.02557485849835042
+        },
+        {
+          "cusip": "844741108",
+          "issuer": "Southwest Airlines Co.",
+          "titleOfClass": "COMMON",
+          "value": 75214276,
+          "shares": 2001977,
+          "weight": 0.025205350501689257
+        },
+        {
+          "cusip": "127097103",
+          "issuer": "Coterra Energy Inc.",
+          "titleOfClass": "COMMON",
+          "value": 74808422,
+          "shares": 2128868,
+          "weight": 0.02506934317879071
+        },
+        {
+          "cusip": "M22465104",
+          "issuer": "Check Point Software Technologies Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 74071868,
+          "shares": 518529,
+          "weight": 0.02482251368416895
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc. - Class A",
+          "titleOfClass": "COMMON",
+          "value": 73520753,
+          "shares": 255671,
+          "weight": 0.02463782737884922
+        },
+        {
+          "cusip": "45337C102",
+          "issuer": "Incyte Corporation",
+          "titleOfClass": "COMMON",
+          "value": 72268065,
+          "shares": 767829,
+          "weight": 0.02421803419877181
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "Vistra Corp.",
+          "titleOfClass": "COMMON",
+          "value": 72122621,
+          "shares": 479762,
+          "weight": 0.024169293890504165
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 71842452,
+          "shares": 902430,
+          "weight": 0.024075405360024824
+        },
+        {
+          "cusip": "911312106",
+          "issuer": "United Parcel Service, Inc. Cl B",
+          "titleOfClass": "COMMON",
+          "value": 71627133,
+          "shares": 728066,
+          "weight": 0.02400324896693964
+        },
+        {
+          "cusip": "G5960L103",
+          "issuer": "Medtronic, PLC",
+          "titleOfClass": "COMMON",
+          "value": 71506959,
+          "shares": 825239,
+          "weight": 0.023962976987306546
+        },
+        {
+          "cusip": "97023105",
+          "issuer": "The Boeing Company",
+          "titleOfClass": "COMMON",
+          "value": 70657441,
+          "shares": 355009,
+          "weight": 0.02367829168437956
+        },
+        {
+          "cusip": "13091103",
+          "issuer": "Albertsons Companies, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 70449494,
+          "shares": 4134360,
+          "weight": 0.023608605751076487
+        },
+        {
+          "cusip": "G4705A100",
+          "issuer": "ICON Plc",
+          "titleOfClass": "COMMON",
+          "value": 69379172,
+          "shares": 626958,
+          "weight": 0.023249925955240003
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 64190000,
+          "shares": 1914405,
+          "weight": 0.021510962210198412
+        },
+        {
+          "cusip": "690742101",
+          "issuer": "Owens Corning",
+          "titleOfClass": "COMMON",
+          "value": 64101953,
+          "shares": 592330,
+          "weight": 0.0214814564353157
+        },
+        {
+          "cusip": "681919106",
+          "issuer": "Omnicom Group Inc.",
+          "titleOfClass": "COMMON",
+          "value": 63483468,
+          "shares": 842962,
+          "weight": 0.021274193505535756
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "Mohawk Industries, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 63264193,
+          "shares": 642537,
+          "weight": 0.021200711401802446
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 60542776,
+          "shares": 924882,
+          "weight": 0.02028872669631574
+        },
+        {
+          "cusip": "G8267P108",
+          "issuer": "Smurfit WestRock Public Limited Company",
+          "titleOfClass": "COMMON",
+          "value": 60139070,
+          "shares": 1509136,
+          "weight": 0.020153439198106825
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM Incorporated",
+          "titleOfClass": "COMMON",
+          "value": 54705229,
+          "shares": 424796,
+          "weight": 0.0183324834665719
+        },
+        {
+          "cusip": "50155Q100",
+          "issuer": "Kyndryl Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 54421550,
+          "shares": 4147984,
+          "weight": 0.018237418686250558
+        },
+        {
+          "cusip": "695156109",
+          "issuer": "Packaging Corporation of America",
+          "titleOfClass": "COMMON",
+          "value": 11619045,
+          "shares": 54750,
+          "weight": 0.0038937036596603026
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corporation",
+          "titleOfClass": "COMMON",
+          "value": 2039000,
+          "shares": 9855,
+          "weight": 0.0006832972728866577
+        }
+      ],
+      "totalValue": 2984059912
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-10",
+      "accession": "0001193125-26-044656",
+      "holdings": [
+        {
+          "cusip": "75886F107",
+          "issuer": "Regeneron Pharmaceuticals, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 135761899,
+          "shares": 175887,
+          "weight": 0.043200556378725476
+        },
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical Industries",
+          "titleOfClass": "COMMON",
+          "value": 134512166,
+          "shares": 4309906,
+          "weight": 0.04280288102708021
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc. Cl A",
+          "titleOfClass": "COMMON",
+          "value": 109466742,
+          "shares": 349734,
+          "weight": 0.03483322047054156
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise",
+          "titleOfClass": "COMMON",
+          "value": 109367074,
+          "shares": 1361981,
+          "weight": 0.034801505290620906
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 109072550,
+          "shares": 958711,
+          "weight": 0.03470778532382162
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway, Inc. C",
+          "titleOfClass": "COMMON",
+          "value": 105659041,
+          "shares": 210204,
+          "weight": 0.033621578596529256
+        },
+        {
+          "cusip": "844741108",
+          "issuer": "Southwest Airlines Co.",
+          "titleOfClass": "COMMON",
+          "value": 104180407,
+          "shares": 2520697,
+          "weight": 0.033151065058113736
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM Incorporated",
+          "titleOfClass": "COMMON",
+          "value": 100747766,
+          "shares": 588996,
+          "weight": 0.032058770370570915
+        },
+        {
+          "cusip": "79466L302",
+          "issuer": "Salesforce, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 100278767,
+          "shares": 378539,
+          "weight": 0.031909531019248455
+        },
+        {
+          "cusip": "00130H105",
+          "issuer": "The AES Corporation",
+          "titleOfClass": "COMMON",
+          "value": 98922224,
+          "shares": 6898342,
+          "weight": 0.03147786784435676
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 93224170,
+          "shares": 3391203,
+          "weight": 0.029664700049200757
+        },
+        {
+          "cusip": "172967424",
+          "issuer": "Citigroup Inc.",
+          "titleOfClass": "COMMON",
+          "value": 92064793,
+          "shares": 788969,
+          "weight": 0.029295776722246574
+        },
+        {
+          "cusip": "31620M106",
+          "issuer": "Fidelity National Information Services",
+          "titleOfClass": "COMMON",
+          "value": 91983298,
+          "shares": 1384040,
+          "weight": 0.029269844340864045
+        },
+        {
+          "cusip": "45337C102",
+          "issuer": "Incyte Corporation",
+          "titleOfClass": "COMMON",
+          "value": 91839507,
+          "shares": 929832,
+          "weight": 0.02922408885830223
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "Capital One Financial Corp",
+          "titleOfClass": "COMMON",
+          "value": 88644624,
+          "shares": 365756,
+          "weight": 0.02820745072800522
+        },
+        {
+          "cusip": "126408103",
+          "issuer": "CSX Corporation",
+          "titleOfClass": "COMMON",
+          "value": 87067932,
+          "shares": 2401874,
+          "weight": 0.02770573432495251
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "Bank of America Corporation",
+          "titleOfClass": "COMMON",
+          "value": 86785655,
+          "shares": 1577921,
+          "weight": 0.027615911454598307
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 86719242,
+          "shares": 1066395,
+          "weight": 0.027594778290051306
+        },
+        {
+          "cusip": "573874104",
+          "issuer": "Marvell Technology, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 86229971,
+          "shares": 1014709,
+          "weight": 0.02743908822107271
+        },
+        {
+          "cusip": "127097103",
+          "issuer": "Coterra Energy, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 86050240,
+          "shares": 3269386,
+          "weight": 0.02738189633398438
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 85749126,
+          "shares": 920055,
+          "weight": 0.027286079374813654
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies",
+          "titleOfClass": "COMMON",
+          "value": 83487174,
+          "shares": 1017888,
+          "weight": 0.026566307585955788
+        },
+        {
+          "cusip": "26884L109",
+          "issuer": "EQT Corporation",
+          "titleOfClass": "COMMON",
+          "value": 81342663,
+          "shares": 1517587,
+          "weight": 0.025883906492256466
+        },
+        {
+          "cusip": "50155Q100",
+          "issuer": "Kyndryl Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 78995363,
+          "shares": 2974223,
+          "weight": 0.025136976265626516
+        },
+        {
+          "cusip": "M22465104",
+          "issuer": "Check Point Software Technologies",
+          "titleOfClass": "COMMON",
+          "value": 78785807,
+          "shares": 424584,
+          "weight": 0.02507029381746409
+        },
+        {
+          "cusip": "13091103",
+          "issuer": "Albertsons Companies, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 77834323,
+          "shares": 4533158,
+          "weight": 0.02476752375835159
+        },
+        {
+          "cusip": "82846H405",
+          "issuer": "QXO, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 77199120,
+          "shares": 4002028,
+          "weight": 0.024565396922946646
+        },
+        {
+          "cusip": "98956P102",
+          "issuer": "Zimmer Biomet Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 76500069,
+          "shares": 850757,
+          "weight": 0.024342953127157486
+        },
+        {
+          "cusip": "G96629103",
+          "issuer": "Willis Towers Watson PLC",
+          "titleOfClass": "COMMON",
+          "value": 74302703,
+          "shares": 226119,
+          "weight": 0.023643733136372778
+        },
+        {
+          "cusip": "38222105",
+          "issuer": "Applied Materials, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 72108567,
+          "shares": 280589,
+          "weight": 0.022945540958237504
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "Mohawk Industries, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 71093857,
+          "shares": 650447,
+          "weight": 0.02262265186427266
+        },
+        {
+          "cusip": "446413106",
+          "issuer": "Huntington Ingalls Industries",
+          "titleOfClass": "COMMON",
+          "value": 69470520,
+          "shares": 204283,
+          "weight": 0.022106092637370782
+        },
+        {
+          "cusip": "55622104",
+          "issuer": "BP PLC Sponsored ADR",
+          "titleOfClass": "COMMON",
+          "value": 67889683,
+          "shares": 1954785,
+          "weight": 0.02160305726111934
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 61526532,
+          "shares": 1018314,
+          "weight": 0.019578250113115
+        },
+        {
+          "cusip": "06849F108",
+          "issuer": "Barrick Mining Corporation",
+          "titleOfClass": "COMMON",
+          "value": 50329777,
+          "shares": 1155678,
+          "weight": 0.01601535029218456
+        },
+        {
+          "cusip": "934423104",
+          "issuer": "Warner Bros. Discovery, Inc",
+          "titleOfClass": "COMMON",
+          "value": 28549525,
+          "shares": 990615,
+          "weight": 0.00908469440566924
+        },
+        {
+          "cusip": "651639106",
+          "issuer": "Newmont Corporation",
+          "titleOfClass": "COMMON",
+          "value": 8853200,
+          "shares": 88665,
+          "weight": 0.002817161284198981
+        }
+      ],
+      "totalValue": 3142596077
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-06",
+      "accession": "0001193125-25-268947",
+      "holdings": [
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical Indust",
+          "titleOfClass": "COMMON",
+          "value": 114078470,
+          "shares": 5647449,
+          "weight": 0.037704089926653
+        },
+        {
+          "cusip": "172967424",
+          "issuer": "Citigroup Inc.",
+          "titleOfClass": "COMMON",
+          "value": 100376802,
+          "shares": 988934,
+          "weight": 0.033175549857548434
+        },
+        {
+          "cusip": "127097103",
+          "issuer": "Coterra Energy, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 100317624,
+          "shares": 4241760,
+          "weight": 0.03315599092908735
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "Capital One Financial Corp",
+          "titleOfClass": "COMMON",
+          "value": 97209858,
+          "shares": 457286,
+          "weight": 0.032128842785051105
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "Bank of America Corporatio",
+          "titleOfClass": "COMMON",
+          "value": 96973208,
+          "shares": 1879690,
+          "weight": 0.03205062756283483
+        },
+        {
+          "cusip": "747525103",
+          "issuer": "QUALCOMM Incorporated",
+          "titleOfClass": "COMMON",
+          "value": 94568007,
+          "shares": 568454,
+          "weight": 0.03125568426813886
+        },
+        {
+          "cusip": "31620M106",
+          "issuer": "Fidelity National Informat",
+          "titleOfClass": "COMMON",
+          "value": 91874070,
+          "shares": 1393298,
+          "weight": 0.030365310800606046
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 90693607,
+          "shares": 1487512,
+          "weight": 0.029975155821256424
+        },
+        {
+          "cusip": "436440101",
+          "issuer": "Hologic, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 90278201,
+          "shares": 1337653,
+          "weight": 0.0298378599302783
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway, Inc. C",
+          "titleOfClass": "COMMON",
+          "value": 90108101,
+          "shares": 179234,
+          "weight": 0.029781640157199963
+        },
+        {
+          "cusip": "98956P102",
+          "issuer": "Zimmer Biomet Holdings, In",
+          "titleOfClass": "COMMON",
+          "value": 88283974,
+          "shares": 896284,
+          "weight": 0.029178747705665194
+        },
+        {
+          "cusip": "13091103",
+          "issuer": "Albertsons Companies, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 85837154,
+          "shares": 4902179,
+          "weight": 0.02837004890987723
+        },
+        {
+          "cusip": "126408103",
+          "issuer": "CSX Corporation",
+          "titleOfClass": "COMMON",
+          "value": 85815845,
+          "shares": 2416667,
+          "weight": 0.028363006069521406
+        },
+        {
+          "cusip": "G96629103",
+          "issuer": "Willis Towers Watson PLC",
+          "titleOfClass": "COMMON",
+          "value": 85516493,
+          "shares": 247551,
+          "weight": 0.028264067201146652
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "Mohawk Industries, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 85237521,
+          "shares": 661166,
+          "weight": 0.028171864129217142
+        },
+        {
+          "cusip": "934423104",
+          "issuer": "Warner Bros. Discovery, In",
+          "titleOfClass": "COMMON",
+          "value": 84776957,
+          "shares": 4340858,
+          "weight": 0.028019643061797682
+        },
+        {
+          "cusip": "26884L109",
+          "issuer": "EQT Corporation",
+          "titleOfClass": "COMMON",
+          "value": 83104867,
+          "shares": 1526821,
+          "weight": 0.027467000378866735
+        },
+        {
+          "cusip": "446413106",
+          "issuer": "Huntington Ingalls Industr",
+          "titleOfClass": "COMMON",
+          "value": 82638808,
+          "shares": 287030,
+          "weight": 0.027312963158284045
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 81870363,
+          "shares": 715025,
+          "weight": 0.027058984301592797
+        },
+        {
+          "cusip": "38222105",
+          "issuer": "Applied Materials, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 81740193,
+          "shares": 399239,
+          "weight": 0.027015961797997225
+        },
+        {
+          "cusip": "G97822103",
+          "issuer": "Perrigo Company PLC",
+          "titleOfClass": "COMMON",
+          "value": 81307725,
+          "shares": 3650998,
+          "weight": 0.026873026743184515
+        },
+        {
+          "cusip": "844741108",
+          "issuer": "Southwest Airlines Co.",
+          "titleOfClass": "COMMON",
+          "value": 80975997,
+          "shares": 2537637,
+          "weight": 0.02676338727884748
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc. Cl A",
+          "titleOfClass": "COMMON",
+          "value": 78816423,
+          "shares": 324214,
+          "weight": 0.02604962619580296
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 77589408,
+          "shares": 925667,
+          "weight": 0.025644085308891063
+        },
+        {
+          "cusip": "00130H105",
+          "issuer": "The AES Corporation",
+          "titleOfClass": "COMMON",
+          "value": 77588886,
+          "shares": 5895812,
+          "weight": 0.02564391278260331
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 75613406,
+          "shares": 2670908,
+          "weight": 0.024990996631393494
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies",
+          "titleOfClass": "COMMON",
+          "value": 73654776,
+          "shares": 980756,
+          "weight": 0.024343649575870745
+        },
+        {
+          "cusip": "M22465104",
+          "issuer": "Check Point Software",
+          "titleOfClass": "COMMON",
+          "value": 73103993,
+          "shares": 353313,
+          "weight": 0.0241616102150512
+        },
+        {
+          "cusip": "573874104",
+          "issuer": "Marvell Technology, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 72365271,
+          "shares": 860774,
+          "weight": 0.023917455110947883
+        },
+        {
+          "cusip": "45337C102",
+          "issuer": "Incyte Corporation",
+          "titleOfClass": "COMMON",
+          "value": 72076288,
+          "shares": 849856,
+          "weight": 0.023821943302108985
+        },
+        {
+          "cusip": "460146103",
+          "issuer": "International Paper Compan",
+          "titleOfClass": "COMMON",
+          "value": 71986677,
+          "shares": 1551437,
+          "weight": 0.023792325958867818
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PayPal Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 71699680,
+          "shares": 1069187,
+          "weight": 0.023697470543146693
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise",
+          "titleOfClass": "COMMON",
+          "value": 68215781,
+          "shares": 817347,
+          "weight": 0.02254600663245981
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 67919276,
+          "shares": 1171628,
+          "weight": 0.022448008726424586
+        },
+        {
+          "cusip": "75886F107",
+          "issuer": "Regeneron Pharmaceuticals,",
+          "titleOfClass": "COMMON",
+          "value": 64676793,
+          "shares": 115028,
+          "weight": 0.021376335249232582
+        },
+        {
+          "cusip": "50155Q100",
+          "issuer": "Kyndryl Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 61113122,
+          "shares": 2035069,
+          "weight": 0.02019850588447159
+        },
+        {
+          "cusip": "06849F108",
+          "issuer": "Barrick Mining Corporation",
+          "titleOfClass": "COMMON",
+          "value": 38146902,
+          "shares": 1164080,
+          "weight": 0.012607937531343288
+        },
+        {
+          "cusip": "651639106",
+          "issuer": "Newmont Corporation",
+          "titleOfClass": "COMMON",
+          "value": 7475346,
+          "shares": 88665,
+          "weight": 0.0024706775767315762
+        }
+      ],
+      "totalValue": 3025625873
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-06",
+      "accession": "0000950123-25-007068",
+      "holdings": [
+        {
+          "cusip": "172967424",
+          "issuer": "Citigroup Inc.",
+          "titleOfClass": "COMMON",
+          "value": 119594962,
+          "shares": 1405016,
+          "weight": 0.04075849490928691
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "Capital One Financial Corp",
+          "titleOfClass": "COMMON",
+          "value": 113389378,
+          "shares": 532945,
+          "weight": 0.038643604284770865
+        },
+        {
+          "cusip": "127097103",
+          "issuer": "Coterra Energy, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 111376704,
+          "shares": 4388365,
+          "weight": 0.037957676034858015
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PayPal Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 103049585,
+          "shares": 1386566,
+          "weight": 0.035119756847505235
+        },
+        {
+          "cusip": "126408103",
+          "issuer": "CSX Corporation",
+          "titleOfClass": "COMMON",
+          "value": 101381181,
+          "shares": 3106993,
+          "weight": 0.03455115734462121
+        },
+        {
+          "cusip": "60505104",
+          "issuer": "Bank of America Corporation",
+          "titleOfClass": "COMMON",
+          "value": 99375360,
+          "shares": 2100071,
+          "weight": 0.03386756462758485
+        },
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical Industries",
+          "titleOfClass": "COMMON",
+          "value": 97987541,
+          "shares": 5846512,
+          "weight": 0.03339458974051133
+        },
+        {
+          "cusip": "934423104",
+          "issuer": "Warner Bros. Discovery, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 97951347,
+          "shares": 8547238,
+          "weight": 0.03338225466435028
+        },
+        {
+          "cusip": "844741108",
+          "issuer": "Southwest Airlines Co.",
+          "titleOfClass": "COMMON",
+          "value": 92582171,
+          "shares": 2853951,
+          "weight": 0.03155241560588672
+        },
+        {
+          "cusip": "436440101",
+          "issuer": "Hologic, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 90096080,
+          "shares": 1382690,
+          "weight": 0.030705144737005776
+        },
+        {
+          "cusip": "31620M106",
+          "issuer": "Fidelity National Information Services",
+          "titleOfClass": "COMMON",
+          "value": 88840698,
+          "shares": 1091275,
+          "weight": 0.03027730496850273
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 88384558,
+          "shares": 1770524,
+          "weight": 0.030121850427968472
+        },
+        {
+          "cusip": "G97822103",
+          "issuer": "Perrigo Company PLC",
+          "titleOfClass": "COMMON",
+          "value": 87846570,
+          "shares": 3287671,
+          "weight": 0.029938501725041863
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 86460376,
+          "shares": 1079136,
+          "weight": 0.029466080645195004
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise Group",
+          "titleOfClass": "COMMON",
+          "value": 86324149,
+          "shares": 1025471,
+          "weight": 0.029419653877769736
+        },
+        {
+          "cusip": "71813109",
+          "issuer": "Baxter International Inc.",
+          "titleOfClass": "COMMON",
+          "value": 85435444,
+          "shares": 2821514,
+          "weight": 0.029116779261543362
+        },
+        {
+          "cusip": "00130H105",
+          "issuer": "The AES Corporation",
+          "titleOfClass": "COMMON",
+          "value": 84872067,
+          "shares": 8067687,
+          "weight": 0.028924777874507434
+        },
+        {
+          "cusip": "98956P102",
+          "issuer": "Zimmer Biomet Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 84575202,
+          "shares": 927258,
+          "weight": 0.028823604962296922
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 81834943,
+          "shares": 659906,
+          "weight": 0.02788971250868648
+        },
+        {
+          "cusip": "446413106",
+          "issuer": "Huntington Ingalls Industries",
+          "titleOfClass": "COMMON",
+          "value": 80046646,
+          "shares": 331511,
+          "weight": 0.02728025293821734
+        },
+        {
+          "cusip": "G96629103",
+          "issuer": "Willis Towers Watson PLC",
+          "titleOfClass": "COMMON",
+          "value": 78809732,
+          "shares": 257128,
+          "weight": 0.026858707146244717
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 77644871,
+          "shares": 2640982,
+          "weight": 0.02646171733710437
+        },
+        {
+          "cusip": "45337C102",
+          "issuer": "Incyte Corporation",
+          "titleOfClass": "COMMON",
+          "value": 77637882,
+          "shares": 1140057,
+          "weight": 0.02645933545482307
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "Alphabet Inc. Cl A",
+          "titleOfClass": "COMMON",
+          "value": 76602599,
+          "shares": 434674,
+          "weight": 0.026106506404338724
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 75724299,
+          "shares": 1538799,
+          "weight": 0.0258071778583852
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "Mohawk Industries, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 71718633,
+          "shares": 684077,
+          "weight": 0.024442029071688787
+        },
+        {
+          "cusip": "460146103",
+          "issuer": "International Paper Company",
+          "titleOfClass": "COMMON",
+          "value": 69208090,
+          "shares": 1477858,
+          "weight": 0.023586424852465523
+        },
+        {
+          "cusip": "26884L109",
+          "issuer": "EQT Corporation",
+          "titleOfClass": "COMMON",
+          "value": 67538818,
+          "shares": 1158073,
+          "weight": 0.023017529531321353
+        },
+        {
+          "cusip": "38222105",
+          "issuer": "Applied Materials, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 66732128,
+          "shares": 364517,
+          "weight": 0.02274260599183001
+        },
+        {
+          "cusip": "13091103",
+          "issuer": "Albertsons Companies, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 65530151,
+          "shares": 3046497,
+          "weight": 0.022332966884828328
+        },
+        {
+          "cusip": "06849F108",
+          "issuer": "Barrick Mining Corporation",
+          "titleOfClass": "COMMON",
+          "value": 64141257,
+          "shares": 3080752,
+          "weight": 0.021859625632974097
+        },
+        {
+          "cusip": "501044101",
+          "issuer": "The Kroger Co.",
+          "titleOfClass": "COMMON",
+          "value": 63735261,
+          "shares": 888544,
+          "weight": 0.021721260390638965
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies",
+          "titleOfClass": "COMMON",
+          "value": 63381254,
+          "shares": 855694,
+          "weight": 0.021600613230708
+        },
+        {
+          "cusip": "57667L107",
+          "issuer": "Match Group, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 62161059,
+          "shares": 2012336,
+          "weight": 0.021184765348287688
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway, Inc. C",
+          "titleOfClass": "COMMON",
+          "value": 57004138,
+          "shares": 117348,
+          "weight": 0.01942726373775919
+        },
+        {
+          "cusip": "651639106",
+          "issuer": "Newmont Corporation",
+          "titleOfClass": "COMMON",
+          "value": 15258877,
+          "shares": 261910,
+          "weight": 0.005200293140491446
+        }
+      ],
+      "totalValue": 2934234011
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-06",
+      "accession": "0000950123-25-004108",
+      "holdings": [
+        {
+          "cusip": "127097103",
+          "issuer": "Coterra Energy, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 113392994,
+          "shares": 3923633,
+          "weight": 0.03972235792102848
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "Capital One Financial Corp",
+          "titleOfClass": "COMMON",
+          "value": 107605102,
+          "shares": 600140,
+          "weight": 0.03769481892128872
+        },
+        {
+          "cusip": "31620M106",
+          "issuer": "Fidelity National Information Services",
+          "titleOfClass": "COMMON",
+          "value": 97102072,
+          "shares": 1300242,
+          "weight": 0.03401553414188427
+        },
+        {
+          "cusip": "71813109",
+          "issuer": "Baxter International Inc.",
+          "titleOfClass": "COMMON",
+          "value": 96730626,
+          "shares": 2825902,
+          "weight": 0.033885414013295596
+        },
+        {
+          "cusip": "172967424",
+          "issuer": "Citigroup Inc.",
+          "titleOfClass": "COMMON",
+          "value": 96397179,
+          "shares": 1357898,
+          "weight": 0.03376860519985433
+        },
+        {
+          "cusip": "844741108",
+          "issuer": "Southwest Airlines Co.",
+          "titleOfClass": "COMMON",
+          "value": 95948403,
+          "shares": 2857308,
+          "weight": 0.03361139583206598
+        },
+        {
+          "cusip": "26875P101",
+          "issuer": "EOG Resources, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 92891541,
+          "shares": 724357,
+          "weight": 0.032540555719323294
+        },
+        {
+          "cusip": "G97822103",
+          "issuer": "Perrigo Company PLC",
+          "titleOfClass": "COMMON",
+          "value": 92116082,
+          "shares": 3285167,
+          "weight": 0.03226890701454456
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 91984847,
+          "shares": 931964,
+          "weight": 0.03222293447728387
+        },
+        {
+          "cusip": "126408103",
+          "issuer": "CSX Corporation",
+          "titleOfClass": "COMMON",
+          "value": 91542309,
+          "shares": 3110510,
+          "weight": 0.032067910324471954
+        },
+        {
+          "cusip": "45337C102",
+          "issuer": "Incyte Corporation",
+          "titleOfClass": "COMMON",
+          "value": 90512441,
+          "shares": 1494838,
+          "weight": 0.0317071403697831
+        },
+        {
+          "cusip": "98956P102",
+          "issuer": "Zimmer Biomet Holdings, Inc",
+          "titleOfClass": "COMMON",
+          "value": 90372646,
+          "shares": 798486,
+          "weight": 0.03165816920472532
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 89621631,
+          "shares": 1248386,
+          "weight": 0.03139508340390361
+        },
+        {
+          "cusip": "110122108",
+          "issuer": "Bristol-Myers Squibb Company",
+          "titleOfClass": "COMMON",
+          "value": 86920874,
+          "shares": 1425166,
+          "weight": 0.030448989360282862
+        },
+        {
+          "cusip": "436440101",
+          "issuer": "Hologic, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 85466702,
+          "shares": 1383628,
+          "weight": 0.029939582750358285
+        },
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical Industries",
+          "titleOfClass": "COMMON",
+          "value": 83798608,
+          "shares": 5452089,
+          "weight": 0.029355237769451262
+        },
+        {
+          "cusip": "501044101",
+          "issuer": "The Kroger Co.",
+          "titleOfClass": "COMMON",
+          "value": 81032917,
+          "shares": 1197118,
+          "weight": 0.028386396892024858
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PayPal Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 80896167,
+          "shares": 1239788,
+          "weight": 0.028338492411738355
+        },
+        {
+          "cusip": "125269100",
+          "issuer": "CF Industries Holdings, Inc",
+          "titleOfClass": "COMMON",
+          "value": 78798020,
+          "shares": 1008292,
+          "weight": 0.02760349686073516
+        },
+        {
+          "cusip": "G96629103",
+          "issuer": "Willis Towers Watson PLC",
+          "titleOfClass": "COMMON",
+          "value": 77967769,
+          "shares": 230708,
+          "weight": 0.027312654135599142
+        },
+        {
+          "cusip": "00130H105",
+          "issuer": "The AES Corporation",
+          "titleOfClass": "COMMON",
+          "value": 75736489,
+          "shares": 6097946,
+          "weight": 0.02653102116467651
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway, Inc. C",
+          "titleOfClass": "COMMON",
+          "value": 75691335,
+          "shares": 142122,
+          "weight": 0.026515203403046844
+        },
+        {
+          "cusip": "67901108",
+          "issuer": "Barrick Gold Corporation",
+          "titleOfClass": "COMMON",
+          "value": 74899443,
+          "shares": 3852852,
+          "weight": 0.02623779810357306
+        },
+        {
+          "cusip": "68622V106",
+          "issuer": "Organon & Company",
+          "titleOfClass": "COMMON",
+          "value": 74108691,
+          "shares": 4977078,
+          "weight": 0.025960792154062905
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 68395169,
+          "shares": 2397307,
+          "weight": 0.023959305484845313
+        },
+        {
+          "cusip": "05352A100",
+          "issuer": "Avantor, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 67633826,
+          "shares": 4172352,
+          "weight": 0.023692601713475897
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise Group",
+          "titleOfClass": "COMMON",
+          "value": 63625801,
+          "shares": 773096,
+          "weight": 0.022288562557349283
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies",
+          "titleOfClass": "COMMON",
+          "value": 63050410,
+          "shares": 781197,
+          "weight": 0.022086999070573914
+        },
+        {
+          "cusip": "57667L107",
+          "issuer": "Match Group, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 62840638,
+          "shares": 2014123,
+          "weight": 0.02201351447358188
+        },
+        {
+          "cusip": "M22465104",
+          "issuer": "Check Point Software",
+          "titleOfClass": "COMMON",
+          "value": 61740337,
+          "shares": 270886,
+          "weight": 0.02162807134697332
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "Mohawk Industries, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 61159032,
+          "shares": 535637,
+          "weight": 0.021424436144684866
+        },
+        {
+          "cusip": "N6596X109",
+          "issuer": "NXP Semiconductors NV",
+          "titleOfClass": "COMMON",
+          "value": 57280092,
+          "shares": 301379,
+          "weight": 0.020065616365799815
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 57259661,
+          "shares": 1730945,
+          "weight": 0.020058459243776167
+        },
+        {
+          "cusip": "693656100",
+          "issuer": "PVH Corp.",
+          "titleOfClass": "COMMON",
+          "value": 56747908,
+          "shares": 877907,
+          "weight": 0.019879188592953068
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "Lennar Corporation",
+          "titleOfClass": "COMMON",
+          "value": 53573795,
+          "shares": 466752,
+          "weight": 0.0187672746358369
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 45887782,
+          "shares": 975713,
+          "weight": 0.01607481059020391
+        },
+        {
+          "cusip": "651639106",
+          "issuer": "Newmont Corporation",
+          "titleOfClass": "COMMON",
+          "value": 13909709,
+          "shares": 288105,
+          "weight": 0.004872668230943361
+        }
+      ],
+      "totalValue": 2854639048
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-11",
+      "accession": "0000950123-25-001578",
+      "holdings": [
+        {
+          "cusip": "14040H105",
+          "issuer": "Capital One Financial Corp",
+          "titleOfClass": "COMMON",
+          "value": 126836876,
+          "shares": 711288,
+          "weight": 0.0418725748180413
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 109089674,
+          "shares": 1553099,
+          "weight": 0.03601370264307625
+        },
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical Industries",
+          "titleOfClass": "COMMON",
+          "value": 105190573,
+          "shares": 4772712,
+          "weight": 0.034726494983171416
+        },
+        {
+          "cusip": "127097103",
+          "issuer": "Coterra Energy, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 100674645,
+          "shares": 3941842,
+          "weight": 0.03323565462966974
+        },
+        {
+          "cusip": "05352A100",
+          "issuer": "Avantor, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 98639943,
+          "shares": 4681535,
+          "weight": 0.03256393979078158
+        },
+        {
+          "cusip": "693656100",
+          "issuer": "PVH Corp.",
+          "titleOfClass": "COMMON",
+          "value": 93294448,
+          "shares": 882217,
+          "weight": 0.030799235026790342
+        },
+        {
+          "cusip": "G96629103",
+          "issuer": "Willis Towers Watson PLC",
+          "titleOfClass": "COMMON",
+          "value": 93069869,
+          "shares": 297120,
+          "weight": 0.030725094908580074
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PayPal Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 90323088,
+          "shares": 1058267,
+          "weight": 0.029818301895708374
+        },
+        {
+          "cusip": "N6596X109",
+          "issuer": "NXP Semiconductors NV",
+          "titleOfClass": "COMMON",
+          "value": 90067225,
+          "shares": 433328,
+          "weight": 0.029733834011063623
+        },
+        {
+          "cusip": "M22465104",
+          "issuer": "Check Point Software",
+          "titleOfClass": "COMMON",
+          "value": 89408390,
+          "shares": 478888,
+          "weight": 0.029516333243934635
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "Bath & Body Works, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 86620477,
+          "shares": 2234214,
+          "weight": 0.02859596135083716
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 86447798,
+          "shares": 776361,
+          "weight": 0.028538954945641525
+        },
+        {
+          "cusip": "172967424",
+          "issuer": "Citigroup Inc.",
+          "titleOfClass": "COMMON",
+          "value": 86334180,
+          "shares": 1226512,
+          "weight": 0.028501446309701323
+        },
+        {
+          "cusip": "844741108",
+          "issuer": "Southwest Airlines Co.",
+          "titleOfClass": "COMMON",
+          "value": 85262001,
+          "shares": 2536050,
+          "weight": 0.028147488558519937
+        },
+        {
+          "cusip": "45337C102",
+          "issuer": "Incyte Corporation",
+          "titleOfClass": "COMMON",
+          "value": 82959217,
+          "shares": 1201089,
+          "weight": 0.027387271984518315
+        },
+        {
+          "cusip": "98956P102",
+          "issuer": "Zimmer Biomet Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 81447385,
+          "shares": 771063,
+          "weight": 0.02688817187634229
+        },
+        {
+          "cusip": "501044101",
+          "issuer": "The Kroger Co.",
+          "titleOfClass": "COMMON",
+          "value": 80743010,
+          "shares": 1320409,
+          "weight": 0.026655637018833993
+        },
+        {
+          "cusip": "110122108",
+          "issuer": "Bristol-Myers Squibb Company",
+          "titleOfClass": "COMMON",
+          "value": 77695737,
+          "shares": 1373687,
+          "weight": 0.025649642778771683
+        },
+        {
+          "cusip": "31620M106",
+          "issuer": "Fidelity National Information Services",
+          "titleOfClass": "COMMON",
+          "value": 76615029,
+          "shares": 948558,
+          "weight": 0.02529286935440529
+        },
+        {
+          "cusip": "68622V106",
+          "issuer": "Organon & Company",
+          "titleOfClass": "COMMON",
+          "value": 74132378,
+          "shares": 4968658,
+          "weight": 0.024473273405474907
+        },
+        {
+          "cusip": "71813109",
+          "issuer": "Baxter International Inc.",
+          "titleOfClass": "COMMON",
+          "value": 72450382,
+          "shares": 2484581,
+          "weight": 0.023917997167406366
+        },
+        {
+          "cusip": "125269100",
+          "issuer": "CF Industries Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 72060760,
+          "shares": 844594,
+          "weight": 0.023789371511680226
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway, Inc. C",
+          "titleOfClass": "COMMON",
+          "value": 71986304,
+          "shares": 158812,
+          "weight": 0.023764791401155807
+        },
+        {
+          "cusip": "436440101",
+          "issuer": "Hologic, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 69943521,
+          "shares": 970225,
+          "weight": 0.023090408787029275
+        },
+        {
+          "cusip": "00130H105",
+          "issuer": "The AES Corporation",
+          "titleOfClass": "COMMON",
+          "value": 69083174,
+          "shares": 5367768,
+          "weight": 0.022806382995295194
+        },
+        {
+          "cusip": "G97822103",
+          "issuer": "Perrigo Company PLC",
+          "titleOfClass": "COMMON",
+          "value": 68614334,
+          "shares": 2668780,
+          "weight": 0.02265160515310291
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 68576902,
+          "shares": 1786322,
+          "weight": 0.022639247751454285
+        },
+        {
+          "cusip": "31428X106",
+          "issuer": "FedEx Corporation",
+          "titleOfClass": "COMMON",
+          "value": 67934161,
+          "shares": 241475,
+          "weight": 0.022427060086006558
+        },
+        {
+          "cusip": "126408103",
+          "issuer": "CSX Corporation",
+          "titleOfClass": "COMMON",
+          "value": 67824602,
+          "shares": 2101785,
+          "weight": 0.02239089144507843
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "Vistra Corp.",
+          "titleOfClass": "COMMON",
+          "value": 66421906,
+          "shares": 481772,
+          "weight": 0.021927820333117524
+        },
+        {
+          "cusip": "05722G100",
+          "issuer": "Baker Hughes Company",
+          "titleOfClass": "COMMON",
+          "value": 64763360,
+          "shares": 1578824,
+          "weight": 0.021380285628193357
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 63941270,
+          "shares": 2333623,
+          "weight": 0.021108889594817673
+        },
+        {
+          "cusip": "26875P101",
+          "issuer": "EOG Resources, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 62869321,
+          "shares": 512884,
+          "weight": 0.020755007773385674
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies",
+          "titleOfClass": "COMMON",
+          "value": 60616159,
+          "shares": 775341,
+          "weight": 0.020011172877750373
+        },
+        {
+          "cusip": "67901108",
+          "issuer": "Barrick Gold Corporation",
+          "titleOfClass": "COMMON",
+          "value": 59407688,
+          "shares": 3832754,
+          "weight": 0.019612221137856267
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 57616566,
+          "shares": 1081595,
+          "weight": 0.019020919204866055
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "Lennar Corporation",
+          "titleOfClass": "COMMON",
+          "value": 54041931,
+          "shares": 396289,
+          "weight": 0.017840827293073076
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise Group",
+          "titleOfClass": "COMMON",
+          "value": 46213664,
+          "shares": 546972,
+          "weight": 0.015256486634500693
+        },
+        {
+          "cusip": "57667L107",
+          "issuer": "Match Group, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 39962298,
+          "shares": 1221715,
+          "weight": 0.013192727270465587
+        },
+        {
+          "cusip": "651639106",
+          "issuer": "Newmont Corporation",
+          "titleOfClass": "COMMON",
+          "value": 9935507,
+          "shares": 266940,
+          "weight": 0.0032800024199009206
+        }
+      ],
+      "totalValue": 3029115753
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-12",
+      "accession": "0000950123-24-010937",
+      "holdings": [
+        {
+          "cusip": "14040H105",
+          "issuer": "Capital One Financial Corp",
+          "titleOfClass": "COMMON",
+          "value": 109660306,
+          "shares": 732387,
+          "weight": 0.03566444055580408
+        },
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical Indust",
+          "titleOfClass": "COMMON",
+          "value": 107702728,
+          "shares": 5976844,
+          "weight": 0.03502778426000321
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 100128242,
+          "shares": 1772495,
+          "weight": 0.03256436047849589
+        },
+        {
+          "cusip": "G96629103",
+          "issuer": "Willis Towers Watson PLC",
+          "titleOfClass": "COMMON",
+          "value": 100118405,
+          "shares": 339926,
+          "weight": 0.032561161225142105
+        },
+        {
+          "cusip": "693656100",
+          "issuer": "PVH Corp.",
+          "titleOfClass": "COMMON",
+          "value": 99617318,
+          "shares": 987973,
+          "weight": 0.03239819444001581
+        },
+        {
+          "cusip": "68622V106",
+          "issuer": "Organon & Company",
+          "titleOfClass": "COMMON",
+          "value": 98348936,
+          "shares": 5141084,
+          "weight": 0.03198568296625563
+        },
+        {
+          "cusip": "127097103",
+          "issuer": "Coterra Energy, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 96192684,
+          "shares": 4016396,
+          "weight": 0.03128441261527436
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 96017641,
+          "shares": 2141339,
+          "weight": 0.031227483988171954
+        },
+        {
+          "cusip": "31620M106",
+          "issuer": "Fidelity National Informat",
+          "titleOfClass": "COMMON",
+          "value": 93800587,
+          "shares": 1120007,
+          "weight": 0.03050643921384853
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "Vistra Corp.",
+          "titleOfClass": "COMMON",
+          "value": 93065754,
+          "shares": 785100,
+          "weight": 0.030267452028759488
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 91504681,
+          "shares": 951291,
+          "weight": 0.029759749677356503
+        },
+        {
+          "cusip": "05352A100",
+          "issuer": "Avantor, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 91116959,
+          "shares": 3522109,
+          "weight": 0.02963365219755212
+        },
+        {
+          "cusip": "67901108",
+          "issuer": "Barrick Gold Corporation",
+          "titleOfClass": "COMMON",
+          "value": 86597957,
+          "shares": 4353844,
+          "weight": 0.028163952868055814
+        },
+        {
+          "cusip": "501044101",
+          "issuer": "The Kroger Co.",
+          "titleOfClass": "COMMON",
+          "value": 85000768,
+          "shares": 1483434,
+          "weight": 0.027644504635375485
+        },
+        {
+          "cusip": "70450Y103",
+          "issuer": "PayPal Holdings, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 84082241,
+          "shares": 1077563,
+          "weight": 0.027345775288492198
+        },
+        {
+          "cusip": "436440101",
+          "issuer": "Hologic, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 82841887,
+          "shares": 1016964,
+          "weight": 0.026942379263852675
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 79615143,
+          "shares": 3604126,
+          "weight": 0.02589295651669385
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "Pfizer Inc.",
+          "titleOfClass": "COMMON",
+          "value": 79549983,
+          "shares": 2748790,
+          "weight": 0.025871764756143625
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "Bath & Body Works, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 78222897,
+          "shares": 2450592,
+          "weight": 0.02544016118429658
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 77483988,
+          "shares": 2317798,
+          "weight": 0.025199848375880303
+        },
+        {
+          "cusip": "125269100",
+          "issuer": "CF Industries Holdings, In",
+          "titleOfClass": "COMMON",
+          "value": 74400612,
+          "shares": 867140,
+          "weight": 0.024197052705556412
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise",
+          "titleOfClass": "COMMON",
+          "value": 74222541,
+          "shares": 831998,
+          "weight": 0.024139139292527884
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corporation",
+          "titleOfClass": "COMMON",
+          "value": 72303446,
+          "shares": 424316,
+          "weight": 0.02351499868919562
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS Health Corporation",
+          "titleOfClass": "COMMON",
+          "value": 71734258,
+          "shares": 1140812,
+          "weight": 0.023329883652300893
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies",
+          "titleOfClass": "COMMON",
+          "value": 70963083,
+          "shares": 756133,
+          "weight": 0.023079077084739226
+        },
+        {
+          "cusip": "05722G100",
+          "issuer": "Baker Hughes Company",
+          "titleOfClass": "COMMON",
+          "value": 70775410,
+          "shares": 1957826,
+          "weight": 0.023018040846590943
+        },
+        {
+          "cusip": "G97822103",
+          "issuer": "Perrigo Company PLC",
+          "titleOfClass": "COMMON",
+          "value": 69743262,
+          "shares": 2658912,
+          "weight": 0.02268235893639463
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "The Kraft Heinz Company",
+          "titleOfClass": "COMMON",
+          "value": 68017444,
+          "shares": 1937267,
+          "weight": 0.022121077140672334
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "Lennar Corporation",
+          "titleOfClass": "COMMON",
+          "value": 66244183,
+          "shares": 353340,
+          "weight": 0.02154436562279251
+        },
+        {
+          "cusip": "M22465104",
+          "issuer": "Check Point Software",
+          "titleOfClass": "COMMON",
+          "value": 64892134,
+          "shares": 336560,
+          "weight": 0.021104643421132465
+        },
+        {
+          "cusip": "15135B101",
+          "issuer": "Centene Corporation",
+          "titleOfClass": "COMMON",
+          "value": 62984819,
+          "shares": 836674,
+          "weight": 0.020484333986297464
+        },
+        {
+          "cusip": "N6596X109",
+          "issuer": "NXP Semiconductors NV",
+          "titleOfClass": "COMMON",
+          "value": 62394920,
+          "shares": 259968,
+          "weight": 0.02029248318278586
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "Merck & Co. Inc.",
+          "titleOfClass": "COMMON",
+          "value": 62165356,
+          "shares": 547423,
+          "weight": 0.020217822880162297
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "Elevance Health, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 62138440,
+          "shares": 119497,
+          "weight": 0.020209069082940536
+        },
+        {
+          "cusip": "446413106",
+          "issuer": "Huntington Ingalls Industr",
+          "titleOfClass": "COMMON",
+          "value": 62103920,
+          "shares": 234904,
+          "weight": 0.02019784226320153
+        },
+        {
+          "cusip": "14149Y108",
+          "issuer": "Cardinal Health, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 61163205,
+          "shares": 553413,
+          "weight": 0.019891896790119837
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway, Inc. C",
+          "titleOfClass": "COMMON",
+          "value": 60346530,
+          "shares": 131114,
+          "weight": 0.019626292415544123
+        },
+        {
+          "cusip": "31428X106",
+          "issuer": "FedEx Corporation",
+          "titleOfClass": "COMMON",
+          "value": 58576004,
+          "shares": 214031,
+          "weight": 0.019050470392217782
+        },
+        {
+          "cusip": "45337C102",
+          "issuer": "Incyte Corporation",
+          "titleOfClass": "COMMON",
+          "value": 40013503,
+          "shares": 605348,
+          "weight": 0.013013452645052699
+        },
+        {
+          "cusip": "651639106",
+          "issuer": "Newmont Corporation",
+          "titleOfClass": "COMMON",
+          "value": 8927754,
+          "shares": 167030,
+          "weight": 0.002903542434304735
+        }
+      ],
+      "totalValue": 3074779929
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-13",
+      "accession": "0000950123-24-008032",
+      "holdings": [
+        {
+          "cusip": "881624209",
+          "issuer": "Teva Pharmaceutical  Industries Ltd ADR",
+          "titleOfClass": "COMMON",
+          "value": 109873498,
+          "shares": 6761446,
+          "weight": 0.036628439796467675
+        },
+        {
+          "cusip": "31620M106",
+          "issuer": "Fidelity National Information Services",
+          "titleOfClass": "COMMON",
+          "value": 109669374,
+          "shares": 1455273,
+          "weight": 0.03656039114250552
+        },
+        {
+          "cusip": "14040H105",
+          "issuer": "Capital One Financial Corp",
+          "titleOfClass": "COMMON",
+          "value": 103978166,
+          "shares": 751016,
+          "weight": 0.034663117701760275
+        },
+        {
+          "cusip": "68622V106",
+          "issuer": "Organon & Company",
+          "titleOfClass": "COMMON",
+          "value": 100823139,
+          "shares": 4870683,
+          "weight": 0.03361132888435383
+        },
+        {
+          "cusip": "693656100",
+          "issuer": "PVH Corp.",
+          "titleOfClass": "COMMON",
+          "value": 96538301,
+          "shares": 911857,
+          "weight": 0.032182895881150295
+        },
+        {
+          "cusip": "68389X105",
+          "issuer": "Oracle Corporation",
+          "titleOfClass": "COMMON",
+          "value": 95214690,
+          "shares": 674325,
+          "weight": 0.03174164474498057
+        },
+        {
+          "cusip": "49456B101",
+          "issuer": "Kinder Morgan, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 94706620,
+          "shares": 4766312,
+          "weight": 0.031572269857076375
+        },
+        {
+          "cusip": "949746101",
+          "issuer": "Wells Fargo & Company",
+          "titleOfClass": "COMMON",
+          "value": 93454026,
+          "shares": 1573565,
+          "weight": 0.031154693601167818
+        },
+        {
+          "cusip": "G96629103",
+          "issuer": "Willis Towers Watson PLC",
+          "titleOfClass": "COMMON",
+          "value": 92938329,
+          "shares": 354537,
+          "weight": 0.03098277610639834
+        },
+        {
+          "cusip": "Y2573F102",
+          "issuer": "Flex Ltd.",
+          "titleOfClass": "COMMON",
+          "value": 92742128,
+          "shares": 3144867,
+          "weight": 0.03091736873658377
+        },
+        {
+          "cusip": "37045V100",
+          "issuer": "General Motors Company",
+          "titleOfClass": "COMMON",
+          "value": 91163394,
+          "shares": 1962191,
+          "weight": 0.030391067450775643
+        },
+        {
+          "cusip": "436440101",
+          "issuer": "Hologic, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 86584039,
+          "shares": 1166115,
+          "weight": 0.028864451551788305
+        },
+        {
+          "cusip": "446413106",
+          "issuer": "Huntington Ingalls Industries, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 85104305,
+          "shares": 345489,
+          "weight": 0.02837115381648014
+        },
+        {
+          "cusip": "05722G100",
+          "issuer": "Baker Hughes Company",
+          "titleOfClass": "COMMON",
+          "value": 84870275,
+          "shares": 2413144,
+          "weight": 0.028293135423313416
+        },
+        {
+          "cusip": "N6596X109",
+          "issuer": "NXP Semiconductors NV",
+          "titleOfClass": "COMMON",
+          "value": 84072058,
+          "shares": 312431,
+          "weight": 0.028027034463016173
+        },
+        {
+          "cusip": "84670702",
+          "issuer": "Berkshire Hathaway, Inc. Cl B",
+          "titleOfClass": "COMMON",
+          "value": 83144632,
+          "shares": 204387,
+          "weight": 0.027717859202147727
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "Bath & Body Works, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 81563852,
+          "shares": 2088703,
+          "weight": 0.027190875842962602
+        },
+        {
+          "cusip": "717081103",
+          "issuer": "Pfizer Inc.",
+          "titleOfClass": "COMMON",
+          "value": 79352875,
+          "shares": 2836057,
+          "weight": 0.026453804215955015
+        },
+        {
+          "cusip": "31428X106",
+          "issuer": "FedEx Corporation",
+          "titleOfClass": "COMMON",
+          "value": 78815343,
+          "shares": 262858,
+          "weight": 0.026274607604769715
+        },
+        {
+          "cusip": "500754106",
+          "issuer": "The Kraft Heinz Company",
+          "titleOfClass": "COMMON",
+          "value": 77425369,
+          "shares": 2403022,
+          "weight": 0.025811233088581513
+        },
+        {
+          "cusip": "05352A100",
+          "issuer": "Avantor, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 76412114,
+          "shares": 3604345,
+          "weight": 0.025473445082906387
+        },
+        {
+          "cusip": "M22465104",
+          "issuer": "Checkpoint Software Technologies",
+          "titleOfClass": "COMMON",
+          "value": 75997680,
+          "shares": 460592,
+          "weight": 0.025335285553129614
+        },
+        {
+          "cusip": "501044101",
+          "issuer": "The Kroger Co.",
+          "titleOfClass": "COMMON",
+          "value": 75709708,
+          "shares": 1516317,
+          "weight": 0.02523928455873997
+        },
+        {
+          "cusip": "36266G107",
+          "issuer": "GE HealthCare Technologies",
+          "titleOfClass": "COMMON",
+          "value": 75321914,
+          "shares": 966657,
+          "weight": 0.02511000598437046
+        },
+        {
+          "cusip": "67901108",
+          "issuer": "Barrick Gold Corporation",
+          "titleOfClass": "COMMON",
+          "value": 74318591,
+          "shares": 4455551,
+          "weight": 0.024775529001559635
+        },
+        {
+          "cusip": "744573106",
+          "issuer": "Public Service Enterprise Group",
+          "titleOfClass": "COMMON",
+          "value": 71298339,
+          "shares": 967413,
+          "weight": 0.02376867001767472
+        },
+        {
+          "cusip": "92840M102",
+          "issuer": "Vistra Corp.",
+          "titleOfClass": "COMMON",
+          "value": 69111928,
+          "shares": 803814,
+          "weight": 0.023039787938359882
+        },
+        {
+          "cusip": "126650100",
+          "issuer": "CVS Health Corporation",
+          "titleOfClass": "COMMON",
+          "value": 68853979,
+          "shares": 1165831,
+          "weight": 0.02295379568737085
+        },
+        {
+          "cusip": "8.9151e+113",
+          "issuer": "TotalEnergies SE ADR",
+          "titleOfClass": "COMMON",
+          "value": 67102885,
+          "shares": 1006342,
+          "weight": 0.022370034886773096
+        },
+        {
+          "cusip": "36752103",
+          "issuer": "Elevance Health, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 66144309,
+          "shares": 122069,
+          "weight": 0.022050475175419054
+        },
+        {
+          "cusip": "14149Y108",
+          "issuer": "Cardinal Health, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 65851000,
+          "shares": 669762,
+          "weight": 0.021952694989625186
+        },
+        {
+          "cusip": "125269100",
+          "issuer": "CF Industries Holding, Inc.",
+          "titleOfClass": "COMMON",
+          "value": 65830864,
+          "shares": 888166,
+          "weight": 0.021945982267475014
+        },
+        {
+          "cusip": "58933Y105",
+          "issuer": "Merck & Co. Inc.",
+          "titleOfClass": "COMMON",
+          "value": 65724801,
+          "shares": 530895,
+          "weight": 0.02191062413033686
+        },
+        {
+          "cusip": "254687106",
+          "issuer": "The Walt Disney Company",
+          "titleOfClass": "COMMON",
+          "value": 61882692,
+          "shares": 623252,
+          "weight": 0.02062978333833835
+        },
+        {
+          "cusip": "G97822103",
+          "issuer": "Perrigo Company PLC",
+          "titleOfClass": "COMMON",
+          "value": 61402139,
+          "shares": 2391049,
+          "weight": 0.020469581770627163
+        },
+        {
+          "cusip": "526057104",
+          "issuer": "Lennar Corporation",
+          "titleOfClass": "COMMON",
+          "value": 59747474,
+          "shares": 398662,
+          "weight": 0.01991796742832396
+        },
+        {
+          "cusip": "15135B101",
+          "issuer": "Centene Corporation",
+          "titleOfClass": "COMMON",
+          "value": 56618941,
+          "shares": 853981,
+          "weight": 0.018875010894422013
+        },
+        {
+          "cusip": "166764100",
+          "issuer": "Chevron Corporation",
+          "titleOfClass": "COMMON",
+          "value": 13319945,
+          "shares": 85155,
+          "weight": 0.0044404593683252044
+        },
+        {
+          "cusip": "651639106",
+          "issuer": "Newmont Corporation",
+          "titleOfClass": "COMMON",
+          "value": 6993546,
+          "shares": 167030,
+          "weight": 0.0023314328139878403
+        }
+      ],
+      "totalValue": 2999677262
+    }
+  ]
+}

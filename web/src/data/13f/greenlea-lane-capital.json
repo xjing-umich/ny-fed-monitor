@@ -1,0 +1,610 @@
+{
+  "manager": {
+    "cik": "0001766504",
+    "slug": "greenlea-lane-capital",
+    "name": "GREENLEA LANE CAPITAL MANAGEMENT, LLC",
+    "person": "Josh Tarasoff"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-11",
+      "accession": "0001420506-26-000887",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 65090623,
+          "shares": 312530,
+          "weight": 0.18905532239633346
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 56364269,
+          "shares": 1392742,
+          "weight": 0.16370967977105802
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 45242820,
+          "shares": 63,
+          "weight": 0.131407498146381
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 43171849,
+          "shares": 22555,
+          "weight": 0.12539237535245018
+        },
+        {
+          "cusip": "46436E718",
+          "issuer": "ISHARES TR",
+          "titleOfClass": "0-3 MNTH TREASRY",
+          "value": 38552780,
+          "shares": 383000,
+          "weight": 0.11197631726731079
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 28766064,
+          "shares": 100035,
+          "weight": 0.08355085960067646
+        },
+        {
+          "cusip": "64110L106",
+          "issuer": "NETFLIX INC.",
+          "titleOfClass": "COM",
+          "value": 26872002,
+          "shares": 279480,
+          "weight": 0.07804956793154243
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 20347736,
+          "shares": 54735,
+          "weight": 0.05909987663684646
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 19885909,
+          "shares": 776490,
+          "weight": 0.0577585028974012
+        }
+      ],
+      "totalValue": 344294052
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001420506-26-000460",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 73004904,
+          "shares": 316285,
+          "weight": 0.21305751915323368
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 64863771,
+          "shares": 1413462,
+          "weight": 0.1892984357897856
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 50571600,
+          "shares": 67,
+          "weight": 0.14758816251042084
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 49237733,
+          "shares": 22905,
+          "weight": 0.14369540492388438
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 31661515,
+          "shares": 101155,
+          "weight": 0.09240096855045375
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 29017431,
+          "shares": 776490,
+          "weight": 0.08468447353975203
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 27927701,
+          "shares": 62100,
+          "weight": 0.08150420539849328
+        },
+        {
+          "cusip": "G17977110",
+          "issuer": "BURFORD CAP LTD",
+          "titleOfClass": "ORD SHS",
+          "value": 16368842,
+          "shares": 1835072,
+          "weight": 0.04777083013397642
+        }
+      ],
+      "totalValue": 342653497
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001420506-25-003244",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 70678485,
+          "shares": 321895,
+          "weight": 0.20608206941809873
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 65302905,
+          "shares": 952215,
+          "weight": 0.1904081249253363
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 50531400,
+          "shares": 67,
+          "weight": 0.14733784238009226
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 42919589,
+          "shares": 22455,
+          "weight": 0.12514356695243634
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 35281861,
+          "shares": 79335,
+          "weight": 0.10287372356384988
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 33070032,
+          "shares": 764095,
+          "weight": 0.09642454320126906
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 25469587,
+          "shares": 104770,
+          "weight": 0.0742634083934355
+        },
+        {
+          "cusip": "G17977110",
+          "issuer": "BURFORD CAP LTD",
+          "titleOfClass": "ORD SHS",
+          "value": 19708948,
+          "shares": 1835072,
+          "weight": 0.057466721165481946
+        }
+      ],
+      "totalValue": 342962807
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001420506-25-001997",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 71222770,
+          "shares": 324640,
+          "weight": 0.20035715297628456
+        },
+        {
+          "cusip": "112585104",
+          "issuer": "BROOKFIELD CORP CL A LTD VT SH",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 58894498,
+          "shares": 952215,
+          "weight": 0.1656764254640403
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 48829600,
+          "shares": 67,
+          "weight": 0.1373628073854862
+        },
+        {
+          "cusip": "G17977110",
+          "issuer": "BURFORD CAPITAL LTD",
+          "titleOfClass": "ORD SHS",
+          "value": 45723630,
+          "shares": 3362322,
+          "weight": 0.12862538666413892
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL CORP COM",
+          "titleOfClass": "COM",
+          "value": 44850719,
+          "shares": 22455,
+          "weight": 0.1261697960887979
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 42292658,
+          "shares": 764095,
+          "weight": 0.11897370108856599
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC COM",
+          "titleOfClass": "COM",
+          "value": 25201556,
+          "shares": 79335,
+          "weight": 0.07089463117950062
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC CAP STK",
+          "titleOfClass": "CL A",
+          "value": 18463617,
+          "shares": 104770,
+          "weight": 0.05194009915318554
+        }
+      ],
+      "totalValue": 355479048
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-13",
+      "accession": "0001420506-25-001012",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 61766006,
+          "shares": 324640,
+          "weight": 0.21340432861094447
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 53495587,
+          "shares": 67,
+          "weight": 0.1848296590098989
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 50702744,
+          "shares": 967425,
+          "weight": 0.17518026083882762
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 41982093,
+          "shares": 22455,
+          "weight": 0.14505001942892715
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 33835010,
+          "shares": 907835,
+          "weight": 0.11690148125482797
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 21007510,
+          "shares": 81060,
+          "weight": 0.07258189184739745
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 16201633,
+          "shares": 104770,
+          "weight": 0.05597737067159437
+        },
+        {
+          "cusip": "G17977110",
+          "issuer": "BURFORD CAP LTD",
+          "titleOfClass": "ORD SHS",
+          "value": 10441250,
+          "shares": 790405,
+          "weight": 0.03607498833758207
+        }
+      ],
+      "totalValue": 289431833
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001420506-25-000474",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 78994660,
+          "shares": 360065,
+          "weight": 0.23818191762195304
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 57156718,
+          "shares": 994895,
+          "weight": 0.1723369237644317
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 47664400,
+          "shares": 70,
+          "weight": 0.14371602073228518
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 45002171,
+          "shares": 933655,
+          "weight": 0.1356889615820999
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 37493716,
+          "shares": 21720,
+          "weight": 0.11304973242055733
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 33668141,
+          "shares": 83370,
+          "weight": 0.10151499336975815
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 20400861,
+          "shares": 107770,
+          "weight": 0.061511957822451724
+        },
+        {
+          "cusip": "G17977110",
+          "issuer": "BURFORD CAP LTD",
+          "titleOfClass": "ORD SHS",
+          "value": 11276164,
+          "shares": 884405,
+          "weight": 0.03399949268646302
+        }
+      ],
+      "totalValue": 331656831
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001420506-24-002439",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 69743319,
+          "shares": 374300,
+          "weight": 0.21165982619761683
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 55069512,
+          "shares": 1036115,
+          "weight": 0.16712716724461557
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 49073780,
+          "shares": 71,
+          "weight": 0.14893107891323734
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 45670462,
+          "shares": 1087910,
+          "weight": 0.13860255273031763
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 35245993,
+          "shares": 22470,
+          "weight": 0.10696595544216098
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 25448750,
+          "shares": 97270,
+          "weight": 0.07723288881543766
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 18495592,
+          "shares": 111520,
+          "weight": 0.05613116559798412
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 16932305,
+          "shares": 39350,
+          "weight": 0.05138683941074038
+        },
+        {
+          "cusip": "G17977110",
+          "issuer": "BURFORD CAP LTD",
+          "titleOfClass": "ORD SHS",
+          "value": 13826931,
+          "shares": 1042755,
+          "weight": 0.04196252564788951
+        }
+      ],
+      "totalValue": 329506644
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001420506-24-001499",
+      "holdings": [
+        {
+          "cusip": "23135106",
+          "issuer": "AMAZON COM INC",
+          "titleOfClass": "COM",
+          "value": 93504013,
+          "shares": 483850,
+          "weight": 0.25518064547425506
+        },
+        {
+          "cusip": "11271J107",
+          "issuer": "BROOKFIELD CORP",
+          "titleOfClass": "CL A LTD VT SH",
+          "value": 64267988,
+          "shares": 1547135,
+          "weight": 0.17539297122115688
+        },
+        {
+          "cusip": "84670108",
+          "issuer": "BERKSHIRE HATHAWAY INC DEL",
+          "titleOfClass": "CL A",
+          "value": 43469111,
+          "shares": 71,
+          "weight": 0.11863101322904762
+        },
+        {
+          "cusip": "594918104",
+          "issuer": "MICROSOFT CORP",
+          "titleOfClass": "COM",
+          "value": 39852297,
+          "shares": 89165,
+          "weight": 0.10876041087233035
+        },
+        {
+          "cusip": "570535104",
+          "issuer": "MARKEL GROUP INC",
+          "titleOfClass": "COM",
+          "value": 35862022,
+          "shares": 22760,
+          "weight": 0.09787060071926469
+        },
+        {
+          "cusip": "898202106",
+          "issuer": "TRUPANION INC",
+          "titleOfClass": "COM",
+          "value": 32340000,
+          "shares": 1100000,
+          "weight": 0.08825869403741429
+        },
+        {
+          "cusip": "88160R101",
+          "issuer": "TESLA INC",
+          "titleOfClass": "COM",
+          "value": 23072808,
+          "shares": 116600,
+          "weight": 0.06296771496153385
+        },
+        {
+          "cusip": "02079K305",
+          "issuer": "ALPHABET INC",
+          "titleOfClass": "CAP STK CL A",
+          "value": 20542877,
+          "shares": 112780,
+          "weight": 0.056063311558170535
+        },
+        {
+          "cusip": "G17977110",
+          "issuer": "BURFORD CAP LTD",
+          "titleOfClass": "ORD SHS",
+          "value": 13511709,
+          "shares": 1035380,
+          "weight": 0.03687463792682675
+        }
+      ],
+      "totalValue": 366422825
+    }
+  ]
+}

@@ -1,0 +1,730 @@
+{
+  "manager": {
+    "cik": "0001063296",
+    "slug": "atlantic-investment",
+    "name": "ATLANTIC INVESTMENT MANAGEMENT, INC.",
+    "person": "Alex Roepers"
+  },
+  "filings": [
+    {
+      "period": "2026-03-31",
+      "filedAt": "2026-05-15",
+      "accession": "0001493152-26-023724",
+      "holdings": [
+        {
+          "cusip": "497266106",
+          "issuer": "KIRBY CORP",
+          "titleOfClass": "COM",
+          "value": 34150160,
+          "shares": 257000,
+          "weight": 0.1989421384365619
+        },
+        {
+          "cusip": "24061103",
+          "issuer": "DAUCH CORP",
+          "titleOfClass": "COM",
+          "value": 22771200,
+          "shares": 3840000,
+          "weight": 0.13265387988714075
+        },
+        {
+          "cusip": "G3265R107",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "COM SHS",
+          "value": 22427106,
+          "shares": 322971,
+          "weight": 0.13064935644762565
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 20072051,
+          "shares": 212223,
+          "weight": 0.11692995724610751
+        },
+        {
+          "cusip": "688239201",
+          "issuer": "OSHKOSH CORP",
+          "titleOfClass": "COM",
+          "value": 20064723,
+          "shares": 136300,
+          "weight": 0.11688726790027536
+        },
+        {
+          "cusip": "G6564A105",
+          "issuer": "NOMAD FOODS LTD",
+          "titleOfClass": "USD ORD SHS",
+          "value": 12807939,
+          "shares": 1332772,
+          "weight": 0.07461279167140183
+        },
+        {
+          "cusip": "G27907107",
+          "issuer": "DOLE PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 9659297,
+          "shares": 675948,
+          "weight": 0.05627034253935756
+        },
+        {
+          "cusip": "693656100",
+          "issuer": "PVH CORPORATION",
+          "titleOfClass": "COM",
+          "value": 8929280,
+          "shares": 128000,
+          "weight": 0.052017620353720845
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "COM",
+          "value": 8474400,
+          "shares": 220000,
+          "weight": 0.049367711834052905
+        },
+        {
+          "cusip": "24906P109",
+          "issuer": "DENTSPLY SIRONA INC",
+          "titleOfClass": "COM",
+          "value": 7076000,
+          "shares": 610000,
+          "weight": 0.04122131701804946
+        },
+        {
+          "cusip": "608190104",
+          "issuer": "MOHAWK INDS INC",
+          "titleOfClass": "COM",
+          "value": 3938400,
+          "shares": 40000,
+          "weight": 0.02294319318031176
+        },
+        {
+          "cusip": "G6375R107",
+          "issuer": "NATIONAL ENERGY SERVICES REU",
+          "titleOfClass": "SHS",
+          "value": 1288200,
+          "shares": 60000,
+          "weight": 0.007504423485394477
+        }
+      ],
+      "totalValue": 171658756
+    },
+    {
+      "period": "2025-12-31",
+      "filedAt": "2026-02-17",
+      "accession": "0001493152-26-007089",
+      "holdings": [
+        {
+          "cusip": "G0750C108",
+          "issuer": "AXALTA COATING SYS LTD",
+          "titleOfClass": "COM",
+          "value": 33085440,
+          "shares": 1024000,
+          "weight": 0.18626439167447018
+        },
+        {
+          "cusip": "497266106",
+          "issuer": "KIRBY CORP",
+          "titleOfClass": "COM",
+          "value": 24570140,
+          "shares": 223000,
+          "weight": 0.13832496047979312
+        },
+        {
+          "cusip": "34354P105",
+          "issuer": "FLOWSERVE CORP",
+          "titleOfClass": "COM",
+          "value": 21785320,
+          "shares": 314000,
+          "weight": 0.12264698239569033
+        },
+        {
+          "cusip": "G3265R107",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "COM SHS",
+          "value": 20998633,
+          "shares": 275971,
+          "weight": 0.11821809236148756
+        },
+        {
+          "cusip": "688239201",
+          "issuer": "OSHKOSH CORP",
+          "titleOfClass": "COM",
+          "value": 19422398,
+          "shares": 154600,
+          "weight": 0.10934420543687635
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 17998861,
+          "shares": 229988,
+          "weight": 0.1013299776275711
+        },
+        {
+          "cusip": "44186104",
+          "issuer": "ASHLAND INC",
+          "titleOfClass": "COM",
+          "value": 12495361,
+          "shares": 212977,
+          "weight": 0.07034637639450765
+        },
+        {
+          "cusip": "24061103",
+          "issuer": "AMERICAN AXLE & MFG HLDGS IN",
+          "titleOfClass": "COM",
+          "value": 12070030,
+          "shares": 1883000,
+          "weight": 0.06795184816773195
+        },
+        {
+          "cusip": "957100",
+          "issuer": "ABM INDS INC",
+          "titleOfClass": "COM",
+          "value": 8460000,
+          "shares": 200000,
+          "weight": 0.04762810328549409
+        },
+        {
+          "cusip": "G6564A105",
+          "issuer": "NOMAD FOODS LTD",
+          "titleOfClass": "USD ORD SHS",
+          "value": 6740038,
+          "shares": 538772,
+          "weight": 0.037945062176377664
+        }
+      ],
+      "totalValue": 177626221
+    },
+    {
+      "period": "2025-09-30",
+      "filedAt": "2025-11-14",
+      "accession": "0001493152-25-023434",
+      "holdings": [
+        {
+          "cusip": "16115Q308",
+          "issuer": "CHART INDS INC",
+          "titleOfClass": "COM",
+          "value": 29521925,
+          "shares": 147499,
+          "weight": 0.16953030837441596
+        },
+        {
+          "cusip": "G3265R107",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "COM SHS",
+          "value": 26337710,
+          "shares": 305471,
+          "weight": 0.15124488319023704
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 24673531,
+          "shares": 360566,
+          "weight": 0.14168829841264455
+        },
+        {
+          "cusip": "G0750C108",
+          "issuer": "AXALTA COATING SYS LTD",
+          "titleOfClass": "COM",
+          "value": 21865680,
+          "shares": 764000,
+          "weight": 0.12556415183685682
+        },
+        {
+          "cusip": "688239201",
+          "issuer": "OSHKOSH CORP",
+          "titleOfClass": "COM",
+          "value": 19338270,
+          "shares": 149100,
+          "weight": 0.1110504439167743
+        },
+        {
+          "cusip": "44186104",
+          "issuer": "ASHLAND INC",
+          "titleOfClass": "COM",
+          "value": 13597816,
+          "shares": 283820,
+          "weight": 0.07808575964130277
+        },
+        {
+          "cusip": "388689101",
+          "issuer": "GRAPHIC PACKAGING HLDG CO",
+          "titleOfClass": "COM",
+          "value": 12634079,
+          "shares": 645584,
+          "weight": 0.07255147856708981
+        },
+        {
+          "cusip": "G6564A105",
+          "issuer": "NOMAD FOODS LTD",
+          "titleOfClass": "USD ORD SHS",
+          "value": 9494300,
+          "shares": 722000,
+          "weight": 0.054521228097396
+        },
+        {
+          "cusip": "693656100",
+          "issuer": "PVH CORPORATION",
+          "titleOfClass": "COM",
+          "value": 8377000,
+          "shares": 100000,
+          "weight": 0.04810510809347569
+        },
+        {
+          "cusip": "G27907107",
+          "issuer": "DOLE PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 4435200,
+          "shares": 330000,
+          "weight": 0.025469234262406996
+        },
+        {
+          "cusip": "70830104",
+          "issuer": "BATH & BODY WORKS INC",
+          "titleOfClass": "COM",
+          "value": 3864000,
+          "shares": 150000,
+          "weight": 0.022189105607400034
+        }
+      ],
+      "totalValue": 174139511
+    },
+    {
+      "period": "2025-06-30",
+      "filedAt": "2025-08-14",
+      "accession": "0001641172-25-023987",
+      "holdings": [
+        {
+          "cusip": "16115Q308",
+          "issuer": "CHART INDS INC",
+          "titleOfClass": "COM",
+          "value": 45229190,
+          "shares": 274699,
+          "weight": 0.2307811548785627
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 32564355,
+          "shares": 647274,
+          "weight": 0.16615905468958206
+        },
+        {
+          "cusip": "G3265R107",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "COM SHS",
+          "value": 23943242,
+          "shares": 350971,
+          "weight": 0.12216997563513535
+        },
+        {
+          "cusip": "688239201",
+          "issuer": "OSHKOSH CORP",
+          "titleOfClass": "COM",
+          "value": 23741214,
+          "shares": 209100,
+          "weight": 0.12113913128090734
+        },
+        {
+          "cusip": "44186104",
+          "issuer": "ASHLAND INC",
+          "titleOfClass": "COM",
+          "value": 14898970,
+          "shares": 296320,
+          "weight": 0.07602173514717064
+        },
+        {
+          "cusip": "12008R107",
+          "issuer": "BUILDERS FIRSTSOURCE INC",
+          "titleOfClass": "COM",
+          "value": 13886110,
+          "shares": 119000,
+          "weight": 0.0708536346233651
+        },
+        {
+          "cusip": "277432100",
+          "issuer": "EASTMAN CHEM CO",
+          "titleOfClass": "COM",
+          "value": 10057449,
+          "shares": 134710,
+          "weight": 0.051317958498753695
+        },
+        {
+          "cusip": "382550101",
+          "issuer": "GOODYEAR TIRE & RUBR CO",
+          "titleOfClass": "COM",
+          "value": 9488550,
+          "shares": 915000,
+          "weight": 0.04841516125146141
+        },
+        {
+          "cusip": "693656100",
+          "issuer": "PVH CORPORATION",
+          "titleOfClass": "COM",
+          "value": 8918000,
+          "shares": 130000,
+          "weight": 0.045503939805400496
+        },
+        {
+          "cusip": "880779103",
+          "issuer": "TEREX CORP NEW",
+          "titleOfClass": "COM",
+          "value": 7236950,
+          "shares": 155000,
+          "weight": 0.03692641143470432
+        },
+        {
+          "cusip": "95082P105",
+          "issuer": "WESCO INTL INC",
+          "titleOfClass": "COM",
+          "value": 6019000,
+          "shares": 32500,
+          "weight": 0.030711842754956895
+        }
+      ],
+      "totalValue": 195983030
+    },
+    {
+      "period": "2025-03-31",
+      "filedAt": "2025-05-15",
+      "accession": "0001641172-25-010906",
+      "holdings": [
+        {
+          "cusip": "G3265R107",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "COM SHS",
+          "value": 40101275,
+          "shares": 673971,
+          "weight": 0.22404380181885267
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 30673922,
+          "shares": 572809,
+          "weight": 0.17137365586443187
+        },
+        {
+          "cusip": "16115Q308",
+          "issuer": "CHART INDS INC",
+          "titleOfClass": "COM",
+          "value": 29651400,
+          "shares": 205399,
+          "weight": 0.16566087699833804
+        },
+        {
+          "cusip": "688239201",
+          "issuer": "OSHKOSH CORP",
+          "titleOfClass": "COM",
+          "value": 22193472,
+          "shares": 235900,
+          "weight": 0.1239938092352489
+        },
+        {
+          "cusip": "277432100",
+          "issuer": "EASTMAN CHEM CO",
+          "titleOfClass": "COM",
+          "value": 22166978,
+          "shares": 251583,
+          "weight": 0.12384578859287808
+        },
+        {
+          "cusip": "237266101",
+          "issuer": "DARLING INGREDIENTS INC",
+          "titleOfClass": "COM",
+          "value": 15887102,
+          "shares": 508550,
+          "weight": 0.08876043796522425
+        },
+        {
+          "cusip": "44186104",
+          "issuer": "ASHLAND INC",
+          "titleOfClass": "COM",
+          "value": 7411250,
+          "shares": 125000,
+          "weight": 0.041406280130244534
+        },
+        {
+          "cusip": "880779103",
+          "issuer": "TEREX CORP NEW",
+          "titleOfClass": "COM",
+          "value": 5855900,
+          "shares": 155000,
+          "weight": 0.03271661808935051
+        },
+        {
+          "cusip": "95082P105",
+          "issuer": "WESCO INTL INC",
+          "titleOfClass": "COM",
+          "value": 5047250,
+          "shares": 32500,
+          "weight": 0.028198731305431164
+        }
+      ],
+      "totalValue": 178988549
+    },
+    {
+      "period": "2024-12-31",
+      "filedAt": "2025-02-14",
+      "accession": "0001493152-25-006869",
+      "holdings": [
+        {
+          "cusip": "G6095L109",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "SHS",
+          "value": 46203998,
+          "shares": 763955,
+          "weight": 0.22321332817642436
+        },
+        {
+          "cusip": "16115Q308",
+          "issuer": "CHART INDS INC",
+          "titleOfClass": "COM",
+          "value": 43639383,
+          "shares": 228670,
+          "weight": 0.21082357243188513
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 31381748,
+          "shares": 438109,
+          "weight": 0.1516064565467657
+        },
+        {
+          "cusip": "688239201",
+          "issuer": "OSHKOSH CORP",
+          "titleOfClass": "COM",
+          "value": 21866100,
+          "shares": 230000,
+          "weight": 0.10563598750130915
+        },
+        {
+          "cusip": "237266101",
+          "issuer": "DARLING INGREDIENTS INC",
+          "titleOfClass": "COM",
+          "value": 19845095,
+          "shares": 589050,
+          "weight": 0.09587243300736266
+        },
+        {
+          "cusip": "302491303",
+          "issuer": "FMC CORP",
+          "titleOfClass": "COM NEW",
+          "value": 15603810,
+          "shares": 321000,
+          "weight": 0.07538261867149619
+        },
+        {
+          "cusip": "382550101",
+          "issuer": "GOODYEAR TIRE & RUBR CO",
+          "titleOfClass": "COM",
+          "value": 11803365,
+          "shares": 1311485,
+          "weight": 0.05702251968176263
+        },
+        {
+          "cusip": "880779103",
+          "issuer": "TEREX CORP NEW",
+          "titleOfClass": "COM",
+          "value": 7164100,
+          "shares": 155000,
+          "weight": 0.03461004834232574
+        },
+        {
+          "cusip": "95082P105",
+          "issuer": "WESCO INTL INC",
+          "titleOfClass": "COM",
+          "value": 5881200,
+          "shares": 32500,
+          "weight": 0.028412308079296233
+        },
+        {
+          "cusip": "447011107",
+          "issuer": "HUNTSMAN CORP",
+          "titleOfClass": "COM",
+          "value": 3606000,
+          "shares": 200000,
+          "weight": 0.017420727561372206
+        }
+      ],
+      "totalValue": 206994799
+    },
+    {
+      "period": "2024-09-30",
+      "filedAt": "2024-11-14",
+      "accession": "0001493152-24-045834",
+      "holdings": [
+        {
+          "cusip": "16115Q308",
+          "issuer": "CHART INDS INC",
+          "titleOfClass": "COM",
+          "value": 53264750,
+          "shares": 429070,
+          "weight": 0.2600521376102871
+        },
+        {
+          "cusip": "G6095L109",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "SHS",
+          "value": 43800443,
+          "shares": 608255,
+          "weight": 0.21384496933577155
+        },
+        {
+          "cusip": "880779103",
+          "issuer": "TEREX CORP NEW",
+          "titleOfClass": "COM",
+          "value": 33070761,
+          "shares": 625038,
+          "weight": 0.16145991655736516
+        },
+        {
+          "cusip": "95082P105",
+          "issuer": "WESCO INTL INC",
+          "titleOfClass": "COM",
+          "value": 32588120,
+          "shares": 194000,
+          "weight": 0.1591035397087295
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 23871776,
+          "shares": 281109,
+          "weight": 0.1165481181710972
+        },
+        {
+          "cusip": "703481101",
+          "issuer": "PATTERSON-UTI ENERGY INC",
+          "titleOfClass": "COM",
+          "value": 13387500,
+          "shares": 1750000,
+          "weight": 0.06536120027330869
+        },
+        {
+          "cusip": "447011107",
+          "issuer": "HUNTSMAN CORP",
+          "titleOfClass": "COM",
+          "value": 4840000,
+          "shares": 200000,
+          "weight": 0.023630118343440823
+        }
+      ],
+      "totalValue": 204823350
+    },
+    {
+      "period": "2024-06-30",
+      "filedAt": "2024-08-14",
+      "accession": "0001493152-24-032232",
+      "holdings": [
+        {
+          "cusip": "277432100",
+          "issuer": "EASTMAN CHEM CO",
+          "titleOfClass": "COM",
+          "value": 36038950,
+          "shares": 367857,
+          "weight": 0.16239305960146275
+        },
+        {
+          "cusip": "G48833118",
+          "issuer": "WEATHERFORD INTL PLC",
+          "titleOfClass": "ORD SHS",
+          "value": 29767717,
+          "shares": 243101,
+          "weight": 0.13413461382699762
+        },
+        {
+          "cusip": "880779103",
+          "issuer": "TEREX CORP NEW",
+          "titleOfClass": "COM",
+          "value": 29094704,
+          "shares": 530538,
+          "weight": 0.13110198828653213
+        },
+        {
+          "cusip": "G6095L109",
+          "issuer": "APTIV PLC",
+          "titleOfClass": "SHS",
+          "value": 26567706,
+          "shares": 377275,
+          "weight": 0.11971522655160985
+        },
+        {
+          "cusip": "95082P105",
+          "issuer": "WESCO INTL INC",
+          "titleOfClass": "COM",
+          "value": 26552100,
+          "shares": 167500,
+          "weight": 0.11964490524402069
+        },
+        {
+          "cusip": "703481101",
+          "issuer": "PATTERSON-UTI ENERGY INC",
+          "titleOfClass": "COM",
+          "value": 22066800,
+          "shares": 2130000,
+          "weight": 0.09943395042346012
+        },
+        {
+          "cusip": "382550101",
+          "issuer": "GOODYEAR TIRE & RUBR CO",
+          "titleOfClass": "COM",
+          "value": 15322500,
+          "shares": 1350000,
+          "weight": 0.0690438443890128
+        },
+        {
+          "cusip": "34354P105",
+          "issuer": "FLOWSERVE CORP",
+          "titleOfClass": "COM",
+          "value": 12981324,
+          "shares": 269882,
+          "weight": 0.05849440458276112
+        },
+        {
+          "cusip": "16115Q308",
+          "issuer": "CHART INDS INC",
+          "titleOfClass": "COM",
+          "value": 10103800,
+          "shares": 70000,
+          "weight": 0.045528157607290426
+        },
+        {
+          "cusip": "44186104",
+          "issuer": "ASHLAND INC",
+          "titleOfClass": "COM",
+          "value": 5669400,
+          "shares": 60000,
+          "weight": 0.02554656037716229
+        },
+        {
+          "cusip": "447011107",
+          "issuer": "HUNTSMAN CORP",
+          "titleOfClass": "COM",
+          "value": 4554000,
+          "shares": 200000,
+          "weight": 0.020520519976998813
+        },
+        {
+          "cusip": "887389104",
+          "issuer": "TIMKEN CO",
+          "titleOfClass": "COM",
+          "value": 3205200,
+          "shares": 40000,
+          "weight": 0.014442769132691392
+        }
+      ],
+      "totalValue": 221924201
+    }
+  ]
+}
