@@ -3,7 +3,7 @@
 // No recommendations, no target prices — just margin-of-safety arithmetic and a
 // three-tier Graham classification the reader judges for themselves.
 import type { LatestPrice } from "@/lib/managers/priceRead";
-import type { StrikeZone, StrikeZoneAssessment, ValuationFloor } from "./types";
+import type { StrikeZone, StrikeZoneAssessment, ValuationFloor, ValuePosition } from "./types";
 
 /** Graham's classic one-third margin of safety. */
 export const GRAHAM_MOS = 1 / 3;
@@ -72,14 +72,41 @@ export function deriveStrikeZone(
 
   let epv: StrikeZoneAssessment["epv"];
   if (hasEpv) {
-    // Each lamp's per_share_high >= per_share_low, so ceiling (global max high)
-    // >= floorConservative (global min low); mosHigh >= mosLow holds.
-    const floorConservative = Math.min(...lows);
-    const ceiling = Math.max(...highs);
+    // v1 fields (UNCHANGED): each lamp's high >= low, so ceiling (max high) >= floorConservative (min low).
+    const floorConservative = Math.min(...lows); // EPV_low
+    const ceiling = Math.max(...highs);          // EPV_high (zero-growth top)
     const mosLow = (floorConservative - price.close) / floorConservative;
     const mosHigh = (ceiling - price.close) / ceiling;
     const zone: StrikeZone = mosLow >= GRAHAM_MOS ? "in_strike_zone" : mosLow >= 0 ? "approaching" : "outside";
-    epv = { zone, floorConservative, ceiling, mosLow, mosHigh };
+
+    // v2 value band (spec §1): fold reproduction value (AV) into floor/base, layer GV ceilings.
+    const avPs = hasAsset ? (floor.asset_floor.per_share as number) : undefined;
+    const valueFloor = avPs != null ? Math.max(avPs, floorConservative) : floorConservative;
+    const base = avPs != null ? Math.max(avPs, ceiling) : ceiling;
+
+    const gv = floor.growth_value;
+    const ps = gv.per_share;
+    const gvUsable =
+      gv.assessable &&
+      !gv.gated_to_zero &&
+      [ps.pessimistic, ps.neutral, ps.optimistic].every((n) => Number.isFinite(n) && n >= 0);
+    const growthCollapsed = !gvUsable;
+    const ceilings = gvUsable
+      ? { pessimistic: base + ps.pessimistic, neutral: base + ps.neutral, optimistic: base + ps.optimistic }
+      : undefined;
+
+    // 5/6-tier position. strikeMax = valueFloor × (1 − 1/3); GRAHAM_MOS reused.
+    const strikeMax = valueFloor * (1 - GRAHAM_MOS);
+    let position: ValuePosition;
+    if (price.close <= strikeMax) position = "in_strike_zone";
+    else if (price.close <= valueFloor) position = "approaching";
+    else if (price.close <= base) position = "zero_growth_zone";
+    else if (!ceilings) position = "above_zero_growth";
+    else if (price.close <= ceilings.neutral) position = "moat_band";
+    else if (price.close <= ceilings.optimistic) position = "upper_band";
+    else position = "above_optimistic";
+
+    epv = { zone, floorConservative, ceiling, mosLow, mosHigh, valueFloor, base, ceilings, position, growthCollapsed };
   }
 
   const assetFloor = hasAsset

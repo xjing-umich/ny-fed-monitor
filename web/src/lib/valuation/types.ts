@@ -91,6 +91,21 @@ export type PerShareUnavailable = {
 export type StrikeZone = "in_strike_zone" | "approaching" | "outside";
 
 /**
+ * v2 value-band position (spec §2). Where price.close sits in the conservative→
+ * optimistic value band. An OBSERVATION, never a verdict. Tiers 4/5 exist only
+ * when growth value is assessable; otherwise the band collapses to the four
+ * zero-growth states (…|"above_zero_growth"). GRAHAM_MOS=1/3 drives tier 1↔2.
+ */
+export type ValuePosition =
+  | "in_strike_zone"      // price ≤ valueFloor × (1 − 1/3)
+  | "approaching"         // valueFloor × 2/3 < price ≤ valueFloor
+  | "zero_growth_zone"    // valueFloor < price ≤ base
+  | "moat_band"           // base < price ≤ ceiling_neutral
+  | "upper_band"          // ceiling_neutral < price ≤ ceiling_optimistic
+  | "above_optimistic"    // price > ceiling_optimistic
+  | "above_zero_growth";  // GV collapsed: price > base, no growth ceilings
+
+/**
  * Deterministic price-vs-floor assessment. The ONLY place price enters the
  * valuation card. Observation, never a recommendation: no BUY/SELL/HOLD, no
  * target price. `undefined` from the engine means "no meaningful comparison".
@@ -106,15 +121,27 @@ export type StrikeZoneAssessment = {
   suppressedReason?: string;
   /** EPV strike zone — present only when ≥1 EPV lamp is assessable with a positive per_share_low AND currency matches. */
   epv?: {
+    // ── v1 backward-compat fields (UNCHANGED computation — zero behavior change) ──
     zone: StrikeZone;
-    /** Global-minimum assessable per_share_low across lamps — the conservative reference. */
+    /** Global-minimum assessable per_share_low across lamps — EPV_low, the conservative reference. */
     floorConservative: number;
-    /** Global-maximum assessable per_share_high across lamps. */
+    /** Global-maximum assessable per_share_high across lamps — EPV_high, the zero-growth ceiling. */
     ceiling: number;
-    /** Margin of safety vs floorConservative — the conservative end; drives the zone. */
+    /** Margin of safety vs floorConservative — the conservative end; drives `zone`. */
     mosLow: number;
-    /** Margin of safety vs ceiling — the optimistic end of the range. */
+    /** Margin of safety vs ceiling — the optimistic end of the zero-growth range. */
     mosHigh: number;
+    // ── v2 value band (spec §1) ──
+    /** max(AV_ps, EPV_low) — conservative floor that drives the strike zone (folds reproduction value). */
+    valueFloor: number;
+    /** valueBaseZeroGrowth = max(AV_ps, EPV_high) — top of the zero-growth value. */
+    base: number;
+    /** base + growth_value.per_share[s]. Undefined when growth value collapsed (gated/not assessable/non-finite). */
+    ceilings?: { pessimistic: number; neutral: number; optimistic: number };
+    /** 5/6-tier price position over the value band. */
+    position: ValuePosition;
+    /** true when growth value is gated_to_zero / not assessable / non-finite → ceilings undefined, position degrades to 4 tiers. */
+    growthCollapsed: boolean;
   };
   /** Asset-floor second lamp — present only when asset_floor is assessable AND currency matches. */
   assetFloor?: {
