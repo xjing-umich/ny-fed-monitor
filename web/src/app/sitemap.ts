@@ -49,6 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/investors/sells", "weekly", 0.8),
     entry("/stocks", "weekly", 0.8),
     entry("/macro", "daily", 0.7),
+    entry("/macro/methodology", "weekly", 0.5),
     entry("/about", "monthly", 0.4),
     entry("/learn", "weekly", 0.6),
   ];

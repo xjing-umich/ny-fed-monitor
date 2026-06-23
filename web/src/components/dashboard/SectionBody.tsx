@@ -259,12 +259,21 @@ export type SectionBodyProps = {
   lang: Lang;
   /** When true, suppresses the status pills and section title header (used inside EntityPage which has its own header). */
   headless?: boolean;
+  /** When true, suppresses the KPI strip because the surrounding page already renders key facts. */
+  hideMetricStrip?: boolean;
 };
 
-export function SectionBody({ sectionKey, section, lang, headless = false }: SectionBodyProps): React.ReactElement {
+export function SectionBody({
+  sectionKey,
+  section,
+  lang,
+  headless = false,
+  hideMetricStrip = false,
+}: SectionBodyProps): React.ReactElement {
   const mode = inferSectionMode(section);
   const metrics = (section.key_metrics ?? []).slice(0, keyMetricLimit(sectionKey));
   const tables = section.tables ?? [];
+  const warnings = lang === "zh" ? (section.warnings_zh ?? section.warnings ?? []) : (section.warnings ?? []);
   const chartSpec = buildChartSpec(sectionKey, section, lang);
   const hasChart = Boolean(chartSpec);
   const expectsChart = chartExpected(sectionKey);
@@ -314,7 +323,7 @@ export function SectionBody({ sectionKey, section, lang, headless = false }: Sec
       )}
 
       {/* KPI strip */}
-      {!isUnavailable && metrics.length > 0 && (
+      {!isUnavailable && !hideMetricStrip && metrics.length > 0 && (
         <SectionBlock heading={lang === "zh" ? "核心指标" : "Key Metrics"}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 8 }}>
             {metrics.map((metric) => (
@@ -358,10 +367,10 @@ export function SectionBody({ sectionKey, section, lang, headless = false }: Sec
       )}
 
       {/* Warnings */}
-      {section.warnings && section.warnings.length > 0 && (
+      {warnings.length > 0 && (
         <SectionBlock heading={lang === "zh" ? "提示" : "Warnings"}>
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-            {section.warnings.map((w, i) => (
+            {warnings.map((w, i) => (
               <li key={i} style={{
                 fontSize: 12, color: "var(--tt-warn)",
                 background: "color-mix(in srgb, var(--tt-warn) 8%, var(--tt-panel))",

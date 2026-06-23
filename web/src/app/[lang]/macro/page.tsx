@@ -3,12 +3,26 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { MACRO_GROUPS } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
 import { buildAllSections } from "@/lib/build";
-import { sectionLabel, badgeTone } from "@/lib/dashboard";
-import { INDICATOR_BLURBS } from "@/lib/indicatorBlurbs";
+import {
+  DRIVER_MODULES,
+  RESEARCH_PROMPTS,
+  UPCOMING_MACRO_EVENTS,
+  buildCrossSignalChecks,
+  buildLatestUpdates,
+  buildMacroSummary,
+  buildMarketSnapshot,
+  buildWatchItems,
+  type CrossSignalCheck,
+  type ResearchPrompt,
+  type SnapshotItem,
+  type WatchItem,
+} from "@/lib/macroResearch";
 import SubNav from "@/components/shell/SubNav";
+import MacroViewHero from "./MacroViewHero";
+import MacroViewModules from "./MacroViewModules";
+import MacroSubNav from "./MacroSubNav";
 
 // 宏观数据由 cron 周期更新;与 /macro/[indicator] 子页一致用 10 分钟 ISR 静态化,
 // 而非每请求重算 → 概览页 CDN 秒开,数据最多滞后 10 分钟。
@@ -36,30 +50,6 @@ export async function generateMetadata({
       };
 }
 
-// ── Group heading labels ───────────────────────────────────────────────────────
-
-const GROUP_LABELS: Record<string, { zh: string; en: string }> = {
-  funding: { zh: "资金面", en: "Funding" },
-  supply:  { zh: "供给面", en: "Supply" },
-  policy:  { zh: "政策面", en: "Policy" },
-};
-
-// ── Single-language indicator names (overrides raw section.title_zh which may contain mixed scripts) ──
-
-const INDICATOR_NAME: Record<string, { zh: string; en: string }> = {
-  "repo-financing":      { zh: "回购融资", en: "Repo Financing" },
-  "reference-rates":     { zh: "短端利率", en: "Reference Rates" },
-  "facility-usage":      { zh: "资金工具", en: "ON RRP / SRP" },
-  "fails":               { zh: "结算失败", en: "Fails / Specialness" },
-  "auction-risk":        { zh: "拍卖风险", en: "Auction Risk" },
-  "soma":                { zh: "美联储持仓", en: "SOMA" },
-  "dealer-inventory":    { zh: "交易商库存", en: "Dealer Inventory" },
-  "transactions":        { zh: "成交与流动性", en: "Transactions / Liquidity" },
-  "market-share":        { zh: "交易商集中度", en: "Market Share" },
-  "policy-expectations": { zh: "政策预期", en: "Policy Expectations" },
-  "data-freshness":      { zh: "数据新鲜度", en: "Data Freshness" },
-};
-
 // ── Tone → signal color ───────────────────────────────────────────────────────
 
 const TONE_ACCENT: Record<string, string> = {
@@ -70,57 +60,98 @@ const TONE_ACCENT: Record<string, string> = {
   gray:   "var(--tt-faint)",
 };
 
-// ── Indicator cell (editorial hairline style) ──────────────────────────────────
-
-function IndicatorCard({
-  lang,
-  indicator,
-  name,
-  blurb,
-  signal,
-  signalTone,
-}: {
-  lang: Lang;
-  indicator: string;
-  name: string;
-  blurb: string;
-  signal?: string;
-  signalTone?: string;
-}) {
-  const accentColor = signalTone ? (TONE_ACCENT[signalTone] ?? TONE_ACCENT.gray) : TONE_ACCENT.gray;
-
+function ToneDot({ tone }: { tone: SnapshotItem["tone"] | WatchItem["tone"] | CrossSignalCheck["tone"] }) {
   return (
-    <Link
-      href={macroPath(lang, indicator)}
-      className="indicator-card block no-underline"
-    >
-      <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2">
-        {/* Name + freshness badge */}
-        <div className="flex items-start justify-between gap-2">
-          <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
-            {name}
-          </span>
-          {signal && (
-            <span
-              className="flex-shrink-0 font-mono text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-sm"
-              style={{ color: accentColor, border: `1px solid ${accentColor}` }}
-            >
-              {signal}
-            </span>
-          )}
+    <span
+      aria-hidden="true"
+      className="mt-[0.35rem] h-1.5 w-1.5 shrink-0 rounded-full"
+      style={{ background: TONE_ACCENT[tone] ?? TONE_ACCENT.gray }}
+    />
+  );
+}
+
+function SnapshotCell({ item, lang }: { item: SnapshotItem; lang: Lang }) {
+  return (
+    <Link href={macroPath(lang, item.hrefKey ?? item.sourceKey)} className="block border-t border-[var(--tt-border)] py-3 no-underline">
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+          {item.label[lang]}
+        </span>
+        <ToneDot tone={item.tone} />
+      </div>
+      <div className="mt-1 font-mono text-base font-medium tabular-nums text-[var(--tt-text)]">
+        {item.value}
+      </div>
+    </Link>
+  );
+}
+
+function WatchRow({ item, lang }: { item: WatchItem; lang: Lang }) {
+  const content = (
+    <div className="border-t border-[var(--tt-border)] py-3">
+      <div className="flex items-start gap-2">
+        <ToneDot tone={item.tone} />
+        <div>
+          <div className="font-display text-sm font-medium text-[var(--tt-text)]">
+            {item.label[lang]}
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-[var(--tt-muted)]">
+            {item.detail[lang]}
+          </p>
         </div>
+      </div>
+    </div>
+  );
+  if (!item.sourceKey) return content;
+  return <Link href={macroPath(lang, item.sourceKey)} className="block no-underline">{content}</Link>;
+}
 
-        {/* One-liner blurb */}
-        <p className="text-xs text-[var(--tt-muted)] leading-relaxed m-0">
-          {blurb}
+function CrossSignalRow({ item, lang }: { item: CrossSignalCheck; lang: Lang }) {
+  return (
+    <Link href={macroPath(lang, item.primaryKey)} className="block no-underline">
+      <div className="border-t border-[var(--tt-border)] py-3">
+        <div className="flex items-start gap-2">
+          <ToneDot tone={item.tone} />
+          <div>
+            <div className="font-display text-sm font-medium text-[var(--tt-text)]">
+              {item.label[lang]}
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--tt-muted)]">
+              {item.detail[lang]}
+            </p>
+            <span className="mt-2 inline-block font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-accent)]">
+              {lang === "zh" ? "查看相关指标 →" : "Open related signal →"}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function ResearchPromptCard({ item, lang }: { item: ResearchPrompt; lang: Lang }) {
+  return (
+    <Link href={macroPath(lang, item.hrefKey)} className="indicator-card block no-underline">
+      <div className="border-t border-[var(--tt-border)] py-3">
+        <div className="font-display text-sm font-medium leading-snug text-[var(--tt-text)]">
+          {item.question[lang]}
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
+          {item.detail[lang]}
         </p>
-
-        {/* Money-green arrow link */}
-        <span className="font-mono text-[11px] text-[var(--tt-accent)]">
-          {lang === "zh" ? "查看详情 →" : "View details →"}
+        <span className="mt-2 inline-block font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-accent)]">
+          {lang === "zh" ? "深挖 →" : "Dive deeper →"}
         </span>
       </div>
     </Link>
+  );
+}
+
+function SectionKicker({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="border-b border-[var(--tt-border)] pb-2 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+      {children}
+    </div>
   );
 }
 
@@ -136,97 +167,153 @@ export default async function MacroOverviewPage({
   const lang = rawLang as Lang;
 
   const data = await buildAllSections();
+  const summary = buildMacroSummary(data);
+  const snapshot = buildMarketSnapshot(data);
+  const watchItems = buildWatchItems(data);
+  const crossSignalChecks = buildCrossSignalChecks(data);
+  const latestUpdates = buildLatestUpdates(data);
 
   return (
-    <div className="mx-auto max-w-4xl px-2 py-8 sm:py-10 flex flex-col gap-10">
+    <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10 flex flex-col gap-10">
       {/* CSS hover: indicator links darken text on hover — no JS event handlers */}
       <style>{`.indicator-card:hover span.font-display { color: var(--tt-accent); }`}</style>
 
-      {/* Section sub-nav */}
-      <SubNav lang={lang} section="macro" />
-
-      {/* Editorial page heading */}
-      <div className="border-b border-[var(--tt-border)] pb-6">
-        <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
-          {lang === "zh" ? "宏观 / 流动性" : "Macro / Liquidity"}
-        </h1>
-        <p className="mt-2 text-sm text-[var(--tt-muted)]">
-          {lang === "zh"
-            ? "追踪美国国债市场资金面、供给面与政策面动态，数据来自 NY Fed 及 Treasury.gov。"
-            : "Track US Treasury market funding, supply, and policy dynamics sourced from NY Fed and Treasury.gov."}
-        </p>
-      </div>
-
-      {/* 3 macro groups */}
-      {MACRO_GROUPS.map((group) => {
-        const groupLabel = GROUP_LABELS[group.key] ?? { zh: group.key, en: group.key };
-        return (
-          <section key={group.key} id={group.key}>
-            {/* Group label — uppercase tracked, hairline below */}
-            <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] border-b border-[var(--tt-border)] pb-2 mb-0">
-              {lang === "zh" ? groupLabel.zh : groupLabel.en}
+      <React.Suspense
+        fallback={(
+          <header className="border-b border-[var(--tt-border)] pb-6">
+            <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+              {lang === "zh" ? "宏观 / 流动性" : "Macro / Liquidity"}
             </div>
-
-            {/* Indicator cells — hairline-ruled grid */}
-            <div className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-              {group.indicators.map((indicator) => {
-                const section = data.sections[indicator];
-                const localizedName = INDICATOR_NAME[indicator];
-                const name = localizedName ? localizedName[lang] : (sectionLabel(lang, section) ?? indicator);
-                const blurb = INDICATOR_BLURBS[indicator]?.[lang] ?? "";
-
-                // Headline signal: freshness_status or mode-derived label
-                const signalRaw = section?.freshness_status ?? section?.mode;
-                const signalTone = signalRaw ? badgeTone(signalRaw) : "gray";
-                // Only show signal if meaningful
-                const showSignal =
-                  signalRaw &&
-                  !["live", "manual-live"].includes(signalRaw) &&
-                  signalRaw !== "unavailable" &&
-                  signalRaw !== "mock";
-                const signalLabel = showSignal ? signalRaw : undefined;
-                const tone = showSignal ? signalTone : undefined;
-
-                return (
-                  <IndicatorCard
-                    key={indicator}
-                    lang={lang}
-                    indicator={indicator}
-                    name={name}
-                    blurb={blurb}
-                    signal={signalLabel}
-                    signalTone={tone}
-                  />
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
-
-      {/* System area */}
-      <section>
-        <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] border-b border-[var(--tt-border)] pb-2 mb-0">
-          {lang === "zh" ? "系统" : "System"}
-        </div>
-
-        <Link
-          href={macroPath(lang, "data-freshness")}
-          className="indicator-card block no-underline"
-        >
-          <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2 max-w-xs">
-            <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
-              {lang === "zh" ? "数据新鲜度" : "Data Freshness"}
-            </span>
-            <p className="text-xs text-[var(--tt-muted)] leading-relaxed m-0">
-              {INDICATOR_BLURBS["data-freshness"]?.[lang] ?? ""}
+            <h1 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
+              {lang === "zh" ? "美债市场监控" : "Treasury Market Monitor"}
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--tt-muted)]">
+              {lang === "zh"
+                ? "先看市场摘要、核心快照和异动，再下钻到资金面、供给面、政策面与宏观定价。"
+                : "Start with the market summary, core snapshot, and watch items, then drill into funding, supply, policy, and macro pricing."}
             </p>
-            <span className="font-mono text-[11px] text-[var(--tt-accent)]">
-              {lang === "zh" ? "查看详情 →" : "View details →"}
-            </span>
+          </header>
+        )}
+      >
+        <MacroViewHero lang={lang} />
+      </React.Suspense>
+
+      {/* Section sub-nav */}
+      <React.Suspense fallback={<SubNav lang={lang} section="macro" />}>
+        <MacroSubNav lang={lang} />
+      </React.Suspense>
+
+      <React.Suspense fallback={null}>
+        <MacroViewModules lang={lang} data={data} placement="featured" />
+      </React.Suspense>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "市场摘要" : "Market Summary"}</SectionKicker>
+        <div className="grid gap-x-10 gap-y-5 border-b border-[var(--tt-border)] py-5 md:grid-cols-[1.15fr_0.85fr]">
+          <div>
+            <h2 className="font-display text-2xl font-medium leading-tight text-[var(--tt-text)]">
+              {summary.headline[lang]}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--tt-muted)]">
+              {summary.primaryDriver[lang]}
+            </p>
           </div>
-        </Link>
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            {summary.bullets.map((item) => (
+              <li key={item.en} className="border-t border-[var(--tt-border)] pt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
+                {item[lang]}
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "市场快照" : "Market Snapshot"}</SectionKicker>
+        <div className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+          {snapshot.map((item) => (
+            <SnapshotCell key={item.key} item={item} lang={lang} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "异动与观察清单" : "Top Changes / Watch Items"}</SectionKicker>
+        <div className="grid gap-x-10 md:grid-cols-2">
+          {watchItems.map((item) => (
+            <WatchRow key={item.key} item={item} lang={lang} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "交叉信号检查" : "Cross-Signal Checks"}</SectionKicker>
+        <div className="grid gap-x-10 md:grid-cols-2">
+          {crossSignalChecks.map((item) => (
+            <CrossSignalRow key={item.key} item={item} lang={lang} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "研究问题" : "Research Questions"}</SectionKicker>
+        <div className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-4">
+          {RESEARCH_PROMPTS.map((item) => (
+            <ResearchPromptCard key={item.key} item={item} lang={lang} />
+          ))}
+        </div>
+      </section>
+
+      {/* Driver modules */}
+      <React.Suspense fallback={null}>
+        <MacroViewModules lang={lang} data={data} placement="remaining" />
+      </React.Suspense>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "宏观定价下一步" : "Macro Pricing Next Coverage"}</SectionKicker>
+        <div className="grid gap-x-10 gap-y-4 border-b border-[var(--tt-border)] py-4 md:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <h2 className="font-display text-xl font-medium text-[var(--tt-text)]">
+              {lang === "zh" ? "市场价格与宏观确认已接入" : "Market pricing and macro confirmation are live"}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--tt-muted)]">
+              {lang === "zh"
+                ? "FRED 曲线、实际收益率、breakeven、GDPNow、Chicago financial/activity indexes、就业、CPI/PCE 和 Atlanta Fed Wage Growth Tracker 已进入 Macro Pricing。下一步补 Cleveland inflation nowcast。"
+                : "FRED curve, real-yield, breakeven, GDPNow, Chicago financial/activity indexes, labor, CPI/PCE, and the Atlanta Fed Wage Growth Tracker now power Macro Pricing. Cleveland inflation nowcast is next."}
+            </p>
+          </div>
+          <ul className="m-0 grid list-none gap-x-8 p-0 sm:grid-cols-2">
+            {(DRIVER_MODULES.find((item) => item.key === "macro-pricing")?.comingSignals ?? []).map((item) => (
+              <li key={item.en} className="border-t border-[var(--tt-border)] py-2 text-xs leading-relaxed text-[var(--tt-muted)]">
+                {item[lang]}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "未来事件" : "Upcoming Macro Events"}</SectionKicker>
+        <div className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+          {UPCOMING_MACRO_EVENTS.map((item) => (
+            <div key={item.en} className="border-t border-[var(--tt-border)] py-3 text-sm text-[var(--tt-text)]">
+              {item[lang]}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker>{lang === "zh" ? "最新数据更新" : "Latest Data Updates"}</SectionKicker>
+        <div className="grid gap-x-10 md:grid-cols-2">
+          {latestUpdates.map((item) => (
+            <p key={item.en} className="m-0 border-t border-[var(--tt-border)] py-3 text-xs leading-relaxed text-[var(--tt-muted)]">
+              {item[lang]}
+            </p>
+          ))}
+        </div>
+      </section>
+
     </div>
   );
 }

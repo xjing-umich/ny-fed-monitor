@@ -28,9 +28,12 @@ export const SECONDARY_NAV: Record<string, SecondaryNavItem[]> = {
     { key: "sec", zh: "SEC 财务", en: "SEC fundamentals", href: "/stocks#sec-fundamentals" },
   ],
   macro: [
-    { key: "funding", zh: "资金面", en: "Funding", href: "/macro#funding" },
-    { key: "supply", zh: "供给面", en: "Supply", href: "/macro#supply" },
-    { key: "policy", zh: "政策面", en: "Policy", href: "/macro#policy" },
+    { key: "funding", zh: "资金面", en: "Funding", href: "/macro?view=funding" },
+    { key: "supply", zh: "供给面", en: "Supply", href: "/macro?view=supply" },
+    { key: "policy", zh: "政策面", en: "Policy", href: "/macro?view=policy" },
+    { key: "macro-pricing", zh: "宏观定价", en: "Macro Pricing", href: "/macro?view=macro-pricing" },
+    { key: "system", zh: "系统", en: "System", href: "/macro?view=system" },
+    { key: "methodology", zh: "方法论", en: "Methodology", href: "/macro/methodology" },
   ],
 };
 
@@ -41,6 +44,10 @@ export const MACRO_GROUPS = [
     indicators: ["auction-risk", "soma", "dealer-inventory", "transactions", "market-share"] },
   { key: "policy", zh: "政策面", en: "Policy",
     indicators: ["policy-expectations"] },
+  { key: "macro-pricing", zh: "宏观定价", en: "Macro Pricing",
+    indicators: ["macro-pricing", "macro-conditions", "wage-pressure"] },
+  { key: "system", zh: "系统", en: "System",
+    indicators: ["data-freshness"] },
 ] as const;
 
 export function indicatorToGroup(indicator: string): string | null {

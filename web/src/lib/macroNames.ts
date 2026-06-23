@@ -13,6 +13,9 @@ export const ALL_SECTION_KEYS = [
   "facility-usage",
   "auction-risk",
   "policy-expectations",
+  "macro-pricing",
+  "macro-conditions",
+  "wage-pressure",
   "data-freshness",
 ] as const;
 
@@ -29,5 +32,8 @@ export const SECTION_NAME: Record<IndicatorKey, { zh: string; en: string }> = {
   "transactions":        { zh: "成交与流动性", en: "Transactions / Liquidity" },
   "market-share":        { zh: "交易商集中度", en: "Market Share" },
   "policy-expectations": { zh: "政策预期", en: "Policy Expectations" },
+  "macro-pricing":       { zh: "宏观定价", en: "Macro Pricing" },
+  "macro-conditions":    { zh: "宏观确认", en: "Macro Conditions" },
+  "wage-pressure":        { zh: "工资压力", en: "Wage Pressure" },
   "data-freshness":      { zh: "数据新鲜度", en: "Data Freshness" },
 };

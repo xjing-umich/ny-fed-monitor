@@ -18,6 +18,7 @@ import {
   type SomaSummaryRow,
 } from "@/lib/sources/nyfed";
 import { fetchUpcomingAuctions, fetchRecentAuctionResults } from "@/lib/sources/treasury";
+import { fetchFredSeriesBatch } from "@/lib/sources/fred";
 
 // ─── Analyzers ────────────────────────────────────────────────────────────────
 import { computeSingleSeries, computeFails } from "@/lib/analyzers/pd";
@@ -29,6 +30,9 @@ import type { FacilityRow } from "@/lib/analyzers/facilityUsage";
 import { computeAuction } from "@/lib/analyzers/auction";
 import type { AuctionRow } from "@/lib/analyzers/auction";
 import { computeMarketShare } from "@/lib/analyzers/marketShare";
+import { computeMacroPricing } from "@/lib/analyzers/macroPricing";
+import { computeMacroConditions } from "@/lib/analyzers/macroConditions";
+import { computeWagePressure } from "@/lib/analyzers/wagePressure";
 
 // ─── Section order ────────────────────────────────────────────────────────────
 
@@ -43,6 +47,9 @@ const SECTION_ORDER = [
   "facility-usage",
   "auction-risk",
   "policy-expectations",
+  "macro-pricing",
+  "macro-conditions",
+  "wage-pressure",
   "data-freshness",
 ] as const;
 
@@ -206,6 +213,25 @@ async function buildMarketShare(): Promise<Section> {
   }
 }
 
+async function buildMacroPricing(): Promise<Section> {
+  const series = await fetchFredSeriesBatch(["DGS2", "DGS10", "DGS30", "T10Y2Y", "DFII10", "T10YIE"]);
+  return computeMacroPricing(series);
+}
+
+async function buildMacroConditions(): Promise<Section> {
+  const series = await fetchFredSeriesBatch(["GDPNOW", "NFCI", "ANFCI", "CFNAI", "UNRATE", "PAYEMS", "CPIAUCSL", "PCEPI"]);
+  return computeMacroConditions(series);
+}
+
+async function buildWagePressure(): Promise<Section> {
+  const series = await fetchFredSeriesBatch([
+    "FRBATLWGT3MMAUMHWGO",
+    "FRBATLWGT3MMAUMHWGJMJST",
+    "FRBATLWGT3MMAUMHWGJMJSW",
+  ]);
+  return computeWagePressure(series);
+}
+
 // ─── Main builder ─────────────────────────────────────────────────────────────
 
 export async function buildAllSections(): Promise<DataPayload> {
@@ -218,6 +244,9 @@ export async function buildAllSections(): Promise<DataPayload> {
     referenceRates,
     soma,
     marketShare,
+    macroPricing,
+    macroConditions,
+    wagePressure,
   ] = await Promise.all([
     safe("dealer-inventory", buildDealerInventory),
     safe("transactions", buildTransactions),
@@ -226,6 +255,9 @@ export async function buildAllSections(): Promise<DataPayload> {
     safe("reference-rates", buildReferenceRates),
     safe("soma", buildSoma),
     safe("market-share", buildMarketShare),
+    safe("macro-pricing", buildMacroPricing),
+    safe("macro-conditions", buildMacroConditions),
+    safe("wage-pressure", buildWagePressure),
   ]);
 
   // Dependent sections (need reference-rates for facility-usage, and dealer/txn/fails for auction)
@@ -262,6 +294,9 @@ export async function buildAllSections(): Promise<DataPayload> {
     "facility-usage": facilityUsage as Section,
     "auction-risk": auctionRisk as Section,
     "policy-expectations": policyExpectations as unknown as Section,
+    "macro-pricing": macroPricing as Section,
+    "macro-conditions": macroConditions as Section,
+    "wage-pressure": wagePressure as Section,
   };
 
   sections["data-freshness"] = buildDataFreshnessSection(sections);

@@ -1,6 +1,8 @@
 import React from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { ArrowLeft } from "lucide-react";
 import type { Lang } from "@/lib/nav";
 import { MACRO_GROUPS, indicatorToGroup } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
@@ -11,6 +13,7 @@ import { EntityPage } from "@/components/entity/EntityPage";
 import { SectionBody } from "@/components/dashboard/SectionBody";
 import type { Tone } from "@/components/entity/types";
 import { ALL_SECTION_KEYS, SECTION_NAME, type IndicatorKey } from "@/lib/macroNames";
+import { MACRO_INDICATOR_RESEARCH } from "@/lib/macroResearch";
 
 // ── Static params ──────────────────────────────────────────────────────────────
 
@@ -67,6 +70,124 @@ function deriveTone(rawSignal: string): Tone {
   return "neutral";
 }
 
+function ResearchContext({
+  indicator,
+  lang,
+}: {
+  indicator: string;
+  lang: Lang;
+}): React.ReactElement | null {
+  const note = MACRO_INDICATOR_RESEARCH[indicator];
+  if (!note) return null;
+
+  const blockStyle: React.CSSProperties = {
+    borderTop: "1px solid var(--tt-border)",
+    paddingTop: 12,
+  };
+  const headingStyle: React.CSSProperties = {
+    fontSize: 10,
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    color: "var(--tt-faint)",
+    marginBottom: 8,
+  };
+  const itemStyle: React.CSSProperties = {
+    fontSize: 13,
+    lineHeight: 1.65,
+    color: "var(--tt-muted)",
+    margin: 0,
+  };
+
+  return (
+    <section style={{ display: "grid", gap: 20 }}>
+      <div style={blockStyle}>
+        <div style={headingStyle}>{lang === "zh" ? "观察重点" : "What To Watch"}</div>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
+          {note.watch.map((item) => (
+            <li key={item.en} style={itemStyle}>{item[lang]}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div style={blockStyle}>
+        <div style={headingStyle}>{lang === "zh" ? "可能误导的地方" : "What Can Mislead"}</div>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
+          {note.misleading.map((item) => (
+            <li key={item.en} style={itemStyle}>{item[lang]}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div style={blockStyle}>
+        <div style={headingStyle}>{lang === "zh" ? "数据链路" : "Data Lineage"}</div>
+        <p style={itemStyle}>{note.lineage[lang]}</p>
+        <p style={{ ...itemStyle, marginTop: 6 }}>
+          {lang === "zh" ? "来源：" : "Sources: "}
+          {note.sources.join(" / ")}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function groupLabel(lang: Lang, groupKey: string | null): string | null {
+  if (!groupKey) return null;
+  const group = MACRO_GROUPS.find((item) => item.key === groupKey);
+  if (!group) return null;
+  return lang === "zh" ? group.zh : group.en;
+}
+
+function groupViewHref(lang: Lang, groupKey: string | null): string | null {
+  if (!groupKey) return null;
+  if (!["funding", "supply", "policy", "macro-pricing", "system"].includes(groupKey)) return `/${lang}/macro`;
+  return `/${lang}/macro?view=${groupKey}`;
+}
+
+function MacroContextNotice({
+  lang,
+  groupKey,
+}: {
+  lang: Lang;
+  groupKey: string | null;
+}): React.ReactElement | null {
+  const label = groupLabel(lang, groupKey);
+  if (!label) return null;
+
+  return (
+    <div className="border-y border-[var(--tt-border)] py-3 text-xs leading-relaxed text-[var(--tt-muted)]">
+      <span className="text-[var(--tt-faint)]">
+        {lang === "zh" ? "所属模块" : "Module"}
+      </span>
+      <span className="mx-2 text-[var(--tt-faint)]">/</span>
+      <span className="font-medium text-[var(--tt-text)]">{label}</span>
+    </div>
+  );
+}
+
+function MacroBackButton({
+  lang,
+  groupKey,
+}: {
+  lang: Lang;
+  groupKey: string | null;
+}): React.ReactElement | null {
+  const label = groupLabel(lang, groupKey);
+  const href = groupViewHref(lang, groupKey);
+  if (!label || !href) return null;
+
+  return (
+    <Link
+      href={href}
+      aria-label={lang === "zh" ? `返回${label}视图` : `Back to ${label} view`}
+      className="inline-flex w-fit items-center gap-2 rounded-md border border-[var(--tt-border)] px-3 py-2 text-sm font-medium text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
+    >
+      <ArrowLeft className="size-4" aria-hidden="true" />
+      <span>{lang === "zh" ? `返回${label}` : `Back to ${label}`}</span>
+    </Link>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function IndicatorEntityPage({
@@ -114,7 +235,9 @@ export default async function IndicatorEntityPage({
 
   // Sources
   const sourceDate = section.data_date ?? data.as_of.slice(0, 10);
-  const sources = [{ name: "NY Fed / Treasury.gov", asOf: sourceDate }];
+  const researchNote = MACRO_INDICATOR_RESEARCH[indicator];
+  const sources = (researchNote?.sources.length ? researchNote.sources : ["NY Fed / Treasury.gov"])
+    .map((name) => ({ name, asOf: sourceDate }));
 
   // Related: other indicators in the same MACRO_GROUPS group
   const groupKey = indicatorToGroup(indicator);
@@ -151,10 +274,10 @@ export default async function IndicatorEntityPage({
     isAccessibleForFree: true,
     creator: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
     ...(sourceDate ? { dateModified: sourceDate, temporalCoverage: sourceDate } : {}),
-    sourceOrganization: [
-      { "@type": "Organization", name: "Federal Reserve Bank of New York" },
-      { "@type": "Organization", name: "U.S. Department of the Treasury" },
-    ],
+    sourceOrganization: sources.map((source) => ({
+      "@type": "Organization",
+      name: source.name,
+    })),
   };
 
   return (
@@ -166,14 +289,18 @@ export default async function IndicatorEntityPage({
         subtitle={subtitle}
         verdict={verdict}
         keyFacts={keyFacts}
+        topAction={<MacroBackButton lang={lang} groupKey={groupKey} />}
+        notice={<MacroContextNotice lang={lang} groupKey={groupKey} />}
         sources={sources}
         related={related}
       >
+        <ResearchContext indicator={indicator} lang={lang} />
         <SectionBody
           sectionKey={indicator}
           section={section}
           lang={lang}
           headless
+          hideMetricStrip
         />
       </EntityPage>
     </>

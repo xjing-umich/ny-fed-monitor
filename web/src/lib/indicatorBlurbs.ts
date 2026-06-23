@@ -46,6 +46,18 @@ export const INDICATOR_BLURBS: Record<string, IndicatorBlurb> = {
     zh: "市场隐含的政策利率预期——反映投资者对美联储下一步行动的定价",
     en: "Market-implied policy rate expectations — reflecting investors' pricing of the Fed's next moves",
   },
+  "macro-pricing": {
+    zh: "曲线、实际收益率与 breakeven——拆解名义收益率，但需要跨资产和宏观确认",
+    en: "Curve, real yields, and breakevens — decomposing nominal yields while requiring macro and cross-asset confirmation",
+  },
+  "macro-conditions": {
+    zh: "GDPNow、金融条件、活动、就业与通胀——作为市场定价的确认层，而非实时驱动",
+    en: "GDPNow, financial conditions, activity, labor, and inflation — a confirmation layer, not a live driver",
+  },
+  "wage-pressure": {
+    zh: "Atlanta Fed 工资增长追踪器——月度平滑确认工资黏性是否支撑 higher-for-longer",
+    en: "Atlanta Fed Wage Growth Tracker — monthly smoothed confirmation of wage stickiness and higher-for-longer risk",
+  },
   "data-freshness": {
     zh: "各数据源的更新时间和健康状态——系统监控面板",
     en: "Update timestamps and health status for each data source — system monitoring dashboard",
