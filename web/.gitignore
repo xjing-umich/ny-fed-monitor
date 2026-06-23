@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 13F per-slug + index.json: Supabase 是唯一真源,ingest 仍会本地生成它们但不再提交。
+# former-names.json 例外 —— 构建期 aliases/config.ts 静态 import 它,必须保留追踪。
+src/data/13f/*.json
+!src/data/13f/former-names.json
