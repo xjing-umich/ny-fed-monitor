@@ -1,16 +1,14 @@
-import React from "react";
+"use client";
+
 import Link from "next/link";
-import { SECONDARY_NAV } from "@/lib/nav";
+import { useSearchParams } from "next/navigation";
 import type { Lang } from "@/lib/nav";
+import { SECONDARY_NAV } from "@/lib/nav";
 
-interface SubNavProps {
-  lang: Lang;
-  section: "investors" | "stocks" | "macro";
-  active?: string;
-}
-
-export default function SubNav({ lang, section, active }: SubNavProps) {
-  const items = SECONDARY_NAV[section] ?? [];
+export default function MacroSubNav({ lang }: { lang: Lang }) {
+  const searchParams = useSearchParams();
+  const active = searchParams.get("view") ?? undefined;
+  const items = SECONDARY_NAV.macro ?? [];
 
   return (
     <nav
@@ -19,22 +17,7 @@ export default function SubNav({ lang, section, active }: SubNavProps) {
     >
       {items.map((item) => {
         const isActive = item.key === active;
-        const isSoon = item.soon === true;
         const label = lang === "zh" ? item.zh : item.en;
-
-        if (isSoon) {
-          return (
-            <span
-              key={item.key}
-              className="relative flex items-center gap-1.5 px-4 py-2.5 text-[11px] uppercase tracking-[0.1em] text-[var(--tt-faint)] cursor-not-allowed select-none shrink-0"
-            >
-              {label}
-              <span className="text-[9px] uppercase tracking-[0.08em] text-[var(--tt-faint)] border border-[var(--tt-border)] rounded px-1 py-0.5 leading-none">
-                {lang === "zh" ? "即将上线" : "soon"}
-              </span>
-            </span>
-          );
-        }
 
         return (
           <Link

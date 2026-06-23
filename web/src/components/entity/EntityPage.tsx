@@ -22,6 +22,8 @@ export type EntityPageProps = {
   keyFacts: KeyFact[];
   /** 顶部醒目提示(如数据陈旧告示), 紧跟标题之下渲染 */
   notice?: React.ReactNode;
+  /** Optional page-level action rendered above the title, e.g. a back link. */
+  topAction?: React.ReactNode;
   aiPageKey?: string;
   /** 若提供, 用服务端渲染的叙述节点替代客户端 AINarrative(SEO/GEO 可见) */
   aiNarrative?: React.ReactNode;
@@ -43,6 +45,7 @@ export function EntityPage({
   verdict,
   keyFacts,
   notice,
+  topAction,
   aiPageKey,
   aiNarrative,
   children,
@@ -54,6 +57,8 @@ export function EntityPage({
 }: EntityPageProps): React.ReactElement {
   return (
     <div className="space-y-7">
+      {topAction}
+
       {/* ① Masthead — serif headline, verdict, standfirst, hairline rule */}
       <header className="space-y-3 pb-1">
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
