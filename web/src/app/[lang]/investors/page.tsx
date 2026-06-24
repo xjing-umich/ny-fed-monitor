@@ -4,6 +4,7 @@ import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
 import { InvestorListClient } from "./InvestorListClient";
 import SubNav from "@/components/shell/SubNav";
+import { ogFor } from "@/lib/seo";
 
 export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
@@ -20,17 +21,20 @@ export async function generateMetadata({
     canonical: `/${lang}/investors`,
     languages: { en: "/en/investors", "zh-CN": "/zh/investors", "x-default": "/en/investors" },
   };
-  return lang === "zh"
-    ? {
-        title: "超级投资者 — Compounder · 复利",
-        description: "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。",
-        alternates,
-      }
-    : {
-        title: "Superinvestors — Compounder",
-        description: "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.",
-        alternates,
-      };
+  const title =
+    lang === "zh"
+      ? "超级投资者 — Compounder · 复利"
+      : "Superinvestors — Compounder";
+  const description =
+    lang === "zh"
+      ? "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。"
+      : "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.";
+  return {
+    title,
+    description,
+    alternates,
+    ...ogFor({ lang, title, description, path: `/${lang}/investors` }),
+  };
 }
 
 export default async function InvestorsPage({

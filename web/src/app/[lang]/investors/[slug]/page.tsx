@@ -25,6 +25,7 @@ import { ConvictionPicks } from "@/components/entity/ConvictionPicks";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { buildInvestorProse, displayFundName } from "@/lib/managers/profileProse";
 import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
+import { ogFor } from "@/lib/seo";
 
 const MAX_HOLDINGS = 25;
 
@@ -77,17 +78,20 @@ export async function generateMetadata({
       "x-default": `/en/investors/${slug}`,
     },
   };
-  return lang === "zh"
-    ? {
-        title: `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`,
-        description: `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
-        alternates,
-      }
-    : {
-        title: `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`,
-        description: `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
-        alternates,
-      };
+  const title =
+    lang === "zh"
+      ? `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`
+      : `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`;
+  const description =
+    lang === "zh"
+      ? `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`
+      : `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`;
+  return {
+    title,
+    description,
+    alternates,
+    ...ogFor({ lang: l, title, description, path: `/${l}/investors/${slug}`, type: "profile" }),
+  };
 }
 
 // ── Holdings table ────────────────────────────────────────────────────────────

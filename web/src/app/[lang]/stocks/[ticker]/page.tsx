@@ -24,6 +24,7 @@ import { getLatestPrice } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
+import { ogFor, datasetLd } from "@/lib/seo";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -60,11 +61,20 @@ export async function generateMetadata({
     canonical: `/${l}/stocks/${ticker}`,
     languages: { en: `/en/stocks/${ticker}`, "zh-CN": `/zh/stocks/${ticker}`, "x-default": `/en/stocks/${ticker}` },
   };
-  return lang === "zh"
-    ? { title: `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
-        description: `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。`, alternates }
-    : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
-        description: `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.`, alternates };
+  const title =
+    lang === "zh"
+      ? `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`
+      : `${issuer} (${ticker}) Stock — Who's Holding | Compounder`;
+  const description =
+    lang === "zh"
+      ? `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。`
+      : `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.`;
+  return {
+    title,
+    description,
+    alternates,
+    ...ogFor({ lang: l, title, description, path: `/${l}/stocks/${ticker}`, type: "article" }),
+  };
 }
 
 // ── Holders table ─────────────────────────────────────────────────────────────
@@ -398,11 +408,26 @@ export default async function StockTickerPage({
     url: `https://thecompounder.fyi/${lang}/stocks/${ticker}`,
   };
 
+  // Dataset — frames the holders table as a citable factual dataset for AI engines.
+  const dataset = datasetLd({
+    lang,
+    name:
+      lang === "zh"
+        ? `${issuer}（${ticker}）机构持仓`
+        : `${issuer} (${ticker}) institutional holders`,
+    description:
+      lang === "zh"
+        ? `持有 ${issuer}（${ticker}）的超级投资者 13F 持仓数据，来源 SEC EDGAR。`
+        : `Superinvestor 13F holdings of ${issuer} (${ticker}), sourced from SEC EDGAR.`,
+    url: `https://thecompounder.fyi/${lang}/stocks/${ticker}`,
+  });
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }} />
       <EntityPage
         lang={lang}
         title={issuer}

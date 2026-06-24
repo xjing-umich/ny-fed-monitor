@@ -5,6 +5,7 @@ import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import SubNav from "@/components/shell/SubNav";
+import { ogFor } from "@/lib/seo";
 import { StocksTableClient, type StockRow } from "./StocksTableClient";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 每小时 ISR → 列表页 CDN 秒开。
@@ -23,17 +24,20 @@ export async function generateMetadata({
     canonical: `/${lang}/stocks`,
     languages: { en: "/en/stocks", "zh-CN": "/zh/stocks", "x-default": "/en/stocks" },
   };
-  return lang === "zh"
-    ? {
-        title: "个股 · 最多机构持有 — Compounder · 复利",
-        description: "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。",
-        alternates,
-      }
-    : {
-        title: "Stocks · Most held — Compounder",
-        description: "Securities held by the most superinvestors simultaneously, derived from 13F filings.",
-        alternates,
-      };
+  const title =
+    lang === "zh"
+      ? "个股 · 最多机构持有 — Compounder · 复利"
+      : "Stocks · Most held — Compounder";
+  const description =
+    lang === "zh"
+      ? "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。"
+      : "Securities held by the most superinvestors simultaneously, derived from 13F filings.";
+  return {
+    title,
+    description,
+    alternates,
+    ...ogFor({ lang, title, description, path: `/${lang}/stocks` }),
+  };
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
