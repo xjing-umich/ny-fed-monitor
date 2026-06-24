@@ -2,11 +2,15 @@ import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor, ValuePosition } from "@/lib/valuation";
 import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
-import { GRAHAM_MOS } from "@/lib/valuation";
 
 function perShare(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+// Whole-dollar form for the readable main view (precise cents live in the fold).
+function usd0(value: number | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return `$${Math.round(value).toLocaleString()}`;
 }
 function range(low: number | undefined, high: number | undefined): string {
   if (low == null || high == null) return "—";
@@ -56,55 +60,6 @@ function LampMethod({ lamp }: { lamp: EpvLamp }) {
   );
 }
 
-const POSITION_LABEL: Record<ValuePosition, string> = {
-  in_strike_zone: "In strike zone",
-  approaching: "Approaching",
-  zero_growth_zone: "Zero-growth value range",
-  moat_band: "Moat-adjusted value band",
-  upper_band: "Upper band",
-  above_optimistic: "Above optimistic upper bound",
-  above_zero_growth: "Above zero-growth value",
-};
-
-const POSITION_TONE: Record<ValuePosition, string> = {
-  in_strike_zone: "var(--tt-accent)",
-  approaching: "var(--tt-warn)",
-  zero_growth_zone: "var(--tt-text)",
-  moat_band: "var(--tt-text)",
-  upper_band: "var(--tt-warn)",
-  above_optimistic: "var(--tt-faint)",
-  above_zero_growth: "var(--tt-faint)",
-};
-
-function PositionBadge({ position }: { position: ValuePosition }) {
-  const tone = POSITION_TONE[position];
-  return (
-    <span
-      className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em]"
-      style={{ color: tone, borderColor: tone }}
-    >
-      {POSITION_LABEL[position]}
-    </span>
-  );
-}
-
-const POSITION_SENTENCE: Record<ValuePosition, (sz: StrikeZoneAssessment) => string> = {
-  in_strike_zone: (sz) =>
-    `At ${perShare(sz.price.close)}, the price sits inside the strike zone — at least a one-third margin of safety below the conservative value floor (max of reproduction value and zero-growth earnings power).`,
-  approaching: (sz) =>
-    `At ${perShare(sz.price.close)}, the price is approaching the strike zone, but the margin of safety is still under one-third of the conservative value floor.`,
-  zero_growth_zone: (sz) =>
-    `At ${perShare(sz.price.close)}, the price is within the zero-growth value range — above the conservative floor but at or below what the business is worth assuming no growth at all.`,
-  moat_band: (sz) =>
-    `At ${perShare(sz.price.close)}, the price is within the moat-adjusted value band — above zero-growth value but at or below the neutral growth-value upper bound.`,
-  upper_band: (sz) =>
-    `At ${perShare(sz.price.close)}, the price is in the upper band — only the optimistic growth scenario supports today's price.`,
-  above_optimistic: (sz) =>
-    `At ${perShare(sz.price.close)}, the price is above the optimistic upper bound — beyond even the optimistic moat-driven growth value.`,
-  above_zero_growth: (sz) =>
-    `At ${perShare(sz.price.close)}, the price is above the zero-growth value. Growth value is not credited here, so there is no moat-adjusted band above this point.`,
-};
-
 // Compact growth-value provenance for the folded method section (assumptions externalized).
 function growthSummary(floor: ValuationFloor): string {
   const gv = floor.growth_value;
@@ -115,57 +70,37 @@ function growthSummary(floor: ValuationFloor): string {
   return `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (neutral ${perShare(gv.per_share.neutral)}). Conservative, not a forecast.`;
 }
 
-const CONSISTENCY_TEXT: Record<string, string> = {
-  both_margin_of_safety: "Price sits below both methods' value ranges — both show a margin of safety.",
-  within_value_range: "Price sits inside both methods' value ranges.",
-  above_both_values: "Price sits above both methods' value ranges.",
-};
-
-// Second sentence of the reading: the owner-earnings DCF and how the two methods relate.
-// Divergence on a quality compounder is expected (conservative DCF vs growth-credited
-// Greenwald), surfaced honestly — never framed as advice or an error.
-function crossCheckSentence(oeDcf?: OeDcfAssessment, reconciliation?: MethodReconciliation): string | null {
-  if (!oeDcf?.assessable || oeDcf.per_share_low == null || oeDcf.per_share_high == null) return null;
-  const dcf = `The owner-earnings DCF reads ${range(oeDcf.per_share_low, oeDcf.per_share_high)} / sh`;
-  if (reconciliation?.comparable && reconciliation.divergence_flag && reconciliation.divergence_pct != null) {
-    return `${dcf}; the two methods differ ~${pct(reconciliation.divergence_pct)} — a deliberately conservative DCF (growth capped, zero-growth terminal) against growth-credited Greenwald, a gap that is expected for a compounder rather than an error.`;
-  }
-  if (reconciliation?.comparable && reconciliation.consistency) {
-    return `${dcf}. ${CONSISTENCY_TEXT[reconciliation.consistency] ?? ""}`.trim();
-  }
-  if (reconciliation && !reconciliation.comparable) {
-    return `${dcf}; the Greenwald growth ceilings are unavailable, so the two methods cannot be cross-checked here.`;
-  }
-  return `${dcf}.`;
+// Where the price sits relative to the combined value range — three plain buckets.
+type Bucket = "below" | "within" | "above";
+function bucketFromConsistency(c?: string): Bucket | null {
+  if (c === "both_margin_of_safety") return "below";
+  if (c === "within_value_range") return "within";
+  if (c === "above_both_values") return "above";
+  return null;
+}
+function bucketFromPosition(p: ValuePosition): Bucket {
+  if (p === "in_strike_zone" || p === "approaching") return "below";
+  if (p === "above_optimistic" || p === "above_zero_growth") return "above";
+  return "within";
 }
 
-// One method band on the number line. lo/hi are pre-ordered so width is never negative.
-function bandBar(xPct: (v: number) => number, lo: number, hi: number, top: string, color: string, title: string) {
+// One band segment on the value-range line. lo/hi pre-ordered so width is never negative.
+function bandSeg(xPct: (v: number) => number, lo: number, hi: number, color: string, title: string) {
   return (
     <div
-      className="absolute h-1.5 rounded-full"
-      style={{ left: `${xPct(lo)}%`, width: `${xPct(hi) - xPct(lo)}%`, top, backgroundColor: color }}
+      className="absolute top-1/2 h-2 -translate-y-1/2 rounded-full"
+      style={{ left: `${xPct(lo)}%`, width: `${Math.max(0, xPct(hi) - xPct(lo))}%`, backgroundColor: color }}
       title={title}
     />
   );
 }
 
-// One quality chip. Warn tone when the diagnostic crosses its disclosure threshold.
-function Chip({ label, warn = false }: { label: string; warn?: boolean }) {
-  const tone = warn ? "var(--tt-warn)" : "var(--tt-muted)";
-  return (
-    <span
-      className="inline-flex items-center rounded-md px-2 py-0.5 text-xs"
-      style={{ color: tone, backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)" }}
-    >
-      {label}
-    </span>
-  );
-}
+const DCF_COLOR = "#7F77DD"; // conservative owner-earnings DCF
+const GW_COLOR = "#1D9E75"; // growth-credited Greenwald
 
-// The value spine: one fair-value headline + one number line carrying BOTH methods +
-// one reading + quality chips. Renders only when there is a price-aware EPV assessment.
-// Static geometry (inline %), RSC, no hydration.
+// The readable value-range read: a one-line verdict, one combined band (two tones =
+// the two methods, its WIDTH = how much they agree), one plain sentence. Every precise
+// number lives in the folded method section. Renders only with a price-aware assessment.
 function ValueSpine({
   floor,
   sz,
@@ -179,130 +114,103 @@ function ValueSpine({
 }) {
   const epv = sz.epv;
   if (!epv) return null;
-  const { graham_epv, buffett_epv } = floor;
+  const price = sz.price.close;
+
   const oeOk = oeDcf?.assessable && finitePositive(oeDcf.per_share_low) && finitePositive(oeDcf.per_share_high);
+  const conservative = oeOk ? { lo: oeDcf!.per_share_low!, hi: oeDcf!.per_share_high! } : null;
+  // Greenwald lens: the growth band, or a single zero-growth point when growth is not credited.
+  const growth = epv.ceilings ? { lo: epv.ceilings.pessimistic, hi: epv.ceilings.optimistic } : { lo: epv.base, hi: epv.base };
 
-  // headline value range: Greenwald growth band, or zero-growth base when GV collapsed.
-  const headline = epv.ceilings
-    ? `${perShare(epv.ceilings.pessimistic)} – ${perShare(epv.ceilings.optimistic)}`
-    : `≈ ${perShare(epv.base)}`;
-  const headlineSub = epv.ceilings
-    ? `neutral ${perShare(epv.ceilings.neutral)}`
-    : "zero-growth value — no growth credited";
-
-  // number-line domain
-  const candidates = [
-    sz.price.close,
-    epv.valueFloor,
-    epv.base,
-    epv.ceilings?.optimistic,
-    sz.assetFloor?.perShare,
-    graham_epv.assessable ? graham_epv.per_share_high : undefined,
-    buffett_epv.assessable ? buffett_epv.per_share_high : undefined,
-    oeOk ? oeDcf!.per_share_high : undefined,
-  ].filter((n): n is number => typeof n === "number" && Number.isFinite(n));
-  const domainMax = (candidates.length ? Math.max(...candidates) : sz.price.close) * 1.08 || 1;
-  const xPct = (v: number) => Math.max(0, Math.min(100, (v / domainMax) * 100));
-  const strikeMax = epv.valueFloor * (1 - GRAHAM_MOS);
-
-  const tick = (value: number, label: string, tone: string, full = false) => (
-    <div
-      className={`absolute ${full ? "inset-y-0" : "top-1/4 h-1/2"} w-px`}
-      style={{ left: `${xPct(value)}%`, backgroundColor: tone }}
-      title={`${label} ${perShare(value)}`}
-    />
+  const ends = [conservative?.lo, conservative?.hi, growth.lo, growth.hi].filter(
+    (n): n is number => typeof n === "number" && Number.isFinite(n),
   );
+  const rangeLo = Math.min(...ends);
+  const rangeHi = Math.max(...ends);
+  const bothMethods = !!conservative && !!epv.ceilings;
+
+  // verdict bucket: prefer the two-method consistency, else the single-method position.
+  const bucket =
+    (bothMethods ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
+  const methodWord = bothMethods ? "either method" : "this method";
+  const nearTop = price <= rangeHi * 1.08;
+  let phrase: string;
+  let sub: string;
+  if (bucket === "below") {
+    phrase = `is below its ${usd0(rangeLo)} – ${usd0(rangeHi)} value range`;
+    sub = `A margin of safety on ${bothMethods ? "both methods" : "this method"}.`;
+  } else if (bucket === "within") {
+    phrase = `sits inside its ${usd0(rangeLo)} – ${usd0(rangeHi)} value range`;
+    sub = "Within what the methods consider fair.";
+  } else {
+    phrase = `${nearTop ? "is at the top of" : "is above"} its ${usd0(rangeLo)} – ${usd0(rangeHi)} value range`;
+    sub = `Looks fully priced — little to no margin of safety on ${methodWord}.`;
+  }
+
+  // axis framed around the value range + price so the band fills the width
+  const domLo = Math.min(rangeLo, price) * 0.96;
+  const domHi = Math.max(rangeHi, price) * 1.04;
+  const span = domHi - domLo || 1;
+  const xPct = (v: number) => Math.max(0, Math.min(100, ((v - domLo) / span) * 100));
+
+  const widthSentence =
+    bothMethods && reconciliation?.comparable
+      ? reconciliation.divergence_flag
+        ? "The range is wide because the two methods disagree on how much to credit the moat’s future growth — normal for a compounder."
+        : "The two methods broadly agree, which lends the range more weight."
+      : null;
 
   return (
     <div className="space-y-3">
-      {/* headline + price */}
+      {/* verdict */}
       <div>
         <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="text-xs text-[var(--tt-faint)]">Fair value</span>
-          <span className="font-mono text-2xl tabular-nums text-[var(--tt-text)]">{headline}</span>
-          <span className="text-xs text-[var(--tt-faint)]">/ sh · {headlineSub}</span>
+          <span className="font-mono text-2xl tabular-nums text-[var(--tt-text)]">{usd0(price)}</span>
+          <span className="text-sm text-[var(--tt-muted)]">{phrase}</span>
         </div>
-        <div className="mt-1 flex items-center gap-2 flex-wrap">
-          <span className="rounded-md bg-[color-mix(in_srgb,var(--tt-accent)_10%,transparent)] px-2 py-0.5 font-mono text-xs text-[var(--tt-text)]">
-            Price {perShare(sz.price.close)}
-          </span>
-          <PositionBadge position={epv.position} />
-        </div>
+        <p className="mt-0.5 text-xs text-[var(--tt-faint)]">{sub}</p>
       </div>
 
-      {/* one number line, both methods */}
+      {/* one combined value-range band */}
       <div>
-        <div className="relative h-16 w-full">
-          <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-[var(--tt-border)]" />
-          {/* strike-zone shade */}
+        <div className="relative h-8 w-full">
+          {/* range envelope */}
           <div
-            className="absolute top-1/2 h-10 -translate-y-1/2 rounded-sm border"
-            style={{
-              left: 0,
-              width: `${xPct(strikeMax)}%`,
-              backgroundColor: "color-mix(in srgb, var(--tt-accent) 12%, transparent)",
-              borderColor: "color-mix(in srgb, var(--tt-accent) 35%, transparent)",
-            }}
+            className="absolute top-1/2 h-2.5 -translate-y-1/2 rounded-full bg-[var(--tt-border)]"
+            style={{ left: `${xPct(rangeLo)}%`, width: `${Math.max(0, xPct(rangeHi) - xPct(rangeLo))}%` }}
             aria-hidden
           />
-          {/* Buffett OE-DCF band (upper) — min/max so a malformed low>high never draws negative width */}
-          {oeOk ? bandBar(xPct, Math.min(oeDcf!.per_share_low!, oeDcf!.per_share_high!), Math.max(oeDcf!.per_share_low!, oeDcf!.per_share_high!), "28%", "#7F77DD", `Owner-earnings DCF: ${range(oeDcf!.per_share_low, oeDcf!.per_share_high)}`) : null}
-          {/* Greenwald band (lower) — growth ceilings, or a single zero-growth point */}
-          {epv.ceilings ? bandBar(xPct, Math.min(epv.ceilings.pessimistic, epv.ceilings.optimistic), Math.max(epv.ceilings.pessimistic, epv.ceilings.optimistic), "60%", "#1D9E75", `Greenwald fair value: ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)}`) : null}
-          {/* zero-growth base + reproduction-value reference ticks */}
-          {tick(epv.base, "Zero-growth base", "var(--tt-muted)")}
-          {sz.assetFloor ? tick(sz.assetFloor.perShare, "Reproduction value", "var(--tt-faint)") : null}
-          {/* current price marker (full height) */}
-          {tick(sz.price.close, "Price", "var(--tt-accent)", true)}
+          {conservative ? bandSeg(xPct, conservative.lo, conservative.hi, DCF_COLOR, `Conservative DCF ${range(conservative.lo, conservative.hi)}`) : null}
+          {epv.ceilings ? bandSeg(xPct, growth.lo, growth.hi, GW_COLOR, `Growth-credited Greenwald ${range(growth.lo, growth.hi)}`) : null}
+          {/* price marker */}
+          <div className="absolute inset-y-0 w-0.5 bg-[var(--tt-accent)]" style={{ left: `${xPct(price)}%` }} title={`Price ${perShare(price)}`} />
+          {/* end labels */}
+          <span className="absolute top-0 left-0 font-mono text-[10px] text-[var(--tt-faint)]" style={{ left: `${xPct(rangeLo)}%` }}>{usd0(rangeLo)}</span>
+          <span className="absolute top-0 font-mono text-[10px] text-[var(--tt-faint)] -translate-x-full" style={{ left: `${xPct(rangeHi)}%` }}>{usd0(rangeHi)}</span>
         </div>
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] text-[var(--tt-faint)]">
-          <span style={{ color: "var(--tt-accent)" }}>▏Price {perShare(sz.price.close)}</span>
-          {oeOk ? <span><span style={{ color: "#7F77DD" }}>▬</span> Owner-earnings DCF {range(oeDcf!.per_share_low, oeDcf!.per_share_high)}</span> : null}
-          {epv.ceilings ? <span><span style={{ color: "#1D9E75" }}>▬</span> Greenwald {range(epv.ceilings.pessimistic, epv.ceilings.optimistic)}</span> : null}
-          <span>Zero-growth {perShare(epv.base)}</span>
-          {sz.assetFloor ? <span>Reproduction {perShare(sz.assetFloor.perShare)}</span> : null}
+          <span style={{ color: "var(--tt-accent)" }}>▏Price {usd0(price)}</span>
+          {conservative ? <span><span style={{ color: DCF_COLOR }}>▬</span> Conservative (owner-earnings DCF)</span> : null}
+          {epv.ceilings ? <span><span style={{ color: GW_COLOR }}>▬</span> Growth-credited (Greenwald)</span> : null}
         </div>
       </div>
 
-      {/* reading: one position sentence + one cross-check sentence */}
-      <p className="text-sm text-[var(--tt-text)]">{POSITION_SENTENCE[epv.position](sz)}</p>
-      {crossCheckSentence(oeDcf, reconciliation) ? (
-        <p className="text-sm text-[var(--tt-muted)]">{crossCheckSentence(oeDcf, reconciliation)}</p>
-      ) : null}
-
-      {/* quality chips */}
-      <div className="flex flex-wrap gap-2">
-        <Chip label={`Moat: ${MOAT_SHORT[floor.moat_reading.signal]}`} />
-        {oeDcf?.assessable && oeDcf.terminal_share_pct != null ? (
-          <Chip label={`Terminal ${pct(oeDcf.terminal_share_pct)} of value`} warn={!!oeDcf.terminal_dependency_flag} />
-        ) : null}
-        {oeDcf?.diagnostics?.oe_yield != null ? (
-          <Chip
-            label={`OE yield ${pct(oeDcf.diagnostics.oe_yield)}${oeDcf.discount?.dgs10_value != null ? ` vs 10Y ${pct1(oeDcf.discount.dgs10_value)}` : ""}`}
-            warn={!!oeDcf.diagnostics.oe_yield_flag}
-          />
-        ) : null}
-      </div>
+      {widthSentence ? <p className="text-sm text-[var(--tt-text)]">{widthSentence}</p> : null}
 
       {sz.assetFloor?.priceBelow ? (
         <p className="text-sm text-[var(--tt-text)]">
-          Price is at or below the reproducible tangible asset base ({perShare(sz.assetFloor.perShare)} / sh) — a rarer, harder floor.
+          Price is at or below the reproducible tangible asset base ({usd0(sz.assetFloor.perShare)} / sh) — a rarer, harder floor.
         </p>
       ) : null}
 
-      {/* one disclaimer */}
       <p className="text-xs text-[var(--tt-muted)]">
-        A range of observations from two valuation methods — not investment advice, not a buy/sell signal, and not a price target.
-        Growth value is a deliberately conservative estimate, never a prediction. Whether to act is your judgment.
+        Observations from two valuation methods — not investment advice, not a buy/sell signal, and not a price target.
       </p>
 
-      {/* one provenance micro-line */}
       <p className="text-[10px] text-[var(--tt-faint)]">
         Price as of {sz.price.date}
         {sz.price.source ? ` · ${sz.price.source}` : ""}
         {sz.stale ? " · may be stale" : ""}
-        {oeDcf?.discount?.dgs10_date ? ` · DGS10 ${oeDcf.discount.dgs10_value != null ? pct1(oeDcf.discount.dgs10_value) : ""} @ ${oeDcf.discount.dgs10_date}` : ""}
-        {epv.growthCollapsed ? " · growth value not credited" : ""}.
+        {oeDcf?.discount?.dgs10_date ? ` · DGS10 ${oeDcf.discount.dgs10_value != null ? pct1(oeDcf.discount.dgs10_value) : ""} @ ${oeDcf.discount.dgs10_date}` : ""}.
       </p>
     </div>
   );
@@ -310,7 +218,7 @@ function ValueSpine({
 
 // Price-free fallback: no axis is meaningful without a price, so show the two
 // zero-growth lenses, the asset floor and moat, and the owner-earnings DCF range
-// as compact text. Mirrors the data the spine would carry, minus price positioning.
+// as compact text.
 function CompactFloor({ floor, oeDcf, suppressedReason }: { floor: ValuationFloor; oeDcf?: OeDcfAssessment; suppressedReason?: string }) {
   const { graham_epv, buffett_epv, asset_floor, moat_reading } = floor;
   const lampText = (lamp: EpvLamp) =>
@@ -341,23 +249,38 @@ function CompactFloor({ floor, oeDcf, suppressedReason }: { floor: ValuationFloo
   );
 }
 
-// Everything secondary lives here, collapsed by default: per-lamp method notes,
-// asset-floor and moat basis, the window/discount/tax/shares provenance, and the
-// owner-earnings DCF assumptions (g1, OE years, discount band, no-bridge, divergence).
+// Everything precise and secondary, collapsed by default: a one-line numbers summary,
+// then per-lamp method notes, asset/moat basis, growth value, the window/tax/shares
+// provenance, and the owner-earnings DCF assumptions.
 function MethodDetails({
   floor,
+  sz,
   oeDcf,
   reconciliation,
 }: {
   floor: ValuationFloor;
+  sz?: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
 }) {
   const { graham_epv, buffett_epv, asset_floor, moat_reading, provenance } = floor;
+  const epv = sz?.epv;
   return (
     <details className="text-xs text-[var(--tt-muted)]">
-      <summary className="cursor-pointer text-[var(--tt-faint)]">Method, assumptions &amp; sources</summary>
+      <summary className="cursor-pointer text-[var(--tt-faint)]">Method &amp; numbers</summary>
       <div className="mt-2 space-y-2">
+        {/* precise numbers summary */}
+        <p className="font-mono text-[var(--tt-text)]">
+          {oeDcf?.assessable && oeDcf.per_share_low != null ? `Owner-earnings DCF ${range(oeDcf.per_share_low, oeDcf.per_share_high)}` : null}
+          {epv?.ceilings ? ` · Greenwald ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)} (neutral ${perShare(epv.ceilings.neutral)})` : epv ? ` · Greenwald zero-growth ${perShare(epv.base)}` : null}
+          {epv ? ` · zero-growth base ${perShare(epv.base)}` : null}
+          {sz?.assetFloor ? ` · reproduction ${perShare(sz.assetFloor.perShare)}` : null}
+        </p>
+        <p>
+          Moat {MOAT_SHORT[moat_reading.signal]}
+          {oeDcf?.assessable && oeDcf.terminal_share_pct != null ? ` · terminal value ${pct(oeDcf.terminal_share_pct)} of present value${oeDcf.terminal_dependency_flag ? " (>70% — leans on the distant future)" : ""}` : ""}
+          {oeDcf?.diagnostics?.oe_yield != null ? ` · owner-earnings yield ${pct(oeDcf.diagnostics.oe_yield)}${oeDcf.discount?.dgs10_value != null ? ` vs 10Y ${pct1(oeDcf.discount.dgs10_value)}` : ""}` : ""}.
+        </p>
         <LampMethod lamp={graham_epv} />
         <LampMethod lamp={buffett_epv} />
         {asset_floor.assessable && (finitePositive(asset_floor.tangible_net_assets) || finitePositive(asset_floor.capitalized_rd)) ? (
@@ -455,7 +378,7 @@ export function EarningsPowerFloorCard({
           />
         )}
 
-        <MethodDetails floor={floor} oeDcf={oeDcf} reconciliation={reconciliation} />
+        <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} />
       </CardContent>
     </Card>
   );
