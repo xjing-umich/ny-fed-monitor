@@ -1,6 +1,7 @@
 import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor, ValuePosition } from "@/lib/valuation";
+import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
 import { GRAHAM_MOS } from "@/lib/valuation";
 
 function perShare(value: number | undefined): string {
@@ -321,12 +322,105 @@ function StrikeZoneSection({ floor, sz }: { floor: ValuationFloor; sz: StrikeZon
   );
 }
 
+const CONSISTENCY_TEXT: Record<string, string> = {
+  both_margin_of_safety: "Price sits below both value ranges — both methods show a margin of safety.",
+  within_value_range: "Price sits inside the two methods' value ranges.",
+  above_both_values: "Price sits above both methods' value ranges.",
+};
+
+function CrossCheckSection({
+  oeDcf,
+  reconciliation,
+}: {
+  oeDcf?: OeDcfAssessment;
+  reconciliation?: MethodReconciliation;
+}) {
+  if (!oeDcf || !oeDcf.assessable || !oeDcf.tiers) return null;
+
+  return (
+    <div className="border-t border-[var(--tt-border)] pt-4 mt-4 space-y-2">
+      <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        Two-method cross-check
+      </span>
+
+      {/* Buffett owner-earnings DCF range */}
+      <p className="text-sm text-[var(--tt-text)]">
+        Owner-earnings DCF (Buffett, zero-growth terminal):{" "}
+        <span className="font-mono">
+          {perShare(oeDcf.per_share_low!)} – {perShare(oeDcf.per_share_high!)}
+        </span>{" "}
+        / sh
+      </p>
+
+      {reconciliation?.comparable && reconciliation.greenwald_range ? (
+        <p className="text-sm text-[var(--tt-muted)]">
+          Greenwald fair value:{" "}
+          <span className="font-mono">
+            {perShare(reconciliation.greenwald_range[0])} – {perShare(reconciliation.greenwald_range[1])}
+          </span>{" "}
+          / sh.{" "}
+          {reconciliation.consistency ? CONSISTENCY_TEXT[reconciliation.consistency] : null}
+        </p>
+      ) : (
+        <p className="text-sm text-[var(--tt-muted)]">
+          {reconciliation?.reason_if_not ??
+            "Greenwald growth ceilings unavailable — methods cannot be cross-checked; showing the owner-earnings DCF alone."}
+        </p>
+      )}
+
+      {reconciliation?.divergence_flag ? (
+        <p className="text-sm text-[var(--tt-warn)]">
+          The two methods&apos; midpoints differ by{" "}
+          <span className="font-mono">{pct(reconciliation.divergence_pct!)}</span> (&gt;20%) — the underlying
+          assumptions warrant review.
+        </p>
+      ) : null}
+
+      {/* Danger diagnostics (honest disclosure, not a verdict) */}
+      <ul className="text-xs text-[var(--tt-muted)] space-y-1">
+        {oeDcf.terminal_dependency_flag ? (
+          <li>
+            Terminal value is{" "}
+            <span className="font-mono">{pct(oeDcf.terminal_share_pct!)}</span> of present value (&gt;70%) — this
+            estimate leans heavily on the distant future.
+          </li>
+        ) : (
+          <li>
+            Terminal share of value:{" "}
+            <span className="font-mono">{pct(oeDcf.terminal_share_pct!)}</span>.
+          </li>
+        )}
+        {oeDcf.diagnostics?.oe_yield != null ? (
+          <li>
+            Owner-earnings yield:{" "}
+            <span className="font-mono">{pct(oeDcf.diagnostics.oe_yield)}</span>
+            {oeDcf.diagnostics.oe_yield_flag ? " — far from the 10-year treasury yield." : "."}
+          </li>
+        ) : null}
+      </ul>
+
+      {/* Provenance + mandatory disclaimer */}
+      <p className="text-[11px] text-[var(--tt-faint)]">
+        Growth g₁ ={" "}
+        <span className="font-mono">{pct(oeDcf.growth_g1!)}</span>
+        {oeDcf.declined ? " (history declining → capped at 0)" : ""}; OE FY{" "}
+        {oeDcf.oe_fiscal_years?.join(", ")}; discount {oeDcf.discount?.note} {oeDcf.no_bridge_note} A range of
+        observations from two valuation methods — educational only, not investment advice, and not a price target.
+      </p>
+    </div>
+  );
+}
+
 export function EarningsPowerFloorCard({
   floor,
   strikeZone,
+  oeDcf,
+  reconciliation,
 }: {
   floor: ValuationFloor | PerShareUnavailable | undefined;
   strikeZone?: StrikeZoneAssessment;
+  oeDcf?: OeDcfAssessment;
+  reconciliation?: MethodReconciliation;
 }) {
   if (!floor) return null;
   if (floor.kind === "per_share_unavailable") {
@@ -401,6 +495,7 @@ export function EarningsPowerFloorCard({
 
         {strikeZone?.epv ? <FairValueHeadline floor={floor} sz={strikeZone} /> : null}
         {strikeZone ? <StrikeZoneSection floor={floor} sz={strikeZone} /> : null}
+        <CrossCheckSection oeDcf={oeDcf} reconciliation={reconciliation} />
 
         <details className="text-xs text-[var(--tt-muted)]">
           <summary className="cursor-pointer text-[var(--tt-faint)]">Method, assumptions &amp; sources</summary>
