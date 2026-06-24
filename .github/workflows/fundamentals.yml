@@ -1,0 +1,27 @@
+name: Weekly Fundamentals (full holdings)
+on:
+  # SEC EDGAR companyfacts → fundamentals for the FULL 13F holdings universe
+  # (consensus_holdings ∩ SEC US-company map, ~1.6k companies, ~35-40min).
+  # Idempotent per ticker; the universe is read live each run so newly-held
+  # names are auto-covered. Fundamentals are quarterly data → weekly is ample.
+  # No 300s limit on Actions (the Vercel cron only covers the hardcoded core).
+  schedule:
+    - cron: "0 7 * * 6"     # Saturdays 07:00 UTC
+  workflow_dispatch: {}
+jobs:
+  fundamentals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: web
+      - run: npm run sec:ingest:holdings
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          # SEC requires a contact User-Agent. Uses the repo secret if set, else a default contact.
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || 'Compounder Research junlinzhu@jobright.ai' }}

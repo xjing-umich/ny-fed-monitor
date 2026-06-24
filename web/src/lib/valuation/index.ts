@@ -5,3 +5,4 @@ export * from "./strikeZone";
 export * from "./maintenanceCapex";
 export * from "./reproductionValue";
 export * from "./growthValue";
+export { deriveOeDcf, reconcileMethods, pickLatestFredPoint } from "./ownerEarningsDcf";
