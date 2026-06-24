@@ -18,7 +18,14 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
 import { getSecCompanyData } from "@/lib/sec/read";
-import { fundamentalsToFloorInput, computeValuationFloor, deriveStrikeZone } from "@/lib/valuation";
+import {
+  fundamentalsToFloorInput,
+  computeValuationFloor,
+  deriveStrikeZone,
+  deriveOeDcf,
+  reconcileMethods,
+} from "@/lib/valuation";
+import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
@@ -308,9 +315,8 @@ export default async function StockTickerPage({
   // 薄数据(<3 盈利年)→ undefined 不渲染; 多股权无股数 → per_share_unavailable, 卡片诚实标注;
   // 无营业利润(金融) → 单灯档。卡片按 kind 自行分支。
   const sec = await getSecCompanyData(ticker);
-  const valuationFloor = computeValuationFloor(
-    fundamentalsToFloorInput(ticker, issuer, sec.annual),
-  );
+  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual);
+  const valuationFloor = computeValuationFloor(floorInput);
 
   // Strike zone (price vs floor): only when a real per-share floor exists.
   // Multi-class (per_share_unavailable) / thin (undefined) skip the price hit.
@@ -318,6 +324,18 @@ export default async function StockTickerPage({
   const latestPrice = valuationFloor?.kind === "floor" ? await getLatestPrice(ticker) : null;
   const strikeZone =
     valuationFloor?.kind === "floor" ? deriveStrikeZone(valuationFloor, latestPrice) : undefined;
+
+  // Second intrinsic-value method (Buffett owner-earnings DCF) + two-method cross-check.
+  // DGS10 read is best-effort; null → DCF uses the 8–10% fallback band (flagged in-card).
+  const dgs10 = valuationFloor?.kind === "floor" ? await getLatestDgs10() : null;
+  const oeDcf =
+    valuationFloor?.kind === "floor"
+      ? deriveOeDcf(valuationFloor, floorInput.years, dgs10, latestPrice)
+      : undefined;
+  const reconciliation =
+    valuationFloor?.kind === "floor"
+      ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, latestPrice)
+      : undefined;
 
   const subtitle =
     lang === "zh"
@@ -425,7 +443,12 @@ export default async function StockTickerPage({
                   {lang === "zh" ? "估值 · 地基层" : "Valuation"}
                 </span>
               </div>
-              <EarningsPowerFloorCard floor={valuationFloor} strikeZone={strikeZone} />
+              <EarningsPowerFloorCard
+                floor={valuationFloor}
+                strikeZone={strikeZone}
+                oeDcf={oeDcf}
+                reconciliation={reconciliation}
+              />
             </section>
           )}
           {/* 持有人趋势：自带 border-t 与上方估值带分隔；<2 季内部返回 null 不渲染 */}
