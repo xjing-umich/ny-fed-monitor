@@ -220,3 +220,52 @@ export type GrowthValue = {
   per_share: GrowthScenarioSet;
   notes: string[];
 };
+
+// ── Re-export LatestPrice so valuation modules share a single import path ─────
+export type { LatestPrice } from "@/lib/managers/priceRead";
+
+// ── Buffett Owner-Earnings DCF (second intrinsic-value method) ──────────────
+
+export type DiscountBandProvenance = {
+  r_low: number;        // aggressive end (lower discount) — normally DGS10 + 0.025
+  r_high: number;       // strict end (higher discount)   — normally 0.10
+  midpoint: number;     // (r_low + r_high) / 2
+  dgs10_value?: number; // decimal (e.g. 0.0425), undefined when fallback
+  dgs10_date?: string;  // FRED as-of
+  anchored: boolean;    // false → fallback band, not anchored to live treasury
+  inverted: boolean;    // DGS10 ≥ 7.5% forced r_aggressive ≥ r_strict → [min,max]
+  note: string;
+};
+
+export type OeDcfTier = {
+  growth_stage1: number; // g applied in years 1–5
+  discount_rate: number;
+  equity_value: number;  // PV(explicit OE 1–10) + PV(zero-growth terminal)
+  per_share: number;
+};
+
+export type OeDcfAssessment = {
+  assessable: boolean;
+  not_assessable_reason?: string;
+  owner_earnings?: number;   // OE_0 base = buffett_epv.normalized_earnings
+  oe_fiscal_years?: number[];
+  cagr_raw?: number;         // pre-clamp net-income CAGR (may be negative/undefined)
+  cagr_window?: number[];    // fiscal years at the two CAGR endpoints
+  growth_g1?: number;        // clamp(cagr_raw, 0, 0.10)
+  declined?: boolean;        // history declining → g1 forced 0
+  discount?: DiscountBandProvenance;
+  tiers?: { pessimistic: OeDcfTier; neutral: OeDcfTier; optimistic: OeDcfTier };
+  per_share_low?: number;    // = tiers.pessimistic.per_share
+  per_share_high?: number;   // = tiers.optimistic.per_share
+  terminal_share_pct?: number;        // PV(TV)/equity at the neutral tier
+  terminal_dependency_flag?: boolean; // > 0.70
+  diagnostics?: {
+    oe_yield?: number;             // (OE_0 / shares) / price
+    oe_yield_vs_dgs10_bps?: number;
+    oe_yield_flag?: boolean;       // |diff| > 300 bps
+    quick_check_per_share?: number; // OE_0 / midpoint r / shares (no growth)
+    quick_check_deviation_pct?: number; // |neutral_ps − quick| / quick
+    quick_check_flag?: boolean;    // > 50%
+  };
+  no_bridge_note: string;
+};
