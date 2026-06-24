@@ -84,22 +84,8 @@ function bucketFromPosition(p: ValuePosition): Bucket {
   return "within";
 }
 
-// One band segment on the value-range line. lo/hi pre-ordered so width is never negative.
-function bandSeg(xPct: (v: number) => number, lo: number, hi: number, color: string, title: string) {
-  return (
-    <div
-      className="absolute top-1/2 h-2 -translate-y-1/2 rounded-full"
-      style={{ left: `${xPct(lo)}%`, width: `${Math.max(0, xPct(hi) - xPct(lo))}%`, backgroundColor: color }}
-      title={title}
-    />
-  );
-}
-
-const DCF_COLOR = "#7F77DD"; // conservative owner-earnings DCF
-const GW_COLOR = "#1D9E75"; // growth-credited Greenwald
-
-// The readable value-range read: a one-line verdict, one combined band (two tones =
-// the two methods, its WIDTH = how much they agree), one plain sentence. Every precise
+// The readable read: a plain status (margin of safety / fair value / above fair value),
+// a neutral cheaper→pricier gauge with the price marker, one sentence. Every precise
 // number lives in the folded method section. Renders only with a price-aware assessment.
 function ValueSpine({
   floor,
@@ -127,84 +113,91 @@ function ValueSpine({
   const rangeLo = Math.min(...ends);
   const rangeHi = Math.max(...ends);
   const bothMethods = !!conservative && !!epv.ceilings;
+  const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
-  // verdict bucket: prefer the two-method consistency, else the single-method position.
+  // bucket: prefer the two-method consistency, else the single-method position.
   const bucket =
     (bothMethods ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
-  const methodWord = bothMethods ? "either method" : "this method";
-  const nearTop = price <= rangeHi * 1.08;
-  let phrase: string;
-  let sub: string;
-  if (bucket === "below") {
-    phrase = `is below its ${usd0(rangeLo)} – ${usd0(rangeHi)} value range`;
-    sub = `A margin of safety on ${bothMethods ? "both methods" : "this method"}.`;
-  } else if (bucket === "within") {
-    phrase = `sits inside its ${usd0(rangeLo)} – ${usd0(rangeHi)} value range`;
-    sub = "Within what the methods consider fair.";
-  } else {
-    phrase = `${nearTop ? "is at the top of" : "is above"} its ${usd0(rangeLo)} – ${usd0(rangeHi)} value range`;
-    sub = `Looks fully priced — little to no margin of safety on ${methodWord}.`;
-  }
+  const onMethods = bothMethods ? "both methods" : "this method";
 
-  // axis framed around the value range + price so the band fills the width
-  const domLo = Math.min(rangeLo, price) * 0.96;
-  const domHi = Math.max(rangeHi, price) * 1.04;
-  const span = domHi - domLo || 1;
-  const xPct = (v: number) => Math.max(0, Math.min(100, ((v - domLo) / span) * 100));
+  const status = bucket === "below" ? "Margin of safety" : bucket === "within" ? "In fair-value range" : "Above fair value";
+  const sub =
+    bucket === "below"
+      ? `Price sits below ${onMethods}' value estimate.`
+      : bucket === "within"
+        ? `Price sits within ${onMethods}' value estimate.`
+        : "Little to no margin of safety today.";
+  const sits = bucket === "below" ? "below both" : bucket === "within" ? "inside both" : "above both";
+  const sentence = bothMethods
+    ? `Two methods value the business — a conservative owner-earnings DCF and a growth-credited Greenwald estimate. Today’s price sits ${sits}.`
+    : `A conservative earnings-power estimate; today’s price sits ${bucket === "below" ? "below" : bucket === "within" ? "inside" : "above"} it.`;
 
-  const widthSentence =
-    bothMethods && reconciliation?.comparable
-      ? reconciliation.divergence_flag
-        ? "The range is wide because the two methods disagree on how much to credit the moat’s future growth — normal for a compounder."
-        : "The two methods broadly agree, which lends the range more weight."
-      : null;
+  // gauge: three categorical zones (cheaper · fair · pricier); marker placed within the
+  // active zone by how far the price runs through the value range.
+  const spanRange = rangeHi - rangeLo || 1;
+  const marker =
+    bucket === "below"
+      ? 33 * clamp(price / (rangeLo || 1), 0, 1)
+      : bucket === "within"
+        ? 33 + 33 * clamp((price - rangeLo) / spanRange, 0, 1)
+        : 66 + 33 * clamp((price - rangeHi) / (rangeHi || 1), 0, 1);
+  const markerPct = clamp(marker, 2, 98);
+  const zones: { key: Bucket; label: string }[] = [
+    { key: "below", label: "margin of safety" },
+    { key: "within", label: "fair value" },
+    { key: "above", label: "above fair value" },
+  ];
 
   return (
     <div className="space-y-3">
-      {/* verdict */}
-      <div>
-        <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="font-mono text-2xl tabular-nums text-[var(--tt-text)]">{usd0(price)}</span>
-          <span className="text-sm text-[var(--tt-muted)]">{phrase}</span>
-        </div>
-        <p className="mt-0.5 text-xs text-[var(--tt-faint)]">{sub}</p>
+      {/* status */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-muted)_8%,transparent)] px-2.5 py-1 text-sm font-medium text-[var(--tt-text)]">
+          {status}
+        </span>
+        <span className="text-sm text-[var(--tt-muted)]">{sub}</span>
       </div>
 
-      {/* one combined value-range band */}
+      {/* neutral cheaper → pricier gauge */}
       <div>
-        <div className="relative h-8 w-full">
-          {/* range envelope */}
-          <div
-            className="absolute top-1/2 h-2.5 -translate-y-1/2 rounded-full bg-[var(--tt-border)]"
-            style={{ left: `${xPct(rangeLo)}%`, width: `${Math.max(0, xPct(rangeHi) - xPct(rangeLo))}%` }}
-            aria-hidden
-          />
-          {conservative ? bandSeg(xPct, conservative.lo, conservative.hi, DCF_COLOR, `Conservative DCF ${range(conservative.lo, conservative.hi)}`) : null}
-          {epv.ceilings ? bandSeg(xPct, growth.lo, growth.hi, GW_COLOR, `Growth-credited Greenwald ${range(growth.lo, growth.hi)}`) : null}
+        <div className="relative pt-4">
+          <div className="flex h-7 overflow-hidden rounded-md">
+            {zones.map((z) => {
+              const active = z.key === bucket;
+              return (
+                <div
+                  key={z.key}
+                  className="flex flex-1 items-center justify-center text-[10px]"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, var(--tt-faint) ${active ? 16 : 7}%, transparent)`,
+                    color: active ? "var(--tt-text)" : "var(--tt-faint)",
+                  }}
+                >
+                  {z.label}
+                </div>
+              );
+            })}
+          </div>
           {/* price marker */}
-          <div className="absolute inset-y-0 w-0.5 bg-[var(--tt-accent)]" style={{ left: `${xPct(price)}%` }} title={`Price ${perShare(price)}`} />
-          {/* end labels */}
-          <span className="absolute top-0 left-0 font-mono text-[10px] text-[var(--tt-faint)]" style={{ left: `${xPct(rangeLo)}%` }}>{usd0(rangeLo)}</span>
-          <span className="absolute top-0 font-mono text-[10px] text-[var(--tt-faint)] -translate-x-full" style={{ left: `${xPct(rangeHi)}%` }}>{usd0(rangeHi)}</span>
+          <div className="absolute bottom-0 top-3 w-0.5 bg-[var(--tt-accent)]" style={{ left: `${markerPct}%` }} title={`Price ${perShare(price)}`} />
+          <span className="absolute top-0 -translate-x-1/2 font-mono text-[10px] text-[var(--tt-text)]" style={{ left: `${markerPct}%` }}>{usd0(price)}</span>
         </div>
-        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] text-[var(--tt-faint)]">
-          <span style={{ color: "var(--tt-accent)" }}>▏Price {usd0(price)}</span>
-          {conservative ? <span><span style={{ color: DCF_COLOR }}>▬</span> Conservative (owner-earnings DCF)</span> : null}
-          {epv.ceilings ? <span><span style={{ color: GW_COLOR }}>▬</span> Growth-credited (Greenwald)</span> : null}
+        <div className="mt-1 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
+          <span>cheaper</span>
+          <span>{usd0(rangeLo)} – {usd0(rangeHi)} value estimate</span>
+          <span>pricier</span>
         </div>
       </div>
 
-      {widthSentence ? <p className="text-sm text-[var(--tt-text)]">{widthSentence}</p> : null}
+      <p className="text-sm text-[var(--tt-text)]">{sentence}</p>
 
       {sz.assetFloor?.priceBelow ? (
-        <p className="text-sm text-[var(--tt-text)]">
+        <p className="text-sm text-[var(--tt-muted)]">
           Price is at or below the reproducible tangible asset base ({usd0(sz.assetFloor.perShare)} / sh) — a rarer, harder floor.
         </p>
       ) : null}
 
-      <p className="text-xs text-[var(--tt-muted)]">
-        Observations from two valuation methods — not investment advice, not a buy/sell signal, and not a price target.
-      </p>
+      <p className="text-xs text-[var(--tt-muted)]">An observation from two valuation methods — not investment advice, not a buy/sell signal, and not a price target.</p>
 
       <p className="text-[10px] text-[var(--tt-faint)]">
         Price as of {sz.price.date}
