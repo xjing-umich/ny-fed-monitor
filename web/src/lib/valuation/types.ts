@@ -275,8 +275,7 @@ export type OeDcfAssessment = {
 export type ConsistencyReading =
   | "both_margin_of_safety"
   | "within_value_range"
-  | "above_both_values"
-  | "not_comparable";
+  | "above_both_values";
 
 export type MethodReconciliation = {
   comparable: boolean;

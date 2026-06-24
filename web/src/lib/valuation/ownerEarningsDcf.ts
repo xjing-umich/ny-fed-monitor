@@ -162,8 +162,8 @@ export function reconcileMethods(
   const bfLow = Math.min(oeDcf!.per_share_low!, oeDcf!.per_share_high!);
   const bfHigh = Math.max(oeDcf!.per_share_low!, oeDcf!.per_share_high!);
 
-  const gwMid = greenwaldCeilings!.neutral;
-  const bfMid = oeDcf!.tiers!.neutral.per_share;
+  const gwMid = Math.min(gwHigh, Math.max(gwLow, greenwaldCeilings!.neutral));
+  const bfMid = Math.min(bfHigh, Math.max(bfLow, oeDcf!.tiers!.neutral.per_share));
   const mean = (gwMid + bfMid) / 2;
   const divergence = mean > 0 ? Math.abs(gwMid - bfMid) / mean : 0;
 
@@ -225,10 +225,12 @@ export function deriveOeDcf(
     discount_rate: discount.r_high,
     ...tierValues(oe0, g1 / 2, discount.r_high, shares),
   };
+  const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares);
   const neutral: OeDcfTier = {
     growth_stage1: g1,
     discount_rate: discount.midpoint,
-    ...tierValues(oe0, g1, discount.midpoint, shares),
+    equity_value: neutralRun.equity,
+    per_share: neutralRun.perShare,
   };
   const optimistic: OeDcfTier = {
     growth_stage1: g1,
@@ -236,8 +238,7 @@ export function deriveOeDcf(
     ...tierValues(oe0, g1, discount.r_low, shares),
   };
 
-  // terminal share computed at the neutral tier
-  const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares);
+  // terminal share computed at the neutral tier (reuse neutralRun)
   const terminalShare = neutralRun.pvTv / neutralRun.equity;
 
   // diagnostics

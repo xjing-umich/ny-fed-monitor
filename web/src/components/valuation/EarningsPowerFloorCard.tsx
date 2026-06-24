@@ -404,7 +404,7 @@ function CrossCheckSection({
         Growth g₁ ={" "}
         <span className="font-mono">{pct(oeDcf.growth_g1!)}</span>
         {oeDcf.declined ? " (history declining → capped at 0)" : ""}; OE FY{" "}
-        {oeDcf.oe_fiscal_years?.join(", ")}; discount {oeDcf.discount?.note} {oeDcf.no_bridge_note} A range of
+        {oeDcf.oe_fiscal_years?.join(", ")}; discount {oeDcf.discount?.note} · {oeDcf.no_bridge_note} A range of
         observations from two valuation methods — educational only, not investment advice, and not a price target.
       </p>
     </div>
