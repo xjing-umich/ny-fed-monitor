@@ -139,6 +139,17 @@ function crossCheckSentence(oeDcf?: OeDcfAssessment, reconciliation?: MethodReco
   return `${dcf}.`;
 }
 
+// One method band on the number line. lo/hi are pre-ordered so width is never negative.
+function bandBar(xPct: (v: number) => number, lo: number, hi: number, top: string, color: string, title: string) {
+  return (
+    <div
+      className="absolute h-1.5 rounded-full"
+      style={{ left: `${xPct(lo)}%`, width: `${xPct(hi) - xPct(lo)}%`, top, backgroundColor: color }}
+      title={title}
+    />
+  );
+}
+
 // One quality chip. Warn tone when the diagnostic crosses its disclosure threshold.
 function Chip({ label, warn = false }: { label: string; warn?: boolean }) {
   const tone = warn ? "var(--tt-warn)" : "var(--tt-muted)";
@@ -234,32 +245,10 @@ function ValueSpine({
             }}
             aria-hidden
           />
-          {/* Buffett OE-DCF band (upper) */}
-          {oeOk ? (
-            <div
-              className="absolute h-1.5 rounded-full"
-              style={{
-                left: `${xPct(oeDcf!.per_share_low!)}%`,
-                width: `${xPct(oeDcf!.per_share_high!) - xPct(oeDcf!.per_share_low!)}%`,
-                top: "28%",
-                backgroundColor: "#7F77DD",
-              }}
-              title={`Owner-earnings DCF: ${range(oeDcf!.per_share_low, oeDcf!.per_share_high)}`}
-            />
-          ) : null}
+          {/* Buffett OE-DCF band (upper) — min/max so a malformed low>high never draws negative width */}
+          {oeOk ? bandBar(xPct, Math.min(oeDcf!.per_share_low!, oeDcf!.per_share_high!), Math.max(oeDcf!.per_share_low!, oeDcf!.per_share_high!), "28%", "#7F77DD", `Owner-earnings DCF: ${range(oeDcf!.per_share_low, oeDcf!.per_share_high)}`) : null}
           {/* Greenwald band (lower) — growth ceilings, or a single zero-growth point */}
-          {epv.ceilings ? (
-            <div
-              className="absolute h-1.5 rounded-full"
-              style={{
-                left: `${xPct(epv.ceilings.pessimistic)}%`,
-                width: `${xPct(epv.ceilings.optimistic) - xPct(epv.ceilings.pessimistic)}%`,
-                top: "60%",
-                backgroundColor: "#1D9E75",
-              }}
-              title={`Greenwald fair value: ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)}`}
-            />
-          ) : null}
+          {epv.ceilings ? bandBar(xPct, Math.min(epv.ceilings.pessimistic, epv.ceilings.optimistic), Math.max(epv.ceilings.pessimistic, epv.ceilings.optimistic), "60%", "#1D9E75", `Greenwald fair value: ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)}`) : null}
           {/* zero-growth base + reproduction-value reference ticks */}
           {tick(epv.base, "Zero-growth base", "var(--tt-muted)")}
           {sz.assetFloor ? tick(sz.assetFloor.perShare, "Reproduction value", "var(--tt-faint)") : null}
