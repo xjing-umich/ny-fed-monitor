@@ -5,6 +5,8 @@ import type {
   OeDcfAssessment,
   OeDcfTier,
   DiscountBandProvenance,
+  MethodReconciliation,
+  ConsistencyReading,
 } from "./types";
 
 export const GROWTH_CAP = 0.1;
@@ -127,6 +129,62 @@ function tierValues(oe0: number, g1: number, r: number, shares: number): {
 } {
   const run = dcfTier(oe0, g1, r, shares);
   return { equity_value: run.equity, per_share: run.perShare };
+}
+
+export const DIVERGENCE_FLAG = 0.2; // formulas.md §9 reconciliation line
+
+export function reconcileMethods(
+  greenwaldCeilings: { pessimistic: number; neutral: number; optimistic: number } | undefined,
+  oeDcf: OeDcfAssessment | undefined,
+  price: LatestPrice | null,
+): MethodReconciliation {
+  const gwOk =
+    greenwaldCeilings != null &&
+    [greenwaldCeilings.pessimistic, greenwaldCeilings.neutral, greenwaldCeilings.optimistic].every(
+      (n) => Number.isFinite(n),
+    );
+  const bfOk =
+    oeDcf != null && oeDcf.assessable && oeDcf.per_share_low != null && oeDcf.per_share_high != null;
+
+  if (!gwOk || !bfOk) {
+    return {
+      comparable: false,
+      reason_if_not: !gwOk
+        ? "Greenwald growth-value ceilings are unavailable, so the two methods cannot be cross-checked."
+        : "The owner-earnings DCF is unavailable, so the two methods cannot be cross-checked.",
+      ...(gwOk ? { greenwald_range: [greenwaldCeilings!.pessimistic, greenwaldCeilings!.optimistic] as [number, number] } : {}),
+      ...(bfOk ? { buffett_range: [oeDcf!.per_share_low!, oeDcf!.per_share_high!] as [number, number] } : {}),
+    };
+  }
+
+  const gwLow = Math.min(greenwaldCeilings!.pessimistic, greenwaldCeilings!.optimistic);
+  const gwHigh = Math.max(greenwaldCeilings!.pessimistic, greenwaldCeilings!.optimistic);
+  const bfLow = Math.min(oeDcf!.per_share_low!, oeDcf!.per_share_high!);
+  const bfHigh = Math.max(oeDcf!.per_share_low!, oeDcf!.per_share_high!);
+
+  const gwMid = greenwaldCeilings!.neutral;
+  const bfMid = oeDcf!.tiers!.neutral.per_share;
+  const mean = (gwMid + bfMid) / 2;
+  const divergence = mean > 0 ? Math.abs(gwMid - bfMid) / mean : 0;
+
+  let consistency: ConsistencyReading | undefined;
+  if (price && price.close > 0) {
+    const below = Math.min(gwLow, bfLow);
+    const above = Math.max(gwHigh, bfHigh);
+    if (price.close < below) consistency = "both_margin_of_safety";
+    else if (price.close > above) consistency = "above_both_values";
+    else consistency = "within_value_range";
+  }
+
+  return {
+    comparable: true,
+    greenwald_range: [gwLow, gwHigh],
+    buffett_range: [bfLow, bfHigh],
+    price: price?.close,
+    consistency,
+    divergence_pct: divergence,
+    divergence_flag: divergence > DIVERGENCE_FLAG,
+  };
 }
 
 export function deriveOeDcf(

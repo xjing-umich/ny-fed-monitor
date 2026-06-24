@@ -269,3 +269,22 @@ export type OeDcfAssessment = {
   };
   no_bridge_note: string;
 };
+
+// ── Method reconciliation (cross-check Greenwald vs Buffett OE-DCF) ──────────
+
+export type ConsistencyReading =
+  | "both_margin_of_safety"
+  | "within_value_range"
+  | "above_both_values"
+  | "not_comparable";
+
+export type MethodReconciliation = {
+  comparable: boolean;
+  reason_if_not?: string;
+  greenwald_range?: [number, number]; // [pessimistic, optimistic] per share
+  buffett_range?: [number, number];
+  price?: number;
+  consistency?: ConsistencyReading;
+  divergence_pct?: number;  // |gwMid − bfMid| / mean
+  divergence_flag?: boolean; // > 0.20 — assumptions need review
+};

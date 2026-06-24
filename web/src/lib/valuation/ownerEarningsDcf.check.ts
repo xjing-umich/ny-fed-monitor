@@ -5,7 +5,9 @@ import {
   pickLatestFredPoint,
   GROWTH_CAP,
   R_STRICT,
+  reconcileMethods,
 } from "./ownerEarningsDcf";
+import type { OeDcfAssessment } from "./types";
 
 // ── fixtures ────────────────────────────────────────────────────────────────
 function lamp(oe: number, shares: number, yearsUsed: number[]) {
@@ -137,4 +139,69 @@ assert.strictEqual(pickLatestFredPoint([{ date: "x", value: null }]), null);
   }
 }
 
-console.log("ownerEarningsDcf.check.ts: deriveOeDcf OK");
+function oeStub(low: number, high: number): OeDcfAssessment {
+  return {
+    assessable: true,
+    per_share_low: low,
+    per_share_high: high,
+    tiers: {
+      pessimistic: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: low },
+      neutral: { growth_stage1: 0, discount_rate: 0.09, equity_value: 0, per_share: (low + high) / 2 },
+      optimistic: { growth_stage1: 0, discount_rate: 0.08, equity_value: 0, per_share: high },
+    },
+    no_bridge_note: "x",
+  } as OeDcfAssessment;
+}
+
+// price below both ranges → both show margin of safety
+{
+  const m = reconcileMethods({ pessimistic: 100, neutral: 120, optimistic: 140 }, oeStub(90, 150), price(50));
+  assert.strictEqual(m.consistency, "both_margin_of_safety");
+  assert.deepStrictEqual(m.greenwald_range, [100, 140]);
+  assert.deepStrictEqual(m.buffett_range, [90, 150]);
+}
+// price within → within value range
+{
+  const m = reconcileMethods({ pessimistic: 100, neutral: 120, optimistic: 140 }, oeStub(90, 150), price(110));
+  assert.strictEqual(m.consistency, "within_value_range");
+}
+// price above both → above both values
+{
+  const m = reconcileMethods({ pessimistic: 100, neutral: 120, optimistic: 140 }, oeStub(90, 150), price(200));
+  assert.strictEqual(m.consistency, "above_both_values");
+}
+// divergence > 20% flagged (gw neutral 120 vs bf neutral 50 → mean 85, |70|/85 ≈ 0.82)
+{
+  const m = reconcileMethods({ pessimistic: 40, neutral: 120, optimistic: 200 }, oeStub(10, 90), price(60));
+  assert.ok(m.divergence_pct! > 0.2, "divergence computed");
+  assert.strictEqual(m.divergence_flag, true, "divergence flagged");
+}
+// degradation: missing Greenwald → not comparable
+{
+  const m = reconcileMethods(undefined, oeStub(90, 150), price(110));
+  assert.strictEqual(m.comparable, false);
+  assert.ok(m.reason_if_not, "reason present");
+  assert.strictEqual(m.consistency, undefined);
+}
+// degradation: missing OE-DCF → not comparable
+{
+  const m = reconcileMethods({ pessimistic: 100, neutral: 120, optimistic: 140 }, undefined, price(110));
+  assert.strictEqual(m.comparable, false);
+}
+// no price → comparable for divergence, but no consistency reading
+{
+  const m = reconcileMethods({ pessimistic: 100, neutral: 120, optimistic: 140 }, oeStub(90, 150), null);
+  assert.strictEqual(m.comparable, true);
+  assert.strictEqual(m.consistency, undefined);
+  assert.ok(m.divergence_pct != null, "divergence still computed without price");
+}
+// compliance on reconcile output
+{
+  const m = reconcileMethods({ pessimistic: 100, neutral: 120, optimistic: 140 }, oeStub(90, 150), price(110));
+  const blob = JSON.stringify(m).toLowerCase();
+  for (const bad of ["buy", "sell", " hold", "target price", "rating", "recommend"]) {
+    assert.ok(!blob.includes(bad), `no "${bad}" token in reconcile output`);
+  }
+}
+
+console.log("ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK");
