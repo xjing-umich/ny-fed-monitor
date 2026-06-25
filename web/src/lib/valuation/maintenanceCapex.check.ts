@@ -36,7 +36,9 @@ const salesCase: ValuationFloorYear[] = [
 const sc = maintenanceCapex(salesCase);
 approx(sc.methods.greenwald_sales!, 1_000, 1e-6, "sales method = capex − growth capex");
 
-// AI-hog: capex_t / capex_{t-2} ≥ 2 → maintenance floor = capex_t × 0.5 + warning.
+// AI-hog: capex_t / capex_{t-2} ≥ 2 → warning fires, but the floor is capped at the
+// D&A sustaining proxy (not 50% of spiked capex) so a growth-capex ramp can't be
+// mistaken for maintenance and drive owner earnings negative.
 const aiHog: ValuationFloorYear[] = [
   { fiscal_year: 2025, revenue: 20_000, capex: 8_000, d_and_a: 2_000, ppe_net: 18_000 },
   { fiscal_year: 2024, revenue: 18_000, capex: 5_000, d_and_a: 1_900, ppe_net: 12_000 },
@@ -44,7 +46,19 @@ const aiHog: ValuationFloorYear[] = [
 ];
 const ai = maintenanceCapex(aiHog);
 assert.strictEqual(ai.ai_capex_distortion_warning, true, "AI distortion fires (8000/3500 ≥ 2)");
-assert.ok(ai.value! >= 8_000 * 0.5, "maintenance capex raised to AI floor = capex_t × 0.5");
+assert.ok(ai.value! <= 2_000, "maintenance capped at the D&A sustaining proxy, not 50% of spiked capex");
+
+// Extreme ramp (capex ≫ D&A): floor capped at D&A, so the median (asset-based) stands
+// and maintenance does NOT balloon to 50% of capex (the ORCL failure mode).
+const extremeRamp: ValuationFloorYear[] = [
+  { fiscal_year: 2025, revenue: 67_000, capex: 55_000, d_and_a: 7_600, ppe_net: 100_000 },
+  { fiscal_year: 2024, revenue: 57_000, capex: 21_000, d_and_a: 3_900, ppe_net: 43_000 },
+  { fiscal_year: 2023, revenue: 53_000, capex: 6_900, d_and_a: 3_100, ppe_net: 21_000 },
+];
+const er = maintenanceCapex(extremeRamp);
+assert.strictEqual(er.ai_capex_distortion_warning, true, "extreme ramp flags AI distortion");
+assert.ok(er.value! < 55_000 * 0.5, `maintenance ($${er.value}) far below 50% of capex ($27.5k)`);
+assert.ok(er.value! <= 10_000, "maintenance stays at the asset-based level (~PP&E/life), not the spiked-capex floor");
 
 // Divergence > 50% → degraded confidence.
 const divergent: ValuationFloorYear[] = [
