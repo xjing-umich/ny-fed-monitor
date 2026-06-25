@@ -65,8 +65,12 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   const earningsYears = selectEarningsYears(input.years);
   if (earningsYears.length < MIN_YEARS) return undefined;
 
-  // Scan all input years (not just the margin-qualified subset) for any usable diluted count.
-  const shares = input.years.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
+  // Prefer the diluted count from a real earnings year (so a latest stub/transition
+  // period that carries a share count but no earnings can't supply the per-share
+  // divisor for window-averaged earnings); fall back to any year with a usable count.
+  const shares =
+    earningsYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
+    input.years.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
   if (shares == null) return { kind: "per_share_unavailable", reason: MULTI_CLASS_REASON };
 
   // Full path uses the margin-qualified year subset for BOTH lamps so years_used is consistent.
