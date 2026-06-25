@@ -6,7 +6,8 @@ import { ArrowLeft } from "lucide-react";
 import type { Lang } from "@/lib/nav";
 import { MACRO_GROUPS, indicatorToGroup } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
-import { buildAllSections } from "@/lib/build";
+import { readMacroSnapshot } from "@/lib/macroSnapshot";
+import { MacroRefreshing } from "../MacroRefreshing";
 import { sectionLabel, metricLabel, badgeTone } from "@/lib/dashboard";
 import { indicatorBlurb, INDICATOR_BLURBS } from "@/lib/indicatorBlurbs";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -199,11 +200,17 @@ export default async function IndicatorEntityPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  const data = await buildAllSections();
+  // 已知指标集是静态的(ALL_SECTION_KEYS)→ 未知才 404。
+  if (!(ALL_SECTION_KEYS as readonly string[]).includes(indicator)) notFound();
 
-  // Validate indicator against actual built sections
-  const section = data.sections[indicator];
-  if (!section) notFound();
+  // 从物化快照读(构建期不再实时抓 NY Fed/FRED/Treasury → 杜绝静态导出超时)。
+  const data = await readMacroSnapshot();
+  const section = data?.sections[indicator];
+  if (!data || !section) {
+    // 快照暂无(首次摄取前 / DB 抖动)→ 优雅"刷新中":绝不 404、不抛错、不实时抓 → 构建必成功。
+    const names = SECTION_NAME[indicator as IndicatorKey];
+    return <MacroRefreshing lang={lang} title={names ? names[lang] : indicator} />;
+  }
 
   // Title
   const names = SECTION_NAME[indicator as IndicatorKey];

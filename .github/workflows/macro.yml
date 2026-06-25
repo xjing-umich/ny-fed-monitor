@@ -1,0 +1,20 @@
+name: Macro Snapshot (daily)
+on:
+  schedule:
+    - cron: "30 11 * * *"   # 每日 11:30 UTC;宏观多为 business-daily(NY Fed/FRED),日更足够新鲜。幂等:整段覆盖单行快照。
+  workflow_dispatch: {}
+jobs:
+  macro:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: web
+      - run: npm run macro:ingest
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
