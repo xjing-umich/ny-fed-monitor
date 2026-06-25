@@ -92,11 +92,15 @@ function ValueSpine({
   sz,
   oeDcf,
   reconciliation,
+  issuer,
+  ticker,
 }: {
   floor: ValuationFloor;
   sz: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
+  issuer?: string;
+  ticker?: string;
 }) {
   const epv = sz.epv;
   if (!epv) return null;
@@ -128,9 +132,12 @@ function ValueSpine({
         ? `Price sits within ${onMethods}' value estimate.`
         : "Little to no margin of safety today.";
   const sits = bucket === "below" ? "below both" : bucket === "within" ? "inside both" : "above both";
+  const who = issuer ? `${issuer}${ticker ? ` (${ticker})` : ""}: ` : "";
+  const valueRange = `${usd0(rangeLo)}–${usd0(rangeHi)} / sh`;
+  const asOf = sz.price?.date ? ` (price ${usd0(price)} as of ${sz.price.date})` : "";
   const sentence = bothMethods
-    ? `Two methods value the business — a conservative owner-earnings DCF and a growth-credited Greenwald estimate. Today’s price sits ${sits}.`
-    : `A conservative earnings-power estimate; today’s price sits ${bucket === "below" ? "below" : bucket === "within" ? "inside" : "above"} it.`;
+    ? `${who}Two methods value the business — a conservative owner-earnings DCF and a growth-credited Greenwald estimate, ${valueRange}. Today’s price sits ${sits}${asOf}.`
+    : `${who}A conservative earnings-power estimate, ${valueRange}; today’s price sits ${bucket === "below" ? "below" : bucket === "within" ? "inside" : "above"} it${asOf}.`;
 
   // gauge: three categorical zones (cheaper · fair · pricier); marker placed within the
   // active zone by how far the price runs through the value range.
@@ -315,11 +322,15 @@ export function EarningsPowerFloorCard({
   strikeZone,
   oeDcf,
   reconciliation,
+  issuer,
+  ticker,
 }: {
   floor: ValuationFloor | PerShareUnavailable | undefined;
   strikeZone?: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
+  issuer?: string;
+  ticker?: string;
 }) {
   if (!floor) return null;
   if (floor.kind === "per_share_unavailable") {
@@ -362,7 +373,7 @@ export function EarningsPowerFloorCard({
         ) : null}
 
         {hasSpine ? (
-          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} />
+          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} />
         ) : (
           <CompactFloor
             floor={floor}
