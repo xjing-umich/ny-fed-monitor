@@ -198,6 +198,12 @@ function ValueSpine({
 
       <p className="text-sm text-[var(--tt-text)]">{sentence}</p>
 
+      {floor.buffett_epv.method.simplifications.some((s) => s.includes("AI-hog")) ? (
+        <p className="text-sm text-[var(--tt-warn)]">
+          Capex is in a steep ramp (heavy build-ahead investment) — owner earnings carry extra uncertainty, so read the value range with that caveat.
+        </p>
+      ) : null}
+
       {sz.assetFloor?.priceBelow ? (
         <p className="text-sm text-[var(--tt-muted)]">
           Price is at or below the reproducible tangible asset base ({usd0(sz.assetFloor.perShare)} / sh) — a rarer, harder floor.

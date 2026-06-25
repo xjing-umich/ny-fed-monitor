@@ -88,17 +88,24 @@ export function maintenanceCapex(years: ValuationFloorYear[]): MaintCapex {
     notes.push("Only one maintenance-capex method available; estimate is degraded.");
   }
 
-  // AI-hog rule: capex doubling over two years → floor maintenance at 50% of current capex.
+  // AI-hog rule: capex doubling over two years → ensure maintenance isn't understated.
+  // The floor is 50% of current capex, but CAPPED at the D&A sustaining proxy: an
+  // extreme ramp (capex ≫ D&A, e.g. an AI data-center buildout) is mostly GROWTH
+  // capex, and flooring at 50% of spiked capex overstates maintenance enough to drive
+  // owner earnings negative for a profitable company (e.g. ORCL: 50% of $55.7B = $27.8B
+  // vs D&A $7.6B). The asset-based median (PP&E/useful-life) already scales with the
+  // grown asset base, so the cap doesn't understate maintenance.
   let aiWarning = false;
   const capexTminus2 = sorted[2]?.capex;
   if (capexTminus2 != null && capexTminus2 > 0 && capexT / capexTminus2 >= AI_CAPEX_DOUBLING_RATIO) {
     aiWarning = true;
-    const floor = capexT * AI_CAPEX_MAINT_FLOOR_FRACTION;
+    const rawFloor = capexT * AI_CAPEX_MAINT_FLOOR_FRACTION;
+    const floor = daProxy != null ? Math.min(rawFloor, daProxy) : rawFloor;
     if (value < floor) {
       value = floor;
-      notes.push(`Capex doubled within two years (AI-hog rule): maintenance capex floored at ${(AI_CAPEX_MAINT_FLOOR_FRACTION * 100).toFixed(0)}% of current capex.`);
+      notes.push("Capex doubled within two years (AI-hog rule): maintenance capex floored at the D&A sustaining proxy (the growth-capex spike is not treated as maintenance).");
     } else {
-      notes.push("Capex doubled within two years (AI-hog rule): flagged; estimate already above the 50% floor.");
+      notes.push("Capex doubled within two years (AI-hog rule): flagged; the spike is treated as growth, not maintenance — owner earnings carry extra uncertainty.");
     }
   }
 

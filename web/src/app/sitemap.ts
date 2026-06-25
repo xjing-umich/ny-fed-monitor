@@ -18,15 +18,19 @@ type ChangeFreq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 // zh version expressed via hreflang alternates (+ x-default → en). This matches
 // the on-page <link rel="alternate"> tags and is the correct way to pair
 // localized URLs in a sitemap — better than emitting duplicate en/zh entries.
+// lastModified: 取真实的 13F 报告期(YYYY-MM-DD) —— 新一季数据进库时该日期自动前移,
+// 是诚实的"内容版本"信号(避免凭空造日期)。无真实日期的纯编辑页(about/learn/macro)不带 lastmod。
 function entry(
   path: string,
   changeFrequency: ChangeFreq,
-  priority: number
+  priority: number,
+  lastModified?: string
 ): MetadataRoute.Sitemap[number] {
   return {
     url: `${BASE}/en${path}`,
     changeFrequency,
     priority,
+    ...(lastModified ? { lastModified } : {}),
     alternates: {
       languages: {
         en: `${BASE}/en${path}`,
@@ -40,13 +44,19 @@ function entry(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [idx, held] = await Promise.all([getManagerIndex(), consensusHeld()]);
 
+  // 全局最新报告期(各投资人 period 的最大值)。13F 数据按季整体刷新,故聚合页/榜单/个股页
+  // 都以此为 lastmod;period 为 YYYY-MM-DD 字符串,按字典序取最大即最新。无数据则留空。
+  const periods = (idx.managers ?? []).map((m) => m.period).filter(Boolean);
+  const globalLatest = periods.length ? periods.reduce((a, b) => (b > a ? b : a)) : undefined;
+
   const urls: MetadataRoute.Sitemap = [
-    entry("", "daily", 1),
-    entry("/investors", "weekly", 0.8),
-    entry("/investors/consensus", "weekly", 0.8),
-    entry("/investors/buys", "weekly", 0.8),
-    entry("/investors/sells", "weekly", 0.8),
-    entry("/stocks", "weekly", 0.8),
+    entry("", "daily", 1, globalLatest),
+    entry("/investors", "weekly", 0.8, globalLatest),
+    entry("/investors/consensus", "weekly", 0.8, globalLatest),
+    entry("/investors/buys", "weekly", 0.8, globalLatest),
+    entry("/investors/sells", "weekly", 0.8, globalLatest),
+    entry("/stocks", "weekly", 0.8, globalLatest),
+    // 编辑/外部数据页:无诚实的 13F 变更日期 → 不带 lastmod。
     entry("/macro", "daily", 0.7),
     entry("/macro/methodology", "weekly", 0.5),
     entry("/about", "monthly", 0.4),
@@ -58,7 +68,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   for (const m of idx.managers ?? []) {
-    urls.push(entry(`/investors/${m.slug}`, "weekly", 0.7));
+    // 每位投资人用其自身最新报告期 —— 停报者 period 更旧 → lastmod 更旧,正确告诉 Google
+    // 该页不必频繁重抓。
+    urls.push(entry(`/investors/${m.slug}`, "weekly", 0.7, m.period || undefined));
   }
 
   // mostHeld returns rows whose `cusip` field already holds the canonical ticker
@@ -78,7 +90,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const h of held) {
     if (!h.cusip || !isLikelyTicker(h.cusip) || seenStocks.has(h.cusip)) continue;
     seenStocks.add(h.cusip);
-    urls.push(entry(`/stocks/${h.cusip}`, "weekly", 0.6));
+    // 个股共识快照随整库按季刷新 → 用全局最新报告期作 lastmod。
+    urls.push(entry(`/stocks/${h.cusip}`, "weekly", 0.6, globalLatest));
   }
 
   return urls;
