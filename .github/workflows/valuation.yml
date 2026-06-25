@@ -1,0 +1,21 @@
+name: Valuation Snapshot (daily)
+on:
+  schedule:
+    # 每日 12:00 UTC：晚于 prices(工作日 22:00 UTC EOD 入库)与 SEC fundamentals(周更)，
+    # 确保读到最新在库价格+基本面。幂等：逐 ticker upsert(onConflict=ticker)，重跑只覆盖。
+    - cron: "0 12 * * *"
+  workflow_dispatch: {}
+jobs:
+  valuation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: web
+      - run: npm run valuation:ingest
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

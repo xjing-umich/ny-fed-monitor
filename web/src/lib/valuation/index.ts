@@ -6,3 +6,5 @@ export * from "./maintenanceCapex";
 export * from "./reproductionValue";
 export * from "./growthValue";
 export { deriveOeDcf, reconcileMethods, pickLatestFredPoint } from "./ownerEarningsDcf";
+export { deriveValuationVerdict } from "./deriveValuationVerdict";
+export type { ValuationVerdict, VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
