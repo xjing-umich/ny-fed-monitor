@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
-import { buildAllSections } from "@/lib/build";
+import { readMacroSnapshot } from "@/lib/macroSnapshot";
+import { MacroRefreshing } from "./MacroRefreshing";
 import {
   DRIVER_MODULES,
   RESEARCH_PROMPTS,
@@ -166,7 +167,9 @@ export default async function MacroOverviewPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  const data = await buildAllSections();
+  // 从物化快照读(构建期不再实时抓外部 API)。快照暂无 → 优雅"刷新中",构建必成功。
+  const data = await readMacroSnapshot();
+  if (!data) return <MacroRefreshing lang={lang} />;
   const summary = buildMacroSummary(data);
   const snapshot = buildMarketSnapshot(data);
   const watchItems = buildWatchItems(data);

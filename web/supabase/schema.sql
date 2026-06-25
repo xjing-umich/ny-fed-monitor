@@ -520,3 +520,14 @@ create table if not exists price_ingest_runs (
   started_at timestamptz not null default now(),
   finished_at timestamptz
 );
+
+-- 宏观快照(单行,id=1): 把 buildAllSections() 实时抓取+分析的整段 DataPayload 物化为一行 JSONB,
+-- 让 /macro 页改读快照、构建期不再实时抓外部 API(NY Fed/FRED/Treasury)→ 杜绝静态导出超时。
+-- 由 scripts/macro-ingest.ts(定时 Action / npm run macro:ingest)整体重写。
+create table if not exists macro_snapshot (
+  id int primary key default 1,
+  payload jsonb not null,
+  as_of text not null default '',
+  computed_at timestamptz not null default now(),
+  constraint macro_snapshot_singleton check (id = 1)
+);
