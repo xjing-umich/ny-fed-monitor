@@ -101,6 +101,7 @@ const TABLE_COPY = {
     },
     exitedTitle: (n: number) => `本季清仓 (${n})`,
     more: (n: number) => `… 等 ${n} 位`,
+    showAll: (n: number) => `展开全部 ${n} 位持有人`,
   },
   en: {
     title: "Superinvestors Holding This Security",
@@ -112,10 +113,12 @@ const TABLE_COPY = {
     },
     exitedTitle: (n: number) => `Exited this quarter (${n})`,
     more: (n: number) => `… +${n} more`,
+    showAll: (n: number) => `Show all ${n} holders`,
   },
 } as const;
 
 const EXIT_CAP = 12;
+const HOLDERS_VISIBLE = 10;
 
 function HoldersTable({
   holders,
@@ -128,55 +131,48 @@ function HoldersTable({
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const sorted = [...holders].sort((a, b) => b.value - a.value);
+  const head = sorted.slice(0, HOLDERS_VISIBLE);
+  const tail = sorted.slice(HOLDERS_VISIBLE);
 
   const columns: Column<HolderRow>[] = [
-    {
-      key: "investor",
-      header: t.cols.investor,
-      role: "primary",
-      cell: (r) => r.person,
-    },
-    {
-      key: "value",
-      header: t.cols.value,
-      align: "right",
-      width: "w-32",
-      cell: (r) => formatUSD(r.value),
-    },
-    {
-      key: "shares",
-      header: t.cols.shares,
-      align: "right",
-      width: "w-32",
-      hideOnMobile: true,
-      cell: (r) => r.shares.toLocaleString(),
-    },
-    {
-      key: "weight",
-      header: t.cols.weight,
-      align: "right",
-      width: "w-40",
-      cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={r.kind} lang={lang} />,
-    },
+    { key: "investor", header: t.cols.investor, role: "primary", cell: (r) => r.person },
+    { key: "value", header: t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value) },
+    { key: "shares", header: t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => r.shares.toLocaleString() },
+    { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={r.kind} lang={lang} /> },
   ];
 
   return (
     <section>
-      {/* Section label with hairline rule */}
-      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-          {t.title}
-        </span>
-      </div>
+      {/* 支柱②标题:语义 h2(文档大纲),视觉沿用 eyebrow */}
+      <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        {t.title}
+      </h2>
       <DataTable
         columns={columns}
-        rows={sorted}
+        rows={head}
         getKey={(r) => r.slug}
         rowHref={(r) => investorPath(lang, r.slug)}
         breakpoint="lg"
       />
 
-      {/* 本季清仓：表底 rounded-full chip 列表，mobile 自动 wrap；空 → 不渲染 */}
+      {/* 溢出行:全部留 DOM,默认折叠(原生 <details>,零 JS) */}
+      {tail.length > 0 && (
+        <details className="group mt-2">
+          <summary className="cursor-pointer list-none py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
+            <span className="group-open:hidden">{t.showAll(sorted.length)} ▸</span>
+            <span className="hidden group-open:inline">{t.title} ▾</span>
+          </summary>
+          <DataTable
+            columns={columns}
+            rows={tail}
+            getKey={(r) => r.slug}
+            rowHref={(r) => investorPath(lang, r.slug)}
+            breakpoint="lg"
+          />
+        </details>
+      )}
+
+      {/* 本季清仓:表底 chip 列表;空 → 不渲染 */}
       {exited.length > 0 && (
         <div className="mt-4 border-t border-[var(--tt-border)] pt-3">
           <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-negative)]">
