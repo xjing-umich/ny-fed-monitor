@@ -76,6 +76,27 @@ const ALL_FIELDS = Object.keys(FUNDAMENTAL_TAGS) as FundamentalField[];
 const FLOW_FIELDS = ALL_FIELDS.filter((field) => !INSTANT_FIELDS.has(field));
 const INSTANT_FIELD_LIST = ALL_FIELDS.filter((field) => INSTANT_FIELDS.has(field));
 
+// Some filers tag weighted-average share counts in millions/thousands (e.g. MCD
+// reports diluted shares as 716.4, not 716,400,000) — SEC companyfacts returns
+// that raw value, and the unit decl is just "shares" with no scale. Reconcile
+// against net income / diluted EPS (both filer-scale-independent): if the tagged
+// count is smaller by a clean power of 10 (≥100×), rescale it to absolute shares.
+// Returns the value unchanged when there is no reliable EPS cross-check.
+export function normalizeDilutedShares(
+  shares: number | null,
+  netIncome: number | null,
+  epsDiluted: number | null
+): number | null {
+  if (shares == null || !(shares > 0)) return shares;
+  if (netIncome == null || epsDiluted == null || epsDiluted === 0) return shares;
+  const implied = Math.abs(netIncome / epsDiluted);
+  if (!(implied > 0)) return shares;
+  const ratio = implied / shares;
+  if (ratio < 100) return shares; // already absolute (EPS-rounding noise stays ~1×)
+  const scale = Math.pow(10, Math.round(Math.log10(ratio)));
+  return shares * scale;
+}
+
 // Fields that, when absent, mark a period as not "high" quality. Enrichment
 // fields (d_and_a, sga, etc.) intentionally do NOT gate quality — a period is
 // still trustworthy without them; they just enable richer valuation.
@@ -301,6 +322,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
   const ebitda = v.operating_income !== null && v.d_and_a !== null ? v.operating_income + v.d_and_a : null;
   const workingCapital =
     v.current_assets !== null && v.current_liabilities !== null ? v.current_assets - v.current_liabilities : null;
+  const sharesDiluted = normalizeDilutedShares(v.shares_diluted, v.net_income, v.eps_diluted);
 
   const filedDates = Object.values(draft.picks)
     .map((p) => p.filed)
@@ -329,7 +351,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
     operating_income: v.operating_income,
     net_income: v.net_income,
     eps_diluted: v.eps_diluted,
-    shares_diluted: v.shares_diluted,
+    shares_diluted: sharesDiluted,
     operating_cash_flow: v.operating_cash_flow,
     capex,
     free_cash_flow: freeCashFlow,
