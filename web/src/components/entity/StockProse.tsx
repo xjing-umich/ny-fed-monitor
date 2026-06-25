@@ -11,11 +11,35 @@ import type { ProseParagraph } from "@/lib/stocks/stockProse";
 export function StockProse({
   paragraphs,
   lang,
+  bare = false,
 }: {
   paragraphs: ProseParagraph[];
   lang: Lang;
+  bare?: boolean;
 }): React.ReactElement | null {
   if (paragraphs.length === 0) return null;
+  const body = (
+    <div className="max-w-3xl space-y-3">
+      {paragraphs.map((p, i) => (
+        <p key={i} className="text-[15px] leading-relaxed text-[var(--tt-muted)]">
+          {p.map((seg, j) =>
+            typeof seg === "string" ? (
+              <React.Fragment key={j}>{seg}</React.Fragment>
+            ) : (
+              <Link
+                key={j}
+                href={seg.href}
+                className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+              >
+                {seg.label}
+              </Link>
+            ),
+          )}
+        </p>
+      ))}
+    </div>
+  );
+  if (bare) return body;
   const heading = lang === "zh" ? "持有概览" : "Ownership overview";
   return (
     <section>
@@ -24,25 +48,7 @@ export function StockProse({
           {heading}
         </span>
       </div>
-      <div className="max-w-3xl space-y-3">
-        {paragraphs.map((p, i) => (
-          <p key={i} className="text-[15px] leading-relaxed text-[var(--tt-muted)]">
-            {p.map((seg, j) =>
-              typeof seg === "string" ? (
-                <React.Fragment key={j}>{seg}</React.Fragment>
-              ) : (
-                <Link
-                  key={j}
-                  href={seg.href}
-                  className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
-                >
-                  {seg.label}
-                </Link>
-              ),
-            )}
-          </p>
-        ))}
-      </div>
+      {body}
     </section>
   );
 }

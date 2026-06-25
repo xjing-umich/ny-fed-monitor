@@ -25,17 +25,29 @@ const COPY = {
 export function HolderTrend({
   series,
   lang,
+  bare = false,
 }: {
   /** 持有人数序列，按季度升序（最早 → 最新），长度即季数。 */
   series: readonly number[];
   lang: Lang;
+  bare?: boolean;
 }): React.ReactElement | null {
-  // 退化态：少于 2 季无趋势可言 → 不渲染。
   if (series.length < 2) return null;
   const t = COPY[lang];
   const first = series[0];
   const last = series[series.length - 1];
-
+  const body = (
+    <>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <p className="text-sm leading-relaxed text-[var(--tt-muted)]">
+          {t.sentence(series.length, first, last)}
+        </p>
+        <Sparkline series={series} color="var(--tt-muted)" />
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-[var(--tt-faint)]">{t.backfill}</p>
+    </>
+  );
+  if (bare) return body;
   return (
     <section>
       <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
@@ -43,14 +55,7 @@ export function HolderTrend({
           {t.eyebrow}
         </span>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <p className="text-sm leading-relaxed text-[var(--tt-muted)]">
-          {t.sentence(series.length, first, last)}
-        </p>
-        <Sparkline series={series} color="var(--tt-muted)" />
-      </div>
-      {/* backfill 噪声脚注：早期回填偏低，避免斜率误导 */}
-      <p className="mt-2 text-xs leading-relaxed text-[var(--tt-faint)]">{t.backfill}</p>
+      {body}
     </section>
   );
 }
