@@ -45,7 +45,10 @@ export const readValuationVerdicts = cache(
         getDb().from("valuation_snapshot").select("*").in("ticker", keys),
       );
       if (error) {
-        if ((error as { code?: string }).code !== "42P01")
+        // 42P01 = 原生 postgres "undefined table"；PGRST205 = PostgREST 在 schema cache 找不到表。
+        // 二者都意味"表未迁移"，属预期降级态(部署后、跑 migration 前)，静默；其余错误才上报。
+        const code = (error as { code?: string }).code;
+        if (code !== "42P01" && code !== "PGRST205")
           console.error(`readValuationVerdicts 失败: ${(error as Error).message}`);
         return out;
       }
