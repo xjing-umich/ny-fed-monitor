@@ -214,7 +214,11 @@ export function deriveOeDcf(
   const oe0 = lamp.normalized_earnings;
   const shares = lamp.equity_value_low / lamp.per_share_low;
 
-  const { cagr, window } = netIncomeCagr(years);
+  // Measure growth over the SAME fiscal years that back oe0 (the lamp's window),
+  // not the full input history — otherwise an anomalous oldest year outside the
+  // window can inflate g1 to the cap and compound into the terminal value.
+  const windowYears = years.filter((y) => lamp.method.years_used.includes(y.fiscal_year));
+  const { cagr, window } = netIncomeCagr(windowYears.length >= 2 ? windowYears : years);
   const declined = cagr != null && cagr < 0;
   const g1 = cagr == null ? 0 : clamp(cagr, 0, GROWTH_CAP);
 
