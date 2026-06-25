@@ -1,6 +1,7 @@
 import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor, ValuePosition } from "@/lib/valuation";
+import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
+import { deriveValuationVerdict } from "@/lib/valuation";
 import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
 
 function perShare(value: number | undefined): string {
@@ -71,18 +72,8 @@ function growthSummary(floor: ValuationFloor): string {
 }
 
 // Where the price sits relative to the combined value range — three plain buckets.
+// (bucket derivation lives in the shared deriveValuationVerdict pure fn — single source of truth.)
 type Bucket = "below" | "within" | "above";
-function bucketFromConsistency(c?: string): Bucket | null {
-  if (c === "both_margin_of_safety") return "below";
-  if (c === "within_value_range") return "within";
-  if (c === "above_both_values") return "above";
-  return null;
-}
-function bucketFromPosition(p: ValuePosition): Bucket {
-  if (p === "in_strike_zone" || p === "approaching") return "below";
-  if (p === "above_optimistic" || p === "above_zero_growth") return "above";
-  return "within";
-}
 
 // The readable read: a plain status (margin of safety / fair value / above fair value),
 // a neutral cheaper→pricier gauge with the price marker, one sentence. Every precise
@@ -106,22 +97,19 @@ function ValueSpine({
   if (!epv) return null;
   const price = sz.price.close;
 
+  // Single source of truth: bucket + range come from the shared pure verdict (extracted from
+  // this very logic), so the card and the investor-page overlay can never drift apart.
+  const verdict = deriveValuationVerdict({ floor, strikeZone: sz, oeDcf, reconciliation });
+  if (!verdict) return null; // epv present ⇒ verdict non-null in practice; narrows the type here.
+
   const oeOk = oeDcf?.assessable && finitePositive(oeDcf.per_share_low) && finitePositive(oeDcf.per_share_high);
   const conservative = oeOk ? { lo: oeDcf!.per_share_low!, hi: oeDcf!.per_share_high! } : null;
-  // Greenwald lens: the growth band, or a single zero-growth point when growth is not credited.
-  const growth = epv.ceilings ? { lo: epv.ceilings.pessimistic, hi: epv.ceilings.optimistic } : { lo: epv.base, hi: epv.base };
-
-  const ends = [conservative?.lo, conservative?.hi, growth.lo, growth.hi].filter(
-    (n): n is number => typeof n === "number" && Number.isFinite(n),
-  );
-  const rangeLo = Math.min(...ends);
-  const rangeHi = Math.max(...ends);
+  const rangeLo = verdict.rangeLo;
+  const rangeHi = verdict.rangeHi;
   const bothMethods = !!conservative && !!epv.ceilings;
   const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
-  // bucket: prefer the two-method consistency, else the single-method position.
-  const bucket =
-    (bothMethods ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
+  const bucket = verdict.bucket;
   const onMethods = bothMethods ? "both methods" : "this method";
 
   const status = bucket === "below" ? "Margin of safety" : bucket === "within" ? "In fair-value range" : "Above fair value";
