@@ -27,6 +27,7 @@ import { buildInvestorProse, displayFundName } from "@/lib/managers/profileProse
 import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
 import { readValuationVerdicts, type SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
+import { StrikeZonePicks } from "@/components/investor/StrikeZonePicks";
 
 const MAX_HOLDINGS = 25;
 
@@ -456,6 +457,13 @@ export default async function InvestorSlugPage({
               asOfPeriod={fresh === "stale" ? latest.period : undefined}
             />
           )}
+          <StrikeZonePicks
+            holdings={latest.holdings}
+            investorName={manager.person}
+            verdicts={verdicts}
+            cusipToTicker={cusipToTicker}
+            lang={lang}
+          />
           <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} />
         </>
       </EntityPage>
