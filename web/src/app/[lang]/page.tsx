@@ -10,6 +10,7 @@ import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
 import ValuationShowcase from "@/components/home/ValuationShowcase";
+import SectionReveal from "@/components/home/SectionReveal";
 import NewsletterForm from "@/components/shell/NewsletterForm";
 
 // 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
@@ -95,144 +96,78 @@ export default async function HomePage({
       <HeroMasthead lang={lang} period={period} moves={moves} />
 
       {topManagers.length > 0 && (
-        <TrackedInvestorsWall lang={lang} managers={topInvestors} total={topManagers.length} />
+        <SectionReveal>
+          <TrackedInvestorsWall lang={lang} managers={topInvestors} total={topManagers.length} />
+        </SectionReveal>
       )}
 
       {/* Pillar ① — Who's buying (Investors) */}
       {topInvestors.length > 0 && (
-        <section className="mt-20">
-          <BlockHeading
-            title={isZh ? "投资者" : "Investors"}
-            thesis={isZh ? "按管理规模排序的顶级 13F 申报机构。" : "Top 13F filers, ranked by reported portfolio value."}
-            href={`/${lang}/investors`}
-            isZh={isZh}
-          />
-          <table className="mt-4 w-full border-collapse text-sm">
-            <tbody>
-              {topInvestors.map((m) => (
-                <tr key={m.cik} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-2.5 pr-4">
-                    <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                      {m.person}
-                    </Link>
-                    <span className="ml-2 truncate text-[11px] text-[var(--tt-faint)]">{cleanIssuer(m.topHolding)}</span>
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">{m.holdingCount}</td>
-                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-text)]">{formatUSD(m.totalValue)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+        <SectionReveal>
+          <section className="mt-20">
+            <BlockHeading
+              title={isZh ? "投资者" : "Investors"}
+              thesis={isZh ? "按管理规模排序的顶级 13F 申报机构。" : "Top 13F filers, ranked by reported portfolio value."}
+              href={`/${lang}/investors`}
+              isZh={isZh}
+            />
+            <table className="mt-4 w-full border-collapse text-sm">
+              <tbody>
+                {topInvestors.map((m) => (
+                  <tr key={m.cik} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
+                    <td className="py-2.5 pr-4">
+                      <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                        {m.person}
+                      </Link>
+                      <span className="ml-2 truncate text-[11px] text-[var(--tt-faint)]">{cleanIssuer(m.topHolding)}</span>
+                    </td>
+                    <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">{m.holdingCount}</td>
+                    <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-text)]">{formatUSD(m.totalValue)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </SectionReveal>
       )}
 
       {/* Pillar ② — What they own (Consensus holdings) */}
       {held.length > 0 && (
-        <section className="mt-20">
-          <BlockHeading
-            title={isZh ? "共识持仓" : "Consensus holdings"}
-            thesis={isZh ? "多位投资者共同持有的高共识标的。" : "High-conviction names held across multiple investors."}
-            href={`/${lang}/investors/consensus`}
-            isZh={isZh}
-          />
-          <table className="mt-4 w-full border-collapse text-sm">
-            <tbody>
-              {moves.mostBought.map((row) => (
-                <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-2.5 pr-3">
-                    <span className="flex items-center gap-2">
-                      <MoveTag kind={row.dominantKind} />
+        <SectionReveal>
+          <section className="mt-20">
+            <BlockHeading
+              title={isZh ? "共识持仓" : "Consensus holdings"}
+              thesis={isZh ? "多位投资者共同持有的高共识标的。" : "High-conviction names held across multiple investors."}
+              href={`/${lang}/investors/consensus`}
+              isZh={isZh}
+            />
+            <table className="mt-4 w-full border-collapse text-sm">
+              <tbody>
+                {held.map((row) => (
+                  <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
+                    <td className="py-2.5 pr-4">
                       <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
                         <EntityName issuer={row.issuer} ticker={row.cusip} />
                       </Link>
-                    </span>
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {isZh ? `${row.count} 位` : `${row.count} inv`}
-                  </td>
-                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {formatUSD(row.value)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-sm text-[var(--tt-faint)]">{isZh ? "本季暂无显著动向。" : "No notable moves this quarter."}</p>
-        )}
-      </LegBand>
-
-      {/* 值不值 · Valuation —— strike-zone 命中优先;空快照回退共识股(中性标题) */}
-      <LegBand
-        eyebrow={isZh ? "值不值" : "Valuation"}
-        title={
-          strike.leaders.length > 0
-            ? isZh
-              ? `现在 ${strike.total} 只落在 strike zone`
-              : `${strike.total} stocks in the strike zone now`
-            : isZh
-              ? "机构最集中的持仓"
-              : "Most widely held"
-        }
-        description={
-          strike.leaders.length > 0
-            ? isZh
-              ? "现价低于我们保守价值带的标的，按安全边际排序。位置观察，非买卖建议。"
-              : "Stocks trading below our conservative value band, by margin of safety. A position observation, not advice."
-            : isZh
-              ? "被最多超级投资者共同持有的标的。估值快照刷新中。"
-              : "Stocks held by the most superinvestors. Valuation snapshot refreshing."
-        }
-        href={`/${lang}/stocks`}
-        viewAll={isZh ? "查看全部 →" : "View all →"}
-      >
-        {strike.leaders.length > 0 ? (
-          <table className="w-full border-collapse text-sm">
-            <tbody>
-              {strike.leaders.map((row) => (
-                <tr key={row.ticker} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-2.5 pr-3">
-                    <Link href={stockPath(lang, row.ticker)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                      <span className="font-mono">{row.ticker}</span>
-                    </Link>
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    ${Math.round(row.rangeLo).toLocaleString()}–${Math.round(row.rangeHi).toLocaleString()}/sh
-                  </td>
-                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-positive)] whitespace-nowrap">
-                    {row.marginPct != null && row.marginPct > 0 ? `−${Math.round(row.marginPct * 100)}%` : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : consensus.length > 0 ? (
-          <table className="w-full border-collapse text-sm">
-            <tbody>
-              {consensus.slice(0, 3).map((row) => (
-                <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-2.5 pr-3">
-                    <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                      <EntityName issuer={row.issuer} ticker={row.cusip} />
-                    </Link>
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {isZh ? `${row.holderCount} 位` : `${row.holderCount}`}
-                  </td>
-                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {formatUSD(row.totalValue)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-sm text-[var(--tt-faint)]">{isZh ? "估值数据刷新中。" : "Valuation data refreshing."}</p>
-        )}
-      </LegBand>
+                    </td>
+                    <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
+                      {isZh ? `${row.holderCount} 位` : `${row.holderCount}`}
+                    </td>
+                    <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+                      {formatUSD(row.totalValue)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </SectionReveal>
+      )}
 
       {/* Pillar ③ — What it's worth (Valuation) */}
-      <ValuationShowcase lang={lang} />
+      <SectionReveal>
+        <ValuationShowcase lang={lang} />
+      </SectionReveal>
 
       {/* Trust strip + demoted macro + soft newsletter */}
       <section className="mt-16 border-t border-[var(--tt-border)] pt-6">
