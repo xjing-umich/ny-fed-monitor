@@ -5,7 +5,7 @@ import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import SubNav from "@/components/shell/SubNav";
-import { StocksTableClient, type StockRow } from "./StocksTableClient";
+import { StocksTable, type StockRow } from "./StocksTable";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 每小时 ISR → 列表页 CDN 秒开。
 export const revalidate = 3600;
@@ -96,7 +96,7 @@ export default async function StocksIndexPage({
       </div>
 
       {/* Responsive table + 分页(client) */}
-      <StocksTableClient lang={lang} rows={tableRows} />
+      <StocksTable lang={lang} rows={tableRows} />
 
       <p className="mt-8 text-xs text-[var(--tt-faint)]">
         {isZh
