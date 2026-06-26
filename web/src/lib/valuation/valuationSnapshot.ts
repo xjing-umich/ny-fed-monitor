@@ -133,3 +133,108 @@ export const readStrikeZoneLeaders = cache(
     }
   },
 );
+
+export type ScreenView = "strike_zone" | "below" | "all";
+
+export type ScreenerRow = {
+  ticker: string;
+  issuer: string;
+  bucket: VerdictBucket;
+  inStrikeZone: boolean;
+  rangeLo: number;
+  rangeHi: number;
+  price: number;
+  priceDate: string;
+  marginPct: number | null;
+  coverage: VerdictCoverage;
+  computedAt: string;
+  holderCount: number;
+};
+
+/**
+ * 估值 screener 数据(/stocks/screener 用)。两查询 join:
+ *   ① valuation_snapshot 按 view 过滤 + margin_pct DESC(NULLS LAST)
+ *   ② consensus_holdings 批量补 issuer + holder_count(单查询, 零 per-ticker 扇出)
+ * strikeTotal = 全表 in_strike_zone 计数(与 view 无关, 供顶部句)。
+ * 优雅降级:无 env / 表缺(42P01/PGRST205)/ 出错 → 空结果, 绝不抛。
+ */
+export const readValuationScreen = cache(
+  async (
+    view: ScreenView,
+    limit: number,
+  ): Promise<{ rows: ScreenerRow[]; strikeTotal: number; computedAt: string | null }> => {
+    const empty = { rows: [] as ScreenerRow[], strikeTotal: 0, computedAt: null as string | null };
+    if (!hasSupabaseEnv()) return empty;
+    const isMissingTable = (e: unknown) => {
+      const code = (e as { code?: string }).code;
+      return code === "42P01" || code === "PGRST205";
+    };
+    try {
+      // ① strike-zone 全表计数(顶部句)
+      const { count, error: cErr } = await withRetry(() =>
+        getDb().from("valuation_snapshot").select("ticker", { count: "exact", head: true }).eq("in_strike_zone", true),
+      );
+      if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
+      const strikeTotal = cErr ? 0 : count ?? 0;
+
+      // ② 主查询(thunk 内重建 builder)
+      const runMain = () => {
+        let q = getDb()
+          .from("valuation_snapshot")
+          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,computed_at")
+          .order("margin_pct", { ascending: false, nullsFirst: false })
+          .limit(limit);
+        if (view === "strike_zone") q = q.eq("in_strike_zone", true);
+        else if (view === "below") q = q.eq("verdict_bucket", "below");
+        return q;
+      };
+      const { data, error } = await withRetry(runMain);
+      if (error) {
+        if (!isMissingTable(error)) console.error(`readValuationScreen 失败: ${(error as Error).message}`);
+        return { ...empty, strikeTotal };
+      }
+      const snapRows = (data ?? []) as Row[];
+      if (snapRows.length === 0) return { rows: [], strikeTotal, computedAt: null };
+
+      // ③ join consensus_holdings 取 issuer + holder_count
+      const tickers = snapRows.map((r) => r.ticker.toUpperCase());
+      const holders = new Map<string, { issuer: string; holderCount: number }>();
+      const { data: hData, error: hErr } = await withRetry(() =>
+        getDb().from("consensus_holdings").select("ticker,issuer,holder_count").in("ticker", tickers),
+      );
+      if (hErr) {
+        if (!isMissingTable(hErr)) console.error(`readValuationScreen holders 失败: ${(hErr as Error).message}`);
+      } else {
+        for (const h of (hData ?? []) as { ticker: string; issuer: string | null; holder_count: number | null }[])
+          holders.set(h.ticker.toUpperCase(), { issuer: h.issuer ?? "", holderCount: h.holder_count ?? 0 });
+      }
+
+      const rows: ScreenerRow[] = snapRows.map((r) => {
+        const tk = r.ticker.toUpperCase();
+        const h = holders.get(tk);
+        return {
+          ticker: tk,
+          issuer: h?.issuer || tk,
+          bucket: r.verdict_bucket as VerdictBucket,
+          inStrikeZone: r.in_strike_zone,
+          rangeLo: Number(r.range_lo),
+          rangeHi: Number(r.range_hi),
+          price: Number(r.price),
+          priceDate: r.price_date ?? "",
+          marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
+          coverage: r.coverage as VerdictCoverage,
+          computedAt: r.computed_at,
+          holderCount: h?.holderCount ?? 0,
+        };
+      });
+      const computedAt = rows.reduce<string | null>(
+        (mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx),
+        null,
+      );
+      return { rows, strikeTotal, computedAt };
+    } catch (err) {
+      console.error(`readValuationScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
+      return empty;
+    }
+  },
+);
