@@ -9,8 +9,9 @@ import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
-import ValuationShowcase from "@/components/home/ValuationShowcase";
 import SectionReveal from "@/components/home/SectionReveal";
+import FeatureRow from "@/components/home/FeatureRow";
+import ValueBandCard from "@/components/home/ValueBandCard";
 
 // 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
 export const revalidate = 86400;
@@ -100,73 +101,90 @@ export default async function HomePage({
         </SectionReveal>
       )}
 
-      {/* Pillar ① — Who's buying (Investors) */}
+      {/* Feature row ① — Investors */}
       {topInvestors.length > 0 && (
         <SectionReveal>
-          <section className="mt-20">
-            <BlockHeading
-              title={isZh ? "投资者" : "Investors"}
-              thesis={isZh ? "按管理规模排序的顶级 13F 申报机构。" : "Top 13F filers, ranked by reported portfolio value."}
-              href={`/${lang}/investors`}
-              isZh={isZh}
-            />
-            <table className="mt-4 w-full border-collapse text-sm">
-              <tbody>
-                {topInvestors.map((m) => (
-                  <tr key={m.cik} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                    <td className="py-2.5 pr-4">
-                      <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                        {m.person}
-                      </Link>
-                      <span className="ml-2 truncate text-[11px] text-[var(--tt-faint)]">{cleanIssuer(m.topHolding)}</span>
-                    </td>
-                    <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">{m.holdingCount}</td>
-                    <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-text)]">{formatUSD(m.totalValue)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+          <FeatureRow
+            eyebrow={isZh ? "13F 追踪" : "13F tracking"}
+            title={isZh ? "跟随聪明钱，逐季追踪" : "Follow the smart money, quarter by quarter"}
+            body={isZh
+              ? "追踪 70+ 位传奇投资者的 SEC 13F 季度持仓——谁在建仓、谁在清仓，逐季看清。"
+              : "Track 70+ legendary investors' SEC 13F filings — who's building a position, who's getting out, quarter over quarter."}
+            ctaLabel={isZh ? "浏览全部投资者 →" : "Browse all investors →"}
+            href={`/${lang}/investors`}
+          >
+            <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+              <table className="w-full border-collapse text-sm">
+                <tbody>
+                  {topInvestors.slice(0, 6).map((m) => (
+                    <tr key={m.cik} className="border-b border-[var(--tt-border)] last:border-0">
+                      <td className="py-2 pr-4">
+                        <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                          {m.person}
+                        </Link>
+                      </td>
+                      <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">{formatUSD(m.totalValue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FeatureRow>
         </SectionReveal>
       )}
 
-      {/* Pillar ② — What they own (Consensus holdings) */}
+      {/* Feature row ② — Consensus */}
       {held.length > 0 && (
         <SectionReveal>
-          <section className="mt-20">
-            <BlockHeading
-              title={isZh ? "共识持仓" : "Consensus holdings"}
-              thesis={isZh ? "多位投资者共同持有的高共识标的。" : "High-conviction names held across multiple investors."}
-              href={`/${lang}/investors/consensus`}
-              isZh={isZh}
-            />
-            <table className="mt-4 w-full border-collapse text-sm">
-              <tbody>
-                {held.map((row) => (
-                  <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                    <td className="py-2.5 pr-4">
-                      <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                        <EntityName issuer={row.issuer} ticker={row.cusip} />
-                      </Link>
-                    </td>
-                    <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                      {isZh ? `${row.holderCount} 位` : `${row.holderCount}`}
-                    </td>
-                    <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">
-                      {formatUSD(row.totalValue)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+          <FeatureRow
+            reverse
+            eyebrow={isZh ? "跨基金共识" : "Cross-fund consensus"}
+            title={isZh ? "看共识如何形成" : "See the consensus form"}
+            body={isZh
+              ? "当多位顶级投资者持有同一只股票，那是值得注意的信号。我们跨基金聚合，告诉你有几位在持有。"
+              : "When many of the best investors hold the same stock, that's a signal worth noting. We aggregate across funds so you can see how many own it."}
+            ctaLabel={isZh ? "查看共识持仓 →" : "View consensus holdings →"}
+            href={`/${lang}/investors/consensus`}
+          >
+            <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+              <table className="w-full border-collapse text-sm">
+                <tbody>
+                  {held.slice(0, 6).map((row) => (
+                    <tr key={row.cusip} className="border-b border-[var(--tt-border)] last:border-0">
+                      <td className="py-2 pr-4">
+                        <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                          <EntityName issuer={row.issuer} ticker={row.cusip} />
+                        </Link>
+                      </td>
+                      <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
+                        {isZh ? `${row.holderCount} 位持有` : `${row.holderCount} hold`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FeatureRow>
         </SectionReveal>
       )}
 
-      {/* Pillar ③ — What it's worth (Valuation) */}
-      <SectionReveal>
-        <ValuationShowcase lang={lang} />
-      </SectionReveal>
+      {/* Feature row ③ — Valuation (id anchor for hero link) */}
+      <div id="valuation" className="scroll-mt-24">
+        <SectionReveal>
+          <FeatureRow
+            reverse
+            eyebrow={isZh ? "估值" : "Valuation"}
+            title={isZh ? "知道它到底值多少" : "Know what it's worth"}
+            body={isZh
+              ? "持仓只是起点。每只股票都用三套保守方法估值——Buffett 所有者收益 DCF、Greenwald 盈利能力价值、资产重置价值——只为已证实的价值付费。"
+              : "Holdings are only the start. Every stock is valued three conservative ways — Buffett owner-earnings DCF, Greenwald earnings-power value, asset reproduction value — so you pay only for proven value."}
+            ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
+            href={`/${lang}/stocks`}
+          >
+            <ValueBandCard lang={lang} />
+          </FeatureRow>
+        </SectionReveal>
+      </div>
 
       {/* Trust strip + demoted macro (newsletter lives globally in the footer) */}
       <section className="mt-16 border-t border-[var(--tt-border)] pt-6">
@@ -181,20 +199,6 @@ export default async function HomePage({
           </Link>
         </div>
       </section>
-    </div>
-  );
-}
-
-function BlockHeading({ title, thesis, href, isZh }: { title: string; thesis: string; href: string; isZh: boolean }) {
-  return (
-    <div className="border-b border-[var(--tt-border)] pb-2">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{title}</h2>
-        <Link href={href} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
-          {isZh ? "查看全部 →" : "View all →"}
-        </Link>
-      </div>
-      <p className="mt-1.5 text-xs text-[var(--tt-muted)]">{thesis}</p>
     </div>
   );
 }
