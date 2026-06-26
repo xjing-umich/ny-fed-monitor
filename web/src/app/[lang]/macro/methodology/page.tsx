@@ -14,7 +14,8 @@ import {
 } from "@/lib/macroResearch";
 import { SECTION_NAME, type IndicatorKey } from "@/lib/macroNames";
 
-export const revalidate = 3600;
+// 方法论为近静态内容,日级 ISR 足够。
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,

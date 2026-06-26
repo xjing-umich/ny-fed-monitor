@@ -25,9 +25,9 @@ import MacroViewHero from "./MacroViewHero";
 import MacroViewModules from "./MacroViewModules";
 import MacroSubNav from "./MacroSubNav";
 
-// 宏观数据由 cron 周期更新;与 /macro/[indicator] 子页一致用 10 分钟 ISR 静态化,
-// 而非每请求重算 → 概览页 CDN 秒开,数据最多滞后 10 分钟。
-export const revalidate = 600;
+// 宏观数据由 cron 日更(macro:ingest);与 /macro/[indicator] 子页一致用日级 ISR 静态化,
+// 而非每 10 分钟重验把整段大 JSONB 快照反复读出(egress) → 概览页 CDN 秒开。
+export const revalidate = 86400;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 

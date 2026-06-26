@@ -35,8 +35,9 @@ import { FoldedSection } from "@/components/entity/FoldedSection";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
-// + 每小时 ISR 缓存。13F 季度级数据,1h 重验足够新鲜。
-export const revalidate = 3600;
+// + 日级 ISR 缓存。13F 季度更、价格日更(页面只显示最新价),日级重验足够新鲜,
+// 且避免几千个 ticker 页每小时各重验一次反复读库(egress)。
+export const revalidate = 86400;
 export const dynamicParams = true;
 
 export async function generateStaticParams(): Promise<Array<{ lang: string; ticker: string }>> {

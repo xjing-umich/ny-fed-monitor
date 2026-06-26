@@ -16,9 +16,9 @@ import type { Tone } from "@/components/entity/types";
 import { ALL_SECTION_KEYS, SECTION_NAME, type IndicatorKey } from "@/lib/macroNames";
 import { MACRO_INDICATOR_RESEARCH } from "@/lib/macroResearch";
 
-// ISR:预渲染 + 每小时重校验。读物化快照(零外部抓取),让 macro:ingest 写入的新数据
-// 无需重新部署即可在 1 小时内自动出现(与 /macro 概览页 ISR 口径一致)。
-export const revalidate = 3600;
+// ISR:预渲染 + 日级重校验。读物化快照(零外部抓取),让 macro:ingest(日更 cron)写入的
+// 新数据无需重新部署即可在一天内自动出现(与 /macro 概览页 ISR 口径一致)。
+export const revalidate = 86400;
 
 // ── Static params ──────────────────────────────────────────────────────────────
 

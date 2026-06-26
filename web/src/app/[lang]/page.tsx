@@ -16,7 +16,8 @@ import { HomeHero } from "@/components/home/HomeHero";
 import { DataStrip } from "@/components/home/DataStrip";
 import { LegBand } from "@/components/home/LegBand";
 
-export const revalidate = 3600;
+// 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,
