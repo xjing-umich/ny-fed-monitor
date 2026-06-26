@@ -266,6 +266,8 @@ export type OeDcfAssessment = {
     quick_check_per_share?: number; // OE_0 / midpoint r / shares (no growth)
     quick_check_deviation_pct?: number; // |neutral_ps − quick| / quick
     quick_check_flag?: boolean;    // > 50%
+    r_minus_g?: number;            // discount.midpoint − growth_g1 (explicit-phase spread)
+    r_minus_g_flag?: boolean;      // r_minus_g < 4% — growth nearly matches discount, estimate is sensitive
   };
   no_bridge_note: string;
 };

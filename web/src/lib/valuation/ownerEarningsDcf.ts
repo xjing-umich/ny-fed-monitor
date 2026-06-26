@@ -16,6 +16,7 @@ export const FALLBACK_BAND: [number, number] = [0.08, 0.1];
 export const TERMINAL_SHARE_FLAG = 0.7;
 export const OE_YIELD_FLAG_BPS = 300;
 export const QUICK_CHECK_DEV_FLAG = 0.5;
+export const R_MINUS_G_FLAG = 0.04; // (r − g) below this → explicit-phase value is sensitive
 export const PROJECTION_YEARS = 10;
 const INVERSION_DGS10 = 0.075; // DGS10 ≥ 7.5% inverts the band
 
@@ -249,6 +250,7 @@ export function deriveOeDcf(
   const oePerShare = oe0 / shares;
   const quickPerShare = oe0 / discount.midpoint / shares; // no-growth capitalization
   const quickDev = Math.abs(neutral.per_share - quickPerShare) / quickPerShare;
+  const rMinusG = discount.midpoint - g1;
   let oeYield: number | undefined;
   let oeYieldBps: number | undefined;
   let oeYieldFlag: boolean | undefined;
@@ -281,6 +283,8 @@ export function deriveOeDcf(
       quick_check_per_share: quickPerShare,
       quick_check_deviation_pct: quickDev,
       quick_check_flag: quickDev > QUICK_CHECK_DEV_FLAG,
+      r_minus_g: rMinusG,
+      r_minus_g_flag: rMinusG < R_MINUS_G_FLAG,
     },
     no_bridge_note: NO_BRIDGE_NOTE,
   };
