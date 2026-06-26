@@ -104,6 +104,7 @@ export default function HeroMasthead({
         </nav>
       </div>
 
+      {(moves.mostBought.length > 0 || moves.mostSold.length > 0) && (
       <aside className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
         <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
           <span className="font-display text-sm font-medium text-[var(--tt-text)]">{c.panelTitle}</span>
@@ -122,6 +123,7 @@ export default function HeroMasthead({
           </>
         )}
       </aside>
+      )}
     </section>
   );
 }
