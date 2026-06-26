@@ -17,6 +17,7 @@
     "consensus": "tsx scripts/consensus.ts",
     "prices": "tsx scripts/prices.ts",
     "prices:backfill": "tsx scripts/prices-backfill.ts",
+    "prices:prune": "tsx scripts/prices-prune.ts",
     "ai-check": "tsx scripts/ai-tells.ts",
     "sec:ingest": "tsx scripts/sec-ingest-company.ts",
     "sec:ingest:all": "tsx scripts/sec-ingest-all.ts",

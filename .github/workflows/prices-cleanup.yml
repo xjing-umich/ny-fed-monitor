@@ -1,0 +1,23 @@
+name: Weekly Prices Cleanup
+on:
+  # 滚动删除 prices 中早于近 24 个月的旧行, 控制 Supabase DB Size。
+  # 周日跑: 价格写入是 Mon-Fri 22:00(Daily Prices), 周日无写入 → 物理错峰, 零重叠。
+  # 纯 REST DELETE(行级锁, 不阻塞写入); 不做 VACUUM(稳态靠 autovacuum 复用空间)。
+  # 也可在 Actions 页手动 Run workflow 触发。
+  schedule:
+    - cron: "0 8 * * 0"     # 每周日 08:00 UTC
+  workflow_dispatch: {}
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: web
+      - run: npm run prices:prune
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
