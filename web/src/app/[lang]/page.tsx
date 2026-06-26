@@ -105,7 +105,7 @@ export default async function HomePage({
 
       {topManagers.length > 0 && (
         <SectionReveal>
-          <TrackedInvestorsWall lang={lang} managers={topInvestors} total={topManagers.length} />
+          <TrackedInvestorsWall lang={lang} managers={topManagers.slice(0, 12)} total={topManagers.length} />
         </SectionReveal>
       )}
 
