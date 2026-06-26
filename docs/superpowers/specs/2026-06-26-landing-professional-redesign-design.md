@@ -206,6 +206,51 @@ independently understandable and testable.
   static; marquee only if it reads as tasteful, not gimmicky.
 - Portraits vs monograms — revisit after launch.
 
+## v2 — Rich scroll expansion (2026-06-26, after first build shipped)
+
+User feedback after the first build: the page reads too sparse — Linear-style
+sites carry many sections. The deep diagnosis: the real problem isn't "too few
+sections," it's that **the product's genuine depth is hidden** (QoQ deltas,
+cross-fund consensus math, three valuation methods, strike-zone, freshness,
+bilingual, Learn, primary-source provenance). Linear's actual lesson is *one
+confident section per real capability, each with a visual* — not length for its
+own sake. So v2 surfaces hidden depth as dedicated sections; it does NOT add
+filler.
+
+**Honesty red line (what we do NOT borrow from Linear):** no fabricated customer
+logos, no invented testimonials, no made-up metrics. Those would destroy
+institutional credibility (the whole point). Honest substitutes:
+- Logo wall → the **tracked-investors wall** (already built; it's real).
+- Customer testimonials → an **attributed investing-philosophy pull-quote**
+  (Buffett/Graham public quote, used as philosophy, not endorsement).
+
+**v2 section order (hero/wall/trust strip from v1 are kept as the base):**
+
+1. Hero masthead (v1)
+2. Tracked-investors wall (v1)
+3. **Feature row ① — Investors / 13F** (alternating text + visual)
+4. **Feature row ② — Consensus** (reversed)
+5. **Feature row ③ — Valuation** (reversed; static value-band as the visual)
+6. **Foundations grid** — 9 small capability cards (lucide-react icons)
+7. **Philosophy pull-quote** — large attributed Fraunces quote
+8. **Learn teaser** — 3 real primers from `listArticles(lang)`
+9. **Closing CTA band** — "Start with any investor, any stock" + entry links
+10. Trust strip (v1) + global footer
+
+**v2 decisions (locked):**
+- The three v1 pillar tables / ValuationShowcase are **folded into the feature
+  rows as their visuals** (no duplicate plain tables). `ValuationShowcase` is
+  superseded by a small `ValueBandCard` used as feature row ③'s visual.
+- Feature rows alternate sides (`reverse` flag) via a reusable `FeatureRow`
+  primitive.
+- Valuation visual stays **static schematic** (no new data read) — user choice.
+- All new sections are **server components** wrapped in `SectionReveal`.
+- `LearnTeaser` may call `listArticles(lang)` — a cheap bundled read (no DB, no
+  external API), which is within the "no new *heavy* per-request reads" rule.
+- Foundations grid uses `lucide-react` (already a dependency) for icons.
+- All copy per-locale single-language; no buy/sell/forecast wording; the
+  "no recommendations" guardrail itself appears as a foundations card.
+
 ## Verification (per `no-tests-solo-dev`)
 
 No test suite. Verify via `tsc` for types and by viewing the page in the browser

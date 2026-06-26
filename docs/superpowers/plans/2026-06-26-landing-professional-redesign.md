@@ -623,6 +623,377 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 ---
 
+---
+
+## v2 — Rich scroll expansion (Tasks 7–9)
+
+Surfaces hidden product depth as dedicated Linear-style sections. The v1
+hero/wall/trust-strip stay; the three v1 pillars become alternating feature rows;
+then foundations grid → philosophy quote → learn teaser → closing CTA. All new
+sections are server components wrapped in `SectionReveal`. Same Global
+Constraints apply (tokens-only, single-language copy, no buy/sell/forecast, RSC,
+no new heavy reads). `lucide-react` (existing dep) provides foundations icons.
+
+Final v2 page order: Hero → Wall → FeatureRow① Investors → FeatureRow② Consensus
+→ FeatureRow③ Valuation → FoundationsGrid → PhilosophyQuote → LearnTeaser →
+ClosingCTA → Trust strip.
+
+### Task 7: FeatureRow primitive + ValueBandCard + restructure pillars into feature rows
+
+**Files:**
+- Create: `web/src/components/home/FeatureRow.tsx` (presentational primitive)
+- Create: `web/src/components/home/ValueBandCard.tsx` (the static value-band visual)
+- Modify: `web/src/app/[lang]/page.tsx` (replace the two pillar `<section>`s + `<ValuationShowcase/>` with three `<FeatureRow>`s)
+- Delete: `web/src/components/home/ValuationShowcase.tsx` (superseded; its band moves to `ValueBandCard`, its copy moves into FeatureRow ③)
+
+**Interfaces:**
+- `FeatureRow` produces: `export default function FeatureRow(props: { eyebrow: string; title: string; body: string; ctaLabel: string; href: string; reverse?: boolean; children: React.ReactNode }): React.ReactElement`
+- `ValueBandCard` produces: `export default function ValueBandCard(props: { lang: Lang }): React.ReactElement`
+- Page consumes the already-loaded `topInvestors`, `held`, `lang`, plus existing `investorPath`, `stockPath`, `EntityName`, `formatUSD`, `cleanIssuer`.
+
+- [ ] **Step 1: Create `FeatureRow.tsx`**
+
+```tsx
+import Link from "next/link";
+
+export default function FeatureRow({
+  eyebrow,
+  title,
+  body,
+  ctaLabel,
+  href,
+  reverse = false,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  body: string;
+  ctaLabel: string;
+  href: string;
+  reverse?: boolean;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <section className="mt-24 grid grid-cols-1 items-center gap-10 md:grid-cols-2">
+      <div className={reverse ? "md:order-2" : ""}>
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
+        <h2 className="mt-3 font-display text-2xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-3xl">
+          {title}
+        </h2>
+        <p className="mt-3 max-w-[42ch] text-sm leading-relaxed text-[var(--tt-muted)]">{body}</p>
+        <Link
+          href={href}
+          className="mt-5 inline-block font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
+        >
+          {ctaLabel}
+        </Link>
+      </div>
+      <div className={reverse ? "md:order-1" : ""}>{children}</div>
+    </section>
+  );
+}
+```
+
+- [ ] **Step 2: Create `ValueBandCard.tsx`** (extracted from ValuationShowcase's band)
+
+```tsx
+import type { Lang } from "@/lib/nav";
+
+const COPY = {
+  zh: { band: "价值带", floor: "保守下限", fair: "合理区间", optimistic: "乐观上限" },
+  en: { band: "Value band", floor: "Conservative floor", fair: "Fair range", optimistic: "Optimistic ceiling" },
+} as const;
+
+export default function ValueBandCard({ lang }: { lang: Lang }): React.ReactElement {
+  const c = COPY[lang];
+  return (
+    <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-5">
+      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">{c.band}</p>
+      <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full">
+        <span className="h-full w-1/3 bg-[var(--tt-accent)] opacity-90" />
+        <span className="h-full w-1/3 bg-[var(--tt-accent)] opacity-50" />
+        <span className="h-full w-1/3 bg-[var(--tt-accent)] opacity-25" />
+      </div>
+      <div className="mt-2 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
+        <span>{c.floor}</span>
+        <span>{c.fair}</span>
+        <span>{c.optimistic}</span>
+      </div>
+    </div>
+  );
+}
+```
+
+- [ ] **Step 3: Restructure `page.tsx`.** Remove the import of `ValuationShowcase`; add imports for `FeatureRow` and `ValueBandCard`. Replace the two pillar `<SectionReveal><section>…</section></SectionReveal>` blocks AND the `<SectionReveal><ValuationShowcase/></SectionReveal>` block with the three feature rows below. Keep the existing `<table>` markup as each row's visual, wrapped in a panel card. Keep `BlockHeading` only if still referenced elsewhere; if it becomes unused after this change, delete it (and remove unused imports flagged by tsc).
+
+Feature row ① (Investors), visual = top investors mini-table in a panel card:
+
+```tsx
+{topInvestors.length > 0 && (
+  <SectionReveal>
+    <FeatureRow
+      eyebrow={isZh ? "13F 追踪" : "13F tracking"}
+      title={isZh ? "跟随聪明钱，逐季追踪" : "Follow the smart money, quarter by quarter"}
+      body={isZh
+        ? "追踪 70+ 位传奇投资者的 SEC 13F 季度持仓——谁在建仓、谁在清仓，逐季看清。"
+        : "Track 70+ legendary investors' SEC 13F filings — who's building a position, who's getting out, quarter over quarter."}
+      ctaLabel={isZh ? "浏览全部投资者 →" : "Browse all investors →"}
+      href={`/${lang}/investors`}
+    >
+      <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+        <table className="w-full border-collapse text-sm">
+          <tbody>
+            {topInvestors.slice(0, 6).map((m) => (
+              <tr key={m.cik} className="border-b border-[var(--tt-border)] last:border-0">
+                <td className="py-2 pr-4">
+                  <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                    {m.person}
+                  </Link>
+                </td>
+                <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">{formatUSD(m.totalValue)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </FeatureRow>
+  </SectionReveal>
+)}
+```
+
+Feature row ② (Consensus), `reverse`, visual = consensus mini-table in a panel card:
+
+```tsx
+{held.length > 0 && (
+  <SectionReveal>
+    <FeatureRow
+      reverse
+      eyebrow={isZh ? "跨基金共识" : "Cross-fund consensus"}
+      title={isZh ? "看共识如何形成" : "See the consensus form"}
+      body={isZh
+        ? "当多位顶级投资者持有同一只股票，那是值得注意的信号。我们跨基金聚合，告诉你有几位在持有。"
+        : "When many of the best investors hold the same stock, that's a signal worth noting. We aggregate across funds so you can see how many own it."}
+      ctaLabel={isZh ? "查看共识持仓 →" : "View consensus holdings →"}
+      href={`/${lang}/investors/consensus`}
+    >
+      <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+        <table className="w-full border-collapse text-sm">
+          <tbody>
+            {held.slice(0, 6).map((row) => (
+              <tr key={row.cusip} className="border-b border-[var(--tt-border)] last:border-0">
+                <td className="py-2 pr-4">
+                  <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                    <EntityName issuer={row.issuer} ticker={row.cusip} />
+                  </Link>
+                </td>
+                <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
+                  {isZh ? `${row.holderCount} 位持有` : `${row.holderCount} hold`}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </FeatureRow>
+  </SectionReveal>
+)}
+```
+
+Feature row ③ (Valuation), `reverse`, visual = `<ValueBandCard lang={lang} />`:
+
+```tsx
+<SectionReveal>
+  <FeatureRow
+    reverse
+    eyebrow={isZh ? "估值" : "Valuation"}
+    title={isZh ? "知道它到底值多少" : "Know what it’s worth"}
+    body={isZh
+      ? "持仓只是起点。每只股票都用三套保守方法估值——Buffett 所有者收益 DCF、Greenwald 盈利能力价值、资产重置价值——只为已证实的价值付费。"
+      : "Holdings are only the start. Every stock is valued three conservative ways — Buffett owner-earnings DCF, Greenwald earnings-power value, asset reproduction value — so you pay only for proven value."}
+    ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
+    href={`/${lang}/stocks`}
+  >
+    <ValueBandCard lang={lang} />
+  </FeatureRow>
+</SectionReveal>
+```
+
+Note: feature row ③ needs an `id="valuation"` anchor (the hero links to `#valuation`). Add `id="valuation"` + `scroll-mt-24` to row ③ — simplest is to wrap it: change its `<SectionReveal>` to a `<div id="valuation" className="scroll-mt-24"><SectionReveal>…</SectionReveal></div>`.
+
+- [ ] **Step 4: Type-check** — `cd web && npx tsc --noEmit` → PASS. Delete `ValuationShowcase.tsx` and remove its import; remove `BlockHeading`/`MoveColumn` if now unused.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add web/src/components/home/FeatureRow.tsx web/src/components/home/ValueBandCard.tsx 'web/src/app/[lang]/page.tsx'
+git rm web/src/components/home/ValuationShowcase.tsx
+git commit -m "feat(landing): pillars → alternating feature rows + value-band card
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+```
+
+### Task 8: Foundations grid, philosophy quote, learn teaser, closing CTA
+
+**Files:**
+- Create: `web/src/components/home/FoundationsGrid.tsx`, `PhilosophyQuote.tsx`, `LearnTeaser.tsx`, `ClosingCTA.tsx`
+- Modify: `web/src/app/[lang]/page.tsx` (insert the four after the feature rows, before the trust strip, each in `<SectionReveal>`)
+
+**Interfaces:**
+- `FoundationsGrid({ lang })`, `PhilosophyQuote({ lang })`, `ClosingCTA({ lang })` — server, static.
+- `LearnTeaser({ lang })` — server; calls `listArticles(lang)` from `@/lib/learn` (returns `Article[]` with `slug`, `title`, `description`), links to `/${lang}/learn/${slug}` and `/${lang}/learn`.
+
+- [ ] **Step 1: `FoundationsGrid.tsx`** — 9 cards, 3-col grid, `lucide-react` icons.
+
+```tsx
+import type { Lang } from "@/lib/nav";
+import { FileText, Clock, TrendingUp, Users, Calculator, Layers, Target, Languages, ShieldCheck } from "lucide-react";
+
+const COPY = {
+  zh: {
+    eyebrow: "建立在一手来源之上",
+    items: [
+      "纯一手 SEC EDGAR 数据", "45 天申报新鲜度标注", "季度环比变动 (QoQ)",
+      "跨基金共识聚合", "Buffett 所有者收益 DCF", "Greenwald 盈利能力价值",
+      "Strike-zone 区间识别", "中英双语", "不荐股、不预测",
+    ],
+  },
+  en: {
+    eyebrow: "Built on primary sources",
+    items: [
+      "Primary SEC EDGAR data", "45-day filing freshness", "Quarter-over-quarter deltas",
+      "Cross-fund consensus", "Buffett owner-earnings DCF", "Greenwald earnings-power value",
+      "Strike-zone detection", "Bilingual EN / 中文", "No recommendations, no forecasts",
+    ],
+  },
+} as const;
+
+const ICONS = [FileText, Clock, TrendingUp, Users, Calculator, Layers, Target, Languages, ShieldCheck];
+
+export default function FoundationsGrid({ lang }: { lang: Lang }): React.ReactElement {
+  const c = COPY[lang];
+  return (
+    <section className="mt-24 border-t border-[var(--tt-border)] pt-8">
+      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
+      <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 md:grid-cols-3">
+        {c.items.map((label, i) => {
+          const Icon = ICONS[i];
+          return (
+            <div key={label} className="flex items-start gap-3">
+              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--tt-accent)]" strokeWidth={1.75} aria-hidden />
+              <span className="font-display text-sm text-[var(--tt-text)]">{label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+```
+
+- [ ] **Step 2: `PhilosophyQuote.tsx`** — large attributed Fraunces quote.
+
+```tsx
+import type { Lang } from "@/lib/nav";
+
+const COPY = {
+  zh: { quote: "价格是你付出的，价值是你得到的。", who: "—— 沃伦·巴菲特" },
+  en: { quote: "Price is what you pay. Value is what you get.", who: "— Warren Buffett" },
+} as const;
+
+export default function PhilosophyQuote({ lang }: { lang: Lang }): React.ReactElement {
+  const c = COPY[lang];
+  return (
+    <section className="mt-24 border-t border-[var(--tt-border)] pt-12">
+      <blockquote className="mx-auto max-w-3xl text-center">
+        <p className="font-display text-2xl font-medium leading-snug tracking-tight text-[var(--tt-text)] sm:text-3xl">
+          “{c.quote}”
+        </p>
+        <footer className="mt-4 font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.who}</footer>
+      </blockquote>
+    </section>
+  );
+}
+```
+
+- [ ] **Step 3: `LearnTeaser.tsx`** — 3 real primers.
+
+```tsx
+import Link from "next/link";
+import type { Lang } from "@/lib/nav";
+import { listArticles } from "@/lib/learn";
+
+const COPY = {
+  zh: { eyebrow: "学习", title: "读懂生意，而非代码", cta: "全部指南 →" },
+  en: { eyebrow: "Learn", title: "Learn to read businesses, not tickers", cta: "All guides →" },
+} as const;
+
+export default function LearnTeaser({ lang }: { lang: Lang }): React.ReactElement {
+  const c = COPY[lang];
+  const articles = listArticles(lang).slice(0, 3);
+  return (
+    <section className="mt-24 border-t border-[var(--tt-border)] pt-8">
+      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
+      <h2 className="mt-3 font-display text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{c.title}</h2>
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
+        {articles.map((a) => (
+          <Link key={a.slug} href={`/${lang}/learn/${a.slug}`} className="group block no-underline">
+            <h3 className="font-display text-base font-medium text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">{a.title}</h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-[var(--tt-muted)]">{a.description}</p>
+          </Link>
+        ))}
+      </div>
+      <Link href={`/${lang}/learn`} className="mt-6 inline-block font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">{c.cta}</Link>
+    </section>
+  );
+}
+```
+
+- [ ] **Step 4: `ClosingCTA.tsx`** — confident closing band.
+
+```tsx
+import Link from "next/link";
+import type { Lang } from "@/lib/nav";
+
+const COPY = {
+  zh: { line: "从任意一位投资者、任意一只股票开始。", investors: "投资者", stocks: "股票", valuation: "估值" },
+  en: { line: "Start with any investor, any stock.", investors: "Investors", stocks: "Stocks", valuation: "Valuation" },
+} as const;
+
+export default function ClosingCTA({ lang }: { lang: Lang }): React.ReactElement {
+  const c = COPY[lang];
+  return (
+    <section className="mt-24 border-t border-[var(--tt-border)] pt-12 text-center">
+      <p className="font-display text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{c.line}</p>
+      <nav className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+        <Link href={`/${lang}/investors`} className="font-display text-[15px] text-[var(--tt-text)] no-underline [border-bottom:1px_solid_var(--tt-accent)] hover:text-[var(--tt-accent)]">{c.investors}</Link>
+        <Link href={`/${lang}/stocks`} className="font-display text-[15px] text-[var(--tt-text)] no-underline [border-bottom:1px_solid_var(--tt-accent)] hover:text-[var(--tt-accent)]">{c.stocks}</Link>
+        <Link href="#valuation" className="font-display text-[15px] text-[var(--tt-text)] no-underline [border-bottom:1px_solid_var(--tt-accent)] hover:text-[var(--tt-accent)]">{c.valuation}</Link>
+      </nav>
+    </section>
+  );
+}
+```
+
+- [ ] **Step 5: Wire into `page.tsx`** — import the four; insert after feature row ③ and before the trust-strip section, in this order, each wrapped in `<SectionReveal>`: `FoundationsGrid` → `PhilosophyQuote` → `LearnTeaser` → `ClosingCTA`.
+
+- [ ] **Step 6: Type-check** — `cd web && npx tsc --noEmit` → PASS.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add web/src/components/home/FoundationsGrid.tsx web/src/components/home/PhilosophyQuote.tsx web/src/components/home/LearnTeaser.tsx web/src/components/home/ClosingCTA.tsx 'web/src/app/[lang]/page.tsx'
+git commit -m "feat(landing): foundations grid, philosophy quote, learn teaser, closing CTA
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+```
+
+### Task 9: v2 QA + whole-branch review + finish
+
+- [ ] **Step 1:** `cd web && npx tsc --noEmit` → PASS.
+- [ ] **Step 2:** Controller visual QA in the preview (`/en` + `/zh`, light + dark, mobile): all 9 sections render in order, feature rows alternate sides on desktop and stack on mobile, foundations icons render, philosophy quote centered, learn teaser shows 3 real primers, closing CTA links work, `#valuation` anchor still scrolls to feature row ③. No console errors; no external macro/FRED calls; `revalidate=3600` intact.
+- [ ] **Step 3:** Whole-branch final review (most-capable model) on the full v2 diff.
+- [ ] **Step 4:** `superpowers:finishing-a-development-branch`.
+
 ## Self-Review
 
 **Spec coverage:**
