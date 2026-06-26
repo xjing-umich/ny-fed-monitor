@@ -6,6 +6,10 @@ import { isLikelyTicker } from "@/lib/externalLinks";
 
 const BASE = "https://thecompounder.fyi";
 
+// sitemap 读 consensusHeld(最多 5000 行)+ getManagerIndex;爬虫频繁抓取。
+// 季度级数据 → 日级缓存,避免每次抓 sitemap 都重跑这两笔大读(egress)。
+export const revalidate = 86400;
+
 // Only submit the substantial stock pages — those held by ≥2 funds (consensus).
 // On a new, low-authority domain, listing the full ~1000-page universe (mostly
 // thin single-holder pages with no internal links) buries crawl budget and

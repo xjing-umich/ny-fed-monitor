@@ -31,8 +31,9 @@ import { StrikeZonePicks } from "@/components/investor/StrikeZonePicks";
 
 const MAX_HOLDINGS = 25;
 
-// ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的 AI 叙述(及更新的持仓)无需重新部署即可在 1 小时内出现, 同时保持静态托管利于 SEO。
-export const revalidate = 3600;
+// ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的 AI 叙述(及更新的持仓)无需重新部署即可在一天内出现, 同时保持静态托管利于 SEO。
+// 13F 季度级数据 → 日级重验足够,避免 76 户详情页每小时各重验一次反复读库(egress)。
+export const revalidate = 86400;
 
 // "2026-03-31" → "Q1 2026" for SEO-friendly titles ("[name] portfolio Q1 2026").
 // Passes through any value not in YYYY-MM-DD form unchanged.

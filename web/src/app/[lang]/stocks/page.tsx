@@ -7,8 +7,9 @@ import { isLikelyTicker } from "@/lib/externalLinks";
 import SubNav from "@/components/shell/SubNav";
 import { StocksTable, type StockRow } from "./StocksTable";
 
-// 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 每小时 ISR → 列表页 CDN 秒开。
-export const revalidate = 3600;
+// 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 日级 ISR → 列表页 CDN 秒开,
+// 且不会每小时把 consensusHeld(最多 5000 行)反复读出(egress)。
+export const revalidate = 86400;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 
