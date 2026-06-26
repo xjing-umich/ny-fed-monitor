@@ -143,6 +143,20 @@ function ValueSpine({
     { key: "above", label: "above fair value" },
   ];
 
+  // Model cautions — surface the engine's already-computed fragility flags in plain language.
+  // Renders only when ≥1 fires. Observation of model sensitivity, never advice.
+  const cautions: string[] = [];
+  if (oeDcf?.terminal_dependency_flag)
+    cautions.push("The estimate leans heavily on the distant future (terminal value over 70% of present value).");
+  if (oeDcf?.diagnostics?.oe_yield_flag)
+    cautions.push("Owner-earnings yield diverges sharply from the 10-year Treasury (over 300 bps).");
+  if (oeDcf?.diagnostics?.quick_check_flag)
+    cautions.push("The DCF result diverges from a zero-growth sanity check (over 50%).");
+  if (reconciliation?.divergence_flag)
+    cautions.push("The two methods' midpoints differ materially — growth assumptions warrant review (over 20%).");
+  if (oeDcf?.diagnostics?.r_minus_g_flag)
+    cautions.push("Growth nearly matches the discount rate — the estimate is sensitive to assumptions.");
+
   return (
     <div className="space-y-3">
       {/* status */}
@@ -196,6 +210,22 @@ function ValueSpine({
         <p className="text-sm text-[var(--tt-muted)]">
           Price is at or below the reproducible tangible asset base ({usd0(sz.assetFloor.perShare)} / sh) — a rarer, harder floor.
         </p>
+      ) : null}
+
+      {cautions.length > 0 ? (
+        <div className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-warn)_6%,transparent)] px-3 py-2">
+          <p className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-warn)]">
+            Model cautions
+          </p>
+          <ul className="mt-1.5 space-y-1">
+            {cautions.map((c, i) => (
+              <li key={i} className="flex gap-1.5 text-xs leading-relaxed text-[var(--tt-muted)]">
+                <span aria-hidden className="text-[var(--tt-warn)]">·</span>
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
 
       <p className="text-xs text-[var(--tt-muted)]">An observation from two valuation methods — not investment advice, not a buy/sell signal, and not a price target.</p>
