@@ -235,16 +235,19 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
   }
 }
 
-/** SEC ingest 默认覆盖广度：标普 500 量级的大盘(Top-N 最被机构持有)。 */
-export const DEFAULT_UNIVERSE_LIMIT = 500;
+/** SEC ingest 默认覆盖广度：不设上限 = 全部被机构持有(consensus)的名字。传数字可截断为 Top-N。 */
+export const DEFAULT_UNIVERSE_LIMIT = Infinity;
+
+const CONSENSUS_PAGE = 1000; // Supabase 单请求行上限,分页拉全。
 
 /**
  * SEC ingest 的 ticker universe —— 数据驱动、自动同步、无外部成分股名单。
- * 按机构持有广度(holder_count)从 consensus_holdings 取 Top-N(覆盖标普 500 级大盘:
- * 这类公司必被多家 13F 重仓 → 自然落在榜首)。
+ * 默认拉全 consensus_holdings(被追踪 13F 投资者持有的全部名字),按 holder_count 降序;
+ * 传 limit 则截断为 Top-N(如 500 = 标普级大盘)。
+ *  - 分页(每页 ≤1000)绕过 Supabase 单请求行上限,拉到 limit 或拉完为止。
  *  - isLikelyTicker 过滤未解析的原始 CUSIP/CINS(如 G0403H108)。
  *  - 并入 COMPANY_UNIVERSE 种子置顶:保证精选名字恒在(含双类 GOOG/GOOGL),且供 DB 异常兜底。
- *  - 优雅降级:consensus_holdings 读失败/空 → 回退纯种子名单,绝不返回空(同既有读取器范式)。
+ *  - 优雅降级:consensus_holdings 读失败/空 → 回退已拉到的 + 种子,绝不返回空(同既有读取器范式)。
  */
 export async function resolveIngestUniverse(
   limit: number = DEFAULT_UNIVERSE_LIMIT,
@@ -262,24 +265,31 @@ export async function resolveIngestUniverse(
     }
     return out;
   };
+  const ranked: string[] = [];
   try {
-    // 多取一些(过滤掉非 ticker 后仍够补足到 limit)。
-    const { data, error } = await supabase
-      .from("consensus_holdings")
-      .select("ticker,holder_count")
-      .order("holder_count", { ascending: false })
-      .limit(Math.max(limit * 2, 1000));
-    if (error || !data?.length) {
-      if (error) console.error(`resolveIngestUniverse 读 consensus_holdings 失败,回退种子名单: ${error.message}`);
-      return take(seed);
+    for (let from = 0; ; from += CONSENSUS_PAGE) {
+      const { data, error } = await supabase
+        .from("consensus_holdings")
+        .select("ticker,holder_count")
+        .order("holder_count", { ascending: false })
+        .range(from, from + CONSENSUS_PAGE - 1);
+      if (error) {
+        console.error(`resolveIngestUniverse 读 consensus_holdings 失败(已拉 ${ranked.length},回退已拉+种子): ${error.message}`);
+        break;
+      }
+      if (!data?.length) break;
+      for (const r of data) {
+        const t = String(r.ticker).toUpperCase();
+        if (isLikelyTicker(t)) ranked.push(t);
+      }
+      if (data.length < CONSENSUS_PAGE) break; // 末页
+      if (ranked.length >= limit) break; // 有 cap 时早停
     }
-    const ranked = data.map((r) => String(r.ticker).toUpperCase()).filter(isLikelyTicker);
-    // 种子置顶(精选恒在),再按持有广度补足。
-    return take([...seed, ...ranked]);
   } catch (err) {
-    console.error(`resolveIngestUniverse 异常,回退种子名单: ${err instanceof Error ? err.message : String(err)}`);
-    return take(seed);
+    console.error(`resolveIngestUniverse 异常(已拉 ${ranked.length},回退已拉+种子): ${err instanceof Error ? err.message : String(err)}`);
   }
+  // 种子置顶(精选恒在),再按持有广度补足。
+  return take([...seed, ...ranked]);
 }
 
 export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT) {
