@@ -2,16 +2,20 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
-import { mostHeld, notableMoves } from "@/lib/aggregations";
-import { formatUSD, cleanIssuer } from "@/lib/format";
+import { notableMoves, consensusHeld } from "@/lib/aggregations";
+import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
+import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
+import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
 import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
+import { DataStrip } from "@/components/home/DataStrip";
 import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
 import SectionReveal from "@/components/home/SectionReveal";
 import FeatureRow from "@/components/home/FeatureRow";
 import ValueBandCard from "@/components/home/ValueBandCard";
+import StrikeLeadersCard from "@/components/home/StrikeLeadersCard";
 import FoundationsGrid from "@/components/home/FoundationsGrid";
 import PhilosophyQuote from "@/components/home/PhilosophyQuote";
 import LearnTeaser from "@/components/home/LearnTeaser";
@@ -29,12 +33,12 @@ export async function generateMetadata({
   const l = lang === "en" ? "en" : "zh";
   const title =
     l === "zh"
-      ? "Compounder · 复利 — 谁在买 × 值不值 × 大环境"
-      : "Compounder — Who's buying × Worth it × The big picture";
+      ? "Compounder · 复利 — 超级投资者持仓 × 个股估值"
+      : "Compounder — Smart-money holdings × valuation";
   const description =
     l === "zh"
-      ? "一处看懂三件事：顶级投资者的 SEC 13F 持仓（谁在买）、个股的保守价值带（值不值）、资金与利率的大环境。数据来自 SEC EDGAR 与公开市场。"
-      : "Three things in one place: top investors' SEC 13F holdings, a conservative value band per stock, and the liquidity-and-rates backdrop. Sourced from SEC EDGAR and public markets.";
+      ? "追踪巴菲特等顶级投资者的 SEC 13F 季度持仓与跨机构共识，以及个股的保守价值带。数据来源 SEC EDGAR。"
+      : "Track top investors' SEC 13F holdings, cross-fund consensus, and a conservative value band per stock. Source: SEC EDGAR.";
   return {
     title,
     description,
@@ -52,19 +56,18 @@ export default async function HomePage({
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
 
-  // 全部廉价并行读(Supabase / 快照 / bundled JSON)。无外部 API、无重计算。
-  const [idx, moves, consensus, strike, macro, dgs10] = await Promise.all([
+  // 全部廉价并行读(Supabase / bundled JSON)。无外部 API、无重计算。
+  const [idx, moves, held, strike, dgs10] = await Promise.all([
     getManagerIndex(),
-    notableMoves(3),
+    notableMoves(6),
     consensusHeld(),
     readStrikeZoneLeaders(3),
-    readMacroSnapshot(),
     getLatestDgs10(),
   ]);
 
-  const managers = idx.managers ?? [];
-  const period = [...managers].sort((a, b) => b.totalValue - a.totalValue)[0]?.period ?? "";
-  const macroSummary = macro ? buildMacroSummary(macro) : null;
+  const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
+  const period = topManagers[0]?.period ?? "";
+  const topInvestors = topManagers.slice(0, 8);
 
   // Link the philosophy band's featured quote to Buffett's page if we track him.
   const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
@@ -82,8 +85,8 @@ export default async function HomePage({
         logo: "https://thecompounder.fyi/icon.png",
         image: "https://thecompounder.fyi/icon.png",
         description: isZh
-          ? "一处看懂超级投资者 13F 持仓、个股保守估值与资金利率大环境。"
-          : "Smart-money 13F holdings, conservative single-stock valuation, and the liquidity-and-rates backdrop in one place.",
+          ? "聚合超级投资者 13F 持仓与个股保守估值。"
+          : "Smart-money 13F holdings and conservative single-stock valuation.",
       },
       {
         "@type": "WebSite",
@@ -102,6 +105,15 @@ export default async function HomePage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       <HeroMasthead lang={lang} period={period} moves={moves} />
+
+      {/* Real-data stat bar (carries the 10Y/rates signal — macro presence) */}
+      <DataStrip
+        lang={lang}
+        period={period}
+        investorCount={topManagers.length}
+        consensusCount={held.length}
+        dgs10={dgs10}
+      />
 
       {topManagers.length > 0 && (
         <SectionReveal>
@@ -176,7 +188,8 @@ export default async function HomePage({
         </SectionReveal>
       )}
 
-      {/* Feature row ③ — Valuation (id anchor for hero link); not reversed → row rhythm right/left/right */}
+      {/* Feature row ③ — Valuation (id anchor for hero link); not reversed → row rhythm right/left/right.
+          Real strike-zone leaders when any; else the static value-band schematic. */}
       <div id="valuation" className="scroll-mt-24">
         <SectionReveal>
           <FeatureRow
@@ -188,7 +201,11 @@ export default async function HomePage({
             ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
             href={`/${lang}/stocks`}
           >
-            <ValueBandCard lang={lang} />
+            {strike.leaders.length > 0 ? (
+              <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
+            ) : (
+              <ValueBandCard lang={lang} />
+            )}
           </FeatureRow>
         </SectionReveal>
       </div>
