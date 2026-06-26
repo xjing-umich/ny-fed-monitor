@@ -11,7 +11,6 @@ import HeroMasthead from "@/components/home/HeroMasthead";
 import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
 import ValuationShowcase from "@/components/home/ValuationShowcase";
 import SectionReveal from "@/components/home/SectionReveal";
-import NewsletterForm from "@/components/shell/NewsletterForm";
 
 // 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
 export const revalidate = 86400;
@@ -169,7 +168,7 @@ export default async function HomePage({
         <ValuationShowcase lang={lang} />
       </SectionReveal>
 
-      {/* Trust strip + demoted macro + soft newsletter */}
+      {/* Trust strip + demoted macro (newsletter lives globally in the footer) */}
       <section className="mt-16 border-t border-[var(--tt-border)] pt-6">
         <p className="font-mono text-[11px] tracking-[0.04em] text-[var(--tt-faint)]">
           {isZh
@@ -180,9 +179,6 @@ export default async function HomePage({
           <Link href={`/${lang}/macro`} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
             {isZh ? "宏观流动性 →" : "Macro & liquidity →"}
           </Link>
-        </div>
-        <div className="mt-6 max-w-sm">
-          <NewsletterForm lang={lang} />
         </div>
       </section>
     </div>
