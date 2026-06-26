@@ -6,6 +6,7 @@ import { fetchCompanySubmissions, normalizeRecentFilings } from "./company-submi
 import { FundamentalPeriod, normalizeCompanyFacts } from "./normalize-facts";
 import { resolveTickerCik } from "./ticker-cik";
 import { sleep } from "./sec-client";
+import { isLikelyTicker } from "../externalLinks";
 
 type SavedSummary = {
   company: boolean;
@@ -234,10 +235,57 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
   }
 }
 
-export async function ingestAllCompanies(limit: number = COMPANY_UNIVERSE.length) {
+/** SEC ingest 默认覆盖广度：标普 500 量级的大盘(Top-N 最被机构持有)。 */
+export const DEFAULT_UNIVERSE_LIMIT = 500;
+
+/**
+ * SEC ingest 的 ticker universe —— 数据驱动、自动同步、无外部成分股名单。
+ * 按机构持有广度(holder_count)从 consensus_holdings 取 Top-N(覆盖标普 500 级大盘:
+ * 这类公司必被多家 13F 重仓 → 自然落在榜首)。
+ *  - isLikelyTicker 过滤未解析的原始 CUSIP/CINS(如 G0403H108)。
+ *  - 并入 COMPANY_UNIVERSE 种子置顶:保证精选名字恒在(含双类 GOOG/GOOGL),且供 DB 异常兜底。
+ *  - 优雅降级:consensus_holdings 读失败/空 → 回退纯种子名单,绝不返回空(同既有读取器范式)。
+ */
+export async function resolveIngestUniverse(
+  limit: number = DEFAULT_UNIVERSE_LIMIT,
+  supabase: SupabaseClient = createServiceSupabaseClient(),
+): Promise<string[]> {
+  const seed = COMPANY_UNIVERSE.map((t) => t.toUpperCase());
+  const take = (list: string[]) => {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (const t of list) {
+      if (seen.has(t)) continue;
+      seen.add(t);
+      out.push(t);
+      if (out.length >= limit) break;
+    }
+    return out;
+  };
+  try {
+    // 多取一些(过滤掉非 ticker 后仍够补足到 limit)。
+    const { data, error } = await supabase
+      .from("consensus_holdings")
+      .select("ticker,holder_count")
+      .order("holder_count", { ascending: false })
+      .limit(Math.max(limit * 2, 1000));
+    if (error || !data?.length) {
+      if (error) console.error(`resolveIngestUniverse 读 consensus_holdings 失败,回退种子名单: ${error.message}`);
+      return take(seed);
+    }
+    const ranked = data.map((r) => String(r.ticker).toUpperCase()).filter(isLikelyTicker);
+    // 种子置顶(精选恒在),再按持有广度补足。
+    return take([...seed, ...ranked]);
+  } catch (err) {
+    console.error(`resolveIngestUniverse 异常,回退种子名单: ${err instanceof Error ? err.message : String(err)}`);
+    return take(seed);
+  }
+}
+
+export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT) {
   const supabase = createServiceSupabaseClient();
   const runId = await startRun(supabase, "all");
-  const tickers = COMPANY_UNIVERSE.slice(0, limit);
+  const tickers = await resolveIngestUniverse(limit, supabase);
   const results: IngestCompanyResult[] = [];
 
   for (const ticker of tickers) {
