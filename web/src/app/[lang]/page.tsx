@@ -172,11 +172,10 @@ export default async function HomePage({
         </SectionReveal>
       )}
 
-      {/* Feature row ③ — Valuation (id anchor for hero link) */}
+      {/* Feature row ③ — Valuation (id anchor for hero link); not reversed → row rhythm right/left/right */}
       <div id="valuation" className="scroll-mt-24">
         <SectionReveal>
           <FeatureRow
-            reverse
             eyebrow={isZh ? "估值" : "Valuation"}
             title={isZh ? "知道它到底值多少" : "Know what it's worth"}
             body={isZh
