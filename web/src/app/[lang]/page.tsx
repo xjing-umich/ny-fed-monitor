@@ -12,6 +12,10 @@ import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
 import SectionReveal from "@/components/home/SectionReveal";
 import FeatureRow from "@/components/home/FeatureRow";
 import ValueBandCard from "@/components/home/ValueBandCard";
+import FoundationsGrid from "@/components/home/FoundationsGrid";
+import PhilosophyQuote from "@/components/home/PhilosophyQuote";
+import LearnTeaser from "@/components/home/LearnTeaser";
+import ClosingCTA from "@/components/home/ClosingCTA";
 
 // 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
 export const revalidate = 86400;
@@ -185,6 +189,22 @@ export default async function HomePage({
           </FeatureRow>
         </SectionReveal>
       </div>
+
+      <SectionReveal>
+        <FoundationsGrid lang={lang} />
+      </SectionReveal>
+
+      <SectionReveal>
+        <PhilosophyQuote lang={lang} />
+      </SectionReveal>
+
+      <SectionReveal>
+        <LearnTeaser lang={lang} />
+      </SectionReveal>
+
+      <SectionReveal>
+        <ClosingCTA lang={lang} />
+      </SectionReveal>
 
       {/* Trust strip + demoted macro (newsletter lives globally in the footer) */}
       <section className="mt-16 border-t border-[var(--tt-border)] pt-6">
