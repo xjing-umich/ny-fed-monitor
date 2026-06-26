@@ -73,3 +73,63 @@ export const readValuationVerdicts = cache(
     }
   },
 );
+
+export type StrikeLeader = {
+  ticker: string;
+  rangeLo: number;
+  rangeHi: number;
+  marginPct: number | null;
+  computedAt: string;
+};
+
+/**
+ * 取"现在落在 strike zone"的全表总数 + 安全边际最高的 Top N(首页值不值腿用)。
+ * 同样优雅降级:无 env / 表未迁移(42P01 / PGRST205)/ 出错 → { total:0, leaders:[] },绝不抛。
+ */
+export const readStrikeZoneLeaders = cache(
+  async (limit: number): Promise<{ total: number; leaders: StrikeLeader[] }> => {
+    const empty = { total: 0, leaders: [] as StrikeLeader[] };
+    if (!hasSupabaseEnv()) return empty;
+    const isMissingTable = (e: unknown) => {
+      const code = (e as { code?: string }).code;
+      return code === "42P01" || code === "PGRST205";
+    };
+    try {
+      const { count, error: cErr } = await withRetry(() =>
+        getDb()
+          .from("valuation_snapshot")
+          .select("ticker", { count: "exact", head: true })
+          .eq("in_strike_zone", true),
+      );
+      if (cErr) {
+        if (!isMissingTable(cErr))
+          console.error(`readStrikeZoneLeaders count 失败: ${(cErr as Error).message}`);
+        return empty;
+      }
+      const { data, error } = await withRetry(() =>
+        getDb()
+          .from("valuation_snapshot")
+          .select("ticker,range_lo,range_hi,margin_pct,computed_at")
+          .eq("in_strike_zone", true)
+          .order("margin_pct", { ascending: false })
+          .limit(limit),
+      );
+      if (error) {
+        if (!isMissingTable(error))
+          console.error(`readStrikeZoneLeaders 失败: ${(error as Error).message}`);
+        return empty;
+      }
+      const leaders: StrikeLeader[] = (data ?? []).map((r: Record<string, unknown>) => ({
+        ticker: String(r.ticker).toUpperCase(),
+        rangeLo: Number(r.range_lo),
+        rangeHi: Number(r.range_hi),
+        marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
+        computedAt: String(r.computed_at),
+      }));
+      return { total: count ?? leaders.length, leaders };
+    } catch (err) {
+      console.error(`readStrikeZoneLeaders 异常: ${err instanceof Error ? err.message : String(err)}`);
+      return empty;
+    }
+  },
+);
