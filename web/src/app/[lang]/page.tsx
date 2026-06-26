@@ -2,19 +2,15 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
-import { notableMoves, consensusHeld } from "@/lib/aggregations";
-import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
-import { readMacroSnapshot } from "@/lib/macroSnapshot";
-import { buildMacroSummary } from "@/lib/macroResearch";
-import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { formatUSD } from "@/lib/format";
+import { mostHeld, notableMoves } from "@/lib/aggregations";
+import { formatUSD, cleanIssuer } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
-import { stockPath } from "@/lib/urls";
-import MoveTag from "@/components/shell/MoveTag";
+import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
-import { HomeHero } from "@/components/home/HomeHero";
-import { DataStrip } from "@/components/home/DataStrip";
-import { LegBand } from "@/components/home/LegBand";
+import HeroMasthead from "@/components/home/HeroMasthead";
+import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
+import ValuationShowcase from "@/components/home/ValuationShowcase";
+import NewsletterForm from "@/components/shell/NewsletterForm";
 
 // 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
 export const revalidate = 86400;
@@ -93,33 +89,53 @@ export default async function HomePage({
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-2 pb-10 pt-1 sm:pb-12 sm:pt-2">
+    <div className="mx-auto max-w-5xl px-2 pb-16 pt-6 sm:pb-20 sm:pt-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <HomeHero lang={lang} />
+      <HeroMasthead lang={lang} period={period} moves={moves} />
 
-      <DataStrip
-        lang={lang}
-        period={period}
-        investorCount={managers.length}
-        consensusCount={consensus.length}
-        dgs10={dgs10}
-      />
+      {topManagers.length > 0 && (
+        <TrackedInvestorsWall lang={lang} managers={topInvestors} total={topManagers.length} />
+      )}
 
-      {/* 谁在买 · Superinvestors */}
-      <LegBand
-        eyebrow={isZh ? "谁在买" : "Superinvestors"}
-        title={isZh ? "本季最多人增持" : "Most bought this quarter"}
-        description={
-          isZh
-            ? "顶级投资者本季新建或加仓最多的标的，按持有人数排序。数据来自 SEC 13F。"
-            : "Where top investors opened or added the most this quarter, by holder count. From SEC 13F filings."
-        }
-        href={`/${lang}/investors`}
-        viewAll={isZh ? "查看全部 →" : "View all →"}
-      >
-        {moves.mostBought.length > 0 ? (
-          <table className="w-full border-collapse text-sm">
+      {/* Pillar ① — Who's buying (Investors) */}
+      {topInvestors.length > 0 && (
+        <section className="mt-20">
+          <BlockHeading
+            title={isZh ? "投资者" : "Investors"}
+            thesis={isZh ? "按管理规模排序的顶级 13F 申报机构。" : "Top 13F filers, ranked by reported portfolio value."}
+            href={`/${lang}/investors`}
+            isZh={isZh}
+          />
+          <table className="mt-4 w-full border-collapse text-sm">
+            <tbody>
+              {topInvestors.map((m) => (
+                <tr key={m.cik} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
+                  <td className="py-2.5 pr-4">
+                    <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                      {m.person}
+                    </Link>
+                    <span className="ml-2 truncate text-[11px] text-[var(--tt-faint)]">{cleanIssuer(m.topHolding)}</span>
+                  </td>
+                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)]">{m.holdingCount}</td>
+                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-text)]">{formatUSD(m.totalValue)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {/* Pillar ② — What they own (Consensus holdings) */}
+      {held.length > 0 && (
+        <section className="mt-20">
+          <BlockHeading
+            title={isZh ? "共识持仓" : "Consensus holdings"}
+            thesis={isZh ? "多位投资者共同持有的高共识标的。" : "High-conviction names held across multiple investors."}
+            href={`/${lang}/investors/consensus`}
+            isZh={isZh}
+          />
+          <table className="mt-4 w-full border-collapse text-sm">
             <tbody>
               {moves.mostBought.map((row) => (
                 <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
@@ -215,40 +231,39 @@ export default async function HomePage({
         )}
       </LegBand>
 
-      {/* 大环境 · Macro */}
-      <LegBand
-        eyebrow={isZh ? "大环境" : "Macro"}
-        title={isZh ? "资金与利率" : "Liquidity & rates"}
-        description={
-          macroSummary
-            ? macroSummary.headline[lang]
-            : isZh
-              ? "宏观快照刷新中。"
-              : "Macro snapshot refreshing."
-        }
-        href={`/${lang}/macro`}
-        viewAll={isZh ? "查看全部 →" : "View all →"}
-      >
-        {macroSummary ? (
-          <ul className="space-y-2">
-            {macroSummary.bullets.slice(0, 3).map((b, i) => (
-              <li key={i} className="flex gap-2 text-sm leading-relaxed text-[var(--tt-muted)]">
-                <span aria-hidden className="text-[var(--tt-faint)]">·</span>
-                <span>{b[lang]}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-[var(--tt-faint)]">{isZh ? "宏观快照刷新中。" : "Macro snapshot refreshing."}</p>
-        )}
-      </LegBand>
+      {/* Pillar ③ — What it's worth (Valuation) */}
+      <ValuationShowcase lang={lang} />
 
-      {/* 三源脚注 */}
-      <p className="mt-12 border-t border-[var(--tt-border)] pt-6 text-xs leading-relaxed text-[var(--tt-faint)]">
-        {isZh
-          ? `数据来源：SEC EDGAR 13F 季度报告${period ? `（截至 ${period}，含 45 天延迟）` : ""} · 公开市场价格 · FRED / NY Fed / U.S. Treasury${dgs10 ? `（10Y 截至 ${dgs10.date}）` : ""}。仅供参考，非投资建议。`
-          : `Sources: SEC EDGAR 13F filings${period ? ` (as of ${period}, 45-day lag)` : ""} · public market prices · FRED / NY Fed / U.S. Treasury${dgs10 ? ` (10Y as of ${dgs10.date})` : ""}. For reference only, not investment advice.`}
-      </p>
+      {/* Trust strip + demoted macro + soft newsletter */}
+      <section className="mt-16 border-t border-[var(--tt-border)] pt-6">
+        <p className="font-mono text-[11px] tracking-[0.04em] text-[var(--tt-faint)]">
+          {isZh
+            ? "来源：SEC EDGAR 13F 季度报告 · 45 天延迟 · 不荐股、不预测。"
+            : "Source: SEC EDGAR 13F quarterly filings · 45-day lag · No recommendations, no forecasts."}
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Link href={`/${lang}/macro`} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
+            {isZh ? "宏观流动性 →" : "Macro & liquidity →"}
+          </Link>
+        </div>
+        <div className="mt-6 max-w-sm">
+          <NewsletterForm lang={lang} />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function BlockHeading({ title, thesis, href, isZh }: { title: string; thesis: string; href: string; isZh: boolean }) {
+  return (
+    <div className="border-b border-[var(--tt-border)] pb-2">
+      <div className="flex items-baseline justify-between">
+        <h2 className="font-display text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{title}</h2>
+        <Link href={href} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
+          {isZh ? "查看全部 →" : "View all →"}
+        </Link>
+      </div>
+      <p className="mt-1.5 text-xs text-[var(--tt-muted)]">{thesis}</p>
     </div>
   );
 }
