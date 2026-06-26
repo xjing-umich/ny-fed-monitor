@@ -4,17 +4,22 @@ import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { notableMoves, consensusHeld } from "@/lib/aggregations";
 import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
-import { readMacroSnapshot } from "@/lib/macroSnapshot";
-import { buildMacroSummary } from "@/lib/macroResearch";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
-import { stockPath } from "@/lib/urls";
-import MoveTag from "@/components/shell/MoveTag";
+import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
-import { HomeHero } from "@/components/home/HomeHero";
+import HeroMasthead from "@/components/home/HeroMasthead";
 import { DataStrip } from "@/components/home/DataStrip";
-import { LegBand } from "@/components/home/LegBand";
+import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
+import SectionReveal from "@/components/home/SectionReveal";
+import FeatureRow from "@/components/home/FeatureRow";
+import ValueBandCard from "@/components/home/ValueBandCard";
+import StrikeLeadersCard from "@/components/home/StrikeLeadersCard";
+import FoundationsGrid from "@/components/home/FoundationsGrid";
+import PhilosophyQuote from "@/components/home/PhilosophyQuote";
+import LearnTeaser from "@/components/home/LearnTeaser";
+import ClosingCTA from "@/components/home/ClosingCTA";
 
 // 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
 export const revalidate = 86400;
@@ -28,12 +33,12 @@ export async function generateMetadata({
   const l = lang === "en" ? "en" : "zh";
   const title =
     l === "zh"
-      ? "Compounder · 复利 — 谁在买 × 值不值 × 大环境"
-      : "Compounder — Who's buying × Worth it × The big picture";
+      ? "Compounder · 复利 — 超级投资者持仓 × 个股估值"
+      : "Compounder — Smart-money holdings × valuation";
   const description =
     l === "zh"
-      ? "一处看懂三件事：顶级投资者的 SEC 13F 持仓（谁在买）、个股的保守价值带（值不值）、资金与利率的大环境。数据来自 SEC EDGAR 与公开市场。"
-      : "Three things in one place: top investors' SEC 13F holdings, a conservative value band per stock, and the liquidity-and-rates backdrop. Sourced from SEC EDGAR and public markets.";
+      ? "追踪巴菲特等顶级投资者的 SEC 13F 季度持仓与跨机构共识，以及个股的保守价值带。数据来源 SEC EDGAR。"
+      : "Track top investors' SEC 13F holdings, cross-fund consensus, and a conservative value band per stock. Source: SEC EDGAR.";
   return {
     title,
     description,
@@ -51,19 +56,22 @@ export default async function HomePage({
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
 
-  // 全部廉价并行读(Supabase / 快照 / bundled JSON)。无外部 API、无重计算。
-  const [idx, moves, consensus, strike, macro, dgs10] = await Promise.all([
+  // 全部廉价并行读(Supabase / bundled JSON)。无外部 API、无重计算。
+  const [idx, moves, held, strike, dgs10] = await Promise.all([
     getManagerIndex(),
-    notableMoves(3),
+    notableMoves(6),
     consensusHeld(),
     readStrikeZoneLeaders(3),
-    readMacroSnapshot(),
     getLatestDgs10(),
   ]);
 
-  const managers = idx.managers ?? [];
-  const period = [...managers].sort((a, b) => b.totalValue - a.totalValue)[0]?.period ?? "";
-  const macroSummary = macro ? buildMacroSummary(macro) : null;
+  const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
+  const period = topManagers[0]?.period ?? "";
+  const topInvestors = topManagers.slice(0, 8);
+
+  // Link the philosophy band's featured quote to Buffett's page if we track him.
+  const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
+  const buffettHref = buffett ? investorPath(lang, buffett.slug) : undefined;
 
   const ld = {
     "@context": "https://schema.org",
@@ -77,8 +85,8 @@ export default async function HomePage({
         logo: "https://thecompounder.fyi/icon.png",
         image: "https://thecompounder.fyi/icon.png",
         description: isZh
-          ? "一处看懂超级投资者 13F 持仓、个股保守估值与资金利率大环境。"
-          : "Smart-money 13F holdings, conservative single-stock valuation, and the liquidity-and-rates backdrop in one place.",
+          ? "聚合超级投资者 13F 持仓与个股保守估值。"
+          : "Smart-money 13F holdings and conservative single-stock valuation.",
       },
       {
         "@type": "WebSite",
@@ -93,162 +101,144 @@ export default async function HomePage({
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-2 pb-10 pt-1 sm:pb-12 sm:pt-2">
+    <div className="mx-auto max-w-5xl px-2 pb-16 pt-6 sm:pb-20 sm:pt-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <HomeHero lang={lang} />
+      <HeroMasthead lang={lang} period={period} moves={moves} />
 
+      {/* Real-data stat bar (carries the 10Y/rates signal — macro presence) */}
       <DataStrip
         lang={lang}
         period={period}
-        investorCount={managers.length}
-        consensusCount={consensus.length}
+        investorCount={topManagers.length}
+        consensusCount={held.length}
         dgs10={dgs10}
       />
 
-      {/* 谁在买 · Superinvestors */}
-      <LegBand
-        eyebrow={isZh ? "谁在买" : "Superinvestors"}
-        title={isZh ? "本季最多人增持" : "Most bought this quarter"}
-        description={
-          isZh
-            ? "顶级投资者本季新建或加仓最多的标的，按持有人数排序。数据来自 SEC 13F。"
-            : "Where top investors opened or added the most this quarter, by holder count. From SEC 13F filings."
-        }
-        href={`/${lang}/investors`}
-        viewAll={isZh ? "查看全部 →" : "View all →"}
-      >
-        {moves.mostBought.length > 0 ? (
-          <table className="w-full border-collapse text-sm">
-            <tbody>
-              {moves.mostBought.map((row) => (
-                <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-2.5 pr-3">
-                    <span className="flex items-center gap-2">
-                      <MoveTag kind={row.dominantKind} />
-                      <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                        <EntityName issuer={row.issuer} ticker={row.cusip} />
-                      </Link>
-                    </span>
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {isZh ? `${row.count} 位` : `${row.count} inv`}
-                  </td>
-                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {formatUSD(row.value)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-sm text-[var(--tt-faint)]">{isZh ? "本季暂无显著动向。" : "No notable moves this quarter."}</p>
-        )}
-      </LegBand>
+      {topManagers.length > 0 && (
+        <SectionReveal>
+          <TrackedInvestorsWall lang={lang} managers={topManagers.slice(0, 12)} total={topManagers.length} />
+        </SectionReveal>
+      )}
 
-      {/* 值不值 · Valuation —— strike-zone 命中优先;空快照回退共识股(中性标题) */}
-      <LegBand
-        eyebrow={isZh ? "值不值" : "Valuation"}
-        title={
-          strike.leaders.length > 0
-            ? isZh
-              ? `现在 ${strike.total} 只落在 strike zone`
-              : `${strike.total} stocks in the strike zone now`
-            : isZh
-              ? "机构最集中的持仓"
-              : "Most widely held"
-        }
-        description={
-          strike.leaders.length > 0
-            ? isZh
-              ? "现价低于我们保守价值带的标的，按安全边际排序。位置观察，非买卖建议。"
-              : "Stocks trading below our conservative value band, by margin of safety. A position observation, not advice."
-            : isZh
-              ? "被最多超级投资者共同持有的标的。估值快照刷新中。"
-              : "Stocks held by the most superinvestors. Valuation snapshot refreshing."
-        }
-        href={`/${lang}/stocks`}
-        viewAll={isZh ? "查看全部 →" : "View all →"}
-      >
-        {strike.leaders.length > 0 ? (
-          <table className="w-full border-collapse text-sm">
-            <tbody>
-              {strike.leaders.map((row) => (
-                <tr key={row.ticker} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-2.5 pr-3">
-                    <Link href={stockPath(lang, row.ticker)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                      <span className="font-mono">{row.ticker}</span>
-                    </Link>
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    ${Math.round(row.rangeLo).toLocaleString()}–${Math.round(row.rangeHi).toLocaleString()}/sh
-                  </td>
-                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-positive)] whitespace-nowrap">
-                    {row.marginPct != null && row.marginPct > 0 ? `−${Math.round(row.marginPct * 100)}%` : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : consensus.length > 0 ? (
-          <table className="w-full border-collapse text-sm">
-            <tbody>
-              {consensus.slice(0, 3).map((row) => (
-                <tr key={row.cusip} className="border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]">
-                  <td className="py-2.5 pr-3">
-                    <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                      <EntityName issuer={row.issuer} ticker={row.cusip} />
-                    </Link>
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {isZh ? `${row.holderCount} 位` : `${row.holderCount}`}
-                  </td>
-                  <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                    {formatUSD(row.totalValue)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-sm text-[var(--tt-faint)]">{isZh ? "估值数据刷新中。" : "Valuation data refreshing."}</p>
-        )}
-      </LegBand>
+      {/* Feature row ① — Investors */}
+      {topInvestors.length > 0 && (
+        <SectionReveal>
+          <FeatureRow
+            eyebrow={isZh ? "13F 追踪" : "13F tracking"}
+            title={isZh ? "跟随聪明钱，逐季追踪" : "Follow the smart money, quarter by quarter"}
+            body={isZh
+              ? "追踪 70+ 位传奇投资者的 SEC 13F 季度持仓——谁在建仓、谁在清仓，逐季看清。"
+              : "Track 70+ legendary investors' SEC 13F filings — who's building a position, who's getting out, quarter over quarter."}
+            ctaLabel={isZh ? "浏览全部投资者 →" : "Browse all investors →"}
+            href={`/${lang}/investors`}
+          >
+            <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+              <table className="w-full border-collapse text-sm">
+                <tbody>
+                  {topInvestors.slice(0, 6).map((m) => (
+                    <tr key={m.cik} className="border-b border-[var(--tt-border)] last:border-0">
+                      <td className="py-2 pr-4">
+                        <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                          {m.person}
+                        </Link>
+                      </td>
+                      <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">{formatUSD(m.totalValue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FeatureRow>
+        </SectionReveal>
+      )}
 
-      {/* 大环境 · Macro */}
-      <LegBand
-        eyebrow={isZh ? "大环境" : "Macro"}
-        title={isZh ? "资金与利率" : "Liquidity & rates"}
-        description={
-          macroSummary
-            ? macroSummary.headline[lang]
-            : isZh
-              ? "宏观快照刷新中。"
-              : "Macro snapshot refreshing."
-        }
-        href={`/${lang}/macro`}
-        viewAll={isZh ? "查看全部 →" : "View all →"}
-      >
-        {macroSummary ? (
-          <ul className="space-y-2">
-            {macroSummary.bullets.slice(0, 3).map((b, i) => (
-              <li key={i} className="flex gap-2 text-sm leading-relaxed text-[var(--tt-muted)]">
-                <span aria-hidden className="text-[var(--tt-faint)]">·</span>
-                <span>{b[lang]}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-[var(--tt-faint)]">{isZh ? "宏观快照刷新中。" : "Macro snapshot refreshing."}</p>
-        )}
-      </LegBand>
+      {/* Feature row ② — Consensus */}
+      {held.length > 0 && (
+        <SectionReveal>
+          <FeatureRow
+            reverse
+            eyebrow={isZh ? "跨基金共识" : "Cross-fund consensus"}
+            title={isZh ? "看共识如何形成" : "See the consensus form"}
+            body={isZh
+              ? "当多位顶级投资者持有同一只股票，那是值得注意的信号。我们跨基金聚合，告诉你有几位在持有。"
+              : "When many of the best investors hold the same stock, that's a signal worth noting. We aggregate across funds so you can see how many own it."}
+            ctaLabel={isZh ? "查看共识持仓 →" : "View consensus holdings →"}
+            href={`/${lang}/investors/consensus`}
+          >
+            <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+              <table className="w-full border-collapse text-sm">
+                <tbody>
+                  {held.slice(0, 6).map((row) => (
+                    <tr key={row.cusip} className="border-b border-[var(--tt-border)] last:border-0">
+                      <td className="py-2 pr-4">
+                        <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+                          <EntityName issuer={row.issuer} ticker={row.cusip} />
+                        </Link>
+                      </td>
+                      <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
+                        {isZh ? `${row.holderCount} 位持有` : `${row.holderCount} hold`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FeatureRow>
+        </SectionReveal>
+      )}
 
-      {/* 三源脚注 */}
-      <p className="mt-12 border-t border-[var(--tt-border)] pt-6 text-xs leading-relaxed text-[var(--tt-faint)]">
-        {isZh
-          ? `数据来源：SEC EDGAR 13F 季度报告${period ? `（截至 ${period}，含 45 天延迟）` : ""} · 公开市场价格 · FRED / NY Fed / U.S. Treasury${dgs10 ? `（10Y 截至 ${dgs10.date}）` : ""}。仅供参考，非投资建议。`
-          : `Sources: SEC EDGAR 13F filings${period ? ` (as of ${period}, 45-day lag)` : ""} · public market prices · FRED / NY Fed / U.S. Treasury${dgs10 ? ` (10Y as of ${dgs10.date})` : ""}. For reference only, not investment advice.`}
-      </p>
+      {/* Feature row ③ — Valuation (id anchor for hero link); not reversed → row rhythm right/left/right.
+          Real strike-zone leaders when any; else the static value-band schematic. */}
+      <div id="valuation" className="scroll-mt-24">
+        <SectionReveal>
+          <FeatureRow
+            eyebrow={isZh ? "估值" : "Valuation"}
+            title={isZh ? "知道它到底值多少" : "Know what it's worth"}
+            body={isZh
+              ? "持仓只是起点。每只股票都用三套保守方法估值——Buffett 所有者收益 DCF、Greenwald 盈利能力价值、资产重置价值——只为已证实的价值付费。"
+              : "Holdings are only the start. Every stock is valued three conservative ways — Buffett owner-earnings DCF, Greenwald earnings-power value, asset reproduction value — so you pay only for proven value."}
+            ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
+            href={`/${lang}/stocks`}
+          >
+            {strike.leaders.length > 0 ? (
+              <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
+            ) : (
+              <ValueBandCard lang={lang} />
+            )}
+          </FeatureRow>
+        </SectionReveal>
+      </div>
+
+      <SectionReveal>
+        <FoundationsGrid lang={lang} />
+      </SectionReveal>
+
+      <SectionReveal>
+        <PhilosophyQuote lang={lang} featuredHref={buffettHref} />
+      </SectionReveal>
+
+      <SectionReveal>
+        <LearnTeaser lang={lang} />
+      </SectionReveal>
+
+      <SectionReveal>
+        <ClosingCTA lang={lang} />
+      </SectionReveal>
+
+      {/* Trust strip + demoted macro (newsletter lives globally in the footer) */}
+      <section className="mt-16 border-t border-[var(--tt-border)] pt-6">
+        <p className="font-mono text-[11px] tracking-[0.04em] text-[var(--tt-faint)]">
+          {isZh
+            ? "来源：SEC EDGAR 13F 季度报告 · 45 天延迟 · 不荐股、不预测。"
+            : "Source: SEC EDGAR 13F quarterly filings · 45-day lag · No recommendations, no forecasts."}
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Link href={`/${lang}/macro`} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
+            {isZh ? "宏观流动性 →" : "Macro & liquidity →"}
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
