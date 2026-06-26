@@ -35,6 +35,29 @@ export type ValuationVerdict = {
 function finitePositive(n: number | undefined): n is number {
   return n != null && Number.isFinite(n) && n > 0;
 }
+
+/**
+ * 数据健壮性上限:保守引擎正常不该出现 >80% 安全边际(≈现价 < 价值带下沿 1/5)。
+ * 超过它几乎必是坏数据——缺/错 shares_diluted、或拆股调整后的价格与 SEC 股数不一致
+ * (典型:Yahoo 拆股价 vs 申报老股数 → per-share 带被抬高 10×)。
+ */
+export const SANE_MARGIN_MAX = 0.8;
+
+/**
+ * 价值带与现价严重脱节 = 坏数据,判定应整条抑制(返回 null,即"无可信判定")。
+ * 守 [[valuation-philosophy-constraint]]:宁可诚实空缺,也不把"打一折"的算崩当真实
+ * 安全边际推到最敏感的面(strike zone / below)。screener/卡片/投资人页共用此判据。
+ */
+export function isImplausibleBand(v: {
+  rangeLo: number;
+  rangeHi: number;
+  price: number;
+  marginPct: number | null;
+}): boolean {
+  if (!(v.price > 0) || !(v.rangeLo > 0) || !(v.rangeHi >= v.rangeLo)) return true; // 退化带
+  if (v.marginPct != null && v.marginPct > SANE_MARGIN_MAX) return true; // 假深度低估
+  return false;
+}
 // 逐字搬运自卡片：两法 consistency → bucket。
 function bucketFromConsistency(c?: string): VerdictBucket | null {
   if (c === "both_margin_of_safety") return "below";
@@ -81,6 +104,9 @@ export function deriveValuationVerdict(input: {
   const inStrikeZone = epv.position === "in_strike_zone";
   const marginPct = rangeLo > 0 ? (rangeLo - price) / rangeLo : null;
   const coverage: VerdictCoverage = bothMethods ? "full" : "single_lamp";
+
+  // 数据健壮性闸:价值带与现价严重脱节(坏 shares / 拆股不一致)→ 无可信判定,不污染最敏感的面。
+  if (isImplausibleBand({ rangeLo, rangeHi, price, marginPct })) return null;
 
   return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage };
 }

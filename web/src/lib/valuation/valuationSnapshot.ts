@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb, withRetry } from "@/lib/managers/db";
 import type { VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
+import { isImplausibleBand } from "./deriveValuationVerdict";
 
 export type SnapshotVerdict = {
   ticker: string;
@@ -226,7 +227,9 @@ export const readValuationScreen = cache(
           computedAt: r.computed_at,
           holderCount: h?.holderCount ?? 0,
         };
-      });
+      })
+        // 读层防御:坏数据行(价值带与现价严重脱节)不进面 —— 即便快照尚有旧脏行(重跑 ingest 前)。
+        .filter((r) => !isImplausibleBand(r));
       const computedAt = rows.reduce<string | null>(
         (mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx),
         null,
