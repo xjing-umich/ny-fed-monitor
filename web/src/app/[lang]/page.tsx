@@ -66,6 +66,10 @@ export default async function HomePage({
   const period = [...managers].sort((a, b) => b.totalValue - a.totalValue)[0]?.period ?? "";
   const macroSummary = macro ? buildMacroSummary(macro) : null;
 
+  // Link the philosophy band's featured quote to Buffett's page if we track him.
+  const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
+  const buffettHref = buffett ? investorPath(lang, buffett.slug) : undefined;
+
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
@@ -194,7 +198,7 @@ export default async function HomePage({
       </SectionReveal>
 
       <SectionReveal>
-        <PhilosophyQuote lang={lang} />
+        <PhilosophyQuote lang={lang} featuredHref={buffettHref} />
       </SectionReveal>
 
       <SectionReveal>
