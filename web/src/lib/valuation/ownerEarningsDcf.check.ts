@@ -130,6 +130,38 @@ assert.strictEqual(pickLatestFredPoint([{ date: "x", value: null }]), null);
   assert.strictEqual(r.tiers, undefined, "no tiers");
 }
 
+// ── 13. (r − g) guard: r_minus_g = midpoint − g1; flag iff spread < 4% ────────
+{
+  // 低 DGS10 + 强劲净利增长 → g1 触顶、midpoint 偏低 → 窄差 → flag true
+  const rNarrow = deriveOeDcf(
+    floorWith(lamp(1000, 100, [2022, 2023, 2024])),
+    [yr(2024, 200), yr(2023, 140), yr(2022, 100)],
+    { value: 1, date: "d" }, // DGS10 1% → midpoint ~6.75%
+    price(50),
+  );
+  assert.ok(rNarrow.assessable, "narrow fixture assessable");
+  assert.strictEqual(
+    rNarrow.diagnostics?.r_minus_g,
+    (rNarrow.discount!.midpoint) - rNarrow.growth_g1!,
+    "r_minus_g identity = midpoint − g1",
+  );
+  assert.strictEqual(
+    rNarrow.diagnostics?.r_minus_g_flag,
+    (rNarrow.diagnostics!.r_minus_g as number) < 0.04,
+    "flag matches < 4% threshold (narrow)",
+  );
+  assert.ok(rNarrow.diagnostics?.r_minus_g_flag === true, "narrow spread → flag true");
+
+  // 净利持平/下降 → g1 = 0 → 宽差 → flag false
+  const rWide = deriveOeDcf(
+    floorWith(lamp(1000, 100, [2022, 2023, 2024])),
+    [yr(2024, 100), yr(2023, 100), yr(2022, 100)],
+    { value: 4, date: "d" },
+    price(50),
+  );
+  assert.ok(rWide.diagnostics?.r_minus_g_flag === false, "flat growth → flag false");
+}
+
 // ── 12. compliance: emitted strings carry no advice/target tokens ────────────
 {
   const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), [yr(2024, 110), yr(2023, 100)], { value: 4, date: "d" }, price(50));
