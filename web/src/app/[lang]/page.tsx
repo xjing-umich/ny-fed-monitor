@@ -108,7 +108,7 @@ export default async function HomePage({
 
       {/* 谁在买 · Superinvestors */}
       <LegBand
-        eyebrow="谁在买 · Superinvestors"
+        eyebrow={isZh ? "谁在买" : "Superinvestors"}
         title={isZh ? "本季最多人增持" : "Most bought this quarter"}
         description={
           isZh
@@ -148,7 +148,7 @@ export default async function HomePage({
 
       {/* 值不值 · Valuation —— strike-zone 命中优先;空快照回退共识股(中性标题) */}
       <LegBand
-        eyebrow="值不值 · Valuation"
+        eyebrow={isZh ? "值不值" : "Valuation"}
         title={
           strike.leaders.length > 0
             ? isZh
@@ -217,7 +217,7 @@ export default async function HomePage({
 
       {/* 大环境 · Macro */}
       <LegBand
-        eyebrow="大环境 · Macro"
+        eyebrow={isZh ? "大环境" : "Macro"}
         title={isZh ? "资金与利率" : "Liquidity & rates"}
         description={
           macroSummary
