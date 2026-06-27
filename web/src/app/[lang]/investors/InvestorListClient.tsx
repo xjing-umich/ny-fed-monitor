@@ -128,7 +128,7 @@ export function InvestorListClient({
       cell: (m) => {
         const pd = fmtPctDelta(m.qoq?.valueDeltaPct);
         return (
-          <span className="font-medium text-[var(--tt-accent)]">
+          <span className="font-medium text-[var(--tt-text)]">
             {formatUSD(m.totalValue)}
             {pd && <span className={`ml-1.5 text-[11px] ${pd.cls}`}>{pd.text}</span>}
           </span>
@@ -205,7 +205,7 @@ export function InvestorListClient({
             className={[
               "px-3 py-1 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
               sort === "value"
-                ? "bg-[var(--tt-accent)] text-white border-[var(--tt-accent)]"
+                ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
                 : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
             ].join(" ")}
           >
@@ -216,7 +216,7 @@ export function InvestorListClient({
             className={[
               "px-3 py-1 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
               sort === "count"
-                ? "bg-[var(--tt-accent)] text-white border-[var(--tt-accent)]"
+                ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
                 : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
             ].join(" ")}
           >

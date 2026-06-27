@@ -7,6 +7,7 @@ import { stockPath, absoluteUrl } from "@/lib/urls";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
+import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
@@ -68,21 +69,22 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
       />
       <SubNav lang={lang} section="investors" active={side === "buy" ? "buys" : "sells"} />
       <div className="pb-8 sm:pb-10">
-        <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
-          <div className="flex items-start justify-between gap-4">
-            <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">{heading}</h1>
-            <div className="shrink-0 pt-1">
+        <div className="mb-6">
+          <PageHeader
+            eyebrow={isZh ? "本季动向 · SEC 13F" : "This quarter · SEC 13F"}
+            title={heading}
+            intro={sub}
+            dateline={<DataAsOfBadge lang={lang} />}
+            action={
               <ShareButton
                 url={shareUrl}
                 text={shareText}
                 labels={shareLabels(lang)}
                 meta={{ entity: shareSlug, entityType: shareSlug, lang }}
               />
-            </div>
-          </div>
-          <p className="mt-2 text-sm text-[var(--tt-muted)]">{sub}</p>
-          <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
-          <p className="mt-2 text-xs text-[var(--tt-faint)]">
+            }
+          />
+          <p className="mt-3 text-xs text-[var(--tt-faint)]">
             {isZh
               ? `统计基准季：${globalLatest ?? "—"}。${lagged.length > 0 ? `未计入（最新申报更早）：${lagged.map((m) => `${m.person}（${m.period}）`).join("、")}。` : ""}`
               : `Baseline quarter: ${globalLatest ?? "—"}.${lagged.length > 0 ? ` Not counted (older latest filing): ${lagged.map((m) => `${m.person} (${m.period})`).join(", ")}.` : ""}`}

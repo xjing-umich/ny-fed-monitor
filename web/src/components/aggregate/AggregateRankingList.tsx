@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
+import { Badge } from "@/components/common/Badge";
 
 export type RankRow = {
   ticker: string;
@@ -14,12 +15,6 @@ export type RankRow = {
   value?: number;             // 买卖页: 涉及金额
   kindLabel?: string;         // 买卖页: 动作标签
   kindTone?: "positive" | "warn" | "neutral";
-};
-
-const toneClass: Record<NonNullable<RankRow["kindTone"]>, string> = {
-  positive: "text-[var(--tt-accent)]",
-  warn: "text-[#b03a3a]",
-  neutral: "text-[var(--tt-muted)]",
 };
 
 export function AggregateRankingList({
@@ -42,16 +37,20 @@ export function AggregateRankingList({
             <Link href={r.href} className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
               <EntityName issuer={r.issuer} ticker={r.ticker} />
             </Link>
-            <div className="mt-0.5 text-[11px] text-[var(--tt-faint)]">
-              {r.pctOfAggregate != null && (isZh ? `占聚合 ${(r.pctOfAggregate * 100).toFixed(1)}%` : `${(r.pctOfAggregate * 100).toFixed(1)}% of aggregate`)}
-              {r.kindLabel && <span className={toneClass[r.kindTone ?? "neutral"]}>{r.kindLabel}</span>}
-              {r.value != null && <span className="ml-2">{formatUSD(r.value)}</span>}
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--tt-faint)]">
+              {r.pctOfAggregate != null && (
+                <span className="font-mono tabular-nums">
+                  {isZh ? `占聚合 ${(r.pctOfAggregate * 100).toFixed(1)}%` : `${(r.pctOfAggregate * 100).toFixed(1)}% of aggregate`}
+                </span>
+              )}
+              {r.kindLabel && <Badge tone={r.kindTone ?? "neutral"}>{r.kindLabel}</Badge>}
+              {r.value != null && <span className="font-mono tabular-nums">{formatUSD(r.value)}</span>}
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="font-display text-2xl font-semibold tabular-nums text-[var(--tt-text)]">{r.primary}</div>
+            <div className="font-mono text-2xl font-medium tabular-nums text-[var(--tt-text)]">{r.primary}</div>
             {r.delta != null ? (
-              <div className={`text-[11px] ${r.delta > 0 ? "text-[var(--tt-accent)]" : r.delta < 0 ? "text-[#b03a3a]" : "text-[var(--tt-faint)]"}`}>
+              <div className={`font-mono text-[11px] tabular-nums ${r.delta > 0 ? "text-[var(--tt-accent)]" : r.delta < 0 ? "text-[var(--tt-negative)]" : "text-[var(--tt-faint)]"}`}>
                 {r.delta === 0 ? (isZh ? "持平" : "—") : `${r.delta > 0 ? "+" : "−"}${Math.abs(r.delta)} ${isZh ? "位" : ""}`}
               </div>
             ) : (

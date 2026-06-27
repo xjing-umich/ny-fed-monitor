@@ -8,6 +8,7 @@ import { stockPath, absoluteUrl } from "@/lib/urls";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
+import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
@@ -74,26 +75,23 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
       />
       <SubNav lang={lang} section="investors" active="consensus" />
       <div className="pb-8 sm:pb-10">
-        <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
-          <div className="flex items-start justify-between gap-4">
-            <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">
-              {isZh ? "共识持仓" : "Consensus holdings"}
-            </h1>
-            <div className="shrink-0 pt-1">
+        <div className="mb-6">
+          <PageHeader
+            eyebrow={isZh ? "跨基金共识 · SEC 13F" : "Cross-fund consensus · SEC 13F"}
+            title={isZh ? "共识持仓" : "Consensus holdings"}
+            intro={isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
+            dateline={<DataAsOfBadge lang={lang} />}
+            action={
               <ShareButton
                 url={shareUrl}
                 text={shareText}
                 labels={shareLabels(lang)}
                 meta={{ entity: "consensus", entityType: "consensus", lang }}
               />
-            </div>
-          </div>
-          <p className="mt-2 text-sm text-[var(--tt-muted)]">
-            {isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
-          </p>
-          <div className="mt-3"><DataAsOfBadge lang={lang} /></div>
+            }
+          />
           {staleManagers.length > 0 && (
-            <p className="mt-2 text-xs text-[var(--tt-faint)]">
+            <p className="mt-3 text-xs text-[var(--tt-faint)]">
               {isZh
                 ? `注：${staleManagers.map((m) => `${m.person}（数据截至 ${m.period}）`).join("、")} 的持仓按其最新申报计入，环比变动不计。`
                 : `Note: ${staleManagers.map((m) => `${m.person} (as of ${m.period})`).join(", ")} counted per their latest filing; excluded from QoQ deltas.`}
