@@ -7,9 +7,10 @@ export const DURATION_MODERATE = 8;          // moderate franchise
 export const DURATION_PESSIMISTIC_DELTA = 2; // pessimistic scenario shortens duration by this many years
 export const ROIIC_SENSITIVITY = 0.25;       // ±25% band on ROIIC for the scenarios (heuristic, disclosed)
 export const MOAT_STRONG_MULTIPLE = 2.0;     // EPV/AV at/above this → strong franchise
-export const GV_DISCOUNT_PESSIMISTIC = 0.10;
-export const GV_DISCOUNT_NEUTRAL = 0.09;
-export const GV_DISCOUNT_OPTIMISTIC = 0.08;
+// audit #3: 与 EPV/OE-DCF 提高的股权成本保持一致(各 +1%),增长溢价层不比基础便宜。
+export const GV_DISCOUNT_PESSIMISTIC = 0.11;
+export const GV_DISCOUNT_NEUTRAL = 0.10;
+export const GV_DISCOUNT_OPTIMISTIC = 0.09;
 
 export type GrowthValueArgs = {
   years: ValuationFloorYear[];

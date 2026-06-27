@@ -50,20 +50,22 @@ assert.strictEqual(floor.provenance.share_count_basis, "diluted", "diluted basis
 const g = floor.graham_epv;
 assert.ok(g.assessable, "graham assessable");
 assert.ok(Math.abs(g.normalized_earnings! - 3_655) < 1, `nopat≈3655 (15% tax) got ${g.normalized_earnings}`);
-// equity_high uses LOW rate 0.08: 3655/0.08 + cash2000 − debt1000 = 46_687.5
-assert.ok(Math.abs(g.equity_value_high! - 46_687.5) < 1, `graham eq_high≈46687.5 got ${g.equity_value_high}`);
-// equity_low uses HIGH rate 0.10: 3655/0.10 + 1000 = 37_550
-assert.ok(Math.abs(g.equity_value_low! - 37_550) < 1, `graham eq_low≈37550 got ${g.equity_value_low}`);
-assert.ok(Math.abs(g.per_share_high! - 46.6875) < 0.01, `graham ps_high≈46.69 got ${g.per_share_high}`);
+// equity_high uses LOW rate: 3655/r_low + cash2000 − debt1000
+const gHigh = 3_655 / DISCOUNT_RATE_LOW + 2_000 - 1_000;
+assert.ok(Math.abs(g.equity_value_high! - gHigh) < 1, `graham eq_high≈${gHigh.toFixed(0)} got ${g.equity_value_high}`);
+// equity_low uses HIGH rate: 3655/r_high + 1000
+const gLow = 3_655 / DISCOUNT_RATE_HIGH + 2_000 - 1_000;
+assert.ok(Math.abs(g.equity_value_low! - gLow) < 1, `graham eq_low≈${gLow.toFixed(0)} got ${g.equity_value_low}`);
+assert.ok(Math.abs(g.per_share_high! - gHigh / 1_000) < 0.01, `graham ps_high≈${(gHigh / 1_000).toFixed(2)} got ${g.per_share_high}`);
 assert.ok(g.method.bridge.includes("cash") && g.method.bridge.includes("debt"), "graham bridges +cash −debt");
 assert.ok(/unlevered/i.test(g.method.leverage_treatment), "graham unlevered");
 
 // ── Buffett owner-earnings lamp, NO bridge ───────────────────────────────────
-// avg net income 2_400; eq_high 2400/0.08 = 30_000 (no bridge), eq_low 24_000
+// avg net income 2_400; eq_high 2400/r_low (no bridge), eq_low 2400/r_high
 const b = floor.buffett_epv;
 assert.ok(b.assessable, "buffett assessable");
-assert.ok(Math.abs(b.equity_value_high! - 30_000) < 1, `buffett eq_high≈30000 (no bridge) got ${b.equity_value_high}`);
-assert.ok(Math.abs(b.equity_value_low! - 24_000) < 1, `buffett eq_low≈24000 got ${b.equity_value_low}`);
+assert.ok(Math.abs(b.equity_value_high! - 2_400 / DISCOUNT_RATE_LOW) < 1, `buffett eq_high (no bridge) got ${b.equity_value_high}`);
+assert.ok(Math.abs(b.equity_value_low! - 2_400 / DISCOUNT_RATE_HIGH) < 1, `buffett eq_low got ${b.equity_value_low}`);
 assert.ok(/no .*bridge/i.test(b.method.bridge), "buffett states no bridge");
 assert.ok(/levered/i.test(b.method.leverage_treatment), "buffett levered");
 
@@ -77,10 +79,10 @@ const levered: ValuationFloorInput = {
   ],
 };
 const lf = floorOf(computeValuationFloor(levered));
-// avg NI 950 → buffett eq_high 950/0.08 = 11_875 (debt NOT subtracted)
-assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 11_875) < 1, `levered buffett eq_high≈11875 got ${lf.buffett_epv.equity_value_high}`);
-// graham bridges: nopat 0.2×10000×(1−0.21)=1580; /0.08 +500 −8000 = 12_250
-assert.ok(Math.abs(lf.graham_epv.equity_value_high! - 12_250) < 1, `levered graham eq_high≈12250 (bridged) got ${lf.graham_epv.equity_value_high}`);
+// avg NI 950 → buffett eq_high 950/r_low (debt NOT subtracted)
+assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 950 / DISCOUNT_RATE_LOW) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
+// graham bridges: nopat 0.2×10000×(1−0.21)=1580; /r_low +500 −8000
+assert.ok(Math.abs(lf.graham_epv.equity_value_high! - (1_580 / DISCOUNT_RATE_LOW + 500 - 8_000)) < 1, `levered graham eq_high (bridged) got ${lf.graham_epv.equity_value_high}`);
 assert.strictEqual(lf.high_leverage_warning, true, "levered trips high-leverage warning");
 assert.ok((lf.net_debt_to_equity ?? 0) > 1, "net debt/equity > 1 recorded");
 assert.strictEqual(floor.high_leverage_warning, false, "net-cash compounder no warning");
@@ -142,9 +144,10 @@ const fin = floorOf(computeValuationFloor(financial));
 assert.strictEqual(fin.graham_epv.assessable, false, "financial: graham not assessable (no operating income)");
 assert.ok(/operating income is not reported/i.test(fin.graham_epv.not_assessable_reason ?? ""), "financial: graham reason names missing operating income");
 assert.ok(fin.buffett_epv.assessable, "financial: buffett lamp assessable");
-// avg NI 2800 → eq_high 2800/0.08 = 35_000 (no bridge), per share /1000 = 35
-assert.ok(Math.abs(fin.buffett_epv.equity_value_high! - 35_000) < 1, `financial buffett eq_high≈35000 got ${fin.buffett_epv.equity_value_high}`);
-assert.ok(Math.abs(fin.buffett_epv.per_share_high! - 35) < 1e-9, `financial buffett ps_high≈35 got ${fin.buffett_epv.per_share_high}`);
+// avg NI 2800 → eq_high 2800/r_low (no bridge), per share /1000
+const finHigh = 2_800 / DISCOUNT_RATE_LOW;
+assert.ok(Math.abs(fin.buffett_epv.equity_value_high! - finHigh) < 1, `financial buffett eq_high≈${finHigh.toFixed(0)} got ${fin.buffett_epv.equity_value_high}`);
+assert.ok(Math.abs(fin.buffett_epv.per_share_high! - finHigh / 1_000) < 1e-9, `financial buffett ps_high got ${fin.buffett_epv.per_share_high}`);
 assert.strictEqual(fin.asset_floor.assessable, true, "financial: asset floor still emitted");
 assert.ok(fin.provenance.earnings_basis_note && /owner[- ]earnings/i.test(fin.provenance.earnings_basis_note), "financial: provenance carries single-lamp basis note");
 assert.notStrictEqual(fin.moat_reading.signal, "not_assessable", "financial: moat reads off buffett lamp, not stuck unassessable");
@@ -184,9 +187,9 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
     const mc = maintenanceCapex(years as any).value!;
     const da = 1_000;
     // write A: EPV(Biz) = (NOPAT + D&A − maintCapex)/r. With maintCapex > D&A, < NOPAT/r.
-    const expectedHigh = (nopat + da - mc) / 0.08 + 1_000 - 0; // +cash −debt
+    const expectedHigh = (nopat + da - mc) / DISCOUNT_RATE_LOW + 1_000 - 0; // +cash −debt
     assert.ok(Math.abs(g.equity_value_high! - expectedHigh) < 1e-6, "EPV write A: full-cash maintenance-capex deduction, no tax shield");
-    assert.ok(g.equity_value_high! < nopat / 0.08 + 1_000, "maintCapex > D&A presses EPV below NOPAT/WACC");
+    assert.ok(g.equity_value_high! < nopat / DISCOUNT_RATE_LOW + 1_000, "maintCapex > D&A presses EPV below NOPAT/WACC");
   }
 }
 
@@ -268,6 +271,28 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
     assert.strictEqual(cFloor.growth_value.gated_to_zero, true, "non-franchise → GV gated to zero");
     assert.strictEqual(cFloor.growth_value.scenarios.neutral, 0, "gated → GV 0");
   }
+}
+
+// ── audit #2: cyclical normalization (declining → anchor to latest run-rate) ────
+{
+  // 净利 recent-first [500,1200,1700,1500,600]; avg=1100, 最新 500 < avg → 应压到 500。
+  // 无 D&A/capex → canCorrect=false → owner earnings = 正常化净利本身。
+  const cyc: ValuationFloorInput = {
+    ticker: "CYC",
+    years: [
+      year(2025, { revenue: 5_000, operating_margin: 0.10, operating_income: 500, net_income: 500, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2024, { revenue: 8_000, operating_margin: 0.20, operating_income: 1_600, net_income: 1_200, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2023, { revenue: 9_000, operating_margin: 0.25, operating_income: 2_250, net_income: 1_700, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2022, { revenue: 8_500, operating_margin: 0.23, operating_income: 1_955, net_income: 1_500, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2021, { revenue: 6_000, operating_margin: 0.12, operating_income: 720, net_income: 600, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+    ],
+  };
+  const f = floorOf(computeValuationFloor(cyc));
+  assert.strictEqual(f.buffett_epv.normalized_earnings, 500, "declining cyclical → owner earnings anchored to latest (500), not the 1100 average");
+  // 对照:把最新年净利换成最高(2200>avg)→ 用均值 1440,不压(无回归)。
+  const grow: ValuationFloorInput = { ...cyc, years: [{ ...cyc.years[0], net_income: 2_200 }, ...cyc.years.slice(1)] };
+  const fg = floorOf(computeValuationFloor(grow));
+  assert.ok(Math.abs((fg.buffett_epv.normalized_earnings as number) - 1_440) < 1e-6, "latest ≥ avg → uses average (no cap, no regression)");
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");

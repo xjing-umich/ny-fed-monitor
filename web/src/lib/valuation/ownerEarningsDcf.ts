@@ -10,9 +10,11 @@ import type {
 } from "./types";
 
 export const GROWTH_CAP = 0.1;
-export const R_STRICT = 0.1;
-export const DGS10_PREMIUM = 0.025;
-export const FALLBACK_BAND: [number, number] = [0.08, 0.1];
+// audit #3: 股权风险溢价从 2.5% 提到 4.5%(历史 ~4.5–5.5%),strict 端 10%→12%,
+// fallback 带 8–10%→9–11%。原 2.5% 溢价系统性低估贴现率 → 高估所有名字,对高风险名字最甚。
+export const R_STRICT = 0.12;
+export const DGS10_PREMIUM = 0.045;
+export const FALLBACK_BAND: [number, number] = [0.09, 0.11];
 export const TERMINAL_SHARE_FLAG = 0.7;
 export const OE_YIELD_FLAG_BPS = 300;
 export const QUICK_CHECK_DEV_FLAG = 0.5;
@@ -102,12 +104,12 @@ function discountBand(dgs10: { value: number; date: string } | null): DiscountBa
       midpoint: (FALLBACK_BAND[0] + FALLBACK_BAND[1]) / 2,
       anchored: false,
       inverted: false,
-      note: "DGS10 unavailable — discount band falls back to the 8–10% engine range (not anchored to live treasury).",
+      note: "DGS10 unavailable — discount band falls back to the 9–11% engine range (not anchored to live treasury).",
     };
   }
   const dgs10Dec = dgs10.value / 100; // FRED percent → decimal
   const rAggressive = dgs10Dec + DGS10_PREMIUM;
-  const inverted = dgs10Dec >= INVERSION_DGS10; // rAggressive ≥ 0.10
+  const inverted = dgs10Dec >= INVERSION_DGS10; // rAggressive ≥ R_STRICT (0.12)
   const rLow = Math.min(rAggressive, R_STRICT);
   const rHigh = Math.max(rAggressive, R_STRICT);
   return {
@@ -119,8 +121,8 @@ function discountBand(dgs10: { value: number; date: string } | null): DiscountBa
     anchored: true,
     inverted,
     note: inverted
-      ? `DGS10 ${dgs10.value.toFixed(2)}% pushes the +2.5% end above the 10% strict threshold; band shown as [min,max].`
-      : `Discount band: ${(rLow * 100).toFixed(2)}%–${(rHigh * 100).toFixed(2)}% (DGS10 +2.5% to a 10% strict end, as of ${dgs10.date}).`,
+      ? `DGS10 ${dgs10.value.toFixed(2)}% pushes the +4.5% end above the 12% strict threshold; band shown as [min,max].`
+      : `Discount band: ${(rLow * 100).toFixed(2)}%–${(rHigh * 100).toFixed(2)}% (DGS10 +4.5% to a 12% strict end, as of ${dgs10.date}).`,
   };
 }
 

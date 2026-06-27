@@ -324,7 +324,7 @@ export default async function StockTickerPage({
     valuationFloor?.kind === "floor" ? deriveStrikeZone(valuationFloor, latestPrice) : undefined;
 
   // Second intrinsic-value method (Buffett owner-earnings DCF) + two-method cross-check.
-  // DGS10 read is best-effort; null → DCF uses the 8–10% fallback band (flagged in-card).
+  // DGS10 read is best-effort; null → DCF uses the 9–11% fallback band (flagged in-card).
   const dgs10 = valuationFloor?.kind === "floor" ? await getLatestDgs10() : null;
   const oeDcf =
     valuationFloor?.kind === "floor"
