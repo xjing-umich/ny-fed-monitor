@@ -5,6 +5,8 @@ import {
   pickLatestFredPoint,
   GROWTH_CAP,
   R_STRICT,
+  DGS10_PREMIUM,
+  FALLBACK_BAND,
   reconcileMethods,
 } from "./ownerEarningsDcf";
 import type { OeDcfAssessment } from "./types";
@@ -75,8 +77,8 @@ assert.strictEqual(pickLatestFredPoint([{ date: "x", value: null }]), null);
 // ── 5. discount band from DGS10 (normal, ordered) ────────────────────────────
 {
   const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), [yr(2024, 100), yr(2023, 100)], { value: 4.25, date: "2026-06-19" }, null);
-  assert.ok(Math.abs(r.discount!.r_low - (0.0425 + 0.025)) < 1e-9, "r_low = DGS10/100 + 0.025");
-  assert.strictEqual(r.discount!.r_high, 0.1, "r_high = strict 0.10");
+  assert.ok(Math.abs(r.discount!.r_low - (0.0425 + DGS10_PREMIUM)) < 1e-9, "r_low = DGS10/100 + premium");
+  assert.strictEqual(r.discount!.r_high, R_STRICT, "r_high = strict end");
   assert.strictEqual(r.discount!.anchored, true, "anchored");
   assert.strictEqual(r.discount!.inverted, false, "not inverted");
   assert.strictEqual(r.discount!.dgs10_date, "2026-06-19", "as-of stamped");
@@ -93,7 +95,7 @@ assert.strictEqual(pickLatestFredPoint([{ date: "x", value: null }]), null);
 {
   const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), [yr(2024, 100), yr(2023, 100)], null, null);
   assert.strictEqual(r.discount!.anchored, false, "fallback not anchored");
-  assert.deepStrictEqual([r.discount!.r_low, r.discount!.r_high], [0.08, 0.1], "fallback 8–10%");
+  assert.deepStrictEqual([r.discount!.r_low, r.discount!.r_high], [FALLBACK_BAND[0], FALLBACK_BAND[1]], "fallback band");
 }
 
 // ── 8. zero-growth terminal share + >70% flag ────────────────────────────────

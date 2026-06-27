@@ -47,7 +47,7 @@ export const EXTREME_OE_YIELD = 0.33;
 
 /**
  * 估值可靠性：把引擎**已经算出**的红旗收口成一个布尔。任一触发 → 不可靠：
- *  - high_leverage_warning：净负债/权益>1，8–10% 单率股权桥失真。
+ *  - high_leverage_warning：净负债/权益>1，9–11% 单率股权桥失真。
  *  - declined：盈利下滑 → 滚动均值高估其盈利力（周期峰值幻觉，#2 深修前的护栏）。
  *  - quick_check_flag：DCF 与简化资本化偏离>50% → 模型对增长/贴现高度敏感、不稳。
  *  - 极端 OE 收益率：>33% ≈ 每股算错（ADR 比例/股数）。

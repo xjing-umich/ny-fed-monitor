@@ -3,8 +3,10 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 
-export const DISCOUNT_RATE_LOW = 0.08;
-export const DISCOUNT_RATE_HIGH = 0.1;
+// audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
+// 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
+export const DISCOUNT_RATE_LOW = 0.09;
+export const DISCOUNT_RATE_HIGH = 0.11;
 export const MAX_TAX_RATE = 0.21; // statutory cap
 export const MIN_YEARS = 3;
 export const TARGET_YEARS = 5;
@@ -150,7 +152,7 @@ function assembleFloor(
     growth_value: growthValue,
     high_leverage_warning: highLeverage,
     high_leverage_note: highLeverage
-      ? "High leverage (net debt / shareholders' equity above 1.0): the single 8–10% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
+      ? "High leverage (net debt / shareholders' equity above 1.0): the single 9–11% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
       : undefined,
     net_debt_to_equity: netDebtToEquity,
     provenance: {
@@ -195,7 +197,7 @@ function buildGrahamLamp(
   const method = {
     earnings_basis: "Normalized NOPAT = average operating margin over the years shown × latest-year revenue × (1 − normalized tax); then + D&A − maintenance capex (write A).",
     leverage_treatment: "Unlevered (pre-interest, attributable to all capital).",
-    denominator: "Capitalized at the 8–10% rate band (read as a WACC proxy).",
+    denominator: "Capitalized at the 9–11% rate band (read as a WACC proxy).",
     bridge: "Enterprise → equity bridge applied: + cash − total debt.",
     discount_rate_low: DISCOUNT_RATE_LOW,
     discount_rate_high: DISCOUNT_RATE_HIGH,
@@ -241,7 +243,7 @@ function grahamNotApplicableLamp(yearsUsed: number[]): EpvLamp {
     method: {
       earnings_basis: "Normalized NOPAT from operating margin — not applicable when operating income is not reported separately.",
       leverage_treatment: "Unlevered (pre-interest, attributable to all capital).",
-      denominator: "Capitalized at the 8–10% rate band (read as a WACC proxy).",
+      denominator: "Capitalized at the 9–11% rate band (read as a WACC proxy).",
       bridge: "Enterprise → equity bridge (+ cash − total debt) — not applied (lens not assessable).",
       discount_rate_low: DISCOUNT_RATE_LOW,
       discount_rate_high: DISCOUNT_RATE_HIGH,
@@ -273,12 +275,12 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
   }
   simplifications.push("One-time items are not separately normalized (multi-year averaging smooths them partially).");
   simplifications.push("Share-based compensation is left as a real expense (not added back); see the SBC/OE disclosure.");
-  simplifications.push("Capitalized at the same 8–10% band as a cost-of-equity proxy (theoretically the cost of equity is higher; v2 simplification, v3 to refine).");
+  simplifications.push("Capitalized at the same 9–11% band as a cost-of-equity proxy (theoretically the cost of equity is higher; v2 simplification, v3 to refine).");
 
   const method = {
     earnings_basis: "Owner earnings = average net income + average D&A − maintenance capex (zero-growth floor; no ΔNWC).",
     leverage_treatment: "Levered (starts from net income, already after interest — an equity-holder stream).",
-    denominator: "Capitalized at the 8–10% rate band (read as a cost-of-equity proxy).",
+    denominator: "Capitalized at the 9–11% rate band (read as a cost-of-equity proxy).",
     bridge: "No enterprise→equity bridge: the capitalized result is already equity value (subtracting debt would double-count interest).",
     discount_rate_low: DISCOUNT_RATE_LOW,
     discount_rate_high: DISCOUNT_RATE_HIGH,
