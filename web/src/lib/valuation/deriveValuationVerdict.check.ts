@@ -13,7 +13,7 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
-import { deriveValuationVerdict } from "./deriveValuationVerdict";
+import { deriveValuationVerdict, assessReliability } from "./deriveValuationVerdict";
 
 // 仅 deriveValuationVerdict 真正读取的字段被填实；其余用最小 stub 满足类型。
 function floorStub(): ValuationFloor {
@@ -86,6 +86,35 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
 {
   const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { ceilings: false, price: 50 }) });
   assert(v && v.bucket === "below" && Math.abs(v.marginPct! - 0.75) < 1e-9, "margin 0.75 ≤ cap → kept");
+}
+// 9) 默认无红旗 → reliable = true(且仍出判定)
+{
+  const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
+  assert(v && v.reliable === true, "no red flags → reliable");
+}
+// 10) 盈利下滑(declined)→ reliable = false(判定仍在,只是便宜信号不可信)
+{
+  const oeDeclined = { ...oe(), declined: true } as OeDcfAssessment;
+  const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), oeDcf: oeDeclined, reconciliation: recon("both_margin_of_safety") });
+  assert(v && v.bucket === "below" && v.reliable === false, "declined → unreliable but still emitted");
+}
+// 11) 高杠杆 floor → reliable = false
+{
+  const levFloor = { kind: "floor", high_leverage_warning: true } as unknown as ValuationFloor;
+  const v = deriveValuationVerdict({ floor: levFloor, strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
+  assert(v && v.reliable === false, "high leverage → unreliable");
+}
+// 12) 极端 OE 收益率(>33%, 疑似 per-share/ADR 算错)→ reliable = false
+{
+  const oeBadYield = { ...oe(), diagnostics: { oe_yield: 0.4 } } as OeDcfAssessment;
+  const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), oeDcf: oeBadYield, reconciliation: recon("both_margin_of_safety") });
+  assert(v && v.reliable === false, "extreme OE yield → unreliable");
+}
+// 13) assessReliability 直测:quick_check_flag → false
+{
+  const oeQuick = { assessable: true, per_share_low: 90, per_share_high: 150, diagnostics: { quick_check_flag: true } } as OeDcfAssessment;
+  assert(assessReliability({ floor: floorStub(), oeDcf: oeQuick }) === false, "quick_check_flag → unreliable");
+  assert(assessReliability({ floor: floorStub(), oeDcf: oe() }) === true, "clean → reliable");
 }
 
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");

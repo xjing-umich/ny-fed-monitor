@@ -101,6 +101,7 @@ async function main() {
         price_date: v.priceDate || null,
         margin_pct: v.marginPct,
         coverage: v.coverage,
+        reliable: v.reliable,
         computed_at: computedAt,
         payload: v,
         updated_at: computedAt,
