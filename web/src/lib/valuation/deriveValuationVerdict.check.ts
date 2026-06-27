@@ -116,5 +116,14 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   assert(assessReliability({ floor: floorStub(), oeDcf: oeQuick }) === false, "quick_check_flag → unreliable");
   assert(assessReliability({ floor: floorStub(), oeDcf: oe() }) === true, "clean → reliable");
 }
+// 14) value_destruction(盈利力<重置价值,便宜实为资产折扣)→ reliable = false(判定仍在,只是不当"便宜")
+{
+  const vdFloor = { kind: "floor", moat_reading: { signal: "value_destruction" } } as unknown as ValuationFloor;
+  const v = deriveValuationVerdict({ floor: vdFloor, strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
+  assert(v && v.bucket === "below" && v.reliable === false, "value_destruction → unreliable but still emitted");
+  // 对照:franchise 信号不否决
+  const frFloor = { kind: "floor", moat_reading: { signal: "franchise" } } as unknown as ValuationFloor;
+  assert(assessReliability({ floor: frFloor, oeDcf: oe() }) === true, "franchise signal → reliable");
+}
 
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");

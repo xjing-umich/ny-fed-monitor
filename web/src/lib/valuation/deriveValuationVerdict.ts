@@ -51,11 +51,15 @@ export const EXTREME_OE_YIELD = 0.33;
  *  - declined：盈利下滑 → 滚动均值高估其盈利力（周期峰值幻觉，#2 深修前的护栏）。
  *  - quick_check_flag：DCF 与简化资本化偏离>50% → 模型对增长/贴现高度敏感、不稳。
  *  - 极端 OE 收益率：>33% ≈ 每股算错（ADR 比例/股数）。
+ *  - value_destruction（盈利力 < 重置价值）：此时 valueFloor 由资产底（AV）主导而非 EPV，
+ *    "便宜"实为现价跌破 ⅔ 有形账面 —— 经典价值陷阱，且这类生意的账面恰恰最不可信。
+ *    守复利品牌：资产折扣可在"全部估值"里诚实展示，但不据此进 strike-zone/below 当"便宜"。
  * 守 [[valuation-philosophy-constraint]]：不可靠的便宜信号宁可不标，也不误导。
  */
 export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcfAssessment }): boolean {
   const { floor, oeDcf } = input;
   if (floor?.high_leverage_warning) return false;
+  if (floor?.moat_reading?.signal === "value_destruction") return false;
   if (oeDcf?.declined) return false;
   if (oeDcf?.diagnostics?.quick_check_flag) return false;
   const oeY = oeDcf?.diagnostics?.oe_yield;

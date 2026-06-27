@@ -76,6 +76,18 @@ async function main() {
   const dgs10 = await getLatestDgs10(); // 全局共享, 取一次
   const computedAt = new Date().toISOString();
 
+  // 数据新鲜度护栏(守 CLAUDE.md 铁律:外部数据必须标注来源/日期、不用过时数据)。
+  // 整本估值的 DCF 都锚到这一个 DGS10 快照 —— 若它过期/缺失,全书贴现率一起漂。
+  // 这里显式标注它的值与 as-of 日期,并在 >10 个日历日(节假日+周末的宽容上限)时高声告警。
+  if (!dgs10) {
+    console.warn("⚠ DGS10 不可用(FRED 取数失败/超时)→ 全书 DCF 退化到 9–11% fallback 带(未锚活国债)。");
+  } else {
+    const ageDays = Math.floor((Date.parse(computedAt) - Date.parse(`${dgs10.date}T00:00:00Z`)) / 86_400_000);
+    const tag = `DGS10 锚: ${dgs10.value.toFixed(2)}% (10Y 国债, FRED, as-of ${dgs10.date}, ${ageDays} 日前)`;
+    if (ageDays > 10) console.warn(`⚠ ${tag} —— 已超 10 日,疑似过期,贴现率可能偏离当下;建议先刷新 FRED 再 ingest。`);
+    else console.log(tag);
+  }
+
   let valued = 0, skipped = 0;
   const rows: Record<string, unknown>[] = [];
   for (const ticker of universe) {
