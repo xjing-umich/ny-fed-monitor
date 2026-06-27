@@ -119,7 +119,23 @@ async function main() {
     const { error } = await db.from("valuation_snapshot").upsert(rows.slice(i, i + BATCH), { onConflict: "ticker" });
     if (error) throw new Error(`valuation_snapshot upsert 失败: ${error.message}`);
   }
-  console.log(`估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据), computed_at ${computedAt}`);
+
+  // 清理陈旧行:本轮 universe 里尝试过、但算不出估值(翻转为不可估值/被引擎闸抑制,如周期股
+  // 最新年转亏 → #2 压到亏损 → 不可估值)的 ticker,其旧行必须删除 —— upsert 只覆盖不删,
+  // 否则会留下上一轮的陈旧价值带(AMR/ATKR 那种"打一折"幻觉就是这么残留的)。只删本轮
+  // 尝试过的(universe ∩ 未写入),不碰本轮 universe 之外的行。
+  const written = new Set(rows.map((r) => r.ticker as string));
+  const stale = universe.filter((t) => !written.has(t));
+  let deleted = 0;
+  for (let i = 0; i < stale.length; i += BATCH) {
+    const { error, count } = await db
+      .from("valuation_snapshot")
+      .delete({ count: "exact" })
+      .in("ticker", stale.slice(i, i + BATCH));
+    if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
+    deleted += count ?? 0;
+  }
+  console.log(`估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据), 清理陈旧 ${deleted}, computed_at ${computedAt}`);
 }
 
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
