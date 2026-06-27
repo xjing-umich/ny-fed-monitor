@@ -7,11 +7,13 @@ import { investorPath } from "@/lib/urls";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge, type BadgeTone } from "@/components/common/Badge";
+import PageHeader from "@/components/common/PageHeader";
 
 type Row = ManagerSummary & { qoq?: ManagerQoQ };
 
 const COPY = {
   zh: {
+    eyebrow: "SEC 13F · 季度披露",
     heading: "超级投资者",
     subtitle: "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。",
     search: "搜索投资人或机构…",
@@ -30,6 +32,7 @@ const COPY = {
     noResults: "无匹配结果",
   },
   en: {
+    eyebrow: "SEC 13F · quarterly filings",
     heading: "Superinvestors",
     subtitle: "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.",
     search: "Search by name or firm…",
@@ -125,7 +128,7 @@ export function InvestorListClient({
       cell: (m) => {
         const pd = fmtPctDelta(m.qoq?.valueDeltaPct);
         return (
-          <span className="font-medium text-[var(--tt-accent)]">
+          <span className="font-medium text-[var(--tt-text)]">
             {formatUSD(m.totalValue)}
             {pd && <span className={`ml-1.5 text-[11px] ${pd.cls}`}>{pd.text}</span>}
           </span>
@@ -184,13 +187,7 @@ export function InvestorListClient({
 
   return (
     <div className="space-y-8">
-      {/* Editorial heading */}
-      <div className="border-b border-[var(--tt-border)] pb-6">
-        <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
-          {t.heading}
-        </h1>
-        <p className="mt-2 text-sm text-[var(--tt-muted)]">{t.subtitle}</p>
-      </div>
+      <PageHeader eyebrow={t.eyebrow} title={t.heading} intro={t.subtitle} />
 
       {/* Controls — quiet hairline style */}
       <div className="flex flex-wrap gap-4 items-center">
@@ -208,7 +205,7 @@ export function InvestorListClient({
             className={[
               "px-3 py-1 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
               sort === "value"
-                ? "bg-[var(--tt-accent)] text-white border-[var(--tt-accent)]"
+                ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
                 : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
             ].join(" ")}
           >
@@ -219,7 +216,7 @@ export function InvestorListClient({
             className={[
               "px-3 py-1 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
               sort === "count"
-                ? "bg-[var(--tt-accent)] text-white border-[var(--tt-accent)]"
+                ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
                 : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
             ].join(" ")}
           >

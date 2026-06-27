@@ -150,7 +150,7 @@ function ResearchPromptCard({ item, lang }: { item: ResearchPrompt; lang: Lang }
 
 function SectionKicker({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border-b border-[var(--tt-border)] pb-2 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+    <div className="border-b border-[var(--tt-border)] pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-accent)]">
       {children}
     </div>
   );
@@ -184,7 +184,7 @@ export default async function MacroOverviewPage({
       <React.Suspense
         fallback={(
           <header className="border-b border-[var(--tt-border)] pb-6">
-            <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+            <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
               {lang === "zh" ? "宏观 / 流动性" : "Macro / Liquidity"}
             </div>
             <h1 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">

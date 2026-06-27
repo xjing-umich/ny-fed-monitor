@@ -63,7 +63,7 @@ export default function MacroViewHero({ lang }: { lang: Lang }) {
 
   return (
     <header className="border-b border-[var(--tt-border)] pb-6">
-      <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
         {isOverview
           ? (lang === "zh" ? "宏观 / 流动性" : "Macro / Liquidity")
           : (lang === "zh" ? "美债市场监控" : "Treasury Market Monitor")}

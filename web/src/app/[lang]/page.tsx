@@ -10,7 +10,7 @@ import { EntityName } from "@/components/common/EntityName";
 import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
-import { DataStrip } from "@/components/home/DataStrip";
+import { DataStrip } from "@/components/common/DataStrip";
 import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
 import SectionReveal from "@/components/home/SectionReveal";
 import FeatureRow from "@/components/home/FeatureRow";

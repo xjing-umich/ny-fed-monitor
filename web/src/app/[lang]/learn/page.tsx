@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { listArticles } from "@/lib/learn";
+import PageHeader from "@/components/common/PageHeader";
 
 export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
@@ -10,13 +11,19 @@ export function generateStaticParams() {
 const COPY = {
   en: {
     title: "Learn",
+    eyebrow: "Learn",
+    heading: "Learn to read businesses, not tickers",
     intro:
       "Plain guides to 13F filings, value investing, and how to read what serious investors actually do. Educational only, not investment advice.",
+    updated: "Updated",
   },
   zh: {
     title: "学习",
+    eyebrow: "学习",
+    heading: "读懂生意，而非代码",
     intro:
       "关于 13F 申报、价值投资,以及如何读懂严肃投资者真实动作的大白话指南。仅供教育参考,不构成投资建议。",
+    updated: "更新于",
   },
 } as const;
 
@@ -49,11 +56,8 @@ export default async function LearnIndexPage({
   const articles = listArticles(lang);
 
   return (
-    <article className="max-w-[720px] mx-auto py-4">
-      <h1 className="font-display text-2xl font-medium tracking-tight text-[var(--tt-text)]">
-        {c.title}
-      </h1>
-      <p className="mt-3 text-sm leading-relaxed text-[var(--tt-muted)]">{c.intro}</p>
+    <article className="max-w-[720px] mx-auto py-8 sm:py-10">
+      <PageHeader eyebrow={c.eyebrow} title={c.heading} intro={c.intro} />
 
       <ul className="mt-8 flex flex-col">
         {articles.map((a) => (
@@ -65,6 +69,11 @@ export default async function LearnIndexPage({
               <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
                 {a.description}
               </p>
+              {a.updated ? (
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                  {c.updated} {a.updated}
+                </p>
+              ) : null}
             </Link>
           </li>
         ))}

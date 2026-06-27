@@ -17,6 +17,8 @@ import type { Tone } from "./types";
 export type EntityPageProps = {
   lang: "zh" | "en";
   title: string;
+  /** Optional green mono eyebrow above the title (e.g. "SUPERINVESTOR · SEC 13F"). */
+  eyebrow?: string;
   subtitle: string;
   verdict?: { label: string; tone: Tone };
   keyFacts: KeyFact[];
@@ -41,6 +43,7 @@ export type EntityPageProps = {
 export function EntityPage({
   lang,
   title,
+  eyebrow,
   subtitle,
   verdict,
   keyFacts,
@@ -59,16 +62,19 @@ export function EntityPage({
     <div className="space-y-7">
       {topAction}
 
-      {/* ① Masthead — serif headline, verdict, standfirst, hairline rule */}
+      {/* ① Masthead — eyebrow, serif headline, verdict, standfirst, hairline rule */}
       <header className="space-y-3 pb-1">
+        {eyebrow && (
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
+        )}
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-          <h1 className="font-display text-3xl sm:text-4xl font-medium leading-[1.1] tracking-tight text-foreground">
+          <h1 className="font-display text-3xl sm:text-4xl font-medium leading-[1.1] tracking-tight text-[var(--tt-text)]">
             {title}
           </h1>
           {verdict && <VerdictChip label={verdict.label} tone={verdict.tone} />}
           {headerAction && <div className="ml-auto self-center">{headerAction}</div>}
         </div>
-        <p className="max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
+        <p className="max-w-3xl text-[15px] leading-relaxed text-[var(--tt-muted)]">
           {subtitle}
         </p>
         {disclaimer && (
@@ -83,7 +89,7 @@ export function EntityPage({
 
       {/* ② Key facts — editorial stat row separated by hairlines (no card) */}
       {keyFacts.length > 0 && (
-        <div className="border-y border-border py-4">
+        <div className="border-y border-[var(--tt-border)] py-4">
           <KeyFacts facts={keyFacts} />
         </div>
       )}

@@ -64,6 +64,7 @@
   --tt-bg:            var(--background);
   --tt-panel:         var(--card);
   --tt-panel-2:       var(--muted);
+  --tt-surface:       var(--accent); /* soft hover/selected surface (rows, nav) */
   --tt-border:        var(--border);
   --tt-border-strong: var(--border-strong);
   --tt-text:          var(--foreground);
@@ -122,6 +123,7 @@
   --tt-bg:            var(--background);
   --tt-panel:         var(--card);
   --tt-panel-2:       var(--muted);
+  --tt-surface:       var(--accent); /* soft hover/selected surface (rows, nav) */
   --tt-border:        var(--border);
   --tt-border-strong: var(--border-strong);
   --tt-text:          var(--foreground);

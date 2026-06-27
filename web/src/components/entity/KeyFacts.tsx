@@ -11,10 +11,10 @@ export type KeyFact = {
 };
 
 const VALUE_TONE_CLASS: Record<Tone, string> = {
-  positive: "text-[color:var(--color-positive)]",
-  warn:     "text-[color:var(--color-warn)]",
-  negative: "text-destructive",
-  neutral:  "text-card-foreground",
+  positive: "text-[var(--tt-positive)]",
+  warn:     "text-[var(--tt-warn)]",
+  negative: "text-[var(--tt-negative)]",
+  neutral:  "text-[var(--tt-text)]",
 };
 
 export function KeyFacts({ facts }: { facts: KeyFact[] }) {
@@ -30,7 +30,7 @@ export function KeyFacts({ facts }: { facts: KeyFact[] }) {
           className={cn(
             "flex min-w-0 flex-col gap-1.5",
             "sm:min-w-[8rem] sm:px-6 sm:first:pl-0",
-            i > 0 && "sm:border-l sm:border-border"
+            i > 0 && "sm:border-l sm:border-[var(--tt-border)]"
           )}
         >
           <span className="tt-label">{fact.label}</span>
@@ -40,7 +40,7 @@ export function KeyFacts({ facts }: { facts: KeyFact[] }) {
             <span
               className={cn(
                 "tnum font-mono text-lg font-medium leading-tight break-words sm:text-xl sm:leading-none",
-                fact.tone ? VALUE_TONE_CLASS[fact.tone] : "text-card-foreground"
+                fact.tone ? VALUE_TONE_CLASS[fact.tone] : "text-[var(--tt-text)]"
               )}
             >
               {fact.value}

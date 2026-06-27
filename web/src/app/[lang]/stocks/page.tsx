@@ -5,6 +5,7 @@ import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import SubNav from "@/components/shell/SubNav";
+import PageHeader from "@/components/common/PageHeader";
 import { StocksTable, type StockRow } from "./StocksTable";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 日级 ISR → 列表页 CDN 秒开,
@@ -81,19 +82,14 @@ export default async function StocksIndexPage({
       <SubNav lang={lang} section="stocks" active="held" />
 
       {/* Editorial section heading */}
-      <div className="mb-8 border-b border-[var(--tt-border)] pb-6">
-        <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
-          {isZh ? "个股" : "Stocks"}
-          <span className="mx-2 text-[var(--tt-faint)]">·</span>
-          <span className="text-[var(--tt-muted)]">
-            {isZh ? "最多机构持有" : "Most held"}
-          </span>
-        </h1>
-        <p className="mt-2 text-sm text-[var(--tt-muted)]">
-          {isZh
+      <div className="mb-8">
+        <PageHeader
+          eyebrow={isZh ? "SEC 13F · 最多机构持有" : "SEC 13F · most held"}
+          title={isZh ? "个股" : "Stocks"}
+          intro={isZh
             ? "按持有机构数排列，数据来源：SEC 13F 持仓披露。"
             : "Ranked by number of superinvestors holding the security. Source: SEC 13F filings."}
-        </p>
+        />
       </div>
 
       {/* Responsive table + 分页(client) */}
