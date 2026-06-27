@@ -270,4 +270,26 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   }
 }
 
+// ── audit #2: cyclical normalization (declining → anchor to latest run-rate) ────
+{
+  // 净利 recent-first [500,1200,1700,1500,600]; avg=1100, 最新 500 < avg → 应压到 500。
+  // 无 D&A/capex → canCorrect=false → owner earnings = 正常化净利本身。
+  const cyc: ValuationFloorInput = {
+    ticker: "CYC",
+    years: [
+      year(2025, { revenue: 5_000, operating_margin: 0.10, operating_income: 500, net_income: 500, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2024, { revenue: 8_000, operating_margin: 0.20, operating_income: 1_600, net_income: 1_200, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2023, { revenue: 9_000, operating_margin: 0.25, operating_income: 2_250, net_income: 1_700, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2022, { revenue: 8_500, operating_margin: 0.23, operating_income: 1_955, net_income: 1_500, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+      year(2021, { revenue: 6_000, operating_margin: 0.12, operating_income: 720, net_income: 600, effective_tax_rate: 0.21, shareholders_equity: 4_000, cash: 500, total_debt: 0, shares_diluted: 1_000 }),
+    ],
+  };
+  const f = floorOf(computeValuationFloor(cyc));
+  assert.strictEqual(f.buffett_epv.normalized_earnings, 500, "declining cyclical → owner earnings anchored to latest (500), not the 1100 average");
+  // 对照:把最新年净利换成最高(2200>avg)→ 用均值 1440,不压(无回归)。
+  const grow: ValuationFloorInput = { ...cyc, years: [{ ...cyc.years[0], net_income: 2_200 }, ...cyc.years.slice(1)] };
+  const fg = floorOf(computeValuationFloor(grow));
+  assert.ok(Math.abs((fg.buffett_epv.normalized_earnings as number) - 1_440) < 1e-6, "latest ≥ avg → uses average (no cap, no regression)");
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");
