@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb, withRetry } from "@/lib/managers/db";
 import type { VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
+import { isImplausibleBand } from "./deriveValuationVerdict";
 
 export type SnapshotVerdict = {
   ticker: string;
@@ -170,22 +171,29 @@ export const readValuationScreen = cache(
       return code === "42P01" || code === "PGRST205";
     };
     try {
-      // ① strike-zone 全表计数(顶部句)
+      // ① strike-zone 全表计数(顶部句)。只数两法夹逼(coverage=full)确认的 —— 与下方
+      // 视图口径一致:single_lamp 单法不足以认定"落在 strike zone"(守保守纪律,见下)。
       const { count, error: cErr } = await withRetry(() =>
-        getDb().from("valuation_snapshot").select("ticker", { count: "exact", head: true }).eq("in_strike_zone", true),
+        getDb()
+          .from("valuation_snapshot")
+          .select("ticker", { count: "exact", head: true })
+          .eq("in_strike_zone", true)
+          .eq("coverage", "full"),
       );
       if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
       const strikeTotal = cErr ? 0 : count ?? 0;
 
-      // ② 主查询(thunk 内重建 builder)
+      // ② 主查询(thunk 内重建 builder)。strike_zone/below 视图加 coverage=full:只有
+      // Greenwald EPV 与 Owner-Earnings DCF 两法独立都认为便宜,才标"进入区/有安全边际"
+      // (用引擎自身的两法夹逼作信心闸,非魔法阈值;single_lamp 单法仍在"全部可估值"可见)。
       const runMain = () => {
         let q = getDb()
           .from("valuation_snapshot")
           .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,computed_at")
           .order("margin_pct", { ascending: false, nullsFirst: false })
           .limit(limit);
-        if (view === "strike_zone") q = q.eq("in_strike_zone", true);
-        else if (view === "below") q = q.eq("verdict_bucket", "below");
+        if (view === "strike_zone") q = q.eq("in_strike_zone", true).eq("coverage", "full");
+        else if (view === "below") q = q.eq("verdict_bucket", "below").eq("coverage", "full");
         return q;
       };
       const { data, error } = await withRetry(runMain);
@@ -226,7 +234,9 @@ export const readValuationScreen = cache(
           computedAt: r.computed_at,
           holderCount: h?.holderCount ?? 0,
         };
-      });
+      })
+        // 读层防御:坏数据行(价值带与现价严重脱节)不进面 —— 即便快照尚有旧脏行(重跑 ingest 前)。
+        .filter((r) => !isImplausibleBand(r));
       const computedAt = rows.reduce<string | null>(
         (mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx),
         null,

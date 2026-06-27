@@ -76,5 +76,16 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
 {
   assert(deriveValuationVerdict({ floor: floorStub() }) === null, "no strike zone → null");
 }
+// 7) 坏数据:价值带远高于现价(>80% 假安全边际)→ null(健壮性闸)
+{
+  // single_lamp 路径:base=200 → rangeLo=rangeHi=200;price=10 → margin=(200-10)/200=0.95 > 0.8
+  const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { ceilings: false, price: 10 }) });
+  assert(v === null, "implausible band (margin>0.8) → null");
+}
+// 8) 边界:margin 恰在阈下(single_lamp base=200, price=50 → margin=0.75)→ 仍出判定
+{
+  const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { ceilings: false, price: 50 }) });
+  assert(v && v.bucket === "below" && Math.abs(v.marginPct! - 0.75) < 1e-9, "margin 0.75 ≤ cap → kept");
+}
 
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");
