@@ -40,9 +40,20 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
       align: "right",
       width: "w-24",
       mobileLabel: isZh ? "安全边际" : "Margin",
+      // reliable=false(周期峰值/高杠杆/模型不稳/per-share疑错)挂诚实标记:数值弱化 + ⚠ +
+      // title 说明。这些不进 strike-zone/below,但在"全部可估值"仍可见,必须标出不确定性。
       cell: (r) =>
         r.marginPct != null && r.marginPct > 0 ? (
-          <span className="font-mono tabular-nums text-[var(--tt-positive)]">−{Math.round(r.marginPct * 100)}%</span>
+          r.reliable ? (
+            <span className="font-mono tabular-nums text-[var(--tt-positive)]">−{Math.round(r.marginPct * 100)}%</span>
+          ) : (
+            <span
+              className="font-mono tabular-nums text-[var(--tt-faint)]"
+              title={isZh ? "估值带红旗(盈利下滑/高杠杆/模型不稳/每股口径疑错),边际不可信，未计入便宜信号。" : "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal."}
+            >
+              −{Math.round(r.marginPct * 100)}%<span aria-hidden className="ml-0.5 text-[var(--tt-warning,#b58900)]">⚠</span>
+            </span>
+          )
         ) : (
           <span className="text-[var(--tt-faint)]">—</span>
         ),

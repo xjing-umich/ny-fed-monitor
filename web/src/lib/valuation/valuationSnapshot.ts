@@ -27,6 +27,7 @@ type Row = {
   price_date: string | null;
   margin_pct: number | null;
   coverage: string;
+  reliable: boolean;
   computed_at: string;
 };
 
@@ -148,6 +149,7 @@ export type ScreenerRow = {
   priceDate: string;
   marginPct: number | null;
   coverage: VerdictCoverage;
+  reliable: boolean;
   computedAt: string;
   holderCount: number;
 };
@@ -171,14 +173,16 @@ export const readValuationScreen = cache(
       return code === "42P01" || code === "PGRST205";
     };
     try {
-      // ① strike-zone 全表计数(顶部句)。只数两法夹逼(coverage=full)确认的 —— 与下方
-      // 视图口径一致:single_lamp 单法不足以认定"落在 strike zone"(守保守纪律,见下)。
+      // ① strike-zone 全表计数(顶部句)。只数两法夹逼(coverage=full)且可靠(reliable)的 ——
+      // 与下方视图口径一致:single_lamp 单法、或带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)
+      // 不足以认定"落在 strike zone"(守保守纪律,见下)。
       const { count, error: cErr } = await withRetry(() =>
         getDb()
           .from("valuation_snapshot")
           .select("ticker", { count: "exact", head: true })
           .eq("in_strike_zone", true)
-          .eq("coverage", "full"),
+          .eq("coverage", "full")
+          .eq("reliable", true),
       );
       if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
       const strikeTotal = cErr ? 0 : count ?? 0;
@@ -189,11 +193,12 @@ export const readValuationScreen = cache(
       const runMain = () => {
         let q = getDb()
           .from("valuation_snapshot")
-          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,computed_at")
+          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at")
           .order("margin_pct", { ascending: false, nullsFirst: false })
           .limit(limit);
-        if (view === "strike_zone") q = q.eq("in_strike_zone", true).eq("coverage", "full");
-        else if (view === "below") q = q.eq("verdict_bucket", "below").eq("coverage", "full");
+        // "便宜"视图(strike_zone/below)额外要求 reliable=true:位置可算但带红旗的不据此标便宜。
+        if (view === "strike_zone") q = q.eq("in_strike_zone", true).eq("coverage", "full").eq("reliable", true);
+        else if (view === "below") q = q.eq("verdict_bucket", "below").eq("coverage", "full").eq("reliable", true);
         return q;
       };
       const { data, error } = await withRetry(runMain);
@@ -231,6 +236,7 @@ export const readValuationScreen = cache(
           priceDate: r.price_date ?? "",
           marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
           coverage: r.coverage as VerdictCoverage,
+          reliable: r.reliable ?? true,
           computedAt: r.computed_at,
           holderCount: h?.holderCount ?? 0,
         };

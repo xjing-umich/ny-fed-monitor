@@ -30,10 +30,37 @@ export type ValuationVerdict = {
   marginPct: number | null;
   /** full=两法夹逼 / single_lamp=仅单法（金融单灯或缺一法）。 */
   coverage: VerdictCoverage;
+  /**
+   * 估值可靠性：引擎自身诊断无红旗 → true。false 表示"位置可算、但便宜信号不可信"
+   * （盈利下滑致滚动均值高估的周期峰值幻觉 / 高杠杆股权值失真 / DCF 模型不稳 / per-share 疑似算错）。
+   * 数据本身不算坏（不像 isImplausibleBand 那样整条抑制），故仍展示，只是 strike-zone/below 不据此标"便宜"。
+   */
+  reliable: boolean;
 };
 
 function finitePositive(n: number | undefined): n is number {
   return n != null && Number.isFinite(n) && n > 0;
+}
+
+/** OE 收益率上限：>33%(≈P/OE<3x) 几乎必是 per-share/ADR 口径错（如 ADS:普通股比例未对齐）。 */
+export const EXTREME_OE_YIELD = 0.33;
+
+/**
+ * 估值可靠性：把引擎**已经算出**的红旗收口成一个布尔。任一触发 → 不可靠：
+ *  - high_leverage_warning：净负债/权益>1，8–10% 单率股权桥失真。
+ *  - declined：盈利下滑 → 滚动均值高估其盈利力（周期峰值幻觉，#2 深修前的护栏）。
+ *  - quick_check_flag：DCF 与简化资本化偏离>50% → 模型对增长/贴现高度敏感、不稳。
+ *  - 极端 OE 收益率：>33% ≈ 每股算错（ADR 比例/股数）。
+ * 守 [[valuation-philosophy-constraint]]：不可靠的便宜信号宁可不标，也不误导。
+ */
+export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcfAssessment }): boolean {
+  const { floor, oeDcf } = input;
+  if (floor?.high_leverage_warning) return false;
+  if (oeDcf?.declined) return false;
+  if (oeDcf?.diagnostics?.quick_check_flag) return false;
+  const oeY = oeDcf?.diagnostics?.oe_yield;
+  if (oeY != null && oeY > EXTREME_OE_YIELD) return false;
+  return true;
 }
 
 /**
@@ -108,5 +135,8 @@ export function deriveValuationVerdict(input: {
   // 数据健壮性闸:价值带与现价严重脱节(坏 shares / 拆股不一致)→ 无可信判定,不污染最敏感的面。
   if (isImplausibleBand({ rangeLo, rangeHi, price, marginPct })) return null;
 
-  return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage };
+  // 可靠性:位置可算但便宜信号是否可信(周期峰值/高杠杆/模型不稳/per-share疑错)。floor 此处已窄化为 ValuationFloor。
+  const reliable = assessReliability({ floor, oeDcf });
+
+  return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, reliable };
 }
