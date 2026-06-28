@@ -1,5 +1,4 @@
-import { BarChart3 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ReactNode } from "react";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
 import { deriveValuationVerdict } from "@/lib/valuation";
 import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
@@ -341,6 +340,28 @@ function MethodDetails({
   );
 }
 
+// Editorial panel shell — replaces the shadcn Card (which leaned on drifting
+// bg-card / ring-foreground / font-heading tokens). Green-mono eyebrow → Fraunces
+// title, hairline rule, matching the home-panel rhythm (StrikeLeadersCard et al.).
+function Panel({ children }: { children: ReactNode }) {
+  return (
+    <section className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-5 sm:p-6">
+      <header className="border-b border-[var(--tt-border-strong)] pb-3">
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          Valuation · two methods
+        </p>
+        <h2 className="mt-1.5 font-display text-lg font-medium leading-tight tracking-tight text-[var(--tt-text)]">
+          Earnings Power &amp; Asset Floor
+        </h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
+          Two intrinsic-value methods and a tangible asset floor — deterministic, not price forecasts or recommendations.
+        </p>
+      </header>
+      <div className="mt-4 space-y-3">{children}</div>
+    </section>
+  );
+}
+
 export function EarningsPowerFloorCard({
   floor,
   strikeZone,
@@ -359,17 +380,9 @@ export function EarningsPowerFloorCard({
   if (!floor) return null;
   if (floor.kind === "per_share_unavailable") {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="size-4 text-[var(--tt-accent)]" />
-            Earnings Power &amp; Asset Floor
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-[var(--tt-muted)]">{floor.reason}</p>
-        </CardContent>
-      </Card>
+      <Panel>
+        <p className="text-sm text-[var(--tt-muted)]">{floor.reason}</p>
+      </Panel>
     );
   }
 
@@ -377,17 +390,7 @@ export function EarningsPowerFloorCard({
   const hasSpine = !!strikeZone?.epv && !strikeZone.currencyMismatch;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="size-4 text-[var(--tt-accent)]" />
-          Earnings Power &amp; Asset Floor
-        </CardTitle>
-        <CardDescription>
-          Two intrinsic-value methods and a tangible asset floor — deterministic, not price forecasts or recommendations.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <Panel>
         {floor.high_leverage_warning ? (
           <p className="text-xs text-[var(--tt-warn)]">High leverage — ranges are a degraded approximation (see method).</p>
         ) : null}
@@ -407,7 +410,6 @@ export function EarningsPowerFloorCard({
         )}
 
         <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} />
-      </CardContent>
-    </Card>
+    </Panel>
   );
 }
