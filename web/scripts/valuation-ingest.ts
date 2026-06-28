@@ -30,7 +30,7 @@ import {
   deriveValuationVerdict,
 } from "@/lib/valuation";
 import { getLatestPrice } from "@/lib/managers/priceRead";
-import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
+import { getLatestDgs10, persistDgs10 } from "@/lib/managers/treasuryRead";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 function loadEnv(): Record<string, string> {
@@ -73,7 +73,11 @@ async function main() {
 
   const universe = await collectUniverse();
   console.log(`Universe: ${universe.length} tickers(持仓并集)`);
-  const dgs10 = await getLatestDgs10(); // 全局共享, 取一次
+  // 先耐心抓 DGS10 写入 market_rates(FRED 可达时刷新/播种), 再读 —— getLatestDgs10 在 live
+  // 6s 超时时回退到该 last-good, 使全表估值锚定真 10Y 而非未锚定回退带。
+  await persistDgs10();
+  const dgs10 = await getLatestDgs10(); // 全局共享, 取一次(fresh 或 DB last-good)
+  if (!dgs10) console.warn("DGS10 仍不可用(live 失败且 market_rates 无 last-good)→ 本轮贴现带未锚定");
   const computedAt = new Date().toISOString();
 
   let valued = 0, skipped = 0;
