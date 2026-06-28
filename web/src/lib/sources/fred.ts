@@ -32,11 +32,12 @@ function parseFredCsv(id: string, csv: string): FredSeries {
 // 该 section unavailable),绝不阻塞构建。
 const FRED_TIMEOUT_MS = 8000;
 
-export async function fetchFredSeries(id: string): Promise<FredSeries> {
+// timeoutMs 默认 8s(渲染/构建安全上限);批量 ingest 的耐心 writer 可传更长值(graph-CSV 慢)。
+export async function fetchFredSeries(id: string, timeoutMs: number = FRED_TIMEOUT_MS): Promise<FredSeries> {
   const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${encodeURIComponent(id)}`;
   const csv = await fetch(url, {
     next: { revalidate: 3600, tags: [`fred-${id}`] },
-    signal: AbortSignal.timeout(FRED_TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
   }).then((res) => {
     if (!res.ok) throw new Error(`${url} ${res.status}`);
     return res.text();
