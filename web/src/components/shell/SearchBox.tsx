@@ -138,8 +138,8 @@ export default function SearchBox({
               key={item.href}
               onMouseDown={() => handleSelect(item.href)}
               className={[
-                "w-full text-left text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors truncate",
-                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-xs",
+                "w-full text-left font-display text-[var(--tt-text)] hover:bg-[var(--tt-surface)] hover:text-[var(--tt-accent)] transition-colors truncate",
+                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-[13px]",
               ].join(" ")}
             >
               {item.label}

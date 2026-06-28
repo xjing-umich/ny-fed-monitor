@@ -42,7 +42,7 @@ export default function SubNav({ lang, section, active }: SubNavProps) {
             href={item.href ? `/${lang}${item.href}` : "#"}
             className={[
               "relative flex items-center px-4 py-2.5 text-[11px] uppercase tracking-[0.1em] transition-colors no-underline shrink-0",
-              "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px]",
+              "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px",
               isActive
                 ? "text-[var(--tt-text)] after:bg-[var(--tt-accent)]"
                 : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] after:bg-transparent hover:after:bg-[var(--tt-border)]",
