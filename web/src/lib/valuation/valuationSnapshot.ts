@@ -14,6 +14,7 @@ export type SnapshotVerdict = {
   priceDate: string;
   marginPct: number | null;
   coverage: VerdictCoverage;
+  reliable: boolean;
   computedAt: string;
 };
 
@@ -55,7 +56,7 @@ export const readValuationVerdicts = cache(
         return out;
       }
       for (const r of (data ?? []) as Row[]) {
-        out.set(r.ticker.toUpperCase(), {
+        const v: SnapshotVerdict = {
           ticker: r.ticker.toUpperCase(),
           bucket: r.verdict_bucket as VerdictBucket,
           inStrikeZone: r.in_strike_zone,
@@ -65,8 +66,14 @@ export const readValuationVerdicts = cache(
           priceDate: r.price_date ?? "",
           marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
           coverage: r.coverage as VerdictCoverage,
+          reliable: r.reliable ?? true,
           computedAt: r.computed_at,
-        });
+        };
+        // 读层防御:坏数据行(价值带与现价严重脱节 / >80% 假安全边际)不发徽章 → 该行降级 "—"
+        // (覆盖诚实),与 screener 各视图统一过 isImplausibleBand 同口径(即便快照尚有旧脏行)。
+        // single_lamp / reliable=false 非脏数据,保留 —— 徽章分别以 * 与 ⚠ 诚实标注。
+        if (isImplausibleBand(v)) continue;
+        out.set(v.ticker, v);
       }
       return out;
     } catch (err) {
@@ -97,37 +104,59 @@ export const readStrikeZoneLeaders = cache(
       return code === "42P01" || code === "PGRST205";
     };
     try {
+      // 计数与 leaders 都只认两法夹逼(coverage=full)且可靠(reliable)的 —— 与 /stocks/screener
+      // strike_zone 视图同一信心闸:single_lamp 单法、或带红旗(周期峰值/高杠杆/模型不稳/per-share
+      // 疑错)不据此标"落在 strike zone"。(head 计数无法过 isImplausibleBand,可能仍含极少脏行;
+      // 重跑 valuation:ingest 清表后彻底干净 —— 与 screener strikeTotal 相同的登记遗留。)
       const { count, error: cErr } = await withRetry(() =>
         getDb()
           .from("valuation_snapshot")
           .select("ticker", { count: "exact", head: true })
-          .eq("in_strike_zone", true),
+          .eq("in_strike_zone", true)
+          .eq("coverage", "full")
+          .eq("reliable", true),
       );
       if (cErr) {
         if (!isMissingTable(cErr))
           console.error(`readStrikeZoneLeaders count 失败: ${(cErr as Error).message}`);
         return empty;
       }
+      // 多取一些再过滤:坏数据行(假高边际)按 margin DESC 恰会浮到榜首,故 limit 行可能全是脏行;
+      // 取 limit 的数倍、读层过 isImplausibleBand 后再截断,保证首页榜呈现干净的 Top N。
+      const overscan = Math.max(limit * 5, 20);
       const { data, error } = await withRetry(() =>
         getDb()
           .from("valuation_snapshot")
-          .select("ticker,range_lo,range_hi,margin_pct,computed_at")
+          .select("ticker,range_lo,range_hi,price,margin_pct,computed_at")
           .eq("in_strike_zone", true)
+          .eq("coverage", "full")
+          .eq("reliable", true)
           .order("margin_pct", { ascending: false })
-          .limit(limit),
+          .limit(overscan),
       );
       if (error) {
         if (!isMissingTable(error))
           console.error(`readStrikeZoneLeaders 失败: ${(error as Error).message}`);
         return empty;
       }
-      const leaders: StrikeLeader[] = (data ?? []).map((r: Record<string, unknown>) => ({
-        ticker: String(r.ticker).toUpperCase(),
-        rangeLo: Number(r.range_lo),
-        rangeHi: Number(r.range_hi),
-        marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
-        computedAt: String(r.computed_at),
-      }));
+      const leaders: StrikeLeader[] = (data ?? [])
+        .filter(
+          (r: Record<string, unknown>) =>
+            !isImplausibleBand({
+              rangeLo: Number(r.range_lo),
+              rangeHi: Number(r.range_hi),
+              price: Number(r.price),
+              marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
+            }),
+        )
+        .slice(0, limit)
+        .map((r: Record<string, unknown>) => ({
+          ticker: String(r.ticker).toUpperCase(),
+          rangeLo: Number(r.range_lo),
+          rangeHi: Number(r.range_hi),
+          marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
+          computedAt: String(r.computed_at),
+        }));
       return { total: count ?? leaders.length, leaders };
     } catch (err) {
       console.error(`readStrikeZoneLeaders 异常: ${err instanceof Error ? err.message : String(err)}`);
