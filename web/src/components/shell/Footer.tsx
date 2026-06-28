@@ -9,7 +9,7 @@ import NewsletterForm from "./NewsletterForm";
 import ScrollToTop from "./ScrollToTop";
 
 const colHeading =
-  "text-[11px] font-semibold uppercase tracking-wider text-[var(--tt-faint)]";
+  "font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-faint)]";
 const colLink =
   "text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors no-underline";
 
@@ -19,8 +19,8 @@ export default function Footer({ lang }: { lang: Lang }) {
 
   return (
     <footer className="border-t border-[var(--tt-border)] bg-[var(--tt-panel-2)]">
-      {/* Columns */}
-      <div className="max-w-[1180px] mx-auto px-6 py-10">
+      {/* Columns — width + gutter matched to the main content column (AppShell) */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Explore */}
           <nav className="flex flex-col gap-3">
@@ -68,7 +68,7 @@ export default function Footer({ lang }: { lang: Lang }) {
 
       {/* Bottom bar */}
       <div className="border-t border-[var(--tt-border)]">
-        <div className="max-w-[1180px] mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <span className="flex items-center gap-1.5">
             <LogoMark className="h-[14px] w-[14px] text-[var(--tt-faint)] shrink-0" />
             <span className="font-display text-sm font-medium text-[var(--tt-faint)]">

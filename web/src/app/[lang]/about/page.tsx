@@ -29,5 +29,5 @@ export default async function AboutPage({
 }) {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  return <ProseDoc doc={getAboutDoc(lang)} />;
+  return <ProseDoc doc={getAboutDoc(lang)} eyebrow={lang === "zh" ? "关于 · 复利" : "About · Compounder"} />;
 }

@@ -115,10 +115,10 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={[
-                  "px-3 py-2.5 rounded-md text-sm font-medium transition-colors no-underline",
+                  "border-l-2 px-3 py-2 text-sm font-medium transition-colors no-underline",
                   active
-                    ? "text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_10%,transparent)]"
-                    : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)]",
+                    ? "border-[var(--tt-accent)] text-[var(--tt-text)]"
+                    : "border-transparent text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-border)]",
                 ].join(" ")}
               >
                 {lang === "zh" ? entry.zh : entry.en}

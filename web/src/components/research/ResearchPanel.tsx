@@ -385,7 +385,7 @@ function RiskSignals({ signals }: { signals: RiskSignal[] | undefined }) {
             <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--tt-faint)]">{category}</h3>
             <div className="grid gap-3">
               {rows.map((signal) => (
-                <article key={signal.id} className="rounded-lg border border-[var(--tt-border)] bg-background/50 p-4">
+                <article key={signal.id} className="rounded-lg border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <h4 className="font-mono text-sm font-medium text-[var(--tt-text)]">{signal.id}</h4>
                     <Badge variant="outline" className={cn("border", severityClass(signal.severity))}>
@@ -454,7 +454,7 @@ function SpecialGaps({ data }: { data: ResearchApiResponse }) {
 
 function Notice({ text }: { text: string }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-[var(--tt-border)] bg-muted/50 p-3 text-sm text-[var(--tt-muted)]">
+    <div className="flex items-start gap-2 rounded-lg border border-[var(--tt-border)] bg-[var(--tt-panel-2)] p-3 text-sm text-[var(--tt-muted)]">
       <AlertCircle className="mt-0.5 size-4 shrink-0 text-[var(--tt-warn)]" />
       <span>{text}</span>
     </div>
@@ -499,7 +499,7 @@ function LoadingPanel({ ticker }: { ticker: string }) {
   return (
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-8 sm:px-6 lg:px-8">
       <div>
-        <p className="font-mono text-xs uppercase tracking-[0.12em] text-[var(--tt-faint)]">Research</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">Research</p>
         <h1 className="mt-2 font-display text-3xl font-medium tracking-tight text-[var(--tt-text)]">{ticker}</h1>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
@@ -569,7 +569,7 @@ export function ResearchPanel({ ticker }: Props) {
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <header className="space-y-4 border-b border-[var(--tt-border)] pb-6">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.12em] text-[var(--tt-faint)]">Evidence-Bound Research Note</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">Evidence-Bound Research Note</p>
           <h1 className="mt-2 font-display text-3xl font-medium tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {data.company_name ?? data.ticker}
           </h1>
@@ -610,7 +610,7 @@ export function ResearchPanel({ ticker }: Props) {
         </CardHeader>
         <CardContent className="space-y-5">
           <StringList values={data.ui_ready.limitations} empty="No limitations reported." />
-          <p className="rounded-lg border border-[var(--tt-border)] bg-muted/50 p-3 text-sm text-[var(--tt-muted)]">
+          <p className="rounded-lg border border-[var(--tt-border)] bg-[var(--tt-panel-2)] p-3 text-sm text-[var(--tt-muted)]">
             {SAFE_DISCLAIMER}
           </p>
         </CardContent>

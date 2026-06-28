@@ -13,5 +13,6 @@ interface LegalArticleProps {
 export default function LegalArticle({ slug, lang }: LegalArticleProps) {
   const doc = getLegalDoc(slug, lang);
   const updatedLabel = lang === "zh" ? "最后更新" : "Last updated";
-  return <ProseDoc doc={doc} updated={LAST_UPDATED} updatedLabel={updatedLabel} />;
+  const eyebrow = lang === "zh" ? "法律条款" : "Legal";
+  return <ProseDoc doc={doc} eyebrow={eyebrow} updated={LAST_UPDATED} updatedLabel={updatedLabel} />;
 }

@@ -31,7 +31,7 @@ export function Paginated<T>({
             onClick={() =>
               setCount((c) => Math.min(c + pageSize, items.length))
             }
-            className="border border-[var(--tt-border)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] transition-colors hover:border-[var(--tt-accent)]"
+            className="rounded-md border border-[var(--tt-border)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] transition-colors hover:border-[var(--tt-accent)]"
           >
             {moreLabel}
             <span className="ml-1.5 text-[var(--tt-faint)]">+{remaining}</span>
