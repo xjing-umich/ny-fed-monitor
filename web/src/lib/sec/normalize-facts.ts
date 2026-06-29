@@ -509,11 +509,22 @@ export function normalizeCompanyFacts(
 
   // 5. Finalize, split, sort, limit, then compute YoY within each series.
   const finalized = drafts.map((d) => finalizeRow(ticker, cik, d, filings));
-  const annual = finalized
+  // 数据准确性护栏: 丢弃 period_end 落在未来 90 天之后的行。XBRL 偶有公司自报错标年份
+  // (如 LEGH 把 2024-Q1 标成 2033-03-31), 这种行会污染"最新期"物化(latest 按 period_end
+  // 倒序选最新 → 2033>2026 被当最新, 盖住真最新季)。90 天容差留给正常的提前申报。
+  const futureCutoff = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
+  const finalizedSane = finalized.filter((r) => {
+    if (r.period_end > futureCutoff) {
+      console.warn(`[normalize-facts] 丢弃未来日期行 ${ticker} ${r.fiscal_period} FY${r.fiscal_year} period_end=${r.period_end}`);
+      return false;
+    }
+    return true;
+  });
+  const annual = finalizedSane
     .filter((r) => r.fiscal_period === "FY")
     .sort((a, b) => b.period_end.localeCompare(a.period_end))
     .slice(0, 6);
-  const quarterly = finalized
+  const quarterly = finalizedSane
     .filter((r) => r.fiscal_period !== "FY")
     .sort((a, b) => b.period_end.localeCompare(a.period_end))
     .slice(0, 12);
