@@ -29,7 +29,7 @@ import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
-import { QuarterMovesPill } from "@/components/entity/QuarterMovesPill";
+import OwnershipConsensusPanel from "@/components/entity/OwnershipConsensusPanel";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 
@@ -436,7 +436,6 @@ export default async function StockTickerPage({
         title={issuer}
         subtitle={subtitle}
         disclaimer={disclaimer}
-        notice={<QuarterMovesPill moves={moves} lang={lang} />}
         keyFacts={[]}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         related={related}
@@ -459,6 +458,18 @@ export default async function StockTickerPage({
               />
             </section>
           )}
+
+          {/* 支柱② 谁在买 — 共识信号块(与估值结论并置) */}
+          <OwnershipConsensusPanel
+            issuer={issuer}
+            ticker={ticker}
+            n={n}
+            totalValue={totalValue}
+            moves={moves}
+            topHolder={{ person: topHolder.person, slug: topHolder.slug }}
+            period={latestPeriod}
+            lang={lang}
+          />
 
           {/* 支柱② 谁在买 — Top 10 + 折叠溢出 */}
           <HoldersTable holders={holders} exited={exitedHolders} lang={lang} />
