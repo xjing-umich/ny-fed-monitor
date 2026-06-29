@@ -14,6 +14,7 @@ import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer } from "@/lib/format";
+import { ogFor, datasetLd } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -69,11 +70,17 @@ export async function generateMetadata({
     canonical: `/${l}/stocks/${ticker}`,
     languages: { en: `/en/stocks/${ticker}`, "zh-CN": `/zh/stocks/${ticker}`, "x-default": `/en/stocks/${ticker}` },
   };
-  return lang === "zh"
-    ? { title: `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
-        description: `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。`, alternates }
-    : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
-        description: `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.`, alternates };
+  const meta =
+    lang === "zh"
+      ? { title: `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
+          description: `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
+      : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
+          description: `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
+  return {
+    ...meta,
+    alternates,
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: `/${l}/stocks/${ticker}` }),
+  };
 }
 
 // ── Holders table ─────────────────────────────────────────────────────────────
@@ -426,11 +433,27 @@ export default async function StockTickerPage({
     url: `https://thecompounder.fyi/${lang}/stocks/${ticker}`,
   };
 
+  // Dataset structured data — the stock's 13F holders table as a factual,
+  // SEC-sourced dataset (GEO-friendly; mirrors the investor page's Dataset).
+  const dataset = datasetLd({
+    lang,
+    name:
+      lang === "zh"
+        ? `${issuer}（${ticker}）的机构 13F 持有人`
+        : `${issuer} (${ticker}) institutional 13F holders`,
+    description:
+      lang === "zh"
+        ? `持有 ${issuer}（${ticker}）的超级投资者及其持股数量、市值与组合权重，来自 SEC 13F 季度申报。`
+        : `Superinvestors holding ${issuer} (${ticker}) with share counts, market values, and portfolio weights, from quarterly SEC 13F filings.`,
+    path: `/${lang}/stocks/${ticker}`,
+  });
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }} />
       <EntityPage
         lang={lang}
         title={issuer}
