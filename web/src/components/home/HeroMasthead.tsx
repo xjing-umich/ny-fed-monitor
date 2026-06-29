@@ -77,7 +77,7 @@ export default function HeroMasthead({
   const links: { label: string; href: string }[] = [
     { label: c.investors, href: `/${lang}/investors` },
     { label: c.stocks, href: `/${lang}/stocks` },
-    { label: c.valuation, href: "#valuation" },
+    { label: c.valuation, href: `/${lang}/stocks/screener` },
   ];
   return (
     <section className="grid grid-cols-1 gap-10 md:grid-cols-[1.05fr_0.95fr] md:items-start">

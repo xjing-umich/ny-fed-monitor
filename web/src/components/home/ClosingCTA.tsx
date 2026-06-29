@@ -25,7 +25,7 @@ export default function ClosingCTA({ lang }: { lang: Lang }): React.ReactElement
   const links = [
     { label: c.investors, href: `/${lang}/investors` },
     { label: c.stocks, href: `/${lang}/stocks` },
-    { label: c.valuation, href: "#valuation" },
+    { label: c.valuation, href: `/${lang}/stocks/screener` },
   ];
   return (
     <section className="mt-24 border-t border-[var(--tt-border)] pt-16 text-center">
