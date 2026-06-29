@@ -1,7 +1,6 @@
-// 跑法: cd web && npx tsx --tsconfig scripts/tsconfig.json src/lib/managers/consensusRead.check.ts
-// (consensusRead.ts 含 import "server-only", 需该 tsconfig 把 server-only 桩空; 见 tsx-ingest-server-only-stub)
+// 跑法(可裸跑, 无需 server-only 桩): cd web && npx tsx src/lib/managers/holderCounts.check.ts
 import { strict as assert } from "node:assert";
-import { mapHolderCountRows } from "./consensusRead";
+import { mapHolderCountRows } from "./holderCounts";
 
 // 1) 基本映射 + 大写归一
 const m = mapHolderCountRows([
@@ -22,4 +21,4 @@ const dup = mapHolderCountRows([
 ]);
 assert.equal(dup.get("AAPL"), 12, "dup ticker tolerated");
 
-console.log("consensusRead.check.ts: all assertions passed");
+console.log("holderCounts.check.ts: all assertions passed");
