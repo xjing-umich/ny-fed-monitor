@@ -12,6 +12,7 @@ import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
+import { ReportCallout } from "@/components/aggregate/ReportCallout";
 import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
 import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
 
@@ -100,6 +101,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
         </div>
         <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang)} />
         <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "持有" : "holders"} />
+        <ReportCallout lang={lang} period={globalLatest} />
       </div>
     </>
   );

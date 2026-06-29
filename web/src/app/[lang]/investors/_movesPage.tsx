@@ -11,6 +11,7 @@ import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
+import { ReportCallout } from "@/components/aggregate/ReportCallout";
 import { movesBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
 import { getManagerIndex } from "@/lib/managers/source";
 import { globalLatestPeriod } from "@/lib/freshness/derive";
@@ -92,6 +93,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
         </div>
         <AggregateBlurb text={movesBlurb(blurbRows, side, lang)} />
         <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "位投资者" : "managers"} />
+        <ReportCallout lang={lang} period={globalLatest} />
       </div>
     </>
   );

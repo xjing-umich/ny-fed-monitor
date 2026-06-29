@@ -97,6 +97,14 @@ export function globalLatestPeriod(periods: Array<string | null | undefined>): s
   return max;
 }
 
+/** 13F 报告期(季末日)→ 季度标签。"2026-03-31" → "Q1 2026"。非法/空 → null;无法识别月份则回退年份。 */
+export function quarterLabel(period: string | null | undefined): string | null {
+  if (!period) return null;
+  const [y, m] = period.split("-");
+  const q: Record<string, string> = { "03": "Q1", "06": "Q2", "09": "Q3", "12": "Q4" };
+  return q[m] ? `${q[m]} ${y}` : (y ?? null);
+}
+
 /** period 落后 globalLatest 的季数(非负)。任一非法 → null。 */
 export function quarterLag(period: string | null, globalLatest: string | null): number | null {
   const p = parseUTC(period);

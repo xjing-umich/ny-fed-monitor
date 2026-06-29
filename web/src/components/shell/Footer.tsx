@@ -34,6 +34,9 @@ export default function Footer({ lang }: { lang: Lang }) {
                 {lang === "zh" ? entry.zh : entry.en}
               </Link>
             ))}
+            <Link href={`/${lang}/reports/superinvestor-consensus`} className={colLink}>
+              {lang === "zh" ? "季度共识报告" : "Consensus Report"}
+            </Link>
           </nav>
 
           {/* Legal */}
