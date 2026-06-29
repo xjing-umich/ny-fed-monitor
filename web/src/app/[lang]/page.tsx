@@ -121,10 +121,19 @@ export default async function HomePage({
         </SectionReveal>
       )}
 
+      <SectionReveal>
+        <p className="mt-20 font-mono text-xs leading-relaxed tracking-[0.04em] text-[var(--tt-muted)]">
+          {isZh
+            ? "三步看懂 · ① 跟谁 → ② 他们共同看好什么 → ③ 那只到底便不便宜"
+            : "Three steps · ① who to follow → ② what they agree on → ③ whether it's actually cheap"}
+        </p>
+      </SectionReveal>
+
       {/* Feature row ① — Investors */}
       {topInvestors.length > 0 && (
         <SectionReveal>
           <FeatureRow
+            step={1}
             eyebrow={isZh ? "13F 追踪" : "13F tracking"}
             title={isZh ? "跟随聪明钱，逐季追踪" : "Follow the smart money, quarter by quarter"}
             body={isZh
@@ -157,6 +166,7 @@ export default async function HomePage({
       {held.length > 0 && (
         <SectionReveal>
           <FeatureRow
+            step={2}
             reverse
             eyebrow={isZh ? "跨基金共识" : "Cross-fund consensus"}
             title={isZh ? "看共识如何形成" : "See the consensus form"}
@@ -192,6 +202,7 @@ export default async function HomePage({
           Real strike-zone leaders when any; else the static value-band schematic. */}
       <SectionReveal>
         <FeatureRow
+          step={3}
           eyebrow={isZh ? "估值" : "Valuation"}
           title={isZh ? "知道它到底值多少" : "Know what it's worth"}
           body={isZh
