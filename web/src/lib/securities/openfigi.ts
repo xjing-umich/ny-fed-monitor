@@ -25,6 +25,16 @@ export function padCusip(cusip: string): string {
 }
 
 /**
+ * 选对 OpenFIGI 的 idType。字母开头的 9 位标识符是 **CINS**(国际证券, 国家码前缀,
+ * 如 G0403H108=AON、N07059210=ASML), 必须用 ID_CINS;纯数字/数字开头的才是标准 US CUSIP,
+ * 用 ID_CUSIP。用错类型 OpenFIGI 一律回 "No identifier found" —— 这正是大量在美上市外国
+ * 注册股(AON/ASML/ACCENTURE/LINDE/MEDTRONIC…)迟迟解析不出 ticker 的根因。
+ */
+export function openfigiIdType(idValue: string): "ID_CUSIP" | "ID_CINS" {
+  return /^[A-Za-z]/.test(idValue) ? "ID_CINS" : "ID_CUSIP";
+}
+
+/**
  * OpenFIGI 双类别股/权证 ticker 用斜杠(如 BRK/B)，会破坏路径路由(/stocks/BRK/B)。
  * 规范化为点号(BRK.B，业界通用)，使 ticker 可安全作 URL 段与主键。
  */
