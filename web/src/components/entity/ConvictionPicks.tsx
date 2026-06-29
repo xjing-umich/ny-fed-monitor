@@ -94,14 +94,14 @@ export function ConvictionPicks({
               href={stockPath(lang, ticker)}
               event="conviction_card_click"
               payload={{ investor, ticker, signal: p.signal, lang }}
-              className="block rounded-lg border border-[var(--tt-border)] bg-[var(--tt-surface)] p-4 no-underline transition-colors hover:border-[var(--tt-accent)]"
+              className="block rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] p-4 no-underline transition-colors hover:border-[var(--tt-accent)]"
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="text-sm font-medium text-[var(--tt-text)]">
                   <EntityName issuer={p.issuer} ticker={cusipToTicker.get(p.cusip)} />
                 </span>
                 <span
-                  className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em]"
+                  className="shrink-0 rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em]"
                   style={{ color, borderColor: color }}
                 >
                   {t.chip[p.signal](p)}

@@ -17,8 +17,8 @@ export function SourceFooter({ lang, sources }: SourceFooterProps) {
   const asOfLabel = lang === "zh" ? "截至" : "as of";
 
   return (
-    <div className="border-t border-border pt-3">
-      <p className="text-xs italic text-muted-foreground">
+    <div className="border-t border-[var(--tt-border)] pt-3">
+      <p className="text-xs italic text-[var(--tt-muted)]">
         <span className="not-italic font-medium uppercase tracking-[0.08em] text-[11px] text-[var(--tt-faint)]">
           {heading}
         </span>
@@ -31,7 +31,7 @@ export function SourceFooter({ lang, sources }: SourceFooterProps) {
                 <FreshnessDot status={src.status} lang={lang} />{" "}
               </>
             )}
-            <span className="not-italic font-medium text-card-foreground">
+            <span className="not-italic font-medium text-[var(--tt-text)]">
               {src.name}
             </span>{" "}
             {asOfLabel} {src.asOf}

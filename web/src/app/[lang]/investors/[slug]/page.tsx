@@ -329,7 +329,7 @@ export default async function InvestorSlugPage({
     n > 0 ? "text-[var(--tt-positive)]" : n < 0 ? "text-[var(--tt-warn)]" : "text-[var(--tt-faint)]";
 
   const valueNode = (
-    <span className="tnum font-mono text-xl font-medium leading-none text-card-foreground">
+    <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
       {formatUSD(latest.totalValue)}
       {valDeltaPct != null && valDeltaPct !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
@@ -340,7 +340,7 @@ export default async function InvestorSlugPage({
     </span>
   );
   const countNode = (
-    <span className="tnum font-mono text-xl font-medium leading-none text-card-foreground">
+    <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
       {latest.holdings.length}
       {cntDelta !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(cntDelta)}`}>

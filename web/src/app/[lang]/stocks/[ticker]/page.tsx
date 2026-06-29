@@ -185,7 +185,7 @@ function HoldersTable({
               <Link
                 key={e.slug}
                 href={investorPath(lang, e.slug)}
-                className="inline-flex items-center rounded-full border border-[var(--tt-border)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
+                className="inline-flex items-center rounded-md border border-[var(--tt-border)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
               >
                 {e.person}
               </Link>
