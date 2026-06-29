@@ -17,6 +17,7 @@ const COPY = {
     empty: (name: string) => `目前 ${name} 的可估值持仓无一落入 strike zone。`,
     footnote: (computed: string, method: string) => `估值截至 ${computed}；方法：${method}。位置观察，非买卖建议。`,
     method: "保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼",
+    cta: "点开任一只看个股估值 →",
   },
   en: {
     eyebrow: "Strike-zone picks",
@@ -25,6 +26,7 @@ const COPY = {
     empty: (name: string) => `None of ${name}'s tracked holdings are in the strike zone right now.`,
     footnote: (computed: string, method: string) => `Valuation as of ${computed}; method: ${method}. Position observation, not advice.`,
     method: "conservative Greenwald value band + Owner-Earnings DCF",
+    cta: "Open any to see the stock's valuation →",
   },
 } as const;
 
@@ -75,12 +77,17 @@ export function StrikeZonePicks({
         {hits.length > 0 ? t.hit(investorName, hits.length, asOf) : t.empty(investorName)}
       </p>
       {hits.length > 0 && (
+        <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)]">
+          {t.cta}
+        </p>
+      )}
+      {hits.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {hits.map(({ h, tk, v }) => (
             <Link
               key={h.cusip}
               href={stockPath(lang, tk)}
-              className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--tt-positive)]/40 px-2 py-1 text-xs no-underline hover:border-[var(--tt-positive)]"
+              className="group inline-flex items-center gap-1.5 rounded-sm border border-[var(--tt-positive)]/40 px-2 py-1 text-xs no-underline hover:border-[var(--tt-positive)]"
             >
               <span className="font-mono font-medium text-[var(--tt-text)]">{tk}</span>
               <span className="text-[var(--tt-faint)]">{cleanIssuer(h.issuer)}</span>
@@ -88,6 +95,7 @@ export function StrikeZonePicks({
               {v.marginPct != null && v.marginPct > 0 && (
                 <span className="font-mono text-[var(--tt-positive)]">−{Math.round(v.marginPct * 100)}%</span>
               )}
+              <span aria-hidden className="text-[var(--tt-faint)] transition-colors group-hover:text-[var(--tt-accent)]">→</span>
             </Link>
           ))}
         </div>

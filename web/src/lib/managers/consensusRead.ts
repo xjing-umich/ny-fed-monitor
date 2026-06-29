@@ -35,6 +35,30 @@ export const readConsensusHeld = cache(async (limit: number): Promise<HeldRow[] 
   return mapHeldRows((data ?? []) as HeldDbRow[]);
 });
 
+type HolderCountDbRow = { ticker: string; holder_count: number };
+
+/** 纯映射(单测): consensus_holdings 行 → ticker(大写)→holder_count Map。 */
+export function mapHolderCountRows(rows: HolderCountDbRow[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const r of rows) out.set(r.ticker.toUpperCase(), Number(r.holder_count));
+  return out;
+}
+
+/**
+ * 按持仓 ticker 批量取"该票被几位超投持有"(consensus_holdings.holder_count)。
+ * 与 readValuationVerdicts 同范式: 单次 .in() 查、零 per-ticker 扇出。
+ * 空入参 / 无 env / 出错 → 空 Map(优雅降级, 不阻断渲染)。
+ * 注意: 绝不用 readConsensusHeld(limit)(只返回 Top-N, 投资人持仓常落在外)。
+ */
+export const readHolderCounts = cache(async (tickers: string[]): Promise<Map<string, number>> => {
+  if (!hasSupabaseEnv() || tickers.length === 0) return new Map();
+  const upper = [...new Set(tickers.map((t) => t.toUpperCase()))];
+  const { data, error } = await getDb()
+    .from("consensus_holdings").select("ticker,holder_count").in("ticker", upper);
+  if (error) { console.error(`readHolderCounts 失败: ${error.message}`); return new Map(); }
+  return mapHolderCountRows((data ?? []) as HolderCountDbRow[]);
+});
+
 export type StockHolderApp = {
   cik: string; slug: string; person: string; issuer: string;
   value: number; shares: number; weight: number; priorWeight: number | undefined;
