@@ -188,27 +188,25 @@ export default async function HomePage({
         </SectionReveal>
       )}
 
-      {/* Feature row ③ — Valuation (id anchor for hero link); not reversed → row rhythm right/left/right.
+      {/* Feature row ③ — Valuation; not reversed → row rhythm right/left/right.
           Real strike-zone leaders when any; else the static value-band schematic. */}
-      <div id="valuation" className="scroll-mt-24">
-        <SectionReveal>
-          <FeatureRow
-            eyebrow={isZh ? "估值" : "Valuation"}
-            title={isZh ? "知道它到底值多少" : "Know what it's worth"}
-            body={isZh
-              ? "持仓只是起点。每只股票都用三套保守方法估值——Buffett 所有者收益 DCF、Greenwald 盈利能力价值、资产重置价值——只为已证实的价值付费。"
-              : "Holdings are only the start. Every stock is valued three conservative ways — Buffett owner-earnings DCF, Greenwald earnings-power value, asset reproduction value — so you pay only for proven value."}
-            ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
-            href={`/${lang}/stocks`}
-          >
-            {strike.leaders.length > 0 ? (
-              <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
-            ) : (
-              <ValueBandCard lang={lang} />
-            )}
-          </FeatureRow>
-        </SectionReveal>
-      </div>
+      <SectionReveal>
+        <FeatureRow
+          eyebrow={isZh ? "估值" : "Valuation"}
+          title={isZh ? "知道它到底值多少" : "Know what it's worth"}
+          body={isZh
+            ? "持仓只是起点。每只股票都用三套保守方法估值——Buffett 所有者收益 DCF、Greenwald 盈利能力价值、资产重置价值——只为已证实的价值付费。"
+            : "Holdings are only the start. Every stock is valued three conservative ways — Buffett owner-earnings DCF, Greenwald earnings-power value, asset reproduction value — so you pay only for proven value."}
+          ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
+          href={`/${lang}/stocks`}
+        >
+          {strike.leaders.length > 0 ? (
+            <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
+          ) : (
+            <ValueBandCard lang={lang} />
+          )}
+        </FeatureRow>
+      </SectionReveal>
 
       <SectionReveal>
         <FoundationsGrid lang={lang} />
