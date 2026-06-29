@@ -28,6 +28,7 @@ import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
 import { readValuationVerdicts, type SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import { StrikeZonePicks } from "@/components/investor/StrikeZonePicks";
+import { readHolderCounts } from "@/lib/managers/consensusRead";
 
 const MAX_HOLDINGS = 25;
 
@@ -99,14 +100,14 @@ export async function generateMetadata({
 const HOLD_COPY = {
   zh: {
     title: "持仓明细",
-    cols: { issuer: "标的", value: "市值", valuation: "估值", shares: "持股数", weight: "权重(上季→本季)" },
+    cols: { issuer: "标的", value: "市值", valuation: "估值", consensus: "持有人数", shares: "持股数", weight: "权重(上季→本季)" },
     truncated: (n: number, total: number) => `显示前 ${n} 条，共 ${total} 个持仓`,
     exitedTitle: (n: number) => `本季清仓 (${n})`,
     more: (n: number) => `… 等 ${n} 只`,
   },
   en: {
     title: "Holdings",
-    cols: { issuer: "Security", value: "Value", valuation: "Valuation", shares: "Shares", weight: "Weight (prev→now)" },
+    cols: { issuer: "Security", value: "Value", valuation: "Valuation", consensus: "Holders", shares: "Shares", weight: "Weight (prev→now)" },
     truncated: (n: number, total: number) => `Showing top ${n} of ${total} positions`,
     exitedTitle: (n: number) => `Exited this quarter (${n})`,
     more: (n: number) => `… +${n} more`,
@@ -120,6 +121,7 @@ function HoldingsTable({
   lang,
   cusipToTicker,
   verdicts,
+  holderCounts,
 }: {
   holdings: Holding[];
   prior?: FilingData;
@@ -127,6 +129,7 @@ function HoldingsTable({
   lang: Lang;
   cusipToTicker: Map<string, string>;
   verdicts: Map<string, SnapshotVerdict>;
+  holderCounts: Map<string, number>;
 }): React.ReactElement {
   const t = HOLD_COPY[lang];
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
@@ -162,6 +165,19 @@ function HoldingsTable({
       cell: (h) => {
         const tk = cusipToTicker.get(h.cusip);
         return <ValuationBadge verdict={tk ? verdicts.get(tk.toUpperCase()) : undefined} lang={lang} />;
+      },
+    },
+    {
+      key: "consensus",
+      header: t.cols.consensus,
+      align: "right",
+      width: "w-24",
+      cell: (h) => {
+        const tk = cusipToTicker.get(h.cusip);
+        const c = tk ? holderCounts.get(tk.toUpperCase()) : undefined;
+        return c != null
+          ? <span className="font-mono tabular-nums text-[var(--tt-muted)]">{c}</span>
+          : <span className="text-[var(--tt-faint)]">—</span>;
       },
     },
     {
@@ -268,6 +284,7 @@ export default async function InvestorSlugPage({
     .map((h) => cusipToTicker.get(h.cusip))
     .filter((t): t is string => Boolean(t));
   const verdicts = await readValuationVerdicts(holdingTickers);
+  const holderCounts = await readHolderCounts(holdingTickers);
 
   // index 供全局最新季基准与 Related 共用（getManagerIndex 有 cache()，单次查询）
   const idx = await getManagerIndex();
@@ -465,7 +482,7 @@ export default async function InvestorSlugPage({
             cusipToTicker={cusipToTicker}
             lang={lang}
           />
-          <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} />
+          <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} />
         </>
       </EntityPage>
     </>
