@@ -7,6 +7,7 @@ export default function FeatureRow({
   ctaLabel,
   href,
   reverse = false,
+  step,
   children,
 }: {
   eyebrow: string;
@@ -15,12 +16,16 @@ export default function FeatureRow({
   ctaLabel: string;
   href: string;
   reverse?: boolean;
+  step?: number;
   children: React.ReactNode;
 }): React.ReactElement {
   return (
     <section className="mt-24 grid grid-cols-1 items-center gap-10 md:grid-cols-2">
       <div className={reverse ? "md:order-2" : ""}>
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          {step != null && <span className="text-[var(--tt-faint)]">{`0${step} — `}</span>}
+          {eyebrow}
+        </p>
         <h2 className="mt-3 font-display text-2xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-3xl">
           {title}
         </h2>
