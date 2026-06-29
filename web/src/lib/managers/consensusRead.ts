@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
 import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
+import { mapHolderCountRows, type HolderCountDbRow } from "@/lib/managers/holderCounts";
 
 type HeldDbRow = { ticker: string; issuer: string; holder_count: number; total_value: number };
 type MoveDbRow = { ticker: string; direction: string; issuer: string; manager_count: number; net_value: number; dominant_kind?: string | null };
@@ -34,15 +35,6 @@ export const readConsensusHeld = cache(async (limit: number): Promise<HeldRow[] 
   if (error) { console.error(`readConsensusHeld 失败: ${error.message}`); return null; }
   return mapHeldRows((data ?? []) as HeldDbRow[]);
 });
-
-type HolderCountDbRow = { ticker: string; holder_count: number };
-
-/** 纯映射(单测): consensus_holdings 行 → ticker(大写)→holder_count Map。 */
-export function mapHolderCountRows(rows: HolderCountDbRow[]): Map<string, number> {
-  const out = new Map<string, number>();
-  for (const r of rows) out.set(r.ticker.toUpperCase(), Number(r.holder_count));
-  return out;
-}
 
 /**
  * 按持仓 ticker 批量取"该票被几位超投持有"(consensus_holdings.holder_count)。
