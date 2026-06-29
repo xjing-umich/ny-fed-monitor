@@ -16,6 +16,7 @@ import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod } from "@
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
+import { ogFor } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
@@ -82,17 +83,21 @@ export async function generateMetadata({
       "x-default": `/en/investors/${slug}`,
     },
   };
-  return lang === "zh"
-    ? {
-        title: `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`,
-        description: `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
-        alternates,
-      }
-    : {
-        title: `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`,
-        description: `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
-        alternates,
-      };
+  const meta =
+    lang === "zh"
+      ? {
+          title: `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`,
+          description: `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
+        }
+      : {
+          title: `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`,
+          description: `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
+        };
+  return {
+    ...meta,
+    alternates,
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: `/${l}/investors/${slug}`, type: "profile" }),
+  };
 }
 
 // ── Holdings table ────────────────────────────────────────────────────────────

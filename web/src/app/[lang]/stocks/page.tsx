@@ -4,6 +4,7 @@ import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { isLikelyTicker } from "@/lib/externalLinks";
+import { ogFor } from "@/lib/seo";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { StocksTable, type StockRow } from "./StocksTable";
@@ -25,17 +26,21 @@ export async function generateMetadata({
     canonical: `/${lang}/stocks`,
     languages: { en: "/en/stocks", "zh-CN": "/zh/stocks", "x-default": "/en/stocks" },
   };
-  return lang === "zh"
-    ? {
-        title: "个股 · 最多机构持有 — Compounder · 复利",
-        description: "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。",
-        alternates,
-      }
-    : {
-        title: "Stocks · Most held — Compounder",
-        description: "Securities held by the most superinvestors simultaneously, derived from 13F filings.",
-        alternates,
-      };
+  const meta =
+    lang === "zh"
+      ? {
+          title: "个股 · 最多机构持有 — Compounder · 复利",
+          description: "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。",
+        }
+      : {
+          title: "Stocks · Most held — Compounder",
+          description: "Securities held by the most superinvestors simultaneously, derived from 13F filings.",
+        };
+  return {
+    ...meta,
+    alternates,
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: `/${lang}/stocks` }),
+  };
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
