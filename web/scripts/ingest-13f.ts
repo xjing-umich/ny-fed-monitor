@@ -21,6 +21,7 @@ import WebSocket from "ws";
 import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
 import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
+import { padCusip } from "../src/lib/securities/openfigi.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
@@ -162,7 +163,15 @@ async function parseInfoTable(cikInt: string, accession: string): Promise<Holdin
     throw new Error(`No infoTable XML found for accession ${accession}`);
   }
 
-  const parser = new XMLParser({ removeNSPrefix: true, ignoreAttributes: true });
+  // parseTagValue/parseAttributeValue 必须关掉:否则 fast-xml-parser 会把 <cusip>037833100</cusip>
+  // 当数字解析(丢前导零 → 37833100),把 <cusip>92343E102</cusip> 当科学计数法浮点(→ 9.2343e+106),
+  // 损坏 CUSIP 主键。数值字段(value/sshPrnamt)下方已显式 Number(...),不受影响。
+  const parser = new XMLParser({
+    removeNSPrefix: true,
+    ignoreAttributes: true,
+    parseTagValue: false,
+    parseAttributeValue: false,
+  });
   const parsed = parser.parse(infoTableXml);
 
   // Navigate to the infoTable entries
@@ -189,11 +198,17 @@ async function parseInfoTable(cikInt: string, accession: string): Promise<Holdin
   const holdings: Holding[] = entries.map((e: any) => {
     const shrs = e?.shrsOrPrnAmt ?? {};
     const rawValue = Number(e?.value ?? 0);
+    // CUSIP 归一为标准 9 位(SEC 常缺前导零)。异常长度告警但不丢弃,便于发现脏数据。
+    const rawCusip = String(e?.cusip ?? "").trim();
+    const cusip = rawCusip ? padCusip(rawCusip) : "";
+    if (cusip && cusip.length !== 9) {
+      console.warn(`[ingest-13f] 异常 CUSIP 长度(${cusip.length}): "${rawCusip}" → "${cusip}"`);
+    }
     // Determine if value is in dollars or thousands
     // For filings with reportDate year >= 2023, value is in whole dollars
     // We handle this at call site based on period
     return {
-      cusip: String(e?.cusip ?? ""),
+      cusip,
       issuer: String(e?.nameOfIssuer ?? ""),
       titleOfClass: e?.titleOfClass ? String(e.titleOfClass) : undefined,
       value: rawValue,

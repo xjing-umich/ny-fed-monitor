@@ -35,11 +35,18 @@ export async function upsertManagerDetail(db: any, d: ManagerDetail, formerNames
   const { error: mErr } = await db.from("managers").upsert(p.manager, { onConflict: "cik" });
   if (mErr) throw new Error(`managers upsert failed (${d.manager.slug}): ${mErr.message}`);
   for (const f of p.filings) {
-    const { data: up } = await db.from("filings").upsert(f, { onConflict: "accession" }).select("id").limit(1);
+    // 数据准确性: filings/holdings 的写错误同样必须冒泡,绝不静默(否则部分写入伪装成功)。
+    const { data: up, error: fErr } = await db
+      .from("filings").upsert(f, { onConflict: "accession" }).select("id").limit(1);
+    if (fErr) throw new Error(`filings upsert failed (${f.accession}): ${fErr.message}`);
     const filingId = up?.[0]?.id;
     if (!filingId) continue;
-    await db.from("holdings").delete().eq("filing_id", filingId);
+    const { error: delErr } = await db.from("holdings").delete().eq("filing_id", filingId);
+    if (delErr) throw new Error(`holdings delete failed (filing ${filingId}): ${delErr.message}`);
     const rows = p.holdingsByAccession[f.accession].map((h) => ({ ...h, filing_id: filingId }));
-    if (rows.length) await db.from("holdings").insert(rows);
+    if (rows.length) {
+      const { error: insErr } = await db.from("holdings").insert(rows);
+      if (insErr) throw new Error(`holdings insert failed (filing ${filingId}): ${insErr.message}`);
+    }
   }
 }
