@@ -30,6 +30,8 @@ import { readValuationVerdicts, type SnapshotVerdict } from "@/lib/valuation/val
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import { StrikeZonePicks } from "@/components/investor/StrikeZonePicks";
 import { readHolderCounts } from "@/lib/managers/consensusRead";
+import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
+import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 
 const MAX_HOLDINGS = 25;
 
@@ -291,6 +293,12 @@ export default async function InvestorSlugPage({
   const verdicts = await readValuationVerdicts(holdingTickers);
   const holderCounts = await readHolderCounts(holdingTickers);
 
+  // 该投资人当前持仓中现价落在击球区的只数(与 screener strike_zone 视图同口径)。
+  const strikeCount = latest.holdings.reduce((acc, h) => {
+    const tk = cusipToTicker.get(h.cusip);
+    return acc + (tk && verdicts.get(tk.toUpperCase())?.inStrikeZone ? 1 : 0);
+  }, 0);
+
   // index 供全局最新季基准与 Related 共用（getManagerIndex 有 cache()，单次查询）
   const idx = await getManagerIndex();
 
@@ -487,6 +495,7 @@ export default async function InvestorSlugPage({
             cusipToTicker={cusipToTicker}
             lang={lang}
           />
+          <DiscoveryHandoff {...investorHandoffFor(strikeCount, manager.person, lang)} />
           <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} />
         </>
       </EntityPage>
