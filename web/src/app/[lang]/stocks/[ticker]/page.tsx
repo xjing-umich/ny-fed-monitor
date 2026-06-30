@@ -33,6 +33,9 @@ import { WeightQoQ } from "@/components/common/qoqDirection";
 import OwnershipConsensusPanel from "@/components/entity/OwnershipConsensusPanel";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
+import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
+import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
+import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -342,6 +345,12 @@ export default async function StockTickerPage({
       ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, latestPrice)
       : undefined;
 
+  // 上下文出口用的位置档(与估值卡同源, 永不漂移)。kind!=floor / 红旗 → null → 走兜底文案。
+  const handoffVerdict =
+    valuationFloor?.kind === "floor"
+      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation })
+      : null;
+
   const subtitle =
     lang === "zh"
       ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。`
@@ -493,6 +502,8 @@ export default async function StockTickerPage({
             period={latestPeriod}
             lang={lang}
           />
+
+          <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
 
           {/* 支柱② 谁在买 — Top 10 + 折叠溢出 */}
           <HoldersTable holders={holders} exited={exitedHolders} lang={lang} />
