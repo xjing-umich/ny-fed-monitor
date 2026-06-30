@@ -171,7 +171,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
                     type="text"
                     name="name"
                     maxLength={200}
-                    className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] outline-none focus:border-[var(--tt-accent)] transition-colors"
+                    className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] focus:border-[var(--tt-accent)] transition-colors"
                   />
                 </label>
 
@@ -182,7 +182,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
                     name="email"
                     required
                     maxLength={200}
-                    className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] outline-none focus:border-[var(--tt-accent)] transition-colors"
+                    className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] focus:border-[var(--tt-accent)] transition-colors"
                   />
                 </label>
 
@@ -193,12 +193,12 @@ export default function ContactModal({ lang }: ContactModalProps) {
                     required
                     rows={4}
                     maxLength={5000}
-                    className="resize-none rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] outline-none focus:border-[var(--tt-accent)] transition-colors"
+                    className="resize-none rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] focus:border-[var(--tt-accent)] transition-colors"
                   />
                 </label>
 
                 {status === "error" && (
-                  <p className="text-xs text-red-500">{errorMsg || c.error}</p>
+                  <p className="text-xs text-[var(--tt-negative)]">{errorMsg || c.error}</p>
                 )}
 
                 <button
