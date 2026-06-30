@@ -1,4 +1,4 @@
-import { padCusip, parseMappingResult, type MappingResultItem, type SecurityRow } from "../../src/lib/securities/openfigi";
+import { padCusip, openfigiIdType, parseMappingResult, type MappingResultItem, type SecurityRow } from "../../src/lib/securities/openfigi";
 
 const OPENFIGI_URL = "https://api.openfigi.com/v3/mapping";
 
@@ -9,7 +9,11 @@ export async function mapBatch(
   pairs: { cusip: string; issuer: string }[],
   apiKey?: string
 ): Promise<SecurityRow[]> {
-  const body = pairs.map((p) => ({ idType: "ID_CUSIP", idValue: padCusip(p.cusip), exchCode: "US" }));
+  const body = pairs.map((p) => {
+    const idValue = padCusip(p.cusip);
+    // CINS(字母前缀, 外国注册在美上市股)须用 ID_CINS, 否则 OpenFIGI 查无;数字 CUSIP 用 ID_CUSIP。
+    return { idType: openfigiIdType(idValue), idValue, exchCode: "US" };
+  });
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (apiKey) headers["X-OPENFIGI-APIKEY"] = apiKey;
   const res = await fetch(OPENFIGI_URL, { method: "POST", headers, body: JSON.stringify(body) });
