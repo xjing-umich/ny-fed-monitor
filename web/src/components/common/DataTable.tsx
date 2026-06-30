@@ -98,7 +98,7 @@ export function DataTable<T>({
           <thead className={cn(hideHeader && "sr-only")}>
             <tr className="border-b border-[var(--tt-border)]">
               {showRank && (
-                <th className="w-8 pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
+                <th className="sticky top-[60px] z-10 w-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)] py-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
                   #
                 </th>
               )}
@@ -106,7 +106,7 @@ export function DataTable<T>({
                 <th
                   key={c.key}
                   className={cn(
-                    "pb-2 text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]",
+                    "sticky top-[60px] z-10 bg-[var(--tt-bg)] border-b border-[var(--tt-border)] py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]",
                     alignClass(c.align),
                     c.width
                   )}

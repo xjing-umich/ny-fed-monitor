@@ -29,7 +29,7 @@ const COPY = {
   },
 } as const;
 
-const CHIP = "inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[11px] tabular-nums";
+const CHIP = "inline-flex items-center rounded-md border px-2.5 py-0.5 font-mono text-[11px] tabular-nums";
 
 export function QuarterMovesPill({
   moves,
