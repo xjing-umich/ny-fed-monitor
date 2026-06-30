@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
+import { track } from "@vercel/analytics";
 import type { Lang } from "@/lib/nav";
 import { footerCopy } from "@/lib/footer";
 
 type Status = "idle" | "sending" | "ok" | "error";
 
-export default function NewsletterForm({ lang }: { lang: Lang }) {
+export default function NewsletterForm({ lang, source = "footer" }: { lang: Lang; source?: string }) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const c = footerCopy(lang);
@@ -32,6 +33,11 @@ export default function NewsletterForm({ lang }: { lang: Lang }) {
       if (res.ok && json.ok) {
         setStatus("ok");
         form.reset();
+        try {
+          track("newsletter_subscribe", { source, lang });
+        } catch {
+          /* analytics blocked — ignore */
+        }
       } else {
         setStatus("error");
         setErrorMsg(typeof json.error === "string" ? json.error : c.subscribeError);

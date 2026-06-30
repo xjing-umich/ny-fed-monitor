@@ -471,7 +471,7 @@ export default async function StockTickerPage({
         keyFacts={[]}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         related={related}
-        footerCta={<NewsletterCTA lang={lang} />}
+        footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
         <>
           {/* 支柱① 估值结论(头条) — 默认只显结论, 方法在卡内折叠 */}

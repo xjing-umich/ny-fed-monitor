@@ -475,7 +475,7 @@ export default async function InvestorSlugPage({
         notice={freshnessNotice}
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
-        footerCta={<NewsletterCTA lang={lang} />}
+        footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
           <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
