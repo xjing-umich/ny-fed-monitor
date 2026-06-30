@@ -5,6 +5,7 @@ import type { Lang } from "@/lib/nav";
 import SubNav from "@/components/shell/SubNav";
 import { readValuationScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
 import { ScreenerTable } from "./ScreenerTable";
+import { parseSort, sortScreenerRows, type ScreenSort } from "@/lib/valuation/screenerSort";
 
 export const revalidate = 86400;
 
@@ -49,16 +50,18 @@ export default async function ScreenerPage({
   searchParams,
 }: {
   params: Promise<{ lang: string }>;
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; sort?: string }>;
 }) {
   const { lang: rawLang } = await params;
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
-  const { view: rawView } = await searchParams;
+  const { view: rawView, sort: rawSort } = await searchParams;
   const view = parseView(rawView);
+  const sort = parseSort(rawSort);
 
   const { rows, strikeTotal, computedAt } = await readValuationScreen(view, SCREEN_LIMIT);
+  const sortedRows = sortScreenerRows(rows, sort);
   const asOf = computedAt ? computedAt.slice(0, 10) : "";
 
   const geo =
@@ -111,6 +114,34 @@ export default async function ScreenerPage({
         })}
       </nav>
 
+      <nav className="mb-5 flex flex-wrap items-center gap-2" aria-label={isZh ? "排序" : "Sort"}>
+        <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">{isZh ? "排序" : "Sort"}</span>
+        {([
+          { key: "margin", zh: "按安全边际", en: "By margin" },
+          { key: "holders", zh: "按持有机构", en: "By holders" },
+        ] as { key: ScreenSort; zh: string; en: string }[]).map((s) => {
+          const activeSort = s.key === sort;
+          const sp = new URLSearchParams();
+          if (view !== "all") sp.set("view", view);
+          if (s.key === "holders") sp.set("sort", "holders");
+          const qs = sp.toString();
+          return (
+            <Link
+              key={s.key}
+              href={`/${lang}/stocks/screener${qs ? `?${qs}` : ""}`}
+              aria-current={activeSort ? "page" : undefined}
+              className={`rounded-sm border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
+                activeSort
+                  ? "border-[var(--tt-text)] text-[var(--tt-text)]"
+                  : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-accent)]"
+              }`}
+            >
+              {isZh ? s.zh : s.en}
+            </Link>
+          );
+        })}
+      </nav>
+
       {/* 醒目内联免责(合规护栏) */}
       <p className="mb-5 rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-muted)_6%,transparent)] px-3 py-2 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh
@@ -118,7 +149,7 @@ export default async function ScreenerPage({
           : "This is an observational list ordered by valuation position — not advice, not a price target. Margin of safety is the distance from the conservative value band, and excludes any quality or timing judgment."}
       </p>
 
-      <ScreenerTable lang={lang} rows={rows} />
+      <ScreenerTable lang={lang} rows={sortedRows} />
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-faint)]">
         {isZh
