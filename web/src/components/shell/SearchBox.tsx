@@ -102,7 +102,7 @@ export default function SearchBox({
     >
       <div
         className={[
-          "flex items-center rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] text-[var(--tt-muted)] focus-within:border-[var(--tt-accent)] transition-colors",
+          "flex items-center rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] text-[var(--tt-muted)] focus-within:border-[var(--tt-accent)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--tt-accent)_25%,transparent)] transition-colors",
           isHero ? "gap-2.5 h-12 px-4" : "gap-1.5 h-8 px-2.5",
         ].join(" ")}
       >

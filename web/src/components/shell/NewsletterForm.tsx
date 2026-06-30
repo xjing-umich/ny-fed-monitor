@@ -70,7 +70,7 @@ export default function NewsletterForm({ lang }: { lang: Lang }) {
           maxLength={200}
           placeholder={c.emailPlaceholder}
           aria-label={c.emailPlaceholder}
-          className="flex-1 min-w-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] outline-none focus:border-[var(--tt-accent)] transition-colors"
+          className="flex-1 min-w-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-bg)] px-3 py-2 text-sm text-[var(--tt-text)] focus:border-[var(--tt-accent)] transition-colors"
         />
         <button
           type="submit"
@@ -89,7 +89,7 @@ export default function NewsletterForm({ lang }: { lang: Lang }) {
         </button>
       </div>
       {status === "error" && (
-        <p className="text-xs text-red-500">{errorMsg || c.subscribeError}</p>
+        <p className="text-xs text-[var(--tt-negative)]">{errorMsg || c.subscribeError}</p>
       )}
     </form>
   );

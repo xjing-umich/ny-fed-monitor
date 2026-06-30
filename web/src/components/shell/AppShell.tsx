@@ -14,6 +14,14 @@ interface AppShellProps {
 export default function AppShell({ lang, items, children }: AppShellProps) {
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Skip link — first tab stop, lets keyboard users bypass the nav */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-[var(--tt-border)] focus:bg-[var(--tt-panel)] focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--tt-text)] focus:no-underline focus:shadow-md"
+      >
+        {lang === "zh" ? "跳到主内容" : "Skip to content"}
+      </a>
+
       {/* Desktop top nav */}
       <TopNav lang={lang} items={items} />
 
@@ -29,7 +37,7 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
       </header>
 
       {/* Page content */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5">
           {children}
         </div>

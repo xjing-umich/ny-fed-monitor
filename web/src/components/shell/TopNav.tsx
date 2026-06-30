@@ -85,17 +85,24 @@ export default function TopNav({ lang, items }: TopNavProps) {
       <div className="flex items-center gap-0.5">
         {(["zh", "en"] as const).map((l) => {
           const active = l === lang;
+          // Active locale is current state, not a destination — render a
+          // non-interactive <span> rather than a dead `href="#"` link.
+          if (active) {
+            return (
+              <span
+                key={l}
+                aria-current="true"
+                className="px-2 py-1 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
+              >
+                {l}
+              </span>
+            );
+          }
           return (
             <Link
               key={l}
-              href={active ? "#" : otherLangPath}
-              aria-current={active ? "true" : undefined}
-              className={[
-                "px-2 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline",
-                active
-                  ? "text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)] pointer-events-none"
-                  : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent",
-              ].join(" ")}
+              href={otherLangPath}
+              className="px-2 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
             >
               {l}
             </Link>

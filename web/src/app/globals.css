@@ -190,6 +190,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Global keyboard-focus ring — one consistent, on-brand indicator for every
+     interactive element (links, table rows, nav, menu items, summary…). Only
+     keyboard/AT focus triggers it (:focus-visible), so mouse clicks stay quiet.
+     Components that opt out (form inputs via `outline-none`) supply their own
+     ring; everything else inherits this for free. */
+  :focus-visible {
+    outline: 2px solid var(--tt-accent);
+    outline-offset: 2px;
+  }
   body {
     @apply bg-background text-foreground;
     font-size: 13px;
