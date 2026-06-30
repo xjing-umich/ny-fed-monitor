@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import type { Lang } from "@/lib/nav";
@@ -27,9 +27,14 @@ export default function SearchBox({
 }: SearchBoxProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  // Active descendant for keyboard navigation; -1 = nothing highlighted (Enter
+  // then falls back to the first match / ticker guess, preserving prior behavior).
+  const [active, setActive] = useState(-1);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
+  const optionId = (i: number) => `${listboxId}-opt-${i}`;
 
   const q = query.trim().toLowerCase();
   const filtered =
@@ -49,6 +54,18 @@ export default function SearchBox({
       ? query.trim().toUpperCase()
       : null;
 
+  // 下拉无匹配但输入像 ticker 时, 提供一条「直达个股」入口。
+  const showTickerFallback = tickerGuess !== null && filtered.length === 0;
+
+  // 统一的可选项列表(下拉项 + 可选的 ticker 兜底),键盘与鼠标共用同一索引空间。
+  const options: { href: string; label: string }[] = [
+    ...filtered.map((item) => ({ href: item.href, label: item.label })),
+    ...(showTickerFallback
+      ? [{ href: `/${lang}/stocks/${tickerGuess}`, label: tickerGuess as string }]
+      : []),
+  ];
+  const hasOptions = options.length > 0;
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -62,21 +79,48 @@ export default function SearchBox({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 输入变化时重置高亮,避免索引指向已不存在的项。
+  useEffect(() => {
+    setActive(-1);
+  }, [query]);
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") {
       setQuery("");
       setOpen(false);
+      setActive(-1);
       inputRef.current?.blur();
-    } else if (e.key === "Enter") {
-      const dest = filtered.length > 0
-        ? filtered[0].href
-        : tickerGuess
-          ? `/${lang}/stocks/${tickerGuess}`
-          : null;
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      if (!hasOptions) return;
+      e.preventDefault();
+      setOpen(true);
+      setActive((i) => (i + 1) % options.length);
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      if (!hasOptions) return;
+      e.preventDefault();
+      setOpen(true);
+      setActive((i) => (i <= 0 ? options.length - 1 : i - 1));
+      return;
+    }
+    if (e.key === "Enter") {
+      // 有高亮 → 选高亮项;否则沿用旧行为(首个匹配 / ticker 直达)。
+      const dest =
+        active >= 0 && options[active]
+          ? options[active].href
+          : filtered.length > 0
+            ? filtered[0].href
+            : tickerGuess
+              ? `/${lang}/stocks/${tickerGuess}`
+              : null;
       if (!dest) return;
       router.push(dest);
       setQuery("");
       setOpen(false);
+      setActive(-1);
     }
   }
 
@@ -84,16 +128,15 @@ export default function SearchBox({
     router.push(href);
     setQuery("");
     setOpen(false);
+    setActive(-1);
   }
 
   const placeholder =
     placeholderProp ??
     (lang === "zh" ? "搜索投资者 / 股票 / 指标…" : "Search investors / stocks / indicators…");
 
-  // 下拉无匹配但输入像 ticker 时, 提供一条「直达个股」入口。
-  const showTickerFallback = tickerGuess !== null && filtered.length === 0;
-
   const isHero = variant === "hero";
+  const listOpen = open && hasOptions;
 
   return (
     <div
@@ -110,6 +153,11 @@ export default function SearchBox({
         <input
           ref={inputRef}
           type="text"
+          role="combobox"
+          aria-expanded={listOpen}
+          aria-controls={listOpen ? listboxId : undefined}
+          aria-autocomplete="list"
+          aria-activedescendant={listOpen && active >= 0 ? optionId(active) : undefined}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -126,19 +174,27 @@ export default function SearchBox({
         />
       </div>
 
-      {open && (filtered.length > 0 || showTickerFallback) && (
+      {listOpen && (
         <div
+          id={listboxId}
+          role="listbox"
+          aria-label={placeholder}
           className={[
             "absolute top-full mt-1 left-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] shadow-md z-50 overflow-hidden",
             isHero ? "w-full" : "w-72",
           ].join(" ")}
         >
-          {filtered.map((item) => (
+          {filtered.map((item, i) => (
             <button
               key={item.href}
+              id={optionId(i)}
+              role="option"
+              aria-selected={active === i}
               onMouseDown={() => handleSelect(item.href)}
+              onMouseEnter={() => setActive(i)}
               className={[
-                "w-full text-left font-display text-[var(--tt-text)] hover:bg-[var(--tt-surface)] hover:text-[var(--tt-accent)] transition-colors truncate",
+                "w-full text-left font-display text-[var(--tt-text)] transition-colors truncate",
+                active === i ? "bg-[var(--tt-surface)] text-[var(--tt-accent)]" : "hover:bg-[var(--tt-surface)] hover:text-[var(--tt-accent)]",
                 isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-[13px]",
               ].join(" ")}
             >
@@ -147,9 +203,14 @@ export default function SearchBox({
           ))}
           {showTickerFallback && (
             <button
+              id={optionId(filtered.length)}
+              role="option"
+              aria-selected={active === filtered.length}
               onMouseDown={() => handleSelect(`/${lang}/stocks/${tickerGuess}`)}
+              onMouseEnter={() => setActive(filtered.length)}
               className={[
-                "flex w-full items-center justify-between gap-2 text-left text-[var(--tt-muted)] hover:bg-[var(--tt-surface)] transition-colors",
+                "flex w-full items-center justify-between gap-2 text-left text-[var(--tt-muted)] transition-colors",
+                active === filtered.length ? "bg-[var(--tt-surface)]" : "hover:bg-[var(--tt-surface)]",
                 isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-xs",
               ].join(" ")}
             >
