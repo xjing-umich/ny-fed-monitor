@@ -103,7 +103,7 @@ export function ShareButton({
         aria-label={t.button}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--tt-border)] px-3 py-1.5 text-xs font-medium text-[var(--tt-muted)] transition-colors hover:bg-[var(--tt-panel)] hover:text-[var(--tt-text)]"
+        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-3 py-1.5 text-xs font-medium text-[var(--tt-muted)] transition-colors hover:bg-[var(--tt-panel)] hover:text-[var(--tt-text)]"
       >
         {t.button}
       </button>
@@ -111,7 +111,7 @@ export function ShareButton({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-lg border border-[var(--tt-border)] bg-[var(--tt-surface)] py-1 shadow-lg"
+          className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] py-1 shadow-md"
         >
           <button
             type="button"

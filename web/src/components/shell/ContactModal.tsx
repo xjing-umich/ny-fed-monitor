@@ -117,7 +117,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
             role="dialog"
             aria-modal="true"
             aria-label={c.title}
-            className="w-full max-w-md rounded-xl bg-[var(--tt-panel)] border border-[var(--tt-border)] shadow-xl"
+            className="w-full max-w-md rounded-md bg-[var(--tt-panel)] border border-[var(--tt-border)] shadow-lg"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => {
               if (e.key === "Escape") close();

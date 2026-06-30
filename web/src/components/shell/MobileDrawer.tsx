@@ -78,7 +78,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
         aria-label={lang === "zh" ? "导航菜单" : "Navigation menu"}
         className={[
           "md:hidden fixed top-0 left-0 h-full w-72 z-50 flex flex-col",
-          "bg-[var(--tt-panel)] border-r border-[var(--tt-border)] shadow-xl",
+          "bg-[var(--tt-panel)] border-r border-[var(--tt-border)] shadow-lg",
           "transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
