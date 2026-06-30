@@ -478,6 +478,7 @@ export default async function StockTickerPage({
                 reconciliation={reconciliation}
                 issuer={issuer}
                 ticker={ticker}
+                lang={lang}
               />
             </section>
           )}
