@@ -396,7 +396,7 @@ function MethodDetails({
   const epv = sz?.epv;
   return (
     <details className="text-xs text-[var(--tt-muted)]">
-      <summary className="cursor-pointer text-[var(--tt-faint)]">{t.methodSummary}</summary>
+      <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">{t.methodSummary}</summary>
       <div className="mt-2 space-y-2">
         {/* precise numbers summary */}
         <p className="font-mono text-[var(--tt-text)]">

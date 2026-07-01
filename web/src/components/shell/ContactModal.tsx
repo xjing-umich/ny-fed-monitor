@@ -136,7 +136,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
                 type="button"
                 onClick={close}
                 aria-label={c.close}
-                className="shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
+                className="shrink-0 flex items-center justify-center w-11 h-11 rounded-md text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
               >
                 <X size={16} />
               </button>
