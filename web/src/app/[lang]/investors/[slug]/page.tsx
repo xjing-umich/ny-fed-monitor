@@ -12,7 +12,7 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
-import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod } from "@/lib/freshness/derive";
+import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
@@ -38,15 +38,6 @@ const MAX_HOLDINGS = 25;
 // ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的 AI 叙述(及更新的持仓)无需重新部署即可在一天内出现, 同时保持静态托管利于 SEO。
 // 13F 季度级数据 → 日级重验足够,避免 76 户详情页每小时各重验一次反复读库(egress)。
 export const revalidate = 86400;
-
-// "2026-03-31" → "Q1 2026" for SEO-friendly titles ("[name] portfolio Q1 2026").
-// Passes through any value not in YYYY-MM-DD form unchanged.
-function quarterLabel(period: string): string {
-  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(period);
-  if (!m) return period;
-  const q = Math.floor((parseInt(m[2], 10) - 1) / 3) + 1;
-  return `Q${q} ${m[1]}`;
-}
 
 export async function generateStaticParams() {
   const idx = await getManagerIndex();
@@ -383,7 +374,7 @@ export default async function InvestorSlugPage({
   const keyFacts = [
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(latest.totalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(latest.holdings.length), node: countNode },
-    { label: lang === "zh" ? "最新报告期" : "Latest period", value: latest.period },
+    { label: lang === "zh" ? "报告季度" : "Reporting quarter", value: quarterLabel(latest.period) },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
   ];
 
@@ -473,7 +464,7 @@ export default async function InvestorSlugPage({
           />
         }
         notice={freshnessNotice}
-        sources={[{ name: "SEC EDGAR 13F", asOf: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
+        sources={[{ name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >

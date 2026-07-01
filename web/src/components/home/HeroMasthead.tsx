@@ -5,7 +5,7 @@ import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
 import MoveTag from "@/components/shell/MoveTag";
 import { FreshnessDot } from "@/components/entity/FreshnessDot";
-import { filingFreshness } from "@/lib/freshness/derive";
+import { filingFreshness, quarterLabel } from "@/lib/freshness/derive";
 import { stockPath } from "@/lib/urls";
 
 const COPY = {
@@ -84,7 +84,7 @@ export default function HeroMasthead({
       <div>
         <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-accent)]">
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
-          {c.asOf(period)}
+          {c.asOf(quarterLabel(period) || period)}
         </p>
         <h1 className="mt-4 font-display text-3xl font-medium leading-[1.12] tracking-tight text-[var(--tt-text)] sm:text-4xl md:text-5xl">
           {c.propLead}{" "}

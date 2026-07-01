@@ -469,7 +469,7 @@ export default async function StockTickerPage({
         subtitle={subtitle}
         disclaimer={disclaimer}
         keyFacts={[]}
-        sources={[{ name: "SEC EDGAR 13F", asOf: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
+        sources={[{ name: "SEC EDGAR 13F", asOf: latestPeriod, filed: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         related={related}
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
