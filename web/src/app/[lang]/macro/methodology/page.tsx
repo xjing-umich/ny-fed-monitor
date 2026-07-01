@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import SubNav from "@/components/shell/SubNav";
 import type { Lang } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
+import { ogFor } from "@/lib/seo";
 import {
   DRIVER_MODULES,
   MACRO_INDICATOR_RESEARCH,
@@ -24,15 +25,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  return lang === "zh"
-    ? {
-        title: "宏观方法论 — Treasury Market Monitor",
-        description: "说明宏观首页如何选择信号、如何降级低价值数据、以及各指标的数据来源和使用边界。",
-      }
-    : {
-        title: "Macro Methodology — Treasury Market Monitor",
-        description: "How the macro dashboard selects top-level signals, downgrades low-usefulness data, and maps indicators to sources.",
-      };
+  const alternates = {
+    canonical: `/${lang}/macro/methodology`,
+    languages: {
+      en: "/en/macro/methodology",
+      "zh-CN": "/zh/macro/methodology",
+      "x-default": "/en/macro/methodology",
+    },
+  };
+  const title = lang === "zh" ? "宏观方法论 — Treasury Market Monitor" : "Macro Methodology — Treasury Market Monitor";
+  const description =
+    lang === "zh"
+      ? "说明宏观首页如何选择信号、如何降级低价值数据、以及各指标的数据来源和使用边界。"
+      : "How the macro dashboard selects top-level signals, downgrades low-usefulness data, and maps indicators to sources.";
+  return {
+    title,
+    description,
+    alternates,
+    ...ogFor({ lang, title, description, path: `/${lang}/macro/methodology` }),
+  };
 }
 
 const DISPLAY_LABEL: Record<MacroDisplayLevel, { zh: string; en: string }> = {
