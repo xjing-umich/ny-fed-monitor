@@ -32,8 +32,10 @@ export function DataStrip({
   dgs10: { value: number; date: string } | null;
 }): React.ReactElement {
   const t = COPY[lang];
+  // max-sm:nth-child(odd) pl-0 — 移动端 2×2 网格里左列有两格(第1、3),`first:pl-0`
+  // 只覆盖第1格,第3格(左下)会残留 px-4 的左缩进与上格错位;桌面 4 列单行不受影响。
   return (
-    <section className="mt-8 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-1 sm:grid-cols-4">
+    <section className="mt-8 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-1 max-sm:[&>*:nth-child(odd)]:pl-0 sm:grid-cols-4">
       <Tile label={t.period} value={period || "—"} sub={t.lag} />
       <Tile label={t.investors} value={investorCount > 0 ? String(investorCount) : "—"} />
       <Tile label={t.consensus} value={consensusCount > 0 ? String(consensusCount) : "—"} />
