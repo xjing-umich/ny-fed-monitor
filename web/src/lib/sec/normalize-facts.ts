@@ -518,6 +518,13 @@ export function normalizeCompanyFacts(
       console.warn(`[normalize-facts] 丢弃未来日期行 ${ticker} ${r.fiscal_period} FY${r.fiscal_year} period_end=${r.period_end}`);
       return false;
     }
+    // 派生季度(Q4 = FY − 前三季)若得出负营收, 必是 FY/YTD 口径不齐的派生假数据(如 UHAL.B
+    // 单季营收 −38.6 亿)。合法的负营收——保险股投资亏损季——走 is_derived=false 直报路径,
+    // 不受此闸影响。丢弃整行而非仅清营收: 同源派生的净利/FCF 同样不可信。
+    if (r.is_derived && r.revenue !== null && r.revenue < 0) {
+      console.warn(`[normalize-facts] 丢弃派生负营收行 ${ticker} ${r.fiscal_period} FY${r.fiscal_year} revenue=${r.revenue}`);
+      return false;
+    }
     return true;
   });
   const annual = finalizedSane
