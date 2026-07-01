@@ -113,3 +113,15 @@ export function freshness13F(period: string | null, globalLatest: string | null)
   if (lag >= STALE_MIN_LAG) return "stale";
   return "current";
 }
+
+/**
+ * 报告期(季末 YYYY-MM-DD) → 季度标签("2026-03-31" → "Q1 2026")。
+ * 用于把裸日期换成"季度"语感,避免被误读成"某天的过期数据"。非法格式原样返回。
+ */
+export function quarterLabel(period: string | null): string {
+  if (!period) return "";
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(period);
+  if (!m) return period;
+  const q = Math.floor((parseInt(m[2], 10) - 1) / 3) + 1;
+  return `Q${q} ${m[1]}`;
+}
