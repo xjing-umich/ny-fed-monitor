@@ -57,7 +57,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
       <button
         onClick={() => setOpen(true)}
         aria-label={lang === "zh" ? "打开菜单" : "Open menu"}
-        className="md:hidden flex items-center justify-center w-8 h-8 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
+        className="md:hidden flex items-center justify-center w-11 h-11 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
       >
         <Menu size={16} />
       </button>
@@ -97,7 +97,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
           <button
             onClick={() => setOpen(false)}
             aria-label={lang === "zh" ? "关闭菜单" : "Close menu"}
-            className="flex items-center justify-center w-7 h-7 rounded-md text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
+            className="flex items-center justify-center w-11 h-11 rounded-md text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
           >
             <X size={16} />
           </button>
@@ -142,7 +142,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                   <span
                     key={l}
                     aria-current="true"
-                    className="px-2.5 py-1 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
+                    className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
                   >
                     {l}
                   </span>
@@ -153,7 +153,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                   key={l}
                   href={otherLangPath}
                   onClick={() => setOpen(false)}
-                  className="px-2.5 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-[var(--tt-border)]"
+                  className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-[var(--tt-border)]"
                 >
                   {l}
                 </Link>
@@ -165,7 +165,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
           <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             aria-label={lang === "zh" ? "切换主题" : "Toggle theme"}
-            className="flex items-center justify-center w-8 h-8 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
+            className="flex items-center justify-center w-11 h-11 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
           >
             {mounted && resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
           </button>
