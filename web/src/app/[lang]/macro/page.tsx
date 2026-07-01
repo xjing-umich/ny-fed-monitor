@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
+import { ogFor } from "@/lib/seo";
 import { readMacroSnapshot } from "@/lib/macroSnapshot";
 import { MacroRefreshing } from "./MacroRefreshing";
 import {
@@ -38,17 +39,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  return lang === "zh"
-    ? {
-        title: "宏观 / 流动性 — Treasury Market Monitor",
-        description:
-          "资金面、供给面、政策面全景：回购融资、基准利率、美联储工具、国债拍卖、SOMA 持仓与政策预期。",
-      }
-    : {
-        title: "Macro / Liquidity — Treasury Market Monitor",
-        description:
-          "Full-spectrum view of funding, supply, and policy: repo financing, reference rates, Fed facilities, Treasury auctions, SOMA portfolio, and policy expectations.",
-      };
+  // canonical 去掉 ?view= 查询串 → 把 SubNav 链接的 5 个 ?view= 变体全部收口到 /{lang}/macro,
+  // 消除近重复 URL 的爬取浪费;同时补上此前缺失的 hreflang(en↔zh 互指)与 per-page OG。
+  const alternates = {
+    canonical: `/${lang}/macro`,
+    languages: { en: "/en/macro", "zh-CN": "/zh/macro", "x-default": "/en/macro" },
+  };
+  const title =
+    lang === "zh" ? "宏观 / 流动性 — Treasury Market Monitor" : "Macro / Liquidity — Treasury Market Monitor";
+  const description =
+    lang === "zh"
+      ? "资金面、供给面、政策面全景：回购融资、基准利率、美联储工具、国债拍卖、SOMA 持仓与政策预期。"
+      : "Full-spectrum view of funding, supply, and policy: repo financing, reference rates, Fed facilities, Treasury auctions, SOMA portfolio, and policy expectations.";
+  return { title, description, alternates, ...ogFor({ lang, title, description, path: `/${lang}/macro` }) };
 }
 
 // ── Tone → signal color ───────────────────────────────────────────────────────
