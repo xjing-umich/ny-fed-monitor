@@ -13,7 +13,7 @@ interface AppShellProps {
 
 export default function AppShell({ lang, items, children }: AppShellProps) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-[100dvh]">
       {/* Skip link — first tab stop, lets keyboard users bypass the nav */}
       <a
         href="#main-content"
