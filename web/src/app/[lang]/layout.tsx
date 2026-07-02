@@ -81,7 +81,7 @@ export async function generateMetadata({
       siteName: "Compounder",
       title: TITLE,
       description: DESCRIPTION,
-      url: isEn ? "https://thecompounder.fyi/en" : "https://thecompounder.fyi/zh",
+      url: isEn ? "https://thecompounder.fyi" : "https://thecompounder.fyi/zh",
       locale: isEn ? "en_US" : "zh_CN",
       alternateLocale: isEn ? ["zh_CN"] : ["en_US"],
     },
