@@ -9,6 +9,7 @@ import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
 import SearchBox from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
+import { localePath } from "@/lib/urls";
 
 interface TopNavProps {
   lang: Lang;
@@ -24,17 +25,17 @@ export default function TopNav({ lang, items }: TopNavProps) {
   useEffect(() => setMounted(true), []);
 
   const otherLang: Lang = lang === "zh" ? "en" : "zh";
-  const otherLangPath = pathname
-    ? pathname.replace(/^\/(zh|en)/, `/${otherLang}`)
-    : `/${otherLang}`;
+  // 当前 pathname 去掉语言前缀(裸 en 无前缀; /zh 有前缀),再按目标语言重新加。
+  const barePath = pathname ? pathname.replace(/^\/(zh|en)(?=\/|$)/, "") : "";
+  const otherLangPath = localePath(otherLang, barePath);
 
-  const homeHref = `/${lang}`;
+  const homeHref = localePath(lang, "");
 
   function isActive(entry: (typeof TOP_NAV)[number]) {
     if (entry.key === "home") {
-      return pathname === `/${lang}` || pathname === `/${lang}/`;
+      return pathname === homeHref || pathname === `${homeHref === "/" ? "" : homeHref}/`;
     }
-    return pathname.startsWith(`/${lang}${entry.href}`);
+    return pathname.startsWith(localePath(lang, entry.href));
   }
 
   return (
@@ -57,7 +58,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
       <nav className="flex items-center gap-6">
         {TOP_NAV.map((entry) => {
           const active = isActive(entry);
-          const href = entry.key === "home" ? homeHref : `/${lang}${entry.href}`;
+          const href = entry.key === "home" ? homeHref : localePath(lang, entry.href);
           return (
             <Link
               key={entry.key}

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import type { Lang } from "@/lib/nav";
+import { stockPath } from "@/lib/urls";
 
 interface SearchItem {
   label: string;
@@ -61,7 +62,7 @@ export default function SearchBox({
   const options: { href: string; label: string }[] = [
     ...filtered.map((item) => ({ href: item.href, label: item.label })),
     ...(showTickerFallback
-      ? [{ href: `/${lang}/stocks/${tickerGuess}`, label: tickerGuess as string }]
+      ? [{ href: stockPath(lang, tickerGuess as string), label: tickerGuess as string }]
       : []),
   ];
   const hasOptions = options.length > 0;
@@ -114,7 +115,7 @@ export default function SearchBox({
           : filtered.length > 0
             ? filtered[0].href
             : tickerGuess
-              ? `/${lang}/stocks/${tickerGuess}`
+              ? stockPath(lang, tickerGuess)
               : null;
       if (!dest) return;
       router.push(dest);
@@ -206,7 +207,7 @@ export default function SearchBox({
               id={optionId(filtered.length)}
               role="option"
               aria-selected={active === filtered.length}
-              onMouseDown={() => handleSelect(`/${lang}/stocks/${tickerGuess}`)}
+              onMouseDown={() => handleSelect(stockPath(lang, tickerGuess as string))}
               onMouseEnter={() => setActive(filtered.length)}
               className={[
                 "flex w-full items-center justify-between gap-2 text-left text-[var(--tt-muted)] transition-colors",

@@ -6,7 +6,7 @@ import { EntityName } from "@/components/common/EntityName";
 import MoveTag from "@/components/shell/MoveTag";
 import { FreshnessDot } from "@/components/entity/FreshnessDot";
 import { filingFreshness, quarterLabel } from "@/lib/freshness/derive";
-import { stockPath } from "@/lib/urls";
+import { stockPath, localePath } from "@/lib/urls";
 
 const COPY = {
   zh: {
@@ -75,9 +75,9 @@ export default function HeroMasthead({
 }): React.ReactElement {
   const c = COPY[lang];
   const links: { label: string; href: string }[] = [
-    { label: c.investors, href: `/${lang}/investors` },
-    { label: c.stocks, href: `/${lang}/stocks` },
-    { label: c.valuation, href: `/${lang}/stocks/screener` },
+    { label: c.investors, href: localePath(lang, "/investors") },
+    { label: c.stocks, href: localePath(lang, "/stocks") },
+    { label: c.valuation, href: localePath(lang, "/stocks/screener") },
   ];
   return (
     <section className="grid grid-cols-1 gap-10 md:grid-cols-[1.05fr_0.95fr] md:items-start">

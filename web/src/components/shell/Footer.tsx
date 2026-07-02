@@ -7,6 +7,7 @@ import { LogoMark } from "@/components/brand/Logo";
 import ContactModal from "./ContactModal";
 import NewsletterForm from "./NewsletterForm";
 import ScrollToTop from "./ScrollToTop";
+import { localePath } from "@/lib/urls";
 
 const colHeading =
   "font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-faint)]";
@@ -28,7 +29,7 @@ export default function Footer({ lang }: { lang: Lang }) {
             {TOP_NAV.map((entry) => (
               <Link
                 key={entry.key}
-                href={entry.key === "home" ? `/${lang}` : `/${lang}${entry.href}`}
+                href={entry.key === "home" ? localePath(lang, "") : localePath(lang, entry.href)}
                 className={colLink}
               >
                 {lang === "zh" ? entry.zh : entry.en}
@@ -40,7 +41,7 @@ export default function Footer({ lang }: { lang: Lang }) {
           <nav className="flex flex-col gap-3">
             <span className={colHeading}>{c.legal}</span>
             {LEGAL_LINKS.map((l) => (
-              <Link key={l.slug} href={`/${lang}/${l.slug}`} className={colLink}>
+              <Link key={l.slug} href={localePath(lang, `/${l.slug}`)} className={colLink}>
                 {lang === "zh" ? l.zh : l.en}
               </Link>
             ))}
@@ -49,7 +50,7 @@ export default function Footer({ lang }: { lang: Lang }) {
           {/* Support */}
           <div className="flex flex-col gap-3">
             <span className={colHeading}>{c.support}</span>
-            <Link href={`/${lang}/about`} className={colLink}>
+            <Link href={localePath(lang, "/about")} className={colLink}>
               {c.about}
             </Link>
             <ContactModal lang={lang} />

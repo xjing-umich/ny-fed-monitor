@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import type { ManagerSummary } from "@/lib/managers/types";
-import { investorPath } from "@/lib/urls";
+import { investorPath, localePath } from "@/lib/urls";
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -56,7 +56,7 @@ export default function TrackedInvestorsWall({
         ))}
       </div>
       <Link
-        href={`/${lang}/investors`}
+        href={localePath(lang, "/investors")}
         className="mt-6 inline-block font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
       >
         {c.more(total)}
