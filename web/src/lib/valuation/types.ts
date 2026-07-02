@@ -3,6 +3,8 @@
 // engine produces; ValuationFloorInput is the rich input contract mapped from
 // stored FundamentalPeriod rows.
 
+import type { NetNetLamp } from "./netNet";
+
 export type EpvLampMethod = {
   earnings_basis: string;
   leverage_treatment: string;
@@ -73,6 +75,7 @@ export type ValuationFloor = {
   graham_epv: EpvLamp;
   buffett_epv: EpvLamp;
   asset_floor: ReproductionValue;
+  net_net: NetNetLamp;
   moat_reading: MoatReading;
   growth_value: GrowthValue;
   high_leverage_warning: boolean;
@@ -180,6 +183,7 @@ export type ValuationFloorYear = {
   share_repurchases?: number;
   current_assets?: number;
   current_liabilities?: number;
+  total_liabilities?: number;
 };
 
 export type ValuationFloorInput = {

@@ -40,6 +40,7 @@ export function fundamentalsToFloorInput(
       share_repurchases: u(r.share_repurchases),
       current_assets: u(r.current_assets),
       current_liabilities: u(r.current_liabilities),
+      total_liabilities: u(r.total_liabilities),
     }));
   return { ticker, company_name: companyName ?? undefined, years };
 }
