@@ -31,11 +31,13 @@ export default function TopNav({ lang, items }: TopNavProps) {
 
   const homeHref = localePath(lang, "");
 
+  // barePath 已去语言前缀,服务端预渲染与客户端 hydrate 后一致(pathname 会因
+  // proxy rewrite 在两端不同,如 "/investors" vs "/en/investors",故不能直接比 pathname)。
   function isActive(entry: (typeof TOP_NAV)[number]) {
     if (entry.key === "home") {
-      return pathname === homeHref || pathname === `${homeHref === "/" ? "" : homeHref}/`;
+      return barePath === "" || barePath === "/";
     }
-    return pathname.startsWith(localePath(lang, entry.href));
+    return barePath.startsWith(entry.href);
   }
 
   return (

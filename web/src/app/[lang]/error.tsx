@@ -7,6 +7,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { localePath } from "@/lib/urls";
 
 export default function LocaleError({
   error,
@@ -63,7 +64,7 @@ export default function LocaleError({
           {t.retry}
         </button>
         <Link
-          href={isZh ? "/zh" : "/en"}
+          href={localePath(isZh ? "zh" : "en", "")}
           className="inline-flex items-center justify-center rounded-md border border-[var(--tt-border)] px-4 py-2 text-sm font-medium text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-text)]"
         >
           {t.home}
