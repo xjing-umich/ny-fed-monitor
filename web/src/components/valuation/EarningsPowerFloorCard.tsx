@@ -214,10 +214,24 @@ function ValueSpine({
   if (!epv) return null;
   const price = sz.price.close;
 
+  // net-net 独立信号:直接从 floor 自身的 lamp + 现价推导,不经过 verdict。
+  // deriveValuationVerdict 在 isImplausibleBand(边际>80%)或无可评估 EPV 灯时会返回 null,
+  // 而这恰恰是 Graham net-net 目标股(困境/亏损)的典型区间——不能让主判定的抑制连带
+  // 隐藏这条独立注脚(spec 承诺 net-net 独立于 80% 护栏)。
+  const nn = floor.net_net;
+  const netNetTriggered =
+    nn.assessable && Number.isFinite(nn.per_share) && nn.per_share > 0 && price != null && price > 0 && price < nn.per_share;
+
   // Single source of truth: bucket + range come from the shared pure verdict (extracted from
   // this very logic), so the card and the investor-page overlay can never drift apart.
   const verdict = deriveValuationVerdict({ floor, strikeZone: sz, oeDcf, reconciliation });
-  if (!verdict) return null; // epv present ⇒ verdict non-null in practice; narrows the type here.
+  if (!verdict) {
+    // 主判定被抑制(implausible band / 无可比灯):net-net 若触发仍需独立展示,其余一律不渲染。
+    if (!netNetTriggered || !nn.assessable) return null;
+    return (
+      <p className="text-[13px] leading-snug text-[var(--tt-faint)]">{t.netNet(perShare(nn.per_share))}</p>
+    );
+  }
 
   const oeOk = oeDcf?.assessable && finitePositive(oeDcf.per_share_low) && finitePositive(oeDcf.per_share_high);
   const conservative = oeOk ? { lo: oeDcf!.per_share_low!, hi: oeDcf!.per_share_high! } : null;
@@ -320,9 +334,9 @@ function ValueSpine({
         <p className="text-sm text-[var(--tt-muted)]">{t.assetBelow(usd0(sz.assetFloor.perShare))}</p>
       ) : null}
 
-      {verdict?.netNet?.triggered ? (
+      {netNetTriggered && nn.assessable ? (
         <p className="mt-2 text-[13px] leading-snug text-[var(--tt-faint)]">
-          {t.netNet(perShare(verdict.netNet.perShare))}
+          {t.netNet(perShare(nn.per_share))}
         </p>
       ) : null}
 
