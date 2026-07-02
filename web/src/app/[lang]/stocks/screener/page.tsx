@@ -102,7 +102,7 @@ export default async function ScreenerPage({
               key={v.key}
               href={hrefFor(v.key)}
               aria-current={activeView ? "page" : undefined}
-              className={`rounded-sm border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
+              className={`inline-flex items-center rounded-sm border px-2.5 py-1 max-sm:min-h-[44px] font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
                 activeView
                   ? "border-[var(--tt-text)] text-[var(--tt-text)]"
                   : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-accent)]"
@@ -130,7 +130,7 @@ export default async function ScreenerPage({
               key={s.key}
               href={`/${lang}/stocks/screener${qs ? `?${qs}` : ""}`}
               aria-current={activeSort ? "page" : undefined}
-              className={`rounded-sm border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
+              className={`inline-flex items-center rounded-sm border px-2.5 py-1 max-sm:min-h-[44px] font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
                 activeSort
                   ? "border-[var(--tt-text)] text-[var(--tt-text)]"
                   : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-accent)]"
