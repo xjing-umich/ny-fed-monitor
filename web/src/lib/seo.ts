@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { SITE_ORIGIN, absoluteUrl } from "@/lib/urls";
+import { SITE_ORIGIN, absoluteUrl, localePath } from "@/lib/urls";
 
 export const SITE_NAME = "Compounder";
 
@@ -60,5 +60,21 @@ export function datasetLd(opts: {
     isAccessibleForFree: true,
     creator: { "@type": "Organization", name: SITE_NAME, url: SITE_ORIGIN },
     isBasedOn: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany",
+  };
+}
+
+/**
+ * 每页 alternates（canonical + hreflang）统一构造器。
+ * path 是无语言前缀的应用内路径,如 "/investors/AAPL"、"" (首页)。
+ * en/x-default → 裸；zh-CN → /zh 前缀。杜绝各页散拼 /en 硬编码。
+ */
+export function altFor(lang: Lang, path: string) {
+  return {
+    canonical: localePath(lang, path),
+    languages: {
+      en: localePath("en", path),
+      "zh-CN": localePath("zh", path),
+      "x-default": localePath("en", path),
+    },
   };
 }
