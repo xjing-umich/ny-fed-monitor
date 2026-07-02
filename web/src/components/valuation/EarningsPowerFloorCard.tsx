@@ -90,6 +90,8 @@ const COPY = {
     highLeverageWarning: "High leverage — ranges are a degraded approximation (see method).",
     methodSummary: "Method & numbers",
     perSh: "/ sh",
+    netNet: (ps: string) =>
+      `⚑ Price is below net current asset value (${ps}/share). A Graham "net-net" — historically rare and usually a sign of business distress; beware the value trap.`,
   },
   zh: {
     eyebrow: "估值 · 两种方法",
@@ -123,6 +125,8 @@ const COPY = {
     highLeverageWarning: "高杠杆 — 价值区间为降级近似（见方法）。",
     methodSummary: "方法与数字",
     perSh: "/ 股",
+    netNet: (ps: string) =>
+      `⚑ 现价低于每股净流动资产（${ps}）。格雷厄姆式"净 net"深度价值,历史极罕见——常伴随经营困境,须警惕价值陷阱。`,
   },
 } as const;
 
@@ -314,6 +318,12 @@ function ValueSpine({
 
       {sz.assetFloor?.priceBelow ? (
         <p className="text-sm text-[var(--tt-muted)]">{t.assetBelow(usd0(sz.assetFloor.perShare))}</p>
+      ) : null}
+
+      {verdict?.netNet?.triggered ? (
+        <p className="mt-2 text-[13px] leading-snug text-[var(--tt-faint)]">
+          {t.netNet(perShare(verdict.netNet.perShare))}
+        </p>
       ) : null}
 
       {cautions.length > 0 ? (
