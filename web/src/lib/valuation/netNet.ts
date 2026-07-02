@@ -6,6 +6,23 @@ export type NetNetLamp =
   | { assessable: true; per_share: number; ncav: number }
   | { assessable: false; reason: string };
 
+// 折让上限:折让>80%(现价 < 每股 NCAV × 0.2)落在数据存疑区
+// (与引擎 isImplausibleBand 的 SANE_MARGIN_MAX 同阈值),抑制以免展示"好到不真实"的净net。
+export const NETNET_MAX_DISCOUNT = 0.8;
+
+/** net-net 触发判定:现价 < 每股 NCAV 且折让不超过 NETNET_MAX_DISCOUNT。唯一权威实现,card/verdict 共用。 */
+export function isNetNetTriggered(lamp: NetNetLamp, price: number | null | undefined): boolean {
+  return (
+    lamp.assessable &&
+    Number.isFinite(lamp.per_share) &&
+    lamp.per_share > 0 &&
+    price != null &&
+    price > 0 &&
+    price < lamp.per_share &&
+    price >= lamp.per_share * (1 - NETNET_MAX_DISCOUNT)
+  );
+}
+
 export function computeNetNet(input: {
   currentAssets?: number;
   totalLiabilities?: number;

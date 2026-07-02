@@ -9,6 +9,7 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
+import { isNetNetTriggered } from "./netNet";
 
 export type VerdictBucket = "below" | "within" | "above";
 export type VerdictCoverage = "full" | "single_lamp";
@@ -147,7 +148,7 @@ export function deriveValuationVerdict(input: {
   const nn = floor.net_net;
   const netNet =
     nn.assessable && Number.isFinite(nn.per_share) && nn.per_share > 0
-      ? { perShare: nn.per_share, triggered: price < nn.per_share }
+      ? { perShare: nn.per_share, triggered: isNetNetTriggered(nn, price) }
       : undefined;
 
   return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, reliable, netNet };

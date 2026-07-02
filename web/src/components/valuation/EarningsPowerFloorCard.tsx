@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { Lang } from "@/lib/nav";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
 import { deriveValuationVerdict } from "@/lib/valuation";
+import { isNetNetTriggered } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
 
 // USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
@@ -219,8 +220,7 @@ function ValueSpine({
   // 而这恰恰是 Graham net-net 目标股(困境/亏损)的典型区间——不能让主判定的抑制连带
   // 隐藏这条独立注脚(spec 承诺 net-net 独立于 80% 护栏)。
   const nn = floor.net_net;
-  const netNetTriggered =
-    nn.assessable && Number.isFinite(nn.per_share) && nn.per_share > 0 && price != null && price > 0 && price < nn.per_share;
+  const netNetTriggered = isNetNetTriggered(nn, price);
 
   // Single source of truth: bucket + range come from the shared pure verdict (extracted from
   // this very logic), so the card and the investor-page overlay can never drift apart.
