@@ -29,15 +29,6 @@ const nextConfig: NextConfig = {
 
     return [
       {
-        // Root → default locale. Previously handled by app/page.tsx (removed so
-        // the [lang] segment can own <html lang>). English-first SEO, so the
-        // default locale is /en. Temporary (307): "/" stays the canonical entry
-        // point while we route to the en default.
-        source: "/",
-        destination: "/en",
-        permanent: false,
-      },
-      {
         source: "/:lang(zh|en)/managers",
         destination: "/:lang/investors",
         permanent: true,
