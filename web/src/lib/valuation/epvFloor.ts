@@ -2,6 +2,7 @@ import type { EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, Valu
 import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
+import { computeNetNet } from "./netNet";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -148,6 +149,11 @@ function assembleFloor(
     graham_epv: grahamEpv,
     buffett_epv: buffettEpv,
     asset_floor: assetFloor,
+    net_net: computeNetNet({
+      currentAssets: latest.current_assets,
+      totalLiabilities: latest.total_liabilities,
+      sharesDiluted: shares,
+    }),
     moat_reading: moatReading,
     growth_value: growthValue,
     high_leverage_warning: highLeverage,

@@ -295,4 +295,21 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   assert.ok(Math.abs((fg.buffett_epv.normalized_earnings as number) - 1_440) < 1e-6, "latest ≥ avg → uses average (no cap, no regression)");
 }
 
+// net-net:current_assets − total_liabilities，用已解析 shares。
+{
+  const f = computeValuationFloor({
+    ticker: "NETNET", company_name: "NetNet Co",
+    years: [
+      { fiscal_year: 2025, revenue: 1000, operating_income: 100, operating_margin: 0.1, net_income: 80, shareholders_equity: 500, cash: 50, total_debt: 0, shares_diluted: 100, d_and_a: 20, capex: 20, current_assets: 1000, total_liabilities: 400 },
+      { fiscal_year: 2024, revenue: 950, operating_income: 95, operating_margin: 0.1, net_income: 76, shareholders_equity: 480, shares_diluted: 100, d_and_a: 20, capex: 20 },
+      { fiscal_year: 2023, revenue: 900, operating_income: 90, operating_margin: 0.1, net_income: 72, shareholders_equity: 460, shares_diluted: 100, d_and_a: 20, capex: 20 },
+    ],
+  });
+  assert.ok(f && f.kind === "floor", "netnet fixture yields floor");
+  if (f && f.kind === "floor") {
+    assert.ok(f.net_net.assessable, "net_net assessable");
+    if (f.net_net.assessable) assert.ok(Math.abs(f.net_net.per_share - 6) < 1e-6, "net_net per_share = 6");
+  }
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");

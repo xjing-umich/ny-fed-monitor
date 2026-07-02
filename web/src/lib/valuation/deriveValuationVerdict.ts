@@ -9,6 +9,7 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
+import { isNetNetTriggered } from "./netNet";
 
 export type VerdictBucket = "below" | "within" | "above";
 export type VerdictCoverage = "full" | "single_lamp";
@@ -36,6 +37,11 @@ export type ValuationVerdict = {
    * 数据本身不算坏（不像 isImplausibleBand 那样整条抑制），故仍展示，只是 strike-zone/below 不据此标"便宜"。
    */
   reliable: boolean;
+  /**
+   * Graham 净流动资产(net-net)信号:现价低于每股 NCAV 时 triggered=true。
+   * 平时 undefined(不可评估)或 triggered=false。独立于 6 档价值带与 reliable,仅供个股页注脚。
+   */
+  netNet?: { perShare: number; triggered: boolean };
 };
 
 function finitePositive(n: number | undefined): n is number {
@@ -138,5 +144,12 @@ export function deriveValuationVerdict(input: {
   // 可靠性:位置可算但便宜信号是否可信(周期峰值/高杠杆/模型不稳/per-share疑错)。floor 此处已窄化为 ValuationFloor。
   const reliable = assessReliability({ floor, oeDcf });
 
-  return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, reliable };
+  // net-net:现价 < 每股 NCAV → 触发(独立信号,不入 bucket、不入 reliable)。
+  const nn = floor.net_net;
+  const netNet =
+    nn.assessable && Number.isFinite(nn.per_share) && nn.per_share > 0
+      ? { perShare: nn.per_share, triggered: isNetNetTriggered(nn, price) }
+      : undefined;
+
+  return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, reliable, netNet };
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { Lang } from "@/lib/nav";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
 import { deriveValuationVerdict } from "@/lib/valuation";
+import { isNetNetTriggered } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
 
 // USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
@@ -90,6 +91,8 @@ const COPY = {
     highLeverageWarning: "High leverage — ranges are a degraded approximation (see method).",
     methodSummary: "Method & numbers",
     perSh: "/ sh",
+    netNet: (ps: string) =>
+      `⚑ Price is below net current asset value (${ps}/share). A Graham "net-net" — historically rare and usually a sign of business distress; beware the value trap.`,
   },
   zh: {
     eyebrow: "估值 · 两种方法",
@@ -123,6 +126,8 @@ const COPY = {
     highLeverageWarning: "高杠杆 — 价值区间为降级近似（见方法）。",
     methodSummary: "方法与数字",
     perSh: "/ 股",
+    netNet: (ps: string) =>
+      `⚑ 现价低于每股净流动资产（${ps}）。格雷厄姆式"净 net"深度价值,历史极罕见——常伴随经营困境,须警惕价值陷阱。`,
   },
 } as const;
 
@@ -210,10 +215,23 @@ function ValueSpine({
   if (!epv) return null;
   const price = sz.price.close;
 
+  // net-net 独立信号:直接从 floor 自身的 lamp + 现价推导,不经过 verdict。
+  // deriveValuationVerdict 在 isImplausibleBand(边际>80%)或无可评估 EPV 灯时会返回 null,
+  // 而这恰恰是 Graham net-net 目标股(困境/亏损)的典型区间——不能让主判定的抑制连带
+  // 隐藏这条独立注脚(spec 承诺 net-net 独立于 80% 护栏)。
+  const nn = floor.net_net;
+  const netNetTriggered = isNetNetTriggered(nn, price);
+
   // Single source of truth: bucket + range come from the shared pure verdict (extracted from
   // this very logic), so the card and the investor-page overlay can never drift apart.
   const verdict = deriveValuationVerdict({ floor, strikeZone: sz, oeDcf, reconciliation });
-  if (!verdict) return null; // epv present ⇒ verdict non-null in practice; narrows the type here.
+  if (!verdict) {
+    // 主判定被抑制(implausible band / 无可比灯):net-net 若触发仍需独立展示,其余一律不渲染。
+    if (!netNetTriggered || !nn.assessable) return null;
+    return (
+      <p className="text-[13px] leading-snug text-[var(--tt-faint)]">{t.netNet(perShare(nn.per_share))}</p>
+    );
+  }
 
   const oeOk = oeDcf?.assessable && finitePositive(oeDcf.per_share_low) && finitePositive(oeDcf.per_share_high);
   const conservative = oeOk ? { lo: oeDcf!.per_share_low!, hi: oeDcf!.per_share_high! } : null;
@@ -314,6 +332,12 @@ function ValueSpine({
 
       {sz.assetFloor?.priceBelow ? (
         <p className="text-sm text-[var(--tt-muted)]">{t.assetBelow(usd0(sz.assetFloor.perShare))}</p>
+      ) : null}
+
+      {netNetTriggered && nn.assessable ? (
+        <p className="mt-2 text-[13px] leading-snug text-[var(--tt-faint)]">
+          {t.netNet(perShare(nn.per_share))}
+        </p>
       ) : null}
 
       {cautions.length > 0 ? (
