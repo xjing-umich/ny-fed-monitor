@@ -102,7 +102,7 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
 
       {tail.length > 0 && (
         <details className="group mt-4">
-          <summary className="cursor-pointer list-none py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
+          <summary className="cursor-pointer list-none max-sm:flex max-sm:items-center max-sm:min-h-[44px] py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
             <span className="group-open:hidden">{isZh ? `展开其余 ${tail.length} 只` : `Show ${tail.length} more`} ▸</span>
             <span className="hidden group-open:inline">{isZh ? "收起" : "Collapse"} ▾</span>
           </summary>

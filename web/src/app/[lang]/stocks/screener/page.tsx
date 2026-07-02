@@ -76,7 +76,7 @@ export default async function ScreenerPage({
   const hrefFor = (k: ScreenView) => (k === "all" ? `/${lang}/stocks/screener` : `/${lang}/stocks/screener?view=${k}`);
 
   return (
-    <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10">
+    <div className="mx-auto max-w-5xl py-8 sm:py-10">
       <SubNav lang={lang} section="stocks" active="screener" />
 
       <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
