@@ -390,13 +390,13 @@ export default async function InvestorSlugPage({
         "@type": "ListItem",
         position: 1,
         name: lang === "zh" ? "超级投资者" : "Superinvestors",
-        item: `https://thecompounder.fyi/${lang}/investors`,
+        item: absoluteUrl(localePath(lang, `/investors`)),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: manager.person,
-        item: `https://thecompounder.fyi/${lang}/investors/${manager.slug}`,
+        item: absoluteUrl(localePath(lang, `/investors/${manager.slug}`)),
       },
     ],
   };
@@ -410,7 +410,7 @@ export default async function InvestorSlugPage({
     "@type": "Person",
     name: manager.person,
     ...(aliasNames.length ? { alternateName: aliasNames } : {}),
-    url: `https://thecompounder.fyi/${lang}/investors/${manager.slug}`,
+    url: absoluteUrl(localePath(lang, `/investors/${manager.slug}`)),
     jobTitle: lang === "zh" ? "投资人" : "Investor",
     worksFor: { "@type": "Organization", name: fund },
     subjectOf: {

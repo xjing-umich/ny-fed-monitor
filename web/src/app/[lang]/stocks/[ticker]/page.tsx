@@ -8,7 +8,7 @@ import { readStockHolders, readStockTrend } from "@/lib/managers/consensusRead";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, localePath } from "@/lib/urls";
+import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
@@ -397,8 +397,8 @@ export default async function StockTickerPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: lang === "zh" ? "个股" : "Stocks", item: `https://thecompounder.fyi/${lang}/stocks` },
-      { "@type": "ListItem", position: 2, name: issuer, item: `https://thecompounder.fyi/${lang}/stocks/${ticker}` },
+      { "@type": "ListItem", position: 1, name: lang === "zh" ? "个股" : "Stocks", item: absoluteUrl(localePath(lang, `/stocks`)) },
+      { "@type": "ListItem", position: 2, name: issuer, item: absoluteUrl(localePath(lang, `/stocks/${ticker}`)) },
     ],
   };
 
@@ -435,7 +435,7 @@ export default async function StockTickerPage({
     "@type": "Organization",
     name: issuer,
     alternateName: [ticker, ...stockAliases],
-    url: `https://thecompounder.fyi/${lang}/stocks/${ticker}`,
+    url: absoluteUrl(localePath(lang, `/stocks/${ticker}`)),
   };
 
   // Dataset structured data — the stock's 13F holders table as a factual,
@@ -450,7 +450,7 @@ export default async function StockTickerPage({
       lang === "zh"
         ? `持有 ${issuer}（${ticker}）的超级投资者及其持股数量、市值与组合权重，来自 SEC 13F 季度申报。`
         : `Superinvestors holding ${issuer} (${ticker}) with share counts, market values, and portfolio weights, from quarterly SEC 13F filings.`,
-    path: `/${lang}/stocks/${ticker}`,
+    path: localePath(lang, `/stocks/${ticker}`),
   });
 
   return (

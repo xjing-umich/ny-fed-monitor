@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import type { Lang } from "@/lib/nav";
 import { MACRO_GROUPS, indicatorToGroup } from "@/lib/nav";
-import { macroPath } from "@/lib/urls";
+import { macroPath, absoluteUrl, localePath } from "@/lib/urls";
 import { altFor } from "@/lib/seo";
 import { readMacroSnapshot } from "@/lib/macroSnapshot";
 import { MacroRefreshing } from "../MacroRefreshing";
@@ -273,7 +273,7 @@ export default async function IndicatorEntityPage({
       (lang === "zh"
         ? `${title} 的最新读数与历史走势。`
         : `Latest reading and historical trend for ${title}.`),
-    url: `https://thecompounder.fyi/${lang}/macro/${indicator}`,
+    url: absoluteUrl(localePath(lang, `/macro/${indicator}`)),
     inLanguage: lang === "zh" ? "zh-CN" : "en",
     isAccessibleForFree: true,
     creator: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
