@@ -17,7 +17,12 @@ import { deriveValuationVerdict, assessReliability } from "./deriveValuationVerd
 
 // 仅 deriveValuationVerdict 真正读取的字段被填实；其余用最小 stub 满足类型。
 function floorStub(): ValuationFloor {
-  return { kind: "floor" } as unknown as ValuationFloor;
+  return { kind: "floor", net_net: { assessable: false, reason: "stub" } } as unknown as ValuationFloor;
+}
+// net-net 可评估的 floor stub：per_share=95，供 triggered/未触发两档断言复用。
+// （数值需落在 sz() 默认价值带内，否则会被 isImplausibleBand 健壮性闸整条抑制为 null。）
+function floorStubWithNetNet(): ValuationFloor {
+  return { kind: "floor", net_net: { assessable: true, per_share: 95, ncav: 9500 } } as unknown as ValuationFloor;
 }
 function sz(position: ValuePosition, opts?: { ceilings?: boolean; price?: number; date?: string }): StrikeZoneAssessment {
   const price = opts?.price ?? 100;
@@ -100,7 +105,11 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
 }
 // 11) 高杠杆 floor → reliable = false
 {
-  const levFloor = { kind: "floor", high_leverage_warning: true } as unknown as ValuationFloor;
+  const levFloor = {
+    kind: "floor",
+    high_leverage_warning: true,
+    net_net: { assessable: false, reason: "stub" },
+  } as unknown as ValuationFloor;
   const v = deriveValuationVerdict({ floor: levFloor, strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
   assert(v && v.reliable === false, "high leverage → unreliable");
 }
@@ -115,6 +124,27 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   const oeQuick = { assessable: true, per_share_low: 90, per_share_high: 150, diagnostics: { quick_check_flag: true } } as OeDcfAssessment;
   assert(assessReliability({ floor: floorStub(), oeDcf: oeQuick }) === false, "quick_check_flag → unreliable");
   assert(assessReliability({ floor: floorStub(), oeDcf: oe() }) === true, "clean → reliable");
+}
+
+// 14) net-net:price(80) < 每股 NCAV(95) → triggered=true。
+{
+  const v = deriveValuationVerdict({
+    floor: floorStubWithNetNet(),
+    strikeZone: sz("in_strike_zone", { price: 80 }),
+    oeDcf: oe(),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(v && v.netNet && v.netNet.perShare === 95 && v.netNet.triggered === true, "price < per_share → net-net triggered");
+}
+// 15) net-net:price(110) > 每股 NCAV(95) → triggered=false。
+{
+  const v = deriveValuationVerdict({
+    floor: floorStubWithNetNet(),
+    strikeZone: sz("above_optimistic", { price: 110 }),
+    oeDcf: oe(),
+    reconciliation: recon("above_both_values"),
+  });
+  assert(v && v.netNet && v.netNet.perShare === 95 && v.netNet.triggered === false, "price > per_share → net-net not triggered");
 }
 
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");
