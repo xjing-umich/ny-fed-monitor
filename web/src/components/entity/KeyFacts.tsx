@@ -22,15 +22,18 @@ export function KeyFacts({ facts }: { facts: KeyFact[] }) {
 
   return (
     // 移动端: 干净的 2 列网格(无左边框,避免换行后首项错位);
-    // sm+ 恢复单行 flex + 竖线分隔的编辑风格。
-    <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:flex sm:flex-wrap sm:items-stretch sm:gap-y-4">
-      {facts.map((fact, i) => (
+    // sm+: 4 列网格 + 列首感知的竖线分隔(编辑风格)。用 grid 而非 flex-wrap,
+    // 因为 flex-wrap 换行后无法在 CSS 里定位"每行行首",first:pl-0/border-l 会
+    // 让第 2 行起的行首元素残留左缩进与孤立竖线(同 DataStrip 曾犯的族)。
+    // nth-child(4n+1) 精确命中每行列首 → 去 pl / 去左边框,换行安全、无 !important。
+    <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4 sm:gap-x-0 sm:gap-y-4">
+      {facts.map((fact) => (
         <div
           key={fact.label}
           className={cn(
             "flex min-w-0 flex-col gap-1.5",
-            "sm:min-w-[8rem] sm:px-6 sm:first:pl-0",
-            i > 0 && "sm:border-l sm:border-[var(--tt-border)]"
+            "sm:px-6 sm:border-l sm:border-[var(--tt-border)]",
+            "sm:[&:nth-child(4n+1)]:border-l-0 sm:[&:nth-child(4n+1)]:pl-0"
           )}
         >
           <span className="tt-label">{fact.label}</span>
