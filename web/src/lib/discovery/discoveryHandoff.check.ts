@@ -15,7 +15,7 @@ assert.ok(c.line.includes("AAPL"), "ticker uppercased");
 
 // 2) below 非 inStrikeZone → below 视图
 c = stockHandoffFor(v({ inStrikeZone: false, bucket: "below" }), "MSFT", "en");
-assert.equal(c.href, "/en/stocks/screener?view=below", "below → below view");
+assert.equal(c.href, "/stocks/screener?view=below", "below → below view");
 
 // 3) within/above → 邀请看击球区
 c = stockHandoffFor(v({ bucket: "above", inStrikeZone: false }), "NVDA", "zh");
@@ -23,7 +23,7 @@ assert.equal(c.href, "/zh/stocks/screener?view=strike_zone", "above → strike_z
 
 // 4) null → 兜底根链接
 c = stockHandoffFor(null, "X", "en");
-assert.equal(c.href, "/en/stocks/screener", "null → generic");
+assert.equal(c.href, "/stocks/screener", "null → generic");
 
 // 5) 不可信优先于 inStrikeZone → 兜底
 c = stockHandoffFor(v({ reliable: false, inStrikeZone: true }), "X", "zh");
@@ -36,7 +36,7 @@ assert.ok(c.line.includes("3"), "count shown");
 
 // 7) 投资人 k=0 → below; 英文单复数
 c = investorHandoffFor(0, "X", "en");
-assert.equal(c.href, "/en/stocks/screener?view=below", "k=0 → below");
+assert.equal(c.href, "/stocks/screener?view=below", "k=0 → below");
 c = investorHandoffFor(1, "X", "en");
 assert.ok(c.line.includes("1 position ") && !c.line.includes("positions"), "singular position");
 

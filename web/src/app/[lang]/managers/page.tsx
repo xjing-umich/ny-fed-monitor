@@ -1,5 +1,6 @@
 import { permanentRedirect } from "next/navigation";
 import type { Lang } from "@/lib/nav";
+import { localePath } from "@/lib/urls";
 
 export default async function LegacyManagersPage({
   params,
@@ -8,5 +9,5 @@ export default async function LegacyManagersPage({
 }) {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  permanentRedirect(`/${lang}/investors`);
+  permanentRedirect(localePath(lang, "/investors"));
 }

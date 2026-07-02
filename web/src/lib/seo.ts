@@ -15,7 +15,8 @@ const OG_LOCALE: Record<Lang, string> = { zh: "zh_CN", en: "en_US" };
  * every field. The route's `opengraph-image.tsx` still attaches its image
  * (file-based metadata has higher priority), so images are intentionally omitted.
  *
- * `path` is the locale-prefixed path, e.g. "/en/stocks/AAPL".
+ * `path` is the locale-aware path from `localePath()`/`stockPath()` etc.,
+ * e.g. "/stocks/AAPL" (en, bare) or "/zh/stocks/AAPL" (zh, prefixed).
  */
 export function ogFor(opts: {
   lang: Lang;

@@ -138,8 +138,8 @@ function groupLabel(lang: Lang, groupKey: string | null): string | null {
 
 function groupViewHref(lang: Lang, groupKey: string | null): string | null {
   if (!groupKey) return null;
-  if (!["funding", "supply", "policy", "macro-pricing", "system"].includes(groupKey)) return `/${lang}/macro`;
-  return `/${lang}/macro?view=${groupKey}`;
+  if (!["funding", "supply", "policy", "macro-pricing", "system"].includes(groupKey)) return localePath(lang, "/macro");
+  return localePath(lang, `/macro?view=${groupKey}`);
 }
 
 function MacroContextNotice({

@@ -221,7 +221,7 @@ export default async function StockTickerPage({
   const cusipMap = await getCusipMap();
   const asCusip = cusipMap.get(rawTicker);
   if (asCusip?.ticker && asCusip.ticker !== rawTicker) {
-    redirect(`/${lang}/stocks/${asCusip.ticker}`);
+    redirect(stockPath(lang, asCusip.ticker));
   }
 
   // 别名解析:公司名等非票代别名(如 /stocks/apple)308 跳到 canonical ticker。

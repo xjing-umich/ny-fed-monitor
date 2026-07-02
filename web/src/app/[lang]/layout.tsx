@@ -13,6 +13,7 @@ import { cleanIssuer } from "@/lib/format";
 import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
+import { investorPath, stockPath } from "@/lib/urls";
 
 // Characterful display serif for the wordmark and editorial headlines.
 const fraunces = Fraunces({
@@ -124,7 +125,7 @@ export default async function LangLayout({
 
   const managerItems = managerIdx.managers.map((m) => ({
     label: m.person,
-    href: `/${lang}/investors/${m.slug}`,
+    href: investorPath(lang, m.slug),
     keywords: INVESTOR_ALIASES[m.slug],
   }));
 
@@ -136,7 +137,7 @@ export default async function LangLayout({
     seenTickers.add(ticker);
     return [{
       label: cleanIssuer(row.issuer),
-      href: `/${lang}/stocks/${ticker}`,
+      href: stockPath(lang, ticker),
       keywords: ticker,
     }];
   });

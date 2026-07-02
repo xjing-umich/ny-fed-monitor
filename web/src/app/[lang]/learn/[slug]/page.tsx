@@ -95,7 +95,7 @@ export default async function ArticlePage({
       />
       <div className="max-w-[720px] mx-auto">
         <Link
-          href={`/${lang}/learn`}
+          href={localePath(lang, "/learn")}
           className="text-xs text-[var(--tt-faint)] hover:text-[var(--tt-text)] transition-colors no-underline"
         >
           {backLabel}

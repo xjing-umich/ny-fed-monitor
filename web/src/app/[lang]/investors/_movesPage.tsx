@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Lang } from "@/lib/nav";
 import type { MoveRow, MoveKind } from "@/lib/aggregations";
 import { notableMoves } from "@/lib/aggregations";
-import { stockPath, absoluteUrl } from "@/lib/urls";
+import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
@@ -43,7 +43,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
   const heading = side === "buy" ? (isZh ? "本季最多人买" : "Top buys") : (isZh ? "本季最多人卖" : "Top sells");
   const top = rankRows[0];
   const shareSlug = side === "buy" ? "buys" : "sells";
-  const shareUrl = absoluteUrl(`/${lang}/investors/${shareSlug}`);
+  const shareUrl = absoluteUrl(localePath(lang, `/investors/${shareSlug}`));
   const shareText = buildShareText(
     side === "buy"
       ? { kind: "buys", topName: top?.issuer ?? null, count: top?.primary ?? null }

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { mostHeld, holderDeltas } from "@/lib/aggregations";
 import { getManagerIndex } from "@/lib/managers/source";
-import { stockPath, absoluteUrl } from "@/lib/urls";
+import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { altFor } from "@/lib/seo";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
@@ -52,7 +52,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   }));
   const blurbRows: BlurbRow[] = rankRows.map((r) => ({ ticker: r.ticker, issuer: r.issuer, primary: r.primary, delta: r.delta }));
   const top = rankRows[0];
-  const shareUrl = absoluteUrl(`/${lang}/investors/consensus`);
+  const shareUrl = absoluteUrl(localePath(lang, "/investors/consensus"));
   const shareText = buildShareText(
     { kind: "consensus", topName: top?.issuer ?? null, holderCount: top?.primary ?? null, managerCount },
     lang,
