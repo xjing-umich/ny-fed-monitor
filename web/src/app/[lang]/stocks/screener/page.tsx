@@ -76,7 +76,7 @@ export default async function ScreenerPage({
   const hrefFor = (k: ScreenView) => (k === "all" ? `/${lang}/stocks/screener` : `/${lang}/stocks/screener?view=${k}`);
 
   return (
-    <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10">
+    <div className="mx-auto max-w-5xl py-8 sm:py-10">
       <SubNav lang={lang} section="stocks" active="screener" />
 
       <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
@@ -102,7 +102,7 @@ export default async function ScreenerPage({
               key={v.key}
               href={hrefFor(v.key)}
               aria-current={activeView ? "page" : undefined}
-              className={`rounded-sm border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
+              className={`inline-flex items-center rounded-sm border px-2.5 py-1 max-sm:min-h-[44px] font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
                 activeView
                   ? "border-[var(--tt-text)] text-[var(--tt-text)]"
                   : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-accent)]"
@@ -130,7 +130,7 @@ export default async function ScreenerPage({
               key={s.key}
               href={`/${lang}/stocks/screener${qs ? `?${qs}` : ""}`}
               aria-current={activeSort ? "page" : undefined}
-              className={`rounded-sm border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
+              className={`inline-flex items-center rounded-sm border px-2.5 py-1 max-sm:min-h-[44px] font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
                 activeSort
                   ? "border-[var(--tt-text)] text-[var(--tt-text)]"
                   : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-accent)]"

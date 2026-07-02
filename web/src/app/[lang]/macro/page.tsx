@@ -180,7 +180,7 @@ export default async function MacroOverviewPage({
   const latestUpdates = buildLatestUpdates(data);
 
   return (
-    <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10 flex flex-col gap-10">
+    <div className="mx-auto max-w-5xl py-8 sm:py-10 flex flex-col gap-10">
       {/* CSS hover: indicator links darken text on hover — no JS event handlers */}
       <style>{`.indicator-card:hover span.font-display { color: var(--tt-accent); }`}</style>
 

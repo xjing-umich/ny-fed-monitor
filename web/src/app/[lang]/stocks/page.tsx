@@ -82,7 +82,7 @@ export default async function StocksIndexPage({
   });
 
   return (
-    <div className="mx-auto max-w-5xl px-2 py-8 sm:py-10">
+    <div className="mx-auto max-w-5xl py-8 sm:py-10">
       {/* Section sub-nav */}
       <SubNav lang={lang} section="stocks" active="held" />
 
