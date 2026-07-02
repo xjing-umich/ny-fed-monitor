@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ResearchPanel } from "@/components/research/ResearchPanel";
+import { altFor } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -21,13 +22,7 @@ export async function generateMetadata({
       lang === "zh"
         ? `查看 ${upperTicker} 的数据质量、基本面、成长能力和证据约束风险信号。`
         : `View data confidence, fundamental quality, growth capacity, and evidence-bound risk signals for ${upperTicker}.`,
-    alternates: {
-      canonical: `/${lang}/research/${upperTicker}`,
-      languages: {
-        en: `/en/research/${upperTicker}`,
-        "zh-CN": `/zh/research/${upperTicker}`,
-      },
-    },
+    alternates: altFor(lang, `/research/${upperTicker}`),
   };
 }
 

@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import SubNav from "@/components/shell/SubNav";
 import type { Lang } from "@/lib/nav";
-import { macroPath } from "@/lib/urls";
-import { ogFor } from "@/lib/seo";
+import { macroPath, localePath } from "@/lib/urls";
+import { altFor, ogFor } from "@/lib/seo";
 import {
   DRIVER_MODULES,
   MACRO_INDICATOR_RESEARCH,
@@ -25,14 +25,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${lang}/macro/methodology`,
-    languages: {
-      en: "/en/macro/methodology",
-      "zh-CN": "/zh/macro/methodology",
-      "x-default": "/en/macro/methodology",
-    },
-  };
+  const alternates = altFor(lang, "/macro/methodology");
   const title = lang === "zh" ? "宏观方法论 — Treasury Market Monitor" : "Macro Methodology — Treasury Market Monitor";
   const description =
     lang === "zh"
@@ -42,7 +35,7 @@ export async function generateMetadata({
     title,
     description,
     alternates,
-    ...ogFor({ lang, title, description, path: `/${lang}/macro/methodology` }),
+    ...ogFor({ lang, title, description, path: localePath(lang, "/macro/methodology") }),
   };
 }
 

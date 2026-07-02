@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getLegalDoc } from "@/lib/legal";
+import { altFor } from "@/lib/seo";
 import LegalArticle from "@/components/legal/LegalArticle";
 
 export function generateStaticParams() {
@@ -18,10 +19,7 @@ export async function generateMetadata({
   return {
     title: `${doc.title} — Compounder`,
     description: doc.intro,
-    alternates: {
-      canonical: `/${lang}/privacy`,
-      languages: { en: "/en/privacy", "zh-CN": "/zh/privacy", "x-default": "/en/privacy" },
-    },
+    alternates: altFor(lang, "/privacy"),
   };
 }
 

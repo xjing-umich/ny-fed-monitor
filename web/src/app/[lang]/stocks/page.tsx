@@ -4,7 +4,8 @@ import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
 import { isLikelyTicker } from "@/lib/externalLinks";
-import { ogFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
+import { localePath } from "@/lib/urls";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { StocksTable, type StockRow } from "./StocksTable";
@@ -22,10 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${lang}/stocks`,
-    languages: { en: "/en/stocks", "zh-CN": "/zh/stocks", "x-default": "/en/stocks" },
-  };
+  const alternates = altFor(lang, "/stocks");
   const meta =
     lang === "zh"
       ? {
@@ -39,7 +37,7 @@ export async function generateMetadata({
   return {
     ...meta,
     alternates,
-    ...ogFor({ lang, title: meta.title, description: meta.description, path: `/${lang}/stocks` }),
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, "/stocks") }),
   };
 }
 

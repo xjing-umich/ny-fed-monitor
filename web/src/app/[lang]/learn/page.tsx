@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { listArticles } from "@/lib/learn";
+import { altFor } from "@/lib/seo";
 import PageHeader from "@/components/common/PageHeader";
 
 export function generateStaticParams() {
@@ -38,10 +39,7 @@ export async function generateMetadata({
   return {
     title: `${c.title} — Compounder`,
     description: c.intro,
-    alternates: {
-      canonical: `/${lang}/learn`,
-      languages: { en: "/en/learn", "zh-CN": "/zh/learn", "x-default": "/en/learn" },
-    },
+    alternates: altFor(lang, "/learn"),
   };
 }
 

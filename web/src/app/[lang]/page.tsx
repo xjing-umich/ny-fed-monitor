@@ -8,6 +8,7 @@ import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
 import { investorPath, stockPath } from "@/lib/urls";
+import { altFor } from "@/lib/seo";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import { DataStrip } from "@/components/common/DataStrip";
@@ -42,7 +43,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `/${l}`, languages: { en: "/en", "zh-CN": "/zh", "x-default": "/en" } },
+    alternates: altFor(l, ""),
   };
 }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getAboutDoc } from "@/lib/about";
+import { altFor } from "@/lib/seo";
 import ProseDoc from "@/components/legal/ProseDoc";
 
 export function generateStaticParams() {
@@ -15,10 +16,7 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const doc = getAboutDoc(lang);
-  const alternates = {
-    canonical: `/${lang}/about`,
-    languages: { en: "/en/about", "zh-CN": "/zh/about", "x-default": "/en/about" },
-  };
+  const alternates = altFor(lang, "/about");
   return { title: `${doc.title} — Compounder`, description: doc.intro, alternates };
 }
 

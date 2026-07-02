@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
+import { altFor } from "@/lib/seo";
 import SubNav from "@/components/shell/SubNav";
 import { readValuationScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
 import { ScreenerTable } from "./ScreenerTable";
@@ -22,10 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${lang}/stocks/screener`,
-    languages: { en: "/en/stocks/screener", "zh-CN": "/zh/stocks/screener", "x-default": "/en/stocks/screener" },
-  };
+  const alternates = altFor(lang, "/stocks/screener");
   return lang === "zh"
     ? {
         title: "个股 · 按价值带 — Compounder · 复利",

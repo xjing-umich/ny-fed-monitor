@@ -8,13 +8,13 @@ import { readStockHolders, readStockTrend } from "@/lib/managers/consensusRead";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath } from "@/lib/urls";
+import { investorPath, stockPath, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer } from "@/lib/format";
-import { ogFor, datasetLd } from "@/lib/seo";
+import { altFor, ogFor, datasetLd } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -68,11 +68,7 @@ export async function generateMetadata({
   let issuer = ticker;
   for (const c of cusips) { const info = cusipMap.get(c); if (info?.name) { issuer = cleanIssuer(info.name); break; } }
 
-  const l = lang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${l}/stocks/${ticker}`,
-    languages: { en: `/en/stocks/${ticker}`, "zh-CN": `/zh/stocks/${ticker}`, "x-default": `/en/stocks/${ticker}` },
-  };
+  const alternates = altFor(lang, `/stocks/${ticker}`);
   const meta =
     lang === "zh"
       ? { title: `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
@@ -82,7 +78,7 @@ export async function generateMetadata({
   return {
     ...meta,
     alternates,
-    ...ogFor({ lang, title: meta.title, description: meta.description, path: `/${l}/stocks/${ticker}` }),
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/stocks/${ticker}`) }),
   };
 }
 

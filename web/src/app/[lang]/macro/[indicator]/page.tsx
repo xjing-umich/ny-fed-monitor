@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import type { Lang } from "@/lib/nav";
 import { MACRO_GROUPS, indicatorToGroup } from "@/lib/nav";
 import { macroPath } from "@/lib/urls";
+import { altFor } from "@/lib/seo";
 import { readMacroSnapshot } from "@/lib/macroSnapshot";
 import { MacroRefreshing } from "../MacroRefreshing";
 import { sectionLabel, metricLabel, badgeTone } from "@/lib/dashboard";
@@ -42,15 +43,7 @@ export async function generateMetadata({
   const name = names ? names[lang] : indicator;
   const blurb = INDICATOR_BLURBS[indicator]?.[lang] ?? "";
 
-  const l = lang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${l}/macro/${indicator}`,
-    languages: {
-      en: `/en/macro/${indicator}`,
-      "zh-CN": `/zh/macro/${indicator}`,
-      "x-default": `/en/macro/${indicator}`,
-    },
-  };
+  const alternates = altFor(lang, `/macro/${indicator}`);
   return lang === "zh"
     ? {
         title: `${name} — 宏观/流动性 · Treasury Market Monitor`,

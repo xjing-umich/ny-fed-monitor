@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
-import { ogFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
+import { localePath } from "@/lib/urls";
 import { InvestorListClient } from "./InvestorListClient";
 import SubNav from "@/components/shell/SubNav";
 
@@ -17,10 +18,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${lang}/investors`,
-    languages: { en: "/en/investors", "zh-CN": "/zh/investors", "x-default": "/en/investors" },
-  };
+  const alternates = altFor(lang, "/investors");
   const meta =
     lang === "zh"
       ? {
@@ -34,7 +32,7 @@ export async function generateMetadata({
   return {
     ...meta,
     alternates,
-    ...ogFor({ lang, title: meta.title, description: meta.description, path: `/${lang}/investors` }),
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, "/investors") }),
   };
 }
 

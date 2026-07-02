@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
 import { investorPath, stockPath } from "@/lib/urls";
+import { altFor } from "@/lib/seo";
 import ProseDoc from "@/components/legal/ProseDoc";
 
 export function generateStaticParams() {
@@ -25,14 +26,7 @@ export async function generateMetadata({
   return {
     title: `${article.title} — Compounder`,
     description: article.description,
-    alternates: {
-      canonical: `/${lang}/learn/${slug}`,
-      languages: {
-        en: `/en/learn/${slug}`,
-        "zh-CN": `/zh/learn/${slug}`,
-        "x-default": `/en/learn/${slug}`,
-      },
-    },
+    alternates: altFor(lang, `/learn/${slug}`),
   };
 }
 

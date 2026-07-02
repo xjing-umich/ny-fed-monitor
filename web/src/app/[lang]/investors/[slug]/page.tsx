@@ -6,7 +6,7 @@ import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { holdingKey } from "@/lib/managers/assemble";
 import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, absoluteUrl } from "@/lib/urls";
+import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
@@ -16,7 +16,7 @@ import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod, quarterL
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
-import { ogFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
@@ -58,7 +58,6 @@ export async function generateMetadata({
   if (!d) return {};
   const { person, name } = d.manager;
   const fundName = displayFundName(name);
-  const l = lang === "en" ? "en" : "zh";
   const q = d.latest?.period ? quarterLabel(d.latest.period) : "";
   const qSuffix = q ? ` ${q}` : "";
   // 确定性 meta description：从已加载的 13F 数据派生，每位投资人各异（不再依赖已退役的 AI judgment_line）。
@@ -68,14 +67,7 @@ export async function generateMetadata({
     d.latest && d.latest.holdings.length > 0
       ? cleanIssuer([...d.latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
       : "";
-  const alternates = {
-    canonical: `/${l}/investors/${slug}`,
-    languages: {
-      en: `/en/investors/${slug}`,
-      "zh-CN": `/zh/investors/${slug}`,
-      "x-default": `/en/investors/${slug}`,
-    },
-  };
+  const alternates = altFor(lang, `/investors/${slug}`);
   const meta =
     lang === "zh"
       ? {
@@ -89,7 +81,7 @@ export async function generateMetadata({
   return {
     ...meta,
     alternates,
-    ...ogFor({ lang, title: meta.title, description: meta.description, path: `/${l}/investors/${slug}`, type: "profile" }),
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/investors/${slug}`), type: "profile" }),
   };
 }
 
