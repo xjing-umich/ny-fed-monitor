@@ -35,9 +35,10 @@
 
 - 估值卡 `EarningsPowerFloorCard`（`src/components/valuation/EarningsPowerFloorCard.tsx`，RSC，props 含 `lang: Lang`）已在 provenance 区显示 DGS10：`oeDcf.discount.dgs10_value` + `oeDcf.discount.dgs10_date`（类型 `DiscountBandProvenance`，`types.ts:233-234`，`dgs10_value?: number` **fallback 时 undefined**）。有 `pct1` 等格式化工具在文件内。
 - 个股页把 `oeDcf` 传入卡片；`dgs10` 来自 `getLatestDgs10()`（`treasuryRead.ts`）。
-- `macroPath(lang, indicator)` = `/{lang}/macro/{indicator}`（`urls.ts:6`）；macro 利率视图 = `/{lang}/macro?view=macro-pricing`（`MacroSubNav` 现有视图，稳定存在）。
+- **URL 走 `localePath` 单一真相源**（i18n hide-default-locale 迁移已合并，PR #132/#133）：`localePath(lang, path)`（`urls.ts:5`）= **en 裸前缀 / zh 加 `/zh`**，支持带 query。硬编码 `/{lang}/...` 已作废（英文会 301）。既有 `discoveryHandoff.ts` 已用此写法。
+- macro 利率视图目标 = `localePath(lang, "/macro?view=macro-pricing")`（`MacroSubNav` 现有视图，稳定存在）。
 - macro overview 页 `src/app/[lang]/macro/page.tsx`（`MacroOverviewPage`，RSC，有 `lang`）渲染 `MacroViewHero` + `MacroViewModules` + 若干 `<section>`。
-- screener = `/{lang}/stocks/screener`（含自身合规免责）。
+- screener 目标 = `localePath(lang, "/stocks/screener")`（含自身合规免责）。
 
 ## 设计
 
@@ -46,7 +47,7 @@
 在贴现率 provenance 区加一条紧凑 mono 源链接，**仅当 `oeDcf?.discount?.dgs10_value != null` 时渲染**：
 - zh：`贴现锚 · 10Y 美债 {pct1(dgs10_value)} @ {dgs10_date} — 看利率走势 →`
 - en：`Discount anchor · 10Y Treasury {pct1(dgs10_value)} @ {dgs10_date} — see rate trend →`
-- href：`/{lang}/macro?view=macro-pricing`
+- href：`localePath(lang, "/macro?view=macro-pricing")`
 - 无真锚（`dgs10_value` undefined，用 9–11% 兜底）→ 不渲染（诚实）。
 - 用 `next/link`（RSC 内静态链接）+ 现有 `pct1`。样式：mono、`--tt-muted`、hover `--tt-accent`、带 `→`。
 
@@ -55,7 +56,7 @@
 新建小 RSC 组件 `ValuationBridgeCta({ lang })`，紧凑 `rounded-md` 面板，讲清利率↔估值关系并链到 screener：
 - zh：eyebrow `利率 × 估值`；正文 `10 年期美债利率是我们给每只股票估值时用的贴现率地基。`；CTA `看看现在哪些股票相对保守价值带便宜 →`
 - en：eyebrow `Rates × valuation`；正文 `The 10-year Treasury yield is the discount-rate floor we use to value every stock.`；CTA `See which stocks are cheap against a conservative value band →`
-- href：`/{lang}/stocks/screener`
+- href：`localePath(lang, "/stocks/screener")`
 - 挂载：`macro/page.tsx` 的 `MacroViewHero` 之后（利率语境自然接"这利率怎么用于估值"）。
 
 ## 组件边界
