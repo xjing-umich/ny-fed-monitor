@@ -29,7 +29,7 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
     {
       key: "position",
       header: isZh ? "位置" : "Position",
-      width: "w-28",
+      width: "w-40",
       mobileLabel: isZh ? "位置" : "Position",
       // ScreenerRow ⊇ SnapshotVerdict → 直接传整行
       cell: (r) => <ValuationBadge verdict={r} lang={lang} />,
