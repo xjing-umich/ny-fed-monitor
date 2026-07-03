@@ -104,16 +104,16 @@ export const readStrikeZoneLeaders = cache(
       return code === "42P01" || code === "PGRST205";
     };
     try {
-      // 计数与 leaders 都只认两法夹逼(coverage=full)且可靠(reliable)的 —— 与 /stocks/screener
-      // strike_zone 视图同一信心闸:single_lamp 单法、或带红旗(周期峰值/高杠杆/模型不稳/per-share
-      // 疑错)不据此标"落在 strike zone"。(head 计数无法过 isImplausibleBand,可能仍含极少脏行;
-      // 重跑 valuation:ingest 清表后彻底干净 —— 与 screener strikeTotal 相同的登记遗留。)
+      // 计数与 leaders 只认可靠(reliable)的 —— 与 /stocks/screener strike_zone 视图同一信心闸:
+      // 带红旗(周期峰值/高杠杆/模型不稳/per-share 疑错)不据此标"落在 strike zone"。single_lamp
+      // 单法但无红旗仍算数(OE-DCF 对多数深折价名算不出值,若强求两法夹逼会把 tab 架空成几乎为空;
+      // 见 [[valuation-broad-universe-guardrails]] 的口径修订)。(head 计数无法过 isImplausibleBand,
+      // 可能仍含极少脏行;重跑 valuation:ingest 清表后彻底干净。)
       const { count, error: cErr } = await withRetry(() =>
         getDb()
           .from("valuation_snapshot")
           .select("ticker", { count: "exact", head: true })
           .eq("in_strike_zone", true)
-          .eq("coverage", "full")
           .eq("reliable", true),
       );
       if (cErr) {
@@ -129,7 +129,6 @@ export const readStrikeZoneLeaders = cache(
           .from("valuation_snapshot")
           .select("ticker,range_lo,range_hi,price,margin_pct,computed_at")
           .eq("in_strike_zone", true)
-          .eq("coverage", "full")
           .eq("reliable", true)
           .order("margin_pct", { ascending: false })
           .limit(overscan),
@@ -202,32 +201,32 @@ export const readValuationScreen = cache(
       return code === "42P01" || code === "PGRST205";
     };
     try {
-      // ① strike-zone 全表计数(顶部句)。只数两法夹逼(coverage=full)且可靠(reliable)的 ——
-      // 与下方视图口径一致:single_lamp 单法、或带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)
-      // 不足以认定"落在 strike zone"(守保守纪律,见下)。
+      // ① strike-zone 全表计数(顶部句)。只数可靠(reliable)的 —— 与下方视图口径一致:
+      // 带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)不足以认定"落在 strike zone"。
+      // single_lamp 单法但无红旗仍计入(不强求两法夹逼,见下 ②)。
       const { count, error: cErr } = await withRetry(() =>
         getDb()
           .from("valuation_snapshot")
           .select("ticker", { count: "exact", head: true })
           .eq("in_strike_zone", true)
-          .eq("coverage", "full")
           .eq("reliable", true),
       );
       if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
       const strikeTotal = cErr ? 0 : count ?? 0;
 
-      // ② 主查询(thunk 内重建 builder)。strike_zone/below 视图加 coverage=full:只有
-      // Greenwald EPV 与 Owner-Earnings DCF 两法独立都认为便宜,才标"进入区/有安全边际"
-      // (用引擎自身的两法夹逼作信心闸,非魔法阈值;single_lamp 单法仍在"全部可估值"可见)。
+      // ② 主查询(thunk 内重建 builder)。strike_zone/below 视图的信心闸 = reliable=true:
+      // 位置可算但带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)的不标便宜。不强求两法夹逼
+      // (coverage=full)—— OE-DCF 对多数深折价名算不出值,强求会把这两个视图架空成几乎为空;
+      // single_lamp 单法但无红旗的深折价名应当出现在这里(口径修订见 [[valuation-broad-universe-guardrails]])。
       const runMain = () => {
         let q = getDb()
           .from("valuation_snapshot")
           .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at")
           .order("margin_pct", { ascending: false, nullsFirst: false })
           .limit(limit);
-        // "便宜"视图(strike_zone/below)额外要求 reliable=true:位置可算但带红旗的不据此标便宜。
-        if (view === "strike_zone") q = q.eq("in_strike_zone", true).eq("coverage", "full").eq("reliable", true);
-        else if (view === "below") q = q.eq("verdict_bucket", "below").eq("coverage", "full").eq("reliable", true);
+        // "便宜"视图(strike_zone/below)只要求 reliable=true:带红旗的不据此标便宜。
+        if (view === "strike_zone") q = q.eq("in_strike_zone", true).eq("reliable", true);
+        else if (view === "below") q = q.eq("verdict_bucket", "below").eq("reliable", true);
         return q;
       };
       const { data, error } = await withRetry(runMain);
