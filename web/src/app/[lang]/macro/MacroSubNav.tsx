@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { Lang } from "@/lib/nav";
 import { SECONDARY_NAV } from "@/lib/nav";
+import { localePath } from "@/lib/urls";
 
 export default function MacroSubNav({ lang }: { lang: Lang }) {
   const searchParams = useSearchParams();
@@ -22,7 +23,7 @@ export default function MacroSubNav({ lang }: { lang: Lang }) {
         return (
           <Link
             key={item.key}
-            href={item.href ? `/${lang}${item.href}` : "#"}
+            href={item.href ? localePath(lang, item.href) : "#"}
             className={[
               "relative flex items-center px-4 py-2.5 text-[11px] uppercase tracking-[0.1em] transition-colors no-underline shrink-0",
               "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px]",

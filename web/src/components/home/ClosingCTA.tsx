@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
+import { localePath } from "@/lib/urls";
 
 const COPY = {
   zh: {
@@ -23,9 +24,9 @@ const COPY = {
 export default function ClosingCTA({ lang }: { lang: Lang }): React.ReactElement {
   const c = COPY[lang];
   const links = [
-    { label: c.investors, href: `/${lang}/investors` },
-    { label: c.stocks, href: `/${lang}/stocks` },
-    { label: c.valuation, href: `/${lang}/stocks/screener` },
+    { label: c.investors, href: localePath(lang, "/investors") },
+    { label: c.stocks, href: localePath(lang, "/stocks") },
+    { label: c.valuation, href: localePath(lang, "/stocks/screener") },
   ];
   return (
     <section className="mt-24 border-t border-[var(--tt-border)] pt-16 text-center">

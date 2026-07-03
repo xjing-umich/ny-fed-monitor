@@ -173,7 +173,7 @@ function SystemSection({ lang }: { lang: Lang }) {
           </div>
         </Link>
 
-        <Link href={`/${lang}/macro/methodology`} className="indicator-card block no-underline">
+        <Link href={macroPath(lang, "methodology")} className="indicator-card block no-underline">
           <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2">
             <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
               {lang === "zh" ? "方法论与来源" : "Methodology & Sources"}

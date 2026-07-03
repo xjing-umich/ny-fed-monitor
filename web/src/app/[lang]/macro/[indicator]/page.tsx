@@ -5,7 +5,8 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import type { Lang } from "@/lib/nav";
 import { MACRO_GROUPS, indicatorToGroup } from "@/lib/nav";
-import { macroPath } from "@/lib/urls";
+import { macroPath, absoluteUrl, localePath } from "@/lib/urls";
+import { altFor } from "@/lib/seo";
 import { readMacroSnapshot } from "@/lib/macroSnapshot";
 import { MacroRefreshing } from "../MacroRefreshing";
 import { sectionLabel, metricLabel, badgeTone } from "@/lib/dashboard";
@@ -42,15 +43,7 @@ export async function generateMetadata({
   const name = names ? names[lang] : indicator;
   const blurb = INDICATOR_BLURBS[indicator]?.[lang] ?? "";
 
-  const l = lang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${l}/macro/${indicator}`,
-    languages: {
-      en: `/en/macro/${indicator}`,
-      "zh-CN": `/zh/macro/${indicator}`,
-      "x-default": `/en/macro/${indicator}`,
-    },
-  };
+  const alternates = altFor(lang, `/macro/${indicator}`);
   return lang === "zh"
     ? {
         title: `${name} — 宏观/流动性 · Treasury Market Monitor`,
@@ -145,8 +138,8 @@ function groupLabel(lang: Lang, groupKey: string | null): string | null {
 
 function groupViewHref(lang: Lang, groupKey: string | null): string | null {
   if (!groupKey) return null;
-  if (!["funding", "supply", "policy", "macro-pricing", "system"].includes(groupKey)) return `/${lang}/macro`;
-  return `/${lang}/macro?view=${groupKey}`;
+  if (!["funding", "supply", "policy", "macro-pricing", "system"].includes(groupKey)) return localePath(lang, "/macro");
+  return localePath(lang, `/macro?view=${groupKey}`);
 }
 
 function MacroContextNotice({
@@ -280,7 +273,7 @@ export default async function IndicatorEntityPage({
       (lang === "zh"
         ? `${title} 的最新读数与历史走势。`
         : `Latest reading and historical trend for ${title}.`),
-    url: `https://thecompounder.fyi/${lang}/macro/${indicator}`,
+    url: absoluteUrl(localePath(lang, `/macro/${indicator}`)),
     inLanguage: lang === "zh" ? "zh-CN" : "en",
     isAccessibleForFree: true,
     creator: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },

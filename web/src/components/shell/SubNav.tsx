@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { SECONDARY_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
+import { localePath } from "@/lib/urls";
 
 interface SubNavProps {
   lang: Lang;
@@ -39,7 +40,7 @@ export default function SubNav({ lang, section, active }: SubNavProps) {
         return (
           <Link
             key={item.key}
-            href={item.href ? `/${lang}${item.href}` : "#"}
+            href={item.href ? localePath(lang, item.href) : "#"}
             className={[
               "relative flex items-center max-sm:min-h-[44px] px-4 py-2.5 text-[11px] uppercase tracking-[0.1em] transition-colors no-underline shrink-0",
               "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:transition-colors after:duration-200",

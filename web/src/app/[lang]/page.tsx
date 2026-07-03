@@ -7,7 +7,8 @@ import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
-import { investorPath, stockPath } from "@/lib/urls";
+import { investorPath, stockPath, localePath } from "@/lib/urls";
+import { altFor } from "@/lib/seo";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import { DataStrip } from "@/components/common/DataStrip";
@@ -42,7 +43,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `/${l}`, languages: { en: "/en", "zh-CN": "/zh", "x-default": "/en" } },
+    alternates: altFor(l, ""),
   };
 }
 
@@ -140,7 +141,7 @@ export default async function HomePage({
               ? "追踪 70+ 位传奇投资者的 SEC 13F 季度持仓——谁在建仓、谁在清仓，逐季看清。"
               : "Track 70+ legendary investors' SEC 13F filings — who's building a position, who's getting out, quarter over quarter."}
             ctaLabel={isZh ? "浏览全部投资者 →" : "Browse all investors →"}
-            href={`/${lang}/investors`}
+            href={localePath(lang, "/investors")}
           >
             <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
               <table className="w-full border-collapse text-sm">
@@ -174,7 +175,7 @@ export default async function HomePage({
               ? "当多位顶级投资者持有同一只股票，那是值得注意的信号。我们跨基金聚合，告诉你有几位在持有。"
               : "When many of the best investors hold the same stock, that's a signal worth noting. We aggregate across funds so you can see how many own it."}
             ctaLabel={isZh ? "查看共识持仓 →" : "View consensus holdings →"}
-            href={`/${lang}/investors/consensus`}
+            href={localePath(lang, "/investors/consensus")}
           >
             <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
               <table className="w-full border-collapse text-sm">
@@ -209,7 +210,7 @@ export default async function HomePage({
             ? "持仓只是起点。每只股票都用三套保守方法估值——Buffett 所有者收益 DCF、Greenwald 盈利能力价值、资产重置价值——只为已证实的价值付费。"
             : "Holdings are only the start. Every stock is valued three conservative ways — Buffett owner-earnings DCF, Greenwald earnings-power value, asset reproduction value — so you pay only for proven value."}
           ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
-          href={`/${lang}/stocks`}
+          href={localePath(lang, "/stocks")}
         >
           {strike.leaders.length > 0 ? (
             <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
@@ -243,7 +244,7 @@ export default async function HomePage({
             : "Source: SEC EDGAR 13F quarterly filings · 45-day lag · No recommendations, no forecasts."}
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Link href={`/${lang}/macro`} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
+          <Link href={localePath(lang, "/macro")} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
             {isZh ? "宏观流动性 →" : "Macro & liquidity →"}
           </Link>
         </div>

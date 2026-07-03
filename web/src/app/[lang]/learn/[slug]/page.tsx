@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
-import { investorPath, stockPath } from "@/lib/urls";
+import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { altFor } from "@/lib/seo";
 import ProseDoc from "@/components/legal/ProseDoc";
 
 export function generateStaticParams() {
@@ -25,14 +26,7 @@ export async function generateMetadata({
   return {
     title: `${article.title} — Compounder`,
     description: article.description,
-    alternates: {
-      canonical: `/${lang}/learn/${slug}`,
-      languages: {
-        en: `/en/learn/${slug}`,
-        "zh-CN": `/zh/learn/${slug}`,
-        "x-default": `/en/learn/${slug}`,
-      },
-    },
+    alternates: altFor(lang, `/learn/${slug}`),
   };
 }
 
@@ -55,7 +49,7 @@ export default async function ArticlePage({
     "@type": "Article",
     headline: article.title,
     description: article.description,
-    image: `https://thecompounder.fyi/${lang}/learn/${slug}/opengraph-image`,
+    image: `${absoluteUrl(localePath(lang, `/learn/${slug}`))}/opengraph-image`,
     datePublished: article.updated,
     dateModified: article.updated,
     inLanguage: lang === "zh" ? "zh-CN" : "en",
@@ -65,7 +59,7 @@ export default async function ArticlePage({
       name: "Compounder",
       logo: { "@type": "ImageObject", url: "https://thecompounder.fyi/icon.png" },
     },
-    mainEntityOfPage: `https://thecompounder.fyi/${lang}/learn/${slug}`,
+    mainEntityOfPage: absoluteUrl(localePath(lang, `/learn/${slug}`)),
   };
 
   // Breadcrumb — matches the convention on stock/investor detail pages and
@@ -78,13 +72,13 @@ export default async function ArticlePage({
         "@type": "ListItem",
         position: 1,
         name: lang === "zh" ? "学习" : "Learn",
-        item: `https://thecompounder.fyi/${lang}/learn`,
+        item: absoluteUrl(localePath(lang, `/learn`)),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: article.title,
-        item: `https://thecompounder.fyi/${lang}/learn/${slug}`,
+        item: absoluteUrl(localePath(lang, `/learn/${slug}`)),
       },
     ],
   };
@@ -101,7 +95,7 @@ export default async function ArticlePage({
       />
       <div className="max-w-[720px] mx-auto">
         <Link
-          href={`/${lang}/learn`}
+          href={localePath(lang, "/learn")}
           className="text-xs text-[var(--tt-faint)] hover:text-[var(--tt-text)] transition-colors no-underline"
         >
           {backLabel}

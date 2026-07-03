@@ -8,6 +8,7 @@ import { Menu, X, Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
 import { LogoMark } from "@/components/brand/Logo";
+import { localePath } from "@/lib/urls";
 
 interface MobileDrawerProps {
   lang: Lang;
@@ -23,9 +24,9 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
   useEffect(() => setMounted(true), []);
 
   const otherLang: Lang = lang === "zh" ? "en" : "zh";
-  const otherLangPath = pathname
-    ? pathname.replace(/^\/(zh|en)/, `/${otherLang}`)
-    : `/${otherLang}`;
+  // 当前 pathname 去掉语言前缀(裸 en 无前缀; /zh 有前缀),再按目标语言重新加。
+  const barePath = pathname ? pathname.replace(/^\/(zh|en)(?=\/|$)/, "") : "";
+  const otherLangPath = localePath(otherLang, barePath);
 
   // Close drawer on route change
   useEffect(() => {
@@ -44,11 +45,15 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
     };
   }, [open]);
 
+  const homeHref = localePath(lang, "");
+
+  // barePath 已去语言前缀,服务端预渲染与客户端 hydrate 后一致(pathname 会因
+  // proxy rewrite 在两端不同,如 "/investors" vs "/en/investors",故不能直接比 pathname)。
   function isActive(entry: (typeof TOP_NAV)[number]) {
     if (entry.key === "home") {
-      return pathname === `/${lang}` || pathname === `/${lang}/`;
+      return barePath === "" || barePath === "/";
     }
-    return pathname.startsWith(`/${lang}${entry.href}`);
+    return barePath.startsWith(entry.href);
   }
 
   return (
@@ -108,7 +113,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
           {TOP_NAV.map((entry) => {
             const active = isActive(entry);
             const href =
-              entry.key === "home" ? `/${lang}` : `/${lang}${entry.href}`;
+              entry.key === "home" ? homeHref : localePath(lang, entry.href);
             return (
               <Link
                 key={entry.key}

@@ -3,6 +3,7 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { consensusHeld } from "@/lib/aggregations";
 import { ARTICLE_SLUGS } from "@/lib/learn";
 import { isLikelyTicker } from "@/lib/externalLinks";
+import { localePath } from "@/lib/urls";
 
 const BASE = "https://thecompounder.fyi";
 
@@ -31,15 +32,15 @@ function entry(
   lastModified?: string
 ): MetadataRoute.Sitemap[number] {
   return {
-    url: `${BASE}/en${path}`,
+    url: `${BASE}${localePath("en", path)}`,
     changeFrequency,
     priority,
     ...(lastModified ? { lastModified } : {}),
     alternates: {
       languages: {
-        en: `${BASE}/en${path}`,
-        "zh-CN": `${BASE}/zh${path}`,
-        "x-default": `${BASE}/en${path}`,
+        en: `${BASE}${localePath("en", path)}`,
+        "zh-CN": `${BASE}${localePath("zh", path)}`,
+        "x-default": `${BASE}${localePath("en", path)}`,
       },
     },
   };

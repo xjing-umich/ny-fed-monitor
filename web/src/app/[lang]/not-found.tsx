@@ -7,11 +7,12 @@
 // URLs are a separate, config-level concern (next.config globalNotFound).
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { localePath } from "@/lib/urls";
 
 export default function LocaleNotFound() {
   const pathname = usePathname();
   const isZh = pathname?.startsWith("/zh") ?? false;
-  const base = isZh ? "/zh" : "/en";
+  const lang = isZh ? "zh" : "en";
 
   const t = isZh
     ? {
@@ -40,19 +41,19 @@ export default function LocaleNotFound() {
       <p className="max-w-[55ch] text-sm leading-relaxed text-[var(--tt-muted)]">{t.intro}</p>
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <Link
-          href={base}
+          href={localePath(lang, "")}
           className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-[var(--tt-accent)] text-white no-underline transition-opacity hover:opacity-90"
         >
           {t.home}
         </Link>
         <Link
-          href={`${base}/stocks`}
+          href={localePath(lang, "/stocks")}
           className="inline-flex items-center justify-center rounded-md border border-[var(--tt-border)] px-4 py-2 text-sm font-medium text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-text)]"
         >
           {t.stocks}
         </Link>
         <Link
-          href={`${base}/investors`}
+          href={localePath(lang, "/investors")}
           className="inline-flex items-center justify-center rounded-md border border-[var(--tt-border)] px-4 py-2 text-sm font-medium text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-text)]"
         >
           {t.investors}

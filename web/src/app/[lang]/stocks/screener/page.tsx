@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
+import { altFor } from "@/lib/seo";
+import { localePath } from "@/lib/urls";
 import SubNav from "@/components/shell/SubNav";
 import { readValuationScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
 import { ScreenerTable } from "./ScreenerTable";
@@ -22,10 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
-  const alternates = {
-    canonical: `/${lang}/stocks/screener`,
-    languages: { en: "/en/stocks/screener", "zh-CN": "/zh/stocks/screener", "x-default": "/en/stocks/screener" },
-  };
+  const alternates = altFor(lang, "/stocks/screener");
   return lang === "zh"
     ? {
         title: "个股 · 按价值带 — Compounder · 复利",
@@ -73,7 +72,7 @@ export default async function ScreenerPage({
         ? "当前没有可估值股票落在 strike zone（保守引擎常态）。"
         : "No valued stocks are in the strike zone right now (typical for a conservative engine).";
 
-  const hrefFor = (k: ScreenView) => (k === "all" ? `/${lang}/stocks/screener` : `/${lang}/stocks/screener?view=${k}`);
+  const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
 
   return (
     <div className="mx-auto max-w-5xl py-8 sm:py-10">
@@ -128,7 +127,7 @@ export default async function ScreenerPage({
           return (
             <Link
               key={s.key}
-              href={`/${lang}/stocks/screener${qs ? `?${qs}` : ""}`}
+              href={localePath(lang, `/stocks/screener${qs ? `?${qs}` : ""}`)}
               aria-current={activeSort ? "page" : undefined}
               className={`inline-flex items-center rounded-sm border px-2.5 py-1 max-sm:min-h-[44px] font-mono text-[11px] uppercase tracking-[0.08em] no-underline transition-colors ${
                 activeSort

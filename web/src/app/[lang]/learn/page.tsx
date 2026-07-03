@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { listArticles } from "@/lib/learn";
+import { altFor } from "@/lib/seo";
+import { localePath } from "@/lib/urls";
 import PageHeader from "@/components/common/PageHeader";
 
 export function generateStaticParams() {
@@ -38,10 +40,7 @@ export async function generateMetadata({
   return {
     title: `${c.title} — Compounder`,
     description: c.intro,
-    alternates: {
-      canonical: `/${lang}/learn`,
-      languages: { en: "/en/learn", "zh-CN": "/zh/learn", "x-default": "/en/learn" },
-    },
+    alternates: altFor(lang, "/learn"),
   };
 }
 
@@ -62,7 +61,7 @@ export default async function LearnIndexPage({
       <ul className="mt-8 flex flex-col">
         {articles.map((a) => (
           <li key={a.slug} className="border-t border-[var(--tt-border)] py-5">
-            <Link href={`/${lang}/learn/${a.slug}`} className="group no-underline">
+            <Link href={localePath(lang, `/learn/${a.slug}`)} className="group no-underline">
               <h2 className="font-display text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
                 {a.title}
               </h2>

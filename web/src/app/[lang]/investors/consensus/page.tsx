@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { mostHeld, holderDeltas } from "@/lib/aggregations";
 import { getManagerIndex } from "@/lib/managers/source";
-import { stockPath, absoluteUrl } from "@/lib/urls";
+import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { altFor } from "@/lib/seo";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
@@ -25,10 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const { lang: rawLang } = await params;
   const isZh = rawLang === "zh";
   const lang = isZh ? "zh" : "en";
-  const alternates = {
-    canonical: `/${lang}/investors/consensus`,
-    languages: { en: "/en/investors/consensus", "zh-CN": "/zh/investors/consensus", "x-default": "/en/investors/consensus" },
-  };
+  const alternates = altFor(lang, "/investors/consensus");
   return isZh
     ? { title: "共识持仓 · 超级投资者 — Compounder · 复利", description: "顶级价值投资者 13F 中被最多人同时持有的股票，含季度环比。", alternates }
     : { title: "Consensus holdings · Superinvestors — Compounder", description: "Stocks held by the most superinvestors (13F), with quarter-over-quarter change.", alternates };
@@ -54,7 +52,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   }));
   const blurbRows: BlurbRow[] = rankRows.map((r) => ({ ticker: r.ticker, issuer: r.issuer, primary: r.primary, delta: r.delta }));
   const top = rankRows[0];
-  const shareUrl = absoluteUrl(`/${lang}/investors/consensus`);
+  const shareUrl = absoluteUrl(localePath(lang, "/investors/consensus"));
   const shareText = buildShareText(
     { kind: "consensus", topName: top?.issuer ?? null, holderCount: top?.primary ?? null, managerCount },
     lang,

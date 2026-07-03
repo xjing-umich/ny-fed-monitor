@@ -13,6 +13,7 @@ import { cleanIssuer } from "@/lib/format";
 import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
+import { investorPath, stockPath } from "@/lib/urls";
 
 // Characterful display serif for the wordmark and editorial headlines.
 const fraunces = Fraunces({
@@ -28,10 +29,11 @@ const fraunces = Fraunces({
 // generateMetadata (their titles already carry the brand suffix, so no
 // title template is used here to avoid double-branding).
 //
-// SEO is English-first: English is the default locale (root redirects to /en,
-// default metadata is English, English ranks higher in the sitemap). Chinese
-// (/zh) stays fully indexed as the secondary locale — both are crawlable and
-// paired via hreflang on each page.
+// SEO is English-first: English is the default locale, served bare at "/"
+// (the proxy rewrites "/" and other unprefixed paths to the "/en" segment
+// internally — there is no root redirect), and default metadata is English,
+// English ranks higher in the sitemap. Chinese (/zh) stays fully indexed as
+// the secondary locale — both are crawlable and paired via hreflang on each page.
 const TITLE = "Compounder — Smart-money holdings × valuation";
 const DESCRIPTION =
   "Track top investors' SEC 13F holdings, cross-fund consensus, and single-stock valuation. Source: SEC EDGAR.";
@@ -81,7 +83,7 @@ export async function generateMetadata({
       siteName: "Compounder",
       title: TITLE,
       description: DESCRIPTION,
-      url: isEn ? "https://thecompounder.fyi/en" : "https://thecompounder.fyi/zh",
+      url: isEn ? "https://thecompounder.fyi" : "https://thecompounder.fyi/zh",
       locale: isEn ? "en_US" : "zh_CN",
       alternateLocale: isEn ? ["zh_CN"] : ["en_US"],
     },
@@ -124,7 +126,7 @@ export default async function LangLayout({
 
   const managerItems = managerIdx.managers.map((m) => ({
     label: m.person,
-    href: `/${lang}/investors/${m.slug}`,
+    href: investorPath(lang, m.slug),
     keywords: INVESTOR_ALIASES[m.slug],
   }));
 
@@ -136,7 +138,7 @@ export default async function LangLayout({
     seenTickers.add(ticker);
     return [{
       label: cleanIssuer(row.issuer),
-      href: `/${lang}/stocks/${ticker}`,
+      href: stockPath(lang, ticker),
       keywords: ticker,
     }];
   });

@@ -2,13 +2,14 @@
 // 可被 .check.ts 裸 `npx tsx` 跑。守 [[valuation-philosophy-constraint]]: 只陈述事实, 不荐买卖。
 import type { Lang } from "@/lib/nav";
 import type { ValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
+import { localePath } from "@/lib/urls";
 
 export type DiscoveryCta = { eyebrow: string; line: string; href: string; ctaLabel: string };
 
 const EYEBROW: Record<Lang, string> = { zh: "下一步 · 值不值", en: "Next · is it cheap" };
 
 function screenerHref(lang: Lang, view?: "strike_zone" | "below"): string {
-  return view ? `/${lang}/stocks/screener?view=${view}` : `/${lang}/stocks/screener`;
+  return view ? localePath(lang, `/stocks/screener?view=${view}`) : localePath(lang, "/stocks/screener");
 }
 
 /** 个股页: 按估值档位给出延伸到 screener 的观察邀请。verdict=null / 不可信 → 兜底。 */
