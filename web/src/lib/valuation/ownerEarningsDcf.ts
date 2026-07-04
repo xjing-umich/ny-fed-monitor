@@ -21,6 +21,7 @@ export const QUICK_CHECK_DEV_FLAG = 0.5;
 export const R_MINUS_G_FLAG = 0.04; // (r − g) below this → explicit-phase value is sensitive
 export const PROJECTION_YEARS = 10;
 const INVERSION_DGS10 = 0.075; // DGS10 ≥ 7.5% inverts the band
+const DGS10_MAX_AGE_DAYS = 45; // last-good DGS10 older than this is stale, not a live anchor
 
 const NO_BRIDGE_NOTE =
   "No enterprise→equity bridge: owner earnings already flow to shareholders (post-interest), so no net cash is added and no debt subtracted — matching the engine owner-earnings lamp.";
@@ -112,15 +113,21 @@ function discountBand(dgs10: { value: number; date: string } | null): DiscountBa
   const inverted = dgs10Dec >= INVERSION_DGS10; // rAggressive ≥ R_STRICT (0.12)
   const rLow = Math.min(rAggressive, R_STRICT);
   const rHigh = Math.max(rAggressive, R_STRICT);
+  // Local staleness check (do NOT import isPriceStale from @/lib/managers/priceRead —
+  // that module is server-only and this valuation module must stay pure).
+  const dgs10Stale =
+    (Date.now() - new Date(dgs10.date + "T00:00:00Z").getTime()) / 86_400_000 > DGS10_MAX_AGE_DAYS;
   return {
     r_low: rLow,
     r_high: rHigh,
     midpoint: (rLow + rHigh) / 2,
     dgs10_value: dgs10Dec,
     dgs10_date: dgs10.date,
-    anchored: true,
+    anchored: !dgs10Stale,
     inverted,
-    note: inverted
+    note: dgs10Stale
+      ? `DGS10 last-good ${dgs10.date} 超 ${DGS10_MAX_AGE_DAYS} 天,贴现带未锚定实时利率。`
+      : inverted
       ? `DGS10 ${dgs10.value.toFixed(2)}% pushes the +4.5% end above the 12% strict threshold; band shown as [min,max].`
       : `Discount band: ${(rLow * 100).toFixed(2)}%–${(rHigh * 100).toFixed(2)}% (DGS10 +4.5% to a 12% strict end, as of ${dgs10.date}).`,
   };
