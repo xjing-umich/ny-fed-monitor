@@ -105,7 +105,7 @@ export default async function HomePage({
     <div className="mx-auto max-w-5xl px-2 pb-16 pt-6 sm:pb-20 sm:pt-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <HeroMasthead lang={lang} period={period} moves={moves} />
+      <HeroMasthead lang={lang} period={period} moves={moves} investorCount={topManagers.length} />
 
       {/* Real-data stat bar (carries the 10Y/rates signal — macro presence) */}
       <DataStrip
