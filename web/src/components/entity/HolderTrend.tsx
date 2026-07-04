@@ -2,7 +2,7 @@ import React from "react";
 import type { Lang } from "@/lib/nav";
 import { Sparkline } from "@/components/common/Sparkline";
 
-// 持有人数趋势：复用 ConvictionPicks 的 SVG 契约，但语义不同——
+// 持有人数趋势：内联 sparkline SVG，但语义由文字承载——
 // 「绝对数」必须落在文字里（近 N 季 X → Y 家），sparkline 仅画形状且 aria-hidden，
 // 可访问性 / GEO 抓数由文字承载。早期季可能因回填偏低，挂 faint 脚注说明，别让斜率误导。
 // 全 RSC、零 hydration。<2 季 → null（不渲染空盒）。

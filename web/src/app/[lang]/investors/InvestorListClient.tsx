@@ -30,6 +30,11 @@ const COPY = {
     kind: { new: "新建", exited: "清仓", increased: "加仓", decreased: "减仓" },
     topPrefix: "最大：",
     noResults: "无匹配结果",
+    count: (m: number, n: number) => (m === n ? `共 ${n} 位` : `匹配 ${m} / 共 ${n} 位`),
+    filterAll: "全部",
+    filterBuying: "加仓",
+    filterSelling: "减仓",
+    filterMixed: "微调",
   },
   en: {
     eyebrow: "SEC 13F · quarterly filings",
@@ -49,10 +54,16 @@ const COPY = {
     kind: { new: "New", exited: "Exited", increased: "Added", decreased: "Trimmed" },
     topPrefix: "Top: ",
     noResults: "No results",
+    count: (m: number, n: number) => (m === n ? `${n} investors` : `${m} of ${n}`),
+    filterAll: "All",
+    filterBuying: "Buying",
+    filterSelling: "Selling",
+    filterMixed: "Held",
   },
 } as const;
 
 type SortKey = "value" | "count";
+type VerdictFilter = "all" | "buying" | "selling" | "mixed";
 
 // 市值环比%: 非空且非 0 才显, 绿涨橙跌。
 function fmtPctDelta(p: number | null | undefined): { text: string; cls: string } | null {
@@ -91,6 +102,7 @@ export function InvestorListClient({
   const t = COPY[lang];
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("value");
+  const [vf, setVf] = useState<VerdictFilter>("all");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -101,19 +113,20 @@ export function InvestorListClient({
             m.name.toLowerCase().includes(q)
         )
       : managers;
-    return [...base].sort((a, b) =>
+    const afterVf = vf === "all" ? base : base.filter((m) => m.qoq?.verdict === vf);
+    return [...afterVf].sort((a, b) =>
       sort === "value" ? b.totalValue - a.totalValue : b.holdingCount - a.holdingCount
     );
-  }, [managers, query, sort]);
+  }, [managers, query, sort, vf]);
 
   const columns: Column<Row>[] = [
     {
       key: "investor",
       header: t.cols.investor,
       role: "primary",
-      cell: (m) => (
+      cell: (m, i) => (
         <>
-          {m.person}
+          <span className={i < 10 ? "font-semibold" : ""}>{m.person}</span>
           <span className="mt-0.5 block text-[11px] font-normal text-[var(--tt-faint)]">
             {m.name}
           </span>
@@ -173,7 +186,7 @@ export function InvestorListClient({
           <>
             <Badge tone={VERDICT_TONE[v]}>{t.verdict[v]}</Badge>
             {issuer && kind && (
-              <span className="mt-1 hidden text-[11px] text-[var(--tt-muted)] sm:block">
+              <span className="mt-1 hidden text-[11px] text-[var(--tt-muted)] lg:block">
                 {t.topPrefix}
                 <span className="text-[var(--tt-text)]">{cleanIssuer(issuer)}</span>{" "}
                 <span className={KIND_CLASS[kind]}>{t.kind[kind]}</span>
@@ -187,41 +200,77 @@ export function InvestorListClient({
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow={t.eyebrow} title={t.heading} intro={t.subtitle} />
+      <PageHeader title={t.heading} intro={t.subtitle} />
 
       {/* Controls — quiet hairline style */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.search}
-          aria-label={t.search}
-          className="flex-1 min-w-[200px] border-0 border-b border-[var(--tt-border)] bg-transparent px-0 py-1.5 text-sm text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] focus:outline-none focus:border-[var(--tt-accent)]"
-        />
-        <div className="flex gap-1 text-xs">
-          <button
-            onClick={() => setSort("value")}
-            className={[
-              "px-3 py-1 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
-              sort === "value"
-                ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
-                : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
-            ].join(" ")}
-          >
-            {t.sortValue}
-          </button>
-          <button
-            onClick={() => setSort("count")}
-            className={[
-              "px-3 py-1 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
-              sort === "count"
-                ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
-                : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
-            ].join(" ")}
-          >
-            {t.sortCount}
-          </button>
+      <div className="space-y-3">
+        {/* Row 1: 搜索 + 计数 */}
+        <div className="flex flex-wrap gap-4 items-center">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t.search}
+            aria-label={t.search}
+            className="flex-1 min-w-[200px] border-0 border-b border-[var(--tt-border)] bg-transparent px-0 py-1.5 text-sm text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] focus:outline-none focus:border-[var(--tt-accent)]"
+          />
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+            {t.count(filtered.length, managers.length)}
+          </span>
+        </div>
+
+        {/* Row 2: 本季动作快筛 + 排序 */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-1">
+            {(
+              [
+                ["all", t.filterAll],
+                ["buying", t.filterBuying],
+                ["selling", t.filterSelling],
+                ["mixed", t.filterMixed],
+              ] as const
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                onClick={() => setVf(k as VerdictFilter)}
+                aria-pressed={vf === k}
+                className={[
+                  "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border transition-colors",
+                  vf === k
+                    ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
+                    : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
+                ].join(" ")}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 text-xs">
+            <button
+              onClick={() => setSort("value")}
+              aria-pressed={sort === "value"}
+              className={[
+                "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
+                sort === "value"
+                  ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
+                  : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
+              ].join(" ")}
+            >
+              {t.sortValue}
+            </button>
+            <button
+              onClick={() => setSort("count")}
+              aria-pressed={sort === "count"}
+              className={[
+                "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
+                sort === "count"
+                  ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
+                  : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
+              ].join(" ")}
+            >
+              {t.sortCount}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -232,6 +281,7 @@ export function InvestorListClient({
         getKey={(m) => m.cik}
         rowHref={(m) => investorPath(lang, m.slug)}
         breakpoint="lg"
+        showRank
         emptyText={t.noResults}
       />
     </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { holdingKey } from "@/lib/managers/assemble";
-import type { Holding, HoldingChange, FilingData } from "@/lib/managers/types";
+import type { Holding, HoldingChange } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -21,14 +21,12 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { getCusipMap } from "@/lib/managers/securities";
-import { deriveConviction } from "@/lib/managers/conviction";
-import { ConvictionPicks } from "@/components/entity/ConvictionPicks";
-import { WeightQoQ } from "@/components/common/qoqDirection";
+import { WeightBar } from "@/components/investor/WeightBar";
+import { deriveRowSignals, type RowSignal } from "@/lib/managers/rowSignals";
 import { buildInvestorProse, displayFundName } from "@/lib/managers/profileProse";
 import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
 import { readValuationVerdicts, type SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
-import { StrikeZonePicks } from "@/components/investor/StrikeZonePicks";
 import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
@@ -90,14 +88,14 @@ export async function generateMetadata({
 const HOLD_COPY = {
   zh: {
     title: "持仓明细",
-    cols: { issuer: "标的", value: "市值", valuation: "估值", consensus: "持有人数", shares: "持股数", weight: "权重(上季→本季)" },
+    cols: { issuer: "标的", value: "市值", valuation: "估值", consensus: "持有人数", shares: "持股数", weight: "权重", signal: "信号" },
     truncated: (n: number, total: number) => `显示前 ${n} 条，共 ${total} 个持仓`,
     exitedTitle: (n: number) => `本季清仓 (${n})`,
     more: (n: number) => `… 等 ${n} 只`,
   },
   en: {
     title: "Holdings",
-    cols: { issuer: "Security", value: "Value", valuation: "Valuation", consensus: "Holders", shares: "Shares", weight: "Weight (prev→now)" },
+    cols: { issuer: "Security", value: "Value", valuation: "Valuation", consensus: "Holders", shares: "Shares", weight: "Weight", signal: "Signal" },
     truncated: (n: number, total: number) => `Showing top ${n} of ${total} positions`,
     exitedTitle: (n: number) => `Exited this quarter (${n})`,
     more: (n: number) => `… +${n} more`,
@@ -106,30 +104,26 @@ const HOLD_COPY = {
 
 function HoldingsTable({
   holdings,
-  prior,
   changes,
   lang,
   cusipToTicker,
   verdicts,
   holderCounts,
+  rowSignals,
 }: {
   holdings: Holding[];
-  prior?: FilingData;
   changes: HoldingChange[];
   lang: Lang;
   cusipToTicker: Map<string, string>;
   verdicts: Map<string, SnapshotVerdict>;
   holderCounts: Map<string, number>;
+  rowSignals: Map<string, RowSignal>;
 }): React.ReactElement {
   const t = HOLD_COPY[lang];
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
 
-  // 按 cusip+put/call 归并(同 assemble.ts holdingKey):同一 CUSIP 的正股与 put/call 不可互相覆盖,
-  // 否则权重对比错行、且 React 行 key 重复。
-  const priorByKey = new Map((prior?.holdings ?? []).map((h) => [holdingKey(h), h]));
-  const changeByKey = new Map(changes.map((c) => [holdingKey(c), c]));
   const exits = changes.filter((c) => c.kind === "exited");
   const EXIT_CAP = 12;
 
@@ -183,14 +177,33 @@ function HoldingsTable({
       header: t.cols.weight,
       align: "right",
       width: "w-40",
-      cell: (h) => (
-        <WeightQoQ
-          cur={h.weight}
-          prior={priorByKey.get(holdingKey(h))?.weight}
-          kind={changeByKey.get(holdingKey(h))?.kind}
-          lang={lang}
-        />
-      ),
+      cell: (h) => <WeightBar weight={h.weight ?? null} />,
+    },
+    {
+      key: "signal",
+      header: t.cols.signal,
+      align: "right",
+      width: "w-40",
+      role: "trail",
+      cell: (h) => {
+        const s = rowSignals.get(h.cusip);
+        if (!s) return <span className="text-[var(--tt-faint)]">—</span>;
+        return (
+          <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
+            {s.cheap && (
+              <span className="rounded-sm border border-[var(--tt-positive)]/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-positive)]">
+                {lang === "zh" ? "便宜" : "Cheap"}
+                {s.cheap.marginPct != null && s.cheap.marginPct > 0 ? ` −${Math.round(s.cheap.marginPct * 100)}%` : ""}
+              </span>
+            )}
+            {s.conviction && (
+              <span className="rounded-sm border border-[var(--tt-border)] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
+                {s.conviction.label}
+              </span>
+            )}
+          </span>
+        );
+      },
     },
   ];
 
@@ -276,6 +289,9 @@ export default async function InvestorSlugPage({
   const verdicts = await readValuationVerdicts(holdingTickers);
   const holderCounts = await readHolderCounts(holdingTickers);
 
+  // 持仓表行内信号(便宜/高信念徽章): 按 cusip 归并, 零新增 IO(复用已加载的 verdicts/filings)。
+  const rowSignals = deriveRowSignals({ filings: d.filings, verdicts, cusipToTicker, lang });
+
   // 该投资人当前持仓中现价落在击球区的只数(与 screener strike_zone 视图同口径)。
   const strikeCount = latest.holdings.reduce((acc, h) => {
     const tk = cusipToTicker.get(h.cusip);
@@ -284,9 +300,6 @@ export default async function InvestorSlugPage({
 
   // index 供全局最新季基准与 Related 共用（getManagerIndex 有 cache()，单次查询）
   const idx = await getManagerIndex();
-
-  // 信念精选：复用已加载的 d.filings，零新增 IO（spec §5）
-  const picks = deriveConviction(d.filings);
 
   // 确定性服务端正文(SEO 支柱)：复用同一份已装配的 13F 数据派生 3~5 段唯一正文，零新增 IO。
   // 取代了原先读缓存的「AI Read」叙述(时有时无、刻意无数字、带 AI 免责声明) —— 本正文每页必出、含真实数字、零幻觉。
@@ -363,11 +376,17 @@ export default async function InvestorSlugPage({
     </span>
   );
 
+  // 第一大仓占比(占组合权重)
+  const top1 = latest.holdings.length > 0
+    ? [...latest.holdings].sort((a, b) => b.value - a.value)[0]
+    : null;
+  const top1Pct = top1 && latest.totalValue > 0 ? (top1.value / latest.totalValue) * 100 : null;
+
   const keyFacts = [
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(latest.totalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(latest.holdings.length), node: countNode },
-    { label: lang === "zh" ? "报告季度" : "Reporting quarter", value: quarterLabel(latest.period) },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
+    { label: lang === "zh" ? "第一大仓占比" : "Top position", value: top1Pct != null ? `${top1Pct.toFixed(1)}%` : "—" },
   ];
 
   // Subtitle
@@ -461,25 +480,16 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
-          <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
-          {fresh !== "inactive" && picks.length > 0 && (
-            <ConvictionPicks
-              picks={picks}
-              lang={lang}
-              investor={slug}
-              cusipToTicker={cusipToTicker}
-              asOfPeriod={fresh === "stale" ? latest.period : undefined}
-            />
-          )}
-          <StrikeZonePicks
-            holdings={latest.holdings}
-            investorName={manager.person}
-            verdicts={verdicts}
-            cusipToTicker={cusipToTicker}
-            lang={lang}
-          />
+          <HoldingsTable holdings={latest.holdings} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
+          <details className="group border-t border-[var(--tt-border)] pt-4">
+            <summary className="cursor-pointer list-none font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
+              {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}
+            </summary>
+            <div className="mt-3">
+              <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
+            </div>
+          </details>
           <DiscoveryHandoff {...investorHandoffFor(strikeCount, manager.person, lang)} />
-          <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} />
         </>
       </EntityPage>
     </>
