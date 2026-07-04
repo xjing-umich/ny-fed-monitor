@@ -99,16 +99,8 @@ export default async function HomePage({
 
       <HeroMasthead lang={lang} period={period} moves={moves} investorCount={topManagers.length} />
 
-      {/* Real-data stat bar — carries the 10Y macro signal + real-data proof. */}
-      <div className="mt-12">
-        <DataStrip
-          lang={lang}
-          period={period}
-          investorCount={topManagers.length}
-          consensusCount={heldCount}
-          dgs10={dgs10}
-        />
-      </div>
+      {/* Real-data stat bar — carries the 10Y macro signal + real-data proof (own top margin, no wrapper). */}
+      <DataStrip lang={lang} consensusCount={heldCount} dgs10={dgs10} />
 
       {/* Near-full-width to break the max-w-5xl rhythm. */}
       <section className="mx-auto mt-28 max-w-6xl">
