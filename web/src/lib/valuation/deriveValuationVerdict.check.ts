@@ -24,7 +24,10 @@ function floorStub(): ValuationFloor {
 function floorStubWithNetNet(): ValuationFloor {
   return { kind: "floor", net_net: { assessable: true, per_share: 95, ncav: 9500 } } as unknown as ValuationFloor;
 }
-function sz(position: ValuePosition, opts?: { ceilings?: boolean; price?: number; date?: string }): StrikeZoneAssessment {
+function sz(
+  position: ValuePosition,
+  opts?: { ceilings?: boolean; price?: number; date?: string; valueFloor?: number },
+): StrikeZoneAssessment {
   const price = opts?.price ?? 100;
   return {
     price: { close: price, date: opts?.date ?? "2026-06-24", currency: "USD" },
@@ -36,7 +39,7 @@ function sz(position: ValuePosition, opts?: { ceilings?: boolean; price?: number
       ceiling: 200,
       mosLow: 0.2,
       mosHigh: 0.5,
-      valueFloor: 120,
+      valueFloor: opts?.valueFloor ?? 120,
       base: 200,
       ceilings: opts?.ceilings === false ? undefined : { pessimistic: 210, neutral: 260, optimistic: 320 },
       position,
@@ -87,10 +90,33 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { ceilings: false, price: 10 }) });
   assert(v === null, "implausible band (margin>0.8) → null");
 }
-// 8) 边界:margin 恰在阈下(single_lamp base=200, price=50 → margin=0.75)→ 仍出判定
+// 8) 边界:margin 阈下(single_lamp, valueFloor=120, price=50 → margin=(120-50)/120≈0.5833)→ 仍出判定
 {
   const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { ceilings: false, price: 50 }) });
-  assert(v && v.bucket === "below" && Math.abs(v.marginPct! - 0.75) < 1e-9, "margin 0.75 ≤ cap → kept");
+  assert(v && v.bucket === "below" && Math.abs(v.marginPct! - (120 - 50) / 120) < 1e-9, "margin ≤ cap (vs valueFloor) → kept");
+}
+// 8a) marginPct 锚点 = epv.valueFloor,非 rangeLo(两法带的最小端,可与 valueFloor 相差 10×)。
+//     rangeLo=min(90,150,210,320)=90 但 valueFloor=15;price=100 → margin=(15-100)/15,与 rangeLo 口径($(90-100)/90≈-0.11$)显著不同。
+{
+  const v = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: 15 }),
+    oeDcf: oe(),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(v && v.bucket === "below", "below bucket with divergent valueFloor still resolves");
+  assert(v!.rangeLo === 90, "rangeLo unaffected by valueFloor anchor change");
+  assert(Math.abs(v!.marginPct! - (15 - 100) / 15) < 1e-9, "marginPct anchored to valueFloor, not rangeLo");
+}
+// 8b) valueFloor ≤ 0 → marginPct = null(与 rangeLo≤0 旧口径同型的退化保护,但改用 valueFloor 判空)。
+{
+  const v = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: 0 }),
+    oeDcf: oe(),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(v && v.marginPct === null, "valueFloor<=0 → marginPct null");
 }
 // 9) 默认无红旗 → reliable = true(且仍出判定)
 {
