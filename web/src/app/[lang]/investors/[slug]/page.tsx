@@ -327,16 +327,21 @@ export default async function InvestorSlugPage({
     }
   }
 
+  // 长仓 only 子集(汇总口径排除 put/call 期权行, spec: 期权名义市值会扭曲第一大持仓/组合市值)。
+  // 持仓表(HoldingsTable)仍传入全量 latest.holdings —— 期权行照常列出(后续任务加 PUT/CALL 徽章)。
+  const longHoldings = latest.holdings.filter((h) => !h.putCall);
+  const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
+
   // Key facts
   const topHolding =
-    latest.holdings.length > 0
-      ? cleanIssuer([...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
+    longHoldings.length > 0
+      ? cleanIssuer([...longHoldings].sort((a, b) => b.value - a.value)[0].issuer)
       : "—";
 
   // 分享文案数据（确定性，缺失走退化）
   const shareTopHolding =
-    latest.holdings.length > 0
-      ? [...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer
+    longHoldings.length > 0
+      ? [...longHoldings].sort((a, b) => b.value - a.value)[0].issuer
       : null;
   const shareAddedName = changes.find((c) => c.kind === "new")?.issuer ?? null;
   const shareUrl = absoluteUrl(investorPath(lang, slug));
@@ -346,17 +351,19 @@ export default async function InvestorSlugPage({
     manager.person,
   );
 
-  // 组合级 QoQ(无 prior 时不显环比)
+  // 组合级 QoQ(无 prior 时不显环比;对照组同样限定长仓 only,避免期权进出污染环比)
+  const priorLong = prior ? prior.holdings.filter((h) => !h.putCall) : null;
+  const priorLongTotal = priorLong ? priorLong.reduce((s, h) => s + h.value, 0) : 0;
   const valDeltaPct =
-    prior && prior.totalValue > 0 ? (latest.totalValue - prior.totalValue) / prior.totalValue : null;
-  const cntDelta = prior ? latest.holdings.length - prior.holdings.length : 0;
+    priorLong && priorLongTotal > 0 ? (longTotalValue - priorLongTotal) / priorLongTotal : null;
+  const cntDelta = priorLong ? longHoldings.length - priorLong.length : 0;
   const sign = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
   const deltaClass = (n: number) =>
     n > 0 ? "text-[var(--tt-positive)]" : n < 0 ? "text-[var(--tt-warn)]" : "text-[var(--tt-faint)]";
 
   const valueNode = (
     <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
-      {formatUSD(latest.totalValue)}
+      {formatUSD(longTotalValue)}
       {valDeltaPct != null && valDeltaPct !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
           （{lang === "zh" ? "环比 " : ""}{sign(valDeltaPct)}
@@ -367,7 +374,7 @@ export default async function InvestorSlugPage({
   );
   const countNode = (
     <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
-      {latest.holdings.length}
+      {longHoldings.length}
       {cntDelta !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(cntDelta)}`}>
           （{sign(cntDelta)}{Math.abs(cntDelta)}）
@@ -376,15 +383,15 @@ export default async function InvestorSlugPage({
     </span>
   );
 
-  // 第一大仓占比(占组合权重)
-  const top1 = latest.holdings.length > 0
-    ? [...latest.holdings].sort((a, b) => b.value - a.value)[0]
+  // 第一大仓占比(占组合权重,长仓 only)
+  const top1 = longHoldings.length > 0
+    ? [...longHoldings].sort((a, b) => b.value - a.value)[0]
     : null;
-  const top1Pct = top1 && latest.totalValue > 0 ? (top1.value / latest.totalValue) * 100 : null;
+  const top1Pct = top1 && longTotalValue > 0 ? (top1.value / longTotalValue) * 100 : null;
 
   const keyFacts = [
-    { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(latest.totalValue), node: valueNode },
-    { label: lang === "zh" ? "持仓数" : "Holdings", value: String(latest.holdings.length), node: countNode },
+    { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
+    { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
     { label: lang === "zh" ? "第一大仓占比" : "Top position", value: top1Pct != null ? `${top1Pct.toFixed(1)}%` : "—" },
   ];
