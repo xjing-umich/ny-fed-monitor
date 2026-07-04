@@ -200,7 +200,7 @@ export function InvestorListClient({
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow={t.eyebrow} title={t.heading} intro={t.subtitle} />
+      <PageHeader title={t.heading} intro={t.subtitle} />
 
       {/* Controls — quiet hairline style */}
       <div className="space-y-3">
