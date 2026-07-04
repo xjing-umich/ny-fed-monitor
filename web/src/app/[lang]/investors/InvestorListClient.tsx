@@ -237,7 +237,7 @@ export function InvestorListClient({
                 className={[
                   "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border transition-colors",
                   vf === k
-                    ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
+                    ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
                     : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
                 ].join(" ")}
               >
@@ -252,7 +252,7 @@ export function InvestorListClient({
               className={[
                 "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
                 sort === "value"
-                  ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
+                  ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
                   : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
               ].join(" ")}
             >
@@ -264,7 +264,7 @@ export function InvestorListClient({
               className={[
                 "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
                 sort === "count"
-                  ? "border-[var(--tt-accent)] text-[var(--tt-accent)]"
+                  ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
                   : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
               ].join(" ")}
             >
