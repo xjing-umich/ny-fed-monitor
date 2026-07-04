@@ -95,11 +95,13 @@ export default function HeroMasthead({
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
           {c.asOf(quarterLabel(period) || period)}
         </p>
-        <h1 className="mt-4 font-display text-4xl font-medium leading-[1.05] tracking-tight text-[var(--tt-text)] sm:text-6xl md:text-7xl">
-          {headline}{" "}
-          <span className="text-[var(--tt-faint)]">{c.headlineMuted}</span>
+        <h1 className="mt-4 max-w-[18ch] font-display text-4xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-5xl md:text-6xl">
+          {headline}
         </h1>
-        <p className="mt-5 max-w-[40ch] text-sm leading-relaxed text-[var(--tt-muted)]">{c.sub}</p>
+        <p className="mt-5 max-w-[30ch] font-display text-xl leading-snug text-[var(--tt-faint)] sm:text-2xl">
+          {c.headlineMuted}
+        </p>
+        <p className="mt-4 max-w-[42ch] text-sm leading-relaxed text-[var(--tt-muted)]">{c.sub}</p>
         <Link
           href={localePath(lang, "/stocks/screener")}
           className="group mt-7 inline-flex items-center gap-1.5 font-display text-[15px] text-[var(--tt-text)] no-underline [border-bottom:1px_solid_var(--tt-accent)] [transition:color_var(--tt-dur)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
