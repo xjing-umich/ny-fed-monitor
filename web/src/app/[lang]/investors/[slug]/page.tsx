@@ -21,15 +21,12 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { getCusipMap } from "@/lib/managers/securities";
-import { deriveConviction } from "@/lib/managers/conviction";
-import { ConvictionPicks } from "@/components/entity/ConvictionPicks";
 import { WeightBar } from "@/components/investor/WeightBar";
 import { deriveRowSignals, type RowSignal } from "@/lib/managers/rowSignals";
 import { buildInvestorProse, displayFundName } from "@/lib/managers/profileProse";
 import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
 import { readValuationVerdicts, type SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
-import { StrikeZonePicks } from "@/components/investor/StrikeZonePicks";
 import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
@@ -306,9 +303,6 @@ export default async function InvestorSlugPage({
   // index 供全局最新季基准与 Related 共用（getManagerIndex 有 cache()，单次查询）
   const idx = await getManagerIndex();
 
-  // 信念精选：复用已加载的 d.filings，零新增 IO（spec §5）
-  const picks = deriveConviction(d.filings);
-
   // 确定性服务端正文(SEO 支柱)：复用同一份已装配的 13F 数据派生 3~5 段唯一正文，零新增 IO。
   // 取代了原先读缓存的「AI Read」叙述(时有时无、刻意无数字、带 AI 免责声明) —— 本正文每页必出、含真实数字、零幻觉。
   const prose = buildInvestorProse(d, lang);
@@ -384,11 +378,17 @@ export default async function InvestorSlugPage({
     </span>
   );
 
+  // 第一大仓占比(占组合权重)
+  const top1 = latest.holdings.length > 0
+    ? [...latest.holdings].sort((a, b) => b.value - a.value)[0]
+    : null;
+  const top1Pct = top1 && latest.totalValue > 0 ? (top1.value / latest.totalValue) * 100 : null;
+
   const keyFacts = [
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(latest.totalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(latest.holdings.length), node: countNode },
-    { label: lang === "zh" ? "报告季度" : "Reporting quarter", value: quarterLabel(latest.period) },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
+    { label: lang === "zh" ? "第一大仓占比" : "Top position", value: top1Pct != null ? `${top1Pct.toFixed(1)}%` : "—" },
   ];
 
   // Subtitle
@@ -482,25 +482,16 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
-          <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
-          {fresh !== "inactive" && picks.length > 0 && (
-            <ConvictionPicks
-              picks={picks}
-              lang={lang}
-              investor={slug}
-              cusipToTicker={cusipToTicker}
-              asOfPeriod={fresh === "stale" ? latest.period : undefined}
-            />
-          )}
-          <StrikeZonePicks
-            holdings={latest.holdings}
-            investorName={manager.person}
-            verdicts={verdicts}
-            cusipToTicker={cusipToTicker}
-            lang={lang}
-          />
-          <DiscoveryHandoff {...investorHandoffFor(strikeCount, manager.person, lang)} />
           <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
+          <details className="group border-t border-[var(--tt-border)] pt-4">
+            <summary className="cursor-pointer list-none font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
+              {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}
+            </summary>
+            <div className="mt-3">
+              <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
+            </div>
+          </details>
+          <DiscoveryHandoff {...investorHandoffFor(strikeCount, manager.person, lang)} />
         </>
       </EntityPage>
     </>
