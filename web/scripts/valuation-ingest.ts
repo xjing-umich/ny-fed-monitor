@@ -90,6 +90,7 @@ async function main() {
       const floor = computeValuationFloor(floorInput);
       if (!floor || floor.kind !== "floor") { skipped++; continue; }
       const price = await getLatestPrice(ticker);
+      if (price?.stale) { skipped++; continue; } // 陈旧价(>PRICE_MAX_AGE_DAYS天)不当现价喂 strike-zone/OE-DCF
       const strikeZone = deriveStrikeZone(floor, price);
       const oeDcf = deriveOeDcf(floor, floorInput.years, dgs10, price);
       const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
