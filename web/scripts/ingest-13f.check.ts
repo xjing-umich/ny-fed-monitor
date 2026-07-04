@@ -1,4 +1,4 @@
-import { isRealHolding } from "./ingest-13f";
+import { isRealHolding } from "./lib/holdingFilters";
 function assert(c: boolean, msg: string) { if (!c) { console.error("FAIL:", msg); process.exit(1); } }
 assert(isRealHolding({ cusip: "037833100", issuer: "APPLE INC", value: 1e9, shares: 1000 }), "real holding kept");
 assert(!isRealHolding({ cusip: "000000000", issuer: "NONE", value: 0, shares: 0 }), "NONE placeholder dropped");

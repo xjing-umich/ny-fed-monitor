@@ -22,6 +22,7 @@ import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
 import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
 import { padCusip } from "../src/lib/securities/openfigi.js";
+import { isRealHolding } from "./lib/holdingFilters.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
@@ -121,15 +122,6 @@ async function getLatestFilings(cik: string, maxCount = 2) {
   }
 
   return { name, formerNames, filings: selected };
-}
-
-// 真实持仓谓词:排除 13F-NT 占位行(NONE / 全零 cusip / value+shares 全 0)。
-export function isRealHolding(h: { cusip: string; issuer: string; value: number; shares: number }): boolean {
-  if (!h.cusip || !h.issuer) return false;
-  if (h.issuer.trim().toUpperCase() === "NONE") return false;
-  if (/^0+$/.test(h.cusip)) return false;
-  if ((h.value ?? 0) === 0 && (h.shares ?? 0) === 0) return false;
-  return true;
 }
 
 async function parseInfoTable(cikInt: string, accession: string): Promise<Holding[]> {
