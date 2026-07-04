@@ -1,8 +1,8 @@
 // 共识计算纯逻辑(无 I/O): 把各经理人 latest 持仓/changes 聚合为 ticker-keyed 快照行。
 // cusip → ticker 经传入的 map; 未解析 cusip 用 cusip 自身作兜底键(与个股页回退一致)。
 
-export type ScanHolding = { cusip: string; issuer: string; value: number };
-export type ScanChange = { cusip: string; issuer: string; kind: "new" | "exited" | "increased" | "decreased"; value: number };
+export type ScanHolding = { cusip: string; issuer: string; value: number; putCall?: string };
+export type ScanChange = { cusip: string; issuer: string; kind: "new" | "exited" | "increased" | "decreased"; value: number; putCall?: string };
 export type ScanInput = { slug: string; holdings: ScanHolding[]; changes: ScanChange[] };
 export type CusipInfo = { ticker: string | null; name: string | null };
 
@@ -28,6 +28,7 @@ export function computeConsensus(
   const held = new Map<string, { issuer: string; holders: Set<string>; total: number }>();
   for (const m of scan) {
     for (const h of m.holdings) {
+      if (h.putCall) continue; // 期权(put/call)不是长仓,不算持有人
       const { ticker, name } = keyOf(h.cusip, cusipToTicker);
       const e = held.get(ticker) ?? { issuer: name ?? h.issuer, holders: new Set<string>(), total: 0 };
       e.holders.add(m.slug);
@@ -43,6 +44,7 @@ export function computeConsensus(
   const mv = new Map<string, { issuer: string; managers: Set<string>; net: number; direction: "bought" | "sold"; kinds: Map<MoveKind, number> }>();
   for (const m of scan) {
     for (const c of m.changes) {
+      if (c.putCall) continue; // 期权(put/call)不是长仓,不算买卖动向
       const direction: "bought" | "sold" | null =
         c.kind === "new" || c.kind === "increased" ? "bought" : c.kind === "exited" || c.kind === "decreased" ? "sold" : null;
       if (!direction) continue;
@@ -73,7 +75,7 @@ export type StockHolderScan = {
   person: string;
   period: string;
   filedAt: string | null;
-  holdings: { cusip: string; issuer: string; value: number; shares: number; weight: number }[];
+  holdings: { cusip: string; issuer: string; value: number; shares: number; weight: number; putCall?: string }[];
   priorHoldings?: { cusip: string; weight: number }[];
   changes: ScanChange[];
 };
@@ -108,6 +110,7 @@ export function computeStockHolders(
     type Agg = { issuer: string; value: number; shares: number; weight: number; topCusip: string; topVal: number };
     const byTicker = new Map<string, Agg>();
     for (const h of m.holdings) {
+      if (h.putCall) continue; // 期权(put/call)不是长仓,不算持有人
       const { ticker, name } = keyOf(h.cusip, cusipToTicker);
       const e = byTicker.get(ticker) ?? { issuer: name ?? h.issuer, value: 0, shares: 0, weight: 0, topCusip: h.cusip, topVal: -1 };
       e.value += h.value ?? 0;
