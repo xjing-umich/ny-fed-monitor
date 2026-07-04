@@ -1,42 +1,51 @@
+import Link from "next/link";
 import type { Lang } from "@/lib/nav";
-import { FileText, Clock, TrendingUp, Users, Calculator, Layers, Target, Languages, ShieldCheck } from "lucide-react";
+import { localePath } from "@/lib/urls";
+import TrustLockup from "@/components/home/TrustLockup";
 
 const COPY = {
   zh: {
     eyebrow: "建立在一手来源之上",
-    items: [
-      "纯一手 SEC EDGAR 数据", "45 天申报新鲜度标注", "季度环比变动 (QoQ)",
-      "跨基金共识聚合", "Buffett 所有者收益 DCF", "Greenwald 盈利能力价值",
-      "Strike-zone 区间识别", "中英双语", "不荐股、不预测",
+    statement:
+      "每一条持仓数据都直接来自 SEC EDGAR 的 13F 申报文件，按季度环比追踪变动，不经第三方转述。估值层叠加三套保守方法——只为已经被证明的盈利能力和资产付费，不为故事和预期付费。",
+    lockups: [
+      { label: "数据来源", value: "SEC EDGAR · 一手来源" },
+      { label: "披露延迟", value: "45 天申报延迟" },
+      { label: "立场", value: "不荐股 · 不预测" },
     ],
+    macroLabel: "宏观流动性 →",
   },
   en: {
     eyebrow: "Built on primary sources",
-    items: [
-      "Primary SEC EDGAR data", "45-day filing freshness", "Quarter-over-quarter deltas",
-      "Cross-fund consensus", "Buffett owner-earnings DCF", "Greenwald earnings-power value",
-      "Strike-zone detection", "Bilingual EN / 中文", "No recommendations, no forecasts",
+    statement:
+      "Every position traces back to a 13F filing on SEC EDGAR, tracked quarter over quarter with no third-party retelling in between. Valuation stacks three conservative methods on top, paying only for earnings power and assets already proven, never for a story or a forecast.",
+    lockups: [
+      { label: "Data source", value: "SEC EDGAR · Primary source" },
+      { label: "Disclosure lag", value: "45-day filing lag" },
+      { label: "Stance", value: "No recommendations, no forecasts" },
     ],
+    macroLabel: "Macro & liquidity →",
   },
 } as const;
-
-const ICONS = [FileText, Clock, TrendingUp, Users, Calculator, Layers, Target, Languages, ShieldCheck];
 
 export default function FoundationsGrid({ lang }: { lang: Lang }): React.ReactElement {
   const c = COPY[lang];
   return (
     <section className="mt-24 border-t border-[var(--tt-border)] pt-8">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
-      <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 md:grid-cols-3">
-        {c.items.map((label, i) => {
-          const Icon = ICONS[i];
-          return (
-            <div key={label} className="flex items-start gap-3">
-              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--tt-accent)]" strokeWidth={1.75} aria-hidden />
-              <span className="font-display text-sm text-[var(--tt-text)]">{label}</span>
-            </div>
-          );
-        })}
+      <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-[var(--tt-muted)]">{c.statement}</p>
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {c.lockups.map((item) => (
+          <TrustLockup key={item.label} label={item.label} value={item.value} />
+        ))}
+      </div>
+      <div className="mt-6">
+        <Link
+          href={localePath(lang, "/macro")}
+          className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
+        >
+          {c.macroLabel}
+        </Link>
       </div>
     </section>
   );

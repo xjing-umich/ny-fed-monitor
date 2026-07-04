@@ -43,6 +43,10 @@
   --ring:                #1B5E3F;
   --radius:              0.4375rem; /* ~7px — quiet, editorial */
 
+  /* Motion — 全站统一过渡曲线/时长(动效稀疏化的单一真相) */
+  --tt-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --tt-dur: 0.5s;
+
   /* Sidebar */
   --sidebar:             #FCFBF7;
   --sidebar-foreground:  #1C1917;

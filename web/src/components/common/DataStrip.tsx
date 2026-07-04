@@ -1,11 +1,11 @@
 import React from "react";
 import type { Lang } from "@/lib/nav";
 
-// 4-tile 真数据条(RSC):报告期 / 投资人数 / 共识股数 / 10Y 国债。每块带 as-of(CLAUDE.md 硬规)。
-// 缺值显 "—"。克制:muted 标签 + mono 数字。
+// 2-tile 真数据条(RSC):共识股数 / 10Y 国债。仅承载 Hero 未覆盖的信号(报告期/投资人数已在 Hero 呈现,故此处不重复)。
+// dgs10 带 as-of(CLAUDE.md 硬规)。缺值显 "—"。克制:muted 标签 + mono 数字。
 const COPY = {
-  zh: { period: "最新报告期", investors: "追踪投资人", consensus: "共识持仓", dgs10: "10 年期国债", lag: "SEC 13F · 45 天延迟" },
-  en: { period: "Latest period", investors: "Investors tracked", consensus: "Consensus stocks", dgs10: "10Y Treasury", lag: "SEC 13F · 45-day lag" },
+  zh: { consensus: "共识持仓", dgs10: "10 年期国债" },
+  en: { consensus: "Consensus stocks", dgs10: "10Y Treasury" },
 } as const;
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -20,24 +20,16 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
 
 export function DataStrip({
   lang,
-  period,
-  investorCount,
   consensusCount,
   dgs10,
 }: {
   lang: Lang;
-  period: string;
-  investorCount: number;
   consensusCount: number;
   dgs10: { value: number; date: string } | null;
 }): React.ReactElement {
   const t = COPY[lang];
-  // max-sm:nth-child(odd) pl-0 — 移动端 2×2 网格里左列有两格(第1、3),`first:pl-0`
-  // 只覆盖第1格,第3格(左下)会残留 px-4 的左缩进与上格错位;桌面 4 列单行不受影响。
   return (
-    <section className="mt-8 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-1 max-sm:[&>*:nth-child(odd)]:pl-0 sm:grid-cols-4">
-      <Tile label={t.period} value={period || "—"} sub={t.lag} />
-      <Tile label={t.investors} value={investorCount > 0 ? String(investorCount) : "—"} />
+    <section className="mt-12 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-1">
       <Tile label={t.consensus} value={consensusCount > 0 ? String(consensusCount) : "—"} />
       <Tile
         label={t.dgs10}
