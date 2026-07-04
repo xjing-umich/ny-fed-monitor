@@ -265,6 +265,22 @@ function collectInstant(facts: CompanyFacts, field: FundamentalField) {
   return byEnd;
 }
 
+// 债务概念优先级组:每组只取一个,避免重叠概念双算(合并租赁 tag 含纯 LongTermDebt)。
+const DEBT_GROUPS: string[][] = [
+  ["LongTermDebtAndFinanceLeaseObligationsCurrent", "LongTermDebtCurrent"],
+  ["LongTermDebtAndFinanceLeaseObligationsNoncurrent", "LongTermDebtNoncurrent"],
+  ["ShortTermBorrowings"],
+];
+
+export function pickDebtTags(present: Set<string>): string[] {
+  const out: string[] = [];
+  for (const group of DEBT_GROUPS) {
+    const hit = group.find((t) => present.has(t)); // 组内按优先级取第一个存在的
+    if (hit) out.push(hit);
+  }
+  return out;
+}
+
 // total_debt is the sum of several debt concepts at a given period_end.
 function collectTotalDebt(facts: CompanyFacts) {
   const byEnd = new Map<string, Map<string, PickedFact>>();
@@ -280,9 +296,13 @@ function collectTotalDebt(facts: CompanyFacts) {
   }
   const summed = new Map<string, PickedFact>();
   for (const [end, tagMap] of byEnd) {
-    const total = Array.from(tagMap.values()).reduce((sum, p) => sum + p.val, 0);
-    const earliestFiled = Array.from(tagMap.values()).reduce((min, p) => (p.filed < min ? p.filed : min), "9999-99-99");
-    summed.set(end, { val: total, end, filed: earliestFiled, accn: null, tag: Array.from(tagMap.keys()).join("+"), days: null });
+    const keep = new Set(pickDebtTags(new Set(tagMap.keys())));
+    const kept = Array.from(tagMap.entries())
+      .filter(([t]) => keep.has(t))
+      .map(([, p]) => p);
+    const total = kept.reduce((sum, p) => sum + p.val, 0);
+    const earliestFiled = kept.reduce((min, p) => (p.filed < min ? p.filed : min), "9999-99-99");
+    summed.set(end, { val: total, end, filed: earliestFiled, accn: null, tag: [...keep].join("+"), days: null });
   }
   return summed;
 }
