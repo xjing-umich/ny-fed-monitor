@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
-import { cleanIssuer } from "@/lib/format";
+import { cleanIssuer, fmtMarginPct } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
@@ -45,13 +45,13 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
       cell: (r) =>
         r.marginPct != null && r.marginPct > 0 ? (
           r.reliable ? (
-            <span className="font-mono tabular-nums text-[var(--tt-positive)]">−{Math.round(r.marginPct * 100)}%</span>
+            <span className="font-mono tabular-nums text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
           ) : (
             <span
               className="font-mono tabular-nums text-[var(--tt-faint)]"
               title={isZh ? "估值带红旗(盈利下滑/高杠杆/模型不稳/每股口径疑错),边际不可信，未计入便宜信号。" : "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal."}
             >
-              −{Math.round(r.marginPct * 100)}%<span aria-hidden className="ml-0.5 text-[var(--tt-warning,#b58900)]">⚠</span>
+              {fmtMarginPct(r.marginPct)}<span aria-hidden className="ml-0.5 text-[var(--tt-warning,#b58900)]">⚠</span>
             </span>
           )
         ) : (
@@ -113,7 +113,7 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
                 <Link href={stockPath(lang, r.ticker)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                   {cleanIssuer(r.issuer)}
                   <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{r.ticker}</span>
-                  {r.marginPct != null && r.marginPct > 0 ? <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-positive)]">−{Math.round(r.marginPct * 100)}%</span> : null}
+                  {r.marginPct != null && r.marginPct > 0 ? <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span> : null}
                 </Link>
               </li>
             ))}

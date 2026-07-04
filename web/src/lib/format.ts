@@ -11,6 +11,14 @@ export function formatUSD(v: number): string {
 }
 
 /**
+ * 安全边际展示:−N%;四舍五入到 0 但实际 >0 → "<1%"(不带负号,避免 −0%)。
+ */
+export function fmtMarginPct(pct: number): string {
+  const n = Math.round(pct * 100);
+  return n <= 0 ? "<1%" : `−${n}%`;
+}
+
+/**
  * 把全大写的发行人名(如 "AMAZON COM INC")转为标题大小写("Amazon Com Inc")。
  * 撇号后的字母保持小写,避免 "MOODY'S" → "Moody'S"(应为 "Moody's")。
  */
