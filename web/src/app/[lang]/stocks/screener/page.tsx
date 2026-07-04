@@ -69,8 +69,8 @@ export default async function ScreenerPage({
         ? `现在 ${strikeTotal} 只可估值股票落在 strike zone（现价低于保守价值带）${asOf ? `，截至 ${asOf}` : ""}。`
         : `${strikeTotal} valued stocks are in the strike zone (price below the conservative value band)${asOf ? `, as of ${asOf}` : ""}.`
       : isZh
-        ? "当前没有可估值股票落在 strike zone（保守引擎常态）。"
-        : "No valued stocks are in the strike zone right now (typical for a conservative engine).";
+        ? "当前没有可估值股票落在 strike zone（现价低于保守价值带，保守引擎常态）。"
+        : "No valued stocks are in the strike zone (price below the conservative value band) right now.";
 
   const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
 
@@ -87,13 +87,13 @@ export default async function ScreenerPage({
         <p className="mt-2 max-w-2xl text-sm text-[var(--tt-muted)]">
           {isZh
             ? "按现价相对保守价值带的位置排序，安全边际高者在前。来源：SEC 基本面 + 公开市场价格。"
-            : "Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: SEC fundamentals + public market prices."}
+            : "Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: SEC fundamentals + public market prices."}{" "}
+          <span className="text-[var(--tt-text)]">{geo}</span>
         </p>
-        <p className="mt-3 text-sm text-[var(--tt-text)]">{geo}</p>
       </div>
 
-      {/* 预设子视图分段控件(纯 Link, 零 JS) */}
-      <nav className="mb-5 flex flex-wrap gap-2" aria-label={isZh ? "视图" : "Views"}>
+      {/* 视图与排列控件(纯 Link, 零 JS) */}
+      <nav className="mb-5 flex flex-wrap items-center gap-2" aria-label={isZh ? "视图与排列" : "Views and ranking"}>
         {VIEWS.map((v) => {
           const activeView = v.key === view;
           return (
@@ -111,10 +111,7 @@ export default async function ScreenerPage({
             </Link>
           );
         })}
-      </nav>
-
-      <nav className="mb-5 flex flex-wrap items-center gap-2" aria-label={isZh ? "排序" : "Sort"}>
-        <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">{isZh ? "排序" : "Sort"}</span>
+        <span aria-hidden className="mx-1 text-[var(--tt-faint)]">·</span>
         {([
           { key: "margin", zh: "按安全边际", en: "By margin" },
           { key: "holders", zh: "按持有机构", en: "By holders" },
@@ -141,19 +138,12 @@ export default async function ScreenerPage({
         })}
       </nav>
 
-      {/* 醒目内联免责(合规护栏) */}
-      <p className="mb-5 rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-muted)_6%,transparent)] px-3 py-2 text-xs leading-relaxed text-[var(--tt-muted)]">
-        {isZh
-          ? "这是按保守估值位置排序的观察列表，非买卖建议、非目标价；安全边际只是现价与保守价值带的距离，不含质量或时机判断。"
-          : "This is an observational list ordered by valuation position — not advice, not a price target. Margin of safety is the distance from the conservative value band, and excludes any quality or timing judgment."}
-      </p>
-
       <ScreenerTable lang={lang} rows={sortedRows} />
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-faint)]">
         {isZh
-          ? `估值${asOf ? `截至 ${asOf}` : "刷新中"} · 方法：保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼。价格来自公开市场，基本面来自 SEC EDGAR。仅供参考，非投资建议。`
-          : `Valuation ${asOf ? `as of ${asOf}` : "refreshing"} · method: conservative Greenwald value band + Owner-Earnings DCF. Prices from public markets, fundamentals from SEC EDGAR. For reference only, not investment advice.`}
+          ? `估值${asOf ? `截至 ${asOf}` : "刷新中"} · 方法：保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼。安全边际只是现价与保守价值带的距离，不含质量或时机判断；仅供参考，非投资建议。`
+          : `Valuation ${asOf ? `as of ${asOf}` : "refreshing"} · method: conservative Greenwald value band + Owner-Earnings DCF. Margin of safety is the distance from the conservative value band, not a quality or timing judgment. For reference only, not investment advice.`}
       </p>
     </div>
   );
