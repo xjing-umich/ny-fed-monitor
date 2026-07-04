@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import type { Lang } from "@/lib/nav";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
 import { deriveValuationVerdict } from "@/lib/valuation";
@@ -60,9 +59,6 @@ const MOAT_SHORT: Record<Lang, Record<MoatSignal, string>> = {
 
 const COPY = {
   en: {
-    eyebrow: "Valuation · two methods",
-    panelTitle: "Earnings Power & Asset Floor",
-    panelIntro: "Two intrinsic-value methods and a tangible asset floor — deterministic, not price forecasts or recommendations.",
     statusBelow: "Margin of safety",
     statusWithin: "In fair-value range",
     statusAbove: "Above fair value",
@@ -80,8 +76,8 @@ const COPY = {
     capexRamp: "Capex is in a steep ramp (heavy build-ahead investment) — owner earnings carry extra uncertainty, so read the value range with that caveat.",
     assetBelow: (ps: string) => `Price is at or below the reproducible tangible asset base (${ps} / sh) — a rarer, harder floor.`,
     modelCautions: "Model cautions",
-    disclaimerSpine: "An observation from two valuation methods — not investment advice, not a buy/sell signal, and not a price target.",
-    disclaimerCompact: "Zero-growth intrinsic ranges and a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
+    methodDisclaimer: "Zero-growth intrinsic ranges and a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
+    priceUnavailable: "No usable market price is available, so this page does not place price on the value gauge.",
     priceAsOf: "Price as of",
     mayBeStale: "may be stale",
     reproductionValue: "Reproduction value",
@@ -95,9 +91,6 @@ const COPY = {
       `⚑ Price is below net current asset value (${ps}/share). A Graham "net-net" — historically rare and usually a sign of business distress; beware the value trap.`,
   },
   zh: {
-    eyebrow: "估值 · 两种方法",
-    panelTitle: "盈利能力与资产地基",
-    panelIntro: "两种内在价值方法加一道有形资产地板 — 确定性计算，非价格预测、非推荐。",
     statusBelow: "安全边际",
     statusWithin: "处于合理价值区间",
     statusAbove: "高于合理价值",
@@ -115,8 +108,8 @@ const COPY = {
     capexRamp: "资本开支处于陡峭爬坡（大额前置投入）— 所有者盈利附带额外不确定性，价值区间须带此保留来读。",
     assetBelow: (ps: string) => `现价已等于或低于可重置的有形资产基础（${ps} / 股）— 一道更罕见、更硬的地板。`,
     modelCautions: "模型警示",
-    disclaimerSpine: "源自两种估值方法的一项观察 — 非投资建议、非买卖信号、亦非目标价。",
-    disclaimerCompact: "零增长内在价值区间加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
+    methodDisclaimer: "零增长内在价值区间加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
+    priceUnavailable: "缺少可用市场价格，因此不把现价放进价值带位置条。",
     priceAsOf: "价格截至",
     mayBeStale: "可能已过时",
     reproductionValue: "重置价值",
@@ -149,6 +142,20 @@ const CAUTION = {
     rMinusG: "增长率几乎等于贴现率 — 估计对假设高度敏感。",
   },
 } as const;
+
+function valuationCautions(
+  oeDcf: OeDcfAssessment | undefined,
+  reconciliation: MethodReconciliation | undefined,
+  lang: Lang,
+): string[] {
+  const cautions: string[] = [];
+  if (oeDcf?.terminal_dependency_flag) cautions.push(CAUTION[lang].terminal);
+  if (oeDcf?.diagnostics?.oe_yield_flag) cautions.push(CAUTION[lang].oeYield);
+  if (oeDcf?.diagnostics?.quick_check_flag) cautions.push(CAUTION[lang].quickCheck);
+  if (reconciliation?.divergence_flag) cautions.push(CAUTION[lang].divergence);
+  if (oeDcf?.diagnostics?.r_minus_g_flag) cautions.push(CAUTION[lang].rMinusG);
+  return cautions;
+}
 
 // Full method note for one lamp — rendered only inside the collapsible details.
 function LampMethod({ lamp, lang }: { lamp: EpvLamp; lang: Lang }) {
@@ -215,23 +222,10 @@ function ValueSpine({
   if (!epv) return null;
   const price = sz.price.close;
 
-  // net-net 独立信号:直接从 floor 自身的 lamp + 现价推导,不经过 verdict。
-  // deriveValuationVerdict 在 isImplausibleBand(边际>80%)或无可评估 EPV 灯时会返回 null,
-  // 而这恰恰是 Graham net-net 目标股(困境/亏损)的典型区间——不能让主判定的抑制连带
-  // 隐藏这条独立注脚(spec 承诺 net-net 独立于 80% 护栏)。
-  const nn = floor.net_net;
-  const netNetTriggered = isNetNetTriggered(nn, price);
-
   // Single source of truth: bucket + range come from the shared pure verdict (extracted from
   // this very logic), so the card and the investor-page overlay can never drift apart.
   const verdict = deriveValuationVerdict({ floor, strikeZone: sz, oeDcf, reconciliation });
-  if (!verdict) {
-    // 主判定被抑制(implausible band / 无可比灯):net-net 若触发仍需独立展示,其余一律不渲染。
-    if (!netNetTriggered || !nn.assessable) return null;
-    return (
-      <p className="text-[13px] leading-snug text-[var(--tt-faint)]">{t.netNet(perShare(nn.per_share))}</p>
-    );
-  }
+  if (!verdict) return null;
 
   const oeOk = oeDcf?.assessable && finitePositive(oeDcf.per_share_low) && finitePositive(oeDcf.per_share_high);
   const conservative = oeOk ? { lo: oeDcf!.per_share_low!, hi: oeDcf!.per_share_high! } : null;
@@ -273,15 +267,6 @@ function ValueSpine({
     { key: "within", label: t.zoneWithin },
     { key: "above", label: t.zoneAbove },
   ];
-
-  // Model cautions — surface the engine's already-computed fragility flags in plain language.
-  // Renders only when ≥1 fires. Observation of model sensitivity, never advice.
-  const cautions: string[] = [];
-  if (oeDcf?.terminal_dependency_flag) cautions.push(CAUTION[lang].terminal);
-  if (oeDcf?.diagnostics?.oe_yield_flag) cautions.push(CAUTION[lang].oeYield);
-  if (oeDcf?.diagnostics?.quick_check_flag) cautions.push(CAUTION[lang].quickCheck);
-  if (reconciliation?.divergence_flag) cautions.push(CAUTION[lang].divergence);
-  if (oeDcf?.diagnostics?.r_minus_g_flag) cautions.push(CAUTION[lang].rMinusG);
 
   return (
     <div className="space-y-3">
@@ -326,38 +311,6 @@ function ValueSpine({
 
       <p className="text-sm text-[var(--tt-text)]">{sentence}</p>
 
-      {floor.buffett_epv.method.simplifications.some((s) => s.includes("AI-hog")) ? (
-        <p className="text-sm text-[var(--tt-warn)]">{t.capexRamp}</p>
-      ) : null}
-
-      {sz.assetFloor?.priceBelow ? (
-        <p className="text-sm text-[var(--tt-muted)]">{t.assetBelow(usd0(sz.assetFloor.perShare))}</p>
-      ) : null}
-
-      {netNetTriggered && nn.assessable ? (
-        <p className="mt-2 text-[13px] leading-snug text-[var(--tt-faint)]">
-          {t.netNet(perShare(nn.per_share))}
-        </p>
-      ) : null}
-
-      {cautions.length > 0 ? (
-        <div className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-warn)_6%,transparent)] px-3 py-2">
-          <p className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-warn)]">
-            {t.modelCautions}
-          </p>
-          <ul className="mt-1.5 space-y-1">
-            {cautions.map((c, i) => (
-              <li key={i} className="flex gap-1.5 text-xs leading-relaxed text-[var(--tt-muted)]">
-                <span aria-hidden className="text-[var(--tt-warn)]">·</span>
-                <span>{c}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <p className="text-xs text-[var(--tt-muted)]">{t.disclaimerSpine}</p>
-
       <p className="text-[10px] text-[var(--tt-faint)]">
         {t.priceAsOf} {sz.price.date}
         {sz.price.source ? ` · ${sz.price.source}` : ""}
@@ -368,32 +321,14 @@ function ValueSpine({
   );
 }
 
-// Price-free fallback: no axis is meaningful without a price, so show the two
-// zero-growth lenses, the asset floor and moat, and the owner-earnings DCF range
-// as compact text.
-function CompactFloor({ floor, oeDcf, suppressedReason, lang }: { floor: ValuationFloor; oeDcf?: OeDcfAssessment; suppressedReason?: string; lang: Lang }) {
+// Price-free fallback: no axis is meaningful without a price, so keep the public
+// read to one sentence and leave numbers in MethodDetails.
+function CompactFloor({ suppressedReason, lang }: { suppressedReason?: string; lang: Lang }) {
   const t = COPY[lang];
-  const { graham_epv, buffett_epv, asset_floor, moat_reading } = floor;
-  const lampText = (lamp: EpvLamp) =>
-    lamp.assessable ? range(lamp.per_share_low, lamp.per_share_high) : (lamp.not_assessable_reason ?? (lang === "zh" ? "无法评估" : "not assessable"));
   return (
     <div className="space-y-2">
       {suppressedReason ? <p className="text-sm text-[var(--tt-muted)]">{suppressedReason}</p> : null}
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-[var(--tt-text)]">
-        <span><span className="text-[var(--tt-faint)]">{graham_epv.label} </span>{lampText(graham_epv)}</span>
-        <span><span className="text-[var(--tt-faint)]">{buffett_epv.label} </span>{lampText(buffett_epv)}</span>
-      </div>
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-[var(--tt-text)]">
-        <span>
-          <span className="text-[var(--tt-faint)]">{t.reproductionValue} </span>
-          {asset_floor.assessable ? `${perShare(asset_floor.per_share)} ${t.perSh}` : "—"}
-        </span>
-        <span><span className="text-[var(--tt-faint)]">{t.moat} </span>{MOAT_SHORT[lang][moat_reading.signal]} <span className="text-[var(--tt-faint)]">{t.directional}</span></span>
-      </div>
-      {oeDcf?.assessable && oeDcf.per_share_low != null && oeDcf.per_share_high != null ? (
-        <p className="text-sm text-[var(--tt-muted)]">{t.oeDcfCompact(range(oeDcf.per_share_low, oeDcf.per_share_high))}</p>
-      ) : null}
-      <p className="text-xs text-[var(--tt-muted)]">{t.disclaimerCompact}</p>
+      <p className="text-sm text-[var(--tt-text)]">{t.priceUnavailable}</p>
     </div>
   );
 }
@@ -418,10 +353,38 @@ function MethodDetails({
   const zh = lang === "zh";
   const { graham_epv, buffett_epv, asset_floor, moat_reading, provenance } = floor;
   const epv = sz?.epv;
+  const capexRamp = floor.buffett_epv.method.simplifications.some((s) => s.includes("AI-hog"));
+  const netNetTriggered = sz?.price ? isNetNetTriggered(floor.net_net, sz.price.close) : false;
+  const cautions = valuationCautions(oeDcf, reconciliation, lang);
   return (
     <details className="text-xs text-[var(--tt-muted)]">
       <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">{t.methodSummary}</summary>
       <div className="mt-2 space-y-2">
+        {floor.high_leverage_warning ? (
+          <p className="text-[var(--tt-warn)]">{t.highLeverageWarning}</p>
+        ) : null}
+        {!(graham_epv.assessable && buffett_epv.assessable) && provenance.earnings_basis_note ? (
+          <p>{provenance.earnings_basis_note}</p>
+        ) : null}
+        {capexRamp ? <p className="text-[var(--tt-warn)]">{t.capexRamp}</p> : null}
+        {sz?.assetFloor?.priceBelow ? <p>{t.assetBelow(usd0(sz.assetFloor.perShare))}</p> : null}
+        {netNetTriggered && floor.net_net.assessable ? <p>{t.netNet(perShare(floor.net_net.per_share))}</p> : null}
+        {cautions.length > 0 ? (
+          <div className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-warn)_6%,transparent)] px-3 py-2">
+            <p className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-warn)]">
+              {t.modelCautions}
+            </p>
+            <ul className="mt-1.5 space-y-1">
+              {cautions.map((c, i) => (
+                <li key={i} className="flex gap-1.5 text-xs leading-relaxed text-[var(--tt-muted)]">
+                  <span aria-hidden className="text-[var(--tt-warn)]">·</span>
+                  <span>{c}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        <p>{t.methodDisclaimer}</p>
         {/* precise numbers summary */}
         <p className="font-mono text-[var(--tt-text)]">
           {oeDcf?.assessable && oeDcf.per_share_low != null ? `${zh ? "所有者盈利 DCF" : "Owner-earnings DCF"} ${range(oeDcf.per_share_low, oeDcf.per_share_high)}` : null}
@@ -470,29 +433,6 @@ function MethodDetails({
   );
 }
 
-// Editorial panel shell — replaces the shadcn Card (which leaned on drifting
-// bg-card / ring-foreground / font-heading tokens). Green-mono eyebrow → Fraunces
-// title, hairline rule, matching the home-panel rhythm (StrikeLeadersCard et al.).
-function Panel({ children, lang }: { children: ReactNode; lang: Lang }) {
-  const t = COPY[lang];
-  return (
-    <section className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-5 sm:p-6">
-      <header className="border-b border-[var(--tt-border-strong)] pb-3">
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
-          {t.eyebrow}
-        </p>
-        <h2 className="mt-1.5 font-display text-lg font-medium leading-tight tracking-tight text-[var(--tt-text)]">
-          {t.panelTitle}
-        </h2>
-        <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
-          {t.panelIntro}
-        </p>
-      </header>
-      <div className="mt-4 space-y-3">{children}</div>
-    </section>
-  );
-}
-
 export function EarningsPowerFloorCard({
   floor,
   strikeZone,
@@ -511,40 +451,35 @@ export function EarningsPowerFloorCard({
   lang: Lang;
 }) {
   if (!floor) return null;
+  const t = COPY[lang];
   if (floor.kind === "per_share_unavailable") {
     return (
-      <Panel lang={lang}>
+      <div className="space-y-3">
         <p className="text-sm text-[var(--tt-muted)]">{floor.reason}</p>
-      </Panel>
+        <details className="text-xs text-[var(--tt-muted)]">
+          <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">
+            {t.methodSummary}
+          </summary>
+          <p className="mt-2">{t.methodDisclaimer}</p>
+        </details>
+      </div>
     );
   }
 
-  const t = COPY[lang];
-  const { graham_epv, buffett_epv, provenance } = floor;
   const hasSpine = !!strikeZone?.epv && !strikeZone.currencyMismatch;
 
   return (
-    <Panel lang={lang}>
-        {floor.high_leverage_warning ? (
-          <p className="text-xs text-[var(--tt-warn)]">{t.highLeverageWarning}</p>
-        ) : null}
+    <div className="space-y-3">
+      {hasSpine ? (
+        <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} />
+      ) : (
+        <CompactFloor
+          suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
+          lang={lang}
+        />
+      )}
 
-        {!(graham_epv.assessable && buffett_epv.assessable) && provenance.earnings_basis_note ? (
-          <p className="text-xs text-[var(--tt-muted)]">{provenance.earnings_basis_note}</p>
-        ) : null}
-
-        {hasSpine ? (
-          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} />
-        ) : (
-          <CompactFloor
-            floor={floor}
-            oeDcf={oeDcf}
-            suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
-            lang={lang}
-          />
-        )}
-
-        <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} />
-    </Panel>
+      <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} />
+    </div>
   );
 }
