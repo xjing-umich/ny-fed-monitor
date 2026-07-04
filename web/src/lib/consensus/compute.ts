@@ -140,6 +140,7 @@ export function computeStockHolders(
     const exitedSeen = new Set<string>();
     for (const c of m.changes) {
       if (c.kind !== "exited") continue;
+      if (c.putCall) continue; // 期权(put/call)到期/平仓不是长仓清仓,不算 phantom 清仓持有人行
       const { ticker, name } = keyOf(c.cusip, cusipToTicker);
       if (heldTickers.has(ticker) || exitedSeen.has(ticker)) continue;
       exitedSeen.add(ticker);
