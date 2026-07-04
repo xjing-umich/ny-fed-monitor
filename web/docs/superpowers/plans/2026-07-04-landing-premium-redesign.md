@@ -18,6 +18,7 @@
 - **动效稀疏有意图**：只有 Hero ledger stagger + CTA/数字微交互两处；统一 `--tt-ease`；严格守 `prefers-reduced-motion`。
 - **RSC 边界**：默认 server component，`"use client"` 只包动效/交互子件；重做后 home 树 `"use client"` 从 9 处降到 1 处。
 - **i18n**：双语 `COPY`（zh/en 纯本语言，禁中英混排，品牌锁形/既定术语除外）；所有站内链接经 `localePath`/`investorPath`/`stockPath`。
+- **路由基座（本分支 off db-foundation）**：走 **always-prefix**（`/en/x`、`/zh/x`），**无** hide-default-locale 的裸 URL/proxy。已在 `src/lib/urls.ts` 补 `localePath(lang, path) => \`/${lang}${path}\`` 作**单一真相源**——`localePath` 在本分支存在且产出带前缀路径。链接一律用 `localePath`/`investorPath`/`stockPath`，**不写内联 `/${lang}/...` 串**（将来调和裸 URL 只改 `localePath` 一处）。
 - **产品感 / 去 AI 感（用户强调，硬验收）**：文案**重写而非迁移**。禁破折号抒情对仗、禁对偶排比、禁三元枚举花活（`— A… B… C… —`）、禁对冲词、禁万能过渡句、禁通用 SaaS 样板（"Get started"/"Browse free, no account"）。每句带**具体名词/真数字**否则删；真数据（真投资者名/ticker/\$/持有人数）当情绪主角；有编辑立场；克制留白，不每块都 eyebrow+title+body 三件套。**禁装饰图标堆**。参考 spec §3.3b/§6.2b。
 - **入口纪律**：同一目的地正文内**不超过 2 次**、**禁相同多链药丸块**、每次落在不同语境。落点：Hero→`/stocks/screener`；StepIndex 步①→`/investors`（roster CTA）、步②→`/investors/consensus`、步③→`/stocks`（most-held hub）；ClosingCTA→`/investors`（get-started，与步① roster 语境不同）。即 `/investors` 2 次（均干净），其余各 1 次；旧 4×`/investors`、双药丸三连消灭。
 - **数据新鲜度**：dateline 标注来源 + 季度 + 日期（守 CLAUDE.md）。
