@@ -6,12 +6,12 @@ const COPY = {
   zh: {
     line: "从任意一位投资者、任意一只股票开始。",
     sub: "每个数字都能点回它出处的 SEC 申报。",
-    cta: "从任意投资者、任意股票开始",
+    cta: "打开投资者名单",
   },
   en: {
     line: "Start with any investor, any stock.",
     sub: "Every number links to the SEC filing it came from.",
-    cta: "Start with any investor, any stock",
+    cta: "Open the investor list",
   },
 } as const;
 
