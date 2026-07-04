@@ -27,12 +27,12 @@ export async function generateMetadata({
   const meta =
     lang === "zh"
       ? {
-          title: "个股 · 最多机构持有 — Compounder · 复利",
-          description: "统计顶级投资者 13F 持仓中，被最多机构同时持有的股票。",
+          title: "个股 · 最多人持有 — Compounder · 复利",
+          description: "统计顶级投资者 13F 持仓中，最多人持有的股票。",
         }
       : {
           title: "Stocks · Most held — Compounder",
-          description: "Securities held by the most superinvestors simultaneously, derived from 13F filings.",
+          description: "Most widely held securities among tracked superinvestors, derived from 13F filings.",
         };
   return {
     ...meta,
@@ -87,7 +87,7 @@ export default async function StocksIndexPage({
       {/* Editorial section heading */}
       <div className="mb-8">
         <PageHeader
-          eyebrow={isZh ? "SEC 13F · 最多机构持有" : "SEC 13F · most held"}
+          eyebrow={isZh ? "SEC 13F · 最多人持有" : "SEC 13F · most widely held"}
           title={isZh ? "个股" : "Stocks"}
           intro={isZh
             ? "按持有机构数排列，数据来源：SEC 13F 持仓披露。"
