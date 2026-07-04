@@ -37,6 +37,7 @@ import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { buildConsensusSentence } from "@/lib/stocks/consensusSummary";
+import { isLikelyTicker } from "@/lib/externalLinks";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -243,7 +244,7 @@ export default async function StockTickerPage({
   // 旧 CUSIP URL → 301 到 ticker(若该 cusip 已解析)
   const cusipMap = await getCusipMap();
   const asCusip = cusipMap.get(rawTicker);
-  if (asCusip?.ticker && asCusip.ticker !== rawTicker) {
+  if (asCusip?.ticker && asCusip.ticker !== rawTicker && isLikelyTicker(asCusip.ticker)) {
     redirect(stockPath(lang, asCusip.ticker));
   }
 
