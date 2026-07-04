@@ -93,7 +93,8 @@ export default async function ScreenerPage({
       </div>
 
       {/* 视图与排列控件(纯 Link, 零 JS) */}
-      <nav className="mb-5 flex flex-wrap items-center gap-2" aria-label={isZh ? "视图与排列" : "Views and ranking"}>
+      <nav className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2" aria-label={isZh ? "视图与排列" : "Views and ranking"}>
+        <div className="flex flex-wrap gap-2">
         {VIEWS.map((v) => {
           const activeView = v.key === view;
           return (
@@ -111,7 +112,8 @@ export default async function ScreenerPage({
             </Link>
           );
         })}
-        <span aria-hidden className="mx-1 text-[var(--tt-faint)]">·</span>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:border-l sm:border-[var(--tt-border)] sm:pl-3">
         {([
           { key: "margin", zh: "按安全边际", en: "By margin" },
           { key: "holders", zh: "按持有机构", en: "By holders" },
@@ -136,6 +138,7 @@ export default async function ScreenerPage({
             </Link>
           );
         })}
+        </div>
       </nav>
 
       <ScreenerTable lang={lang} rows={sortedRows} />
