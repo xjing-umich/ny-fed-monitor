@@ -135,7 +135,19 @@ function HoldingsTable({
       key: "issuer",
       header: t.cols.issuer,
       role: "primary",
-      cell: (h) => <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />,
+      cell: (h) => (
+        <span className="inline-flex items-center gap-1.5">
+          <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />
+          {h.putCall && (
+            <span
+              className={`rounded-sm px-1 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] border border-current/40 ${h.putCall === "Put" ? "text-[var(--tt-warn)]" : "text-[var(--tt-muted)]"}`}
+              title={lang === "zh" ? "期权:市值为标的名义价值,非权利金" : "Option: value is notional, not premium"}
+            >
+              {h.putCall === "Put" ? "PUT" : "CALL"}
+            </span>
+          )}
+        </span>
+      ),
     },
     {
       key: "value",
@@ -180,7 +192,7 @@ function HoldingsTable({
       header: t.cols.weight,
       align: "right",
       width: "w-40",
-      cell: (h) => <WeightBar weight={h.weight ?? null} />,
+      cell: (h) => h.putCall ? <span className="text-[var(--tt-faint)]">—</span> : <WeightBar weight={h.weight ?? null} />,
     },
     {
       key: "signal",
