@@ -1,22 +1,14 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
-import { notableMoves, consensusHeld } from "@/lib/aggregations";
+import { notableMoves, consensusHeldTop, consensusCount } from "@/lib/aggregations";
 import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { formatUSD } from "@/lib/format";
-import { EntityName } from "@/components/common/EntityName";
-import { investorPath, stockPath, localePath } from "@/lib/urls";
-import { altFor } from "@/lib/seo";
+import { investorPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import { DataStrip } from "@/components/common/DataStrip";
-import TrackedInvestorsWall from "@/components/home/TrackedInvestorsWall";
-import SectionReveal from "@/components/home/SectionReveal";
-import FeatureRow from "@/components/home/FeatureRow";
-import ValueBandCard from "@/components/home/ValueBandCard";
-import StrikeLeadersCard from "@/components/home/StrikeLeadersCard";
+import StepIndex from "@/components/home/StepIndex";
 import FoundationsGrid from "@/components/home/FoundationsGrid";
 import PhilosophyQuote from "@/components/home/PhilosophyQuote";
 import LearnTeaser from "@/components/home/LearnTeaser";
@@ -43,7 +35,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: altFor(l, ""),
+    alternates: { canonical: `/${l}`, languages: { en: "/en", "zh-CN": "/zh", "x-default": "/en" } },
   };
 }
 
@@ -58,17 +50,17 @@ export default async function HomePage({
   const isZh = lang === "zh";
 
   // 全部廉价并行读(Supabase / bundled JSON)。无外部 API、无重计算。
-  const [idx, moves, held, strike, dgs10] = await Promise.all([
+  const [idx, moves, heldTop, heldCount, strike, dgs10] = await Promise.all([
     getManagerIndex(),
     notableMoves(6),
-    consensusHeld(),
+    consensusHeldTop(6),
+    consensusCount(),
     readStrikeZoneLeaders(3),
     getLatestDgs10(),
   ]);
 
   const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
   const period = topManagers[0]?.period ?? "";
-  const topInvestors = topManagers.slice(0, 8);
 
   // Link the philosophy band's featured quote to Buffett's page if we track him.
   const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
@@ -107,148 +99,37 @@ export default async function HomePage({
 
       <HeroMasthead lang={lang} period={period} moves={moves} investorCount={topManagers.length} />
 
-      {/* Real-data stat bar (carries the 10Y/rates signal — macro presence) */}
-      <DataStrip
-        lang={lang}
-        period={period}
-        investorCount={topManagers.length}
-        consensusCount={held.length}
-        dgs10={dgs10}
-      />
+      {/* Real-data stat bar — carries the 10Y macro signal + real-data proof. */}
+      <div className="mt-12">
+        <DataStrip
+          lang={lang}
+          period={period}
+          investorCount={topManagers.length}
+          consensusCount={heldCount}
+          dgs10={dgs10}
+        />
+      </div>
 
-      {topManagers.length > 0 && (
-        <SectionReveal>
-          <TrackedInvestorsWall lang={lang} managers={topManagers.slice(0, 12)} total={topManagers.length} />
-        </SectionReveal>
-      )}
-
-      <SectionReveal>
-        <p className="mt-20 font-mono text-xs leading-relaxed tracking-[0.04em] text-[var(--tt-muted)]">
-          {isZh
-            ? "三步看懂 · ① 跟谁 → ② 他们共同看好什么 → ③ 那只到底便不便宜"
-            : "Three steps · ① who to follow → ② what they agree on → ③ whether it's actually cheap"}
-        </p>
-      </SectionReveal>
-
-      {/* Feature row ① — Investors */}
-      {topInvestors.length > 0 && (
-        <SectionReveal>
-          <FeatureRow
-            step={1}
-            eyebrow={isZh ? "13F 追踪" : "13F tracking"}
-            title={isZh ? "跟随聪明钱，逐季追踪" : "Follow the smart money, quarter by quarter"}
-            body={isZh
-              ? "追踪 70+ 位传奇投资者的 SEC 13F 季度持仓——谁在建仓、谁在清仓，逐季看清。"
-              : "Track 70+ legendary investors' SEC 13F filings — who's building a position, who's getting out, quarter over quarter."}
-            ctaLabel={isZh ? "浏览全部投资者 →" : "Browse all investors →"}
-            href={localePath(lang, "/investors")}
-          >
-            <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
-              <table className="w-full border-collapse text-sm">
-                <tbody>
-                  {topInvestors.slice(0, 6).map((m) => (
-                    <tr key={m.cik} className="border-b border-[var(--tt-border)] last:border-0">
-                      <td className="py-2 pr-4">
-                        <Link href={investorPath(lang, m.slug)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                          {m.person}
-                        </Link>
-                      </td>
-                      <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">{formatUSD(m.totalValue)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </FeatureRow>
-        </SectionReveal>
-      )}
-
-      {/* Feature row ② — Consensus */}
-      {held.length > 0 && (
-        <SectionReveal>
-          <FeatureRow
-            step={2}
-            reverse
-            eyebrow={isZh ? "跨基金共识" : "Cross-fund consensus"}
-            title={isZh ? "看共识如何形成" : "See the consensus form"}
-            body={isZh
-              ? "当多位顶级投资者持有同一只股票，那是值得注意的信号。我们跨基金聚合，告诉你有几位在持有。"
-              : "When many of the best investors hold the same stock, that's a signal worth noting. We aggregate across funds so you can see how many own it."}
-            ctaLabel={isZh ? "查看共识持仓 →" : "View consensus holdings →"}
-            href={localePath(lang, "/investors/consensus")}
-          >
-            <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
-              <table className="w-full border-collapse text-sm">
-                <tbody>
-                  {held.slice(0, 6).map((row) => (
-                    <tr key={row.cusip} className="border-b border-[var(--tt-border)] last:border-0">
-                      <td className="py-2 pr-4">
-                        <Link href={stockPath(lang, row.cusip)} className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
-                          <EntityName issuer={row.issuer} ticker={row.cusip} />
-                        </Link>
-                      </td>
-                      <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                        {isZh ? `${row.holderCount} 位持有` : `${row.holderCount} hold`}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </FeatureRow>
-        </SectionReveal>
-      )}
-
-      {/* Feature row ③ — Valuation; not reversed → row rhythm right/left/right.
-          Real strike-zone leaders when any; else the static value-band schematic. */}
-      <SectionReveal>
-        <FeatureRow
-          step={3}
-          eyebrow={isZh ? "估值" : "Valuation"}
-          title={isZh ? "知道它到底值多少" : "Know what it's worth"}
-          body={isZh
-            ? "持仓只是起点。每只股票都用三套保守方法估值——Buffett 所有者收益 DCF、Greenwald 盈利能力价值、资产重置价值——只为已证实的价值付费。"
-            : "Holdings are only the start. Every stock is valued three conservative ways — Buffett owner-earnings DCF, Greenwald earnings-power value, asset reproduction value — so you pay only for proven value."}
-          ctaLabel={isZh ? "看个股估值 →" : "See per-stock valuation →"}
-          href={localePath(lang, "/stocks")}
-        >
-          {strike.leaders.length > 0 ? (
-            <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
-          ) : (
-            <ValueBandCard lang={lang} />
-          )}
-        </FeatureRow>
-      </SectionReveal>
-
-      <SectionReveal>
-        <FoundationsGrid lang={lang} />
-      </SectionReveal>
-
-      <SectionReveal>
-        <PhilosophyQuote lang={lang} featuredHref={buffettHref} />
-      </SectionReveal>
-
-      <SectionReveal>
-        <LearnTeaser lang={lang} />
-      </SectionReveal>
-
-      <SectionReveal>
-        <ClosingCTA lang={lang} />
-      </SectionReveal>
-
-      {/* Trust strip + demoted macro (newsletter lives globally in the footer) */}
-      <section className="mt-16 border-t border-[var(--tt-border)] pt-6">
-        <p className="font-mono text-[11px] tracking-[0.04em] text-[var(--tt-faint)]">
-          {isZh
-            ? "来源：SEC EDGAR 13F 季度报告 · 45 天延迟 · 不荐股、不预测。"
-            : "Source: SEC EDGAR 13F quarterly filings · 45-day lag · No recommendations, no forecasts."}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Link href={localePath(lang, "/macro")} className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">
-            {isZh ? "宏观流动性 →" : "Macro & liquidity →"}
-          </Link>
-        </div>
+      {/* Near-full-width to break the max-w-5xl rhythm. */}
+      <section className="mx-auto mt-28 max-w-6xl">
+        <StepIndex lang={lang} investors={topManagers.slice(0, 12)} held={heldTop} strike={strike} />
       </section>
+
+      <div className="mt-32">
+        <FoundationsGrid lang={lang} />
+      </div>
+
+      <div className="mt-24">
+        <PhilosophyQuote lang={lang} featuredHref={buffettHref} />
+      </div>
+
+      <div className="mt-20">
+        <LearnTeaser lang={lang} />
+      </div>
+
+      <div className="mt-28">
+        <ClosingCTA lang={lang} />
+      </div>
     </div>
   );
 }
