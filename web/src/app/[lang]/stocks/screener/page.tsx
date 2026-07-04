@@ -86,8 +86,8 @@ export default async function ScreenerPage({
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-[var(--tt-muted)]">
           {isZh
-            ? "按现价相对保守价值带的位置排序，安全边际高者在前。来源：SEC 基本面 + 公开市场价格。"
-            : "Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: SEC fundamentals + public market prices."}{" "}
+            ? "按现价相对保守价值带的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。"
+            : "Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices."}{" "}
           <span className="text-[var(--tt-text)]">{geo}</span>
         </p>
       </div>

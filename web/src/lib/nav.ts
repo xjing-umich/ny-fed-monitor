@@ -26,7 +26,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavItem[]> = {
   stocks: [
     { key: "held", zh: "最多机构持有", en: "Most held", href: "/stocks" },
     { key: "screener", zh: "按价值带", en: "By value", href: "/stocks/screener" },
-    { key: "sec", zh: "SEC 财务", en: "SEC fundamentals", href: "/stocks#sec-fundamentals" },
   ],
   macro: [
     { key: "funding", zh: "资金面", en: "Funding", href: "/macro?view=funding" },
