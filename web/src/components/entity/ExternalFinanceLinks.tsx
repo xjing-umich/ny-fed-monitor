@@ -6,7 +6,7 @@ import { buildExternalFinanceLinks } from "@/lib/externalLinks";
 import type { Lang } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
-type Variant = "table" | "detail";
+type Variant = "table" | "detail" | "prominent";
 
 const LABELS = {
   zh: { yahoo: "在 Yahoo Finance 查看", google: "在 Google Finance 查看", sec: "在 SEC EDGAR 查看" },
@@ -27,12 +27,18 @@ export function ExternalFinanceLinks({
 }): React.ReactElement {
   const links = buildExternalFinanceLinks(ticker, exchange);
   const t = LABELS[lang];
-  const iconSize = variant === "detail" ? 18 : 15;
+  const iconSize = variant === "detail" || variant === "prominent" ? 18 : 15;
 
   // 第三方链接常驻显示(table 与 detail 一致), 不再 hover 才出现。
-  const wrapper = "inline-flex items-center gap-3";
+  const wrapper =
+    variant === "prominent"
+      ? "flex flex-wrap items-center gap-2"
+      : "inline-flex items-center gap-3";
 
-  const linkBase = "inline-flex items-center text-[var(--tt-faint)] transition-colors";
+  const linkBase =
+    variant === "prominent"
+      ? "inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-[var(--tt-border)] px-3 py-2 text-sm text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
+      : "inline-flex items-center text-[var(--tt-faint)] transition-colors";
 
   return (
     <span className={wrapper}>
@@ -45,6 +51,7 @@ export function ExternalFinanceLinks({
         className={cn(linkBase, "hover:text-[#6001D2]")}
       >
         <YahooIcon size={iconSize} />
+        {variant === "prominent" ? <span>Yahoo Finance</span> : null}
       </a>
       <a
         href={links.google}
@@ -55,6 +62,7 @@ export function ExternalFinanceLinks({
         className={cn(linkBase, "hover:text-[#4285F4]")}
       >
         <GoogleIcon size={iconSize} />
+        {variant === "prominent" ? <span>Google Finance</span> : null}
       </a>
       <a
         href={links.sec}
@@ -65,6 +73,7 @@ export function ExternalFinanceLinks({
         className={cn(linkBase, "hover:text-[var(--tt-text)]")}
       >
         <FileText size={iconSize} strokeWidth={1.75} />
+        {variant === "prominent" ? <span>SEC EDGAR</span> : null}
       </a>
     </span>
   );

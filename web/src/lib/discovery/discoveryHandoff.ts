@@ -22,8 +22,8 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
     return {
       eyebrow,
       href: screenerHref(lang),
-      line: zh ? "想知道现在哪些股票相对保守价值带便宜？" : "Want to see which stocks look cheap against a conservative value band?",
-      ctaLabel: zh ? "浏览全部可估值股票，按价值带排序" : "Browse all valued stocks, ranked by value band",
+      line: zh ? "看哪些股票相对价值带便宜。" : "See which stocks look cheap against a conservative value band.",
+      ctaLabel: zh ? "浏览全部可估值股票" : "Browse all valued stocks",
     };
   }
   if (verdict.inStrikeZone) {
@@ -31,7 +31,7 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
       eyebrow,
       href: screenerHref(lang, "strike_zone"),
       line: zh ? `${T} 现价落在保守价值带下方。` : `${T}'s price sits below its conservative value band.`,
-      ctaLabel: zh ? "看全市场还有哪些落在击球区" : "See which other stocks are in the strike zone",
+      ctaLabel: zh ? "看全市场进入区" : "See the full strike-zone list",
     };
   }
   if (verdict.bucket === "below") {
@@ -46,7 +46,7 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
     eyebrow,
     href: screenerHref(lang, "strike_zone"),
     line: zh ? `${T} 现价不低于保守价值带。` : `${T}'s price is not below its conservative value band.`,
-    ctaLabel: zh ? "看看现在哪些股票落在击球区" : "See which stocks are in the strike zone right now",
+    ctaLabel: zh ? "看当前进入区股票" : "See current strike-zone stocks",
   };
 }
 
