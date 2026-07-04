@@ -104,7 +104,6 @@ const HOLD_COPY = {
 
 function HoldingsTable({
   holdings,
-  prior,
   changes,
   lang,
   cusipToTicker,
@@ -113,7 +112,6 @@ function HoldingsTable({
   rowSignals,
 }: {
   holdings: Holding[];
-  prior?: FilingData;
   changes: HoldingChange[];
   lang: Lang;
   cusipToTicker: Map<string, string>;
@@ -482,7 +480,7 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
-          <HoldingsTable holdings={latest.holdings} prior={prior} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
+          <HoldingsTable holdings={latest.holdings} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
           <details className="group border-t border-[var(--tt-border)] pt-4">
             <summary className="cursor-pointer list-none font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
               {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}

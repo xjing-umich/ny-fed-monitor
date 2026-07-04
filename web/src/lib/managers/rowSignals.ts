@@ -8,7 +8,7 @@ export type RowSignal = {
   cheap?: { marginPct: number | null };
 };
 
-// 行内信念徽章短标签(比 ConvictionPicks 卡片更短; 单行不换行)。
+// 行内信念徽章短标签(单行不换行)。
 const CONV_LABEL: Record<Lang, Record<ConvictionSignal, (q: number, s: number) => string>> = {
   zh: {
     accumulating: (_q, s) => `连续加仓·${s}季`,
@@ -20,7 +20,7 @@ const CONV_LABEL: Record<Lang, Record<ConvictionSignal, (q: number, s: number) =
     accumulating: (_q, s) => `Adding ${s}q`,
     fresh_conviction: () => "Big new buy",
     long_core: (q) => `Core ${q}q`,
-    never_trimmed: (q) => `Never trimmed`,
+    never_trimmed: (q) => `Never trimmed ${q}q`,
   },
 };
 
