@@ -59,11 +59,14 @@ export async function generateMetadata({
   const q = d.latest?.period ? quarterLabel(d.latest.period) : "";
   const qSuffix = q ? ` ${q}` : "";
   // 确定性 meta description：从已加载的 13F 数据派生，每位投资人各异（不再依赖已退役的 AI judgment_line）。
-  const posCount = d.latest?.holdings.length ?? 0;
-  const totalLabel = d.latest ? formatUSD(d.latest.totalValue) : "";
+  // 仅统计长仓（排除 put/call 期权），与可见页面的 key-facts 口径保持一致（Task 12）。
+  const longHoldings = (d.latest?.holdings ?? []).filter((h) => !h.putCall);
+  const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
+  const posCount = longHoldings.length;
+  const totalLabel = d.latest ? formatUSD(longTotalValue) : "";
   const topName =
-    d.latest && d.latest.holdings.length > 0
-      ? cleanIssuer([...d.latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
+    longHoldings.length > 0
+      ? cleanIssuer([...longHoldings].sort((a, b) => b.value - a.value)[0].issuer)
       : "";
   const alternates = altFor(lang, `/investors/${slug}`);
   const meta =
