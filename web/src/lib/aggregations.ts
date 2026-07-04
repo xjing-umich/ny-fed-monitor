@@ -120,6 +120,23 @@ export async function consensusHeld(): Promise<HeldRow[]> {
   const rows = await mostHeld(5000);
   return rows.filter((r) => r.holderCount >= CONSENSUS_MIN_HOLDERS);
 }
+
+/** 共识票计数:库优先,无库回退扫描计数。 */
+export async function consensusCount(): Promise<number> {
+  const { readConsensusCount } = await import("@/lib/managers/consensusRead");
+  const fromDb = await readConsensusCount();
+  if (fromDb !== null) return fromDb;
+  return (await consensusHeld()).length; // 回退:无库时全量派生
+}
+
+/** 共识票 Top-n:库优先,无库回退扫描取前 n。 */
+export async function consensusHeldTop(n: number): Promise<HeldRow[]> {
+  const { readConsensusHeldTop } = await import("@/lib/managers/consensusRead");
+  const fromDb = await readConsensusHeldTop(n);
+  if (fromDb && fromDb.length) return fromDb;
+  return (await consensusHeld()).slice(0, n); // 回退
+}
+
 export async function notableMoves(limit = 6): Promise<NotableMoves> {
   const { readConsensusMoves } = await import("@/lib/managers/consensusRead");
   const fromDb = await readConsensusMoves(limit);

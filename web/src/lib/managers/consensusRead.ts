@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
 import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
+import { CONSENSUS_MIN_HOLDERS } from "@/lib/aggregations";
 import { mapHolderCountRows, type HolderCountDbRow } from "@/lib/managers/holderCounts";
 
 type HeldDbRow = { ticker: string; issuer: string; holder_count: number; total_value: number };
@@ -33,6 +34,29 @@ export const readConsensusHeld = cache(async (limit: number): Promise<HeldRow[] 
     .from("consensus_holdings").select("ticker,issuer,holder_count,total_value")
     .order("holder_count", { ascending: false }).order("total_value", { ascending: false }).limit(limit);
   if (error) { console.error(`readConsensusHeld 失败: ${error.message}`); return null; }
+  return mapHeldRows((data ?? []) as HeldDbRow[]);
+});
+
+/** 共识票计数(holder_count>=CONSENSUS_MIN_HOLDERS)。count-only,零行传输。无 env→null。 */
+export const readConsensusCount = cache(async (): Promise<number | null> => {
+  if (!hasSupabaseEnv()) return null;
+  const { count, error } = await getDb()
+    .from("consensus_holdings")
+    .select("ticker", { count: "exact", head: true })
+    .gte("holder_count", CONSENSUS_MIN_HOLDERS);
+  if (error) { console.error(`readConsensusCount 失败: ${error.message}`); return null; }
+  return count ?? 0;
+});
+
+/** 共识票 Top-n(holder_count>=阈值,已排序)。取代 mostHeld(5000) 过取。无 env→null。 */
+export const readConsensusHeldTop = cache(async (n: number): Promise<HeldRow[] | null> => {
+  if (!hasSupabaseEnv()) return null;
+  const { data, error } = await getDb()
+    .from("consensus_holdings").select("ticker,issuer,holder_count,total_value")
+    .gte("holder_count", CONSENSUS_MIN_HOLDERS)
+    .order("holder_count", { ascending: false }).order("total_value", { ascending: false })
+    .limit(n);
+  if (error) { console.error(`readConsensusHeldTop 失败: ${error.message}`); return null; }
   return mapHeldRows((data ?? []) as HeldDbRow[]);
 });
 
