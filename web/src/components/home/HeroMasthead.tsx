@@ -39,7 +39,7 @@ const COPY = {
 
 function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
   return (
-    <RevealStagger className="mt-2">
+    <RevealStagger className="mt-2" stepMs={90} delayMs={250}>
       {rows.map((row) => (
         <div
           key={row.cusip}
