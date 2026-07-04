@@ -4,9 +4,11 @@ import { useEffect, useRef } from "react";
 export default function RevealStagger({
   children,
   stepMs = 60,
+  className,
 }: {
   children: React.ReactNode;
   stepMs?: number;
+  className?: string;
 }): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -36,5 +38,9 @@ export default function RevealStagger({
     io.observe(el);
     return () => io.disconnect();
   }, [stepMs]);
-  return <div ref={ref}>{children}</div>;
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
 }

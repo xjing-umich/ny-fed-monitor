@@ -14,8 +14,8 @@ const COPY = {
     // 主张：真数字（投资者数 + 季度）领句，第二句弱化补估值交叉验证的立场
     headline: (n: number) => `${n} 位投资者，上季度刚上报的每一笔持仓。`,
     headlineNoCount: (q: string) => `${q}，超级投资者刚上报的每一笔持仓。`,
-    headlineMuted: "逐笔对齐第一性原理估值，只留耐心买家出手的位置。",
-    sub: "这里聚合的是 SEC 13F 季度持仓，与自建估值引擎逐票交叉验证。数据来源 SEC EDGAR。",
+    headlineMuted: "逐笔对齐第一性原理估值。",
+    sub: "聚合数百家机构上报的 SEC 13F 季度持仓，按 CUSIP 逐票归并。数据来源 SEC EDGAR。",
     cta: "看个股估值",
     panelTitle: "本季显著动向",
     live: "实时",
@@ -26,8 +26,8 @@ const COPY = {
   en: {
     headline: (n: number) => `${n} investors. One quarter. Every position they just reported.`,
     headlineNoCount: (q: string) => `${q}. Every position the smart money just reported.`,
-    headlineMuted: "Each holding lined up against a first-principles valuation, so you see where patient buyers actually stepped in.",
-    sub: "SEC 13F quarterly holdings, cross-checked stock by stock against a self-built valuation engine. Source: SEC EDGAR.",
+    headlineMuted: "Each holding checked against a first-principles valuation.",
+    sub: "SEC 13F quarterly holdings from hundreds of institutional filers, aggregated by CUSIP. Source: SEC EDGAR.",
     cta: "See per-stock valuation",
     panelTitle: "Notable moves this quarter",
     live: "live",
@@ -39,7 +39,7 @@ const COPY = {
 
 function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
   return (
-    <div className="mt-2">
+    <RevealStagger className="mt-2">
       {rows.map((row) => (
         <div
           key={row.cusip}
@@ -67,7 +67,7 @@ function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
           </span>
         </div>
       ))}
-    </div>
+    </RevealStagger>
   );
 }
 
@@ -120,24 +120,22 @@ export default function HeroMasthead({
             <span className="font-display text-sm font-medium text-[var(--tt-text)]">{c.panelTitle}</span>
             <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.live}</span>
           </div>
-          <RevealStagger>
-            {moves.mostBought.length > 0 && (
-              <div>
-                <p className="pt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                  {c.bought}
-                </p>
-                <PanelRows lang={lang} rows={moves.mostBought.slice(0, 3)} />
-              </div>
-            )}
-            {moves.mostSold.length > 0 && (
-              <div>
-                <p className="pt-4 font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                  {c.sold}
-                </p>
-                <PanelRows lang={lang} rows={moves.mostSold.slice(0, 2)} />
-              </div>
-            )}
-          </RevealStagger>
+          {moves.mostBought.length > 0 && (
+            <div>
+              <p className="pt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {c.bought}
+              </p>
+              <PanelRows lang={lang} rows={moves.mostBought.slice(0, 3)} />
+            </div>
+          )}
+          {moves.mostSold.length > 0 && (
+            <div>
+              <p className="pt-4 font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {c.sold}
+              </p>
+              <PanelRows lang={lang} rows={moves.mostSold.slice(0, 2)} />
+            </div>
+          )}
         </aside>
       )}
     </section>
