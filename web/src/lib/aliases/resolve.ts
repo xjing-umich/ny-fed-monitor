@@ -45,7 +45,7 @@ const buildInvestorIndex = cache(async (): Promise<BuiltIndex> =>
 const CORP_SUFFIXES = new Set([
   "inc", "incorporated", "corp", "corporation", "co", "company", "cos",
   "ltd", "limited", "plc", "lp", "llc", "llp", "sa", "nv", "ag",
-  "holdings", "hldgs", "holding", "group", "grp", "com", "the", "trust", "tr",
+  "com", "the", "trust", "tr",
   "class", "cl", "a", "b", "c",
   "common", "stock", "stk", "shares", "share", "sponsored", "adr", "ads",
   "ord", "ordinary", "cap", "new", "del", "reit", "units", "unit",
@@ -53,7 +53,7 @@ const CORP_SUFFIXES = new Set([
 
 // cleanIssuer 后的名字 → 剥掉尾部噪声后缀的短名。先把连字符/斜杠当分隔符,再逐个剥尾部噪声 token。
 // 仅用于派生一个"短名"别名;歧义(如 alphabet→GOOGL+GOOG、各双股份类别)由 buildFromEntries §6 闸拦掉。
-function companyShortName(cleaned: string): string {
+export function companyShortName(cleaned: string): string {
   const toks = cleaned.replace(/[-/]/g, " ").split(/\s+/).filter(Boolean);
   while (toks.length > 1 && CORP_SUFFIXES.has(toks[toks.length - 1].toLowerCase().replace(/[.,&]/g, ""))) {
     toks.pop();
