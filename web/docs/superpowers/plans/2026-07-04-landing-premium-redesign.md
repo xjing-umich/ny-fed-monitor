@@ -18,6 +18,7 @@
 - **动效稀疏有意图**：只有 Hero ledger stagger + CTA/数字微交互两处；统一 `--tt-ease`；严格守 `prefers-reduced-motion`。
 - **RSC 边界**：默认 server component，`"use client"` 只包动效/交互子件；重做后 home 树 `"use client"` 从 9 处降到 1 处。
 - **i18n**：双语 `COPY`（zh/en 纯本语言，禁中英混排，品牌锁形/既定术语除外）；所有站内链接经 `localePath`/`investorPath`/`stockPath`。
+- **产品感 / 去 AI 感（用户强调，硬验收）**：文案**重写而非迁移**。禁破折号抒情对仗、禁对偶排比、禁三元枚举花活（`— A… B… C… —`）、禁对冲词、禁万能过渡句、禁通用 SaaS 样板（"Get started"/"Browse free, no account"）。每句带**具体名词/真数字**否则删；真数据（真投资者名/ticker/\$/持有人数）当情绪主角；有编辑立场；克制留白，不每块都 eyebrow+title+body 三件套。**禁装饰图标堆**。参考 spec §3.3b/§6.2b。
 - **入口纪律**：同一目的地正文内**不超过 2 次**、**禁相同多链药丸块**、每次落在不同语境。落点：Hero→`/stocks/screener`；StepIndex 步①→`/investors`（roster CTA）、步②→`/investors/consensus`、步③→`/stocks`（most-held hub）；ClosingCTA→`/investors`（get-started，与步① roster 语境不同）。即 `/investors` 2 次（均干净），其余各 1 次；旧 4×`/investors`、双药丸三连消灭。
 - **数据新鲜度**：dateline 标注来源 + 季度 + 日期（守 CLAUDE.md）。
 - **爆炸半径**：不碰 TopNav/SubNav/Footer、令牌色板（仅加 ease token）、SEO metadata（`altFor` 保持）、其他页面、数据管道/schema。
@@ -242,7 +243,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - 眉标 dateline：`font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-accent)]` + `FreshnessDot`，文案含**季度 + 来源 + 45 天延迟**（沿用 `c.asOf`）。
 - **单一主 CTA**（删旧三连药丸 `links` 数组）：文案「看个股估值 → / See per-stock valuation →」，`href={localePath(lang, "/stocks/screener")}`；样式 `font-display text-[15px] [border-bottom:1px_solid_var(--tt-accent)] hover:text-[var(--tt-accent)]` + `→` 位移微交互，过渡用 `transition-colors`（曲线继承全局，或显式 `[transition:color_var(--tt-dur)_var(--tt-ease)]`）。
 - 右侧 ledger：不再是描边表格盒堆叠——外层仅一层克制容器（`rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)]` 可保留但内部用 hairline 分组），把「最多人增持 / 减持」两组行**包进 `<RevealStagger>`**（逐行打印感）；行内 `MoveTag` + `EntityName` + 右对齐 mono `tabular-nums`；增持绿 `var(--tt-positive)`、减持 oxblood `var(--tt-negative)` 克制点缀。
-- 双语 `COPY` 保留 zh/en，纯本语言。
+- **文案按产品感重写（不沿用旧 AI 腔）**：主张标题换成具体有立场的句子——EN 参考 "72 investors. One quarter. Every position they just reported."、ZH "72 位投资者，上季度刚上报的每一笔持仓。"（`72` 用真 `topManagers.length`/dateline 数据注入，不写死）；删旧 "See what they own — and what it's worth." 的破折号抒情。CTA 用具体动词短语，不用 "Get started"。zh/en 纯本语言。
 
 - [ ] **Step 1: 重写组件**
 
@@ -288,7 +289,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - 步②「跨基金共识」：右列 = `held` 的裸表（`EntityName` + `holderCount`），CTA → `localePath(lang, "/investors/consensus")`。
 - 步③「估值」：右列 = `strike.leaders.length > 0 ? <StrikeLeadersCard .../> : <ValueBandCard .../>`，CTA → `localePath(lang, "/stocks")`。
 - 步与步之间 hairline 分隔（`border-t border-[var(--tt-border)] pt-10 first:border-0 first:pt-0`），近满幅容器由 page.tsx 提供（见 Task 7）。
-- 双语 `COPY`：三步的 eyebrow/title/body/cta 文案沿用现 FeatureRow 里已审校的中英文（copy 迁移，不新造），纯本语言。
+- **双语 `COPY` 按产品感重写**（**不**沿用旧 FeatureRow copy）：每步 title/body 要具体有立场，删对偶排比（"who's building… who's getting out"）、删三元枚举花活、删对冲词与万能过渡句（"Holdings are only the start."）。估值步 body 参考 EN "We value every holding on proven earnings and assets. No growth story you have to believe."。数据能说话处砍掉多余 body，敢留白。zh/en 纯本语言。
 
 - [ ] **Step 1: 写 StepIndex**
 
@@ -325,17 +326,17 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - Produces:
   - `TrustLockup({ label, value, lang? }): React.ReactElement` — mono 标签 + 值的 hairline 锁片（`font-mono text-[10px] uppercase tracking-[0.12em]` 标签 + `text-sm` 值，`border border-[var(--tt-border)] rounded-md px-3 py-2`）
   - `FoundationsGrid({ lang }): React.ReactElement`（签名不变）
-- Consumes: lucide 图标（沿用现有集）、`localePath`（macro 入口）
+- Consumes: `localePath`（macro 入口）。**不再 import lucide 图标集**（删装饰图标）。
 
-**craft 参数：**
-- FoundationsGrid 顶部眉标「建立在一手来源之上 / Built on primary sources」保留。
-- 九宫特性网格保留（图标 + label），但**新增一排信任 lockup**：把 `SEC EDGAR · 一手来源`、`45 天申报延迟`、`不荐股 · 不预测` 三条用 `TrustLockup` 显性呈现（合规升为设计元素，非埋底小字）。
+**craft 参数（产品感：删图标堆，让方法论与事实说话）：**
+- **删除九宫装饰图标格**（`FileText/Clock/TrendingUp…` 9 图标 + label = AI/模板 tell）。改为：顶部眉标「建立在一手来源之上 / Built on primary sources」+ **一段克制的方法论陈述**（2–3 句，讲清「一手 SEC EDGAR、季度环比、三套保守估值只为已证实价值付费」，编辑语气、无破折号花活）。
+- **三条事实 lockup**（用 `TrustLockup` 显性呈现，合规升为设计元素）：`SEC EDGAR · 一手来源`、`45 天申报延迟`、`不荐股 · 不预测`。这是本带唯一的"网格"，且是事实标签非装饰。
 - macro 入口从旧 page.tsx trust strip 迁来：`localePath(lang, "/macro")` 的「宏观流动性 →」放在信任带尾部一行，克制。
-- 双语 COPY，纯本语言。
+- 双语 COPY 按产品感写，纯本语言。
 
 - [ ] **Step 1: 写 TrustLockup 基元**
 
-- [ ] **Step 2: 重写 FoundationsGrid**，加三条 TrustLockup + macro 入口。
+- [ ] **Step 2: 重写 FoundationsGrid**，删九宫图标格 → 方法论陈述 + 三条 TrustLockup + macro 入口。断言 `grep -n "lucide" src/components/home/FoundationsGrid.tsx` 无输出（图标已删）。
 
 - [ ] **Step 3: 类型门**
 
@@ -368,7 +369,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - Consumes: `localePath`
 
 **craft 参数：**
-- 保留大字号收尾主张（`font-display text-3xl sm:text-5xl`）+ 副文案。
+- 保留大字号收尾主张（`font-display text-3xl sm:text-5xl`）+ 副文案。**副文案按产品感重写**：删 "Browse free, no account." 样板，改具体可溯源的立场，参考 EN "Every number links to the SEC filing it came from."、ZH "每个数字都能点回它出处的 SEC 申报。"；眉标 "Get started"/"开始" 若显冗余可删。
 - **删三连药丸 `links` 数组**，改单个强 CTA：「从任意投资者、任意股票开始 → / Start with any investor, any stock →」，`href={localePath(lang, "/investors")}`（get-started 语境，与 StepIndex 步① 的 roster 语境不同；按入口纪律 `/investors` 允许 2 次干净出现，无冲突）。
 - CTA 样式沿用现 group hover + `→` 位移微交互，过渡曲线继承全局。
 
@@ -482,6 +483,8 @@ Expected: tsc=0；死引用无输出；client 仅 RevealStagger。
 
 - [ ] **Step 2: 设计原则 8 条自查**（逐条对 §6 第 2 层打勾，问题回修）：令牌无裸 hex（除 `--tt-ease/--tt-dur`）、字体三级尺度、绿色克制、无 Card/描边堆叠、无渐变/影院、动效两处、RSC 边界、响应式。
 
+- [ ] **Step 2b: 产品感 / 去 AI 感自查（§6.2b 6 条，用户强调）**：逐组件通读文案，确认无破折号抒情对仗、无对偶排比、无三元枚举花活、无对冲词、无万能过渡句、无 SaaS 样板；每句带具体名词/真数字；FoundationsGrid 无 lucide 图标；无板块滥用三件套。辅助 grep：`cd web && grep -rn "Get started\|Browse free\|no account\|Holdings are only" src/components/home/` 应无输出。发现 AI 腔即回修对应组件。
+
 - [ ] **Step 3: 产品原则 7 条自查**（对 §6 第 3 层）：不荐股不预测显性、dateline 标注来源+季度+日期、纯本语言无混排、免费无账户表达、macro 克制。
 
 - [ ] **Step 4: 性能自查**：确认 page.tsx 已无 `consensusHeld()`（5000 行）调用、改用 `consensusHeldTop(6)`+`consensusCount()`；client 组件 9→1。
@@ -499,7 +502,7 @@ git push -u origin feat/landing-premium-redesign
 
 ## Self-Review（作者自检，已执行）
 
-- **Spec 覆盖**：§3.1 IA→Task 3/4/5/6/7；§3.2 craft→各组件 craft 参数；§3.3 动效→Task 2 + Hero；§4 范围→Task 3-7 文件动作；§5 性能→Task 1 + Task 7 Step1 + Task 8 Step4；§6 验收→Task 8。无遗漏。
+- **Spec 覆盖**：§3.1 IA→Task 3/4/5/6/7；§3.2 craft→各组件 craft 参数；§3.3b 文案声音/§6.2b 去 AI 感→Global Constraints + Task 3/4/5/6 文案重写 + Task 8 Step 2b 审计；§3.3 动效→Task 2 + Hero；§4 范围→Task 3-7 文件动作；§5 性能→Task 1 + Task 7 Step1 + Task 8 Step4；§6 验收→Task 8。无遗漏。
 - **占位符扫描**：无 TBD/TODO；逻辑步给了完整代码，视觉步给了 craft 参数 + 确切类名（视觉最终打磨由 frontend-design 实现者在建时完成，属预期委派，非占位）。
 - **类型一致**：`readConsensusCount`/`readConsensusHeldTop`/`consensusCount`/`consensusHeldTop`/`RevealStagger`/`TrustLockup`/`StepIndex` 命名跨任务一致；`HeldRow` 沿用既有类型。
 - **入口纪律**：规则为「同一目的地≤2 次、禁药丸三连、语境各异」。`/investors` 干净出现 2 次（StepIndex① roster + ClosingCTA get-started），Hero→screener、步②→consensus、步③→/stocks 各 1 次；旧 4× 与双药丸消灭。无回改依赖。

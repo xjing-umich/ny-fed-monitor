@@ -68,7 +68,7 @@
 | `SectionReveal.tsx` | 删除 | 移除全站淡入；如需 Hero stagger 另建小而有意图的 client util |
 | `FeatureRow.tsx` | 删除 | 被编辑目录取代 |
 | `TrackedInvestorsWall.tsx` | 并入 | 内容并进三步索引步①，文件删除或降级为 index 内部子件 |
-| `FoundationsGrid.tsx` | 重写 | → 一手来源信任带 + 合规 lockup |
+| `FoundationsGrid.tsx` | 重写 | → 方法与信任带；**删九宫装饰图标格**（AI/模板 tell），改克制方法论陈述 + 3 条事实 lockup |
 | `ClosingCTA.tsx` | 重写 | 单一强 CTA，去三连药丸；并入 macro 入口 |
 | `StrikeLeadersCard.tsx` / `ValueBandCard.tsx` | 复用 | 步③真数据 / 兜底 |
 | `PhilosophyQuote.tsx` / `LearnTeaser.tsx` | 保留（微调） | — |
@@ -85,8 +85,21 @@
 ### i18n / 数据 / 红线
 
 - 双语 `COPY`（zh/en 纯本语言，不混排）；`localePath` 纪律沿用。
+- **文案按「产品感/去 AI 感」重写**（见 §6.2b），不沿用现有 AI 腔 copy。
 - 真数据来源不变（SEC 13F / 估值 snapshot），沿用现有 loader；dateline 标注**来源 + 季度 + 日期**。
 - 不荐股不预测合规线升格为设计元素而非删除。
+
+### 3.3b 文案声音（产品感 / 去 AI 感）
+
+现有 copy 是 AI 味主源。重做必须换声音：
+
+- **AI 腔病灶（禁）**：破折号抒情对仗（"See what they own — and what it's worth."）、对偶排比（"who's building… who's getting out"）、三元枚举花活（"— Buffett… Greenwald… asset… —"）、对冲词（"worth noting"）、万能过渡句（"Holdings are only the start."）、通用 SaaS 样板（"Get started" / "Browse free, no account."）。
+- **产品感（要）**：每句带**具体名词 / 真数字**否则删；让真数据（真投资者名、真 ticker、真 \$、真持有人数）当情绪主角；有编辑立场（复利、只为已证实价值付费）；克制——数据能说话就少说、敢留白。
+- **示范 before→after**（真数字由 dateline 注入，不写死）：
+  - Hero EN：~~"See what they own — and what it's worth."~~ → "72 investors. One quarter. Every position they just reported."
+  - Hero ZH：~~"看他们持有什么——以及值多少钱。"~~ → "72 位投资者，上季度刚上报的每一笔持仓。"
+  - 估值 EN：~~"Holdings are only the start… pay only for proven value."~~ → "We value every holding on proven earnings and assets. No growth story you have to believe."
+  - Closing EN：~~"Browse free, no account."~~ → "Every number links to the SEC filing it came from."
 
 ## 5. 性能与数据请求修复
 
@@ -115,6 +128,15 @@
 6. 动效稀疏有意图：全站淡入删除，仅 Hero ledger stagger + 微交互两处；统一曲线；守 `prefers-reduced-motion`。
 7. RSC 边界：默认 server component，`"use client"` 只包动效/交互子件。
 8. 响应式：遵守既定表↔卡片断点规则，移动端不塌。
+
+### 第 2b 层 · 产品感 / 去 AI 感（6，用户明确强调）
+
+1. **文案无 AI 腔**：无破折号抒情对仗、无对偶排比、无三元枚举花活、无对冲词、无万能过渡句、无通用 SaaS 样板（"Get started"/"Browse free"）。
+2. **每句带具体名词/真数字**，否则删；形容词不承担说服。
+3. **真数据当主角**：真投资者名 / ticker / \$ / 持有人数在视觉与情绪上领先，不是标题形容词。
+4. **无装饰图标堆**：不给每个特性配一个图标铺网格（FoundationsGrid 九宫图标格必须删）。
+5. **不过度标签化**：数据能说话的板块砍掉多余 eyebrow/body，敢留白；不是每块都三件套。
+6. **有编辑立场与声音**：体现复利/只为已证实价值付费的观点，非中立功能罗列。
 
 ### 第 3 层 · 产品原则（7）
 
