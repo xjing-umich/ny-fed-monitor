@@ -30,12 +30,13 @@ import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
-import OwnershipConsensusPanel from "@/components/entity/OwnershipConsensusPanel";
+import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
+import { buildConsensusSentence } from "@/lib/stocks/consensusSummary";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -110,6 +111,8 @@ const TABLE_COPY = {
     exitedTitle: (n: number) => `本季清仓 (${n})`,
     more: (n: number) => `… 等 ${n} 位`,
     showAll: (n: number) => `展开全部 ${n} 位持有人`,
+    meta: (n: number, total: string, opened: number, exited: number) =>
+      `${n} 位持有 · 合计 ${total} · 本季 +${opened} 新建 / -${exited} 清仓`,
   },
   en: {
     title: "Superinvestors Holding This Security",
@@ -122,6 +125,8 @@ const TABLE_COPY = {
     exitedTitle: (n: number) => `Exited this quarter (${n})`,
     more: (n: number) => `… +${n} more`,
     showAll: (n: number) => `Show all ${n} holders`,
+    meta: (n: number, total: string, opened: number, exited: number) =>
+      `${n} holder${n === 1 ? "" : "s"} · ${total} combined · this quarter +${opened} opened / -${exited} exited`,
   },
 } as const;
 
@@ -129,18 +134,29 @@ const EXIT_CAP = 12;
 const HOLDERS_VISIBLE = 10;
 
 function HoldersTable({
+  issuer,
+  ticker,
   holders,
   exited,
+  totalValue,
+  moves,
+  period,
   lang,
 }: {
+  issuer: string;
+  ticker: string;
   holders: HolderRow[];
   exited: ExitedHolder[];
+  totalValue: number;
+  moves: QuarterMoves;
+  period: string;
   lang: Lang;
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const sorted = [...holders].sort((a, b) => b.value - a.value);
   const head = sorted.slice(0, HOLDERS_VISIBLE);
   const tail = sorted.slice(HOLDERS_VISIBLE);
+  const sentence = buildConsensusSentence({ issuer, ticker, n: holders.length, moves, period }, lang);
 
   const columns: Column<HolderRow>[] = [
     { key: "investor", header: t.cols.investor, role: "primary", cell: (r) => r.person },
@@ -155,6 +171,13 @@ function HoldersTable({
       <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
         {t.title}
       </h2>
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)]">
+          {t.meta(sorted.length, formatUSD(totalValue), moves.opened, moves.exited)}
+        </p>
+        <QuarterMovesPill moves={moves} lang={lang} />
+      </div>
+      <p className="sr-only">{sentence}</p>
       <DataTable
         columns={columns}
         rows={head}
@@ -359,40 +382,6 @@ export default async function StockTickerPage({
 
   const exchange = (await getTickerExchangeMap()).get(ticker);
 
-  const factLabels =
-    lang === "zh"
-      ? { ticker: "代码", total: "合计市值", largest: "最大持有人", ext: "外部数据" }
-      : { ticker: "Ticker", total: "Total value held", largest: "Largest holder", ext: "External" };
-  const keyFactsNode = (
-    <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-      <div>
-        <dt className="text-[var(--tt-faint)]">{factLabels.ticker}</dt>
-        <dd className="font-mono tabular-nums text-[var(--tt-text)]">{ticker}</dd>
-      </div>
-      <div>
-        <dt className="text-[var(--tt-faint)]">{factLabels.total}</dt>
-        <dd className="font-mono tabular-nums text-[var(--tt-text)]">{formatUSD(totalValue)}</dd>
-      </div>
-      <div>
-        <dt className="text-[var(--tt-faint)]">{factLabels.largest}</dt>
-        <dd className="text-[var(--tt-text)]">{topHolder.person}</dd>
-      </div>
-      {cusipsForTicker.length > 0 && (
-        <div className="col-span-full">
-          <dt className="text-[var(--tt-faint)]">{factLabels.ext}</dt>
-          <dd className="mt-1">
-            <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="detail" lang={lang} />
-          </dd>
-        </div>
-      )}
-    </dl>
-  );
-
-  const related = [...holders]
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 6)
-    .map((r) => ({ label: r.person, href: investorPath(lang, r.slug) }));
-
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -466,10 +455,15 @@ export default async function StockTickerPage({
         disclaimer={disclaimer}
         keyFacts={[]}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestPeriod, filed: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
-        related={related}
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
         <>
+          {cusipsForTicker.length > 0 && (
+            <section aria-label={lang === "zh" ? "外部金融数据" : "External finance links"}>
+              <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="prominent" lang={lang} />
+            </section>
+          )}
+
           {/* 支柱① 估值结论(头条) — 默认只显结论, 方法在卡内折叠 */}
           {valuationFloor && (
             <section>
@@ -488,22 +482,19 @@ export default async function StockTickerPage({
             </section>
           )}
 
-          {/* 支柱② 谁在买 — 共识信号块(与估值结论并置) */}
-          <OwnershipConsensusPanel
+          {/* 支柱② 谁持有 — Top 10 + 折叠溢出 */}
+          <HoldersTable
             issuer={issuer}
             ticker={ticker}
-            n={n}
+            holders={holders}
+            exited={exitedHolders}
             totalValue={totalValue}
             moves={moves}
-            topHolder={{ person: topHolder.person, slug: topHolder.slug }}
             period={latestPeriod}
             lang={lang}
           />
 
           <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
-
-          {/* 支柱② 谁在买 — Top 10 + 折叠溢出 */}
-          <HoldersTable holders={holders} exited={exitedHolders} lang={lang} />
 
           {/* 佐证区(默认折叠, 内容留 DOM 供 SEO/GEO) */}
           <FoldedSection title={lang === "zh" ? "持有概览" : "Ownership overview"}>
@@ -515,10 +506,6 @@ export default async function StockTickerPage({
               <HolderTrend series={trendSeries} lang={lang} bare />
             </FoldedSection>
           )}
-
-          <FoldedSection title={lang === "zh" ? "关键事实与外部链接" : "Key facts & links"}>
-            {keyFactsNode}
-          </FoldedSection>
         </>
       </EntityPage>
     </>
