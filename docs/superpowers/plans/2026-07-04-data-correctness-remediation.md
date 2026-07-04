@@ -15,7 +15,8 @@
 - **文案中英不混排**:每个 locale 纯本语言。UI 新增文案(如 PUT/CALL 徽章)zh/en 各一份。
 - **品牌无判决**:估值/信号文案忠于复利品牌,不投机不推荐。
 - **提交信息**结尾加 `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`。
-- 当前分支 `fix/screener-nav-divider` 已有未提交的 `deriveValuationVerdict.ts`(valueFloor marginPct 改动)——Phase 3 Task 15 延续它,勿丢弃。
+- **分支**: 本工作在 `fix/data-correctness-remediation`(off `db-foundation`)。原 `fix/screener-nav-divider` 上的估值健壮化 WIP(非经营性证券排除 + marginPct→valueFloor)已 `git stash`(stash@{0}),**不在本分支树内**。因此 Task 15 从 db-foundation 现状(`marginPct = rangeLo > 0 ? (rangeLo - price)/rangeLo : null`)**重新实现** valueFloor 锚定,不依赖 stash。用户日后 unstash 时 deriveValuationVerdict.ts 会与本批冲突,系同一改动、平凡调和。
+- 本地 `db-foundation` 落后 `origin/db-foundation` 2 提交;PR 前可 rebase 到 origin。
 
 ---
 
@@ -653,20 +654,29 @@ git commit -m "fix(valuation): 陈旧价(>10天)不再当现价喂strike-zone
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```
 
-## Task 15: margin 锚定与展示价值带一致 + 空白 margin(延续未提交改动)
+## Task 15: margin 锚定 valueFloor + 展示价值带一致 + 空白 margin
 
-未提交改动已把 `marginPct` 锚到 `valueFloor`(修 GCO −566%)。遗留:画面展示的价值带仍是 `rangeLo..rangeHi`(与 marginPct 锚不同)+ `valueFloor≤0` 时 below 绿标显示空白 margin。
+现状(db-foundation)`marginPct = rangeLo > 0 ? (rangeLo - price)/rangeLo : null`,拿 OE-DCF 低端 `rangeLo` 当分母,与 EPV 世界的 strike 判据打架 → below 名显示天文负 margin(GCO −566%/HLX −1307%)。本任务:marginPct 改锚 `valueFloor`(与 inStrikeZone/position 同底),展示价值带下沿也对齐 valueFloor,并处理 `valueFloor≤0` 空白 margin。
 
 **Files:**
 - Modify: `web/src/lib/valuation/deriveValuationVerdict.ts`(valueFloor≤0 分支)
 - Modify: `web/src/app/[lang]/stocks/screener/ScreenerTable.tsx:67`(band 展示锚一致)
 - Modify: `web/src/lib/valuation/deriveValuationVerdict.check.ts`(补用例)
 
-- [ ] **Step 1: 补失败断言** — `deriveValuationVerdict.check.ts` 加:below 桶但 `valueFloor≤0` → `marginPct===null` 且 UI 不显绿标空白(下游用 `marginPct!=null && >0` 已能拦,断言 marginPct 为 null 即可);另断言展示 band 与 marginPct 同锚(valueFloor 为价值带下沿)。
+- [ ] **Step 1: 补失败断言** — `deriveValuationVerdict.check.ts` 加:①below 桶、`valueFloor>0` → `marginPct === (valueFloor - price)/valueFloor`(非 rangeLo 口径);②below 桶、`valueFloor≤0` → `marginPct === null`;③断言输出的 `rangeLo === valueFloor`(展示价值带下沿 = marginPct 分母,同锚)。
 
 - [ ] **Step 2: 跑,确认失败** — `cd web && npx tsx src/lib/valuation/deriveValuationVerdict.check.ts` → FAIL。
 
-- [ ] **Step 3: 实现** — (a) `deriveValuationVerdict.ts`:`rangeLo` 输出对齐到 `valueFloor`(使展示价值带下沿 = marginPct 分母),保持 `rangeHi` 不变;(b) `valueFloor≤0` → `marginPct=null` 已由现改动覆盖,确认 below 桶在 marginPct=null 时 UI 走 `—`(ScreenerTable 的 `marginPct != null && > 0` 已拦,无需额外改);(c) `ScreenerTable.tsx:67` 的 `band(r.rangeLo, r.rangeHi)` 现在 rangeLo=valueFloor,与 margin 列同锚,自然一致。
+- [ ] **Step 3: 实现** — `deriveValuationVerdict.ts`:(a) 找到 `const marginPct = rangeLo > 0 ? (rangeLo - price) / rangeLo : null;`,改为锚 valueFloor:
+
+```ts
+// 安全边际相对 valueFloor(与 inStrikeZone/epv.position 同一个底),而非 rangeLo(OE-DCF+增长最小端)。
+// 二者可差 10× → 旧口径下 below 名显示天文负 margin(GCO −566%/HLX −1307%)且污染 strike 排序。
+const valueFloor = epv.valueFloor;
+const marginPct = valueFloor > 0 ? (valueFloor - price) / valueFloor : null;
+```
+
+(b) 输出的 `rangeLo` 对齐到 `valueFloor`(展示价值带下沿 = marginPct 分母),`rangeHi` 不变;(c) `valueFloor≤0` 时 marginPct=null,ScreenerTable 的 `marginPct != null && > 0` 已把 below 绿标空白拦成 `—`,无需额外改;`ScreenerTable.tsx:67` 的 `band(r.rangeLo, r.rangeHi)` 因 rangeLo=valueFloor 自然与 margin 列同锚。同步更新 `marginPct` 字段的 JSDoc 说明。
 
 - [ ] **Step 4: 跑,确认通过** — `npx tsx src/lib/valuation/deriveValuationVerdict.check.ts` → OK;`npx tsc --noEmit`。抽查 GCO/HLX 不再天文负 margin。
 
