@@ -186,7 +186,7 @@ export function InvestorListClient({
           <>
             <Badge tone={VERDICT_TONE[v]}>{t.verdict[v]}</Badge>
             {issuer && kind && (
-              <span className="mt-1 hidden text-[11px] text-[var(--tt-muted)] sm:block">
+              <span className="mt-1 hidden text-[11px] text-[var(--tt-muted)] lg:block">
                 {t.topPrefix}
                 <span className="text-[var(--tt-text)]">{cleanIssuer(issuer)}</span>{" "}
                 <span className={KIND_CLASS[kind]}>{t.kind[kind]}</span>
