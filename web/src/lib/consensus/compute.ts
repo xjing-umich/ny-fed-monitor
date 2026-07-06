@@ -165,14 +165,14 @@ export function computeStockTrend(
   scan: TrendScan[],
   cusipToTicker: Map<string, CusipInfo>
 ): ConsensusStockTrendRow[] {
-  // key = `${ticker} ${period}` → 持有该票该季的 slug 集合(去重计人数)
+  // key = `${ticker} ${period}` → 持有该票该季的 slug 集合(去重计人数)
   const counts = new Map<string, Set<string>>();
   for (const m of scan) {
     for (const f of m.filings) {
       const tickers = new Set<string>();
       for (const c of f.cusips) tickers.add(keyOf(c, cusipToTicker).ticker);
       for (const t of tickers) {
-        const k = `${t} ${f.period}`;
+        const k = `${t} ${f.period}`;
         let s = counts.get(k);
         if (!s) { s = new Set<string>(); counts.set(k, s); }
         s.add(m.slug);
@@ -181,8 +181,76 @@ export function computeStockTrend(
   }
   const out: ConsensusStockTrendRow[] = [];
   for (const [k, s] of counts) {
-    const sep = k.indexOf(" ");
+    const sep = k.indexOf(" ");
     out.push({ ticker: k.slice(0, sep), period: k.slice(sep + 1), holder_count: s.size });
+  }
+  return out;
+}
+
+// ── 共同持仓快照(consensus_coownership)────────────────────────────────────────
+// 对每个 ticker A, 找"同时也持有 A 的机构还共同持有的其他票 B", 按共持机构数排序。
+// 供个股页"持有 X 的这些人还共同重仓 Y"一行。长仓 only(跳 putCall)、排除自反、每 A 取 Top-K。
+// 复杂度 O(Σ 每持有人长仓票数²): 约 130 户 × 均 ~50 票 → 数十万对, 构建期一次性可接受。
+
+export type CoOwnershipRow = {
+  ticker: string;       // 目标票
+  co_ticker: string;    // 共持票
+  co_issuer: string;    // 共持票 issuer 名(展示用)
+  shared_holders: number;   // 同时持有两票的机构数
+  co_total_value: number;   // 这些共持机构在 co_ticker 上的合计市值(长仓)
+};
+
+const CO_OWNERSHIP_TOP_K = 8;
+
+export function computeCoOwnership(
+  scan: StockHolderScan[],
+  cusipToTicker: Map<string, CusipInfo>,
+): CoOwnershipRow[] {
+  // ticker → 展示 issuer 名(首次见到即定, 与其余快照口径一致)
+  const issuerByTicker = new Map<string, string>();
+  // `${a}|${b}` → { shared, value }
+  const pairs = new Map<string, { shared: number; value: number }>();
+
+  for (const m of scan) {
+    // 该持有人长仓票 → 该票合计市值(同 ticker 多 cusip 求和; 跳期权)
+    const valueByTicker = new Map<string, number>();
+    for (const h of m.holdings) {
+      if (h.putCall) continue;
+      const { ticker, name } = keyOf(h.cusip, cusipToTicker);
+      valueByTicker.set(ticker, (valueByTicker.get(ticker) ?? 0) + (h.value ?? 0));
+      if (!issuerByTicker.has(ticker)) issuerByTicker.set(ticker, name ?? h.issuer);
+    }
+    const tickers = [...valueByTicker.keys()];
+    for (const a of tickers) {
+      for (const b of tickers) {
+        if (a === b) continue;
+        const key = `${a}|${b}`;
+        const e = pairs.get(key) ?? { shared: 0, value: 0 };
+        e.shared += 1;
+        e.value += valueByTicker.get(b) ?? 0;
+        pairs.set(key, e);
+      }
+    }
+  }
+
+  // 分组 → 每 A 按 shared desc, value desc 取 Top-K
+  const byTicker = new Map<string, CoOwnershipRow[]>();
+  for (const [key, e] of pairs) {
+    const sep = key.indexOf("|");
+    const a = key.slice(0, sep);
+    const b = key.slice(sep + 1);
+    const row: CoOwnershipRow = {
+      ticker: a, co_ticker: b, co_issuer: issuerByTicker.get(b) ?? b,
+      shared_holders: e.shared, co_total_value: e.value,
+    };
+    const arr = byTicker.get(a) ?? [];
+    arr.push(row);
+    byTicker.set(a, arr);
+  }
+  const out: CoOwnershipRow[] = [];
+  for (const [, arr] of byTicker) {
+    arr.sort((x, y) => y.shared_holders - x.shared_holders || y.co_total_value - x.co_total_value);
+    out.push(...arr.slice(0, CO_OWNERSHIP_TOP_K));
   }
   return out;
 }

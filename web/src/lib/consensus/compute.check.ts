@@ -1,5 +1,5 @@
 // Task 10: 期权(put/call)必须被剔除出四张共识快照——不是长仓,别算持有人/买卖动向。
-import { computeConsensus, computeStockHolders } from "./compute";
+import { computeConsensus, computeStockHolders, computeCoOwnership } from "./compute";
 
 function assert(c: boolean, m: string) {
   if (!c) { console.error("FAIL:", m); process.exit(1); }
@@ -70,5 +70,35 @@ const priorWeightRows = computeStockHolders([
 ] as any, cmap);
 const priorWeightRow = priorWeightRows.find((r) => r.ticker === "PLTR");
 assert(priorWeightRow?.prior_weight === 0.05, `prior_weight应排除上季put权重, got ${priorWeightRow?.prior_weight}`);
+
+// (e) 共同持仓: 两位持有人都持 A+B, 一位另持 C。A 的共持: B(2 人)在前, C(1 人)在后; 期权不计入。
+const coCmap = new Map([
+  ["ACUSIP", { ticker: "A", name: "Alpha" }],
+  ["BCUSIP", { ticker: "B", name: "Bravo" }],
+  ["CCUSIP", { ticker: "C", name: "Charlie" }],
+]);
+const coScan = [
+  { cik: "1", slug: "m1", person: "M1", period: "2026Q1", filedAt: "2026-05-01",
+    holdings: [
+      { cusip: "ACUSIP", issuer: "Alpha", value: 100, shares: 1, weight: 0.1 },
+      { cusip: "BCUSIP", issuer: "Bravo", value: 200, shares: 1, weight: 0.2 },
+      { cusip: "BCUSIP", issuer: "Bravo", value: 50, shares: 1, weight: 0.05, putCall: "Call" }, // 期权: 不计入
+    ], changes: [] },
+  { cik: "2", slug: "m2", person: "M2", period: "2026Q1", filedAt: "2026-05-01",
+    holdings: [
+      { cusip: "ACUSIP", issuer: "Alpha", value: 100, shares: 1, weight: 0.1 },
+      { cusip: "BCUSIP", issuer: "Bravo", value: 300, shares: 1, weight: 0.3 },
+      { cusip: "CCUSIP", issuer: "Charlie", value: 999, shares: 1, weight: 0.4 },
+    ], changes: [] },
+] as any;
+const co = computeCoOwnership(coScan, coCmap);
+const aRows = co.filter((r) => r.ticker === "A").sort((x, y) => y.shared_holders - x.shared_holders);
+assert(aRows[0]?.co_ticker === "B", `A 的第一共持应是 B(2人), got ${aRows[0]?.co_ticker}`);
+assert(aRows[0]?.shared_holders === 2, `A↔B 共持 2 人, got ${aRows[0]?.shared_holders}`);
+assert(aRows[0]?.co_total_value === 500, `A↔B 合计市值排除期权名义值(200+300), got ${aRows[0]?.co_total_value}`);
+assert(aRows[0]?.co_issuer === "Bravo", `co_issuer 应解析为 Bravo, got ${aRows[0]?.co_issuer}`);
+const aC = aRows.find((r) => r.co_ticker === "C");
+assert(aC?.shared_holders === 1, `A↔C 共持 1 人(仅 m2), got ${aC?.shared_holders}`);
+assert(!co.some((r) => r.ticker === r.co_ticker), `不得出现自反行(ticker===co_ticker)`);
 
 console.log("compute.check OK");
