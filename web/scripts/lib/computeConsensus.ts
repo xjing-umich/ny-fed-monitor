@@ -125,13 +125,13 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
 
   // consensus_coownership: 表缺失 → warn 跳过(与 stock_holders/trend 一致的优雅降级)。
   const { error: coDelErr } = await db.from("consensus_coownership").delete().neq("ticker", "");
-  if (coDelErr && /does not exist|schema cache/i.test(coDelErr.message)) {
+  if (coDelErr && coDelErr.code === "42P01") {
     console.warn("consensus_coownership 表不存在 — 跳过(先跑 migration)。");
-  } else {
-    for (let i = 0; i < coOwnership.length; i += 500) {
-      const { error } = await db.from("consensus_coownership").upsert(coOwnership.slice(i, i + 500), { onConflict: "ticker,co_ticker" });
-      if (error) console.warn(`consensus_coownership upsert err: ${error.message}`);
-    }
+    return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: 0 };
+  }
+  for (let i = 0; i < coOwnership.length; i += 500) {
+    const { error } = await db.from("consensus_coownership").upsert(coOwnership.slice(i, i + 500), { onConflict: "ticker,co_ticker" });
+    if (error) console.warn(`consensus_coownership upsert err: ${error.message}`);
   }
 
   return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: coOwnership.length };
