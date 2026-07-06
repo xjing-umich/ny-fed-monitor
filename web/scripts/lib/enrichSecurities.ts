@@ -67,7 +67,7 @@ export async function enrichSecurities(db: any, apiKey?: string): Promise<{ tota
     }
     // securities upsert(仅 resolved 行)
     const secs = rows.filter((r) => r.resolved && r.ticker).map((r) => ({
-      ticker: r.ticker, name: r.name, exchange: r.exchange, figi: r.figi, primary_cusip: r.cusip, source: "openfigi", as_of: new Date().toISOString().slice(0, 10),
+      ticker: r.ticker, name: r.name, exchange: r.exchange, figi: r.figi, security_type: r.securityType, primary_cusip: r.cusip, source: "openfigi", as_of: new Date().toISOString().slice(0, 10),
     }));
     if (secs.length) {
       const { error } = await db.from("securities").upsert(secs, { onConflict: "ticker" });

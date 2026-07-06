@@ -39,6 +39,7 @@ create table if not exists securities (
   exchange text,
   sector text,
   figi text,
+  security_type text,           -- OpenFIGI securityType; 非经营性(ETP/基金/权证)排出盈利法估值
   primary_cusip text,
   source text,
   as_of date,
