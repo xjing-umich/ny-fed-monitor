@@ -167,7 +167,11 @@ export const readCoOwnership = cache(async (ticker: string, limit = 6): Promise<
     .order("co_total_value", { ascending: false })
     .limit(limit);
   if (error) {
-    if (error.code !== "42P01") console.error(`readCoOwnership 失败: ${error.message}`);
+    const missingTable =
+      error.code === "42P01" ||
+      error.code === "PGRST205" ||
+      /schema cache|does not exist|find the table/i.test(error.message ?? "");
+    if (!missingTable) console.error(`readCoOwnership 失败: ${error.message}`);
     return [];
   }
   return (data ?? [])

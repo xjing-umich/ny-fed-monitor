@@ -528,7 +528,7 @@ export default async function StockTickerPage({
                   >
                     <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(c.coIssuer)}</span>
                     <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
-                      {lang === "zh" ? `${c.sharedHolders} 人` : `${c.sharedHolders}`}
+                      {lang === "zh" ? `${c.sharedHolders} 人` : `${c.sharedHolders} holder${c.sharedHolders === 1 ? "" : "s"}`}
                     </span>
                   </Link>
                 ))}
