@@ -4,7 +4,7 @@ import { notFound, redirect, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { HoldingChange } from "@/lib/managers/types";
-import { readStockHolders, readStockTrend } from "@/lib/managers/consensusRead";
+import { readStockHolders, readStockTrend, readCoOwnership } from "@/lib/managers/consensusRead";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
@@ -36,7 +36,7 @@ import { FoldedSection } from "@/components/entity/FoldedSection";
 import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
-import { buildConsensusSentence } from "@/lib/stocks/consensusSummary";
+import { buildSignalCrossover } from "@/lib/stocks/signalCrossover";
 import { isLikelyTicker } from "@/lib/externalLinks";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
@@ -142,7 +142,9 @@ function HoldersTable({
   totalValue,
   moves,
   period,
+  verdict,
   lang,
+  trend,
 }: {
   issuer: string;
   ticker: string;
@@ -151,13 +153,16 @@ function HoldersTable({
   totalValue: number;
   moves: QuarterMoves;
   period: string;
+  verdict: "below" | "within" | "above" | null;
   lang: Lang;
+  trend: number[];
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const sorted = [...holders].sort((a, b) => b.value - a.value);
   const head = sorted.slice(0, HOLDERS_VISIBLE);
   const tail = sorted.slice(HOLDERS_VISIBLE);
-  const sentence = buildConsensusSentence({ issuer, ticker, n: holders.length, moves, period }, lang);
+  const crossover = buildSignalCrossover(
+    { n: holders.length, moves, verdict, period }, lang);
 
   const columns: Column<HolderRow>[] = [
     { key: "investor", header: t.cols.investor, role: "primary", cell: (r) => r.person },
@@ -178,7 +183,12 @@ function HoldersTable({
         </p>
         <QuarterMovesPill moves={moves} lang={lang} />
       </div>
-      <p className="sr-only">{sentence}</p>
+      <p className="mb-3 text-sm leading-relaxed text-[var(--tt-text)]">{crossover}</p>
+      {trend.length >= 2 && (
+        <div className="mb-3">
+          <HolderTrend series={trend} lang={lang} variant="inline" />
+        </div>
+      )}
       <DataTable
         columns={columns}
         rows={head}
@@ -327,6 +337,8 @@ export default async function StockTickerPage({
   }
 
   if (holders.length === 0) notFound();
+
+  const coOwned = await readCoOwnership(ticker);
 
   const issuer = cleanIssuer(Object.entries(issuerFreq).sort((a, b) => b[1] - a[1])[0][0]);
   const n = holders.length;
@@ -492,8 +504,37 @@ export default async function StockTickerPage({
             totalValue={totalValue}
             moves={moves}
             period={latestPeriod}
+            verdict={handoffVerdict ? handoffVerdict.bucket : null}
             lang={lang}
+            trend={trendSeries}
           />
+
+          {coOwned.length > 0 && (
+            <section aria-label={lang === "zh" ? "共同持仓" : "Co-ownership"}>
+              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {lang === "zh" ? "共同持仓" : "Also held by these investors"}
+              </h2>
+              <p className="mb-3 text-sm text-[var(--tt-muted)]">
+                {lang === "zh"
+                  ? `持有 ${issuer}（${ticker}）的这些人还共同重仓 →`
+                  : `Investors holding ${issuer} (${ticker}) also commonly hold →`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {coOwned.map((c) => (
+                  <Link
+                    key={c.coTicker}
+                    href={stockPath(lang, c.coTicker)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-2.5 py-1 no-underline transition-colors hover:border-[var(--tt-accent)]"
+                  >
+                    <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(c.coIssuer)}</span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
+                      {lang === "zh" ? `${c.sharedHolders} 人` : `${c.sharedHolders} holder${c.sharedHolders === 1 ? "" : "s"}`}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
 
@@ -501,12 +542,6 @@ export default async function StockTickerPage({
           <FoldedSection title={lang === "zh" ? "持有概览" : "Ownership overview"}>
             <StockProse paragraphs={stockProse} lang={lang} bare />
           </FoldedSection>
-
-          {trendSeries.length >= 2 && (
-            <FoldedSection title={lang === "zh" ? "持有人趋势" : "Holders over time"}>
-              <HolderTrend series={trendSeries} lang={lang} bare />
-            </FoldedSection>
-          )}
         </>
       </EntityPage>
     </>
