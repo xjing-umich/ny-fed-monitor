@@ -142,3 +142,40 @@ export const readConsensusMoves = cache(async (limit: number): Promise<NotableMo
   const all = mapMoveRows((data ?? []) as MoveDbRow[]);
   return { mostBought: all.mostBought.slice(0, limit), mostSold: all.mostSold.slice(0, limit) };
 });
+
+export type CoOwnershipApp = {
+  coTicker: string;
+  coIssuer: string;
+  sharedHolders: number;
+  coTotalValue: number;
+};
+
+type CoOwnershipDbRow = { co_ticker: string; co_issuer: string | null; shared_holders: number; co_total_value: number };
+
+/**
+ * 个股页"持有 X 的这些人还共同重仓 Y"。无 env / 表未迁移(42P01)/ 出错 / 空 → 返回 []（优雅降级, 不阻断页面）。
+ * 无 fallback 即时计算(与快照架构一致; 本地无库时该节不渲染, 可接受)。
+ */
+export const readCoOwnership = cache(async (ticker: string, limit = 6): Promise<CoOwnershipApp[]> => {
+  if (!hasSupabaseEnv()) return [];
+  const up = ticker.toUpperCase();
+  const { data, error } = await getDb()
+    .from("consensus_coownership")
+    .select("co_ticker,co_issuer,shared_holders,co_total_value")
+    .eq("ticker", up)
+    .order("shared_holders", { ascending: false })
+    .order("co_total_value", { ascending: false })
+    .limit(limit);
+  if (error) {
+    if (error.code !== "42P01") console.error(`readCoOwnership 失败: ${error.message}`);
+    return [];
+  }
+  return (data ?? [])
+    .filter((r: CoOwnershipDbRow) => r.co_ticker && r.co_ticker !== up)
+    .map((r: CoOwnershipDbRow) => ({
+      coTicker: r.co_ticker,
+      coIssuer: r.co_issuer ?? r.co_ticker,
+      sharedHolders: Number(r.shared_holders) || 0,
+      coTotalValue: Number(r.co_total_value) || 0,
+    }));
+});
