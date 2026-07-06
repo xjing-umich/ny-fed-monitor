@@ -4,7 +4,7 @@ import { notFound, redirect, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { HoldingChange } from "@/lib/managers/types";
-import { readStockHolders, readStockTrend } from "@/lib/managers/consensusRead";
+import { readStockHolders, readStockTrend, readCoOwnership } from "@/lib/managers/consensusRead";
 import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
@@ -338,6 +338,8 @@ export default async function StockTickerPage({
 
   if (holders.length === 0) notFound();
 
+  const coOwned = await readCoOwnership(ticker);
+
   const issuer = cleanIssuer(Object.entries(issuerFreq).sort((a, b) => b[1] - a[1])[0][0]);
   const n = holders.length;
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
@@ -506,6 +508,33 @@ export default async function StockTickerPage({
             lang={lang}
             trend={trendSeries}
           />
+
+          {coOwned.length > 0 && (
+            <section aria-label={lang === "zh" ? "共同持仓" : "Co-ownership"}>
+              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {lang === "zh" ? "共同持仓" : "Also held by these investors"}
+              </h2>
+              <p className="mb-3 text-sm text-[var(--tt-muted)]">
+                {lang === "zh"
+                  ? `持有 ${issuer}（${ticker}）的这些人还共同重仓 →`
+                  : `Investors holding ${issuer} (${ticker}) also commonly hold →`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {coOwned.map((c) => (
+                  <Link
+                    key={c.coTicker}
+                    href={stockPath(lang, c.coTicker)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-2.5 py-1 no-underline transition-colors hover:border-[var(--tt-accent)]"
+                  >
+                    <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(c.coIssuer)}</span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
+                      {lang === "zh" ? `${c.sharedHolders} 人` : `${c.sharedHolders}`}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
 
