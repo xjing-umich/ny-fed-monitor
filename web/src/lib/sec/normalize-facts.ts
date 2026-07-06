@@ -265,6 +265,52 @@ function collectInstant(facts: CompanyFacts, field: FundamentalField) {
   return byEnd;
 }
 
+// 债务概念优先级 —— 避免重叠概念双算,同时覆盖新旧两套 taxonomy。
+// 很多大盘(CMCSA/HD/KO/FDX…)用「资本租赁/合并」老口径,不拆 Current/Noncurrent,
+// 若只认拆分 tag 会把它们的负债整段算成 0(假的「无杠杆」信号)。
+//
+// 规则:
+//   1. 有总额 tag `DebtAndCapitalLeaseObligations`(已含全部)→ 直取,不再叠加分项。
+//   2. 否则「非流动 + 流动 + 短期」三桶各取一(桶内按优先级,越靠前越含租赁/越完整)。
+//   3. 三桶无非流动项时兜底:合并 `LongTermDebt`(含流动+非流动)+ 短期借款。
+const DEBT_GRAND_TOTAL = "DebtAndCapitalLeaseObligations";
+const DEBT_NONCURRENT = [
+  "LongTermDebtAndFinanceLeaseObligationsNoncurrent",
+  "LongTermDebtAndCapitalLeaseObligations",
+  "LongTermDebtNoncurrent",
+];
+const DEBT_CURRENT = [
+  "LongTermDebtAndFinanceLeaseObligationsCurrent",
+  "LongTermDebtCurrent",
+  "DebtCurrent",
+];
+const DEBT_LT_COMBINED = "LongTermDebt"; // 含流动+非流动的合并 LT,仅作非流动兜底
+const DEBT_SHORT = "ShortTermBorrowings";
+
+export function pickDebtTags(present: Set<string>): string[] {
+  // 1. 总额 tag 直取(含全部,叠加分项会双算)
+  if (present.has(DEBT_GRAND_TOTAL)) return [DEBT_GRAND_TOTAL];
+
+  const out: string[] = [];
+  const noncurrent = DEBT_NONCURRENT.find((t) => present.has(t));
+  const current = DEBT_CURRENT.find((t) => present.has(t));
+  const short = present.has(DEBT_SHORT) ? DEBT_SHORT : undefined;
+
+  if (noncurrent) {
+    // 2. 分项:非流动 + 流动 + 短期(各取一,互不重叠)
+    out.push(noncurrent);
+    if (current) out.push(current);
+  } else if (present.has(DEBT_LT_COMBINED)) {
+    // 3. 无分项非流动 → 合并 LongTermDebt(已含流动,故不再叠加 current)
+    out.push(DEBT_LT_COMBINED);
+  } else if (current) {
+    // 极端:只有流动项
+    out.push(current);
+  }
+  if (short) out.push(DEBT_SHORT);
+  return out;
+}
+
 // total_debt is the sum of several debt concepts at a given period_end.
 function collectTotalDebt(facts: CompanyFacts) {
   const byEnd = new Map<string, Map<string, PickedFact>>();
@@ -280,9 +326,13 @@ function collectTotalDebt(facts: CompanyFacts) {
   }
   const summed = new Map<string, PickedFact>();
   for (const [end, tagMap] of byEnd) {
-    const total = Array.from(tagMap.values()).reduce((sum, p) => sum + p.val, 0);
-    const earliestFiled = Array.from(tagMap.values()).reduce((min, p) => (p.filed < min ? p.filed : min), "9999-99-99");
-    summed.set(end, { val: total, end, filed: earliestFiled, accn: null, tag: Array.from(tagMap.keys()).join("+"), days: null });
+    const keep = new Set(pickDebtTags(new Set(tagMap.keys())));
+    const kept = Array.from(tagMap.entries())
+      .filter(([t]) => keep.has(t))
+      .map(([, p]) => p);
+    const total = kept.reduce((sum, p) => sum + p.val, 0);
+    const earliestFiled = kept.reduce((min, p) => (p.filed < min ? p.filed : min), "9999-99-99");
+    summed.set(end, { val: total, end, filed: earliestFiled, accn: null, tag: [...keep].join("+"), days: null });
   }
   return summed;
 }

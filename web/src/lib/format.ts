@@ -3,10 +3,19 @@
  * e.g. 1_500_000_000 → "$1.50B"
  */
 export function formatUSD(v: number): string {
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+  const abs = Math.abs(v);
+  if (abs >= 9.995e11) return `$${(v / 1e12).toFixed(2)}T`;
+  if (abs >= 9.995e8) return `$${(v / 1e9).toFixed(2)}B`;
+  if (abs >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
   return `$${v.toLocaleString()}`;
+}
+
+/**
+ * 安全边际展示:−N%;四舍五入到 0 但实际 >0 → "<1%"(不带负号,避免 −0%)。
+ */
+export function fmtMarginPct(pct: number): string {
+  const n = Math.round(pct * 100);
+  return n <= 0 ? "<1%" : `−${n}%`;
 }
 
 /**

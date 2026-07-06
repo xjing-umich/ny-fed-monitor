@@ -59,7 +59,7 @@ export function mostRecentDueQuarter(today: Date): Date {
     }
   }
   const due = candidates
-    .filter((qe) => addDays(qe, FILING_DEADLINE_DAYS) <= t)
+    .filter((qe) => addDays(qe, FILING_DEADLINE_DAYS) < t)
     .sort((x, y) => y.getTime() - x.getTime());
   // 理论上 due 必非空(去年同季一定已过)；兜底返回最早候选避免崩。
   return due[0] ?? candidates.sort((x, y) => x.getTime() - y.getTime())[0];

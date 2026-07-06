@@ -23,7 +23,7 @@ export function computeChanges(latest: Holding[], prior: Holding[]): HoldingChan
     }
   }
   for (const [k, ph] of pm) {
-    if (!lm.has(k)) out.push({ cusip: ph.cusip, putCall: ph.putCall, issuer: ph.issuer, kind: "exited", prevShares: ph.shares, shares: 0, value: 0, deltaPct: -1 });
+    if (!lm.has(k)) out.push({ cusip: ph.cusip, putCall: ph.putCall, issuer: ph.issuer, kind: "exited", prevShares: ph.shares, shares: 0, value: ph.value, deltaPct: -1 });
   }
   return out;
 }

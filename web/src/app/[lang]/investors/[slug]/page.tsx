@@ -59,11 +59,14 @@ export async function generateMetadata({
   const q = d.latest?.period ? quarterLabel(d.latest.period) : "";
   const qSuffix = q ? ` ${q}` : "";
   // 确定性 meta description：从已加载的 13F 数据派生，每位投资人各异（不再依赖已退役的 AI judgment_line）。
-  const posCount = d.latest?.holdings.length ?? 0;
-  const totalLabel = d.latest ? formatUSD(d.latest.totalValue) : "";
+  // 仅统计长仓（排除 put/call 期权），与可见页面的 key-facts 口径保持一致（Task 12）。
+  const longHoldings = (d.latest?.holdings ?? []).filter((h) => !h.putCall);
+  const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
+  const posCount = longHoldings.length;
+  const totalLabel = d.latest ? formatUSD(longTotalValue) : "";
   const topName =
-    d.latest && d.latest.holdings.length > 0
-      ? cleanIssuer([...d.latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
+    longHoldings.length > 0
+      ? cleanIssuer([...longHoldings].sort((a, b) => b.value - a.value)[0].issuer)
       : "";
   const alternates = altFor(lang, `/investors/${slug}`);
   const meta =
@@ -124,7 +127,7 @@ function HoldingsTable({
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
 
-  const exits = changes.filter((c) => c.kind === "exited");
+  const exits = changes.filter((c) => c.kind === "exited" && !c.putCall);
   const EXIT_CAP = 12;
 
   const columns: Column<Holding>[] = [
@@ -132,7 +135,19 @@ function HoldingsTable({
       key: "issuer",
       header: t.cols.issuer,
       role: "primary",
-      cell: (h) => <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />,
+      cell: (h) => (
+        <span className="inline-flex items-center gap-1.5">
+          <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />
+          {h.putCall && (
+            <span
+              className={`rounded-sm px-1 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] border border-current/40 ${h.putCall === "Put" ? "text-[var(--tt-warn)]" : "text-[var(--tt-muted)]"}`}
+              title={lang === "zh" ? "期权:市值为标的名义价值,非权利金" : "Option: value is notional, not premium"}
+            >
+              {h.putCall === "Put" ? "PUT" : "CALL"}
+            </span>
+          )}
+        </span>
+      ),
     },
     {
       key: "value",
@@ -177,7 +192,7 @@ function HoldingsTable({
       header: t.cols.weight,
       align: "right",
       width: "w-40",
-      cell: (h) => <WeightBar weight={h.weight ?? null} />,
+      cell: (h) => h.putCall ? <span className="text-[var(--tt-faint)]">—</span> : <WeightBar weight={h.weight ?? null} />,
     },
     {
       key: "signal",
@@ -271,6 +286,8 @@ export default async function InvestorSlugPage({
   }
 
   const { manager, latest, prior, changes } = d;
+  const longHoldings = latest.holdings.filter((h) => !h.putCall);
+  const longChanges = changes.filter((c) => !c.putCall);
   // 基金名展示化(全大写 EDGAR 名 → 标题化, 策展混合大小写名原样): 副标题/结构化数据/正文统一口径。
   const fund = displayFundName(manager.name);
 
@@ -283,7 +300,7 @@ export default async function InvestorSlugPage({
     if (info.ticker && isLikelyTicker(info.ticker)) cusipToTicker.set(cusip, info.ticker);
 
   // 估值叠加(读物化快照, 廉价; 失败优雅返回空 Map → 无徽章, 不阻断渲染)。
-  const holdingTickers = latest.holdings
+  const holdingTickers = longHoldings
     .map((h) => cusipToTicker.get(h.cusip))
     .filter((t): t is string => Boolean(t));
   const verdicts = await readValuationVerdicts(holdingTickers);
@@ -293,7 +310,7 @@ export default async function InvestorSlugPage({
   const rowSignals = deriveRowSignals({ filings: d.filings, verdicts, cusipToTicker, lang });
 
   // 该投资人当前持仓中现价落在击球区的只数(与 screener strike_zone 视图同口径)。
-  const strikeCount = latest.holdings.reduce((acc, h) => {
+  const strikeCount = longHoldings.reduce((acc, h) => {
     const tk = cusipToTicker.get(h.cusip);
     return acc + (tk && verdicts.get(tk.toUpperCase())?.inStrikeZone ? 1 : 0);
   }, 0);
@@ -314,10 +331,10 @@ export default async function InvestorSlugPage({
   );
 
   // Verdict
-  const buying = changes.filter((c) => c.kind === "new" || c.kind === "increased").length;
-  const selling = changes.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
+  const buying = longChanges.filter((c) => c.kind === "new" || c.kind === "increased").length;
+  const selling = longChanges.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
   let verdict: { label: string; tone: Tone } | undefined;
-  if (changes.length > 0 && prior) {
+  if (longChanges.length > 0 && prior) {
     if (buying > selling) {
       verdict = { label: lang === "zh" ? "整体加仓" : "Net buying", tone: "positive" };
     } else if (selling > buying) {
@@ -327,18 +344,22 @@ export default async function InvestorSlugPage({
     }
   }
 
+  // 长仓 only 子集(汇总口径排除 put/call 期权行, spec: 期权名义市值会扭曲第一大持仓/组合市值)。
+  // 持仓表(HoldingsTable)仍传入全量 latest.holdings —— 期权行照常列出(后续任务加 PUT/CALL 徽章)。
+  const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
+
   // Key facts
   const topHolding =
-    latest.holdings.length > 0
-      ? cleanIssuer([...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer)
+    longHoldings.length > 0
+      ? cleanIssuer([...longHoldings].sort((a, b) => b.value - a.value)[0].issuer)
       : "—";
 
   // 分享文案数据（确定性，缺失走退化）
   const shareTopHolding =
-    latest.holdings.length > 0
-      ? [...latest.holdings].sort((a, b) => b.value - a.value)[0].issuer
+    longHoldings.length > 0
+      ? [...longHoldings].sort((a, b) => b.value - a.value)[0].issuer
       : null;
-  const shareAddedName = changes.find((c) => c.kind === "new")?.issuer ?? null;
+  const shareAddedName = longChanges.find((c) => c.kind === "new")?.issuer ?? null;
   const shareUrl = absoluteUrl(investorPath(lang, slug));
   const shareText = buildShareText(
     { kind: "investor", managerName: manager.person, topHolding: shareTopHolding, addedName: shareAddedName },
@@ -346,17 +367,19 @@ export default async function InvestorSlugPage({
     manager.person,
   );
 
-  // 组合级 QoQ(无 prior 时不显环比)
+  // 组合级 QoQ(无 prior 时不显环比;对照组同样限定长仓 only,避免期权进出污染环比)
+  const priorLong = prior ? prior.holdings.filter((h) => !h.putCall) : null;
+  const priorLongTotal = priorLong ? priorLong.reduce((s, h) => s + h.value, 0) : 0;
   const valDeltaPct =
-    prior && prior.totalValue > 0 ? (latest.totalValue - prior.totalValue) / prior.totalValue : null;
-  const cntDelta = prior ? latest.holdings.length - prior.holdings.length : 0;
+    priorLong && priorLongTotal > 0 ? (longTotalValue - priorLongTotal) / priorLongTotal : null;
+  const cntDelta = priorLong ? longHoldings.length - priorLong.length : 0;
   const sign = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
   const deltaClass = (n: number) =>
     n > 0 ? "text-[var(--tt-positive)]" : n < 0 ? "text-[var(--tt-warn)]" : "text-[var(--tt-faint)]";
 
   const valueNode = (
     <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
-      {formatUSD(latest.totalValue)}
+      {formatUSD(longTotalValue)}
       {valDeltaPct != null && valDeltaPct !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
           （{lang === "zh" ? "环比 " : ""}{sign(valDeltaPct)}
@@ -367,7 +390,7 @@ export default async function InvestorSlugPage({
   );
   const countNode = (
     <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
-      {latest.holdings.length}
+      {longHoldings.length}
       {cntDelta !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(cntDelta)}`}>
           （{sign(cntDelta)}{Math.abs(cntDelta)}）
@@ -376,15 +399,15 @@ export default async function InvestorSlugPage({
     </span>
   );
 
-  // 第一大仓占比(占组合权重)
-  const top1 = latest.holdings.length > 0
-    ? [...latest.holdings].sort((a, b) => b.value - a.value)[0]
+  // 第一大仓占比(占组合权重,长仓 only)
+  const top1 = longHoldings.length > 0
+    ? [...longHoldings].sort((a, b) => b.value - a.value)[0]
     : null;
-  const top1Pct = top1 && latest.totalValue > 0 ? (top1.value / latest.totalValue) * 100 : null;
+  const top1Pct = top1 && longTotalValue > 0 ? (top1.value / longTotalValue) * 100 : null;
 
   const keyFacts = [
-    { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(latest.totalValue), node: valueNode },
-    { label: lang === "zh" ? "持仓数" : "Holdings", value: String(latest.holdings.length), node: countNode },
+    { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
+    { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
     { label: lang === "zh" ? "第一大仓占比" : "Top position", value: top1Pct != null ? `${top1Pct.toFixed(1)}%` : "—" },
   ];
@@ -480,7 +503,7 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
-          <HoldingsTable holdings={latest.holdings} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
+          <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
           <details className="group border-t border-[var(--tt-border)] pt-4">
             <summary className="cursor-pointer list-none font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
               {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}

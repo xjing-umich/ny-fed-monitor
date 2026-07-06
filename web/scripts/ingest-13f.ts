@@ -22,6 +22,7 @@ import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
 import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
 import { padCusip } from "../src/lib/securities/openfigi.js";
+import { hasLongHoldings, isLongHolding, isRealHolding } from "./lib/holdingFilters.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
@@ -217,7 +218,7 @@ async function parseInfoTable(cikInt: string, accession: string): Promise<Holdin
     };
   });
 
-  return holdings.filter((h) => h.cusip && h.issuer);
+  return holdings.filter(isRealHolding);
 }
 
 function normalizeValueForPeriod(holdings: Holding[], period: string): Holding[] {
@@ -261,10 +262,10 @@ function buildFilingData(
 ): FilingData {
   const normalized = normalizeValueForPeriod(rawHoldings, filingMeta.period);
   const holdings = aggregateByCusip(normalized);
-  const totalValue = holdings.reduce((s, h) => s + h.value, 0);
+  const totalValue = holdings.filter(isLongHolding).reduce((s, h) => s + h.value, 0);
   const withWeight = holdings.map((h) => ({
     ...h,
-    weight: totalValue > 0 ? h.value / totalValue : 0,
+    weight: !h.putCall && totalValue > 0 ? h.value / totalValue : undefined,
   }));
   withWeight.sort((a, b) => b.value - a.value);
   return {
@@ -301,6 +302,10 @@ async function ingestManager(seed: Omit<Manager, "name">): Promise<ManagerDetail
       const raw = await parseInfoTable(cikInt, meta.accession);
       await sleep(300);
       const fd = buildFilingData(meta, raw);
+      if (!hasLongHoldings(fd.holdings)) {
+        console.warn(`[ingest-13f] 跳过无长仓 filing(NONE/13F-NT 或仅含期权): ${meta.accession} ${meta.period}`);
+        continue;
+      }
       filings.push(fd);
       console.log(`[${seed.slug}] ${meta.period}: ${fd.holdings.length} holdings, $${fd.totalValue.toLocaleString()}`);
     } catch (err) {
@@ -334,7 +339,8 @@ async function main() {
       console.log(`[${seed.slug}] Written to ${outPath} (${detail.filings.length} quarters)`);
 
       const top = detail.filings[0];
-      const topHolding = top.holdings[0]?.issuer ?? "";
+      const longHoldings = top.holdings.filter(isLongHolding);
+      const topHolding = longHoldings[0]?.issuer ?? "";
       summaries.push({
         cik: detail.manager.cik,
         slug: detail.manager.slug,
@@ -342,7 +348,7 @@ async function main() {
         person: detail.manager.person,
         period: top.period,
         totalValue: top.totalValue,
-        holdingCount: top.holdings.length,
+        holdingCount: longHoldings.length,
         topHolding,
       });
     } catch (err) {

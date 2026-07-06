@@ -16,16 +16,17 @@ async function readAll(db: any, table: string, cols: string, filter?: (q: any) =
 }
 
 function diff(latest: any[], prior: any[]): ScanInput["changes"] {
-  const lm = new Map(latest.map((h) => [h.cusip, h]));
-  const pm = new Map(prior.map((h) => [h.cusip, h]));
+  const keyOfHolding = (h: any) => `${h.cusip}|${h.put_call ?? ""}`;
+  const lm = new Map(latest.map((h) => [keyOfHolding(h), h]));
+  const pm = new Map(prior.map((h) => [keyOfHolding(h), h]));
   const out: ScanInput["changes"] = [];
   for (const [k, lh] of lm) {
     const ph = pm.get(k);
-    if (!ph) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", value: Number(lh.value) });
-    else if (Number(lh.shares) > Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "increased", value: Number(lh.value) });
-    else if (Number(lh.shares) < Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "decreased", value: Number(lh.value) });
+    if (!ph) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+    else if (Number(lh.shares) > Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "increased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+    else if (Number(lh.shares) < Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "decreased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
   }
-  for (const [k, ph] of pm) if (!lm.has(k)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", value: 0 });
+  for (const [k, ph] of pm) if (!lm.has(k)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", value: Number(ph.value), putCall: ph.put_call ?? undefined });
   return out;
 }
 
@@ -40,8 +41,8 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   for (const m of managers) {
     const filings = await readAll(db, "filings", "id,period,filed_at", (q) => q.eq("cik", m.cik).order("period", { ascending: false }).limit(2));
     if (!filings.length) continue;
-    const latestH = await readAll(db, "holdings", "cusip,issuer,value,shares,weight", (q) => q.eq("filing_id", filings[0].id));
-    const priorH = filings[1] ? await readAll(db, "holdings", "cusip,issuer,value,shares,weight", (q) => q.eq("filing_id", filings[1].id)) : [];
+    const latestH = await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) => q.eq("filing_id", filings[0].id));
+    const priorH = filings[1] ? await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) => q.eq("filing_id", filings[1].id)) : [];
     raws.push({ cik: m.cik, slug: m.slug, person: m.person, period: filings[0].period, filedAt: filings[0].filed_at ?? null, latestH, priorH });
   }
 
@@ -52,7 +53,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
 
   const scan: ScanInput[] = active.map((r) => ({
     slug: r.slug,
-    holdings: r.latestH.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value) })),
+    holdings: r.latestH.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value), putCall: h.put_call ?? undefined })),
     changes: changesOf(r),
   }));
 
@@ -63,8 +64,8 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     person: r.person,
     period: r.period,
     filedAt: r.filedAt,
-    holdings: r.latestH.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value), shares: Number(h.shares), weight: Number(h.weight) })),
-    priorHoldings: r.priorH.map((h) => ({ cusip: h.cusip, weight: Number(h.weight) })),
+    holdings: r.latestH.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value), shares: Number(h.shares), weight: Number(h.weight), putCall: h.put_call ?? undefined })),
+    priorHoldings: r.priorH.map((h) => ({ cusip: h.cusip, weight: Number(h.weight), putCall: h.put_call ?? undefined })),
     changes: changesOf(r),
   }));
 
@@ -104,8 +105,8 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     if (!tf.length) continue;
     const filings: TrendScan["filings"] = [];
     for (const f of tf) {
-      const hs = await readAll(db, "holdings", "cusip", (q) => q.eq("filing_id", f.id));
-      filings.push({ period: f.period, cusips: hs.map((h) => h.cusip) });
+      const hs = await readAll(db, "holdings", "cusip,put_call", (q) => q.eq("filing_id", f.id));
+      filings.push({ period: f.period, cusips: hs.filter((h) => !h.put_call).map((h) => h.cusip) });
     }
     trendScan.push({ slug: m.slug, filings });
   }

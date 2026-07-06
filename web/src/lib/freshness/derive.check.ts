@@ -57,6 +57,9 @@ assert.equal(filingFreshness("2026-03-31", d("2026-06-08")), "fresh", "当季已
 assert.equal(filingFreshness("2025-12-31", d("2026-06-08")), "stale", "晚一季=stale");
 // 晚三季(Scion 场景): 报到 2025-06-30 → stale
 assert.equal(filingFreshness("2025-06-30", d("2026-06-08")), "stale", "晚三季=stale");
+// 2026-05-15 = Mar-31 + 45 天,恰为 SEC 截止日当天,当天数据尚未逾期。
+assert.equal(filingFreshness("2025-12-31", new Date("2026-05-15T00:00:00Z")), "fresh", "截止日当天Q4持仓仍fresh");
+assert.equal(filingFreshness("2025-12-31", new Date("2026-05-16T00:00:00Z")), "stale", "截止日次日才stale");
 
 // --- 13F 三档新鲜度 ---
 assert.equal(globalLatestPeriod(["2025-12-31", "2026-03-31", null]), "2026-03-31", "取最大季");

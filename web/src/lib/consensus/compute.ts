@@ -1,8 +1,8 @@
 // 共识计算纯逻辑(无 I/O): 把各经理人 latest 持仓/changes 聚合为 ticker-keyed 快照行。
 // cusip → ticker 经传入的 map; 未解析 cusip 用 cusip 自身作兜底键(与个股页回退一致)。
 
-export type ScanHolding = { cusip: string; issuer: string; value: number };
-export type ScanChange = { cusip: string; issuer: string; kind: "new" | "exited" | "increased" | "decreased"; value: number };
+export type ScanHolding = { cusip: string; issuer: string; value: number; putCall?: string };
+export type ScanChange = { cusip: string; issuer: string; kind: "new" | "exited" | "increased" | "decreased"; value: number; putCall?: string };
 export type ScanInput = { slug: string; holdings: ScanHolding[]; changes: ScanChange[] };
 export type CusipInfo = { ticker: string | null; name: string | null };
 
@@ -28,6 +28,7 @@ export function computeConsensus(
   const held = new Map<string, { issuer: string; holders: Set<string>; total: number }>();
   for (const m of scan) {
     for (const h of m.holdings) {
+      if (h.putCall) continue; // 期权(put/call)不是长仓,不算持有人
       const { ticker, name } = keyOf(h.cusip, cusipToTicker);
       const e = held.get(ticker) ?? { issuer: name ?? h.issuer, holders: new Set<string>(), total: 0 };
       e.holders.add(m.slug);
@@ -43,6 +44,7 @@ export function computeConsensus(
   const mv = new Map<string, { issuer: string; managers: Set<string>; net: number; direction: "bought" | "sold"; kinds: Map<MoveKind, number> }>();
   for (const m of scan) {
     for (const c of m.changes) {
+      if (c.putCall) continue; // 期权(put/call)不是长仓,不算买卖动向
       const direction: "bought" | "sold" | null =
         c.kind === "new" || c.kind === "increased" ? "bought" : c.kind === "exited" || c.kind === "decreased" ? "sold" : null;
       if (!direction) continue;
@@ -73,8 +75,8 @@ export type StockHolderScan = {
   person: string;
   period: string;
   filedAt: string | null;
-  holdings: { cusip: string; issuer: string; value: number; shares: number; weight: number }[];
-  priorHoldings?: { cusip: string; weight: number }[];
+  holdings: { cusip: string; issuer: string; value: number; shares: number; weight: number; putCall?: string }[];
+  priorHoldings?: { cusip: string; weight: number; putCall?: string }[];
   changes: ScanChange[];
 };
 
@@ -101,13 +103,17 @@ export function computeStockHolders(
   for (const m of scan) {
     // cusip → 本季 change kind(非当季经理 changes 为空 → 全为"持有未变",kind=null)
     const kindByCusip = new Map<string, ScanChange["kind"]>();
-    for (const c of m.changes) kindByCusip.set(c.cusip, c.kind);
+    for (const c of m.changes) {
+      if (c.putCall) continue;
+      kindByCusip.set(c.cusip, c.kind);
+    }
 
     // 当前持仓按 ticker 归并:同 ticker 多 cusip(双重股权/正股+期权)的 value/shares/weight 求和;
     // kind 取该 ticker 组内最大市值 cusip 的变动(确定性,与个股页旧"取首个匹配"等价但更稳)。
     type Agg = { issuer: string; value: number; shares: number; weight: number; topCusip: string; topVal: number };
     const byTicker = new Map<string, Agg>();
     for (const h of m.holdings) {
+      if (h.putCall) continue; // 期权(put/call)不是长仓,不算持有人
       const { ticker, name } = keyOf(h.cusip, cusipToTicker);
       const e = byTicker.get(ticker) ?? { issuer: name ?? h.issuer, value: 0, shares: 0, weight: 0, topCusip: h.cusip, topVal: -1 };
       e.value += h.value ?? 0;
@@ -120,6 +126,7 @@ export function computeStockHolders(
     // 上季同 ticker 组合权重(供 QoQ 箭头): 把上季持仓按 ticker 归并求和。
     const priorWByTicker = new Map<string, number>();
     for (const ph of m.priorHoldings ?? []) {
+      if (ph.putCall) continue;
       const { ticker } = keyOf(ph.cusip, cusipToTicker);
       priorWByTicker.set(ticker, (priorWByTicker.get(ticker) ?? 0) + (ph.weight ?? 0));
     }
@@ -137,6 +144,7 @@ export function computeStockHolders(
     const exitedSeen = new Set<string>();
     for (const c of m.changes) {
       if (c.kind !== "exited") continue;
+      if (c.putCall) continue; // 期权(put/call)到期/平仓不是长仓清仓,不算 phantom 清仓持有人行
       const { ticker, name } = keyOf(c.cusip, cusipToTicker);
       if (heldTickers.has(ticker) || exitedSeen.has(ticker)) continue;
       exitedSeen.add(ticker);

@@ -27,7 +27,7 @@ export type ValuationVerdict = {
   price: number;
   /** 价格 as-of（ISO date）。 */
   priceDate: string;
-  /** 安全边际 %（vs rangeLo，仅 below/strike zone 有意义）；rangeLo≤0 → null。 */
+  /** 安全边际 %（vs epv.valueFloor，即 inStrikeZone/position 同一保守底；仅 below/strike zone 有意义）；valueFloor≤0 → null。 */
   marginPct: number | null;
   /** full=两法夹逼 / single_lamp=仅单法（金融单灯或缺一法）。 */
   coverage: VerdictCoverage;
@@ -135,7 +135,10 @@ export function deriveValuationVerdict(input: {
   const bucket =
     (bothMethods ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
   const inStrikeZone = epv.position === "in_strike_zone";
-  const marginPct = rangeLo > 0 ? (rangeLo - price) / rangeLo : null;
+  // 安全边际相对 valueFloor(与 inStrikeZone/epv.position 同一个底),而非 rangeLo(OE-DCF+增长最小端)。
+  // 二者可差 10× → 旧口径下 below 名显示天文负 margin(GCO −566%/HLX −1307%)且污染 strike 排序。
+  const valueFloor = epv.valueFloor;
+  const marginPct = valueFloor > 0 ? (valueFloor - price) / valueFloor : null;
   const coverage: VerdictCoverage = bothMethods ? "full" : "single_lamp";
 
   // 数据健壮性闸:价值带与现价严重脱节(坏 shares / 拆股不一致)→ 无可信判定,不污染最敏感的面。

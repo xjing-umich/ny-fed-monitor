@@ -31,14 +31,15 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
   const en = lang === "en";
   const paras: ProseParagraph[] = [];
 
-  const holdings = latest.holdings;
+  const holdings = latest.holdings.filter((h) => !h.putCall);
+  const longChanges = changes.filter((c) => !c.putCall);
   const n = holdings.length;
   if (n === 0) return paras;
 
   const fund = displayFundName(manager.name);
 
-  const total = latest.totalValue;
-  const weightOf = (h: Holding): number => (h.weight != null ? h.weight : total > 0 ? h.value / total : 0);
+  const total = holdings.reduce((s, h) => s + h.value, 0);
+  const weightOf = (h: Holding): number => (total > 0 ? h.value / total : 0);
 
   // 按 CUSIP 归并(同 conviction.ts / holdingKey 口径): 同一 CUSIP 的正股与 put/call 行合并为一个
   // 仓位、value/weight 求和, 避免把单条期权行当成"最大持仓"列出。Map 不参与迭代以兼容 tsconfig。
@@ -107,10 +108,10 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
 
   // ── 段 3: 本季动作 — 只在有 prior(可比)时渲染 ─────────────────────────────────
   if (prior) {
-    const news = changes.filter((c) => c.kind === "new").sort((a, b) => b.value - a.value);
-    const exits = changes.filter((c) => c.kind === "exited").sort((a, b) => b.prevShares - a.prevShares);
-    const incs = changes.filter((c) => c.kind === "increased");
-    const decs = changes.filter((c) => c.kind === "decreased");
+    const news = longChanges.filter((c) => c.kind === "new").sort((a, b) => b.value - a.value);
+    const exits = longChanges.filter((c) => c.kind === "exited").sort((a, b) => b.prevShares - a.prevShares);
+    const incs = longChanges.filter((c) => c.kind === "increased");
+    const decs = longChanges.filter((c) => c.kind === "decreased");
 
     const p: ProseParagraph = [];
     if (en) {
@@ -137,7 +138,7 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
     const seenCount = new Map<string, number>();
     for (const f of filings) {
       const heldThisQuarter = new Set<string>();
-      for (const h of f.holdings) if (h.shares > 0) heldThisQuarter.add(h.cusip);
+      for (const h of f.holdings) if (!h.putCall && h.shares > 0) heldThisQuarter.add(h.cusip);
       for (const c of heldThisQuarter) seenCount.set(c, (seenCount.get(c) ?? 0) + 1);
     }
     // 按最新季市值排序, 取前两个持续持有的标的

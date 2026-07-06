@@ -88,11 +88,20 @@ export const FUNDAMENTAL_TAGS: Record<FundamentalField, string[]> = {
   total_assets: ["Assets"],
   total_liabilities: ["Liabilities"],
   total_debt: [
-    "LongTermDebtAndFinanceLeaseObligationsCurrent",
+    // 总额 tag(含全部,优先直取)
+    "DebtAndCapitalLeaseObligations",
+    // 非流动(越靠前越含租赁)
     "LongTermDebtAndFinanceLeaseObligationsNoncurrent",
-    "ShortTermBorrowings",
+    "LongTermDebtAndCapitalLeaseObligations",
+    "LongTermDebtNoncurrent",
+    // 流动
+    "LongTermDebtAndFinanceLeaseObligationsCurrent",
     "LongTermDebtCurrent",
-    "LongTermDebtNoncurrent"
+    "DebtCurrent",
+    // 合并 LongTermDebt(含流动+非流动)= 无分项非流动 tag 时的兜底
+    "LongTermDebt",
+    // 短期借款(独立)
+    "ShortTermBorrowings"
   ],
   ppe_net: ["PropertyPlantAndEquipmentNet"],
   goodwill: ["Goodwill"],

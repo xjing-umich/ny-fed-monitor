@@ -45,6 +45,7 @@ export function computeMostHeld(scan: ScanRow[], limit: number): HeldRow[] {
   const agg = new Map<string, { issuer: string; holders: Set<string>; totalValue: number }>();
   for (const row of scan) {
     for (const h of row.holdings) {
+      if (h.putCall) continue; // 期权不计入 most-held(fallback 路径, 与 DB 路径对齐)
       const e = agg.get(h.cusip) ?? { issuer: h.issuer, holders: new Set<string>(), totalValue: 0 };
       e.holders.add(row.slug);
       e.totalValue += h.value ?? 0;
@@ -75,6 +76,7 @@ export function computeNotableMoves(scan: ScanRow[], limit: number): NotableMove
   };
   for (const row of scan) {
     for (const c of row.changes) {
+      if (c.putCall) continue; // 期权不计入 notable-moves(fallback 路径, 与 DB 路径对齐)
       if (c.kind === "new" || c.kind === "increased") bump(buys, c);
       else if (c.kind === "exited" || c.kind === "decreased") bump(sells, c);
     }
@@ -158,6 +160,7 @@ export function computeHolderDeltas(scan: ScanRow[]): Map<string, number> {
   const m = new Map<string, number>();
   for (const row of scan) {
     for (const c of row.changes) {
+      if (c.putCall) continue; // 期权开平仓不应计入持有人净增减
       if (c.kind === "new") m.set(c.cusip, (m.get(c.cusip) ?? 0) + 1);
       else if (c.kind === "exited") m.set(c.cusip, (m.get(c.cusip) ?? 0) - 1);
     }

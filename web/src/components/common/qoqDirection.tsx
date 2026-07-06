@@ -39,13 +39,14 @@ export function WeightQoQ({
       </span>
     );
   }
-  const arrow = kind === "increased" ? "▲" : kind === "decreased" ? "▼" : "";
-  const colorClass =
-    kind === "increased"
-      ? "text-[var(--tt-positive)]"
-      : kind === "decreased"
-      ? "text-[var(--tt-warn)]"
-      : "text-[var(--tt-faint)]";
+  const up = cur != null && prior != null && cur > prior;
+  const down = cur != null && prior != null && cur < prior;
+  const arrow = up ? "▲" : down ? "▼" : "";
+  const colorClass = up
+    ? "text-[var(--tt-positive)]"
+    : down
+    ? "text-[var(--tt-warn)]"
+    : "text-[var(--tt-faint)]";
   return (
     <span className="font-mono tabular-nums text-[var(--tt-muted)]">
       {fmtPct1(prior)} <span className={colorClass}>→ {fmtPct1(cur)} {arrow}</span>
