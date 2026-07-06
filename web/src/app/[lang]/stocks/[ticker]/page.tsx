@@ -144,6 +144,7 @@ function HoldersTable({
   period,
   verdict,
   lang,
+  trend,
 }: {
   issuer: string;
   ticker: string;
@@ -154,6 +155,7 @@ function HoldersTable({
   period: string;
   verdict: "below" | "within" | "above" | null;
   lang: Lang;
+  trend: number[];
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const sorted = [...holders].sort((a, b) => b.value - a.value);
@@ -182,6 +184,11 @@ function HoldersTable({
         <QuarterMovesPill moves={moves} lang={lang} />
       </div>
       <p className="mb-3 text-sm leading-relaxed text-[var(--tt-text)]">{crossover}</p>
+      {trend.length >= 2 && (
+        <div className="mb-3">
+          <HolderTrend series={trend} lang={lang} variant="inline" />
+        </div>
+      )}
       <DataTable
         columns={columns}
         rows={head}
@@ -497,6 +504,7 @@ export default async function StockTickerPage({
             period={latestPeriod}
             verdict={handoffVerdict ? handoffVerdict.bucket : null}
             lang={lang}
+            trend={trendSeries}
           />
 
           <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
@@ -505,12 +513,6 @@ export default async function StockTickerPage({
           <FoldedSection title={lang === "zh" ? "持有概览" : "Ownership overview"}>
             <StockProse paragraphs={stockProse} lang={lang} bare />
           </FoldedSection>
-
-          {trendSeries.length >= 2 && (
-            <FoldedSection title={lang === "zh" ? "持有人趋势" : "Holders over time"}>
-              <HolderTrend series={trendSeries} lang={lang} bare />
-            </FoldedSection>
-          )}
         </>
       </EntityPage>
     </>
