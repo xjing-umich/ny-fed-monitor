@@ -36,7 +36,7 @@ import { FoldedSection } from "@/components/entity/FoldedSection";
 import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
-import { buildConsensusSentence } from "@/lib/stocks/consensusSummary";
+import { buildSignalCrossover } from "@/lib/stocks/signalCrossover";
 import { isLikelyTicker } from "@/lib/externalLinks";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
@@ -142,6 +142,7 @@ function HoldersTable({
   totalValue,
   moves,
   period,
+  verdict,
   lang,
 }: {
   issuer: string;
@@ -151,13 +152,15 @@ function HoldersTable({
   totalValue: number;
   moves: QuarterMoves;
   period: string;
+  verdict: "below" | "within" | "above" | null;
   lang: Lang;
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const sorted = [...holders].sort((a, b) => b.value - a.value);
   const head = sorted.slice(0, HOLDERS_VISIBLE);
   const tail = sorted.slice(HOLDERS_VISIBLE);
-  const sentence = buildConsensusSentence({ issuer, ticker, n: holders.length, moves, period }, lang);
+  const crossover = buildSignalCrossover(
+    { n: holders.length, moves, verdict, period }, lang);
 
   const columns: Column<HolderRow>[] = [
     { key: "investor", header: t.cols.investor, role: "primary", cell: (r) => r.person },
@@ -178,7 +181,7 @@ function HoldersTable({
         </p>
         <QuarterMovesPill moves={moves} lang={lang} />
       </div>
-      <p className="sr-only">{sentence}</p>
+      <p className="mb-3 text-sm leading-relaxed text-[var(--tt-text)]">{crossover}</p>
       <DataTable
         columns={columns}
         rows={head}
@@ -492,6 +495,7 @@ export default async function StockTickerPage({
             totalValue={totalValue}
             moves={moves}
             period={latestPeriod}
+            verdict={handoffVerdict ? handoffVerdict.bucket : null}
             lang={lang}
           />
 
