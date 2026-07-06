@@ -293,20 +293,20 @@ export default async function StockTickerPage({
     );
     for (const { summary, detail: d } of details) {
       if (!d) continue;
-      const h = d.latest.holdings.find((holding) => targetCusips.has(holding.cusip));
+      const h = d.latest.holdings.find((holding) => !holding.putCall && targetCusips.has(holding.cusip));
       if (!h) continue;
       issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
       if (!latestFiledAt || d.latest.filedAt > latestFiledAt) latestFiledAt = d.latest.filedAt;
       if (!latestPeriod || d.latest.period > latestPeriod) latestPeriod = d.latest.period;
       // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
-      const priorWeight = d.prior?.holdings.find((p) => targetCusips.has(p.cusip))?.weight;
-      const kind = d.changes.find((c) => targetCusips.has(c.cusip))?.kind;
+      const priorWeight = d.prior?.holdings.find((p) => !p.putCall && targetCusips.has(p.cusip))?.weight;
+      const kind = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip))?.kind;
       holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind });
     }
     // 本季动作 + 清仓 chip(按持有人计, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
     for (const { summary, detail: d } of details) {
       if (!d) continue;
-      const ch = d.changes.find((c) => targetCusips.has(c.cusip));
+      const ch = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip));
       if (!ch) continue;
       if (ch.kind === "new") moves.opened++;
       else if (ch.kind === "increased") moves.added++;
@@ -318,7 +318,7 @@ export default async function StockTickerPage({
     for (const { detail: d } of details) {
       if (!d) continue;
       for (const f of d.filings) {
-        if (f.holdings.some((h) => targetCusips.has(h.cusip))) {
+        if (f.holdings.some((h) => !h.putCall && targetCusips.has(h.cusip))) {
           periodCounts.set(f.period, (periodCounts.get(f.period) ?? 0) + 1);
         }
       }

@@ -76,7 +76,7 @@ export type StockHolderScan = {
   period: string;
   filedAt: string | null;
   holdings: { cusip: string; issuer: string; value: number; shares: number; weight: number; putCall?: string }[];
-  priorHoldings?: { cusip: string; weight: number }[];
+  priorHoldings?: { cusip: string; weight: number; putCall?: string }[];
   changes: ScanChange[];
 };
 
@@ -103,7 +103,10 @@ export function computeStockHolders(
   for (const m of scan) {
     // cusip → 本季 change kind(非当季经理 changes 为空 → 全为"持有未变",kind=null)
     const kindByCusip = new Map<string, ScanChange["kind"]>();
-    for (const c of m.changes) kindByCusip.set(c.cusip, c.kind);
+    for (const c of m.changes) {
+      if (c.putCall) continue;
+      kindByCusip.set(c.cusip, c.kind);
+    }
 
     // 当前持仓按 ticker 归并:同 ticker 多 cusip(双重股权/正股+期权)的 value/shares/weight 求和;
     // kind 取该 ticker 组内最大市值 cusip 的变动(确定性,与个股页旧"取首个匹配"等价但更稳)。
@@ -123,6 +126,7 @@ export function computeStockHolders(
     // 上季同 ticker 组合权重(供 QoQ 箭头): 把上季持仓按 ticker 归并求和。
     const priorWByTicker = new Map<string, number>();
     for (const ph of m.priorHoldings ?? []) {
+      if (ph.putCall) continue;
       const { ticker } = keyOf(ph.cusip, cusipToTicker);
       priorWByTicker.set(ticker, (priorWByTicker.get(ticker) ?? 0) + (ph.weight ?? 0));
     }

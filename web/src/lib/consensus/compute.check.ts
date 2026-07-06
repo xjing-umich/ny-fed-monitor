@@ -52,4 +52,23 @@ assert(!zRow, `期权(put)平仓不应生成phantom清仓持有人行, got ${JSO
 const wRow = stockHolderRows.find((r) => r.ticker === "W" && r.kind === "exited");
 assert(!!wRow, `真实长仓清仓(无putCall)仍应正常生成清仓行, got ${JSON.stringify(wRow)}`);
 
+// (d) prior_weight 只应携带上季长仓权重,不能把同 ticker 的 put 名义权重合进去。
+const priorWeightRows = computeStockHolders([
+  {
+    cik: "2",
+    slug: "mgr2",
+    person: "Manager Two",
+    period: "2026Q2",
+    filedAt: "2026-08-01",
+    holdings: [{ cusip: "PLTRCUSIP", issuer: "Palantir", value: 10, shares: 10, weight: 0.1 }],
+    priorHoldings: [
+      { cusip: "PLTRCUSIP", weight: 0.05 },
+      { cusip: "PLTRCUSIP", weight: 0.6, putCall: "Put" },
+    ],
+    changes: [{ cusip: "PLTRCUSIP", issuer: "Palantir", kind: "increased", value: 10 }],
+  },
+] as any, cmap);
+const priorWeightRow = priorWeightRows.find((r) => r.ticker === "PLTR");
+assert(priorWeightRow?.prior_weight === 0.05, `prior_weight应排除上季put权重, got ${priorWeightRow?.prior_weight}`);
+
 console.log("compute.check OK");

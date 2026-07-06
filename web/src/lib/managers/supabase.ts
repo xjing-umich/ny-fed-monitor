@@ -50,13 +50,17 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
   if (mErr) throw new Error(`getManagerIndex managers query failed: ${mErr.message}`);
   const rows = await Promise.all(
     (mgrs ?? []).map(async (m): Promise<IndexRow | null> => {
-      const { data: f, error: fErr } = await withRetry(() => db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(1));
+      const { data: f, error: fErr } = await withRetry(() => db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(8));
       if (fErr) throw new Error(`getManagerIndex filings query failed (${m.cik}): ${fErr.message}`);
-      const latest = f?.[0];
-      if (!latest) return null;
-      const { data: h, error: hErr } = await withRetry(() => db.from("holdings").select("issuer,value").eq("filing_id", latest.id).order("value", { ascending: false }).limit(1));
-      if (hErr) throw new Error(`getManagerIndex holdings query failed (${m.cik}): ${hErr.message}`);
-      return { ...m, period: latest.period, total_value: latest.total_value, holding_count: latest.holding_count, top_holding: h?.[0]?.issuer ?? "", totalValue: latest.total_value, holdingCount: latest.holding_count, topHolding: h?.[0]?.issuer ?? "" } as IndexRow;
+      for (const latest of f ?? []) {
+        const { data: h, error: hErr } = await withRetry(() => db.from("holdings").select("issuer,value,put_call").eq("filing_id", latest.id).order("value", { ascending: false }));
+        if (hErr) throw new Error(`getManagerIndex holdings query failed (${m.cik}): ${hErr.message}`);
+        const longHoldings = (h ?? []).filter((row: any) => !row.put_call);
+        if (longHoldings.length === 0) continue;
+        const totalValue = longHoldings.reduce((s: number, row: any) => s + Number(row.value ?? 0), 0);
+        return { ...m, period: latest.period, total_value: totalValue, holding_count: longHoldings.length, top_holding: longHoldings[0]?.issuer ?? "", totalValue, holdingCount: longHoldings.length, topHolding: longHoldings[0]?.issuer ?? "" } as IndexRow;
+      }
+      return null;
     })
   );
   const out = rows.filter((x): x is IndexRow => x !== null);

@@ -6,3 +6,11 @@ export function isRealHolding(h: { cusip: string; issuer: string; value: number;
   if ((h.value ?? 0) === 0 && (h.shares ?? 0) === 0) return false;
   return true;
 }
+
+export function isLongHolding(h: { putCall?: string | null }): boolean {
+  return !h.putCall;
+}
+
+export function hasLongHoldings<T extends { putCall?: string | null }>(holdings: T[]): boolean {
+  return holdings.some(isLongHolding);
+}

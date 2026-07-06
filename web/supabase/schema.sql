@@ -384,15 +384,22 @@ as $$
       select h.issuer
       from holdings h
       where h.filing_id = f.id
+        and h.put_call is null
       order by h.value desc
       limit 1
     ) as top_holding
   from managers m
   join lateral (
-    select id, period, total_value, holding_count
-    from filings
-    where cik = m.cik
-    order by period desc
+    select
+      f.id,
+      f.period,
+      sum(h.value)::bigint as total_value,
+      count(*)::int as holding_count
+    from filings f
+    join holdings h on h.filing_id = f.id and h.put_call is null
+    where f.cik = m.cik
+    group by f.id, f.period
+    order by f.period desc
     limit 1
   ) f on true;
 $$;
@@ -416,26 +423,39 @@ returns table (
 language sql
 stable
 as $$
-  with latest as (
-    select distinct on (f.cik)
-      f.cik, f.id as filing_id, f.period, f.total_value, f.holding_count
+  with filing_stats as (
+    select
+      f.cik,
+      f.id as filing_id,
+      f.period,
+      sum(h.value)::bigint as total_value,
+      count(*)::int as holding_count
     from filings f
+    join holdings h on h.filing_id = f.id and h.put_call is null
+    group by f.cik, f.id, f.period
+  ),
+  latest as (
+    select distinct on (f.cik)
+      f.cik, f.filing_id, f.period, f.total_value, f.holding_count
+    from filing_stats f
     order by f.cik, f.period desc
   ),
   prior as (
     select distinct on (f.cik)
-      f.cik, f.id as filing_id, f.total_value, f.holding_count
-    from filings f
+      f.cik, f.filing_id, f.total_value, f.holding_count
+    from filing_stats f
     join latest l on l.cik = f.cik and f.period < l.period
     order by f.cik, f.period desc
   ),
   hl as (
     select l.cik, h.cusip, h.issuer, h.value, h.shares
     from latest l join holdings h on h.filing_id = l.filing_id
+    where h.put_call is null
   ),
   hp as (
     select p.cik, h.cusip, h.issuer, h.value, h.shares
     from prior p join holdings h on h.filing_id = p.filing_id
+    where h.put_call is null
   ),
   diff as (
     select

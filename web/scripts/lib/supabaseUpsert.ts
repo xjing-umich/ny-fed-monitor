@@ -8,8 +8,12 @@ export type UpsertPayload = {
   holdingsByAccession: Record<string, HoldingRow[]>;
 };
 
+function longHoldings(f: FilingData) {
+  return f.holdings.filter((h) => !h.putCall);
+}
+
 function filingRow(cik: string, f: FilingData): FilingRow {
-  return { cik, period: f.period, filed_at: f.filedAt, accession: f.accession, total_value: f.totalValue, holding_count: f.holdings.length };
+  return { cik, period: f.period, filed_at: f.filedAt, accession: f.accession, total_value: f.totalValue, holding_count: longHoldings(f).length };
 }
 function holdingRows(f: FilingData): HoldingRow[] {
   return f.holdings.map((h) => ({ cusip: h.cusip, issuer: h.issuer, title_of_class: h.titleOfClass ?? null, value: h.value, shares: h.shares, put_call: h.putCall ?? null, weight: h.weight ?? 0 }));

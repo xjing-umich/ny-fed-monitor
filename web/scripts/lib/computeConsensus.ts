@@ -16,8 +16,9 @@ async function readAll(db: any, table: string, cols: string, filter?: (q: any) =
 }
 
 function diff(latest: any[], prior: any[]): ScanInput["changes"] {
-  const lm = new Map(latest.map((h) => [h.cusip, h]));
-  const pm = new Map(prior.map((h) => [h.cusip, h]));
+  const keyOfHolding = (h: any) => `${h.cusip}|${h.put_call ?? ""}`;
+  const lm = new Map(latest.map((h) => [keyOfHolding(h), h]));
+  const pm = new Map(prior.map((h) => [keyOfHolding(h), h]));
   const out: ScanInput["changes"] = [];
   for (const [k, lh] of lm) {
     const ph = pm.get(k);
@@ -64,7 +65,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     period: r.period,
     filedAt: r.filedAt,
     holdings: r.latestH.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value), shares: Number(h.shares), weight: Number(h.weight), putCall: h.put_call ?? undefined })),
-    priorHoldings: r.priorH.map((h) => ({ cusip: h.cusip, weight: Number(h.weight) })),
+    priorHoldings: r.priorH.map((h) => ({ cusip: h.cusip, weight: Number(h.weight), putCall: h.put_call ?? undefined })),
     changes: changesOf(r),
   }));
 

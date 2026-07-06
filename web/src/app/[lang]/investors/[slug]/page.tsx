@@ -127,7 +127,7 @@ function HoldingsTable({
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
 
-  const exits = changes.filter((c) => c.kind === "exited");
+  const exits = changes.filter((c) => c.kind === "exited" && !c.putCall);
   const EXIT_CAP = 12;
 
   const columns: Column<Holding>[] = [
@@ -286,6 +286,8 @@ export default async function InvestorSlugPage({
   }
 
   const { manager, latest, prior, changes } = d;
+  const longHoldings = latest.holdings.filter((h) => !h.putCall);
+  const longChanges = changes.filter((c) => !c.putCall);
   // 基金名展示化(全大写 EDGAR 名 → 标题化, 策展混合大小写名原样): 副标题/结构化数据/正文统一口径。
   const fund = displayFundName(manager.name);
 
@@ -298,7 +300,7 @@ export default async function InvestorSlugPage({
     if (info.ticker && isLikelyTicker(info.ticker)) cusipToTicker.set(cusip, info.ticker);
 
   // 估值叠加(读物化快照, 廉价; 失败优雅返回空 Map → 无徽章, 不阻断渲染)。
-  const holdingTickers = latest.holdings
+  const holdingTickers = longHoldings
     .map((h) => cusipToTicker.get(h.cusip))
     .filter((t): t is string => Boolean(t));
   const verdicts = await readValuationVerdicts(holdingTickers);
@@ -308,7 +310,7 @@ export default async function InvestorSlugPage({
   const rowSignals = deriveRowSignals({ filings: d.filings, verdicts, cusipToTicker, lang });
 
   // 该投资人当前持仓中现价落在击球区的只数(与 screener strike_zone 视图同口径)。
-  const strikeCount = latest.holdings.reduce((acc, h) => {
+  const strikeCount = longHoldings.reduce((acc, h) => {
     const tk = cusipToTicker.get(h.cusip);
     return acc + (tk && verdicts.get(tk.toUpperCase())?.inStrikeZone ? 1 : 0);
   }, 0);
@@ -329,10 +331,10 @@ export default async function InvestorSlugPage({
   );
 
   // Verdict
-  const buying = changes.filter((c) => c.kind === "new" || c.kind === "increased").length;
-  const selling = changes.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
+  const buying = longChanges.filter((c) => c.kind === "new" || c.kind === "increased").length;
+  const selling = longChanges.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
   let verdict: { label: string; tone: Tone } | undefined;
-  if (changes.length > 0 && prior) {
+  if (longChanges.length > 0 && prior) {
     if (buying > selling) {
       verdict = { label: lang === "zh" ? "整体加仓" : "Net buying", tone: "positive" };
     } else if (selling > buying) {
@@ -344,7 +346,6 @@ export default async function InvestorSlugPage({
 
   // 长仓 only 子集(汇总口径排除 put/call 期权行, spec: 期权名义市值会扭曲第一大持仓/组合市值)。
   // 持仓表(HoldingsTable)仍传入全量 latest.holdings —— 期权行照常列出(后续任务加 PUT/CALL 徽章)。
-  const longHoldings = latest.holdings.filter((h) => !h.putCall);
   const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
 
   // Key facts
@@ -358,7 +359,7 @@ export default async function InvestorSlugPage({
     longHoldings.length > 0
       ? [...longHoldings].sort((a, b) => b.value - a.value)[0].issuer
       : null;
-  const shareAddedName = changes.find((c) => c.kind === "new")?.issuer ?? null;
+  const shareAddedName = longChanges.find((c) => c.kind === "new")?.issuer ?? null;
   const shareUrl = absoluteUrl(investorPath(lang, slug));
   const shareText = buildShareText(
     { kind: "investor", managerName: manager.person, topHolding: shareTopHolding, addedName: shareAddedName },
@@ -502,7 +503,7 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
-          <HoldingsTable holdings={latest.holdings} changes={changes} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
+          <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
           <details className="group border-t border-[var(--tt-border)] pt-4">
             <summary className="cursor-pointer list-none font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
               {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}
