@@ -1,4 +1,4 @@
-import { computeConsensus, computeStockHolders, computeStockTrend, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
+import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
 import { freshness13F, globalLatestPeriod } from "../../src/lib/freshness/derive";
 
 async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
@@ -30,7 +30,7 @@ function diff(latest: any[], prior: any[]): ScanInput["changes"] {
   return out;
 }
 
-export async function computeAndStoreConsensus(db: any): Promise<{ holdings: number; moves: number; stockHolders: number; trend: number }> {
+export async function computeAndStoreConsensus(db: any): Promise<{ holdings: number; moves: number; stockHolders: number; trend: number; coOwnership: number }> {
   const cmap = new Map<string, CusipInfo>();
   for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer"))
     cmap.set(r.cusip, { ticker: r.ticker, name: r.issuer });
@@ -71,6 +71,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
 
   const { holdings, moves } = computeConsensus(scan, cmap);
   const stockHolders = computeStockHolders(holderScan, cmap);
+  const coOwnership = computeCoOwnership(holderScan, cmap);
 
   await db.from("consensus_holdings").delete().neq("ticker", "");
   await db.from("consensus_moves").delete().neq("ticker", "");
@@ -90,7 +91,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const { error: shDelErr } = await db.from("consensus_stock_holders").delete().neq("ticker", "");
   if (shDelErr && shDelErr.code === "42P01") {
     console.warn("consensus_stock_holders 表不存在 — 跳过(先跑 migration)。");
-    return { holdings: holdings.length, moves: moves.length, stockHolders: 0, trend: 0 };
+    return { holdings: holdings.length, moves: moves.length, stockHolders: 0, trend: 0, coOwnership: 0 };
   }
   for (let i = 0; i < stockHolders.length; i += 500) {
     const { error } = await db.from("consensus_stock_holders").upsert(stockHolders.slice(i, i + 500), { onConflict: "ticker,cik" });
@@ -115,12 +116,23 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const { error: trDelErr } = await db.from("consensus_stock_trend").delete().neq("ticker", "");
   if (trDelErr && trDelErr.code === "42P01") {
     console.warn("consensus_stock_trend 表不存在 — 跳过(先跑 migration)。");
-    return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: 0 };
+    return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: 0, coOwnership: 0 };
   }
   for (let i = 0; i < trend.length; i += 500) {
     const { error } = await db.from("consensus_stock_trend").upsert(trend.slice(i, i + 500), { onConflict: "ticker,period" });
     if (error) console.warn(`consensus_stock_trend upsert err: ${error.message}`);
   }
 
-  return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length };
+  // consensus_coownership: 表缺失 → warn 跳过(与 stock_holders/trend 一致的优雅降级)。
+  const { error: coDelErr } = await db.from("consensus_coownership").delete().neq("ticker", "");
+  if (coDelErr && /does not exist|schema cache/i.test(coDelErr.message)) {
+    console.warn("consensus_coownership 表不存在 — 跳过(先跑 migration)。");
+  } else {
+    for (let i = 0; i < coOwnership.length; i += 500) {
+      const { error } = await db.from("consensus_coownership").upsert(coOwnership.slice(i, i + 500), { onConflict: "ticker,co_ticker" });
+      if (error) console.warn(`consensus_coownership upsert err: ${error.message}`);
+    }
+  }
+
+  return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: coOwnership.length };
 }
