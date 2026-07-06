@@ -20,6 +20,7 @@ import { fileURLToPath } from "url";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { getCusipMap } from "@/lib/managers/securities";
 import { isLikelyTicker } from "@/lib/externalLinks";
+import { isOperatingSecurity } from "@/lib/securities/openfigi";
 import { getSecCompanyData } from "@/lib/sec/read";
 import {
   fundamentalsToFloorInput,
@@ -73,6 +74,17 @@ async function main() {
 
   const universe = await collectUniverse();
   console.log(`Universe: ${universe.length} tickers(持仓并集)`);
+
+  // 证券类型图:非经营性载体(ETP/基金/权证…)不该用盈利法估值(如 SIVR/GLD 实物商品信托)。
+  // security_type=NULL(未回填)→ isOperatingSecurity 视为可估,靠上游闸兜底,不静默漏真公司。
+  const secTypeMap = new Map<string, string | null>();
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db.from("securities").select("ticker,security_type").range(from, from + 999);
+    if (error) throw new Error(`securities 读取失败: ${error.message}`);
+    if (!data?.length) break;
+    for (const r of data) secTypeMap.set(String(r.ticker).toUpperCase(), (r.security_type as string | null) ?? null);
+    if (data.length < 1000) break;
+  }
   // 先耐心抓 DGS10 写入 market_rates(FRED 可达时刷新/播种), 再读 —— getLatestDgs10 在 live
   // 6s 超时时回退到该 last-good, 使全表估值锚定真 10Y 而非未锚定回退带。
   await persistDgs10();
@@ -80,9 +92,11 @@ async function main() {
   if (!dgs10) console.warn("DGS10 仍不可用(live 失败且 market_rates 无 last-good)→ 本轮贴现带未锚定");
   const computedAt = new Date().toISOString();
 
-  let valued = 0, skipped = 0;
+  let valued = 0, skipped = 0, excludedNonOperating = 0;
   const rows: Record<string, unknown>[] = [];
   for (const ticker of universe) {
+    // 非经营性证券:不进盈利法估值。旧快照行会被下方陈旧清理删除(其不在 written 集)。
+    if (!isOperatingSecurity(secTypeMap.get(ticker))) { excludedNonOperating++; continue; }
     try {
       const sec = await getSecCompanyData(ticker);
       // company_name 不影响判定(仅卡片 who 前缀用), 投资人页只读 verdict, 故传 ticker 即可。
@@ -140,7 +154,7 @@ async function main() {
     if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
     deleted += count ?? 0;
   }
-  console.log(`估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据), 清理陈旧 ${deleted}, computed_at ${computedAt}`);
+  console.log(`估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据), 排除非经营性 ${excludedNonOperating}(ETP/基金/权证), 清理陈旧 ${deleted}, computed_at ${computedAt}`);
 }
 
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
