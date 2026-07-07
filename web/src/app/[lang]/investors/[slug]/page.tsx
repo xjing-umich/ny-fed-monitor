@@ -30,6 +30,7 @@ import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
+import { LearnLink } from "@/components/common/LearnLink";
 
 const MAX_HOLDINGS = 25;
 
@@ -504,6 +505,11 @@ export default async function InvestorSlugPage({
       >
         <>
           <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
+          <LearnLink
+            lang={lang}
+            slug="what-is-a-superinvestor"
+            label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"}
+          />
           <details className="group border-t border-[var(--tt-border)] pt-4">
             <summary className="cursor-pointer list-none font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
               {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}

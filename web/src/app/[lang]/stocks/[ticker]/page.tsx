@@ -36,6 +36,7 @@ import { FoldedSection } from "@/components/entity/FoldedSection";
 import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
+import { LearnLink } from "@/components/common/LearnLink";
 import { buildSignalCrossover } from "@/lib/stocks/signalCrossover";
 import { isLikelyTicker } from "@/lib/externalLinks";
 
@@ -492,6 +493,11 @@ export default async function StockTickerPage({
                 ticker={ticker}
                 lang={lang}
               />
+              <LearnLink
+                lang={lang}
+                slug="reading-business-quality"
+                label={lang === "zh" ? "什么样的生意算优质" : "What makes a business high quality"}
+              />
             </section>
           )}
 
@@ -507,6 +513,11 @@ export default async function StockTickerPage({
             verdict={handoffVerdict ? handoffVerdict.bucket : null}
             lang={lang}
             trend={trendSeries}
+          />
+          <LearnLink
+            lang={lang}
+            slug="how-to-read-a-13f"
+            label={lang === "zh" ? "如何读懂 13F" : "How to read a 13F"}
           />
 
           {coOwned.length > 0 && (
