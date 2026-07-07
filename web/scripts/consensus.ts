@@ -24,6 +24,6 @@ async function main() {
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
   const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
   const stats = await computeAndStoreConsensus(db);
-  console.log(`共识完成: holdings ${stats.holdings} 行, moves ${stats.moves} 行, stockHolders ${stats.stockHolders} 行, trend ${stats.trend} 行`);
+  console.log(`共识完成: holdings ${stats.holdings} 行, moves ${stats.moves} 行, stockHolders ${stats.stockHolders} 行, trend ${stats.trend} 行, coOwnership ${stats.coOwnership} 行`);
 }
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
