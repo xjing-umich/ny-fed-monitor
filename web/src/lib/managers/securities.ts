@@ -68,3 +68,21 @@ export const tickerToCusips = cache(async (ticker: string): Promise<string[]> =>
   }
   return out;
 });
+
+/** 单票证券元数据:估值层做 ADR/ADS 归一化用。security_type 判是否 ADR,ads_ratio 是每股折合比例。 */
+export const getSecurityMeta = cache(
+  async (ticker: string): Promise<{ securityType: string | null; adsRatio: number | null }> => {
+    if (!hasSupabaseEnv()) return { securityType: null, adsRatio: null };
+    const db = getDb();
+    const { data, error } = await db
+      .from("securities")
+      .select("security_type,ads_ratio")
+      .eq("ticker", ticker.toUpperCase())
+      .maybeSingle();
+    if (error || !data) return { securityType: null, adsRatio: null };
+    return {
+      securityType: (data.security_type as string | null) ?? null,
+      adsRatio: (data.ads_ratio as number | null) ?? null,
+    };
+  },
+);
