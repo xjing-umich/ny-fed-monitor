@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { stockPath } from "@/lib/urls";
+import { fmtValueBand } from "@/lib/format";
 
 const COPY = {
   zh: {
@@ -48,7 +49,7 @@ export default function StrikeLeadersCard({
                 </Link>
               </td>
               <td className="py-2 pr-3 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                {`$${Math.round(row.rangeLo).toLocaleString()}–$${Math.round(row.rangeHi).toLocaleString()}`}
+                {fmtValueBand(row.rangeLo, row.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}
               </td>
               <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-accent)] whitespace-nowrap">
                 {row.marginPct != null && row.marginPct > 0 ? `−${Math.round(row.marginPct * 100)}%` : "—"}
