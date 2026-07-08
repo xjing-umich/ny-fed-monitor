@@ -33,4 +33,6 @@ export type ValuationResult = {
 
 export type ValuationInput = Pick<NormalizedResearchData, "ticker" | "normalized_financials" | "financial_metrics"> & {
   price?: PriceData | null;
+  /** ADR/ADS 归一化比例:每 1 ADS 折合几股普通股。缺省=1(非 ADR);<=0 或非有限值=抑制信号(市值降级留白)。 */
+  ads_ratio?: number;
 };
