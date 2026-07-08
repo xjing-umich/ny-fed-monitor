@@ -40,6 +40,7 @@ create table if not exists securities (
   sector text,
   figi text,
   security_type text,           -- OpenFIGI securityType; 非经营性(ETP/基金/权证)排出盈利法估值
+  ads_ratio numeric,            -- 每 1 ADS 折合几股普通股(ADR only);NULL=未策展→估值抑制
   primary_cusip text,
   source text,
   as_of date,
