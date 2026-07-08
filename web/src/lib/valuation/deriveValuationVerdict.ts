@@ -19,7 +19,7 @@ export type ValuationVerdict = {
   bucket: VerdictBucket;
   /** below 的深折扣子集：现价 ≤ 价值带下沿 ×(1−1/3)。引擎权威标志。 */
   inStrikeZone: boolean;
-  /** 展示用价值带下沿（每股，= 两法各端的最小值）。 */
+  /** 展示用价值带下沿（每股，= epv.valueFloor 保守底，与 inStrikeZone/marginPct 同锚）。 */
   rangeLo: number;
   /** 展示用价值带上沿（每股，= 两法各端的最大值）。 */
   rangeHi: number;
@@ -127,8 +127,11 @@ export function deriveValuationVerdict(input: {
     (n): n is number => typeof n === "number" && Number.isFinite(n),
   );
   if (ends.length === 0) return null;
-  const rangeLo = Math.min(...ends);
+  // 展示价值带下沿 = 保守底 valueFloor（与 inStrikeZone/position/marginPct 同底），
+  // 而非两法端点最小值 —— 后者对单灯发散名会塌到近零(HLX $0.61)/塌成点，令"价值带"与
+  // "安全边际"参照不同底、三处展示自相矛盾(GCO 带 $5–$50 却标 33%)。rangeHi 仍是乐观上沿。
   const rangeHi = Math.max(...ends);
+  const rangeLo = epv.valueFloor;
   const bothMethods = !!conservative && !!epv.ceilings;
 
   // bucket：优先两法 consistency，否则单法 position（与卡片同序）。

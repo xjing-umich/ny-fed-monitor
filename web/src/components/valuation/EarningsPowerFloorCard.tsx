@@ -3,6 +3,7 @@ import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, Va
 import { deriveValuationVerdict } from "@/lib/valuation";
 import { isNetNetTriggered } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
+import { fmtValueBand } from "@/lib/format";
 
 // USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
 // and "en-US" (not undefined) keeps server/client output deterministic (zh-CN groups
@@ -241,7 +242,7 @@ function ValueSpine({
   const sub =
     bucket === "below" ? t.subBelow(onMethods) : bucket === "within" ? t.subWithin(onMethods) : t.subAbove;
   const who = issuer ? `${issuer}${ticker ? (lang === "zh" ? `（${ticker}）` : ` (${ticker})`) : ""}${lang === "zh" ? "：" : ": "}` : "";
-  const valueRange = `${usd0(rangeLo)}–${usd0(rangeHi)} ${t.perSh}`;
+  const valueRange = `${fmtValueBand(rangeLo, rangeHi, usd0)} ${t.perSh}`;
   const asOf = sz.price?.date ? (lang === "zh" ? `（价格 ${usd0(price)} 截至 ${sz.price.date}）` : ` (price ${usd0(price)} as of ${sz.price.date})`) : "";
   const sentence =
     lang === "zh"
@@ -304,7 +305,7 @@ function ValueSpine({
         </div>
         <div className="mt-1 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
           <span>{t.cheaper}</span>
-          <span>{t.valueEstimate(`${usd0(rangeLo)} – ${usd0(rangeHi)}`)}</span>
+          <span>{t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}</span>
           <span>{t.pricier}</span>
         </div>
       </div>

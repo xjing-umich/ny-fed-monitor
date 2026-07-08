@@ -57,8 +57,8 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
 {
   const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
   assert(v && v.bucket === "below" && v.inStrikeZone === true && v.coverage === "full", "two-method below + strike zone");
-  // rangeLo = min(90,150,210,320)=90; price=100 → margin=(90-100)/90<0
-  assert(v!.rangeLo === 90 && v!.rangeHi === 320, "range across both methods");
+  // rangeLo 现 = epv.valueFloor（sz 默认 120，与 margin/strike 同底）；rangeHi = max 两法端点 = 320。
+  assert(v!.rangeLo === 120 && v!.rangeHi === 320, "rangeLo=valueFloor, rangeHi=optimistic top");
 }
 // 2) 两法 within
 {
@@ -95,8 +95,8 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { ceilings: false, price: 50 }) });
   assert(v && v.bucket === "below" && Math.abs(v.marginPct! - (120 - 50) / 120) < 1e-9, "margin ≤ cap (vs valueFloor) → kept");
 }
-// 8a) marginPct 锚点 = epv.valueFloor,非 rangeLo(两法带的最小端,可与 valueFloor 相差 10×)。
-//     rangeLo=min(90,150,210,320)=90 但 valueFloor=15;price=100 → margin=(15-100)/15,与 rangeLo 口径($(90-100)/90≈-0.11$)显著不同。
+// 8a) 价值带下沿 rangeLo 现锚 epv.valueFloor（与 margin/strike 同底），不再是两法端点最小值。
+//     valueFloor=15 ≪ 两法带最小端 90;rangeLo 必须 = 15，与 margin=(15-100)/15 同底（消除展示矛盾）。
 {
   const v = deriveValuationVerdict({
     floor: floorStub(),
@@ -105,10 +105,11 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
     reconciliation: recon("both_margin_of_safety"),
   });
   assert(v && v.bucket === "below", "below bucket with divergent valueFloor still resolves");
-  assert(v!.rangeLo === 90, "rangeLo unaffected by valueFloor anchor change");
-  assert(Math.abs(v!.marginPct! - (15 - 100) / 15) < 1e-9, "marginPct anchored to valueFloor, not rangeLo");
+  assert(v!.rangeLo === 15, "rangeLo now anchored to valueFloor (band coherent with margin)");
+  assert(v!.rangeHi === 320, "rangeHi unchanged (optimistic top)");
+  assert(Math.abs(v!.marginPct! - (15 - 100) / 15) < 1e-9, "marginPct and rangeLo share the valueFloor anchor");
 }
-// 8b) valueFloor ≤ 0 → marginPct = null(与 rangeLo≤0 旧口径同型的退化保护,但改用 valueFloor 判空)。
+// 8b) valueFloor ≤ 0（现实不会发生，仅退化保护）→ rangeLo=0 触发 isImplausibleBand 退化分支 → 整条 null。
 {
   const v = deriveValuationVerdict({
     floor: floorStub(),
@@ -116,7 +117,7 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
     oeDcf: oe(),
     reconciliation: recon("both_margin_of_safety"),
   });
-  assert(v && v.marginPct === null, "valueFloor<=0 → marginPct null");
+  assert(v === null, "valueFloor<=0 → 退化带抑制为 null");
 }
 // 9) 默认无红旗 → reliable = true(且仍出判定)
 {

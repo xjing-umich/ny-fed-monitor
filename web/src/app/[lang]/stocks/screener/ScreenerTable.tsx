@@ -2,17 +2,13 @@ import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
-import { cleanIssuer, fmtMarginPct } from "@/lib/format";
+import { cleanIssuer, fmtMarginPct, fmtValueBand } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
 
 const TOP_N = 60;
-
-function band(lo: number, hi: number): string {
-  return `$${Math.round(lo).toLocaleString()}–$${Math.round(hi).toLocaleString()}`;
-}
 
 export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] }) {
   const isZh = lang === "zh";
@@ -64,7 +60,7 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
       align: "right",
       width: "w-32",
       hideOnMobile: true,
-      cell: (r) => <span className="font-mono tabular-nums text-[var(--tt-muted)]">{band(r.rangeLo, r.rangeHi)}</span>,
+      cell: (r) => <span className="font-mono tabular-nums text-[var(--tt-muted)]">{fmtValueBand(r.rangeLo, r.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}</span>,
     },
     {
       key: "price",

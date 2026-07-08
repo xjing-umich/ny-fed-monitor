@@ -60,3 +60,8 @@ export function trendDirection(value: string | undefined | null): "up" | "down" 
   if (/^-[^a-zA-Z]/.test(s)) return "down";
   return null;
 }
+
+/** 价值带展示：下沿≈上沿(取整相等,如单灯无增长名 valueFloor=rangeHi)时折叠为单值，否则 lo–hi。 */
+export function fmtValueBand(lo: number, hi: number, fmt: (n: number) => string): string {
+  return Math.round(lo) === Math.round(hi) ? fmt(lo) : `${fmt(lo)}–${fmt(hi)}`;
+}
