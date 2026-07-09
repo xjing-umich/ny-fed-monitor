@@ -248,8 +248,10 @@ import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationP
 替换为:
 
 ```ts
-    { label: lang === "zh" ? "击球区" : "Strike zone", value: String(posture.strikeCount) },
+    { label: lang === "zh" ? "低于价值带" : "Below band", value: String(posture.cheap.length) },
 ```
+
+> 口径修订(preview 实测定案):初版用「击球区/strikeCount」,真机发现击球区太严、深价值基金常年为 0,与小节引导数字矛盾且低估;改用 `cheap.length`(与小节同源)。击球区仍留小节括号从句+页底 handoff。
 
 - [ ] **Step 4: 估值姿态小节(独门小节之前)+ 独门 h2 补计数**
 

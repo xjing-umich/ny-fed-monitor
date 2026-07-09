@@ -24,7 +24,7 @@
 | --- | --- |
 | 头条主角 | **估值姿态**(现价 vs 保守价值带) |
 | 呈现 | **头条数字**(keyFact 第 4 项换成击球区)**+ 紧凑读法小节**(持仓表上方,列出便宜持仓) |
-| keyFact 取舍 | **换不加**(四列硬布局容不下第 5 项);「独门重仓」从 keyFact 移出,**计数搬进独门小节自己的 h2**(页面信息零损失) |
+| keyFact 取舍 | **换不加**(四列硬布局容不下第 5 项);「独门重仓」从 keyFact 移出,**计数搬进独门小节自己的 h2**(页面信息零损失);头条数字 = `cheap.length`(「低于价值带」),与小节引导数字同源(preview 定案,详见 §B) |
 | 信心口径 | **只认 `reliable=true`**(与 screener strike_zone 视图同闸),现 line 315 的 strikeCount 未加此闸,顺手 DRY 补齐 |
 
 ## 组件
@@ -71,10 +71,11 @@ export function deriveValuationPosture(input: {
 **修改** `page.tsx` 的 `keyFacts`([page.tsx:412](../../../src/app/[lang]/investors/[slug]/page.tsx:412))。现第 4 项是「独门重仓 N 只」。换成:
 
 ```
-{ label: lang==="zh"?"击球区":"Strike zone", value: String(posture.strikeCount) }
+{ label: lang==="zh"?"低于价值带":"Below band", value: String(posture.cheap.length) }
 ```
 
-- 固定 label(击球区/Strike zone,本站签名术语),value = `posture.strikeCount`(整数;0 也诚实显 0)。
+- label「低于价值带 / Below band」,value = `posture.cheap.length`(= 小节引导句的同一个数字,header 与 section 严格一致)。
+- **口径修订(preview 实测定案,2026-07-09)**:初版用「击球区 / strikeCount」,但真机发现击球区(现价跌破保守下限)太严——深价值基金(dodge-and-cox 等)常年为 0,而小节引导句讲的是更宽的「低于价值带」(cheap = strike ∪ below)。头条「击球区 0」与小节「N trade below」并排读矛盾且低估。改用 `cheap.length` 后两处同源。击球区口径不丢:仍出现在小节括号从句「(其中 K 只落在击球区)」+ 页底 handoff。
 - 「独门重仓」计数不丢:搬进独门小节 h2(见 D)。keyFacts 仍四项。
 
 ### C. 紧凑读法小节 "估值姿态 / Valuation posture"
