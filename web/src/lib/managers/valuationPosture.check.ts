@@ -57,4 +57,13 @@ const empty = deriveValuationPosture({ holdings, cusipToTicker, verdicts: new Ma
 assert(empty.covered === 0 && empty.strikeCount === 0 && empty.belowCount === 0 && empty.cheap.length === 0 && empty.asOf === "", "verdicts 空 → 全 0 降级");
 assert(deriveValuationPosture({ holdings: [], cusipToTicker, verdicts }).covered === 0, "空 holdings → covered 0");
 
+// (g) 不截断: 10 只都便宜 → cheap 返回全部 10(截断在展示层, 非纯函数)
+const many = Array.from({ length: 10 }, (_, i) => ({ cusip: `M${i}`, issuer: `M${i}` }));
+const manyC2T = new Map(many.map((h) => [h.cusip, h.cusip]));
+const manyV = new Map<string, SnapshotVerdict>(
+  many.map((h, i) => [h.cusip.toUpperCase(), v({ ticker: h.cusip, bucket: "below", inStrikeZone: true, marginPct: (10 - i) / 100 })]),
+);
+const rMany = deriveValuationPosture({ holdings: many, cusipToTicker: manyC2T, verdicts: manyV });
+assert(rMany.cheap.length === 10, `cheap 返回全部 10(不截断), got ${rMany.cheap.length}`);
+
 console.log("valuationPosture.check OK");
