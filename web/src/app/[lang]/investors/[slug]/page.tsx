@@ -31,6 +31,7 @@ import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
+import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
 import { LearnLink } from "@/components/common/LearnLink";
 
 const MAX_HOLDINGS = 25;
@@ -311,11 +312,12 @@ export default async function InvestorSlugPage({
   // 持仓表行内信号(便宜/高信念徽章): 按 cusip 归并, 零新增 IO(复用已加载的 verdicts/filings)。
   const rowSignals = deriveRowSignals({ filings: d.filings, verdicts, cusipToTicker, lang });
 
-  // 该投资人当前持仓中现价落在击球区的只数(与 screener strike_zone 视图同口径)。
-  const strikeCount = longHoldings.reduce((acc, h) => {
-    const tk = cusipToTicker.get(h.cusip);
-    return acc + (tk && verdicts.get(tk.toUpperCase())?.inStrikeZone ? 1 : 0);
-  }, 0);
+  // 组合估值姿态(现价 vs 保守价值带): reliable-gated 单一真相源, 喂 keyFact/小节/页底 handoff。
+  const posture = deriveValuationPosture({
+    holdings: longHoldings.map((h) => ({ cusip: h.cusip, issuer: h.issuer })),
+    cusipToTicker,
+    verdicts,
+  });
 
   // index 供全局最新季基准与 Related 共用（getManagerIndex 有 cache()，单次查询）
   const idx = await getManagerIndex();
@@ -413,7 +415,7 @@ export default async function InvestorSlugPage({
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
-    { label: lang === "zh" ? "独门重仓" : "Lonely bets", value: lang === "zh" ? `${lonely.length} 只` : String(lonely.length) },
+    { label: lang === "zh" ? "击球区" : "Strike zone", value: String(posture.strikeCount) },
   ];
 
   // Subtitle
@@ -507,10 +509,41 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
+          {posture.cheap.length > 0 && (
+            <section aria-label={lang === "zh" ? "估值姿态" : "Valuation posture"}>
+              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {lang === "zh" ? "估值姿态" : "Valuation posture"}
+              </h2>
+              <p className="mb-3 text-sm text-[var(--tt-muted)]">
+                {lang === "zh"
+                  ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于保守价值带${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
+                  : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below a conservative value band${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
+                  <Link
+                    key={h.ticker}
+                    href={stockPath(lang, h.ticker)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-2.5 py-1 no-underline transition-colors hover:border-[var(--tt-accent)]"
+                  >
+                    <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(h.issuer)}</span>
+                    <span className="font-mono text-[11px] text-[var(--tt-muted)]">
+                      {h.marginPct != null
+                        ? `${Math.round(h.marginPct * 100)}% ${lang === "zh" ? "安全边际" : "margin"} · `
+                        : ""}
+                      {h.inStrikeZone
+                        ? lang === "zh" ? "击球区" : "strike zone"
+                        : lang === "zh" ? "低于价值带" : "below band"}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
           {lonely.length > 0 && (
             <section aria-label={lang === "zh" ? "独门重仓" : "Lonely conviction"}>
               <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                {lang === "zh" ? "独门重仓" : "Lonely conviction"}
+                {lang === "zh" ? `独门重仓 · ${lonely.length} 只` : `Lonely conviction · ${lonely.length}`}
               </h2>
               <p className="mb-3 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
@@ -547,7 +580,7 @@ export default async function InvestorSlugPage({
               <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
             </div>
           </details>
-          <DiscoveryHandoff {...investorHandoffFor(strikeCount, manager.person, lang)} />
+          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang)} />
         </>
       </EntityPage>
     </>
