@@ -11,11 +11,15 @@ function present(value: unknown): boolean {
 }
 
 function sharesOutstanding(input: ValuationInput): number | undefined {
-  return (
+  const raw =
     input.normalized_financials?.shares_outstanding ??
     input.normalized_financials?.shares_diluted ??
-    input.normalized_financials?.share_count
-  );
+    input.normalized_financials?.share_count;
+  if (raw == null) return undefined;
+  // ADR 归一化:普通股数 ÷ ADS 比例 = ADS 张数,与每 ADS 价相乘才得正确市值。
+  const adsRatio = input.ads_ratio;
+  if (adsRatio != null && (!Number.isFinite(adsRatio) || adsRatio <= 0)) return undefined; // 抑制信号 → 市值降级
+  return typeof adsRatio === "number" && adsRatio > 0 ? raw / adsRatio : raw;
 }
 
 function dataQuality(price: PriceData | null | undefined, metrics: ValuationMetrics): ValuationDataQuality {

@@ -57,4 +57,21 @@ assert.strictEqual(floor.provenance.years_used[0], 2025, "engine sees 2025 lates
 assert.strictEqual(fundamentalsToFloorInput("X", undefined, []).years.length, 0, "empty rows → empty years");
 assert.strictEqual(fundamentalsToFloorInput("X", undefined, undefined).years.length, 0, "undefined rows → empty years");
 
+// ADR 归一化:adsRatio=4 → shares_diluted 减为 1/4(每股口径 ×4,对齐每 ADS 价)
+{
+  const rows = [{
+    fiscal_period: "FY", fiscal_year: 2025, period_end: "2025-12-31",
+    shares_diluted: 5_929_576_000, net_income: 13_991_297_000,
+  }] as unknown as Parameters<typeof fundamentalsToFloorInput>[2];
+
+  const base = fundamentalsToFloorInput("PDD", "PDD", rows);
+  assert.strictEqual(base.years[0].shares_diluted, 5_929_576_000, "缺省 adsRatio=1 → shares 不变");
+
+  const norm = fundamentalsToFloorInput("PDD", "PDD", rows, 4);
+  assert.strictEqual(norm.years[0].shares_diluted, 5_929_576_000 / 4, "adsRatio=4 → shares 减为 1/4");
+
+  const one = fundamentalsToFloorInput("PDD", "PDD", rows, 1);
+  assert.strictEqual(one.years[0].shares_diluted, 5_929_576_000, "adsRatio=1 → 恒等");
+}
+
 console.log("fundamentalsToFloorInput.check.ts: OK");

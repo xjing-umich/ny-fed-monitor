@@ -5,7 +5,12 @@ import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { HoldingChange } from "@/lib/managers/types";
 import { readStockHolders, readStockTrend, readCoOwnership } from "@/lib/managers/consensusRead";
-import { getCusipMap, tickerToCusips, getTickerExchangeMap } from "@/lib/managers/securities";
+import {
+  getCusipMap,
+  tickerToCusips,
+  getTickerExchangeMap,
+  getSecurityMeta,
+} from "@/lib/managers/securities";
 import { filingFreshness } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
@@ -25,6 +30,7 @@ import {
   deriveStrikeZone,
   deriveOeDcf,
   reconcileMethods,
+  resolveAds,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
@@ -356,8 +362,11 @@ export default async function StockTickerPage({
   // 薄数据(<3 盈利年)→ undefined 不渲染; 多股权无股数 → per_share_unavailable, 卡片诚实标注;
   // 无营业利润(金融) → 单灯档。卡片按 kind 自行分支。
   const sec = await getSecCompanyData(ticker);
-  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual);
-  const valuationFloor = computeValuationFloor(floorInput);
+  // ADR/ADS 归一化:ADR 用每 ADS 口径;ADR 但比例未策展 → 视同无地板(卡片走 no-floor 分支,不显示错带)。
+  const { securityType, adsRatio } = await getSecurityMeta(ticker);
+  const ads = resolveAds(securityType, adsRatio);
+  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio);
+  const valuationFloor = ads.suppressed ? undefined : computeValuationFloor(floorInput);
 
   // Strike zone (price vs floor): only when a real per-share floor exists.
   // Multi-class (per_share_unavailable) / thin (undefined) skip the price hit.

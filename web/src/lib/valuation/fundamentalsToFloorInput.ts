@@ -8,6 +8,7 @@ export function fundamentalsToFloorInput(
   ticker: string,
   companyName: string | null | undefined,
   rows: FundamentalPeriod[] | undefined,
+  adsRatio: number = 1,
 ): ValuationFloorInput {
   const years: ValuationFloorYear[] = (rows ?? [])
     .filter((r) => r.fiscal_period === "FY" && r.fiscal_year != null)
@@ -27,7 +28,9 @@ export function fundamentalsToFloorInput(
       cash: u(r.cash_and_equivalents),
       total_debt: u(r.total_debt),
       net_debt: u(r.net_debt),
-      shares_diluted: u(r.shares_diluted),
+      // ADR 归一化:SEC shares 是普通股数,÷ADS比例 = ADS 张数,使每股口径对齐每 ADS 价。
+      // adsRatio 默认 1(非 ADR / 未传)→ 恒等,零行为变化。
+      shares_diluted: r.shares_diluted == null ? undefined : r.shares_diluted / adsRatio,
       d_and_a: u(r.d_and_a),
       // capex is stored NEGATIVE (XBRL cash-outflow); the engine wants a positive outflow magnitude.
       capex: r.capex == null ? undefined : Math.abs(r.capex),
