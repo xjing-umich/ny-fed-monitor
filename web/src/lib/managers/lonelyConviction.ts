@@ -34,5 +34,5 @@ export function deriveLonelyConviction(input: {
     out.push({ issuer: h.issuer, ticker, weight, holderCount, value: h.value });
   }
   out.sort((a, b) => b.weight - a.weight);
-  return out.slice(0, LONELY_LIMIT);
+  return out;
 }

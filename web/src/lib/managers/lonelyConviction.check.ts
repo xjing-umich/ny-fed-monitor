@@ -31,6 +31,6 @@ const many = Array.from({ length: 10 }, (_, i) => ({ cusip: `X${i}`, issuer: `X$
 const c2t = new Map(many.map((h) => [h.cusip, h.cusip]));
 const hc = new Map(many.map((h) => [h.cusip.toUpperCase(), 1]));
 const rl = deriveLonelyConviction({ holdings: many, cusipToTicker: c2t, holderCounts: hc, totalValue: 1000 });
-assert(rl.length === 6, `limit=6 截断, got ${rl.length}`);
+assert(rl.length === 10, `派生层返回全部合格项(截断在展示层), got ${rl.length}`);
 
 console.log("lonelyConviction.check OK");

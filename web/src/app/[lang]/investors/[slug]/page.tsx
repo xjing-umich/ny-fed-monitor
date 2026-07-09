@@ -30,7 +30,7 @@ import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
-import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT } from "@/lib/managers/lonelyConviction";
+import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
 import { LearnLink } from "@/components/common/LearnLink";
 
 const MAX_HOLDINGS = 25;
@@ -509,18 +509,16 @@ export default async function InvestorSlugPage({
         <>
           {lonely.length > 0 && (
             <section aria-label={lang === "zh" ? "独门重仓" : "Lonely conviction"}>
-              <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-                <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                  {lang === "zh" ? "独门重仓" : "Lonely conviction"}
-                </span>
-              </div>
+              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {lang === "zh" ? "独门重仓" : "Lonely conviction"}
+              </h2>
               <p className="mb-3 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
                   ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${latest.period}）：`
                   : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${latest.period}):`}
               </p>
               <div className="flex flex-wrap gap-2">
-                {lonely.map((h) => (
+                {lonely.slice(0, LONELY_LIMIT).map((h) => (
                   <Link
                     key={h.ticker}
                     href={stockPath(lang, h.ticker)}
