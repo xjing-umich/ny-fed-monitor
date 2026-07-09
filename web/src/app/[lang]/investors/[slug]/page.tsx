@@ -30,6 +30,7 @@ import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
+import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT } from "@/lib/managers/lonelyConviction";
 import { LearnLink } from "@/components/common/LearnLink";
 
 const MAX_HOLDINGS = 25;
@@ -400,17 +401,19 @@ export default async function InvestorSlugPage({
     </span>
   );
 
-  // 第一大仓占比(占组合权重,长仓 only)
-  const top1 = longHoldings.length > 0
-    ? [...longHoldings].sort((a, b) => b.value - a.value)[0]
-    : null;
-  const top1Pct = top1 && longTotalValue > 0 ? (top1.value / longTotalValue) * 100 : null;
+  // 独门重仓(少人持 ∩ 够重): 与 keyFact 的 N 同源, 喂下方小节。
+  const lonely = deriveLonelyConviction({
+    holdings: longHoldings.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: h.value })),
+    cusipToTicker,
+    holderCounts,
+    totalValue: longTotalValue,
+  });
 
   const keyFacts = [
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
-    { label: lang === "zh" ? "第一大仓占比" : "Top position", value: top1Pct != null ? `${top1Pct.toFixed(1)}%` : "—" },
+    { label: lang === "zh" ? "独门重仓" : "Lonely bets", value: lang === "zh" ? `${lonely.length} 只` : String(lonely.length) },
   ];
 
   // Subtitle
@@ -504,6 +507,34 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
+          {lonely.length > 0 && (
+            <section aria-label={lang === "zh" ? "独门重仓" : "Lonely conviction"}>
+              <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
+                <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                  {lang === "zh" ? "独门重仓" : "Lonely conviction"}
+                </span>
+              </div>
+              <p className="mb-3 text-sm text-[var(--tt-muted)]">
+                {lang === "zh"
+                  ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${latest.period}）：`
+                  : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${latest.period}):`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {lonely.map((h) => (
+                  <Link
+                    key={h.ticker}
+                    href={stockPath(lang, h.ticker)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-2.5 py-1 no-underline transition-colors hover:border-[var(--tt-accent)]"
+                  >
+                    <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(h.issuer)}</span>
+                    <span className="font-mono text-[11px] text-[var(--tt-muted)]">
+                      {Math.round(h.weight * 100)}% · {lang === "zh" ? `仅 ${h.holderCount} 家持有` : `held by ${h.holderCount}`}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
           <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
           <LearnLink
             lang={lang}
