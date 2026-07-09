@@ -42,8 +42,8 @@
 - Consumes: 无(纯函数,输入全由调用方给)。
 - Produces:
   - `export type LonelyHolding = { issuer: string; ticker: string; weight: number; holderCount: number; value: number }`
-  - `export const LONELY_MAX_HOLDERS = 2` / `MIN_CONVICTION_WEIGHT = 0.03` / `LONELY_LIMIT = 6`
-  - `export function deriveLonelyConviction(input: { holdings: { cusip: string; issuer: string; value: number }[]; cusipToTicker: Map<string,string>; holderCounts: Map<string,number>; totalValue: number; maxHolders?: number; minWeight?: number; limit?: number }): LonelyHolding[]`
+  - `export const LONELY_MAX_HOLDERS = 2` / `MIN_CONVICTION_WEIGHT = 0.03` / `LONELY_LIMIT = 6`(导出:页面引导句插值,DRY 无漂移)
+  - `export function deriveLonelyConviction(input: { holdings: { cusip: string; issuer: string; value: number }[]; cusipToTicker: Map<string,string>; holderCounts: Map<string,number>; totalValue: number }): LonelyHolding[]`(阈值用模块常量,无可选参数)
 
 - [ ] **Step 1: 写断言(先失败)**
 
@@ -117,28 +117,22 @@ export function deriveLonelyConviction(input: {
   cusipToTicker: Map<string, string>;
   holderCounts: Map<string, number>;
   totalValue: number;
-  maxHolders?: number;
-  minWeight?: number;
-  limit?: number;
 }): LonelyHolding[] {
-  const maxHolders = input.maxHolders ?? LONELY_MAX_HOLDERS;
-  const minWeight = input.minWeight ?? MIN_CONVICTION_WEIGHT;
-  const limit = input.limit ?? LONELY_LIMIT;
   const { totalValue } = input;
   if (!(totalValue > 0)) return [];
 
   const out: LonelyHolding[] = [];
   for (const h of input.holdings) {
     const ticker = input.cusipToTicker.get(h.cusip);
-    if (!ticker) continue;                                   // 未解析 ticker → 跳
+    if (!ticker) continue;                                             // 未解析 ticker → 跳
     const holderCount = input.holderCounts.get(ticker.toUpperCase());
-    if (holderCount == null || holderCount > maxHolders) continue;  // 共持缺失/拥挤 → 跳
+    if (holderCount == null || holderCount > LONELY_MAX_HOLDERS) continue;  // 共持缺失/拥挤 → 跳
     const weight = h.value / totalValue;
-    if (weight < minWeight) continue;                        // 太小 → 跳
+    if (weight < MIN_CONVICTION_WEIGHT) continue;                     // 太小 → 跳
     out.push({ issuer: h.issuer, ticker, weight, holderCount, value: h.value });
   }
   out.sort((a, b) => b.weight - a.weight);
-  return out.slice(0, limit);
+  return out.slice(0, LONELY_LIMIT);
 }
 ```
 
@@ -170,14 +164,14 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - Modify: `web/src/app/[lang]/investors/[slug]/page.tsx`
 
 **Interfaces:**
-- Consumes: `deriveLonelyConviction`、`LonelyHolding`(Task 1);页面已有 `longHoldings`、`longTotalValue`、`cusipToTicker`、`holderCounts`、`topHolding`、`top1Pct`、`latest.period`、`stockPath`、`cleanIssuer`、`Link`(均已 import / 在作用域)。
+- Consumes: `deriveLonelyConviction`、`LonelyHolding`、`LONELY_MAX_HOLDERS`、`MIN_CONVICTION_WEIGHT`(Task 1);页面已有 `longHoldings`、`longTotalValue`、`cusipToTicker`、`holderCounts`、`topHolding`、`latest.period`、`stockPath`、`cleanIssuer`、`Link`(均已 import / 在作用域)。注意:本 task **移除**了原"第一大仓占比"keyFact,故 `top1Pct` 若不再被别处引用可一并删其计算(见 Step 3)。
 - Produces: 无(页面末端)。
 
-- [ ] **Step 1: import 纯函数**
+- [ ] **Step 1: import 纯函数 + 常量**
 
 在 `web/src/app/[lang]/investors/[slug]/page.tsx` 顶部 import 区加:
 ```ts
-import { deriveLonelyConviction } from "@/lib/managers/lonelyConviction";
+import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT } from "@/lib/managers/lonelyConviction";
 ```
 
 - [ ] **Step 2: 算 lonely(keyFacts 之前)**
@@ -193,18 +187,25 @@ import { deriveLonelyConviction } from "@/lib/managers/lonelyConviction";
   });
 ```
 
-- [ ] **Step 3: keyFacts 合并末两项 + 加独门**
+- [ ] **Step 3: keyFacts 用独门替换"第一大仓占比"(不合并,保持每项一个干净值)**
 
-grep 定位 keyFacts 数组(现 line 408-413)。把末两项:
+grep 定位 keyFacts 数组(现 line 408-413)。把最后一项"第一大仓占比"整行:
 ```ts
-    { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
     { label: lang === "zh" ? "第一大仓占比" : "Top position", value: top1Pct != null ? `${top1Pct.toFixed(1)}%` : "—" },
 ```
-替换为(合并"第一大持仓"+"占比"成一项,腾出的位放"独门重仓"):
+替换为"独门重仓"(前一项"第一大持仓"保持不动):
 ```ts
-    { label: lang === "zh" ? "第一大持仓" : "Top holding", value: top1Pct != null ? `${topHolding} · ${top1Pct.toFixed(0)}%` : topHolding },
     { label: lang === "zh" ? "独门重仓" : "Lonely bets", value: lang === "zh" ? `${lonely.length} 只` : String(lonely.length) },
 ```
+
+随后 grep 确认 `top1Pct`、`top1` 是否还有别的引用(应无——只喂过这一项)。若无,删除它们的计算行(现约 line 404-406 的 `const top1 = ...` 与 `const top1Pct = ...`),避免 unused 变量:
+```ts
+  const top1 = longHoldings.length > 0
+    ? [...longHoldings].sort((a, b) => b.value - a.value)[0]
+    : null;
+  const top1Pct = top1 && longTotalValue > 0 ? (top1.value / longTotalValue) * 100 : null;
+```
+(若 grep 显示 `top1`/`top1Pct` 别处仍用,则保留其计算、仅删 keyFact 那一项。)
 
 - [ ] **Step 4: 插独门小节(持仓表之前)**
 
@@ -219,8 +220,8 @@ grep 定位 `<HoldingsTable`(现约 line 507)。在该行**之前**插入(它在
               </div>
               <p className="mb-3 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
-                  ? `以下持仓被至多 2 家超投持有、且各占其组合 3% 以上（共持数据截至 ${latest.period}）：`
-                  : `Held by at most 2 tracked superinvestors and each ≥3% of this portfolio (holder data as of ${latest.period}):`}
+                  ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${latest.period}）：`
+                  : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${latest.period}):`}
               </p>
               <div className="flex flex-wrap gap-2">
                 {lonely.map((h) => (
@@ -251,7 +252,7 @@ Expected: tsc 无输出;命中 import、算 lonely、keyFact 项、小节标题(
 
 - [ ] **Step 6: 本地目测**
 
-启动 `next dev`,访问一个持仓多、可能有独门票的投资人页(如 `/investors/<slug>`)。确认:keyFacts 第 3 项为"第一大持仓 X · N%"、第 4 项为"独门重仓 N 只";若 N>0,持仓表上方出现独门小节 chip(每个 `issuer · X% · 仅 N 家持有`,链到个股页);N=0 时小节不渲染、keyFact 显"0 只"。375/768/1280 三档不溢出。
+启动 `next dev`,访问一个持仓多、可能有独门票的投资人页(如 `/investors/<slug>`)。确认:keyFacts 第 3 项仍为"第一大持仓 X"、第 4 项为"独门重仓 N 只"(原"第一大仓占比"已被替换);若 N>0,持仓表上方出现独门小节 chip(每个 `issuer · X% · 仅 N 家持有`,链到个股页);N=0 时小节不渲染、keyFact 显"0 只"。375/768/1280 三档不溢出。
 
 - [ ] **Step 7: 去 AI 腔 lint**
 

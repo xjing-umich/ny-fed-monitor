@@ -42,33 +42,30 @@ export function deriveLonelyConviction(input: {
   cusipToTicker: Map<string, string>;
   holderCounts: Map<string, number>;   // ticker(大写) → 精确共持数(含 1)
   totalValue: number;    // 组合长仓合计市值(= longTotalValue),用于自算权重
-  maxHolders?: number;   // 默认 2:只此人 + 至多 1 家
-  minWeight?: number;    // 默认 0.03:滤掉芝麻小仓
-  limit?: number;        // 默认 6
 }): LonelyHolding[];
 ```
 
-逻辑:遍历长仓 holdings → `ticker = cusipToTicker.get(cusip)`(无 → 跳);`count = holderCounts.get(ticker.toUpperCase())`;**权重自算** `weight = totalValue > 0 ? value / totalValue : 0`(与 keyFacts 的 `top1Pct` 同源,绕开 `h.weight` 量纲不确定性);**双闸**:`count != null && count <= maxHolders` **且** `weight >= minWeight`。命中者收集,按 `weight` 降序,取 `limit`。共持数拿不到(undefined)→ 保守跳过(不能确认独门)。`totalValue <= 0` → 全部 weight=0 → 返回 `[]`(降级)。
+阈值直接用模块常量,**不设可选参数**(单一调用方,YAGNI)。逻辑:遍历长仓 holdings → `ticker = cusipToTicker.get(cusip)`(无 → 跳);`count = holderCounts.get(ticker.toUpperCase())`;**权重自算** `weight = value / totalValue`(与 keyFacts 同源,绕开 `h.weight` 量纲不确定性);**双闸**:`count != null && count <= LONELY_MAX_HOLDERS` **且** `weight >= MIN_CONVICTION_WEIGHT`。命中者按 `weight` 降序、取 `LONELY_LIMIT`。共持数缺失(undefined)→ 保守跳过。`totalValue <= 0` → 返回 `[]`(降级)。
 
 - 纯函数、零 IO → `.check.ts` 断言(见测试)。
-- 常量 `LONELY_MAX_HOLDERS = 2`、`MIN_CONVICTION_WEIGHT = 0.03`、`LONELY_LIMIT = 6`,tunable,导出供页面复用 N 值口径一致。
+- 常量 `LONELY_MAX_HOLDERS = 2`、`MIN_CONVICTION_WEIGHT = 0.03`、`LONELY_LIMIT = 6`,**导出**供页面引导句插值(阈值单一真相源,不硬编码进文案)。
 
 ### B. 头条数字(keyFacts:体量 → 质量)
 
-**修改** `page.tsx` 的 `keyFacts`([page.tsx:408](../../../src/app/[lang]/investors/[slug]/page.tsx:408))。现四项末两项是"第一大持仓"(名)+"第一大仓占比"(%),冗余成对。**合并**成一项 `第一大持仓 {topHolding} · {top1Pct}%`,腾出的位放:
+**修改** `page.tsx` 的 `keyFacts`([page.tsx:408](../../../src/app/[lang]/investors/[slug]/page.tsx:408))。现四项末两项是"第一大持仓"(名)+"第一大仓占比"(%)。**直接用独门重仓替换掉最体量的那项"第一大仓占比"**(不合并、不制造挤字符串,每项仍是一个干净值),"第一大持仓"保持不动:
 
 ```
 { label: "独门重仓" / "Lonely bets", value: `${lonely.length} 只` / `${lonely.length}` }
 ```
 
-仍是四项。`lonely` 由 `deriveLonelyConviction(...)` 在页面算一次,同时喂 keyFact 与小节(单一真相源,N 永不漂移)。`lonely.length === 0` → keyFact 显 `0 只`(诚实:该人无独门重仓 = 偏共识跟随),小节不渲染。
+仍是四项,末项从体量(占比)换成质量(独门数)。`lonely` 由 `deriveLonelyConviction(...)` 在页面算一次,同时喂 keyFact 与小节(单一真相源,N 永不漂移)。`lonely.length === 0` → keyFact 显 `0 只`(诚实:该人无独门重仓 = 偏共识跟随),小节不渲染。替换后原 `top1Pct`/`top1` 若无别处引用则一并删除,避免 unused。
 
 ### C. 独立小节 "独门重仓 / Lonely conviction"
 
 **修改** `page.tsx`,在 `<HoldingsTable .../>`([page.tsx:506](../../../src/app/[lang]/investors/[slug]/page.tsx:506))**之前**插入一节(仅 `lonely.length > 0` 时渲染):
 
 - 语义 `<h2>`,视觉沿用页内既有 eyebrow(`border-t` + `font-display text-[10px] uppercase tracking`)。
-- 一句朴素引导(SSR 全文可爬),zh:`以下持仓被至多 2 家超投持有、且各占其组合 3% 以上（共持数据截至 {period}）：`;en:`Held by at most 2 tracked superinvestors and each ≥3% of this portfolio (holder data as of {period}):`。
+- 一句朴素引导(SSR 全文可爬),阈值由常量插值(不硬编码),zh:`以下持仓仅被 ≤{LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 {pct}% 以上（截至 {period}）：`;en:`Held by ≤{LONELY_MAX_HOLDERS} tracked superinvestors, each ≥{pct}% of this portfolio (as of {period}):`(`pct = Math.round(MIN_CONVICTION_WEIGHT*100)`)。
 - 每只一行/一 chip:`{issuer}（{ticker}） · {weight}% · 仅 {holderCount} 家持有` / `{issuer} ({ticker}) · {weight}% · held by {holderCount}`,链到 `stockPath(lang, ticker)`(强内链)。
 - 视觉复用持仓表既有 token,不新造组件族。
 
@@ -88,7 +85,7 @@ export function deriveLonelyConviction(input: {
 - `web/src/lib/managers/lonelyConviction.check.ts` — 断言脚本
 
 **修改**
-- `web/src/app/[lang]/investors/[slug]/page.tsx` — 算 `lonely`、keyFacts 合并+加项、插独门小节
+- `web/src/app/[lang]/investors/[slug]/page.tsx` — 算 `lonely`、keyFacts 末项替换为独门、插独门小节
 
 ## 非目标(本轮不做)
 
