@@ -415,7 +415,7 @@ export default async function InvestorSlugPage({
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
-    { label: lang === "zh" ? "击球区" : "Strike zone", value: String(posture.strikeCount) },
+    { label: lang === "zh" ? "低于价值带" : "Below band", value: String(posture.cheap.length) },
   ];
 
   // Subtitle
