@@ -415,6 +415,8 @@ export default async function InvestorSlugPage({
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
+    // cheap.length = below ∪ strike; 估值模型下击球区(跌破保守下限)恒 ⊆ below, 故等同「低于价值带」数;
+    // 与小节引导句同源(N trade below)。chip 逐项标签仍各自精确(击球区/低于价值带)。
     { label: lang === "zh" ? "低于价值带" : "Below band", value: String(posture.cheap.length) },
   ];
 
