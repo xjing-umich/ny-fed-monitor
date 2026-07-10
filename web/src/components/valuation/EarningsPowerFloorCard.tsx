@@ -209,6 +209,7 @@ function ValueSpine({
   issuer,
   ticker,
   lang,
+  showStatus = true,
 }: {
   floor: ValuationFloor;
   sz: StrikeZoneAssessment;
@@ -217,6 +218,9 @@ function ValueSpine({
   issuer?: string;
   ticker?: string;
   lang: Lang;
+  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 Fraunces
+   *  标题时传 false, 避免与标题重复 —— 位置带与句子仍留在卡内。 */
+  showStatus?: boolean;
 }) {
   const t = COPY[lang];
   const epv = sz.epv;
@@ -271,13 +275,15 @@ function ValueSpine({
 
   return (
     <div className="space-y-3">
-      {/* status */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-muted)_8%,transparent)] px-2.5 py-1 text-sm font-medium text-[var(--tt-text)]">
-          {status}
-        </span>
-        <span className="text-sm text-[var(--tt-muted)]">{sub}</span>
-      </div>
+      {/* status — 个股页把结论上提到区块标题时(showStatus=false)不再在卡内重复 */}
+      {showStatus && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-muted)_8%,transparent)] px-2.5 py-1 text-sm font-medium text-[var(--tt-text)]">
+            {status}
+          </span>
+          <span className="text-sm text-[var(--tt-muted)]">{sub}</span>
+        </div>
+      )}
 
       {/* neutral cheaper → pricier gauge */}
       <div>
@@ -442,6 +448,7 @@ export function EarningsPowerFloorCard({
   issuer,
   ticker,
   lang,
+  showStatus = true,
 }: {
   floor: ValuationFloor | PerShareUnavailable | undefined;
   strikeZone?: StrikeZoneAssessment;
@@ -450,6 +457,8 @@ export function EarningsPowerFloorCard({
   issuer?: string;
   ticker?: string;
   lang: Lang;
+  /** false → 卡内不渲染结论状态行(个股页把结论上提到区块 Fraunces 标题)。 */
+  showStatus?: boolean;
 }) {
   if (!floor) return null;
   const t = COPY[lang];
@@ -472,7 +481,7 @@ export function EarningsPowerFloorCard({
   return (
     <div className="space-y-3">
       {hasSpine ? (
-        <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} />
+        <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} />
       ) : (
         <CompactFloor
           suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
