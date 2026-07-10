@@ -12,8 +12,11 @@ const OG_LOCALE: Record<Lang, string> = { zh: "zh_CN", en: "en_US" };
  *
  * openGraph is shallow-merged at the top-level key: once a page sets it, it
  * REPLACES the layout's site-wide openGraph entirely — so this helper supplies
- * every field. The route's `opengraph-image.tsx` still attaches its image
- * (file-based metadata has higher priority), so images are intentionally omitted.
+ * every field, including a default image. Routes with their own
+ * `opengraph-image.tsx` (stock/investor leaves, consensus, etc.) override this
+ * default via same-segment file-based priority; routes without one (investors
+ * hub, stocks hub, macro) fall back to the site brand card instead of shipping
+ * a blank `summary_large_image` card.
  *
  * `path` is the locale-aware path from `localePath()`/`stockPath()` etc.,
  * e.g. "/stocks/AAPL" (en, bare) or "/zh/stocks/AAPL" (zh, prefixed).
@@ -26,6 +29,8 @@ export function ogFor(opts: {
   type?: "website" | "article" | "profile";
 }): Pick<Metadata, "openGraph" | "twitter"> {
   const { lang, title, description, path, type = "website" } = opts;
+  // 站点品牌卡(根 opengraph-image 路由)。en 裸前缀 → /opengraph-image,zh → /zh/opengraph-image。
+  const brandCard = absoluteUrl(localePath(lang, "/opengraph-image"));
   return {
     openGraph: {
       type,
@@ -35,11 +40,13 @@ export function ogFor(opts: {
       description,
       locale: OG_LOCALE[lang],
       alternateLocale: lang === "en" ? ["zh_CN"] : ["en_US"],
+      images: [{ url: brandCard, width: 1200, height: 630, alt: SITE_NAME }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [brandCard],
     },
   };
 }
