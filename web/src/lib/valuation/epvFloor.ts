@@ -131,6 +131,9 @@ function assembleFloor(
   const tax = normalizedTaxRate(years);
   const assetFloor = buildReproductionValue(years, shares);
   const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares);
+  // Shared maint read for floor-level AI-hog flag + GV gate (lamps still compute their own for OE arithmetic).
+  const mc = maintenanceCapex(years);
+  const aiCapexDistortion = mc.ai_capex_distortion_warning;
   const epvMid = moatRefLamp.assessable && moatRefLamp.per_share_low != null && moatRefLamp.per_share_high != null
     ? (moatRefLamp.per_share_low + moatRefLamp.per_share_high) / 2
     : undefined;
@@ -141,6 +144,7 @@ function assembleFloor(
     moatSignal: moatReading.signal,
     epvPerShare: epvMid,
     avPerShare: assetFloor.per_share,
+    aiCapexDistortion,
   });
   const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
   const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
@@ -161,6 +165,7 @@ function assembleFloor(
       ? "High leverage (net debt / shareholders' equity above 1.0): the single 9–11% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
       : undefined,
     net_debt_to_equity: netDebtToEquity,
+    ai_capex_distortion_warning: aiCapexDistortion || undefined,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

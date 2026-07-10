@@ -100,6 +100,11 @@ export type ValuationFloor = {
   high_leverage_warning: boolean;
   high_leverage_note?: string;
   net_debt_to_equity?: number;
+  /**
+   * Capex doubled within two years (AI-hog): maintenance floored then D&A-capped.
+   * Lifted from maintenanceCapex — drives reliability=false and GV gated_to_zero (scheme C).
+   */
+  ai_capex_distortion_warning?: boolean;
   provenance: ValuationFloorProvenance;
 };
 

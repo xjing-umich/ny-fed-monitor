@@ -376,4 +376,23 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   assert.strictEqual(bf.moat_reading.franchise_value, undefined, "no franchise_value when blocked");
 }
 
+// ── AI-hog scheme C: floor flag + GV gated even for franchise ─────────────────
+{
+  // High-margin franchise with capex doubling (8000/3500 ≥ 2) → AI warning lifts to floor;
+  // growth value forced gated_to_zero despite franchise moat.
+  const aiYears: ValuationFloorYear[] = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 2_000, capex: 8_000, ppe_net: 18_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 1_900, capex: 5_000, ppe_net: 12_000, working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 1_800, capex: 3_500, ppe_net: 8_000, working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 1_650, capex: 3_200, ppe_net: 6_500, working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 1_500, capex: 3_000, ppe_net: 5_500, working_capital: 1_000 },
+  ];
+  assert.strictEqual(maintenanceCapex(aiYears).ai_capex_distortion_warning, true, "fixture triggers AI-hog");
+  const aiFloor = floorOf(computeValuationFloor({ ticker: "AIHOG", years: aiYears }));
+  assert.strictEqual(aiFloor.ai_capex_distortion_warning, true, "AI warning lifted onto ValuationFloor");
+  assert.strictEqual(aiFloor.moat_reading.signal, "franchise", "AI fixture still reads franchise");
+  assert.strictEqual(aiFloor.growth_value.gated_to_zero, true, "franchise + AI → GV gated_to_zero");
+  assert.strictEqual(aiFloor.growth_value.scenarios.neutral, 0, "AI gate → GV 0");
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");

@@ -19,6 +19,8 @@ export type GrowthValueArgs = {
   moatSignal: MoatSignal;
   epvPerShare?: number;
   avPerShare?: number;
+  /** AI-hog scheme C: force GV gated_to_zero even when moat is franchise. */
+  aiCapexDistortion?: boolean;
 };
 
 const ZERO: GrowthScenarioSet = { pessimistic: 0, neutral: 0, optimistic: 0 };
@@ -37,7 +39,7 @@ function annuityFactor(r: number, n: number): number {
  * the dedicated maintenanceCapex() drives the current-year EPV/OE, not this series.
  */
 export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
-  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare } = args;
+  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion } = args;
   const notes: string[] = [];
   const waccBand: [number, number] = [GV_DISCOUNT_OPTIMISTIC, GV_DISCOUNT_PESSIMISTIC];
 
@@ -47,6 +49,16 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
       assessable: true, gated_to_zero: true, wacc_band: waccBand,
       scenarios: { ...ZERO }, per_share: { ...ZERO },
       notes: ["Growth value applies only to a franchise; without a moat, growth creates no durable value (GV = 0)."],
+    };
+  }
+
+  // AI-hog scheme C: capex doubling → close the growth premium even for a franchise
+  // (maintenance is floored then D&A-capped; OE may look optimistic).
+  if (aiCapexDistortion) {
+    return {
+      assessable: true, gated_to_zero: true, wacc_band: waccBand,
+      scenarios: { ...ZERO }, per_share: { ...ZERO },
+      notes: ["Capex doubled within two years (AI-hog): growth value gated to zero — maintenance is floored then D&A-capped, so a growth premium would compound the distortion."],
     };
   }
 

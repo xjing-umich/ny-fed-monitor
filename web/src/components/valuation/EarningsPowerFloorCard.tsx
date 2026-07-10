@@ -74,7 +74,7 @@ const COPY = {
     cheaper: "cheaper",
     pricier: "pricier",
     valueEstimate: (r: string) => `${r} value estimate`,
-    capexRamp: "Capex is in a steep ramp (heavy build-ahead investment) — owner earnings carry extra uncertainty, so read the value range with that caveat.",
+    capexRamp: "Capex doubled within two years: maintenance is floored then capped at D&A (OE may look optimistic); growth value is closed.",
     assetBelow: (ps: string) => `Price is at or below the reproducible tangible asset base (${ps} / sh) — a rarer, harder floor.`,
     modelCautions: "Model cautions",
     methodDisclaimer: "Zero-growth intrinsic ranges and a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
@@ -109,7 +109,7 @@ const COPY = {
     cheaper: "更便宜",
     pricier: "更贵",
     valueEstimate: (r: string) => `${r} 价值估计`,
-    capexRamp: "资本开支处于陡峭爬坡（大额前置投入）— 所有者盈利附带额外不确定性，价值区间须带此保留来读。",
+    capexRamp: "资本开支两年翻倍：维持性 CapEx 下限后按 D&A 封顶（OE 可能偏乐观）；增长价值已关闭。",
     assetBelow: (ps: string) => `现价已等于或低于可重置的有形资产基础（${ps} / 股）— 一道更罕见、更硬的地板。`,
     modelCautions: "模型警示",
     methodDisclaimer: "零增长内在价值区间加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
@@ -154,8 +154,10 @@ function valuationCautions(
   oeDcf: OeDcfAssessment | undefined,
   reconciliation: MethodReconciliation | undefined,
   lang: Lang,
+  floor?: ValuationFloor,
 ): string[] {
   const cautions: string[] = [];
+  if (floor?.ai_capex_distortion_warning) cautions.push(COPY[lang].capexRamp);
   if (oeDcf?.terminal_dependency_flag) cautions.push(CAUTION[lang].terminal);
   if (oeDcf?.diagnostics?.oe_yield_flag) cautions.push(CAUTION[lang].oeYield);
   if (oeDcf?.diagnostics?.quick_check_flag) cautions.push(CAUTION[lang].quickCheck);
@@ -366,10 +368,9 @@ function MethodDetails({
   const zh = lang === "zh";
   const { graham_epv, buffett_epv, asset_floor, moat_reading, provenance } = floor;
   const epv = sz?.epv;
-  const capexRamp = floor.buffett_epv.method.simplifications.some((s) => s.includes("AI-hog"));
   const netNetAssetFloor = sz?.price ? isNetNetAssetFloor(floor.net_net, sz.price.close) : false;
   const netNetBuy = sz?.price ? isNetNetBuy(floor.net_net, sz.price.close) : false;
-  const cautions = valuationCautions(oeDcf, reconciliation, lang);
+  const cautions = valuationCautions(oeDcf, reconciliation, lang, floor);
   return (
     <details className="text-xs text-[var(--tt-muted)]">
       <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">{t.methodSummary}</summary>
@@ -380,7 +381,6 @@ function MethodDetails({
         {!(graham_epv.assessable && buffett_epv.assessable) && provenance.earnings_basis_note ? (
           <p>{provenance.earnings_basis_note}</p>
         ) : null}
-        {capexRamp ? <p className="text-[var(--tt-warn)]">{t.capexRamp}</p> : null}
         {sz?.assetFloor?.priceBelow ? <p>{t.assetBelow(usd0(sz.assetFloor.perShare))}</p> : null}
         {floor.net_net.assessable && netNetBuy ? (
           <p>{t.netNetBuy(perShare(floor.net_net.per_share))}</p>

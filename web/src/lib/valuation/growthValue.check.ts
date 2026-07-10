@@ -33,6 +33,15 @@ assert.ok(fr.scenarios.neutral > 0, "franchise → positive neutral GV");
 assert.ok(fr.per_share.pessimistic <= fr.per_share.neutral + 1e-9, "pessimistic ≤ neutral");
 assert.ok(fr.per_share.neutral <= fr.per_share.optimistic + 1e-9, "neutral ≤ optimistic");
 
+// AI-hog scheme C: franchise + aiCapexDistortion → still gated_to_zero (growth premium closed).
+const aiGate = computeGrowthValue({
+  years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
+  epvPerShare: 80, avPerShare: 40, aiCapexDistortion: true,
+});
+assert.strictEqual(aiGate.gated_to_zero, true, "franchise + AI distortion → GV gated to zero");
+assert.strictEqual(aiGate.scenarios.neutral, 0, "AI gate → neutral GV = 0");
+assert.strictEqual(aiGate.assessable, true, "AI gate is a real reading (assessable), not missing data");
+
 // Strong franchise (EPV/AV ≥ 2.0) uses the longer duration than a moderate one.
 const strong = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 100, avPerShare: 40 });
 const moderate = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 50, avPerShare: 40 });
