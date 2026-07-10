@@ -1,11 +1,9 @@
 import type { FilingData } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
-import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { deriveConviction, type ConvictionSignal } from "@/lib/managers/conviction";
 
 export type RowSignal = {
   conviction?: { label: string; signal: ConvictionSignal };
-  cheap?: { marginPct: number | null };
 };
 
 // 行内信念徽章短标签(单行不换行)。
@@ -25,19 +23,16 @@ const CONV_LABEL: Record<Lang, Record<ConvictionSignal, (q: number, s: number) =
 };
 
 /**
- * 按 cusip 归并两类行内信号(高信念 + 便宜/击球区)。key = cusip。
+ * 按 cusip 归并行内信念徽章(高信念)。key = cusip。
  * convictionLimit 放宽到 12(默认): 内联徽章覆盖面比原 3 张卡片宽,但仍只标"够格"的。
+ * (便宜/击球区徽章已移除 —— 与同行「估值」列 ValuationBadge + 估值姿态小节 chip 重复。)
  */
 export function deriveRowSignals({
   filings,
-  verdicts,
-  cusipToTicker,
   lang,
   convictionLimit = 12,
 }: {
   filings: FilingData[];
-  verdicts: Map<string, SnapshotVerdict>;
-  cusipToTicker: Map<string, string>;
   lang: Lang;
   convictionLimit?: number;
 }): Map<string, RowSignal> {
@@ -47,15 +42,7 @@ export function deriveRowSignals({
   const picks = deriveConviction(filings, convictionLimit);
   for (const p of picks) {
     const label = CONV_LABEL[lang][p.signal](p.quartersHeld, p.addStreak);
-    out.set(p.cusip, { ...(out.get(p.cusip) ?? {}), conviction: { label, signal: p.signal } });
-  }
-
-  // 便宜(击球区): 遍历有 verdict 的 cusip
-  for (const [cusip, ticker] of cusipToTicker) {
-    const v = verdicts.get(ticker.toUpperCase());
-    if (v?.inStrikeZone) {
-      out.set(cusip, { ...(out.get(cusip) ?? {}), cheap: { marginPct: v.marginPct } });
-    }
+    out.set(p.cusip, { conviction: { label, signal: p.signal } });
   }
 
   return out;

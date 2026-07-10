@@ -4,16 +4,16 @@ import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 
 // 位置档徽章(RSC, 零 JS)。纯位置语言, 无 BUY/SELL/目标价。
 //
-// 关键:"便宜"档(进入区 / 低于价值带)未被红旗(reliable)即算 **已确认** —— 与 /stocks/screener
+// 关键:"便宜"档(击球区 / 低于价值带)未被红旗(reliable)即算 **已确认** —— 与 /stocks/screener
 // 的 strike_zone/below 视图、首页榜同一信心闸(reliable=true,不强求两法夹逼)。single_lamp
 // 单法但无红旗仍算已确认,只额外挂 * 诚实标注单法口径。
 // 带红旗(reliable=false:周期峰值/高杠杆/模型不稳/per-share疑错)的便宜位置如实标位置,但降级
-// 中性样式 + 「未确认」后缀 + ⚠,明确它不会出现在 进入区 / 低于价值带 视图 —— 徽章与 tab 同口径,
-// 不再出现 ALL VALUED 一片"进入区"而 STRIKE ZONE tab 却空的错觉。
+// 中性样式 + 「未确认」后缀 + ⚠,明确它不会出现在 击球区 / 低于价值带 视图 —— 徽章与 tab 同口径,
+// 不再出现 ALL VALUED 一片"击球区"而 STRIKE ZONE tab 却空的错觉。
 // 缺数据 → 静默 "—"(覆盖诚实)。a11y: 文字标签承载语义, 颜色仅增强。
 const COPY = {
   zh: {
-    strike: "进入区", below: "低于价值带", within: "带内", above: "高于价值", none: "—",
+    strike: "击球区", below: "低于价值带", within: "带内", above: "高于价值", none: "—",
     unconfirmed: "未确认",
     lamp: "金融单灯口径",
     flag: "估值带红旗(盈利下滑/高杠杆/模型不稳/每股口径疑错),边际不可信，未计入便宜信号。",
@@ -40,7 +40,7 @@ export function ValuationBadge({ verdict, lang }: { verdict?: SnapshotVerdict; l
   let title: string | undefined;
 
   if (unconfirmedCheap) {
-    // 带红旗:位置如实标(进入区/低于价值带),但中性样式 + 「未确认」后缀 —— 不进 strike_zone/below 视图。
+    // 带红旗:位置如实标(击球区/低于价值带),但中性样式 + 「未确认」后缀 —— 不进 strike_zone/below 视图。
     label = verdict.inStrikeZone ? t.strike : t.below;
     cls = "border-[var(--tt-border)] text-[var(--tt-muted)]";
     marker = (
