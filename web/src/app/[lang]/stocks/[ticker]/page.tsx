@@ -43,7 +43,6 @@ import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
-import { buildSignalCrossover } from "@/lib/stocks/signalCrossover";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
@@ -151,8 +150,6 @@ function HoldersTable({
   exited,
   totalValue,
   moves,
-  period,
-  verdict,
   lang,
   trend,
 }: {
@@ -162,8 +159,6 @@ function HoldersTable({
   exited: ExitedHolder[];
   totalValue: number;
   moves: QuarterMoves;
-  period: string;
-  verdict: "below" | "within" | "above" | null;
   lang: Lang;
   trend: number[];
 }): React.ReactElement {
@@ -171,8 +166,6 @@ function HoldersTable({
   const sorted = [...holders].sort((a, b) => b.value - a.value);
   const head = sorted.slice(0, HOLDERS_VISIBLE);
   const tail = sorted.slice(HOLDERS_VISIBLE);
-  const crossover = buildSignalCrossover(
-    { n: holders.length, moves, verdict, period }, lang);
 
   const columns: Column<HolderRow>[] = [
     { key: "investor", header: t.cols.investor, role: "primary", cell: (r) => r.person },
@@ -193,7 +186,6 @@ function HoldersTable({
         </p>
         <QuarterMovesPill moves={moves} lang={lang} />
       </div>
-      <p className="mb-3 text-sm leading-relaxed text-[var(--tt-text)]">{crossover}</p>
       {trend.length >= 2 && (
         <div className="mb-3">
           <HolderTrend series={trend} lang={lang} variant="inline" />
@@ -587,8 +579,6 @@ export default async function StockTickerPage({
             exited={exitedHolders}
             totalValue={totalValue}
             moves={moves}
-            period={latestPeriod}
-            verdict={handoffVerdict ? handoffVerdict.bucket : null}
             lang={lang}
             trend={trendSeries}
           />

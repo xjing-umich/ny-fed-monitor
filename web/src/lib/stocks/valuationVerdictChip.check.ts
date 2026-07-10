@@ -9,7 +9,7 @@ function v(p: Partial<ValuationVerdict>): ValuationVerdict {
 
 // null → null
 assert(valuationVerdictChip(null, "zh") === null, "null → null");
-// 进入区优先于 bucket, 可信 → positive
+// 击球区优先于 bucket, 可信 → positive
 const strike = valuationVerdictChip(v({ inStrikeZone: true, bucket: "below" }), "en");
 assert(strike?.label === "Strike zone" && strike?.tone === "positive", `strike zone positive, got ${JSON.stringify(strike)}`);
 // below 可信 → positive
