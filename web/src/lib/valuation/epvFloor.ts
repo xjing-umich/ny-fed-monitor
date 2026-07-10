@@ -198,7 +198,7 @@ function buildGrahamLamp(
     simplifications.push(
       `Maintenance capex (${mc.confidence}) deducted in full cash (write A): EPV = (NOPAT + D&A − maintenance capex) / WACC; no tax shield on the capex term.`,
     );
-    if (mc.ai_capex_distortion_warning) simplifications.push("Capex doubled within two years (AI-hog rule): maintenance capex floored at 50% of current capex; EPV is correspondingly pressed down.");
+    // AI-hog / divergence / method notes come from maintenanceCapex (scheme C: floored then D&A-capped; OE/EPV may look optimistic).
     for (const n of mc.notes) simplifications.push(n);
   } else {
     simplifications.push("Maintenance capex unavailable → degraded to the v1 simplification (maintenance capex = D&A, so the depreciation add-back nets to zero).");
@@ -280,7 +280,8 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
   if (normNi.capped) simplifications.push("Net income is below its multi-year average (cyclical/declining): normalized owner earnings anchored to the latest year — no peak-earnings capitalization (audit #2).");
   if (canCorrect) {
     simplifications.push(`Owner earnings = net income + D&A − maintenance capex (${mc.confidence}); the working-capital change is excluded (maintenance ΔNWC ≈ 0; growth ΔNWC is carried in growth value, not double-counted).`);
-    if (mc.ai_capex_distortion_warning) simplifications.push("Capex doubled within two years (AI-hog rule): maintenance capex floored at 50% of current capex.");
+    // AI-hog / divergence / method notes from maintenanceCapex (scheme C: floored then D&A-capped; OE may look optimistic).
+    for (const n of mc.notes) simplifications.push(n);
   } else {
     simplifications.push("Maintenance capex or D&A unavailable → degraded to normalized net income (= average net income over the years shown).");
   }

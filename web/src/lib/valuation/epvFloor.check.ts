@@ -393,6 +393,16 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   assert.strictEqual(aiFloor.moat_reading.signal, "franchise", "AI fixture still reads franchise");
   assert.strictEqual(aiFloor.growth_value.gated_to_zero, true, "franchise + AI → GV gated_to_zero");
   assert.strictEqual(aiFloor.growth_value.scenarios.neutral, 0, "AI gate → GV 0");
+  // Scheme C polish: lamp notes lean on maintenanceCapex (D&A-cap / growth-spike), not the old "50% floor → EPV pressed down" line.
+  for (const lamp of [aiFloor.graham_epv, aiFloor.buffett_epv]) {
+    const joined = lamp.method.simplifications.join(" | ").toLowerCase();
+    assert.ok(!joined.includes("pressed down"), `${lamp.label}: no 'pressed down' (scheme C OE/EPV may look optimistic)`);
+    assert.ok(!joined.includes("50% of current capex"), `${lamp.label}: no raw 50%-of-capex floor wording`);
+    assert.ok(
+      joined.includes("d&a") || joined.includes("growth"),
+      `${lamp.label}: AI-hog note reflects D&A-cap / growth-spike treatment`,
+    );
+  }
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");
