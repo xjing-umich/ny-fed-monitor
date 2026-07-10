@@ -20,6 +20,8 @@ export const OE_YIELD_FLAG_BPS = 300;
 export const QUICK_CHECK_DEV_FLAG = 0.5;
 export const R_MINUS_G_FLAG = 0.04; // (r − g) below this → explicit-phase value is sensitive
 export const PROJECTION_YEARS = 10;
+export const GDP_NOMINAL_CAP = 0.03; // 名义 GDP 长期上限 —— 永续增长 g 的封顶之一（Damodaran 铁律）
+export const MIN_RG_SPREAD = 0.03;   // r − g 最小间距，防终值爆炸；触及则退回零增长
 const INVERSION_DGS10 = 0.075; // DGS10 ≥ 7.5% inverts the band
 const DGS10_MAX_AGE_DAYS = 45; // last-good DGS10 older than this is stale, not a live anchor
 
@@ -79,8 +81,8 @@ function projectOe(oe0: number, g1: number): number[] {
   return path; // length 10, path[9] = OE_10
 }
 
-/** One tier: PV(explicit OE 1–10) + PV(zero-growth terminal OE_10/r). */
-function dcfTier(oe0: number, g1: number, r: number, shares: number): {
+/** One tier: PV(explicit OE 1–10) + PV(terminal value at end of year 10). */
+function dcfTier(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
   equity: number;
   perShare: number;
   pvTv: number;
@@ -91,7 +93,9 @@ function dcfTier(oe0: number, g1: number, r: number, shares: number): {
     pvExplicit += oe[t - 1] / Math.pow(1 + r, t);
   }
   const oe10 = oe[PROJECTION_YEARS - 1];
-  const tv = oe10 / r; // zero-growth perpetuity at end of year 10
+  // 带上限 Gordon：g 与贴现率同源、且 r−g 足够宽时用 Gordon；否则退回零增长（安全兜底）。
+  const useGordon = gTerminal > 0 && r - gTerminal >= MIN_RG_SPREAD;
+  const tv = useGordon ? (oe10 * (1 + gTerminal)) / (r - gTerminal) : oe10 / r;
   const pvTv = tv / Math.pow(1 + r, PROJECTION_YEARS);
   const equity = pvExplicit + pvTv;
   return { equity, perShare: equity / shares, pvTv };
@@ -133,11 +137,11 @@ function discountBand(dgs10: { value: number; date: string } | null): DiscountBa
   };
 }
 
-function tierValues(oe0: number, g1: number, r: number, shares: number): {
+function tierValues(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
   equity_value: number;
   per_share: number;
 } {
-  const run = dcfTier(oe0, g1, r, shares);
+  const run = dcfTier(oe0, g1, r, shares, gTerminal);
   return { equity_value: run.equity, per_share: run.perShare };
 }
 
@@ -234,12 +238,16 @@ export function deriveOeDcf(
 
   const discount = discountBand(dgs10);
 
+  // 终值增长（中枢/乐观档）：g = min(10Y国债, 3%名义GDP) 且不快于近期 g1；恶化/高杠杆股不给终值增长。
+  const gCap = Math.min(discount.dgs10_value ?? 0.025, GDP_NOMINAL_CAP);
+  const gTerminal = declined || floor.high_leverage_warning ? 0 : Math.min(gCap, g1);
+
   const pessimistic: OeDcfTier = {
     growth_stage1: g1 / 2,
     discount_rate: discount.r_high,
-    ...tierValues(oe0, g1 / 2, discount.r_high, shares),
+    ...tierValues(oe0, g1 / 2, discount.r_high, shares, 0), // 悲观档保留零增长底
   };
-  const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares);
+  const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal);
   const neutral: OeDcfTier = {
     growth_stage1: g1,
     discount_rate: discount.midpoint,
@@ -249,7 +257,7 @@ export function deriveOeDcf(
   const optimistic: OeDcfTier = {
     growth_stage1: g1,
     discount_rate: discount.r_low,
-    ...tierValues(oe0, g1, discount.r_low, shares),
+    ...tierValues(oe0, g1, discount.r_low, shares, gTerminal),
   };
 
   // terminal share computed at the neutral tier (reuse neutralRun)
@@ -285,6 +293,8 @@ export function deriveOeDcf(
     per_share_high: optimistic.per_share,
     terminal_share_pct: terminalShare,
     terminal_dependency_flag: terminalShare > TERMINAL_SHARE_FLAG,
+    terminal_growth: gTerminal,
+    terminal_method: gTerminal > 0 ? "gordon_capped" : "zero_growth",
     diagnostics: {
       oe_yield: oeYield,
       oe_yield_vs_dgs10_bps: oeYieldBps,

@@ -27,6 +27,8 @@ export type EpvLamp = {
   per_share_high?: number;
   /** Buffett lamp only: average SBC / owner earnings — real dilution cost, disclosed not added back (spec §1.3). */
   sbc_to_oe_pct?: number;
+  /** Buffett lamp only: 多年回购(绝对值)均值 ≤ SBC 均值 → 回购主要抵消稀释、非净回馈(Mauboussin 洞见);数据缺则 undefined。 */
+  buyback_offsets_sbc?: boolean;
   method: EpvLampMethod;
 };
 
@@ -263,6 +265,8 @@ export type OeDcfAssessment = {
   per_share_high?: number;   // = tiers.optimistic.per_share
   terminal_share_pct?: number;        // PV(TV)/equity at the neutral tier
   terminal_dependency_flag?: boolean; // > 0.70
+  terminal_growth?: number;   // 中枢/乐观档永续增长 g = min(dgs10, 3% GDP, g1)；悲观档恒 0
+  terminal_method?: "gordon_capped" | "zero_growth"; // 中枢档终值口径
   diagnostics?: {
     oe_yield?: number;             // (OE_0 / shares) / price
     oe_yield_vs_dgs10_bps?: number;

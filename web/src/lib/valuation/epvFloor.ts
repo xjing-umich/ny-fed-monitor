@@ -298,6 +298,11 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
   const sbcVals = years.map((y) => y.stock_based_comp).filter((v): v is number => v != null);
   const sbcToOe = sbcVals.length && ownerEarnings > 0 ? avg(sbcVals) / ownerEarnings : undefined;
 
+  // 回购是否仅抵消 SBC 稀释(Mauboussin:回购≠净回馈)。share_repurchases 存负现金流出,取绝对值对齐 SBC 正费用。
+  const repurchVals = years.map((y) => y.share_repurchases).filter((v): v is number => v != null).map(Math.abs);
+  const buybackOffsetsSbc =
+    repurchVals.length && sbcVals.length ? avg(repurchVals) <= avg(sbcVals) : undefined;
+
   if (ownerEarnings <= 0) {
     return {
       label: "Buffett owner-earnings value",
@@ -305,6 +310,7 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
       not_assessable_reason: "Normalized owner earnings are non-positive over the years shown; earnings power cannot be capitalized.",
       normalized_earnings: ownerEarnings,
       sbc_to_oe_pct: sbcToOe,
+      buyback_offsets_sbc: buybackOffsetsSbc,
       method,
     };
   }
@@ -319,6 +325,7 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
     per_share_low: equityLow / shares,
     per_share_high: equityHigh / shares,
     sbc_to_oe_pct: sbcToOe,
+    buyback_offsets_sbc: buybackOffsetsSbc,
     method,
   };
 }
