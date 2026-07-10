@@ -19,7 +19,8 @@
 - 不新增迁移、不重抓 SEC：两任务都靠已存在的字段与列。
 - 引擎序列化输出（JSON）不得含 buy/sell/hold/target price/rating/recommend 记号（既有合规测试会扫）。中文注释/文案不混排英文（术语锁形除外）。
 - 守估值哲学：OBSERVATION 非推荐；任务 1 只修「可靠性判定的公平性」，不动价值带底/安全边际口径；任务 2 使 NCAV 更保守（扣优先股）。
-- 已核验数值事实（供实现者对齐期望）：成长股 fixture（g1=10%、DGS10=4.25%）新口径 `quick_check_deviation_pct ≈ 3.8%`（旧口径 101.5%）；现实输入下 H-model 与离散 DCF 最大背离 ~17% → **quick_check_flag 修正后在真实输入上几乎不再触发，这是预期效果**（停止误藏成长股，真实不稳定由 `terminal_dependency_flag`/`r_minus_g_flag` 承担）；flag 保留为廉价兜底 + 展示诊断。
+- 已核验数值事实（供实现者对齐期望）：成长股 fixture（g1=10%、DGS10=4.25%）新口径 `quick_check_deviation_pct ≈ 3.8%`（旧口径 101.5%）；现实输入下 H-model 与离散 DCF 最大背离 ~17% → **quick_check_flag 修正后在真实输入上几乎不再触发，这是预期效果**（停止误藏成长股）；flag 保留为廉价兜底 + 展示诊断。
+- 可靠性闸接线（务必准确）：`assessReliability` 只吃 `high_leverage_warning / declined / quick_check_flag / oe_yield>33%` 四项。`terminal_dependency_flag`、`r_minus_g_flag` **不进可靠性闸**，只在卡片当 caution 显示——本改动不动它们。quick_check 近乎失效后，可靠性闸实为 high_leverage/declined/extreme-oe_yield 三项；而「便宜/击球区/安全边际」锚定 `epv.valueFloor`（保守零增长 Greenwald 底），不受 OE-DCF 增长/终值假设抬高，故弱化 quick_check 不会开「假便宜」口子。**不得**把 terminal/r_minus_g 加进可靠性闸（成长股 r−g 常年偏窄，加了等于把刚修好的皱褶重新引入）。
 
 ---
 
@@ -29,6 +30,7 @@
 - Modify: `web/src/lib/valuation/ownerEarningsDcf.ts`（新增导出纯函数 `hModelValue`；`deriveOeDcf` 内替换 `quickPerShare` 计算）
 - Modify: `web/src/lib/valuation/types.ts:274-276`（`quick_check_*` 字段注释语义更新）
 - Modify: `web/src/lib/valuation/deriveValuationVerdict.ts:59`（`assessReliability` 上方 quick_check 注释语义更新）
+- Modify: `web/src/components/valuation/EarningsPowerFloorCard.tsx:140,147`（`CAUTION.quickCheck` 用户可见文案：从「零增长理智检验」改为「同增长基准」——H-model 后基线不再是零增长，旧文案变假）
 - Test: `web/src/lib/valuation/ownerEarningsDcf.check.ts`
 
 **Interfaces:**
@@ -137,7 +139,7 @@ export function hModelValue(oe0: number, gS: number, gL: number, r: number): num
 Run: `cd web && npx tsx src/lib/valuation/ownerEarningsDcf.check.ts`
 Expected: PASS —— 末行打印 `ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK`。
 
-- [ ] **Step 5: 更新注释语义（types.ts + deriveValuationVerdict.ts）**
+- [ ] **Step 5: 更新注释语义 + 用户可见文案（types.ts + deriveValuationVerdict.ts + 卡片）**
 
 `web/src/lib/valuation/types.ts` 把 L274-276 三行注释改为：
 
@@ -153,6 +155,16 @@ Expected: PASS —— 末行打印 `ownerEarningsDcf.check.ts: deriveOeDcf + rec
  *  - quick_check_flag：DCF 与同增长假设的 H-model 闭式解偏离>50% → 模型对分档/贴现异常敏感、不稳。
 ```
 
+`web/src/components/valuation/EarningsPowerFloorCard.tsx` 把 `CAUTION` 里 `quickCheck` 两条文案（en L140 / zh L147）改为——旧文案「zero-growth / 零增长理智检验」在 H-model 后已失真，须改口径且保持每 locale 纯本语言、不混排、无 AI 腔：
+
+```ts
+    quickCheck: "The DCF result diverges sharply from a matched-growth benchmark (over 50%) — the model is sensitive to its staging.",
+```
+
+```ts
+    quickCheck: "DCF 结果与同增长基准显著背离（超过 50%）— 模型对分档假设敏感。",
+```
+
 - [ ] **Step 6: 全套自检 + 类型门**
 
 Run: `cd web && npx tsx src/lib/valuation/ownerEarningsDcf.check.ts && npx tsx src/lib/valuation/deriveValuationVerdict.check.ts && npx tsc --noEmit`
@@ -162,7 +174,7 @@ Expected: 两个 check 打印各自 OK 行；`tsc` 无输出（0 错）。
 
 ```bash
 cd /Users/junlinzhu/Desktop/yangyang-code/ny-fed-monitor-val-b
-git add web/src/lib/valuation/ownerEarningsDcf.ts web/src/lib/valuation/ownerEarningsDcf.check.ts web/src/lib/valuation/types.ts web/src/lib/valuation/deriveValuationVerdict.ts
+git add web/src/lib/valuation/ownerEarningsDcf.ts web/src/lib/valuation/ownerEarningsDcf.check.ts web/src/lib/valuation/types.ts web/src/lib/valuation/deriveValuationVerdict.ts web/src/components/valuation/EarningsPowerFloorCard.tsx
 git commit -m "fix(valuation): quick_check 基线改 H-model 增长感知闭式解 (Phase B #1)
 
 零增长资本化基线对含终值增长的 neutral 档系统性偏离>50%，把成长股误判
