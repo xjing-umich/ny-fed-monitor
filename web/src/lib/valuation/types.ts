@@ -263,6 +263,8 @@ export type OeDcfAssessment = {
   per_share_high?: number;   // = tiers.optimistic.per_share
   terminal_share_pct?: number;        // PV(TV)/equity at the neutral tier
   terminal_dependency_flag?: boolean; // > 0.70
+  terminal_growth?: number;   // 中枢/乐观档永续增长 g = min(dgs10, 3% GDP, g1)；悲观档恒 0
+  terminal_method?: "gordon_capped" | "zero_growth"; // 中枢档终值口径
   diagnostics?: {
     oe_yield?: number;             // (OE_0 / shares) / price
     oe_yield_vs_dgs10_bps?: number;

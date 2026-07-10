@@ -164,6 +164,40 @@ assert.strictEqual(pickLatestFredPoint([{ date: "x", value: null }]), null);
   assert.ok(rWide.diagnostics?.r_minus_g_flag === false, "flat growth → flag false");
 }
 
+// ── A1. 终值 Gordon 带宽 ──────────────────────────────────────────────────────
+// 14) 上升净利 + reliable → 中枢/乐观档用封顶 Gordon；悲观档保持零增长底不变。
+{
+  // net income 100→133.1 FY2021→2024 = 10% CAGR；DGS10 4.25% → gCap=min(0.03,0.0425)=0.03，g1=0.10 → gTerminal=0.03
+  const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
+  const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), years, { value: 4.25, date: "2026-06-19" }, price(120));
+  assert.ok(r.assessable, "assessable");
+  assert.strictEqual(r.terminal_method, "gordon_capped", "reliable growth → gordon terminal");
+  assert.ok(Math.abs(r.terminal_growth! - 0.03) < 1e-9, `terminal g capped at 3% GDP, got ${r.terminal_growth}`);
+  // 悲观档仍是零增长底：per_share_low 应等于零增长口径(OE₀ 恒定 → 每股 = 悲观档 equity/shares)
+  assert.ok(r.per_share_low! < r.tiers!.neutral.per_share, "floor(pess) < neutral");
+  assert.ok(Number.isFinite(r.tiers!.neutral.per_share) && r.tiers!.neutral.per_share > 0, "neutral finite positive");
+  assert.ok(r.tiers!.neutral.per_share < r.per_share_high!, "neutral < opt");
+}
+// 15) 净利下滑 → 全档退回零增长（不给恶化股终值增长）。
+{
+  const years = [yr(2024, 80), yr(2023, 90), yr(2022, 100)];
+  const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), years, { value: 4.25, date: "d" }, null);
+  assert.strictEqual(r.terminal_method, "zero_growth", "declined → zero growth terminal");
+  assert.strictEqual(r.terminal_growth, 0, "declined → g 0");
+}
+// 16) 高杠杆 floor → 退回零增长（即便净利上升）。
+{
+  const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
+  const levered = { kind: "floor", buffett_epv: lamp(1000, 100, [2022, 2023, 2024]), high_leverage_warning: true } as unknown as ValuationFloor;
+  const r = deriveOeDcf(levered, years, { value: 4.25, date: "d" }, null);
+  assert.strictEqual(r.terminal_method, "zero_growth", "high leverage → zero growth terminal");
+}
+// 17) g1=0（净利持平）→ gTerminal=0 → 零增长（行为与现状一致）。
+{
+  const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), [yr(2024, 100), yr(2023, 100)], { value: 4, date: "d" }, null);
+  assert.strictEqual(r.terminal_method, "zero_growth", "flat earnings → zero growth");
+}
+
 // ── 12. compliance: emitted strings carry no advice/target tokens ────────────
 {
   const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), [yr(2024, 110), yr(2023, 100)], { value: 4, date: "d" }, price(50));
