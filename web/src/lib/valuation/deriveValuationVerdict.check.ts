@@ -19,7 +19,7 @@ import { deriveValuationVerdict, assessReliability } from "./deriveValuationVerd
 function floorStub(): ValuationFloor {
   return { kind: "floor", net_net: { assessable: false, reason: "stub" } } as unknown as ValuationFloor;
 }
-// net-net 可评估的 floor stub：per_share=95，供 triggered/未触发两档断言复用。
+// net-net 可评估的 floor stub：per_share=95，供 assetFloor/buy 各档断言复用。
 // （数值需落在 sz() 默认价值带内，否则会被 isImplausibleBand 健壮性闸整条抑制为 null。）
 function floorStubWithNetNet(): ValuationFloor {
   return { kind: "floor", net_net: { assessable: true, per_share: 95, ncav: 9500 } } as unknown as ValuationFloor;
@@ -153,7 +153,7 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   assert(assessReliability({ floor: floorStub(), oeDcf: oe() }) === true, "clean → reliable");
 }
 
-// 14) net-net:price(80) < 每股 NCAV(95) → triggered=true。
+// 14) net-net:price(80) 在 (⅔NCAV, NCAV) 之间 → assetFloor=true, buy=false。
 {
   const v = deriveValuationVerdict({
     floor: floorStubWithNetNet(),
@@ -161,9 +161,9 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
     oeDcf: oe(),
     reconciliation: recon("both_margin_of_safety"),
   });
-  assert(v && v.netNet && v.netNet.perShare === 95 && v.netNet.triggered === true, "price < per_share → net-net triggered");
+  assert(v && v.netNet && v.netNet.perShare === 95 && v.netNet.assetFloor === true && v.netNet.buy === false, "price 80 in (⅔NCAV, NCAV) → asset floor, not buy");
 }
-// 15) net-net:price(110) > 每股 NCAV(95) → triggered=false。
+// 15) net-net:price(110) > 每股 NCAV(95) → 两者 false。
 {
   const v = deriveValuationVerdict({
     floor: floorStubWithNetNet(),
@@ -171,7 +171,7 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
     oeDcf: oe(),
     reconciliation: recon("above_both_values"),
   });
-  assert(v && v.netNet && v.netNet.perShare === 95 && v.netNet.triggered === false, "price > per_share → net-net not triggered");
+  assert(v && v.netNet && v.netNet.perShare === 95 && v.netNet.assetFloor === false && v.netNet.buy === false, "price > per_share → neither");
 }
 
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");

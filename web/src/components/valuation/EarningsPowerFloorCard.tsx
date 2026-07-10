@@ -1,7 +1,7 @@
 import type { Lang } from "@/lib/nav";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
 import { deriveValuationVerdict } from "@/lib/valuation";
-import { isNetNetTriggered } from "@/lib/valuation/netNet";
+import { isNetNetAssetFloor, isNetNetBuy } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
 import { fmtValueBand } from "@/lib/format";
 
@@ -89,7 +89,9 @@ const COPY = {
     methodSummary: "Method & numbers",
     perSh: "/ sh",
     netNet: (ps: string) =>
-      `⚑ Price is below net current asset value (${ps}/share). A Graham "net-net" — historically rare and usually a sign of business distress; beware the value trap.`,
+      `⚑ Price is below net current asset value (${ps}/share) — a Graham "net-net". Historically rare and usually a sign of business distress; beware the value trap.`,
+    netNetBuy: (ps: string) =>
+      `⚑ Price is at or below two-thirds of net current asset value (${ps}/share) — Graham's classic net-net threshold with a full margin of safety. Historically rare and usually a sign of business distress; beware the value trap.`,
   },
   zh: {
     statusBelow: "安全边际",
@@ -121,7 +123,9 @@ const COPY = {
     methodSummary: "方法与数字",
     perSh: "/ 股",
     netNet: (ps: string) =>
-      `⚑ 现价低于每股净流动资产（${ps}）。格雷厄姆式"净 net"深度价值,历史极罕见——常伴随经营困境,须警惕价值陷阱。`,
+      `⚑ 现价低于每股净流动资产（${ps}）。格雷厄姆式深度价值信号，历史极罕见——常伴随经营困境，须警惕价值陷阱。`,
+    netNetBuy: (ps: string) =>
+      `⚑ 现价已跌至每股净流动资产的三分之二以下（${ps}）— 格雷厄姆经典买入线，安全边际充分。历史极罕见，常伴随经营困境，须警惕价值陷阱。`,
   },
 } as const;
 
@@ -355,7 +359,8 @@ function MethodDetails({
   const { graham_epv, buffett_epv, asset_floor, moat_reading, provenance } = floor;
   const epv = sz?.epv;
   const capexRamp = floor.buffett_epv.method.simplifications.some((s) => s.includes("AI-hog"));
-  const netNetTriggered = sz?.price ? isNetNetTriggered(floor.net_net, sz.price.close) : false;
+  const netNetAssetFloor = sz?.price ? isNetNetAssetFloor(floor.net_net, sz.price.close) : false;
+  const netNetBuy = sz?.price ? isNetNetBuy(floor.net_net, sz.price.close) : false;
   const cautions = valuationCautions(oeDcf, reconciliation, lang);
   return (
     <details className="text-xs text-[var(--tt-muted)]">
@@ -369,7 +374,11 @@ function MethodDetails({
         ) : null}
         {capexRamp ? <p className="text-[var(--tt-warn)]">{t.capexRamp}</p> : null}
         {sz?.assetFloor?.priceBelow ? <p>{t.assetBelow(usd0(sz.assetFloor.perShare))}</p> : null}
-        {netNetTriggered && floor.net_net.assessable ? <p>{t.netNet(perShare(floor.net_net.per_share))}</p> : null}
+        {floor.net_net.assessable && netNetBuy ? (
+          <p>{t.netNetBuy(perShare(floor.net_net.per_share))}</p>
+        ) : floor.net_net.assessable && netNetAssetFloor ? (
+          <p>{t.netNet(perShare(floor.net_net.per_share))}</p>
+        ) : null}
         {cautions.length > 0 ? (
           <div className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-warn)_6%,transparent)] px-3 py-2">
             <p className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-warn)]">

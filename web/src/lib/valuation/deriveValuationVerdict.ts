@@ -9,7 +9,7 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
-import { isNetNetTriggered } from "./netNet";
+import { isNetNetAssetFloor, isNetNetBuy } from "./netNet";
 
 export type VerdictBucket = "below" | "within" | "above";
 export type VerdictCoverage = "full" | "single_lamp";
@@ -38,10 +38,11 @@ export type ValuationVerdict = {
    */
   reliable: boolean;
   /**
-   * Graham 净流动资产(net-net)信号:现价低于每股 NCAV 时 triggered=true。
-   * 平时 undefined(不可评估)或 triggered=false。独立于 6 档价值带与 reliable,仅供个股页注脚。
+   * Graham 净流动资产(net-net)双层信号:assetFloor=现价低于每股 NCAV(识别信号);
+   * buy=现价不高于⅔每股 NCAV(安全边际达标的买入线)。平时 undefined(不可评估)或两者 false。
+   * 独立于 6 档价值带与 reliable,仅供个股页注脚。
    */
-  netNet?: { perShare: number; triggered: boolean };
+  netNet?: { perShare: number; assetFloor: boolean; buy: boolean };
 };
 
 function finitePositive(n: number | undefined): n is number {
@@ -154,7 +155,7 @@ export function deriveValuationVerdict(input: {
   const nn = floor.net_net;
   const netNet =
     nn.assessable && Number.isFinite(nn.per_share) && nn.per_share > 0
-      ? { perShare: nn.per_share, triggered: isNetNetTriggered(nn, price) }
+      ? { perShare: nn.per_share, assetFloor: isNetNetAssetFloor(nn, price), buy: isNetNetBuy(nn, price) }
       : undefined;
 
   return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, reliable, netNet };
