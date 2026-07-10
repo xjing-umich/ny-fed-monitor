@@ -186,6 +186,7 @@ export type ValuationFloorYear = {
   current_assets?: number;
   current_liabilities?: number;
   total_liabilities?: number;
+  preferred_equity?: number;
 };
 
 export type ValuationFloorInput = {

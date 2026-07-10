@@ -22,6 +22,19 @@ assert.ok(!computeNetNet({ currentAssets: 300, totalLiabilities: 400, sharesDilu
 // 4) 股数非正 → 不可评估。
 assert.ok(!computeNetNet({ currentAssets: 1000, totalLiabilities: 400, sharesDiluted: 0 }).assessable, "shares<=0 → not assessable");
 
+// 4b) 优先股：NCAV=(1000−400−100)/100=5/股（对照无优先股的 6）。
+{
+  const withPref = computeNetNet({ currentAssets: 1000, totalLiabilities: 400, sharesDiluted: 100, preferredStock: 100 });
+  assert.ok(withPref.assessable, "with preferred assessable");
+  if (withPref.assessable) { approx(withPref.ncav, 500, 1e-6, "ncav minus preferred"); approx(withPref.per_share, 5, 1e-6, "per_share minus preferred"); }
+  // 缺省 preferredStock（undefined）→ 与旧口径恒等（?? 0 降级）。
+  const noPref = computeNetNet({ currentAssets: 1000, totalLiabilities: 400, sharesDiluted: 100 });
+  if (noPref.assessable) approx(noPref.per_share, 6, 1e-6, "no preferred → unchanged");
+  // preferredStock=0 显式传 → 同缺省。
+  const zeroPref = computeNetNet({ currentAssets: 1000, totalLiabilities: 400, sharesDiluted: 100, preferredStock: 0 });
+  if (zeroPref.assessable) approx(zeroPref.per_share, 6, 1e-6, "preferred 0 → unchanged");
+}
+
 // 5) assetFloor:~50% 折让(per_share=10, price=5) → true；buy 也 true(5 ≤ ⅔×10=6.67)。
 {
   const lamp: NetNetLamp = { assessable: true, per_share: 10, ncav: 1000 };
