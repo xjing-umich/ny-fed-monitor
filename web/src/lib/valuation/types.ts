@@ -33,17 +33,26 @@ export type EpvLamp = {
 };
 
 /** Greenwald reproduction value (spec §1.4): tangible net assets + capitalized R&D.
- *  Field name `asset_floor` on ValuationFloor is kept for backward-compat; this is a superset of the old AssetFloor. */
+ *  Field name `asset_floor` on ValuationFloor is kept for backward-compat; this is a superset of the old AssetFloor.
+ *  Dual AV (when intangibles separated): `total_value`/`per_share` stay AV_conservative (asset-floor display);
+ *  AV_reproduction = AV_conservative + acquired_reset_proxy for the franchise dual-pass gate. */
 export type ReproductionValue = {
   assessable: boolean;
   not_assessable_reason?: string;
   basis: string;
   intangibles_separated: boolean;
-  total_value?: number;            // AV = tangible net assets + capitalized R&D
+  total_value?: number;            // AV_conservative = tangible net assets + capitalized R&D
   per_share?: number;
   tangible_net_assets?: number;
   capitalized_rd?: number;         // undefined when rd_expense fully absent (degraded to tangible book)
   rd_years_used?: number[];
+  /** (goodwill + intangibles) × ACQUIRED_RESET_DISCOUNT; only when dual_av_comparable. */
+  acquired_reset_proxy?: number;
+  /** AV_reproduction = AV_conservative + acquired_reset_proxy. */
+  reproduction_total_value?: number;
+  reproduction_per_share?: number;
+  /** true when goodwill/intangibles are separable so the franchise dual-pass can run. */
+  dual_av_comparable?: boolean;
 };
 /** @deprecated use ReproductionValue */
 export type AssetFloor = ReproductionValue;
@@ -58,6 +67,14 @@ export type MoatReading = {
   asset_per_share_compared?: number;
   /** EPV − AV (×shares) when franchise; the dollar moat premium over reproduction value. */
   franchise_value?: number;
+  /** AV_conservative per share used in the dual franchise gate. */
+  av_conservative_per_share?: number;
+  /** AV_reproduction per share used in the dual franchise gate. */
+  av_reproduction_per_share?: number;
+  /** true when both EPV/AV_cons and EPV/AV_repr clear the franchise multiple. */
+  dual_test_passed?: boolean;
+  /** true when EPV/AV_cons clears franchise but EPV/AV_repr does not → commodity. */
+  franchise_blocked_by_reproduction?: boolean;
 };
 
 export type ValuationFloorProvenance = {

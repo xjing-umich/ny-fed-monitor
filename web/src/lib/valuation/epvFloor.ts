@@ -331,28 +331,90 @@ function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed
 }
 
 function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, shares: number): MoatReading {
-  const basisNote =
-    "Franchise test compares earnings power (EPV) against reproduction value (tangible net assets + capitalized R&D). EPV well above reproduction value signals a moat; near it, a commodity; below it, value destruction. A directional reading, not a verdict.";
+  const dualComparable =
+    reproduction.dual_av_comparable === true &&
+    reproduction.reproduction_per_share != null &&
+    Number.isFinite(reproduction.reproduction_per_share);
+
+  const basisNote = dualComparable
+    ? "Franchise test compares earnings power (EPV) against reproduction value on both AV_conservative (tangible + capitalized R&D) and AV_reproduction (conservative + acquired-reset proxy). Both must clear the franchise multiple for a moat signal; near it, a commodity; below it, value destruction. A directional reading, not a verdict."
+    : reproduction.intangibles_separated
+      ? "Franchise test compares earnings power (EPV) against reproduction value (tangible net assets + capitalized R&D). EPV well above reproduction value signals a moat; near it, a commodity; below it, value destruction. A directional reading, not a verdict."
+      : "Franchise test compares earnings power (EPV) against reproduction value (tangible net assets + capitalized R&D). EPV well above reproduction value signals a moat; near it, a commodity; below it, value destruction. Dual reproduction test unavailable (intangibles not separated). A directional reading, not a verdict.";
+
   if (!epvLamp.assessable) {
     return { signal: "value_destruction", label: "Normalized earnings are non-positive, so earnings power sits below the reproduction-value base — a value-destruction signal (not a verdict).", basis_note: basisNote };
   }
   if (!reproduction.assessable || reproduction.per_share == null) {
     return { signal: "not_assessable", label: "The earnings-power vs reproduction-value comparison is unavailable because there is no positive asset base.", basis_note: basisNote };
   }
+
   const epvMid = (epvLamp.per_share_low! + epvLamp.per_share_high!) / 2;
-  const ratio = epvMid / reproduction.per_share;
-  if (ratio >= MOAT_FRANCHISE_MULTIPLE) {
+  const avCons = reproduction.per_share;
+  const ratioCons = epvMid / avCons;
+
+  // Dual-AV franchise gate: both EPV/AV_cons and EPV/AV_repr must clear the franchise multiple.
+  if (dualComparable) {
+    const avRepr = reproduction.reproduction_per_share!;
+    const ratioRepr = epvMid / avRepr;
+    const dualFields = {
+      epv_per_share_compared: epvMid,
+      asset_per_share_compared: avCons,
+      av_conservative_per_share: avCons,
+      av_reproduction_per_share: avRepr,
+    };
+    if (ratioCons >= MOAT_FRANCHISE_MULTIPLE && ratioRepr >= MOAT_FRANCHISE_MULTIPLE) {
+      return {
+        signal: "franchise",
+        label: "Earnings power sits well above both conservative and reproduction asset values — a franchise (moat) signal, not a verdict.",
+        basis_note: basisNote,
+        ...dualFields,
+        dual_test_passed: true,
+        franchise_value: (epvMid - avCons) * shares,
+      };
+    }
+    if (ratioCons >= MOAT_FRANCHISE_MULTIPLE && ratioRepr < MOAT_FRANCHISE_MULTIPLE) {
+      return {
+        signal: "commodity",
+        label: "Earnings power clears the conservative asset floor but not the reproduction (acquired-reset) floor — treated as commodity-like, not a franchise.",
+        basis_note: basisNote,
+        ...dualFields,
+        dual_test_passed: false,
+        franchise_blocked_by_reproduction: true,
+      };
+    }
+    // Conservative path for commodity / value_destruction floors (unchanged thresholds).
+    if (ratioCons >= MOAT_COMMODITY_FLOOR) {
+      return {
+        signal: "commodity",
+        label: "Earnings power sits near reproduction value — a commodity-like profile with no clear moat signal.",
+        basis_note: basisNote,
+        ...dualFields,
+        dual_test_passed: false,
+      };
+    }
+    return {
+      signal: "value_destruction",
+      label: "Earnings power sits below reproduction value — a value-destruction signal, not a verdict.",
+      basis_note: basisNote,
+      ...dualFields,
+      dual_test_passed: false,
+    };
+  }
+
+  // Single-AV fallback when intangibles are not separated (dual reproduction test unavailable).
+  if (ratioCons >= MOAT_FRANCHISE_MULTIPLE) {
     return {
       signal: "franchise",
       label: "Earnings power sits well above reproduction value — a franchise (moat) signal, not a verdict.",
       basis_note: basisNote,
       epv_per_share_compared: epvMid,
-      asset_per_share_compared: reproduction.per_share,
-      franchise_value: (epvMid - reproduction.per_share) * shares,
+      asset_per_share_compared: avCons,
+      franchise_value: (epvMid - avCons) * shares,
     };
   }
-  if (ratio >= MOAT_COMMODITY_FLOOR) {
-    return { signal: "commodity", label: "Earnings power sits near reproduction value — a commodity-like profile with no clear moat signal.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: reproduction.per_share };
+  if (ratioCons >= MOAT_COMMODITY_FLOOR) {
+    return { signal: "commodity", label: "Earnings power sits near reproduction value — a commodity-like profile with no clear moat signal.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: avCons };
   }
-  return { signal: "value_destruction", label: "Earnings power sits below reproduction value — a value-destruction signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: reproduction.per_share };
+  return { signal: "value_destruction", label: "Earnings power sits below reproduction value — a value-destruction signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: avCons };
 }
