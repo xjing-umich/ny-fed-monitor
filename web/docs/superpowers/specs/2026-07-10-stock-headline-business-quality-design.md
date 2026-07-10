@@ -59,7 +59,7 @@ export function valuationVerdictChip(
 现价 · 安全边际 · 持有人数 · 合计市值
 ```
 - **现价**:`latestPrice ? $price（priceDate）: "—"`。
-- **安全边际**:`handoffVerdict?.marginPct != null ? fmtMarginPct(marginPct) : "—"`(带内/高于价值/无地板 → 「—」,诚实:非便宜即无安全边际)。
+- **安全边际**:仅便宜档(`inStrikeZone || bucket==="below"`)且 `marginPct!=null` 显 `fmtMarginPct(marginPct)`,否则「—」(带内/高于价值/无地板 → 「—」,诚实:非便宜即无安全边际)。**preview 定案**:初版只判 `marginPct!=null`,但高于价值股 marginPct 非 null(负值)、`fmtMarginPct` 夹成「<1%」会被误读成有微薄边际;改按 verdict 便宜档才显,与徽章 tone 同源。
 - **持有人数**:`String(n)`。
 - **合计市值**:`formatUSD(totalValue)`(13F 永远有,兜底)。
 - 缺值一律「—」不炸;无地板股(薄数据/金融/多股权)现价+安全边际显「—」,估值卡自陈原因。
