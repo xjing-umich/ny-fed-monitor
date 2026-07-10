@@ -18,7 +18,7 @@ import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
-import { formatUSD, cleanIssuer } from "@/lib/format";
+import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
 import { altFor, ogFor, datasetLd } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
@@ -34,7 +34,7 @@ import {
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
-import { getLatestPrice } from "@/lib/managers/priceRead";
+import { getLatestPrice, fmtPriceFact } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
@@ -45,6 +45,9 @@ import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { buildSignalCrossover } from "@/lib/stocks/signalCrossover";
 import { isLikelyTicker } from "@/lib/externalLinks";
+import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
+import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
+import { Sparkline } from "@/components/common/Sparkline";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -393,6 +396,9 @@ export default async function StockTickerPage({
       ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation })
       : null;
 
+  // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
+  const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
+
   const subtitle =
     lang === "zh"
       ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。`
@@ -476,7 +482,13 @@ export default async function StockTickerPage({
         title={issuer}
         subtitle={subtitle}
         disclaimer={disclaimer}
-        keyFacts={[]}
+        verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
+        keyFacts={[
+          { label: lang === "zh" ? "现价" : "Price", value: fmtPriceFact(latestPrice) },
+          { label: lang === "zh" ? "安全边际" : "Margin of safety", value: handoffVerdict?.marginPct != null ? fmtMarginPct(handoffVerdict.marginPct) : "—" },
+          { label: lang === "zh" ? "持有人数" : "Holders", value: String(n) },
+          { label: lang === "zh" ? "合计市值" : "Value held", value: formatUSD(totalValue) },
+        ]}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestPeriod, filed: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
@@ -484,6 +496,63 @@ export default async function StockTickerPage({
           {cusipsForTicker.length > 0 && (
             <section aria-label={lang === "zh" ? "外部金融数据" : "External finance links"}>
               <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="prominent" lang={lang} />
+            </section>
+          )}
+
+          {bq && (
+            <section aria-label={lang === "zh" ? "生意质量" : "Business quality"}>
+              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+                {lang === "zh" ? "生意质量" : "Business quality"}
+              </h2>
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+                {[
+                  { k: lang === "zh" ? "营收增速" : "Revenue growth", v: bq.revenueYoy, sign: true },
+                  { k: lang === "zh" ? "净利率" : "Net margin", v: bq.netMargin, sign: false },
+                  { k: "ROE", v: bq.roe, sign: false },
+                  { k: lang === "zh" ? "FCF 利润率" : "FCF margin", v: bq.fcfMargin, sign: false },
+                ].map((m) => (
+                  <div key={m.k}>
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">{m.k}</dt>
+                    <dd className="tnum mt-1 font-mono text-lg text-[var(--tt-text)]">
+                      {m.v == null ? "—" : `${m.sign && m.v > 0 ? "+" : ""}${(m.v * 100).toFixed(1)}%`}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              {bq.asOf && (
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                  {lang === "zh" ? `基本面截至 ${bq.asOf}` : `Fundamentals as of ${bq.asOf}`}
+                </p>
+              )}
+              {(bq.revenueSeries.length >= 2 || bq.marginSeries.length >= 2) && (
+                <div className="mt-4 flex flex-wrap gap-x-10 gap-y-3">
+                  {bq.revenueSeries.length >= 2 && (
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[11px] text-[var(--tt-muted)]">
+                        {lang === "zh"
+                          ? `营收 ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · 近 ${bq.revenueSeries.length} 年`
+                          : `Revenue ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · ${bq.revenueSeries.length}y`}
+                      </span>
+                      <Sparkline series={bq.revenueSeries} color="var(--tt-muted)" />
+                    </div>
+                  )}
+                  {bq.marginSeries.length >= 2 && (
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[11px] text-[var(--tt-muted)]">
+                        {lang === "zh"
+                          ? `净利率 ${(bq.marginSeries[0] * 100).toFixed(0)}% → ${(bq.marginSeries[bq.marginSeries.length - 1] * 100).toFixed(0)}%`
+                          : `Net margin ${(bq.marginSeries[0] * 100).toFixed(0)}% → ${(bq.marginSeries[bq.marginSeries.length - 1] * 100).toFixed(0)}%`}
+                      </span>
+                      <Sparkline series={bq.marginSeries} color="var(--tt-muted)" />
+                    </div>
+                  )}
+                </div>
+              )}
+              {!bq.reliable && (
+                <p className="mt-3 text-xs text-[var(--tt-muted)]">
+                  {lang === "zh" ? "基本面数据不完整，仅供参考。" : "Fundamentals data incomplete — read with care."}
+                </p>
+              )}
             </section>
           )}
 
