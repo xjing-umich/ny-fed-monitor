@@ -9,3 +9,4 @@ export { deriveOeDcf, reconcileMethods, pickLatestFredPoint } from "./ownerEarni
 export { deriveValuationVerdict } from "./deriveValuationVerdict";
 export type { ValuationVerdict, VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
 export { resolveAds } from "./adsNormalization";
+export { isFundamentalsStale, FUNDAMENTALS_MAX_AGE_MONTHS } from "./fundamentalsStale";

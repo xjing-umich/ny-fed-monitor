@@ -30,6 +30,8 @@ import {
   reconcileMethods,
   deriveValuationVerdict,
   resolveAds,
+  isFundamentalsStale,
+  FUNDAMENTALS_MAX_AGE_MONTHS,
 } from "@/lib/valuation";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import { getLatestDgs10, persistDgs10 } from "@/lib/managers/treasuryRead";
@@ -98,7 +100,7 @@ async function main() {
   if (!dgs10) console.warn("DGS10 仍不可用(live 失败且 market_rates 无 last-good)→ 本轮贴现带未锚定");
   const computedAt = new Date().toISOString();
 
-  let valued = 0, skipped = 0, excludedNonOperating = 0, adrSuppressed = 0;
+  let valued = 0, skipped = 0, excludedNonOperating = 0, adrSuppressed = 0, staleFundamentals = 0;
   const rows: Record<string, unknown>[] = [];
   for (const ticker of universe) {
     // 非经营性证券:不进盈利法估值。旧快照行会被下方陈旧清理删除(其不在 written 集)。
@@ -112,6 +114,9 @@ async function main() {
       const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio);
       const floor = computeValuationFloor(floorInput);
       if (!floor || floor.kind !== "floor") { skipped++; continue; }
+      // 基本面过期闸:最新 FY 年报距今超阈值(停报/退市/外股 ADR 覆盖不了)→ 抑制,
+      // 不拿今天的价配多年前基本面造"陈旧幻觉"verdict。与 price.stale 同类护栏。
+      if (isFundamentalsStale(sec.annual?.[0]?.period_end ?? null, computedAt)) { staleFundamentals++; continue; }
       const price = await getLatestPrice(ticker);
       if (price?.stale) { skipped++; continue; } // 陈旧价(>PRICE_MAX_AGE_DAYS天)不当现价喂 strike-zone/OE-DCF
       const strikeZone = deriveStrikeZone(floor, price);
@@ -163,7 +168,7 @@ async function main() {
     if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
     deleted += count ?? 0;
   }
-  console.log(`估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据), 排除非经营性 ${excludedNonOperating}(ETP/基金/权证), ADR未策展抑制 ${adrSuppressed}, 清理陈旧 ${deleted}, computed_at ${computedAt}`);
+  console.log(`估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据), 过期基本面抑制 ${staleFundamentals}(最新FY距今>${FUNDAMENTALS_MAX_AGE_MONTHS}月), 排除非经营性 ${excludedNonOperating}(ETP/基金/权证), ADR未策展抑制 ${adrSuppressed}, 清理陈旧 ${deleted}, computed_at ${computedAt}`);
 }
 
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
