@@ -152,6 +152,16 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   assert(assessReliability({ floor: floorStub(), oeDcf: oeQuick }) === false, "quick_check_flag → unreliable");
   assert(assessReliability({ floor: floorStub(), oeDcf: oe() }) === true, "clean → reliable");
 }
+// 13b) AI-hog scheme C: floor.ai_capex_distortion_warning → unreliable (boolean, not note-scraping)
+{
+  const aiFloor = {
+    kind: "floor",
+    ai_capex_distortion_warning: true,
+    net_net: { assessable: false, reason: "stub" },
+  } as unknown as ValuationFloor;
+  assert(assessReliability({ floor: aiFloor, oeDcf: oe() }) === false, "ai_capex_distortion_warning → unreliable");
+  assert(assessReliability({ floor: floorStub(), oeDcf: oe() }) === true, "no AI warning → reliable");
+}
 
 // 14) net-net:price(80) 在 (⅔NCAV, NCAV) 之间 → assetFloor=true, buy=false。
 {

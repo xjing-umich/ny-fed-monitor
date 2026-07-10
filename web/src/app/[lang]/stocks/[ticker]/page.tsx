@@ -31,6 +31,7 @@ import {
   deriveOeDcf,
   reconcileMethods,
   resolveAds,
+  isFundamentalsStale,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
@@ -363,7 +364,13 @@ export default async function StockTickerPage({
   const { securityType, adsRatio } = await getSecurityMeta(ticker);
   const ads = resolveAds(securityType, adsRatio);
   const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio);
-  const valuationFloor = ads.suppressed ? undefined : computeValuationFloor(floorInput);
+  // 基本面过期闸:与 ingest 同语义 — 最新 FY 期末超阈值 → 抑制估值(不造陈旧幻觉)。
+  const fundamentalsStale = isFundamentalsStale(
+    sec.annual?.[0]?.period_end ?? null,
+    new Date().toISOString(),
+  );
+  const valuationFloor =
+    ads.suppressed || fundamentalsStale ? undefined : computeValuationFloor(floorInput);
 
   // Strike zone (price vs floor): only when a real per-share floor exists.
   // Multi-class (per_share_unavailable) / thin (undefined) skip the price hit.

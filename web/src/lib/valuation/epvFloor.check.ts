@@ -90,6 +90,14 @@ assert.strictEqual(floor.high_leverage_warning, false, "net-cash compounder no w
 // ── moat franchise + negative-earnings degradation ───────────────────────────
 assert.strictEqual(floor.moat_reading.signal, "franchise", `compounder franchise got ${floor.moat_reading.signal}`);
 assert.ok(/directional/i.test(floor.moat_reading.basis_note) && /reproduction value/i.test(floor.moat_reading.basis_note), "moat basis note directional + reproduction value");
+assert.strictEqual(floor.moat_reading.dual_test_passed, true, "compounder dual franchise gate passed");
+assert.strictEqual(floor.moat_reading.franchise_blocked_by_reproduction, undefined, "compounder not blocked by reproduction AV");
+assert.ok(floor.moat_reading.av_conservative_per_share != null, "compounder exposes AV_conservative");
+assert.ok(floor.moat_reading.av_reproduction_per_share != null, "compounder exposes AV_reproduction");
+assert.ok(
+  floor.moat_reading.av_reproduction_per_share! >= floor.moat_reading.av_conservative_per_share!,
+  "AV_reproduction ≥ AV_conservative",
+);
 const loss: ValuationFloorInput = {
   ticker: "LOSS",
   years: [
@@ -124,8 +132,12 @@ assert.ok(Math.abs(af.per_share! - 4.2) < 1e-9, `tangible per share 4.2 got ${af
 assert.ok(/tangible/i.test(af.basis), "basis says tangible");
 const noIntang = floorOf(computeValuationFloor({ ticker: "NOINT", years: compounder.years.map(({ goodwill, intangibles, ...rest }) => rest) }));
 assert.strictEqual(noIntang.asset_floor.intangibles_separated, false, "no separation when both missing");
+assert.strictEqual(noIntang.asset_floor.dual_av_comparable, false, "no intangible split → dual AV not comparable");
 assert.ok(Math.abs(noIntang.asset_floor.per_share! - 5.0) < 1e-9, `total-book fallback 5.0 got ${noIntang.asset_floor.per_share}`);
 assert.ok(/intangibles not separated|total book/i.test(noIntang.asset_floor.basis), "fallback basis labeled");
+assert.ok(/dual reproduction test unavailable/i.test(noIntang.moat_reading.basis_note), "moat basis notes dual test unavailable when intangibles not separated");
+assert.strictEqual(noIntang.moat_reading.dual_test_passed, undefined, "no dual_test_passed when dual unavailable");
+assert.strictEqual(noIntang.moat_reading.franchise_blocked_by_reproduction, undefined, "no franchise_blocked flag when dual unavailable");
 const negTangible = floorOf(computeValuationFloor({ ticker: "NEGT", years: compounder.years.map((y) => ({ ...y, goodwill: 4_900, intangibles: 300 })) }));
 assert.strictEqual(negTangible.asset_floor.assessable, false, "negative tangible book → not assessable");
 assert.strictEqual(negTangible.asset_floor.per_share, undefined, "no negative per-share floor");
@@ -337,6 +349,60 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   const f = computeValuationFloor({ ticker: "T", years: yrs as never });
   const lamp = (f as { buffett_epv: { buyback_offsets_sbc?: boolean } }).buffett_epv;
   assert.strictEqual(lamp.buyback_offsets_sbc, false, "buybacks ≫ SBC → offsets flag false");
+}
+
+// ── Dual AV franchise gate: cons-pass / repr-fail → commodity ─────────────────
+{
+  // AV_cons_ps = (20k − 10k − 6k)/1k = 4; acquired_reset = 8k → AV_repr_ps = 12.
+  // Low-margin EPV_mid ≈ 6.4 → passes 1.25× cons (5) but fails 1.25× repr (15).
+  const blocked: ValuationFloorInput = {
+    ticker: "BLOCK",
+    years: [
+      year(2025, { revenue: 10_000, operating_margin: 0.08, net_income: 500, effective_tax_rate: 0.21, shareholders_equity: 20_000, goodwill: 10_000, intangibles: 6_000, cash: 0, total_debt: 0, shares_diluted: 1_000 }),
+      year(2024, { revenue: 9_500, operating_margin: 0.08, net_income: 480, effective_tax_rate: 0.21, shareholders_equity: 19_000, goodwill: 10_000, intangibles: 6_000, cash: 0, total_debt: 0, shares_diluted: 1_000 }),
+      year(2023, { revenue: 9_000, operating_margin: 0.08, net_income: 460, effective_tax_rate: 0.21, shareholders_equity: 18_000, goodwill: 10_000, intangibles: 6_000, cash: 0, total_debt: 0, shares_diluted: 1_000 }),
+    ],
+  };
+  const bf = floorOf(computeValuationFloor(blocked));
+  assert.strictEqual(bf.asset_floor.dual_av_comparable, true, "blocked fixture dual-comparable");
+  assert.ok(Math.abs(bf.asset_floor.per_share! - 4) < 1e-9, `AV_cons_ps=4 got ${bf.asset_floor.per_share}`);
+  assert.ok(Math.abs(bf.asset_floor.reproduction_per_share! - 12) < 1e-9, `AV_repr_ps=12 got ${bf.asset_floor.reproduction_per_share}`);
+  const epvMid = (bf.graham_epv.per_share_low! + bf.graham_epv.per_share_high!) / 2;
+  assert.ok(epvMid / 4 >= 1.25, `EPV/AV_cons ≥ 1.25 (got ${epvMid / 4})`);
+  assert.ok(epvMid / 12 < 1.25, `EPV/AV_repr < 1.25 (got ${epvMid / 12})`);
+  assert.strictEqual(bf.moat_reading.signal, "commodity", "cons-pass/repr-fail → commodity (not franchise)");
+  assert.strictEqual(bf.moat_reading.franchise_blocked_by_reproduction, true, "franchise_blocked_by_reproduction");
+  assert.strictEqual(bf.moat_reading.dual_test_passed, false, "dual_test_passed false when repr fails");
+  assert.strictEqual(bf.moat_reading.franchise_value, undefined, "no franchise_value when blocked");
+}
+
+// ── AI-hog scheme C: floor flag + GV gated even for franchise ─────────────────
+{
+  // High-margin franchise with capex doubling (8000/3500 ≥ 2) → AI warning lifts to floor;
+  // growth value forced gated_to_zero despite franchise moat.
+  const aiYears: ValuationFloorYear[] = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 2_000, capex: 8_000, ppe_net: 18_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 1_900, capex: 5_000, ppe_net: 12_000, working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 1_800, capex: 3_500, ppe_net: 8_000, working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 1_650, capex: 3_200, ppe_net: 6_500, working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 1_500, capex: 3_000, ppe_net: 5_500, working_capital: 1_000 },
+  ];
+  assert.strictEqual(maintenanceCapex(aiYears).ai_capex_distortion_warning, true, "fixture triggers AI-hog");
+  const aiFloor = floorOf(computeValuationFloor({ ticker: "AIHOG", years: aiYears }));
+  assert.strictEqual(aiFloor.ai_capex_distortion_warning, true, "AI warning lifted onto ValuationFloor");
+  assert.strictEqual(aiFloor.moat_reading.signal, "franchise", "AI fixture still reads franchise");
+  assert.strictEqual(aiFloor.growth_value.gated_to_zero, true, "franchise + AI → GV gated_to_zero");
+  assert.strictEqual(aiFloor.growth_value.scenarios.neutral, 0, "AI gate → GV 0");
+  // Scheme C polish: lamp notes lean on maintenanceCapex (D&A-cap / growth-spike), not the old "50% floor → EPV pressed down" line.
+  for (const lamp of [aiFloor.graham_epv, aiFloor.buffett_epv]) {
+    const joined = lamp.method.simplifications.join(" | ").toLowerCase();
+    assert.ok(!joined.includes("pressed down"), `${lamp.label}: no 'pressed down' (scheme C OE/EPV may look optimistic)`);
+    assert.ok(!joined.includes("50% of current capex"), `${lamp.label}: no raw 50%-of-capex floor wording`);
+    assert.ok(
+      joined.includes("d&a") || joined.includes("growth"),
+      `${lamp.label}: AI-hog note reflects D&A-cap / growth-spike treatment`,
+    );
+  }
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");
