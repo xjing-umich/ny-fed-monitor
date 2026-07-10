@@ -116,7 +116,7 @@ const COPY = {
     reproductionValue: "重置价值",
     moat: "护城河",
     directional: "（方向性）",
-    oeDcfCompact: (r: string) => `所有者盈利 DCF（巴菲特）：${r} / 股。下限保留零增长终值；上限的永续增长封顶在 min(10 年期国债, 3% 名义 GDP)。`,
+    oeDcfCompact: (r: string) => `所有者盈利 DCF（巴菲特）：${r} / 股。下限保留零增长终值；上限的永续增长封顶在「10 年期国债」与「3% 名义 GDP」两者的较低值。`,
     highLeverageWarning: "高杠杆 — 价值区间为降级近似（见方法）。",
     methodSummary: "方法与数字",
     perSh: "/ 股",
