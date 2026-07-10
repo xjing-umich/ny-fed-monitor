@@ -47,6 +47,7 @@ import { isLikelyTicker } from "@/lib/externalLinks";
 import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { Sparkline } from "@/components/common/Sparkline";
+import { SectionHeading } from "@/components/common/SectionHeading";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
@@ -176,11 +177,12 @@ function HoldersTable({
 
   return (
     <section>
-      {/* 支柱②标题:语义 h2(文档大纲),视觉沿用 eyebrow */}
-      <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-        {t.title}
-      </h2>
-      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+      {/* 支柱②标题:绿眉标 → Fraunces 标题(语义 h2, 文档大纲/SEO) */}
+      <SectionHeading
+        eyebrow={lang === "zh" ? "SEC 13F · 持有人" : "SEC 13F · holders"}
+        title={t.title}
+      />
+      <div className="mb-3 mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
         <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)]">
           {t.meta(sorted.length, formatUSD(totalValue), moves.opened, moves.exited)}
         </p>
@@ -391,6 +393,32 @@ export default async function StockTickerPage({
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
   const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
 
+  // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于价值带)。
+  const marginShown = !!(
+    handoffVerdict &&
+    handoffVerdict.reliable &&
+    (handoffVerdict.inStrikeZone || handoffVerdict.bucket === "below") &&
+    handoffVerdict.marginPct != null
+  );
+
+  // 估值区块 Fraunces 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
+  // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
+  const valuationTitle = handoffVerdict
+    ? lang === "zh"
+      ? handoffVerdict.bucket === "below"
+        ? "安全边际"
+        : handoffVerdict.bucket === "within"
+          ? "处于合理价值区间"
+          : "高于合理价值"
+      : handoffVerdict.bucket === "below"
+        ? "Margin of safety"
+        : handoffVerdict.bucket === "within"
+          ? "In fair-value range"
+          : "Above fair value"
+    : lang === "zh"
+      ? "估值"
+      : "Valuation";
+
   const subtitle =
     lang === "zh"
       ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。`
@@ -477,7 +505,11 @@ export default async function StockTickerPage({
         verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
         keyFacts={[
           { label: lang === "zh" ? "现价" : "Price", value: fmtPriceFact(latestPrice) },
-          { label: lang === "zh" ? "安全边际" : "Margin of safety", value: handoffVerdict && handoffVerdict.reliable && (handoffVerdict.inStrikeZone || handoffVerdict.bucket === "below") && handoffVerdict.marginPct != null ? fmtMarginPct(handoffVerdict.marginPct) : "—" },
+          // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——
+          // 高于价值 / 带内 / 红旗档不显空格子(那是噪音), 结论交给 masthead 徽章 + 估值区块标题。
+          ...(marginShown
+            ? [{ label: lang === "zh" ? "安全边际" : "Margin of safety", value: fmtMarginPct(handoffVerdict!.marginPct!), tone: "positive" as const }]
+            : []),
           { label: lang === "zh" ? "持有人数" : "Holders", value: String(n) },
           { label: lang === "zh" ? "合计市值" : "Value held", value: formatUSD(totalValue) },
         ]}
@@ -493,10 +525,18 @@ export default async function StockTickerPage({
 
           {bq && (
             <section aria-label={lang === "zh" ? "生意质量" : "Business quality"}>
-              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                {lang === "zh" ? "生意质量" : "Business quality"}
-              </h2>
-              <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+              <SectionHeading
+                eyebrow={lang === "zh" ? "SEC 10-K · 基本面" : "SEC 10-K · fundamentals"}
+                title={lang === "zh" ? "生意质量" : "Business quality"}
+                trailing={
+                  bq.asOf ? (
+                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                      {lang === "zh" ? `截至 ${bq.asOf}` : `as of ${bq.asOf}`}
+                    </span>
+                  ) : undefined
+                }
+              />
+              <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
                   { k: lang === "zh" ? "营收增速" : "Revenue growth", v: bq.revenueYoy, sign: true },
                   { k: lang === "zh" ? "净利率" : "Net margin", v: bq.netMargin, sign: false },
@@ -511,33 +551,16 @@ export default async function StockTickerPage({
                   </div>
                 ))}
               </dl>
-              {bq.asOf && (
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
-                  {lang === "zh" ? `基本面截至 ${bq.asOf}` : `Fundamentals as of ${bq.asOf}`}
-                </p>
-              )}
-              {(bq.revenueSeries.length >= 2 || bq.marginSeries.length >= 2) && (
-                <div className="mt-4 flex flex-wrap gap-x-10 gap-y-3">
-                  {bq.revenueSeries.length >= 2 && (
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-[11px] text-[var(--tt-muted)]">
-                        {lang === "zh"
-                          ? `营收 ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · 近 ${bq.revenueSeries.length} 年`
-                          : `Revenue ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · ${bq.revenueSeries.length}y`}
-                      </span>
-                      <Sparkline series={bq.revenueSeries} color="var(--tt-muted)" />
-                    </div>
-                  )}
-                  {bq.marginSeries.length >= 2 && (
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-[11px] text-[var(--tt-muted)]">
-                        {lang === "zh"
-                          ? `净利率 ${(bq.marginSeries[0] * 100).toFixed(0)}% → ${(bq.marginSeries[bq.marginSeries.length - 1] * 100).toFixed(0)}%`
-                          : `Net margin ${(bq.marginSeries[0] * 100).toFixed(0)}% → ${(bq.marginSeries[bq.marginSeries.length - 1] * 100).toFixed(0)}%`}
-                      </span>
-                      <Sparkline series={bq.marginSeries} color="var(--tt-muted)" />
-                    </div>
-                  )}
+              {/* 营收多年轨迹(口径无歧义)。净利率折线暂缓 —— 其结尾值与净利率格子(latest_net_margin
+                  疑似配期异常, 见数据任务)矛盾, 不上自相矛盾的两个数。 */}
+              {bq.revenueSeries.length >= 2 && (
+                <div className="mt-5 flex items-center gap-3">
+                  <span className="font-mono text-[11px] text-[var(--tt-muted)]">
+                    {lang === "zh"
+                      ? `营收 ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · 近 ${bq.revenueSeries.length} 年`
+                      : `Revenue ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · ${bq.revenueSeries.length}y`}
+                  </span>
+                  <Sparkline series={bq.revenueSeries} color="var(--tt-muted)" />
                 </div>
               )}
               {!bq.reliable && (
@@ -548,21 +571,25 @@ export default async function StockTickerPage({
             </section>
           )}
 
-          {/* 支柱① 估值结论(头条) — 默认只显结论, 方法在卡内折叠 */}
+          {/* 支柱① 估值结论(头条) — Fraunces 标题直接是结论, 位置带/句子/方法在卡内 */}
           {valuationFloor && (
             <section>
-              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                {lang === "zh" ? "估值 · 地基层" : "Valuation"}
-              </h2>
-              <EarningsPowerFloorCard
-                floor={valuationFloor}
-                strikeZone={strikeZone}
-                oeDcf={oeDcf}
-                reconciliation={reconciliation}
-                issuer={issuer}
-                ticker={ticker}
-                lang={lang}
+              <SectionHeading
+                eyebrow={lang === "zh" ? "估值 · 两种方法" : "Valuation · two methods"}
+                title={valuationTitle}
               />
+              <div className="mt-5">
+                <EarningsPowerFloorCard
+                  floor={valuationFloor}
+                  strikeZone={strikeZone}
+                  oeDcf={oeDcf}
+                  reconciliation={reconciliation}
+                  issuer={issuer}
+                  ticker={ticker}
+                  lang={lang}
+                  showStatus={false}
+                />
+              </div>
               <LearnLink
                 lang={lang}
                 slug="reading-business-quality"
@@ -590,10 +617,11 @@ export default async function StockTickerPage({
 
           {coOwned.length > 0 && (
             <section aria-label={lang === "zh" ? "共同持仓" : "Co-ownership"}>
-              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                {lang === "zh" ? "共同持仓" : "Also held by these investors"}
-              </h2>
-              <p className="mb-3 text-sm text-[var(--tt-muted)]">
+              <SectionHeading
+                eyebrow={lang === "zh" ? "SEC 13F · 共持信号" : "SEC 13F · co-ownership"}
+                title={lang === "zh" ? "他们还共同持有" : "Also held by these investors"}
+              />
+              <p className="mb-3 mt-5 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
                   ? `持有 ${issuer}（${ticker}）的这些人还共同重仓 →`
                   : `Investors holding ${issuer} (${ticker}) also commonly hold →`}

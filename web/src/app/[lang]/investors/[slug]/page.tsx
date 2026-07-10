@@ -33,6 +33,7 @@ import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
 import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
 import { LearnLink } from "@/components/common/LearnLink";
+import { SectionHeading } from "@/components/common/SectionHeading";
 
 const MAX_HOLDINGS = 25;
 
@@ -220,22 +221,23 @@ function HoldingsTable({
 
   return (
     <section>
-      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-          {t.title}
-        </span>
-      </div>
-      <DataTable
-        columns={columns}
-        rows={capped}
-        getKey={(h) => holdingKey(h)}
-        rowHref={(h) => {
-          const tk = cusipToTicker.get(h.cusip);
-          if (tk) return stockPath(lang, tk);
-          return h.cusip ? stockPath(lang, h.cusip) : "";
-        }}
-        breakpoint="lg"
+      <SectionHeading
+        eyebrow={lang === "zh" ? "SEC 13F · 最新持仓" : "SEC 13F · latest filing"}
+        title={t.title}
       />
+      <div className="mt-5">
+        <DataTable
+          columns={columns}
+          rows={capped}
+          getKey={(h) => holdingKey(h)}
+          rowHref={(h) => {
+            const tk = cusipToTicker.get(h.cusip);
+            if (tk) return stockPath(lang, tk);
+            return h.cusip ? stockPath(lang, h.cusip) : "";
+          }}
+          breakpoint="lg"
+        />
+      </div>
       {truncated && (
         <p className="mt-2 text-xs text-[var(--tt-faint)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
       )}
@@ -507,10 +509,11 @@ export default async function InvestorSlugPage({
         <>
           {posture.cheap.length > 0 && (
             <section aria-label={lang === "zh" ? "估值姿态" : "Valuation posture"}>
-              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                {lang === "zh" ? "估值姿态" : "Valuation posture"}
-              </h2>
-              <p className="mb-3 text-sm text-[var(--tt-muted)]">
+              <SectionHeading
+                eyebrow={lang === "zh" ? "13F × 估值" : "13F × valuation"}
+                title={lang === "zh" ? "估值姿态" : "Valuation posture"}
+              />
+              <p className="mb-3 mt-5 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
                   ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于保守价值带${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
                   : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below a conservative value band${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
@@ -538,10 +541,16 @@ export default async function InvestorSlugPage({
           )}
           {lonely.length > 0 && (
             <section aria-label={lang === "zh" ? "独门重仓" : "Lonely conviction"}>
-              <h2 className="border-t border-[var(--tt-border)] pt-4 pb-3 font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
-                {lang === "zh" ? `独门重仓 · ${lonely.length} 只` : `Lonely conviction · ${lonely.length}`}
-              </h2>
-              <p className="mb-3 text-sm text-[var(--tt-muted)]">
+              <SectionHeading
+                eyebrow={lang === "zh" ? "13F · 集中信号" : "13F · concentration"}
+                title={lang === "zh" ? "独门重仓" : "Lonely conviction"}
+                trailing={
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                    {lang === "zh" ? `${lonely.length} 只` : `${lonely.length}`}
+                  </span>
+                }
+              />
+              <p className="mb-3 mt-5 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
                   ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${latest.period}）：`
                   : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${latest.period}):`}
