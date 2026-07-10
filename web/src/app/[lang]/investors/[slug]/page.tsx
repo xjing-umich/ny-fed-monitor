@@ -206,19 +206,12 @@ function HoldingsTable({
       cell: (h) => {
         const s = rowSignals.get(h.cusip);
         if (!s) return <span className="text-[var(--tt-faint)]">—</span>;
+        if (!s.conviction) return <span className="text-[var(--tt-faint)]">—</span>;
         return (
           <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
-            {s.cheap && (
-              <span className="rounded-sm border border-[var(--tt-positive)]/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-positive)]">
-                {lang === "zh" ? "便宜" : "Cheap"}
-                {s.cheap.marginPct != null && s.cheap.marginPct > 0 ? ` −${Math.round(s.cheap.marginPct * 100)}%` : ""}
-              </span>
-            )}
-            {s.conviction && (
-              <span className="rounded-sm border border-[var(--tt-border)] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
-                {s.conviction.label}
-              </span>
-            )}
+            <span className="rounded-sm border border-[var(--tt-border)] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
+              {s.conviction.label}
+            </span>
           </span>
         );
       },
@@ -309,8 +302,9 @@ export default async function InvestorSlugPage({
   const verdicts = await readValuationVerdicts(holdingTickers);
   const holderCounts = await readHolderCounts(holdingTickers);
 
-  // 持仓表行内信号(便宜/高信念徽章): 按 cusip 归并, 零新增 IO(复用已加载的 verdicts/filings)。
-  const rowSignals = deriveRowSignals({ filings: d.filings, verdicts, cusipToTicker, lang });
+  // 持仓表行内信念徽章(连续加仓/长期核心等): 按 cusip 归并, 零新增 IO(复用已加载的 filings)。
+  // (便宜徽章已移除 —— 与同行「估值」列 + 估值姿态小节 chip 重复。)
+  const rowSignals = deriveRowSignals({ filings: d.filings, lang });
 
   // 组合估值姿态(现价 vs 保守价值带): reliable-gated 单一真相源, 喂 keyFact/小节/页底 handoff。
   const posture = deriveValuationPosture({
@@ -403,7 +397,7 @@ export default async function InvestorSlugPage({
     </span>
   );
 
-  // 独门重仓(少人持 ∩ 够重): 与 keyFact 的 N 同源, 喂下方小节。
+  // 独门重仓(少人持 ∩ 够重): 计数入独门小节 h2, chip 喂小节。
   const lonely = deriveLonelyConviction({
     holdings: longHoldings.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: h.value })),
     cusipToTicker,

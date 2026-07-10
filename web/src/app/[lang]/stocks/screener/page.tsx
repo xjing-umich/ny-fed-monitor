@@ -39,7 +39,7 @@ export async function generateMetadata({
 }
 
 const VIEWS: { key: ScreenView; zh: string; en: string }[] = [
-  { key: "strike_zone", zh: "进入区", en: "Strike zone" },
+  { key: "strike_zone", zh: "击球区", en: "Strike zone" },
   { key: "below", zh: "有安全边际", en: "Below value" },
   { key: "all", zh: "全部可估值", en: "All valued" },
 ];
