@@ -1,3 +1,4 @@
+import { maintenanceCapex } from "./maintenanceCapex";
 import type { GrowthScenarioSet, GrowthValue, MoatSignal, ValuationFloorYear } from "./types";
 
 export const GV_WINDOW = 5;                  // years in the ROIIC window
@@ -34,9 +35,9 @@ function annuityFactor(r: number, n: number): number {
  * Greenwald growth value (spec §1.6). Franchise-gated; cumulative endpoint-aligned ROIIC;
  * three-scenario sensitivity. `years` most-recent-first.
  *
- * Per-year growth reinvestment uses the D&A proxy for maintenance (capex − D&A)+ + ΔNWC — the
- * standard Greenwald growth-capex proxy across a multi-year series (disclosed simplification);
- * the dedicated maintenanceCapex() drives the current-year EPV/OE, not this series.
+ * Per-year growth reinvestment = max(0, capex − maintenanceCapex(slice))+ + ΔNWC, using the same
+ * maintenanceCapex() estimate as EPV/OE (slice latest = that year; falls back to D&A when
+ * maintenance is not assessable).
  */
 export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion } = args;
@@ -89,11 +90,16 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
     };
   }
 
-  // Per-year growth reinvestment = max(0, capex − D&A) + ΔNWC. ΔNWC = WC_y − WC_{y+1} (older).
+  // Per-year growth reinvestment = max(0, capex − maint) + ΔNWC.
+  // maint = maintenanceCapex(window.slice(i)) — same estimator as EPV/OE; D&A fallback.
+  // ΔNWC = WC_y − WC_{y+1} (older).
   function growthReinvest(idx: number): number | undefined {
     const y = window[idx];
-    if (y.capex == null || y.d_and_a == null) return undefined;
-    const growthCapex = Math.max(0, y.capex - y.d_and_a);
+    if (y.capex == null) return undefined;
+    const slice = window.slice(idx); // latest = that year
+    const mc = maintenanceCapex(slice);
+    const maint = mc.assessable && mc.value != null ? mc.value : (y.d_and_a ?? 0);
+    const growthCapex = Math.max(0, y.capex - maint);
     let deltaNwc = 0;
     const older = window[idx + 1];
     if (y.working_capital != null && older?.working_capital != null) {
@@ -124,7 +130,7 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
       assessable: false,
       not_assessable_reason: "No positive growth reinvestment in the matured window, so ROIIC cannot be computed.",
       gated_to_zero: false, wacc_band: waccBand, scenarios: { ...ZERO }, per_share: { ...ZERO },
-      notes: [...notes, "Capex did not exceed D&A (no growth capital deployed) — growth value not assessable."],
+      notes: [...notes, "Capex did not exceed maintenance (no growth capital deployed) — growth value not assessable."],
     };
   }
 
@@ -164,7 +170,7 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   if (roiic <= GV_DISCOUNT_NEUTRAL) {
     notes.push("ROIIC is at or below the cost of capital: incremental growth does not create value (neutral GV = 0).");
   }
-  notes.push("Per-year maintenance uses the D&A proxy for the growth-reinvestment series; net M&A omitted (conservative); ΔNWC growth portion included here only (not in the owner-earnings floor).");
+  notes.push("Growth-reinvestment maintenance uses the same maintenanceCapex() as EPV; net M&A omitted (conservative); ΔNWC growth portion included here only (not in the owner-earnings floor).");
 
   return {
     assessable: true,
