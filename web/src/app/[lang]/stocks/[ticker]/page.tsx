@@ -485,7 +485,7 @@ export default async function StockTickerPage({
         verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
         keyFacts={[
           { label: lang === "zh" ? "现价" : "Price", value: fmtPriceFact(latestPrice) },
-          { label: lang === "zh" ? "安全边际" : "Margin of safety", value: handoffVerdict && (handoffVerdict.inStrikeZone || handoffVerdict.bucket === "below") && handoffVerdict.marginPct != null ? fmtMarginPct(handoffVerdict.marginPct) : "—" },
+          { label: lang === "zh" ? "安全边际" : "Margin of safety", value: handoffVerdict && handoffVerdict.reliable && (handoffVerdict.inStrikeZone || handoffVerdict.bucket === "below") && handoffVerdict.marginPct != null ? fmtMarginPct(handoffVerdict.marginPct) : "—" },
           { label: lang === "zh" ? "持有人数" : "Holders", value: String(n) },
           { label: lang === "zh" ? "合计市值" : "Value held", value: formatUSD(totalValue) },
         ]}
