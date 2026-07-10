@@ -271,9 +271,9 @@ export type OeDcfAssessment = {
     oe_yield?: number;             // (OE_0 / shares) / price
     oe_yield_vs_dgs10_bps?: number;
     oe_yield_flag?: boolean;       // |diff| > 300 bps
-    quick_check_per_share?: number; // OE_0 / midpoint r / shares (no growth)
-    quick_check_deviation_pct?: number; // |neutral_ps − quick| / quick
-    quick_check_flag?: boolean;    // > 50%
+    quick_check_per_share?: number; // H-model baseline: OE_0·[(1+gL)+H(gS−gL)]/(r−gL) / shares
+    quick_check_deviation_pct?: number; // |neutral_ps − H-model baseline| / baseline
+    quick_check_flag?: boolean;    // > 50% —— 离散 DCF 显著背离同增长闭式解 = 模型不稳定
     r_minus_g?: number;            // discount.midpoint − growth_g1 (explicit-phase spread)
     r_minus_g_flag?: boolean;      // r_minus_g < 4% — growth nearly matches discount, estimate is sensitive
   };
