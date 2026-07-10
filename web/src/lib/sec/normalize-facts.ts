@@ -176,6 +176,20 @@ function quarterOfEnd(end: string, fyeMonth: number) {
   return offset === 0 ? 4 : Math.min(4, Math.max(1, Math.round(offset / 3)));
 }
 
+// Fiscal year for a full-year (FY-bucket) flow fact — the annual close. Keying
+// the annual on quarterOfEnd===4 breaks for 52/53-week filers whose year-end
+// DRIFTS across a calendar-month boundary (HD: 2024-01-28 → 2025-02-02, CBRL:
+// Jul→Aug, CIEN: Oct→Nov): the drifted end no longer maps to Q4, so the whole
+// 10-K's annual figures were silently dropped and valuation ran on 1-2yr-stale
+// fundamentals. Accept ends within ±1 calendar month of the FYE (cyclic) — a
+// genuine trailing-twelve-month fact ends mid-year (>1 month away) and stays
+// rejected. Fiscal year is named for the calendar year the period ENDS in.
+function fyeBucketYear(end: string, fyeMonth: number): number | null {
+  const [year, month] = end.split("-").map(Number);
+  const dist = Math.min((month - fyeMonth + 12) % 12, (fyeMonth - month + 12) % 12);
+  return dist <= 1 ? year : null;
+}
+
 // Collect the as-reported value per (period_end, bucket) for one flow field.
 function collectFlow(facts: CompanyFacts, field: FundamentalField) {
   const byKey = new Map<string, PickedFact>();
@@ -214,7 +228,12 @@ function deriveFlowSeries(byKey: Map<string, PickedFact>, fyeMonth: number) {
       if (q === 1) cum.set(`${fy}|1`, p); // 3-month YTD == Q1
     } else if (bucket === "H1" && q === 2) cum.set(`${fy}|2`, p);
     else if (bucket === "TQ" && q === 3) cum.set(`${fy}|3`, p);
-    else if (bucket === "FY" && q === 4) cum.set(`${fy}|4`, p);
+    else if (bucket === "FY") {
+      // Drift-tolerant annual key (not quarterOfEnd===4) so 52/53-week filers'
+      // month-crossing year-ends still register; mid-year TTMs return null.
+      const fyeYear = fyeBucketYear(end, fyeMonth);
+      if (fyeYear !== null) cum.set(`${fyeYear}|4`, p);
+    }
   }
 
   const quarters = new Map<string, PickedFact>();

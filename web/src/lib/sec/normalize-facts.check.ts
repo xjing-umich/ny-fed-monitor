@@ -1,4 +1,6 @@
-import { pickDebtTags } from "./normalize-facts";
+import { pickDebtTags, normalizeCompanyFacts } from "./normalize-facts";
+import type { CompanyFacts, SecFactUnit } from "./company-facts";
+import type { NormalizedFiling } from "./company-submissions";
 
 function assert(c: boolean, m: string) {
   if (!c) {
@@ -66,5 +68,55 @@ assert(
      ["LongTermDebtNoncurrent", "LongTermDebtCurrent"]),
   "CHTR: 分项优先于合并(维持$94.4B)"
 );
+
+// ── 52/53 周财年"跨月漂移"年报归属回归(HD/PVH/CBRL/CIEN 冻结根因)──
+// 零售/科技 52/53 周财年终日逐年漂移,偶尔跨越日历月界(如 HD:2024-01-28 → 2025-02-02)。
+// 旧逻辑用单标量 fyeMonth + quarterOfEnd===4 判年报归属,一旦年终月份变了,整份年报被丢,
+// 估值就吃到 1-2 年前的陈旧基本面。这里用 HD 式合成数据坐实:FY2025 漂进 2 月后仍须出年报行。
+function usd(units: SecFactUnit[]) {
+  return { units: { USD: units } };
+}
+function fyeDriftFacts(): CompanyFacts {
+  return {
+    cik: 354950,
+    entityName: "HOME DEPOT INC",
+    facts: {
+      "us-gaap": {
+        // 上一年(未漂移):FY2024 end 2024-01-28,~363 天 → FY 桶
+        // 漂移年:FY2025 end 2025-02-02(53 周),~370 天 → FY 桶,月份从 1 月漂到 2 月
+        Revenues: usd([
+          { start: "2023-01-30", end: "2024-01-28", val: 150_000_000_000, filed: "2024-03-13", form: "10-K" },
+          { start: "2024-01-29", end: "2025-02-02", val: 160_000_000_000, filed: "2025-03-21", form: "10-K" },
+        ]),
+        NetIncomeLoss: usd([
+          { start: "2023-01-30", end: "2024-01-28", val: 15_000_000_000, filed: "2024-03-13", form: "10-K" },
+          { start: "2024-01-29", end: "2025-02-02", val: 16_000_000_000, filed: "2025-03-21", form: "10-K" },
+        ]),
+        // 中段 365 天 TTM(结束于财年中,2024-07-28):绝不能被当成一份年报
+        RevenueFromContractWithCustomerExcludingAssessedTax: usd([
+          { start: "2023-07-30", end: "2024-07-28", val: 155_000_000_000, filed: "2024-08-20", form: "10-Q" },
+        ]),
+      },
+    },
+  } as CompanyFacts;
+}
+function fyeDriftFilings(): NormalizedFiling[] {
+  const mk = (report: string, filed: string): NormalizedFiling => ({
+    cik: "0000354950", ticker: "HD", accession_number: `acc-${report}`, form: "10-K",
+    filing_date: filed, report_date: report, fiscal_year: Number(report.slice(0, 4)),
+    fiscal_period: "FY", primary_document: null, filing_url: "", sec_index_url: "",
+  });
+  return [mk("2025-02-02", "2025-03-21"), mk("2024-01-28", "2024-03-13")];
+}
+
+// fiscalYearEnd "0128" → fyeMonth=1(SEC submissions MMDD 口径)
+const drift = normalizeCompanyFacts("HD", "0000354950", fyeDriftFacts(), fyeDriftFilings(), "0128");
+const driftEnds = drift.annual.map((r) => r.period_end);
+assert(driftEnds.includes("2024-01-28"), "未漂移年报 FY2024(2024-01-28)仍在(防 regression)");
+assert(driftEnds.includes("2025-02-02"), "漂移年报 FY2025(2025-02-02)必须出行,不得因跨月被丢");
+const fy2025 = drift.annual.find((r) => r.period_end === "2025-02-02");
+assert(fy2025?.fiscal_year === 2025, "漂移年报 fiscal_year 按结束日历年标注=2025");
+assert(fy2025?.revenue === 160_000_000_000, "漂移年报营收取真值 160B");
+assert(!driftEnds.includes("2024-07-28"), "中段 365 天 TTM(2024-07-28)不得被误当年报");
 
 console.log("normalize-facts.check OK");
