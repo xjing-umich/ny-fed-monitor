@@ -27,6 +27,8 @@ export type EpvLamp = {
   per_share_high?: number;
   /** Buffett lamp only: average SBC / owner earnings — real dilution cost, disclosed not added back (spec §1.3). */
   sbc_to_oe_pct?: number;
+  /** Buffett lamp only: 多年回购(绝对值)均值 ≤ SBC 均值 → 回购主要抵消稀释、非净回馈(Mauboussin 洞见);数据缺则 undefined。 */
+  buyback_offsets_sbc?: boolean;
   method: EpvLampMethod;
 };
 

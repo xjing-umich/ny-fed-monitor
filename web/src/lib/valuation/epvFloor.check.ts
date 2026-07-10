@@ -312,4 +312,31 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   }
 }
 
+// ── A3. SBC 回购抵消披露 ──────────────────────────────────────────────────────
+{
+  // 回购 ≈ SBC（回购未超 SBC）→ buyback_offsets_sbc = true
+  const yrs = [2024, 2023, 2022, 2021].map((fy, i) => ({
+    fiscal_year: fy, revenue: 1000, operating_income: 200, operating_margin: 0.2,
+    net_income: 150, shareholders_equity: 800, shares_diluted: 100,
+    d_and_a: 40, capex: 40, stock_based_comp: 30, share_repurchases: -25, // 回购25 ≤ SBC30
+    current_assets: 500, total_liabilities: 300,
+  }));
+  const f = computeValuationFloor({ ticker: "T", years: yrs as never });
+  assert.ok(f && (f as { kind?: string }).kind === "floor", "floor built");
+  const lamp = (f as { buffett_epv: { buyback_offsets_sbc?: boolean } }).buffett_epv;
+  assert.strictEqual(lamp.buyback_offsets_sbc, true, "buybacks ≤ SBC → offsets flag true");
+}
+{
+  // 回购 ≫ SBC（净回馈）→ false
+  const yrs = [2024, 2023, 2022, 2021].map((fy) => ({
+    fiscal_year: fy, revenue: 1000, operating_income: 200, operating_margin: 0.2,
+    net_income: 150, shareholders_equity: 800, shares_diluted: 100,
+    d_and_a: 40, capex: 40, stock_based_comp: 10, share_repurchases: -200, // 回购200 ≫ SBC10
+    current_assets: 500, total_liabilities: 300,
+  }));
+  const f = computeValuationFloor({ ticker: "T", years: yrs as never });
+  const lamp = (f as { buffett_epv: { buyback_offsets_sbc?: boolean } }).buffett_epv;
+  assert.strictEqual(lamp.buyback_offsets_sbc, false, "buybacks ≫ SBC → offsets flag false");
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");
