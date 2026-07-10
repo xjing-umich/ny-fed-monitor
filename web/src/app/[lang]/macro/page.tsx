@@ -46,8 +46,8 @@ export async function generateMetadata({
     lang === "zh" ? "宏观 / 流动性 — Treasury Market Monitor" : "Macro / Liquidity — Treasury Market Monitor";
   const description =
     lang === "zh"
-      ? "资金面、供给面、政策面全景：回购融资、基准利率、美联储工具、国债拍卖、SOMA 持仓与政策预期。"
-      : "Full-spectrum view of funding, supply, and policy: repo financing, reference rates, Fed facilities, Treasury auctions, SOMA portfolio, and policy expectations.";
+      ? "美债市场的资金面、供给面与政策面指标：回购利率、基准利率、美联储工具、国债拍卖、SOMA 持仓与政策预期。"
+      : "Funding, supply, and policy indicators for the Treasury market: repo rates, reference rates, Fed facilities, Treasury auctions, SOMA holdings, and policy expectations.";
   return { title, description, alternates, ...ogFor({ lang, title, description, path: localePath(lang, "/macro") }) };
 }
 
