@@ -192,8 +192,8 @@ export default async function MacroOverviewPage({
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--tt-muted)]">
               {lang === "zh"
-                ? "先看市场摘要、核心快照和异动，再下钻到资金面、供给面、政策面与宏观定价。"
-                : "Start with the market summary, core snapshot, and watch items, then drill into funding, supply, policy, and macro pricing."}
+                ? "先看市场摘要、核心快照和异动，再展开资金面、供给面、政策面与宏观定价。"
+                : "Start with the market summary, core snapshot, and watch items, then move to funding, supply, policy, and macro pricing."}
             </p>
           </header>
         )}
