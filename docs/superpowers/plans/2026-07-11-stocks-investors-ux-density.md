@@ -128,7 +128,7 @@ In `StocksTable.tsx`:
 2. Remove unused imports: `ExternalFinanceLinks` (and `stockGlossary` `links` usage only — keep other glossary keys).
 3. If `exchange` / `isTicker` are only used by Links, stop passing them from `stocks/page.tsx` and drop those fields from `StockRow` **only if** nothing else needs them. Prefer minimal: keep fields on the type if still populated, but unused fields should be removed from the row mapper to avoid dead props.
 
-Minimal safe path: remove column + `ExternalFinanceLinks` import; leave `exchange`/`isTicker` on the row type for now if removing them touches too many lines — or clean them in the same commit if the mapper is local to `page.tsx` + `StocksTable.tsx` only (preferred).
+Required path: remove Links column + `ExternalFinanceLinks` import, and in the same commit drop `exchange` / `isTicker` from `StockRow` and the `stocks/page.tsx` mapper (they exist only for Links).
 
 - [ ] **Step 5: Verify**
 
