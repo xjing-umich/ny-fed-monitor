@@ -1,18 +1,12 @@
 import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
+import { PRICE_MAX_AGE_DAYS, isPriceStale } from "@/lib/valuation/priceAge";
 
 export type LatestPrice = { close: number; date: string; currency: string; source?: string; stale?: boolean };
 export type PricePoint = { date: string; close: number };
 
-/** 价格视为陈旧的最大时龄(天)。超过此天数的最新价不应被当作"现价"喂估值。 */
-export const PRICE_MAX_AGE_DAYS = 10;
-
-/** 纯判定: date 相对 today 是否超过 maxDays 天(陈旧)。 */
-export function isPriceStale(date: string, today: Date, maxDays = PRICE_MAX_AGE_DAYS): boolean {
-  const d = new Date(date + "T00:00:00Z").getTime();
-  return (today.getTime() - d) / 86_400_000 > maxDays;
-}
+export { PRICE_MAX_AGE_DAYS, isPriceStale };
 
 /** 现价事实展示(纯函数, 单测)。无价→占位。 */
 export function fmtPriceFact(p: LatestPrice | null): string {

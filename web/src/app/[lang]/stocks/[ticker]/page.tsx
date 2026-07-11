@@ -374,13 +374,13 @@ export default async function StockTickerPage({
     ads.suppressed || fundamentalsStale ? undefined : computeValuationFloor(floorInput);
 
   // Always load market price for masthead keyFacts (V / BRK.B multi-class still show Price).
-  // Valuation consumers (strike / DCF / reconcile) only get price when kind === "floor".
-  // No env / no price row → getLatestPrice returns null → keyFact "—"; strike sub-block omitted.
+  // Valuation consumers only when kind === "floor"; stale price → 按无价(与 valuation-ingest 同语义)。
   const fetchedPrice = await getLatestPrice(ticker);
-  const { keyFact: latestPrice, valuation: valuationPrice } = resolveStockPagePrice({
+  const { keyFact: latestPrice, valuation: valuationPriceRaw } = resolveStockPagePrice({
     floorKind: valuationFloor?.kind,
     fetched: fetchedPrice,
   });
+  const valuationPrice = valuationPriceRaw?.stale ? null : valuationPriceRaw;
   const strikeZone =
     valuationFloor?.kind === "floor" ? deriveStrikeZone(valuationFloor, valuationPrice) : undefined;
 

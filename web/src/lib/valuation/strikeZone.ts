@@ -4,22 +4,16 @@
 // three-tier Graham classification the reader judges for themselves.
 import type { LatestPrice } from "@/lib/managers/priceRead";
 import type { StrikeZone, StrikeZoneAssessment, ValuationFloor, ValuePosition } from "./types";
+import { PRICE_MAX_AGE_DAYS, isPriceStale } from "./priceAge";
 
 /** Graham's classic one-third margin of safety. */
 export const GRAHAM_MOS = 1 / 3;
 
-/** Price older than this many calendar days is flagged stale (7 calendar days ≈ one trading week plus a weekend). */
-export const STALE_PRICE_DAYS = 7;
+/** @deprecated Use PRICE_MAX_AGE_DAYS — kept as alias so existing imports keep working. */
+export const STALE_PRICE_DAYS = PRICE_MAX_AGE_DAYS;
 
 function finitePositive(n: number | undefined): n is number {
   return n != null && Number.isFinite(n) && n > 0;
-}
-
-function calendarDaysSince(dateISO: string, now: Date): number {
-  const then = new Date(`${dateISO.slice(0, 10)}T00:00:00Z`).getTime();
-  // Unparseable date → treat as maximally old so it flags stale, never masquerades as fresh.
-  if (!Number.isFinite(then)) return Number.MAX_SAFE_INTEGER;
-  return Math.floor((now.getTime() - then) / 86_400_000);
 }
 
 /**
@@ -57,7 +51,7 @@ export function deriveStrikeZone(
 
   const base = {
     price: { close: price.close, date: price.date, currency: price.currency, source: price.source },
-    stale: calendarDaysSince(price.date, now) > STALE_PRICE_DAYS,
+    stale: isPriceStale(price.date, now, PRICE_MAX_AGE_DAYS),
   };
 
   // Per-share floors are USD (SEC companyfacts). A non-USD price makes the
