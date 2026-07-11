@@ -140,7 +140,7 @@ export type ValuePosition =
 export type StrikeZoneAssessment = {
   /** The price the comparison was made against (in-store latest). */
   price: { close: number; date: string; currency: string; source?: string };
-  /** price.date older than STALE_PRICE_DAYS — shown as a degraded "as of" note, NOT hidden. */
+  /** price.date older than PRICE_MAX_AGE_DAYS — shown as a degraded "as of" note, NOT hidden. */
   stale: boolean;
   /** price.currency !== "USD" — EPV/asset comparison suppressed (per-share floors are USD). */
   currencyMismatch: boolean;

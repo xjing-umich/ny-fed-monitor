@@ -36,6 +36,7 @@ import {
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact } from "@/lib/managers/priceRead";
+import { resolveStockPagePrice } from "@/lib/stocks/resolveStockPagePrice";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
@@ -372,23 +373,27 @@ export default async function StockTickerPage({
   const valuationFloor =
     ads.suppressed || fundamentalsStale ? undefined : computeValuationFloor(floorInput);
 
-  // Strike zone (price vs floor): only when a real per-share floor exists.
-  // Multi-class (per_share_unavailable) / thin (undefined) skip the price hit.
-  // No env / no price row → getLatestPrice returns null → deriveStrikeZone → undefined → price-vs-floor sub-block omitted (the floor card/section still render).
-  const latestPrice = valuationFloor?.kind === "floor" ? await getLatestPrice(ticker) : null;
+  // Always load market price for masthead keyFacts (V / BRK.B multi-class still show Price).
+  // Valuation consumers only when kind === "floor"; stale price → 按无价(与 valuation-ingest 同语义)。
+  const fetchedPrice = await getLatestPrice(ticker);
+  const { keyFact: latestPrice, valuation: valuationPriceRaw } = resolveStockPagePrice({
+    floorKind: valuationFloor?.kind,
+    fetched: fetchedPrice,
+  });
+  const valuationPrice = valuationPriceRaw?.stale ? null : valuationPriceRaw;
   const strikeZone =
-    valuationFloor?.kind === "floor" ? deriveStrikeZone(valuationFloor, latestPrice) : undefined;
+    valuationFloor?.kind === "floor" ? deriveStrikeZone(valuationFloor, valuationPrice) : undefined;
 
   // Second intrinsic-value method (Buffett owner-earnings DCF) + two-method cross-check.
   // DGS10 read is best-effort; null → DCF uses the 9–11% fallback band (flagged in-card).
   const dgs10 = valuationFloor?.kind === "floor" ? await getLatestDgs10() : null;
   const oeDcf =
     valuationFloor?.kind === "floor"
-      ? deriveOeDcf(valuationFloor, floorInput.years, dgs10, latestPrice)
+      ? deriveOeDcf(valuationFloor, floorInput.years, dgs10, valuationPrice)
       : undefined;
   const reconciliation =
     valuationFloor?.kind === "floor"
-      ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, latestPrice)
+      ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, valuationPrice)
       : undefined;
 
   // 上下文出口用的位置档(与估值卡同源, 永不漂移)。kind!=floor / 红旗 → null → 走兜底文案。

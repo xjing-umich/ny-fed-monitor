@@ -183,11 +183,26 @@ function quarterOfEnd(end: string, fyeMonth: number) {
 // 10-K's annual figures were silently dropped and valuation ran on 1-2yr-stale
 // fundamentals. Accept ends within ±1 calendar month of the FYE (cyclic) — a
 // genuine trailing-twelve-month fact ends mid-year (>1 month away) and stays
-// rejected. Fiscal year is named for the calendar year the period ENDS in.
+// rejected.
+//
+// Fiscal-year KEY uses the midpoint year of the ~365-day period
+// (`UTC year of end − 182 days`), NOT the calendar year of `end`. Naming by
+// end-year collides for Dec FYE filers whose 53-week close drifts past New
+// Year (FY2023 end 2024-01-04 and FY2024 end 2024-12-28 both keyed `2024|4`,
+// Map overwrite drops a full 10-K). Midpoints of adjacent annuals are ~12
+// months apart, so keys never collide; Jan/Feb closes (HD end 2025-02-02)
+// also label as the prior fiscal year, matching SEC.
 function fyeBucketYear(end: string, fyeMonth: number): number | null {
-  const [year, month] = end.split("-").map(Number);
+  const month = Number(end.split("-")[1]);
   const dist = Math.min((month - fyeMonth + 12) % 12, (fyeMonth - month + 12) % 12);
-  return dist <= 1 ? year : null;
+  if (dist > 1) return null;
+  return new Date(Date.parse(end) - 182 * 86_400_000).getUTCFullYear();
+}
+
+/** Cyclic month distance from period-end to the filer's canonical FYE month. */
+function fyeMonthDist(end: string, fyeMonth: number): number {
+  const month = Number(end.split("-")[1]);
+  return Math.min((month - fyeMonth + 12) % 12, (fyeMonth - month + 12) % 12);
 }
 
 // Collect the as-reported value per (period_end, bucket) for one flow field.
@@ -231,8 +246,16 @@ function deriveFlowSeries(byKey: Map<string, PickedFact>, fyeMonth: number) {
     else if (bucket === "FY") {
       // Drift-tolerant annual key (not quarterOfEnd===4) so 52/53-week filers'
       // month-crossing year-ends still register; mid-year TTMs return null.
+      // Midpoint-year key avoids Dec-FYE New-Year collisions; on same key,
+      // keep the end closest to the canonical FYE month (defensive tiebreak).
       const fyeYear = fyeBucketYear(end, fyeMonth);
-      if (fyeYear !== null) cum.set(`${fyeYear}|4`, p);
+      if (fyeYear !== null) {
+        const k = `${fyeYear}|4`;
+        const existing = cum.get(k);
+        if (!existing || fyeMonthDist(p.end, fyeMonth) < fyeMonthDist(existing.end, fyeMonth)) {
+          cum.set(k, p);
+        }
+      }
     }
   }
 
