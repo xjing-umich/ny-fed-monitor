@@ -11,16 +11,16 @@ AI / 营销腔。本文件是权威准则,新文案落地前对照它自检。�
 - **挣来的(留)**:具体、带真主张,换别的产品说不出来。
   - ✅ "Treat a 13F as a lead, not an answer."
 - **空洞的(杀)**:泛化、装饰,任何产品/发布会都能照搬。
-  - ❌ "N investors. One quarter. Every position they just reported."
+  - ❌ "Invest smarter with data-driven insights."
 
 判不准时问一句:**这句话只有"我们"能对"我们的数据"说,还是谁都能说?**
 只有我们能说 → 留;谁都能说 → 重写。
 
 ## 禁用清单(反例 → 正例)
 
-1. **断句三连**(X. Y. Z. 短促碎句,广告旁白腔)
-   - ❌ "N investors. One quarter. Every position they just reported."
-   - ✅ "Every position N investors reported to the SEC last quarter."
+1. **空洞断句三连**(X. Y. Z. 短促碎句——只在每段都空泛时才是病;每段 front-load 真数据/时间则是好的编辑腔,留)
+   - ❌ "Powerful. Simple. Built for investors."(每段都空,任何产品能说)
+   - ✅ "72 investors. One quarter. Every position they just reported."(每段落到真数字/时间 → 留,这就是我们的好 H1)
 
 2. **空洞对偶**("只 X 不 Y" / "not X, but Y",泛化时)
    - ❌ "We don't chase hype — we build conviction."
