@@ -60,7 +60,7 @@ export function AINarrative({ lang, pageKey }: AINarrativeProps) {
     <section>
       {/* Hairline top rule + uppercase tracked label */}
       <div className="border-t border-[var(--tt-border)] pt-4 pb-1 mb-3">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
           {heading}
         </span>
       </div>

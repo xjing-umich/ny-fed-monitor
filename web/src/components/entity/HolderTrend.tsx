@@ -67,7 +67,7 @@ export function HolderTrend({
   return (
     <section>
       <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
           {t.eyebrow}
         </span>
       </div>

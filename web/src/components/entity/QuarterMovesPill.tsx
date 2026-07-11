@@ -50,7 +50,7 @@ export function QuarterMovesPill({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+      <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
         {t.eyebrow}
       </span>
       {segs.map((s) => (
