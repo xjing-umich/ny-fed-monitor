@@ -1,7 +1,7 @@
 # Landing page audit polish (clickability + first-viewport tighten)
 
 **Date:** 2026-07-11  
-**Status:** Design approved — pending user review of this spec → writing-plans  
+**Status:** Implemented  
 **Branch:** `db-foundation` (implementation branch TBD at plan time)  
 **Scope:** Homepage (`/[lang]`) only — audit High/Med fixes plus first-viewport tighten  
 **Out of scope:** Full landing redesign; moving Notable moves below the fold; MSFT buy+sell dual-list algorithm; investor/stock detail holdings tables; theme/token overhaul; FAQ/SearchAction schema (defer)
