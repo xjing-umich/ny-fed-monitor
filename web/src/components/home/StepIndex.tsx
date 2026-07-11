@@ -76,7 +76,7 @@ function StepRow({
       <div>
         <span className="block font-mono text-4xl leading-none text-[var(--tt-faint)]">{serial}</span>
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
-        <h2 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
+        <h2 className="mt-3 text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {title}
         </h2>
         {body ? <p className="mt-4 max-w-[42ch] text-sm leading-relaxed text-[var(--tt-muted)]">{body}</p> : null}
@@ -123,7 +123,7 @@ export default function StepIndex({
               href={investorPath(lang, m.slug)}
               className="group flex items-baseline justify-between gap-3 border-b border-[var(--tt-border)] py-2 no-underline"
             >
-              <span className="truncate font-display text-sm text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
+              <span className="truncate text-sm text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
                 {m.person}
               </span>
               <span className="shrink-0 font-mono text-xs tabular-nums text-[var(--tt-faint)]">
@@ -146,7 +146,7 @@ export default function StepIndex({
           <tbody>
             {held.map((row) => (
               <tr key={row.cusip} className="border-b border-[var(--tt-border)] last:border-0">
-                <td className="py-2.5 pr-3 font-display text-[var(--tt-text)]">
+                <td className="py-2.5 pr-3 text-[var(--tt-text)]">
                   <EntityName issuer={row.issuer} />
                 </td>
                 <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
