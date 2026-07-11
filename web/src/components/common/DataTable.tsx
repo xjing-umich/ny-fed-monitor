@@ -141,7 +141,7 @@ export function DataTable<T>({
                       c === primaryCol && href ? (
                         <Link
                           href={href}
-                          className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                          className="font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                         >
                           {c.cell(row, i)}
                         </Link>
@@ -187,7 +187,7 @@ export function DataTable<T>({
                   {c.cell(row, i)}
                 </span>
               ))}
-              <span className="min-w-0 font-display font-medium text-[var(--tt-text)]">
+              <span className="min-w-0 font-medium text-[var(--tt-text)]">
                 {primaryCol.cell(row, i)}
               </span>
             </span>

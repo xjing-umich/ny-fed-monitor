@@ -32,9 +32,9 @@ export function AggregateRankingList({
     <ul className="list-none p-0 m-0">
       {rows.map((r, i) => (
         <li key={r.ticker} className="flex items-center gap-3 border-b border-[var(--tt-border)] py-3">
-          <span className="w-6 shrink-0 font-display text-xl text-[var(--tt-faint)] tabular-nums">{i + 1}</span>
+          <span className="w-6 shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">{i + 1}</span>
           <div className="min-w-0 flex-1">
-            <Link href={r.href} className="font-display font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
+            <Link href={r.href} className="font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
               <EntityName issuer={r.issuer} ticker={r.ticker} />
             </Link>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--tt-faint)]">

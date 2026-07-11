@@ -5,6 +5,7 @@ import type { Lang } from "@/lib/nav";
 import { altFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import SubNav from "@/components/shell/SubNav";
+import PageHeader from "@/components/common/PageHeader";
 import { readValuationScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
 import { ScreenerTable } from "./ScreenerTable";
 import { parseSort, sortScreenerRows, type ScreenSort } from "@/lib/valuation/screenerSort";
@@ -78,18 +79,13 @@ export default async function ScreenerPage({
     <div className="mx-auto max-w-5xl py-8 sm:py-10">
       <SubNav lang={lang} section="stocks" active="screener" />
 
-      <div className="mb-6 border-b border-[var(--tt-border)] pb-6">
-        <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
-          {isZh ? "个股" : "Stocks"}
-          <span className="mx-2 text-[var(--tt-faint)]">·</span>
-          <span className="text-[var(--tt-muted)]">{isZh ? "按价值带" : "By value"}</span>
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-[var(--tt-muted)]">
-          {isZh
+      <div className="mb-6">
+        <PageHeader
+          title={isZh ? "个股 · 按价值带" : "Stocks · By value"}
+          intro={`${isZh
             ? "按现价相对保守价值带的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。"
-            : "Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices."}{" "}
-          <span className="text-[var(--tt-text)]">{geo}</span>
-        </p>
+            : "Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices."} ${geo}`}
+        />
       </div>
 
       {/* 视图与排列控件(纯 Link, 零 JS) */}
