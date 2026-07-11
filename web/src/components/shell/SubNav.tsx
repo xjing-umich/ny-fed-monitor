@@ -16,7 +16,7 @@ export default function SubNav({ lang, section, active }: SubNavProps) {
   return (
     <nav
       aria-label={lang === "zh" ? "二级导航" : "Section navigation"}
-      className="flex items-center gap-0 border-b border-[var(--tt-border)] mb-8 overflow-x-auto"
+      className="flex items-center gap-0 border-b border-[var(--tt-border)] mb-4 overflow-x-auto"
     >
       {items.map((item) => {
         const isActive = item.key === active;

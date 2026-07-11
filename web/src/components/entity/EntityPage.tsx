@@ -101,7 +101,7 @@ export function EntityPage({
       {aiNarrative ?? (aiPageKey ? <AINarrative lang={lang} pageKey={aiPageKey} /> : null)}
 
       {/* ④ Data body (tables / charts passed as children) */}
-      <div className="space-y-8 sm:space-y-10">{children}</div>
+      <div className="space-y-6 sm:space-y-7">{children}</div>
 
       {/* ⑤ Source footer + optional compliance line (kept out of masthead to free the standfirst) */}
       <SourceFooter lang={lang} sources={sources} />

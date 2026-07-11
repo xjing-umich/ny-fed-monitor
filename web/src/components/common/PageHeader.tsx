@@ -20,7 +20,7 @@ export default function PageHeader({
   action?: ReactNode;
 }): React.ReactElement {
   return (
-    <header className="pb-6">
+    <header className="pb-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           {eyebrow ? (
