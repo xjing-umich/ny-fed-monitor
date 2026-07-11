@@ -578,7 +578,7 @@ export default async function InvestorSlugPage({
             label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"}
           />
           <details className="group border-t border-[var(--tt-border)] pt-4">
-            <summary className="cursor-pointer list-none font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
+            <summary className="cursor-pointer list-none text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
               {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}
             </summary>
             <div className="mt-3">
