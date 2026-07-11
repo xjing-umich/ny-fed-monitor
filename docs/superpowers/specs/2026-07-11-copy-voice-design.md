@@ -1,8 +1,15 @@
 # Copy Voice Rubric + Full-Site De-AI Sweep — Design
 
 Date: 2026-07-11
-Branch: `fix/home-canonical-hreflang`
+Branch: `fix/copy-voice-de-ai` (reassigned from `fix/home-canonical-hreflang`, whose SEO fixes A/B/macro-meta merged separately via PR #151)
 Status: design approved, pending spec review → writing-plans
+
+> **Addendum (post-execution):** This work ships on `fix/copy-voice-de-ai`, NOT the
+> original `fix/home-canonical-hreflang` — the latter's A/B/macro-description changes
+> were already merged to `db-foundation` (PR #151). The "Where it lands" section below
+> reflects the pre-merge assumption; the plan doc carries the corrected scope. The
+> homepage H1, seeded here as a KILL finding, was KEPT by user ruling; the rubric's
+> staccato rule was recalibrated accordingly (hollow staccato is the tell, not staccato).
 
 ## Problem
 

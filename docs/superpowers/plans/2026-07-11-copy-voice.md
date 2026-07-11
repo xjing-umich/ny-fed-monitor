@@ -268,3 +268,17 @@ Report: A/B/macro already merged (PR #151). Branch `fix/copy-voice-de-ai` carrie
 **Placeholder scan:** Task 4 rewrite text is intentionally gated on Task 3 approval — the three known rewrites are concrete; additional rows are applied by the same exact-string-Edit pattern. This is a genuine approval dependency, not a placeholder. No TBD/TODO elsewhere.
 
 **Type consistency:** No new types/functions introduced. Copy edits are string-literal replacements inside existing `COPY` objects and metadata literals; signatures unchanged (`headline: (n: number) => string` preserved).
+
+---
+
+## Execution Addendum (2026-07-11, post-run)
+
+Task 1's embedded rubric draft (above) shows the pre-ruling verdict on the
+homepage H1 — banning "N investors. One quarter. Every position they just
+reported." as a staccato KILL. That verdict was **overturned by user ruling**
+during Task 3: the H1 is KEPT (data-first = good editorial voice, not an AI
+tell). The shipped rubric (`web/docs/copy-voice.md`) was recalibrated: the
+banned tell is **hollow** staccato (every fragment generic), not staccato per
+se; the H1 now appears as the ✅ example. Final sweep touched only one body
+string (macro "drill into" → "move to"); FoundationsGrid antithesis kept as
+brand voice. Final whole-branch review: Ready to merge.
