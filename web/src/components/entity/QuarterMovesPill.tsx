@@ -29,7 +29,7 @@ const COPY = {
   },
 } as const;
 
-const CHIP = "inline-flex items-center rounded-md border px-2.5 py-0.5 font-mono text-[11px] tabular-nums";
+const CHIP = "inline-flex items-center font-mono text-[11px] tabular-nums";
 
 export function QuarterMovesPill({
   moves,
@@ -49,14 +49,17 @@ export function QuarterMovesPill({
   if (segs.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+      <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
         {t.eyebrow}
       </span>
-      {segs.map((s) => (
-        <span key={s.key} className={CHIP} style={{ color: s.color, borderColor: s.color }}>
-          {s.text}
-        </span>
+      {segs.map((s, i) => (
+        <React.Fragment key={s.key}>
+          {i > 0 && <span className="text-[var(--tt-faint)]" aria-hidden>·</span>}
+          <span className={CHIP} style={{ color: s.color }}>
+            {s.text}
+          </span>
+        </React.Fragment>
       ))}
     </div>
   );

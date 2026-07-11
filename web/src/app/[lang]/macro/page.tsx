@@ -93,7 +93,7 @@ function WatchRow({ item, lang }: { item: WatchItem; lang: Lang }) {
       <div className="flex items-start gap-2">
         <ToneDot tone={item.tone} />
         <div>
-          <div className="font-display text-sm font-medium text-[var(--tt-text)]">
+          <div className="text-sm font-medium text-[var(--tt-text)]">
             {item.label[lang]}
           </div>
           <p className="mt-1 text-xs leading-relaxed text-[var(--tt-muted)]">
@@ -114,7 +114,7 @@ function CrossSignalRow({ item, lang }: { item: CrossSignalCheck; lang: Lang }) 
         <div className="flex items-start gap-2">
           <ToneDot tone={item.tone} />
           <div>
-            <div className="font-display text-sm font-medium text-[var(--tt-text)]">
+            <div className="text-sm font-medium text-[var(--tt-text)]">
               {item.label[lang]}
             </div>
             <p className="mt-1 text-xs leading-relaxed text-[var(--tt-muted)]">
@@ -134,7 +134,7 @@ function ResearchPromptCard({ item, lang }: { item: ResearchPrompt; lang: Lang }
   return (
     <Link href={macroPath(lang, item.hrefKey)} className="indicator-card block no-underline">
       <div className="border-t border-[var(--tt-border)] py-3">
-        <div className="font-display text-sm font-medium leading-snug text-[var(--tt-text)]">
+        <div className="indicator-name text-sm font-medium leading-snug text-[var(--tt-text)]">
           {item.question[lang]}
         </div>
         <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
@@ -179,7 +179,7 @@ export default async function MacroOverviewPage({
   return (
     <div className="mx-auto max-w-5xl py-8 sm:py-10 flex flex-col gap-10">
       {/* CSS hover: indicator links darken text on hover — no JS event handlers */}
-      <style>{`.indicator-card:hover span.font-display { color: var(--tt-accent); }`}</style>
+      <style>{`.indicator-card:hover .indicator-name { color: var(--tt-accent); }`}</style>
 
       <React.Suspense
         fallback={(
@@ -214,7 +214,7 @@ export default async function MacroOverviewPage({
         <SectionKicker>{lang === "zh" ? "市场摘要" : "Market Summary"}</SectionKicker>
         <div className="grid gap-x-10 gap-y-5 border-b border-[var(--tt-border)] py-5 md:grid-cols-[1.15fr_0.85fr]">
           <div>
-            <h2 className="font-display text-2xl font-medium leading-tight text-[var(--tt-text)]">
+            <h2 className="text-2xl font-medium leading-tight text-[var(--tt-text)]">
               {summary.headline[lang]}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-[var(--tt-muted)]">
@@ -276,7 +276,7 @@ export default async function MacroOverviewPage({
         <SectionKicker>{lang === "zh" ? "宏观定价下一步" : "Macro Pricing Next Coverage"}</SectionKicker>
         <div className="grid gap-x-10 gap-y-4 border-b border-[var(--tt-border)] py-4 md:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <h2 className="font-display text-xl font-medium text-[var(--tt-text)]">
+            <h2 className="text-xl font-medium text-[var(--tt-text)]">
               {lang === "zh" ? "市场价格与宏观确认已接入" : "Market pricing and macro confirmation are live"}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-[var(--tt-muted)]">

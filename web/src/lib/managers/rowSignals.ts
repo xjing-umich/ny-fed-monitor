@@ -16,9 +16,9 @@ const CONV_LABEL: Record<Lang, Record<ConvictionSignal, (q: number, s: number) =
   },
   en: {
     accumulating: (_q, s) => `Adding ${s}q`,
-    fresh_conviction: () => "Big new buy",
+    fresh_conviction: () => "Big new",
     long_core: (q) => `Core ${q}q`,
-    never_trimmed: (q) => `Never trimmed ${q}q`,
+    never_trimmed: (q) => `No trim ${q}q`,
   },
 };
 

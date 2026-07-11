@@ -28,7 +28,7 @@ export function InvestorNarrative({
   return (
     <section className="rounded-sm border-l-2 border-[var(--tt-accent)] bg-[var(--tt-surface)] px-4 py-4">
       <div className="pb-2">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
           {t.heading}
         </span>
       </div>

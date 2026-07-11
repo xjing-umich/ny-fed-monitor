@@ -33,7 +33,7 @@ export default function StrikeLeadersCard({
   return (
     <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
       <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
-        <span className="font-display text-sm font-medium text-[var(--tt-text)]">{c.title(total)}</span>
+        <span className="text-sm font-medium text-[var(--tt-text)]">{c.title(total)}</span>
         <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.margin}</span>
       </div>
       <table className="mt-2 w-full border-collapse text-sm">
@@ -43,7 +43,7 @@ export default function StrikeLeadersCard({
               <td className="py-2 pr-3">
                 <Link
                   href={stockPath(lang, row.ticker)}
-                  className="font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                  className="font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                 >
                   {row.ticker}
                 </Link>

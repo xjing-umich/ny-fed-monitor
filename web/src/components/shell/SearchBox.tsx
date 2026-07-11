@@ -194,7 +194,7 @@ export default function SearchBox({
               onMouseDown={() => handleSelect(item.href)}
               onMouseEnter={() => setActive(i)}
               className={[
-                "w-full text-left font-display text-[var(--tt-text)] transition-colors truncate",
+                "w-full text-left text-[var(--tt-text)] transition-colors truncate",
                 active === i ? "bg-[var(--tt-surface)] text-[var(--tt-accent)]" : "hover:bg-[var(--tt-surface)] hover:text-[var(--tt-accent)]",
                 isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-[13px]",
               ].join(" ")}

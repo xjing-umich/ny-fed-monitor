@@ -7,18 +7,21 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
+import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 
 const TOP_N = 60;
 
 export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] }) {
   const isZh = lang === "zh";
+  const g = stockGlossary(lang);
+  const ui = stockUi(lang);
   const head = rows.slice(0, TOP_N);
   const tail = rows.slice(TOP_N);
 
   const columns: Column<ScreenerRow>[] = [
     {
       key: "security",
-      header: isZh ? "标的" : "Security",
+      header: g.security,
       role: "primary",
       cell: (r) => <EntityName issuer={r.issuer} ticker={r.ticker} />,
     },
@@ -77,7 +80,7 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
     },
     {
       key: "holders",
-      header: isZh ? "持有机构" : "Holders",
+      header: g.holdersInstitution,
       align: "right",
       width: "w-20",
       hideOnMobile: true,
@@ -93,14 +96,14 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
         getKey={(r) => r.ticker}
         rowHref={(r) => stockPath(lang, r.ticker)}
         showRank
-        emptyText={isZh ? "当前档暂无可估值股票。" : "No valued stocks in this view yet."}
+        emptyText={ui.emptyScreener}
       />
 
       {tail.length > 0 && (
         <details className="group mt-4">
           <summary className="cursor-pointer list-none max-sm:flex max-sm:items-center max-sm:min-h-[44px] py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
-            <span className="group-open:hidden">{isZh ? `展开其余 ${tail.length} 只` : `Show ${tail.length} more`} ▸</span>
-            <span className="hidden group-open:inline">{isZh ? "收起" : "Collapse"} ▾</span>
+            <span className="group-open:hidden">{ui.showMore(tail.length)} ▸</span>
+            <span className="hidden group-open:inline">{ui.collapse} ▾</span>
           </summary>
           <ul className="mt-3 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {tail.map((r, i) => (

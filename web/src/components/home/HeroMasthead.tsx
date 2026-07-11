@@ -49,7 +49,7 @@ function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
             <MoveTag kind={row.dominantKind} />
             <Link
               href={stockPath(lang, row.cusip)}
-              className="truncate font-display font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+              className="truncate font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
             >
               <EntityName issuer={row.issuer} ticker={row.cusip} />
             </Link>
@@ -98,13 +98,13 @@ export default function HeroMasthead({
         <h1 className="mt-4 max-w-[18ch] font-display text-4xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-5xl md:text-6xl">
           {headline}
         </h1>
-        <p className="mt-5 max-w-[30ch] font-display text-xl leading-snug text-[var(--tt-faint)] sm:text-2xl">
+        <p className="mt-5 max-w-[30ch] text-xl leading-snug text-[var(--tt-faint)] sm:text-2xl">
           {c.headlineMuted}
         </p>
         <p className="mt-4 max-w-[42ch] text-sm leading-relaxed text-[var(--tt-muted)]">{c.sub}</p>
         <Link
           href={localePath(lang, "/stocks/screener")}
-          className="group mt-7 inline-flex items-center gap-1.5 font-display text-[15px] text-[var(--tt-text)] no-underline [border-bottom:1px_solid_var(--tt-accent)] [transition:color_var(--tt-dur)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
+          className="group mt-7 inline-flex items-center gap-1.5 text-[15px] text-[var(--tt-text)] no-underline [border-bottom:1px_solid_var(--tt-accent)] [transition:color_var(--tt-dur)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
         >
           {c.cta}
           <span
@@ -119,7 +119,7 @@ export default function HeroMasthead({
       {(moves.mostBought.length > 0 || moves.mostSold.length > 0) && (
         <aside className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
           <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
-            <span className="font-display text-sm font-medium text-[var(--tt-text)]">{c.panelTitle}</span>
+            <span className="text-sm font-medium text-[var(--tt-text)]">{c.panelTitle}</span>
             <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.live}</span>
           </div>
           {moves.mostBought.length > 0 && (

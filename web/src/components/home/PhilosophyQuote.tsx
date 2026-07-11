@@ -48,7 +48,7 @@ export default function PhilosophyQuote({
           &ldquo;
         </span>
         <blockquote className="relative border-l-2 border-[var(--tt-accent)] pl-6 sm:pl-8">
-          <p className="font-display text-3xl font-medium leading-[1.16] tracking-tight text-[var(--tt-text)] sm:text-4xl">
+          <p className="text-3xl font-medium leading-[1.16] tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {c.hero}
           </p>
           <figcaption className="mt-5 flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
@@ -72,7 +72,7 @@ export default function PhilosophyQuote({
       <div className="mt-10 grid grid-cols-1 gap-8 border-t border-[var(--tt-border)] pt-8 md:grid-cols-2">
         {c.supporting.map((s) => (
           <figure key={s.who}>
-            <blockquote className="font-display text-base leading-relaxed text-[var(--tt-muted)] sm:text-lg">
+            <blockquote className="text-base leading-relaxed text-[var(--tt-muted)] sm:text-lg">
               &ldquo;{s.q}&rdquo;
             </blockquote>
             <figcaption className="mt-3 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">

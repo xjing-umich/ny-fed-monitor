@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 
 /** Canonical interior-page header — codifies the home design rhythm:
  *  green mono eyebrow → Fraunces title → optional dateline → optional intro.
- *  Use on every list/index/section page so headers stop drifting. */
+ *  No bottom rule: SubNav / space-y separate the header from body (avoids
+ *  stacking with search underlines and the next section). */
 export default function PageHeader({
   eyebrow,
   title,
@@ -19,7 +20,7 @@ export default function PageHeader({
   action?: ReactNode;
 }): React.ReactElement {
   return (
-    <header className="border-b border-[var(--tt-border)] pb-6">
+    <header className="pb-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           {eyebrow ? (

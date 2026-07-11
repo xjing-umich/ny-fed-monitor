@@ -14,11 +14,11 @@ export default function LearnTeaser({ lang }: { lang: Lang }): React.ReactElemen
   return (
     <section className="mt-24 border-t border-[var(--tt-border)] pt-8">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
-      <h2 className="mt-3 font-display text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{c.title}</h2>
+      <h2 className="mt-3 text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{c.title}</h2>
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
         {articles.map((a) => (
           <Link key={a.slug} href={localePath(lang, `/learn/${a.slug}`)} className="group block no-underline">
-            <h3 className="font-display text-base font-medium text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">{a.title}</h3>
+            <h3 className="text-base font-medium text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">{a.title}</h3>
             <p className="mt-1.5 text-xs leading-relaxed text-[var(--tt-muted)]">{a.description}</p>
           </Link>
         ))}

@@ -6,6 +6,7 @@ import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
+import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 
 export type StockRow = {
   ticker: string;
@@ -30,7 +31,8 @@ export function StocksTable({
   lang: Lang;
   rows: StockRow[];
 }) {
-  const isZh = lang === "zh";
+  const g = stockGlossary(lang);
+  const ui = stockUi(lang);
   const head = rows.slice(0, TOP_N);
   const tail = rows.slice(TOP_N);
 
@@ -38,16 +40,16 @@ export function StocksTable({
   const columns: Column<StockRow>[] = [
     {
       key: "security",
-      header: isZh ? "标的" : "Security",
+      header: g.security,
       role: "primary",
       cell: (r) => <EntityName issuer={r.issuer} ticker={r.ticker} />,
     },
     {
       key: "holders",
-      header: isZh ? "持有机构数" : "Holders",
+      header: g.holdersInstitution,
       align: "right",
       width: "w-20 sm:w-28",
-      mobileLabel: isZh ? "持有" : "Holders",
+      mobileLabel: g.holdersInstitutionShort,
       cell: (r) => (
         <span className="inline-flex items-center justify-end gap-1.5 text-[var(--tt-text)]">
           <span
@@ -60,15 +62,15 @@ export function StocksTable({
     },
     {
       key: "value",
-      header: isZh ? "合计市值" : "Total value",
+      header: g.totalValue,
       align: "right",
       width: "w-24 sm:w-36",
-      mobileLabel: isZh ? "市值" : "Value",
+      mobileLabel: g.totalValueShort,
       cell: (r) => formatUSD(r.totalValue),
     },
     {
       key: "links",
-      header: isZh ? "链接" : "Links",
+      header: g.links,
       align: "right",
       width: "w-24",
       hideOnMobile: true,
@@ -96,10 +98,10 @@ export function StocksTable({
         <details className="group mt-4">
           <summary className="cursor-pointer list-none py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
             <span className="group-open:hidden">
-              {isZh ? `展开其余 ${tail.length} 只` : `Show ${tail.length} more`} ▸
+              {ui.showMore(tail.length)} ▸
             </span>
             <span className="hidden group-open:inline">
-              {isZh ? "收起" : "Collapse"} ▾
+              {ui.collapse} ▾
             </span>
           </summary>
           <ul className="mt-3 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2 lg:grid-cols-3">
@@ -115,6 +117,9 @@ export function StocksTable({
                   {cleanIssuer(r.issuer)}
                   <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{r.ticker}</span>
                 </Link>
+                <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
+                  {r.holderCount}
+                </span>
               </li>
             ))}
           </ul>

@@ -19,6 +19,8 @@ export type EntityPageProps = {
   title: string;
   /** Optional green mono eyebrow above the title (e.g. "SUPERINVESTOR · SEC 13F"). */
   eyebrow?: string;
+  /** Mono label beside the H1 (e.g. stock ticker) — same baseline, not the display face. */
+  titleMeta?: string;
   subtitle: string;
   verdict?: { label: string; tone: Tone };
   keyFacts: KeyFact[];
@@ -32,7 +34,7 @@ export type EntityPageProps = {
   children: React.ReactNode;
   sources: Source[];
   related?: RelatedItem[];
-  /** Optional compliance/disclaimer line shown under the subtitle. */
+  /** Optional compliance/disclaimer line shown under Sources (not in the masthead). */
   disclaimer?: string;
   /** 可选：标题行右侧操作（如分享按钮）。 */
   headerAction?: React.ReactNode;
@@ -44,6 +46,7 @@ export function EntityPage({
   lang,
   title,
   eyebrow,
+  titleMeta,
   subtitle,
   verdict,
   keyFacts,
@@ -71,25 +74,25 @@ export function EntityPage({
           <h1 className="font-display text-3xl sm:text-4xl font-medium leading-[1.1] tracking-tight text-[var(--tt-text)]">
             {title}
           </h1>
+          {titleMeta && (
+            <span className="font-mono text-lg uppercase tracking-[0.06em] text-[var(--tt-muted)] sm:text-xl">
+              {titleMeta}
+            </span>
+          )}
           {verdict && <VerdictChip label={verdict.label} tone={verdict.tone} />}
           {headerAction && <div className="ml-auto self-center">{headerAction}</div>}
         </div>
         <p className="max-w-3xl text-[15px] leading-relaxed text-[var(--tt-muted)]">
           {subtitle}
         </p>
-        {disclaimer && (
-          <p className="max-w-3xl text-xs leading-relaxed text-[var(--tt-faint)]">
-            {disclaimer}
-          </p>
-        )}
       </header>
 
       {/* 数据陈旧告示(若有) */}
       {notice}
 
-      {/* ② Key facts — editorial stat row separated by hairlines (no card) */}
+      {/* ② Key facts — 仅底边一条 hairline，避免与下一节 SectionHeading 叠成双线 */}
       {keyFacts.length > 0 && (
-        <div className="border-y border-[var(--tt-border)] py-4">
+        <div className="border-b border-[var(--tt-border)] py-4">
           <KeyFacts facts={keyFacts} />
         </div>
       )}
@@ -98,15 +101,20 @@ export function EntityPage({
       {aiNarrative ?? (aiPageKey ? <AINarrative lang={lang} pageKey={aiPageKey} /> : null)}
 
       {/* ④ Data body (tables / charts passed as children) */}
-      <div className="space-y-4">{children}</div>
+      <div className="space-y-8 sm:space-y-10">{children}</div>
 
-      {/* ⑤ Source footer */}
+      {/* ⑤ Source footer + optional compliance line (kept out of masthead to free the standfirst) */}
       <SourceFooter lang={lang} sources={sources} />
+      {disclaimer && (
+        <p className="-mt-4 max-w-3xl text-xs leading-relaxed text-[var(--tt-faint)]">
+          {disclaimer}
+        </p>
+      )}
 
       {/* ⑥ Related links */}
       <RelatedLinks lang={lang} items={related} />
 
-      {/* ⑦ 文末行动号召(可选,如订阅卡片) */}
+      {/* ⑦ 文末行动号召(可选,如文末订阅卡片) */}
       {footerCta}
     </div>
   );

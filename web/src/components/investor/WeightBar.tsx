@@ -17,7 +17,7 @@ export function WeightBar({
     <span className="inline-flex items-center justify-end gap-2">
       <span
         aria-hidden
-        className="relative hidden h-1 w-14 overflow-hidden rounded-full bg-[var(--tt-border)] sm:block"
+        className="relative hidden h-1.5 w-16 overflow-hidden rounded-full bg-[var(--tt-border)] sm:block"
       >
         <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct}%`, background: color }} />
       </span>

@@ -390,7 +390,7 @@ function MethodDetails({
         {buffett_epv.buyback_offsets_sbc ? <p>{t.buybackOffsetsSbc}</p> : null}
         {cautions.length > 0 ? (
           <div className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-warn)_6%,transparent)] px-3 py-2">
-            <p className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-warn)]">
+            <p className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-warn)]">
               {t.modelCautions}
             </p>
             <ul className="mt-1.5 space-y-1">

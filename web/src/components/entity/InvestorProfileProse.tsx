@@ -22,8 +22,8 @@ export function InvestorProfileProse({
   const heading = lang === "zh" ? "组合速览" : "Portfolio overview";
   return (
     <section>
-      <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+      <div className="pb-3">
+        <span className="text-lg font-medium tracking-tight text-[var(--tt-text)]">
           {heading}
         </span>
       </div>
