@@ -101,29 +101,63 @@ async function main() {
   const computedAt = new Date().toISOString();
 
   let valued = 0, skipped = 0, excludedNonOperating = 0, adrSuppressed = 0, staleFundamentals = 0;
+  let exceptionSkipped = 0;
+  // 引擎有意抑制(该删旧行)vs 瞬时异常(保留历史行)。catch / 抓取失败不进此集。
+  const intentionallyUnvaluable = new Set<string>();
   const rows: Record<string, unknown>[] = [];
   for (const ticker of universe) {
-    // 非经营性证券:不进盈利法估值。旧快照行会被下方陈旧清理删除(其不在 written 集)。
-    if (!isOperatingSecurity(secTypeMap.get(ticker))) { excludedNonOperating++; continue; }
+    // 非经营性证券:不进盈利法估值。旧快照行应删(有意抑制,非瞬时故障)。
+    if (!isOperatingSecurity(secTypeMap.get(ticker))) {
+      excludedNonOperating++;
+      intentionallyUnvaluable.add(ticker);
+      continue;
+    }
     // ADR/ADS 归一化:ADR 且比例已策展 → 用每 ADS 口径;ADR 但比例缺 → 抑制(不出估值)。
     const ads = resolveAds(secTypeMap.get(ticker), adsRatioMap.get(ticker));
-    if (ads.suppressed) { adrSuppressed++; continue; }
+    if (ads.suppressed) {
+      adrSuppressed++;
+      intentionallyUnvaluable.add(ticker);
+      continue;
+    }
     try {
       const sec = await getSecCompanyData(ticker);
+      // getSecCompanyData 在 DB 不可用时静默返回空(不抛)——与瞬时故障同类,不得当「有意不可估值」删行。
+      // 有 company 行但无年报 → 真收录、引擎抑制;无 company 且无年报 → 抓取/未就绪,保留历史。
+      if (!sec.company && !(sec.annual?.length)) {
+        exceptionSkipped++;
+        console.error(`  ${ticker} 跳过: SEC 基本面不可用(空结果,保留历史快照)`);
+        continue;
+      }
       // company_name 不影响判定(仅卡片 who 前缀用), 投资人页只读 verdict, 故传 ticker 即可。
       const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio);
       const floor = computeValuationFloor(floorInput);
-      if (!floor || floor.kind !== "floor") { skipped++; continue; }
+      if (!floor || floor.kind !== "floor") {
+        skipped++;
+        intentionallyUnvaluable.add(ticker);
+        continue;
+      }
       // 基本面过期闸:最新 FY 年报距今超阈值(停报/退市/外股 ADR 覆盖不了)→ 抑制,
       // 不拿今天的价配多年前基本面造"陈旧幻觉"verdict。与 price.stale 同类护栏。
-      if (isFundamentalsStale(sec.annual?.[0]?.period_end ?? null, computedAt)) { staleFundamentals++; continue; }
+      if (isFundamentalsStale(sec.annual?.[0]?.period_end ?? null, computedAt)) {
+        staleFundamentals++;
+        intentionallyUnvaluable.add(ticker);
+        continue;
+      }
       const price = await getLatestPrice(ticker);
-      if (price?.stale) { skipped++; continue; } // 陈旧价(>PRICE_MAX_AGE_DAYS天)不当现价喂 strike-zone/OE-DCF
+      if (price?.stale) {
+        skipped++;
+        intentionallyUnvaluable.add(ticker);
+        continue;
+      } // 陈旧价(>PRICE_MAX_AGE_DAYS天)不当现价喂 strike-zone/OE-DCF
       const strikeZone = deriveStrikeZone(floor, price);
       const oeDcf = deriveOeDcf(floor, floorInput.years, dgs10, price);
       const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
       const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation });
-      if (!v) { skipped++; continue; }
+      if (!v) {
+        skipped++;
+        intentionallyUnvaluable.add(ticker);
+        continue;
+      }
       rows.push({
         ticker,
         verdict_bucket: v.bucket,
@@ -141,7 +175,8 @@ async function main() {
       });
       valued++;
     } catch (err) {
-      skipped++;
+      // 瞬时故障(Supabase/SEC 抖动):保留历史行,不进 intentionallyUnvaluable。
+      exceptionSkipped++;
       console.error(`  ${ticker} 跳过: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
@@ -153,22 +188,36 @@ async function main() {
     if (error) throw new Error(`valuation_snapshot upsert 失败: ${error.message}`);
   }
 
-  // 清理陈旧行:本轮 universe 里尝试过、但算不出估值(翻转为不可估值/被引擎闸抑制,如周期股
-  // 最新年转亏 → #2 压到亏损 → 不可估值)的 ticker,其旧行必须删除 —— upsert 只覆盖不删,
-  // 否则会留下上一轮的陈旧价值带(AMR/ATKR 那种"打一折"幻觉就是这么残留的)。只删本轮
-  // 尝试过的(universe ∩ 未写入),不碰本轮 universe 之外的行。
+  // 清理陈旧行:只删「引擎有意抑制」且本轮未写入的 ticker。catch / 抓取异常的 ticker
+  // 不进 intentionallyUnvaluable → 保留历史行,避免抖动期误删后读取侧变"—"。
+  // 另:异常跳过率熔断 —— 超过阈值则整轮跳过清理,防大面积误删。
+  const MAX_EXCEPTION_SKIP_RATIO = 0.05;
   const written = new Set(rows.map((r) => r.ticker as string));
-  const stale = universe.filter((t) => !written.has(t));
+  const exceptionRatio = universe.length > 0 ? exceptionSkipped / universe.length : 0;
   let deleted = 0;
-  for (let i = 0; i < stale.length; i += BATCH) {
-    const { error, count } = await db
-      .from("valuation_snapshot")
-      .delete({ count: "exact" })
-      .in("ticker", stale.slice(i, i + BATCH));
-    if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
-    deleted += count ?? 0;
+  if (exceptionRatio > MAX_EXCEPTION_SKIP_RATIO) {
+    console.warn(
+      `陈旧行清理已跳过:本轮异常跳过率 ${(exceptionRatio * 100).toFixed(1)}% ` +
+        `(${exceptionSkipped}/${universe.length}) > ${(MAX_EXCEPTION_SKIP_RATIO * 100).toFixed(0)}% 阈值。` +
+        `保留全部既有 valuation_snapshot 行,避免抖动期误删。`
+    );
+  } else {
+    const stale = universe.filter((t) => intentionallyUnvaluable.has(t) && !written.has(t));
+    for (let i = 0; i < stale.length; i += BATCH) {
+      const { error, count } = await db
+        .from("valuation_snapshot")
+        .delete({ count: "exact" })
+        .in("ticker", stale.slice(i, i + BATCH));
+      if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
+      deleted += count ?? 0;
+    }
   }
-  console.log(`估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据), 过期基本面抑制 ${staleFundamentals}(最新FY距今>${FUNDAMENTALS_MAX_AGE_MONTHS}月), 排除非经营性 ${excludedNonOperating}(ETP/基金/权证), ADR未策展抑制 ${adrSuppressed}, 清理陈旧 ${deleted}, computed_at ${computedAt}`);
+  console.log(
+    `估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据/陈旧价), ` +
+      `异常跳过 ${exceptionSkipped}, 过期基本面抑制 ${staleFundamentals}(最新FY距今>${FUNDAMENTALS_MAX_AGE_MONTHS}月), ` +
+      `排除非经营性 ${excludedNonOperating}(ETP/基金/权证), ADR未策展抑制 ${adrSuppressed}, ` +
+      `清理陈旧 ${deleted}, computed_at ${computedAt}`
+  );
 }
 
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
