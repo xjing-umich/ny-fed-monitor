@@ -70,7 +70,7 @@ function IndicatorCard({
     <Link href={macroPath(lang, indicator)} className="indicator-card block no-underline">
       <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
-          <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
+          <span className="indicator-name text-sm font-medium text-[var(--tt-text)] leading-snug">
             {name}
           </span>
           {signal && (
@@ -161,7 +161,7 @@ function SystemSection({ lang }: { lang: Lang }) {
       <div className="grid gap-x-8 sm:grid-cols-2">
         <Link href={macroPath(lang, "data-freshness")} className="indicator-card block no-underline">
           <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2">
-            <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
+            <span className="indicator-name text-sm font-medium text-[var(--tt-text)] leading-snug">
               {lang === "zh" ? "数据新鲜度" : "Data Freshness"}
             </span>
             <p className="text-xs text-[var(--tt-muted)] leading-relaxed m-0">
@@ -175,7 +175,7 @@ function SystemSection({ lang }: { lang: Lang }) {
 
         <Link href={macroPath(lang, "methodology")} className="indicator-card block no-underline">
           <div className="border-t border-[var(--tt-border)] pt-3 pb-4 flex flex-col gap-2">
-            <span className="font-display text-sm font-medium text-[var(--tt-text)] leading-snug">
+            <span className="indicator-name text-sm font-medium text-[var(--tt-text)] leading-snug">
               {lang === "zh" ? "方法论与来源" : "Methodology & Sources"}
             </span>
             <p className="text-xs text-[var(--tt-muted)] leading-relaxed m-0">

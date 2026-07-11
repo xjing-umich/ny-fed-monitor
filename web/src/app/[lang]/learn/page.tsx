@@ -62,7 +62,7 @@ export default async function LearnIndexPage({
         {articles.map((a) => (
           <li key={a.slug} className="border-t border-[var(--tt-border)] py-5">
             <Link href={localePath(lang, `/learn/${a.slug}`)} className="group no-underline">
-              <h2 className="font-display text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
+              <h2 className="text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
                 {a.title}
               </h2>
               <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">

@@ -39,7 +39,7 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel }: ProseD
 
       {doc.sections.map((section, i) => (
         <section key={i} className="mt-7">
-          <h2 className="font-display text-base font-medium text-[var(--tt-text)]">
+          <h2 className="text-base font-medium text-[var(--tt-text)]">
             {section.heading}
           </h2>
           {section.paragraphs.map((p, j) => (

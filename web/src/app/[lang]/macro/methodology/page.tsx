@@ -172,7 +172,7 @@ export default async function MacroMethodologyPage({
         <SectionKicker>{lang === "zh" ? "展示规则" : "Display Rules"}</SectionKicker>
         <div className="grid gap-x-10 md:grid-cols-[0.9fr_1.1fr]">
           <div className="border-t border-[var(--tt-border)] py-4">
-            <h2 className="font-display text-xl font-medium text-[var(--tt-text)]">
+            <h2 className="text-xl font-medium text-[var(--tt-text)]">
               {lang === "zh" ? "首页不是数据目录" : "The home page is not a data directory"}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-[var(--tt-muted)]">
@@ -195,7 +195,7 @@ export default async function MacroMethodologyPage({
         <SectionKicker>{lang === "zh" ? "置信度规则" : "Confidence Rules"}</SectionKicker>
         <div className="grid gap-x-10 md:grid-cols-[0.9fr_1.1fr]">
           <div className="border-t border-[var(--tt-border)] py-4">
-            <h2 className="font-display text-xl font-medium text-[var(--tt-text)]">
+            <h2 className="text-xl font-medium text-[var(--tt-text)]">
               {lang === "zh" ? "先确认，再归因" : "Confirm Before Attributing"}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-[var(--tt-muted)]">
@@ -219,7 +219,7 @@ export default async function MacroMethodologyPage({
         <div className="grid gap-x-8 sm:grid-cols-2">
           {DRIVER_MODULES.map((driver) => (
             <div key={driver.key} className="border-t border-[var(--tt-border)] py-4">
-              <h2 className="font-display text-lg font-medium text-[var(--tt-text)]">
+              <h2 className="text-lg font-medium text-[var(--tt-text)]">
                 {driver.label[lang]}
               </h2>
               <p className="mt-1 text-sm leading-relaxed text-[var(--tt-muted)]">
@@ -293,7 +293,7 @@ export default async function MacroMethodologyPage({
         <div className="grid gap-x-8 sm:grid-cols-2">
           {Object.entries(MACRO_INDICATOR_RESEARCH).map(([key, note]) => (
             <div key={key} className="border-t border-[var(--tt-border)] py-4">
-              <Link href={macroPath(lang, key)} className="font-display text-base font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
+              <Link href={macroPath(lang, key)} className="text-base font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                 {indicatorName(lang, key)}
               </Link>
               <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
@@ -312,7 +312,7 @@ export default async function MacroMethodologyPage({
         <div className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
           {PLANNED_SOURCES.map((source) => (
             <div key={source.label.en} className="border-t border-[var(--tt-border)] py-4">
-              <h2 className="font-display text-base font-medium text-[var(--tt-text)]">
+              <h2 className="text-base font-medium text-[var(--tt-text)]">
                 {source.label[lang]}
               </h2>
               <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
