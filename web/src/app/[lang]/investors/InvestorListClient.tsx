@@ -5,6 +5,7 @@ import type { ManagerSummary, ManagerQoQ } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
 import { formatUSD, cleanIssuer } from "@/lib/format";
+import { displayFundName } from "@/lib/managers/profileProse";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge, type BadgeTone } from "@/components/common/Badge";
 import PageHeader from "@/components/common/PageHeader";
@@ -15,7 +16,7 @@ const COPY = {
   zh: {
     eyebrow: "SEC 13F · 季度披露",
     heading: "超级投资者",
-    subtitle: "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。",
+    subtitle: "按组合市值排列 · 最新 13F 季",
     search: "搜索投资人或机构…",
     sortValue: "按市值",
     sortCount: "按持仓数",
@@ -31,7 +32,7 @@ const COPY = {
     topPrefix: "最大：",
     noResults: "无匹配结果",
     count: (m: number, n: number) => (m === n ? `共 ${n} 位` : `匹配 ${m} / 共 ${n} 位`),
-    filterAll: "全部",
+    filterAll: "全部动向",
     filterBuying: "加仓",
     filterSelling: "减仓",
     filterMixed: "微调",
@@ -39,7 +40,7 @@ const COPY = {
   en: {
     eyebrow: "SEC 13F · quarterly filings",
     heading: "Superinvestors",
-    subtitle: "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.",
+    subtitle: "Ranked by portfolio value · latest 13F quarter",
     search: "Search by name or firm…",
     sortValue: "By value",
     sortCount: "By count",
@@ -55,7 +56,7 @@ const COPY = {
     topPrefix: "Top: ",
     noResults: "No results",
     count: (m: number, n: number) => (m === n ? `${n} investors` : `${m} of ${n}`),
-    filterAll: "All",
+    filterAll: "Any move",
     filterBuying: "Buying",
     filterSelling: "Selling",
     filterMixed: "Held",
@@ -128,7 +129,7 @@ export function InvestorListClient({
         <>
           <span className={i < 10 ? "font-semibold" : ""}>{m.person}</span>
           <span className="mt-0.5 block text-[11px] font-normal text-[var(--tt-faint)]">
-            {m.name}
+            {displayFundName(m.name)}
           </span>
         </>
       ),
@@ -199,8 +200,8 @@ export function InvestorListClient({
   ];
 
   return (
-    <div className="space-y-8">
-      <PageHeader title={t.heading} intro={t.subtitle} />
+    <div className="space-y-4">
+      <PageHeader eyebrow={t.eyebrow} title={t.heading} intro={t.subtitle} />
 
       {/* Controls — quiet hairline style */}
       <div className="space-y-3">
@@ -235,10 +236,11 @@ export function InvestorListClient({
                 onClick={() => setVf(k as VerdictFilter)}
                 aria-pressed={vf === k}
                 className={[
-                  "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border transition-colors",
+                  "max-sm:min-h-[44px] px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
+                  "max-sm:border sm:border-0 sm:border-b",
                   vf === k
-                    ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
-                    : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
+                    ? "text-[var(--tt-accent)] max-sm:border-[var(--tt-accent)] max-sm:bg-[var(--tt-accent)]/10 sm:border-[var(--tt-accent)]"
+                    : "text-[var(--tt-muted)] max-sm:border-[var(--tt-border)] hover:text-[var(--tt-text)] sm:border-transparent hover:sm:border-[var(--tt-border)]",
                 ].join(" ")}
               >
                 {label}
@@ -250,10 +252,11 @@ export function InvestorListClient({
               onClick={() => setSort("value")}
               aria-pressed={sort === "value"}
               className={[
-                "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
+                "max-sm:min-h-[44px] px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
+                "max-sm:border sm:border-0 sm:border-b",
                 sort === "value"
-                  ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
-                  : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
+                  ? "text-[var(--tt-accent)] max-sm:border-[var(--tt-accent)] max-sm:bg-[var(--tt-accent)]/10 sm:border-[var(--tt-accent)]"
+                  : "text-[var(--tt-muted)] max-sm:border-[var(--tt-border)] hover:text-[var(--tt-text)] sm:border-transparent hover:sm:border-[var(--tt-border)]",
               ].join(" ")}
             >
               {t.sortValue}
@@ -262,10 +265,11 @@ export function InvestorListClient({
               onClick={() => setSort("count")}
               aria-pressed={sort === "count"}
               className={[
-                "min-h-[44px] px-3 font-mono text-[11px] uppercase tracking-[0.08em] border border-[var(--tt-border)] transition-colors",
+                "max-sm:min-h-[44px] px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
+                "max-sm:border sm:border-0 sm:border-b",
                 sort === "count"
-                  ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
-                  : "text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-muted)]",
+                  ? "text-[var(--tt-accent)] max-sm:border-[var(--tt-accent)] max-sm:bg-[var(--tt-accent)]/10 sm:border-[var(--tt-accent)]"
+                  : "text-[var(--tt-muted)] max-sm:border-[var(--tt-border)] hover:text-[var(--tt-text)] sm:border-transparent hover:sm:border-[var(--tt-border)]",
               ].join(" ")}
             >
               {t.sortCount}
