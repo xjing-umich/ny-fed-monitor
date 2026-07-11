@@ -27,20 +27,29 @@ export async function mapBatch(
  * db: supabase client。返回统计。
  */
 export async function enrichSecurities(db: any, apiKey?: string): Promise<{ total: number; resolved: number; unresolved: number; skippedBatches: number }> {
-  // 1) 去重 cusip + 代表性 issuer(分页读 holdings)
+  // 1) 去重 cusip + 代表性 issuer(分页读 holdings;order id 防 OFFSET 漏行)
   const cusipIssuer = new Map<string, string>();
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await db.from("holdings").select("cusip,issuer").range(from, from + 999);
+    const { data, error } = await db
+      .from("holdings")
+      .select("cusip,issuer")
+      .order("id", { ascending: true })
+      .range(from, from + 999);
     if (error) throw new Error(error.message);
     if (!data?.length) break;
     for (const r of data) if (!cusipIssuer.has(r.cusip)) cusipIssuer.set(r.cusip, r.issuer);
     if (data.length < 1000) break;
   }
 
-  // 2) 已 resolved 的跳过(幂等)
+  // 2) 已 resolved 的跳过(幂等;cusip PK 作唯一排序键)
   const done = new Set<string>();
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await db.from("security_cusips").select("cusip").eq("resolved", true).range(from, from + 999);
+    const { data, error } = await db
+      .from("security_cusips")
+      .select("cusip")
+      .eq("resolved", true)
+      .order("cusip", { ascending: true })
+      .range(from, from + 999);
     if (error) throw new Error(error.message);
     if (!data?.length) break;
     for (const r of data) done.add(r.cusip);

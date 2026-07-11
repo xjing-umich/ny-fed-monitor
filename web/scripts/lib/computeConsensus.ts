@@ -2,10 +2,13 @@ import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwne
 import { freshness13F, globalLatestPeriod } from "../../src/lib/freshness/derive";
 
 async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
+  // PostgREST OFFSET 分页要求排序以唯一列结尾,否则页边界并列行会整行跳过。
+  // 调用方须在 filter 里带 .order(...唯一键);本函数先 filter 再 range。
   const out: any[] = [];
   for (let from = 0; ; from += 1000) {
-    let q = db.from(table).select(cols).range(from, from + 999);
+    let q = db.from(table).select(cols);
     if (filter) q = filter(q);
+    q = q.range(from, from + 999);
     const { data, error } = await q;
     if (error) throw new Error(`${table} read: ${error.message}`);
     if (!data?.length) break;
@@ -55,24 +58,31 @@ export function latestDistinctPeriodFilings(rows: FilingRow[], n: number): Filin
 
 export async function computeAndStoreConsensus(db: any): Promise<{ holdings: number; moves: number; stockHolders: number; trend: number; coOwnership: number }> {
   const cmap = new Map<string, CusipInfo>();
-  for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer"))
+  for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer", (q) => q.order("cusip", { ascending: true })))
     cmap.set(r.cusip, { ticker: r.ticker, name: r.issuer });
 
-  const managers = await readAll(db, "managers", "cik,slug,person");
+  const managers = await readAll(db, "managers", "cik,slug,person", (q) => q.order("cik", { ascending: true }));
   type Raw = { cik: string; slug: string; person: string; period: string; filedAt: string | null; latestH: any[]; priorH: any[] };
   const raws: Raw[] = [];
   for (const m of managers) {
     // 多取几行再按 period 去重:limit(2) 会在同季原件+修正件并存时把两期都耗在同一 period 上。
+    // order 以 id 结尾,保证 OFFSET 分页稳定。
     const filingRows = await readAll(
       db,
       "filings",
       "id,period,filed_at",
-      (q) => q.eq("cik", m.cik).order("period", { ascending: false }).limit(16)
+      (q) => q.eq("cik", m.cik).order("period", { ascending: false }).order("id", { ascending: false }).limit(16)
     );
     const filings = latestDistinctPeriodFilings(filingRows, 2);
     if (!filings.length) continue;
-    const latestH = await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) => q.eq("filing_id", filings[0].id));
-    const priorH = filings[1] ? await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) => q.eq("filing_id", filings[1].id)) : [];
+    const latestH = await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) =>
+      q.eq("filing_id", filings[0].id).order("id", { ascending: true })
+    );
+    const priorH = filings[1]
+      ? await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) =>
+          q.eq("filing_id", filings[1].id).order("id", { ascending: true })
+        )
+      : [];
     raws.push({ cik: m.cik, slug: m.slug, person: m.person, period: filings[0].period, filedAt: filings[0].filed_at ?? null, latestH, priorH });
   }
 
@@ -136,13 +146,15 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
       db,
       "filings",
       "id,period,filed_at",
-      (q) => q.eq("cik", m.cik).order("period", { ascending: false }).limit(32)
+      (q) => q.eq("cik", m.cik).order("period", { ascending: false }).order("id", { ascending: false }).limit(32)
     );
     const tf = latestDistinctPeriodFilings(tfRows, 8);
     if (!tf.length) continue;
     const filings: TrendScan["filings"] = [];
     for (const f of tf) {
-      const hs = await readAll(db, "holdings", "cusip,put_call", (q) => q.eq("filing_id", f.id));
+      const hs = await readAll(db, "holdings", "cusip,put_call", (q) =>
+        q.eq("filing_id", f.id).order("id", { ascending: true })
+      );
       filings.push({ period: f.period, cusips: hs.filter((h) => !h.put_call).map((h) => h.cusip) });
     }
     trendScan.push({ slug: m.slug, filings });

@@ -272,6 +272,7 @@ export async function resolveIngestUniverse(
         .from("consensus_holdings")
         .select("ticker,holder_count")
         .order("holder_count", { ascending: false })
+        .order("ticker", { ascending: true })
         .range(from, from + CONSENSUS_PAGE - 1);
       if (error) {
         console.error(`resolveIngestUniverse 读 consensus_holdings 失败(已拉 ${ranked.length},回退已拉+种子): ${error.message}`);

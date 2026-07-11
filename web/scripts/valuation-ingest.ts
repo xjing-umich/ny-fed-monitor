@@ -83,7 +83,11 @@ async function main() {
   const secTypeMap = new Map<string, string | null>();
   const adsRatioMap = new Map<string, number | null>();
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await db.from("securities").select("ticker,security_type,ads_ratio").range(from, from + 999);
+    const { data, error } = await db
+      .from("securities")
+      .select("ticker,security_type,ads_ratio")
+      .order("ticker", { ascending: true })
+      .range(from, from + 999);
     if (error) throw new Error(`securities 读取失败: ${error.message}`);
     if (!data?.length) break;
     for (const r of data) {
