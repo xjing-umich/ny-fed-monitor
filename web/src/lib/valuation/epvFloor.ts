@@ -157,6 +157,7 @@ function assembleFloor(
       currentAssets: latest.current_assets,
       totalLiabilities: latest.total_liabilities,
       sharesDiluted: shares,
+      preferredStock: latest.preferred_equity,
     }),
     moat_reading: moatReading,
     growth_value: growthValue,

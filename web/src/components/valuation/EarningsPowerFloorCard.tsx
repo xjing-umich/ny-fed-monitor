@@ -137,14 +137,14 @@ const CAUTION = {
   en: {
     terminal: "The estimate leans heavily on the distant future (terminal value over 70% of present value).",
     oeYield: "Owner-earnings yield diverges sharply from the 10-year Treasury (over 300 bps).",
-    quickCheck: "The DCF result diverges from a zero-growth sanity check (over 50%).",
+    quickCheck: "The DCF result diverges sharply from a matched-growth benchmark (over 50%) — the model is sensitive to its staging.",
     divergence: "The two methods’ midpoints differ materially — growth assumptions warrant review (over 20%).",
     rMinusG: "Growth nearly matches the discount rate — the estimate is sensitive to assumptions.",
   },
   zh: {
     terminal: "估计高度依赖遥远的未来（终值占现值 70% 以上）。",
     oeYield: "所有者盈利收益率与 10 年期美债大幅背离（超过 300 个基点）。",
-    quickCheck: "DCF 结果与零增长理智检验出现背离（超过 50%）。",
+    quickCheck: "DCF 结果与同增长基准显著背离（超过 50%）— 模型对分档假设敏感。",
     divergence: "两种方法的中值差异显著 — 增长假设值得复核（超过 20%）。",
     rMinusG: "增长率几乎等于贴现率 — 估计对假设高度敏感。",
   },

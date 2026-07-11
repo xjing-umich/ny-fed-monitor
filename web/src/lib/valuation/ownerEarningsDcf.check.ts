@@ -8,6 +8,7 @@ import {
   DGS10_PREMIUM,
   FALLBACK_BAND,
   reconcileMethods,
+  hModelValue,
 } from "./ownerEarningsDcf";
 import type { OeDcfAssessment } from "./types";
 
@@ -270,6 +271,40 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   for (const bad of ["buy", "sell", " hold", "target price", "rating", "recommend"]) {
     assert.ok(!blob.includes(bad), `no "${bad}" token in reconcile output`);
   }
+}
+
+// ── B1. H-model baseline 精确闭式解 ─────────────────────────────────────────
+// 权益价值 V = OE0·[(1+gL) + H·(gS−gL)] / (r−gL), H = PROJECTION_YEARS/2 = 5.
+// oe0=1000, gS=0.10, gL=0.03, r=0.10 → 1000·(1.03+5·0.07)/0.07 = 1000·1.38/0.07 = 19714.2857
+{
+  const v = hModelValue(1000, 0.1, 0.03, 0.1);
+  assert.ok(Math.abs(v - (1000 * (1.03 + 5 * 0.07)) / 0.07) < 1e-6, `H-model closed form, got ${v}`);
+  // gS=gL=0 退化为零增长资本化 oe0/r
+  assert.ok(Math.abs(hModelValue(1000, 0, 0, 0.1) - 1000 / 0.1) < 1e-9, "gS=gL=0 → oe0/r");
+  // 纯增长感知：gS>0 时严格大于零增长资本化
+  assert.ok(hModelValue(1000, 0.08, 0.03, 0.1) > 1000 / 0.1, "growth-aware > no-growth anchor");
+}
+
+// ── B2. 成长股不再被 quick_check 误判 unreliable（Phase A 皱褶修复）──────────
+// g1=10% 成长股：旧零增长基线 dev≈101%（flag true），新 H-model 基线 dev<5%（flag false）。
+{
+  const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
+  const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), years, { value: 4.25, date: "2026-06-19" }, price(120));
+  assert.ok(r.assessable, "growth fixture assessable");
+  assert.strictEqual(r.diagnostics!.quick_check_flag, false, "growth stock NOT flagged (H-model baseline)");
+  assert.ok(r.diagnostics!.quick_check_deviation_pct! < 0.5, "deviation under threshold");
+  // 诊断基线 = 独立重算的 H-model / shares（口径自洽，不硬编码 fixture 数）
+  const expected = hModelValue(1000, r.growth_g1!, r.terminal_growth!, r.discount!.midpoint) / 100;
+  assert.ok(Math.abs(r.diagnostics!.quick_check_per_share! - expected) < 1e-6, "quick baseline = H-model per share");
+  // 增长感知：新基线严格高于旧零增长锚 oe0/midpoint/shares
+  assert.ok(r.diagnostics!.quick_check_per_share! > 1000 / r.discount!.midpoint / 100, "baseline > old zero-growth anchor");
+}
+
+// ── B3. 零增长名回归不变：g1=0 → H-model 退化为 oe0/r，与旧口径同值 ───────────
+{
+  const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), [yr(2024, 100), yr(2023, 100)], { value: 4, date: "d" }, null);
+  assert.strictEqual(r.diagnostics!.quick_check_flag, false, "flat earnings not flagged");
+  assert.ok(Math.abs(r.diagnostics!.quick_check_per_share! - 1000 / r.discount!.midpoint / 100) < 1e-9, "g1=0 baseline unchanged vs zero-growth");
 }
 
 console.log("ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK");

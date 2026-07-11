@@ -101,6 +101,21 @@ function dcfTier(oe0: number, g1: number, r: number, shares: number, gTerminal: 
   return { equity, perShare: equity / shares, pvTv };
 }
 
+/**
+ * Damodaran 两阶段线性衰减增长的闭式解（H-model），返回权益价值：
+ *   V = OE0 · [ (1 + gL) + H · (gS − gL) ] / (r − gL),  H = PROJECTION_YEARS / 2.
+ * 用作 quick-check 基线：与 neutral 档同增长假设(gS=g1, gL=gTerminal, r=midpoint)，
+ * 故 |neutral − 此基线| 只在离散 10 年 DCF 对分档/贴现异常敏感时才大 —— 这才是
+ * 名副其实的可靠性信号，而非把「有增长」误当「不稳定」。gS=gL=0 时退化为 OE0/r。
+ * r−gL 在本引擎恒 ≥ ~5%（midpoint ≥ 8.25%、gL ≤ 3%），r−gL ≤ 0 时防御性退回 OE0/r。
+ */
+export function hModelValue(oe0: number, gS: number, gL: number, r: number): number {
+  const H = PROJECTION_YEARS / 2;
+  const denom = r - gL;
+  if (!(denom > 0)) return oe0 / r; // 防御：现实输入不会触及
+  return (oe0 * ((1 + gL) + H * (gS - gL))) / denom;
+}
+
 function discountBand(dgs10: { value: number; date: string } | null): DiscountBandProvenance {
   if (!dgs10 || !Number.isFinite(dgs10.value)) {
     return {
@@ -265,7 +280,9 @@ export function deriveOeDcf(
 
   // diagnostics
   const oePerShare = oe0 / shares;
-  const quickPerShare = oe0 / discount.midpoint / shares; // no-growth capitalization
+  // quick-check 基线：与 neutral 档同增长假设的 H-model 闭式解（非零增长资本化），
+  // 使偏离只在模型真不稳定时才大 —— 成长股不再被误判 unreliable（Phase A 皱褶修复）。
+  const quickPerShare = hModelValue(oe0, g1, gTerminal, discount.midpoint) / shares;
   const quickDev = Math.abs(neutral.per_share - quickPerShare) / quickPerShare;
   const rMinusG = discount.midpoint - g1;
   let oeYield: number | undefined;

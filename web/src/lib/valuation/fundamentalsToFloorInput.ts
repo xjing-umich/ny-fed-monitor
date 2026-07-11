@@ -44,6 +44,7 @@ export function fundamentalsToFloorInput(
       current_assets: u(r.current_assets),
       current_liabilities: u(r.current_liabilities),
       total_liabilities: u(r.total_liabilities),
+      preferred_equity: u(r.preferred_equity),
     }));
   return { ticker, company_name: companyName ?? undefined, years };
 }

@@ -36,14 +36,15 @@ export function computeNetNet(input: {
   currentAssets?: number;
   totalLiabilities?: number;
   sharesDiluted?: number;
+  preferredStock?: number;
 }): NetNetLamp {
-  const { currentAssets, totalLiabilities, sharesDiluted } = input;
+  const { currentAssets, totalLiabilities, sharesDiluted, preferredStock } = input;
   if (currentAssets == null || totalLiabilities == null || sharesDiluted == null)
     return { assessable: false, reason: "缺少流动资产/总负债/摊薄股数,无法计算净流动资产。" };
   if (!(sharesDiluted > 0))
     return { assessable: false, reason: "摊薄股数非正,无法计算每股净流动资产。" };
-  // 注:精确 Graham 口径应再减优先股(NCAV = 流动资产 − 总负债 − 优先股);数据层暂无优先股字段,Phase B 补。
-  const ncav = currentAssets - totalLiabilities;
+  // Graham 精确口径:优先股有优先求偿权,普通股 NCAV 须先扣优先股账面(缺失则 ?? 0 恒等降级)。
+  const ncav = currentAssets - totalLiabilities - (preferredStock ?? 0);
   const per_share = ncav / sharesDiluted;
   if (!(per_share > 0)) return { assessable: false, reason: "净流动资产为负,非 net-net。" };
   return { assessable: true, per_share, ncav };
