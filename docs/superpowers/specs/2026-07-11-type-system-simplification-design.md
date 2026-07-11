@@ -1,7 +1,7 @@
 # Type system simplification (Option B)
 
 **Date:** 2026-07-11  
-**Status:** Approved for planning  
+**Status:** Implemented  
 **Scope:** Full `web/` UI — stocks, investors, macro, learn, home, shell  
 **Out of scope:** Theme colors, layout density (except as forced by font class swaps), removing Fraunces from the bundle
 
