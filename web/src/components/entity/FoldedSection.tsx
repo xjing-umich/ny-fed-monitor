@@ -18,7 +18,7 @@ export function FoldedSection({
   return (
     <details open={defaultOpen} className="group border-t border-[var(--tt-border)] pt-4">
       <summary className="flex cursor-pointer list-none items-center gap-2 pb-3 [&::-webkit-details-marker]:hidden">
-        <h2 className="font-display text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        <h2 className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
           {title}
         </h2>
         <span aria-hidden className="text-[var(--tt-faint)] transition-transform group-open:rotate-90">

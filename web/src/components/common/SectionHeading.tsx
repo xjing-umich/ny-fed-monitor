@@ -24,7 +24,7 @@ export function SectionHeading({
         </p>
       )}
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <Tag className="font-display text-xl font-medium leading-tight tracking-tight text-[var(--tt-text)]">
+        <Tag className="text-xl font-medium leading-tight tracking-tight text-[var(--tt-text)]">
           {title}
         </Tag>
         {trailing}
