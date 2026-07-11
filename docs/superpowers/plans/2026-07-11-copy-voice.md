@@ -4,7 +4,9 @@
 
 **Goal:** Establish an in-repo copy voice rubric and sweep the whole site once against it, fixing the real AI-flavored lines while protecting the site's earned voice.
 
-**Architecture:** A full rubric lives in `web/docs/copy-voice.md`; the rule layer (`web/AGENTS.md`) carries only a one-line pointer to it so future sessions apply it without per-turn context bloat. A one-time sweep produces a findings table the user approves line-by-line; approved rewrites are applied and gated on tsc/eslint. All work rides the existing `fix/home-canonical-hreflang` branch in an isolated worktree.
+**Architecture:** A full rubric lives in `web/docs/copy-voice.md`; the rule layer (`web/AGENTS.md`) carries only a one-line pointer to it so future sessions apply it without per-turn context bloat. A one-time sweep produces a findings table the user approves line-by-line; approved rewrites are applied and gated on tsc/eslint. All work rides branch `fix/copy-voice-de-ai` (off latest `db-foundation`) in an isolated worktree.
+
+> **Note (2026-07-11):** The earlier SEO fixes — A (homepage canonical/hreflang), B (ogFor default OG image), macro meta description de-AI — were already merged to `db-foundation` via PR #151. This plan's remaining scope is ONLY the rubric + the copy sweep (homepage H1 staccato, FoundationsGrid antithesis, macro on-page "drill into", plus whatever the sweep surfaces). None of those were in #151.
 
 **Tech Stack:** Markdown (rubric + docs), Next.js 16 TSX metadata/components (copy strings), TypeScript (`tsc --noEmit`), ESLint.
 
@@ -15,7 +17,7 @@
 - Judge `en` and `zh` copy **independently** (not word-for-word translations).
 - Do NOT touch data-templated factual strings (FAQ / Dataset / aggregate blurbs) that are already concrete.
 - No copy rewrite is applied until the user approves it in the Task 3 findings table.
-- All work in isolated worktree `.claude/worktrees/copy-voice` on branch `fix/home-canonical-hreflang`; never touch the shared working tree (peer on `feat/stock-page-hierarchy`).
+- All work in isolated worktree `.claude/worktrees/copy-voice` on branch `fix/copy-voice-de-ai`; never touch the shared working tree (peer on `feat/stock-page-hierarchy`).
 - Verification per task uses what actually verifies it (doc formed / `tsc`=0 / `eslint`=0 / user approval) — no fabricated unit tests for prose.
 - Commit/push only the branch; do NOT merge (user opens/merges the PR).
 
@@ -235,8 +237,8 @@ git commit -m "chore(copy): 全站去 AI 味扫描 — 应用批准的改写(手
 
 - [ ] **Step 1: Push the branch**
 
-Run: `git push origin fix/home-canonical-hreflang`
-Expected: branch updated (fast-forward from prior A+B+macro commits).
+Run: `git push -u origin fix/copy-voice-de-ai`
+Expected: new branch pushed (carries spec + plan + rubric + AGENTS pointer + approved copy rewrites).
 
 - [ ] **Step 2: Remove the worktree, verify peer tree intact**
 
@@ -249,7 +251,7 @@ git branch --show-current   # expect: feat/stock-page-hierarchy (peer), untouche
 
 - [ ] **Step 3: Report to user with PR compare URL**
 
-Report: branch `fix/home-canonical-hreflang` now carries A (canonical) + B (og) + macro desc + copy-voice rubric + AGENTS pointer + approved copy rewrites. PR compare URL: `https://github.com/xjing-umich/ny-fed-monitor/compare/db-foundation...fix/home-canonical-hreflang?expand=1`. Note runtime copy verification happens on the Vercel preview after merge.
+Report: A/B/macro already merged (PR #151). Branch `fix/copy-voice-de-ai` carries the copy-voice rubric + AGENTS pointer + approved copy rewrites (+ spec/plan docs). PR compare URL: `https://github.com/xjing-umich/ny-fed-monitor/compare/db-foundation...fix/copy-voice-de-ai?expand=1`. Note runtime copy verification happens on the Vercel preview after merge.
 
 ---
 
