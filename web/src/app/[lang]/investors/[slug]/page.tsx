@@ -224,7 +224,7 @@ function HoldingsTable({
         eyebrow={lang === "zh" ? "SEC 13F · 最新持仓" : "SEC 13F · latest filing"}
         title={t.title}
       />
-      <div className="mt-5">
+      <div className="mt-3">
         <DataTable
           columns={columns}
           rows={capped}
@@ -490,6 +490,14 @@ export default async function InvestorSlugPage({
         lang={lang}
         title={manager.person}
         subtitle={subtitle}
+        topAction={
+          <Link
+            href={localePath(lang, "/investors")}
+            className="inline-block text-xs text-[var(--tt-faint)] no-underline transition-colors hover:text-[var(--tt-text)]"
+          >
+            {lang === "zh" ? "← 超级投资者" : "← Superinvestors"}
+          </Link>
+        }
         verdict={verdict}
         keyFacts={keyFacts}
         headerAction={
@@ -512,7 +520,7 @@ export default async function InvestorSlugPage({
                 eyebrow={lang === "zh" ? "13F × 估值" : "13F × valuation"}
                 title={lang === "zh" ? "估值姿态" : "Valuation posture"}
               />
-              <p className="mb-3 mt-5 text-sm text-[var(--tt-muted)]">
+              <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
                   ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于保守价值带${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
                   : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below a conservative value band${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
@@ -550,7 +558,7 @@ export default async function InvestorSlugPage({
                   </span>
                 }
               />
-              <p className="mb-3 mt-5 text-sm text-[var(--tt-muted)]">
+              <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
                   ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${latest.period}）：`
                   : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${latest.period}):`}
@@ -580,8 +588,9 @@ export default async function InvestorSlugPage({
             label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"}
           />
           <details className="group mt-6">
-            <summary className="cursor-pointer list-none text-lg font-medium tracking-tight text-[var(--tt-text)] marker:hidden [&::-webkit-details-marker]:hidden">
-              {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}
+            <summary className="cursor-pointer list-none text-lg font-medium tracking-tight text-[var(--tt-text)] [&::-webkit-details-marker]:hidden">
+              <span className="group-open:hidden">{lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}</span>
+              <span className="hidden group-open:inline">{lang === "zh" ? "关于这位投资者 ▾" : "About this investor ▾"}</span>
             </summary>
             <div className="mt-3">
               <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />

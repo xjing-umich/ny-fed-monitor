@@ -187,7 +187,7 @@ function HoldersTable({
         eyebrow={page.holders.eyebrow}
         title={t.title}
       />
-      <div className="mb-3 mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="mb-3 mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
         <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)]">
           {t.meta(sorted.length, formatUSD(totalValue), moves.opened, moves.exited)}
         </p>
@@ -542,7 +542,7 @@ export default async function StockTickerPage({
                   ) : undefined
                 }
               />
-              <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+              <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
                   { k: page.bq.revenueGrowth, v: bq.revenueYoy, sign: true },
                   { k: page.bq.netMargin, v: bq.netMargin, sign: false },
@@ -591,7 +591,7 @@ export default async function StockTickerPage({
                 eyebrow={page.valuation.eyebrow}
                 title={valuationTitle}
               />
-              <div className="mt-5">
+              <div className="mt-3">
                 <EarningsPowerFloorCard
                   floor={valuationFloor}
                   strikeZone={strikeZone}
@@ -634,7 +634,7 @@ export default async function StockTickerPage({
                 eyebrow={page.coOwned.eyebrow}
                 title={page.coOwned.title}
               />
-              <p className="mb-3 mt-5 text-sm text-[var(--tt-muted)]">
+              <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
                 {page.coOwned.lead(issuer, ticker)}
               </p>
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
