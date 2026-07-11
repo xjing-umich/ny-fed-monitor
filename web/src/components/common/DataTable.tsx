@@ -102,7 +102,7 @@ export function DataTable<T>({
           <thead className={cn(hideHeader && "sr-only")}>
             <tr className="border-b border-[var(--tt-border)]">
               {showRank && (
-                <th className="w-8 pb-2 text-left text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
+                <th className="w-8 pb-2 text-left font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
                   #
                 </th>
               )}
@@ -110,7 +110,7 @@ export function DataTable<T>({
                 <th
                   key={c.key}
                   className={cn(
-                    "pb-2 text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]",
+                    "pb-2 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]",
                     alignClass(c.align),
                     c.width
                   )}
@@ -127,12 +127,13 @@ export function DataTable<T>({
                 <tr
                   key={getKey(row, i)}
                   className={cn(
-                    "group border-b border-[var(--tt-border)] transition-colors hover:bg-[var(--tt-surface)]",
+                    // 行间不画满宽下划线——密表里会变成「下划线墙」；靠 hover 面区分行。
+                    "group transition-colors hover:bg-[var(--tt-surface)]",
                     isOverflow(i) && "hidden"
                   )}
                 >
                   {showRank && (
-                    <td className="py-3 pr-3 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
+                    <td className="py-2.5 pr-3 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
                       {i + 1}
                     </td>
                   )}
@@ -152,9 +153,10 @@ export function DataTable<T>({
                       <td
                         key={c.key}
                         className={cn(
-                          "py-3",
+                          "py-2.5",
                           ci < columns.length - 1 && "pr-4",
                           alignClass(c.align),
+                          c === primaryCol && "min-w-0 max-w-[14rem] sm:max-w-[18rem]",
                           c.align === "right" &&
                             "font-mono tabular-nums text-[var(--tt-muted)]",
                           c.cellClassName
@@ -172,7 +174,7 @@ export function DataTable<T>({
       </div>
 
       {/* Mobile/tablet: stacked cards */}
-      <ul className={cn("m-0 list-none p-0", bp.card)}>
+      <ul className={cn("m-0 list-none divide-y divide-[var(--tt-border)] p-0", bp.card)}>
         {rows.map((row, i) => {
           const href = rowHref?.(row);
           const title = (
@@ -195,10 +197,7 @@ export function DataTable<T>({
           return (
             <li
               key={getKey(row, i)}
-              className={cn(
-                "border-b border-[var(--tt-border)] py-3",
-                isOverflow(i) && "hidden"
-              )}
+              className={cn("py-3", isOverflow(i) && "hidden")}
             >
               <div className="flex items-start justify-between gap-3">
                 {href ? (

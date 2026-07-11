@@ -3,12 +3,16 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
+import { getManagerIndex } from "@/lib/managers/source";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { altFor, ogFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
+import { globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
+import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { StocksTable, type StockRow } from "./StocksTable";
+import { stockUi } from "@/lib/stocks/stockCopy";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 日级 ISR → 列表页 CDN 秒开,
 // 且不会每小时把 consensusHeld(最多 5000 行)反复读出(egress)。
@@ -55,12 +59,18 @@ export default async function StocksIndexPage({
   // Full consensus set (held by ≥2 funds) — every stock we submit to search has
   // an internal link from this hub. Single-holder long tail stays out (crawlable
   // but not promoted). Shared source with the sitemap so the two never drift.
-  const rows = await consensusHeld();
-  const cusipMap = await getCusipMap();
-  // Google Finance 链接需 TICKER:EXCHANGE; 与个股详情页一致取交易所, 否则回退搜索。
-  const exchangeMap = await getTickerExchangeMap();
+  // getManagerIndex 有 cache()，与站内其他页共享，只为 dateline 取全局最新季。
+  const [rows, cusipMap, exchangeMap, idx] = await Promise.all([
+    consensusHeld(),
+    getCusipMap(),
+    getTickerExchangeMap(),
+    getManagerIndex(),
+  ]);
 
   const isZh = lang === "zh";
+  const ui = stockUi(lang);
+  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
+  const asOfLabel = quarterLabel(globalLatest) || undefined;
 
   // 服务端预塑形为可序列化行,交给 client 组件(DataTable + 分页)。
   const maxHolders = rows[0]?.holderCount ?? 1;
@@ -88,7 +98,8 @@ export default async function StocksIndexPage({
       <div className="mb-8">
         <PageHeader
           eyebrow={isZh ? "SEC 13F · 最多人持有" : "SEC 13F · most widely held"}
-          title={isZh ? "个股" : "Stocks"}
+          title={ui.stocksTitle}
+          dateline={<DataAsOfBadge lang={lang} asOf={asOfLabel} />}
           intro={isZh
             ? "按持有机构数排列，数据来源：SEC 13F 持仓披露。"
             : "Ranked by number of superinvestors holding the security. Source: SEC 13F filings."}

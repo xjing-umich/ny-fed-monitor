@@ -48,6 +48,7 @@ import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
+import { stockGlossary, stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
 import { Sparkline } from "@/components/common/Sparkline";
 import { SectionHeading } from "@/components/common/SectionHeading";
 
@@ -166,6 +167,8 @@ function HoldersTable({
   trend: number[];
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
+  const ui = stockUi(lang);
+  const page = stockPageCopy(lang);
   const sorted = [...holders].sort((a, b) => b.value - a.value);
   const head = sorted.slice(0, HOLDERS_VISIBLE);
   const tail = sorted.slice(HOLDERS_VISIBLE);
@@ -181,7 +184,7 @@ function HoldersTable({
     <section>
       {/* 支柱②标题:绿眉标 → Fraunces 标题(语义 h2, 文档大纲/SEO) */}
       <SectionHeading
-        eyebrow={lang === "zh" ? "SEC 13F · 持有人" : "SEC 13F · holders"}
+        eyebrow={page.holders.eyebrow}
         title={t.title}
       />
       <div className="mb-3 mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -208,7 +211,7 @@ function HoldersTable({
         <details className="group mt-2">
           <summary className="cursor-pointer list-none max-sm:flex max-sm:items-center max-sm:min-h-[44px] py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
             <span className="group-open:hidden">{t.showAll(sorted.length)} ▸</span>
-            <span className="hidden group-open:inline">{t.title} ▾</span>
+            <span className="hidden group-open:inline">{ui.collapse} ▾</span>
           </summary>
           <DataTable
             columns={columns}
@@ -222,7 +225,7 @@ function HoldersTable({
 
       {/* 本季清仓:表底 chip 列表;空 → 不渲染 */}
       {exited.length > 0 && (
-        <div className="mt-4 border-t border-[var(--tt-border)] pt-3">
+        <div className="mt-5 pt-1">
           <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-negative)]">
             {t.exitedTitle(exited.length)}
           </span>
@@ -415,31 +418,19 @@ export default async function StockTickerPage({
 
   // 估值区块 Fraunces 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
   // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
+  const page = stockPageCopy(lang);
+  const g = stockGlossary(lang);
+  const ui = stockUi(lang);
   const valuationTitle = handoffVerdict
-    ? lang === "zh"
-      ? handoffVerdict.bucket === "below"
-        ? "安全边际"
-        : handoffVerdict.bucket === "within"
-          ? "处于合理价值区间"
-          : "高于合理价值"
-      : handoffVerdict.bucket === "below"
-        ? "Margin of safety"
-        : handoffVerdict.bucket === "within"
-          ? "In fair-value range"
-          : "Above fair value"
-    : lang === "zh"
-      ? "估值"
-      : "Valuation";
+    ? handoffVerdict.bucket === "below"
+      ? page.valuation.below
+      : handoffVerdict.bucket === "within"
+        ? page.valuation.within
+        : page.valuation.above
+    : page.valuation.titleFallback;
 
-  const subtitle =
-    lang === "zh"
-      ? `${n} 位超级投资者持有 ${issuer}（${ticker}）。`
-      : `Held by ${n} superinvestor${n === 1 ? "" : "s"} (${ticker}).`;
-
-  const disclaimer =
-    lang === "zh"
-      ? "仅供教育与信息参考，不构成投资建议。13F 持仓为机构自行申报，可能滞后最多 45 天。"
-      : "Educational data only — not investment advice. 13F positions are self-reported and can lag up to 45 days.";
+  const subtitle = page.subtitle(n);
+  const disclaimer = page.disclaimer;
 
   const exchange = (await getTickerExchangeMap()).get(ticker);
 
@@ -447,7 +438,7 @@ export default async function StockTickerPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: lang === "zh" ? "个股" : "Stocks", item: absoluteUrl(localePath(lang, `/stocks`)) },
+      { "@type": "ListItem", position: 1, name: page.breadcrumbStocks, item: absoluteUrl(localePath(lang, `/stocks`)) },
       { "@type": "ListItem", position: 2, name: issuer, item: absoluteUrl(localePath(lang, `/stocks/${ticker}`)) },
     ],
   };
@@ -512,48 +503,51 @@ export default async function StockTickerPage({
       <EntityPage
         lang={lang}
         title={issuer}
+        titleMeta={ticker}
         subtitle={subtitle}
         disclaimer={disclaimer}
+        topAction={
+          <Link
+            href={localePath(lang, "/stocks")}
+            className="inline-block text-xs text-[var(--tt-faint)] no-underline transition-colors hover:text-[var(--tt-text)]"
+          >
+            {ui.backToStocks}
+          </Link>
+        }
         verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
         keyFacts={[
-          { label: lang === "zh" ? "现价" : "Price", value: fmtPriceFact(latestPrice) },
+          { label: page.price, value: fmtPriceFact(latestPrice) },
           // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——
           // 高于价值 / 带内 / 红旗档不显空格子(那是噪音), 结论交给 masthead 徽章 + 估值区块标题。
           ...(marginShown
-            ? [{ label: lang === "zh" ? "安全边际" : "Margin of safety", value: fmtMarginPct(handoffVerdict!.marginPct!), tone: "positive" as const }]
+            ? [{ label: page.marginOfSafety, value: fmtMarginPct(handoffVerdict!.marginPct!), tone: "positive" as const }]
             : []),
-          { label: lang === "zh" ? "持有人数" : "Holders", value: String(n) },
-          { label: lang === "zh" ? "合计市值" : "Value held", value: formatUSD(totalValue) },
+          { label: g.holdersPeople, value: String(n) },
+          { label: g.totalValue, value: formatUSD(totalValue) },
         ]}
         sources={[{ name: "SEC EDGAR 13F", asOf: latestPeriod, filed: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
         <>
-          {cusipsForTicker.length > 0 && (
-            <section aria-label={lang === "zh" ? "外部金融数据" : "External finance links"}>
-              <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="prominent" lang={lang} />
-            </section>
-          )}
-
           {bq && (
-            <section aria-label={lang === "zh" ? "生意质量" : "Business quality"}>
+            <section aria-label={page.bq.aria}>
               <SectionHeading
-                eyebrow={lang === "zh" ? "SEC 10-K · 基本面" : "SEC 10-K · fundamentals"}
-                title={lang === "zh" ? "生意质量" : "Business quality"}
+                eyebrow={page.bq.eyebrow}
+                title={page.bq.title}
                 trailing={
                   bq.asOf ? (
                     <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
-                      {lang === "zh" ? `截至 ${bq.asOf}` : `as of ${bq.asOf}`}
+                      {page.bq.asOf(bq.asOf)}
                     </span>
                   ) : undefined
                 }
               />
               <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
-                  { k: lang === "zh" ? "营收增速" : "Revenue growth", v: bq.revenueYoy, sign: true },
-                  { k: lang === "zh" ? "净利率" : "Net margin", v: bq.netMargin, sign: false },
+                  { k: page.bq.revenueGrowth, v: bq.revenueYoy, sign: true },
+                  { k: page.bq.netMargin, v: bq.netMargin, sign: false },
                   { k: "ROE", v: bq.roe, sign: false },
-                  { k: lang === "zh" ? "FCF 利润率" : "FCF margin", v: bq.fcfMargin, sign: false },
+                  { k: page.bq.fcfMargin, v: bq.fcfMargin, sign: false },
                 ].map((m) => (
                   <div key={m.k}>
                     <dt className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">{m.k}</dt>
@@ -568,18 +562,25 @@ export default async function StockTickerPage({
               {bq.revenueSeries.length >= 2 && (
                 <div className="mt-5 flex items-center gap-3">
                   <span className="font-mono text-[11px] text-[var(--tt-muted)]">
-                    {lang === "zh"
-                      ? `营收 ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · 近 ${bq.revenueSeries.length} 年`
-                      : `Revenue ${formatUSD(bq.revenueSeries[0])} → ${formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1])} · ${bq.revenueSeries.length}y`}
+                    {page.bq.revenueTrail(
+                      formatUSD(bq.revenueSeries[0]),
+                      formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1]),
+                      bq.revenueSeries.length,
+                    )}
                   </span>
                   <Sparkline series={bq.revenueSeries} color="var(--tt-muted)" />
                 </div>
               )}
               {!bq.reliable && (
                 <p className="mt-3 text-xs text-[var(--tt-muted)]">
-                  {lang === "zh" ? "基本面数据不完整，仅供参考。" : "Fundamentals data incomplete — read with care."}
+                  {page.bq.incomplete}
                 </p>
               )}
+              <LearnLink
+                lang={lang}
+                slug="reading-business-quality"
+                label={page.bq.learn}
+              />
             </section>
           )}
 
@@ -587,7 +588,7 @@ export default async function StockTickerPage({
           {valuationFloor && (
             <section>
               <SectionHeading
-                eyebrow={lang === "zh" ? "估值 · 两种方法" : "Valuation · two methods"}
+                eyebrow={page.valuation.eyebrow}
                 title={valuationTitle}
               />
               <div className="mt-5">
@@ -602,65 +603,73 @@ export default async function StockTickerPage({
                   showStatus={false}
                 />
               </div>
-              <LearnLink
-                lang={lang}
-                slug="reading-business-quality"
-                label={lang === "zh" ? "什么样的生意算优质" : "What makes a business high quality"}
-              />
             </section>
           )}
 
-          {/* 支柱② 谁持有 — Top 10 + 折叠溢出 */}
-          <HoldersTable
-            issuer={issuer}
-            ticker={ticker}
-            holders={holders}
-            exited={exitedHolders}
-            totalValue={totalValue}
-            moves={moves}
-            lang={lang}
-            trend={trendSeries}
-          />
-          <LearnLink
-            lang={lang}
-            slug="how-to-read-a-13f"
-            label={lang === "zh" ? "如何读懂 13F" : "How to read a 13F"}
-          />
+          {/* 支柱② 谁持有 — 表 + 文字说明同簇，避免与表双份叙事抢独立一节 */}
+          <div>
+            <HoldersTable
+              issuer={issuer}
+              ticker={ticker}
+              holders={holders}
+              exited={exitedHolders}
+              totalValue={totalValue}
+              moves={moves}
+              lang={lang}
+              trend={trendSeries}
+            />
+            <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>
+              <StockProse paragraphs={stockProse} lang={lang} bare />
+            </FoldedSection>
+            <LearnLink
+              lang={lang}
+              slug="how-to-read-a-13f"
+              label={page.holders.learn}
+            />
+          </div>
 
           {coOwned.length > 0 && (
-            <section aria-label={lang === "zh" ? "共同持仓" : "Co-ownership"}>
+            <section aria-label={page.coOwned.aria}>
               <SectionHeading
-                eyebrow={lang === "zh" ? "SEC 13F · 共持信号" : "SEC 13F · co-ownership"}
-                title={lang === "zh" ? "他们还共同持有" : "Also held by these investors"}
+                eyebrow={page.coOwned.eyebrow}
+                title={page.coOwned.title}
               />
               <p className="mb-3 mt-5 text-sm text-[var(--tt-muted)]">
-                {lang === "zh"
-                  ? `持有 ${issuer}（${ticker}）的这些人还共同重仓 →`
-                  : `Investors holding ${issuer} (${ticker}) also commonly hold →`}
+                {page.coOwned.lead(issuer, ticker)}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {coOwned.map((c) => (
-                  <Link
-                    key={c.coTicker}
-                    href={stockPath(lang, c.coTicker)}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-2.5 py-1 no-underline transition-colors hover:border-[var(--tt-accent)]"
-                  >
-                    <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(c.coIssuer)}</span>
-                    <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
-                      {lang === "zh" ? `${c.sharedHolders} 人` : `${c.sharedHolders} holder${c.sharedHolders === 1 ? "" : "s"}`}
+                  <li key={c.coTicker} className="flex items-baseline gap-2 text-sm">
+                    <Link
+                      href={stockPath(lang, c.coTicker)}
+                      className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                    >
+                      {cleanIssuer(c.coIssuer)}
+                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{c.coTicker}</span>
+                    </Link>
+                    <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
+                      {page.coOwned.shared(c.sharedHolders)}
                     </span>
-                  </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           )}
 
           <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
 
-          {/* 佐证区(默认折叠, 内容留 DOM 供 SEO/GEO) */}
-          <FoldedSection title={lang === "zh" ? "持有概览" : "Ownership overview"}>
-            <StockProse paragraphs={stockProse} lang={lang} bare />
-          </FoldedSection>
+          {/* 外链沉到正文末、Sources 前：不抢质量/估值/持有人主线；detail=图标无框 */}
+          {cusipsForTicker.length > 0 && (
+            <section
+              aria-label={page.externalAria}
+              className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-2"
+            >
+              <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                {ui.alsoOn}
+              </span>
+              <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="detail" lang={lang} />
+            </section>
+          )}
         </>
       </EntityPage>
     </>

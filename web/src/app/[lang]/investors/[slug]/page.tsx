@@ -167,7 +167,7 @@ function HoldingsTable({
       width: "w-32",
       cell: (h) => {
         const tk = cusipToTicker.get(h.cusip);
-        return <ValuationBadge verdict={tk ? verdicts.get(tk.toUpperCase()) : undefined} lang={lang} />;
+        return <ValuationBadge verdict={tk ? verdicts.get(tk.toUpperCase()) : undefined} lang={lang} density="sparse" />;
       },
     },
     {
@@ -202,17 +202,16 @@ function HoldingsTable({
       key: "signal",
       header: t.cols.signal,
       align: "right",
-      width: "w-40",
+      width: "w-36",
       role: "trail",
+      hideOnMobile: true,
       cell: (h) => {
         const s = rowSignals.get(h.cusip);
-        if (!s) return <span className="text-[var(--tt-faint)]">—</span>;
-        if (!s.conviction) return <span className="text-[var(--tt-faint)]">—</span>;
+        if (!s?.conviction) return <span className="text-[var(--tt-faint)]">—</span>;
+        // 无框 mono 文案：避免 SIGNAL 列 pill 长短不一形成锯齿右缘
         return (
-          <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
-            <span className="rounded-sm border border-[var(--tt-border)] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)]">
-              {s.conviction.label}
-            </span>
+          <span className="inline-block max-w-[9rem] truncate font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)]" title={s.conviction.label}>
+            {s.conviction.label}
           </span>
         );
       },
@@ -243,7 +242,7 @@ function HoldingsTable({
       )}
 
       {exits.length > 0 && (
-        <div className="mt-4 border-t border-[var(--tt-border)] pt-3">
+        <div className="mt-5 pt-1">
           <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-negative)]">
             {t.exitedTitle(exits.length)}
           </span>
@@ -518,25 +517,26 @@ export default async function InvestorSlugPage({
                   ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于保守价值带${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
                   : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below a conservative value band${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
-                  <Link
-                    key={h.ticker}
-                    href={stockPath(lang, h.ticker)}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-2.5 py-1 no-underline transition-colors hover:border-[var(--tt-accent)]"
-                  >
-                    <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(h.issuer)}</span>
-                    <span className="font-mono text-[11px] text-[var(--tt-muted)]">
-                      {h.marginPct != null
-                        ? `${Math.round(h.marginPct * 100)}% ${lang === "zh" ? "安全边际" : "margin"} · `
-                        : ""}
+                  <li key={h.ticker} className="flex items-baseline gap-2 text-sm">
+                    <Link
+                      href={stockPath(lang, h.ticker)}
+                      className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                    >
+                      {cleanIssuer(h.issuer)}
+                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{h.ticker}</span>
+                    </Link>
+                    <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
+                      {h.marginPct != null ? `${Math.round(h.marginPct * 100)}%` : ""}
+                      {h.marginPct != null ? " · " : ""}
                       {h.inStrikeZone
-                        ? lang === "zh" ? "击球区" : "strike zone"
-                        : lang === "zh" ? "低于价值带" : "below band"}
+                        ? lang === "zh" ? "击球区" : "strike"
+                        : lang === "zh" ? "低于带" : "below"}
                     </span>
-                  </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           )}
           {lonely.length > 0 && (
@@ -555,20 +555,22 @@ export default async function InvestorSlugPage({
                   ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${latest.period}）：`
                   : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${latest.period}):`}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {lonely.slice(0, LONELY_LIMIT).map((h) => (
-                  <Link
-                    key={h.ticker}
-                    href={stockPath(lang, h.ticker)}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tt-border)] px-2.5 py-1 no-underline transition-colors hover:border-[var(--tt-accent)]"
-                  >
-                    <span className="text-sm text-[var(--tt-text)]">{cleanIssuer(h.issuer)}</span>
-                    <span className="font-mono text-[11px] text-[var(--tt-muted)]">
-                      {Math.round(h.weight * 100)}% · {lang === "zh" ? `仅 ${h.holderCount} 家持有` : `held by ${h.holderCount}`}
+                  <li key={h.ticker} className="flex items-baseline gap-2 text-sm">
+                    <Link
+                      href={stockPath(lang, h.ticker)}
+                      className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                    >
+                      {cleanIssuer(h.issuer)}
+                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{h.ticker}</span>
+                    </Link>
+                    <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
+                      {Math.round(h.weight * 100)}% · {lang === "zh" ? `${h.holderCount} 家` : `${h.holderCount}`}
                     </span>
-                  </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           )}
           <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
@@ -577,8 +579,8 @@ export default async function InvestorSlugPage({
             slug="what-is-a-superinvestor"
             label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"}
           />
-          <details className="group border-t border-[var(--tt-border)] pt-4">
-            <summary className="cursor-pointer list-none text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)] marker:hidden [&::-webkit-details-marker]:hidden">
+          <details className="group mt-6">
+            <summary className="cursor-pointer list-none text-lg font-medium tracking-tight text-[var(--tt-text)] marker:hidden [&::-webkit-details-marker]:hidden">
               {lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}
             </summary>
             <div className="mt-3">

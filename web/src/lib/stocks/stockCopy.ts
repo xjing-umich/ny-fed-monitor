@@ -1,0 +1,152 @@
+import type { Lang } from "@/lib/nav";
+
+/**
+ * 个股分区跨页术语表 —— 同一概念只用一套中英标签。
+ * - 列表/筛选「持有机构数」：按基金/机构计数
+ * - 详情 masthead「持有人数」：持有该票的超级投资者人数（人）
+ * - EN 两侧均可 "Holders"；ZH 必须区分机构 vs 人
+ */
+export const STOCK_GLOSSARY = {
+  zh: {
+    security: "标的",
+    holdersInstitution: "持有机构数",
+    holdersInstitutionShort: "持有",
+    holdersPeople: "持有人数",
+    totalValue: "合计市值",
+    totalValueShort: "市值",
+    links: "链接",
+    byHolders: "按持有机构数",
+  },
+  en: {
+    security: "Security",
+    holdersInstitution: "Holders",
+    holdersInstitutionShort: "Holders",
+    holdersPeople: "Holders",
+    totalValue: "Total value",
+    totalValueShort: "Value",
+    links: "Links",
+    byHolders: "By holders",
+  },
+} as const;
+
+/** 列表 / 筛选 / 详情共用的轻量 UI 文案。 */
+export const STOCK_UI = {
+  zh: {
+    collapse: "收起",
+    showMore: (n: number) => `展开其余 ${n} 只`,
+    backToStocks: "← 个股",
+    alsoOn: "也可在",
+    stocksTitle: "个股",
+    emptyScreener: "当前档暂无可估值股票。",
+  },
+  en: {
+    collapse: "Collapse",
+    showMore: (n: number) => `Show ${n} more`,
+    backToStocks: "← Stocks",
+    alsoOn: "Also on",
+    stocksTitle: "Stocks",
+    emptyScreener: "No valued stocks in this view yet.",
+  },
+} as const;
+
+/** 详情页区块级文案（与 HoldersTable 内 TABLE_COPY 分工：这里管 masthead / 各节标题）。 */
+export const STOCK_PAGE_COPY = {
+  zh: {
+    subtitle: (n: number) => `${n} 位超级投资者持有。`,
+    disclaimer:
+      "仅供教育与信息参考，不构成投资建议。13F 持仓为机构自行申报，可能滞后最多 45 天。",
+    price: "现价",
+    marginOfSafety: "安全边际",
+    bq: {
+      aria: "生意质量",
+      eyebrow: "SEC 10-K · 基本面",
+      title: "生意质量",
+      asOf: (d: string) => `截至 ${d}`,
+      revenueGrowth: "营收增速",
+      netMargin: "净利率",
+      fcfMargin: "FCF 利润率",
+      revenueTrail: (from: string, to: string, years: number) =>
+        `营收 ${from} → ${to} · 近 ${years} 年`,
+      incomplete: "基本面数据不完整，仅供参考。",
+      learn: "什么样的生意算优质",
+    },
+    valuation: {
+      eyebrow: "估值 · 两种方法",
+      titleFallback: "估值",
+      below: "安全边际",
+      within: "处于合理价值区间",
+      above: "高于合理价值",
+    },
+    holders: {
+      eyebrow: "SEC 13F · 持有人",
+      learn: "如何读懂 13F",
+    },
+    coOwned: {
+      aria: "共同持仓",
+      eyebrow: "SEC 13F · 共持信号",
+      title: "他们还共同持有",
+      lead: (issuer: string, ticker: string) =>
+        `持有 ${issuer}（${ticker}）的这些人还共同重仓 →`,
+      shared: (n: number) => `${n} 人`,
+    },
+    folded: "文字说明",
+    foldedEyebrow: "SEC 13F · 说明",
+    externalAria: "外部金融数据",
+    breadcrumbStocks: "个股",
+  },
+  en: {
+    subtitle: (n: number) => `Held by ${n} superinvestor${n === 1 ? "" : "s"}.`,
+    disclaimer:
+      "Educational data only — not investment advice. 13F positions are self-reported and can lag up to 45 days.",
+    price: "Price",
+    marginOfSafety: "Margin of safety",
+    bq: {
+      aria: "Business quality",
+      eyebrow: "SEC 10-K · fundamentals",
+      title: "Business quality",
+      asOf: (d: string) => `as of ${d}`,
+      revenueGrowth: "Revenue growth",
+      netMargin: "Net margin",
+      fcfMargin: "FCF margin",
+      revenueTrail: (from: string, to: string, years: number) =>
+        `Revenue ${from} → ${to} · ${years}y`,
+      incomplete: "Fundamentals data incomplete — read with care.",
+      learn: "What makes a business high quality",
+    },
+    valuation: {
+      eyebrow: "Valuation · two methods",
+      titleFallback: "Valuation",
+      below: "Margin of safety",
+      within: "In fair-value range",
+      above: "Above fair value",
+    },
+    holders: {
+      eyebrow: "SEC 13F · holders",
+      learn: "How to read a 13F",
+    },
+    coOwned: {
+      aria: "Co-ownership",
+      eyebrow: "SEC 13F · co-ownership",
+      title: "Also held by these investors",
+      lead: (issuer: string, ticker: string) =>
+        `Investors holding ${issuer} (${ticker}) also commonly hold →`,
+      shared: (n: number) => `${n} holder${n === 1 ? "" : "s"}`,
+    },
+    folded: "Written summary",
+    foldedEyebrow: "SEC 13F · notes",
+    externalAria: "External finance links",
+    breadcrumbStocks: "Stocks",
+  },
+} as const;
+
+export function stockGlossary(lang: Lang) {
+  return STOCK_GLOSSARY[lang];
+}
+
+export function stockUi(lang: Lang) {
+  return STOCK_UI[lang];
+}
+
+export function stockPageCopy(lang: Lang) {
+  return STOCK_PAGE_COPY[lang];
+}

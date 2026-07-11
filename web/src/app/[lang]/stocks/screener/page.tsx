@@ -9,6 +9,7 @@ import PageHeader from "@/components/common/PageHeader";
 import { readValuationScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
 import { ScreenerTable } from "./ScreenerTable";
 import { parseSort, sortScreenerRows, type ScreenSort } from "@/lib/valuation/screenerSort";
+import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 
 export const revalidate = 86400;
 
@@ -29,7 +30,7 @@ export async function generateMetadata({
   return lang === "zh"
     ? {
         title: "个股 · 按价值带 — Compounder · 复利",
-        description: "按现价相对保守价值带的位置筛选个股：哪些落在 strike zone、安全边际多少。位置观察，非买卖建议。",
+        description: "按现价相对保守价值带的位置筛选个股：哪些落在击球区、安全边际多少。位置观察，非买卖建议。",
         alternates,
       }
     : {
@@ -56,6 +57,8 @@ export default async function ScreenerPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
+  const g = stockGlossary(lang);
+  const ui = stockUi(lang);
   const { view: rawView, sort: rawSort } = await searchParams;
   const view = parseView(rawView);
   const sort = parseSort(rawSort);
@@ -67,10 +70,10 @@ export default async function ScreenerPage({
   const geo =
     strikeTotal > 0
       ? isZh
-        ? `现在 ${strikeTotal} 只可估值股票落在 strike zone（现价低于保守价值带）${asOf ? `，截至 ${asOf}` : ""}。`
+        ? `现在 ${strikeTotal} 只可估值股票落在击球区（现价低于保守价值带）${asOf ? `，截至 ${asOf}` : ""}。`
         : `${strikeTotal} valued stocks are in the strike zone (price below the conservative value band)${asOf ? `, as of ${asOf}` : ""}.`
       : isZh
-        ? "当前没有可估值股票落在 strike zone（现价低于保守价值带，保守引擎常态）。"
+        ? "当前没有可估值股票落在击球区（现价低于保守价值带，保守引擎常态）。"
         : "No valued stocks are in the strike zone (price below the conservative value band) right now.";
 
   const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
@@ -79,12 +82,22 @@ export default async function ScreenerPage({
     <div className="mx-auto max-w-5xl py-8 sm:py-10">
       <SubNav lang={lang} section="stocks" active="screener" />
 
-      <div className="mb-6">
+      <div className="mb-8">
         <PageHeader
-          title={isZh ? "个股 · 按价值带" : "Stocks · By value"}
-          intro={`${isZh
-            ? "按现价相对保守价值带的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。"
-            : "Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices."} ${geo}`}
+          eyebrow={isZh ? "估值 · 按价值带" : "Valuation · by value band"}
+          title={ui.stocksTitle}
+          dateline={
+            asOf ? (
+              <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)]">
+                {isZh ? `估值截至 ${asOf}` : `Valuation as of ${asOf}`}
+              </span>
+            ) : undefined
+          }
+          intro={
+            isZh
+              ? `按现价相对保守价值带的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。${geo}`
+              : `Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices. ${geo}`
+          }
         />
       </div>
 
@@ -111,9 +124,9 @@ export default async function ScreenerPage({
         </div>
         <div className="flex flex-wrap gap-2 sm:border-l sm:border-[var(--tt-border)] sm:pl-3">
         {([
-          { key: "margin", zh: "按安全边际", en: "By margin" },
-          { key: "holders", zh: "按持有机构", en: "By holders" },
-        ] as { key: ScreenSort; zh: string; en: string }[]).map((s) => {
+          { key: "margin" as ScreenSort, label: isZh ? "按安全边际" : "By margin" },
+          { key: "holders" as ScreenSort, label: g.byHolders },
+        ]).map((s) => {
           const activeSort = s.key === sort;
           const sp = new URLSearchParams();
           if (view !== "all") sp.set("view", view);
@@ -130,7 +143,7 @@ export default async function ScreenerPage({
                   : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-accent)]"
               }`}
             >
-              {isZh ? s.zh : s.en}
+              {s.label}
             </Link>
           );
         })}
