@@ -2,9 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
-import { getCusipMap, getTickerExchangeMap } from "@/lib/managers/securities";
+import { getCusipMap } from "@/lib/managers/securities";
 import { getManagerIndex } from "@/lib/managers/source";
-import { isLikelyTicker } from "@/lib/externalLinks";
 import { altFor, ogFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import { globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
@@ -60,10 +59,9 @@ export default async function StocksIndexPage({
   // an internal link from this hub. Single-holder long tail stays out (crawlable
   // but not promoted). Shared source with the sitemap so the two never drift.
   // getManagerIndex 有 cache()，与站内其他页共享，只为 dateline 取全局最新季。
-  const [rows, cusipMap, exchangeMap, idx] = await Promise.all([
+  const [rows, cusipMap, idx] = await Promise.all([
     consensusHeld(),
     getCusipMap(),
-    getTickerExchangeMap(),
     getManagerIndex(),
   ]);
 
@@ -84,18 +82,14 @@ export default async function StocksIndexPage({
       holderCount: row.holderCount,
       totalValue: row.totalValue,
       barWidth: Math.round((row.holderCount / maxHolders) * 32),
-      exchange: exchangeMap.get(ticker) ?? null,
-      isTicker: isLikelyTicker(ticker),
     };
   });
 
   return (
-    <div className="mx-auto max-w-5xl py-8 sm:py-10">
-      {/* Section sub-nav */}
+    <>
       <SubNav lang={lang} section="stocks" active="held" />
 
-      {/* Editorial section heading */}
-      <div className="mb-8">
+      <div className="mb-4">
         <PageHeader
           eyebrow={isZh ? "SEC 13F · 最多人持有" : "SEC 13F · most widely held"}
           title={ui.stocksTitle}
@@ -106,14 +100,7 @@ export default async function StocksIndexPage({
         />
       </div>
 
-      {/* Responsive table + 分页(client) */}
       <StocksTable lang={lang} rows={tableRows} />
-
-      <p className="mt-8 text-xs text-[var(--tt-faint)]">
-        {isZh
-          ? "数据来源：SEC EDGAR 13F 季度报告。持仓数据存在 45 天延迟，仅供参考。"
-          : "Source: SEC EDGAR 13F quarterly filings. Holdings data has a 45-day lag and is for reference only."}
-      </p>
-    </div>
+    </>
   );
 }

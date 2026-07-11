@@ -5,7 +5,6 @@ import { stockPath } from "@/lib/urls";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
-import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 
 export type StockRow = {
@@ -15,8 +14,6 @@ export type StockRow = {
   totalValue: number;
   /** 持有人数条宽(px),服务端按榜首归一化预算 */
   barWidth: number;
-  exchange: string | null;
-  isTicker: boolean;
 };
 
 // 前 N 名走完整富榜(响应式表 + 卡片 + 外链);其余折叠为紧凑链接列表。
@@ -67,19 +64,6 @@ export function StocksTable({
       width: "w-24 sm:w-36",
       mobileLabel: g.totalValueShort,
       cell: (r) => formatUSD(r.totalValue),
-    },
-    {
-      key: "links",
-      header: g.links,
-      align: "right",
-      width: "w-24",
-      hideOnMobile: true,
-      cell: (r) =>
-        r.isTicker ? (
-          <span className="inline-flex justify-end">
-            <ExternalFinanceLinks ticker={r.ticker} exchange={r.exchange} variant="table" lang={lang} />
-          </span>
-        ) : null,
     },
   ];
 
