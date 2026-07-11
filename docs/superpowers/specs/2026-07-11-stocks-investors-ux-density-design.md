@@ -1,7 +1,7 @@
 # Stocks + Investors UX polish (density P0 + P1)
 
 **Date:** 2026-07-11  
-**Status:** Approved for planning  
+**Status:** Implemented  
 **Scope:** Stocks list/screener, Investors list, stock detail, investor detail — density, utility copy, nav parity, and listed P1 cleanups  
 **Out of scope:** Type system (already shipped), theme colors, Related-managers ranking, ROE i18n (P2), motion system, density CSS token framework
 
