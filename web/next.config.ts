@@ -33,6 +33,11 @@ const nextConfig: NextConfig = {
         destination: "/:lang/investors",
         permanent: true,
       },
+      {
+        source: "/:lang(zh|en)/research/:ticker",
+        destination: "/:lang/stocks/:ticker",
+        permanent: true,
+      },
       ...sectionRedirects,
     ];
   },
