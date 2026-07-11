@@ -1,0 +1,12 @@
+# Compounder
+
+Compounder (复利) tracks superinvestor SEC 13F holdings and conservative single-stock valuation bands.
+
+Primary URLs:
+- https://thecompounder.fyi/ (en)
+- https://thecompounder.fyi/zh (zh-CN)
+- https://thecompounder.fyi/investors
+- https://thecompounder.fyi/stocks
+
+Data source: SEC EDGAR 13F filings (45-day reporting lag).
+Stance: no stock recommendations, no forecasts.

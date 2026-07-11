@@ -1,5 +1,7 @@
 import React from "react";
+import Link from "next/link";
 import type { Lang } from "@/lib/nav";
+import { localePath } from "@/lib/urls";
 
 // 2-tile 真数据条(RSC):共识股数 / 10Y 国债。仅承载 Hero 未覆盖的信号(报告期/投资人数已在 Hero 呈现,故此处不重复)。
 // dgs10 带 as-of(CLAUDE.md 硬规)。缺值显 "—"。克制:muted 标签 + mono 数字。
@@ -8,14 +10,35 @@ const COPY = {
   en: { consensus: "Consensus stocks", dgs10: "10Y Treasury" },
 } as const;
 
-function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="flex flex-col gap-1 px-4 py-3 first:pl-0">
+function Tile({
+  label,
+  value,
+  sub,
+  href,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  href?: string;
+}) {
+  const inner = (
+    <>
       <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-faint)]">{label}</span>
-      <span className="font-mono text-lg font-medium tabular-nums leading-none text-[var(--tt-text)]">{value}</span>
+      <span className="font-mono text-lg font-medium tabular-nums leading-none text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
+        {value}
+      </span>
       {sub ? <span className="font-mono text-[10px] text-[var(--tt-faint)]">{sub}</span> : null}
-    </div>
+    </>
   );
+  const className = "group flex flex-col gap-1 px-4 py-3 first:pl-0 no-underline";
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {inner}
+      </Link>
+    );
+  }
+  return <div className={className}>{inner}</div>;
 }
 
 export function DataStrip({
@@ -30,11 +53,16 @@ export function DataStrip({
   const t = COPY[lang];
   return (
     <section className="mt-12 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-1">
-      <Tile label={t.consensus} value={consensusCount > 0 ? String(consensusCount) : "—"} />
+      <Tile
+        label={t.consensus}
+        value={consensusCount > 0 ? String(consensusCount) : "—"}
+        href={localePath(lang, "/investors/consensus")}
+      />
       <Tile
         label={t.dgs10}
         value={dgs10 ? `${dgs10.value.toFixed(2)}%` : "—"}
         sub={dgs10 ? (lang === "zh" ? `截至 ${dgs10.date}` : `as of ${dgs10.date}`) : undefined}
+        href={localePath(lang, "/macro")}
       />
     </section>
   );

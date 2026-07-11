@@ -4,8 +4,8 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { notableMoves, consensusHeldTop, consensusCount } from "@/lib/aggregations";
 import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { investorPath } from "@/lib/urls";
-import { altFor } from "@/lib/seo";
+import { investorPath, localePath } from "@/lib/urls";
+import { altFor, ogFor } from "@/lib/seo";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import { DataStrip } from "@/components/common/DataStrip";
@@ -36,9 +36,13 @@ export async function generateMetadata({
   return {
     title,
     description,
-    // canonical/hreflang 走全站统一的 altFor(裸 en 前缀):en → "/"(非 "/en",后者会 301 跳回),
-    // 与 sitemap 的裸首页条目一致,避免 canonical 指向重定向 URL 的自相矛盾。
     alternates: altFor(l, ""),
+    ...ogFor({
+      lang: l,
+      title,
+      description,
+      path: localePath(l, ""),
+    }),
   };
 }
 

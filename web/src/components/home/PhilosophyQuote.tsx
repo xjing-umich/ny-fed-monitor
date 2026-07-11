@@ -39,15 +39,9 @@ export default function PhilosophyQuote({
     <section className="mt-24 border-t border-[var(--tt-border)] pt-12">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
 
-      {/* Hero quote — dramatic typesetting */}
-      <figure className="relative mt-8">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -top-8 left-0 select-none font-display text-[110px] leading-none text-[var(--tt-accent)] opacity-[0.12]"
-        >
-          &ldquo;
-        </span>
-        <blockquote className="relative border-l-2 border-[var(--tt-accent)] pl-6 sm:pl-8">
+      {/* Hero quote — left rule only; no oversized decorative glyph (collides with the rule). */}
+      <figure className="mt-8">
+        <blockquote className="border-l-2 border-[var(--tt-accent)] pl-6 sm:pl-8">
           <p className="text-3xl font-medium leading-[1.16] tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {c.hero}
           </p>
