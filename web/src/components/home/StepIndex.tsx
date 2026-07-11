@@ -5,7 +5,7 @@ import type { HeldRow } from "@/lib/aggregations";
 import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { EntityName } from "@/components/common/EntityName";
 import { formatUSD } from "@/lib/format";
-import { investorPath, localePath } from "@/lib/urls";
+import { investorPath, localePath, stockPath } from "@/lib/urls";
 import StrikeLeadersCard from "@/components/home/StrikeLeadersCard";
 import ValueBandCard from "@/components/home/ValueBandCard";
 
@@ -146,8 +146,13 @@ export default function StepIndex({
           <tbody>
             {held.map((row) => (
               <tr key={row.cusip} className="border-b border-[var(--tt-border)] last:border-0">
-                <td className="py-2.5 pr-3 text-[var(--tt-text)]">
-                  <EntityName issuer={row.issuer} />
+                <td className="py-2.5 pr-3">
+                  <Link
+                    href={stockPath(lang, row.cusip)}
+                    className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                  >
+                    <EntityName issuer={row.issuer} ticker={row.cusip} />
+                  </Link>
                 </td>
                 <td className="py-2.5 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                   {row.holderCount}
