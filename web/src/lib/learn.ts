@@ -680,3 +680,48 @@ export function getArticle(slug: string, lang: Lang): Article | undefined {
 export function listArticles(lang: Lang): Article[] {
   return ARTICLE_SLUGS.map((slug) => ARTICLES[slug][lang]);
 }
+
+/** 首页手挑的「从这里开始」门面文章。改这一行即可换门面。 */
+export const FEATURED_SLUG = "what-is-intrinsic-value";
+
+/**
+ * Learn 首页品牌块文案(双语)。理念提炼自 /about,已对照 web/docs/copy-voice.md:
+ * 落到北极星句 "…so the thinking is left to you" 的声音;em-dash 仅作同位澄清;
+ * 不与页眉标题「读懂生意,而非代码」字面重复。
+ */
+export const BRAND: Record<Lang, { body: string; aboutLabel: string }> = {
+  en: {
+    body:
+      "Compounder comes out of the value-investing tradition — Graham's margin of safety, Buffett's preference for good businesses at fair prices held for years. We pull superinvestors' 13F filings, valuation, and the macro backdrop into one place and keep it readable, so the judgment stays yours. Everything here is for learning, not investment advice.",
+    aboutLabel: "About Compounder",
+  },
+  zh: {
+    body:
+      "Compounder 出自价值投资这一脉:格雷厄姆的安全边际,巴菲特那种以合理价格买好生意、然后拿住多年的偏好。我们把超级投资者的 13F、估值和宏观背景归到一处、做得可读,判断留给你。这里的一切只供学习,不构成投资建议。",
+    aboutLabel: "关于 Compounder",
+  },
+};
+
+/** 门面文章;取不到返回 null(区块隐藏)。 */
+export function getFeatured(lang: Lang): Article | null {
+  return getArticle(FEATURED_SLUG, lang) ?? null;
+}
+
+/**
+ * 最新更新的文章 —— 在「非门面」文章里按 updated 取最新一篇。
+ * updated 是 "YYYY-MM-DD",可直接字符串降序比较;缺 updated 的排最后(不参与竞争)。
+ * 取不到返回 null。
+ */
+export function getLatest(lang: Lang): Article | null {
+  const pool = listArticles(lang).filter((a) => a.slug !== FEATURED_SLUG && a.updated);
+  if (pool.length === 0) return null;
+  return pool.reduce((newest, a) => (a.updated > newest.updated ? a : newest));
+}
+
+/** 其余文章:全部指南去掉门面 + 最新两个 slug,原顺序不变。 */
+export function listRest(lang: Lang): Article[] {
+  const latest = getLatest(lang);
+  const exclude = new Set<string>([FEATURED_SLUG]);
+  if (latest) exclude.add(latest.slug);
+  return listArticles(lang).filter((a) => !exclude.has(a.slug));
+}
