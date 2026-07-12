@@ -82,7 +82,7 @@ function projectOe(oe0: number, g1: number): number[] {
 }
 
 /** One tier: PV(explicit OE 1–10) + PV(terminal value at end of year 10). */
-function dcfTier(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
+export function dcfTier(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
   equity: number;
   perShare: number;
   pvTv: number;

@@ -320,3 +320,17 @@ export type MethodReconciliation = {
   divergence_pct?: number;  // |gwMid − bfMid| / mean
   divergence_flag?: boolean; // > 0.20 — assumptions need review
 };
+
+// ── Reverse-DCF implied expectations (parallel layer) ────────────────────
+
+export type ExpectationsTier = "modest" | "fair" | "demanding";
+
+export type ExpectationsAssessment = {
+  assessable: boolean;
+  impliedGrowth?: number;          // g*（小数）
+  impliedGrowthBounded?: "below" | "above"; // 越界标记（不外插）
+  historicalGrowth?: number;       // 公司自身 CAGR
+  impliedCapYears?: number;        // 次级：历史增长下撑住现价所需超额回报年数
+  tier?: ExpectationsTier;
+  reason?: string;                 // 不可评估时的原因（供注脚）
+};
