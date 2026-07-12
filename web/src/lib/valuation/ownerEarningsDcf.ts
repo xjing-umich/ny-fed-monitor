@@ -9,8 +9,10 @@ import type {
   ConsistencyReading,
   MoatCapAssessment,
 } from "./types";
+import { historicalGrowthBaseRate } from "./growthBaseRate";
 
-export const GROWTH_CAP = 0.1;
+export const GROWTH_CAP_FRANCHISE = 0.20; // 已验证 franchise(moat strong):Mauboussin 上沿,须 ROIC×再投资支撑
+export const GROWTH_CAP_BASE = 0.07;      // 非 franchise:贴近名义 GDP+小幅;主流不认无护城河的长期高增长
 // audit #3: 股权风险溢价从 2.5% 提到 4.5%(历史 ~4.5–5.5%),strict 端 10%→12%,
 // fallback 带 8–10%→9–11%。原 2.5% 溢价系统性低估贴现率 → 高估所有名字,对高风险名字最甚。
 export const R_STRICT = 0.12;
@@ -274,9 +276,19 @@ export function deriveOeDcf(
   // not the full input history — otherwise an anomalous oldest year outside the
   // window can inflate g1 to the cap and compound into the terminal value.
   const windowYears = years.filter((y) => lamp.method.years_used.includes(y.fiscal_year));
-  const { cagr, window } = netIncomeCagr(windowYears.length >= 2 ? windowYears : years);
+  const { cagr, window } = netIncomeCagr(windowYears.length >= 2 ? windowYears : years); // 保留:declined + cagr_raw 披露
   const declined = cagr != null && cagr < 0;
-  const g1 = cagr == null ? 0 : clamp(cagr, 0, GROWTH_CAP);
+
+  // 证据驱动增长:历史营收 log 回归(抗端点)与基本面上限(ROIC×再投资)取小,再受 franchise 分档量级封顶。
+  const gRaw = historicalGrowthBaseRate(years);                 // 全历史 FY 营收 log 回归
+  const gFund = floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
+  const cap = floor.moat_cap?.grade === "strong" ? GROWTH_CAP_FRANCHISE : GROWTH_CAP_BASE;
+  const cagrFallback = cagr != null && cagr > 0 ? cagr : undefined;
+  const candidates = [gRaw, gFund, cagrFallback].filter(
+    (n): n is number => n != null && Number.isFinite(n) && n >= 0,
+  );
+  // gRaw/gFund 皆缺 → candidates 仅剩 cagrFallback(退回今天行为,但用新 cap);全缺 → 0。
+  const g1 = declined ? 0 : candidates.length ? clamp(Math.min(...candidates), 0, cap) : 0;
 
   const discount = discountBand(dgs10);
 

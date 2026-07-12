@@ -3,7 +3,8 @@ import type { ValuationFloor, ValuationFloorYear, LatestPrice, MoatReading } fro
 import {
   deriveOeDcf,
   pickLatestFredPoint,
-  GROWTH_CAP,
+  GROWTH_CAP_FRANCHISE,
+  GROWTH_CAP_BASE,
   R_STRICT,
   DGS10_PREMIUM,
   FALLBACK_BAND,
@@ -36,6 +37,27 @@ function floorWith(buffett: ValuationFloor["buffett_epv"]): ValuationFloor {
 function yr(fy: number, net_income: number): ValuationFloorYear {
   return { fiscal_year: fy, net_income };
 }
+/** Year with a revenue series only (drives historicalGrowthBaseRate's log regression). */
+function yrRev(fy: number, revenue: number): ValuationFloorYear {
+  return { fiscal_year: fy, revenue };
+}
+/** Floor with a synthetic fundamentals-growth cap (floor.sustainable_growth) and moat_cap grade. */
+function floorWithMoat(
+  buffett: ValuationFloor["buffett_epv"],
+  opts: { sustainable_growth?: number; grade: "strong" | "moderate" | "none" },
+): ValuationFloor {
+  return {
+    kind: "floor",
+    buffett_epv: buffett,
+    sustainable_growth: opts.sustainable_growth,
+    moat_cap: {
+      grade: opts.grade,
+      capYears: opts.grade === "strong" ? 20 : opts.grade === "moderate" ? 10 : 0,
+      durablePassed: opts.grade === "strong",
+      basis: "test fixture",
+    },
+  } as unknown as ValuationFloor;
+}
 const price = (close: number): LatestPrice => ({ close, date: "2026-06-20", currency: "USD" });
 
 // ── 1. pickLatestFredPoint skips nulls, takes most recent ────────────────────
@@ -48,27 +70,30 @@ assert.deepStrictEqual(
 );
 assert.strictEqual(pickLatestFredPoint([{ date: "x", value: null }]), null);
 
-// ── 2. growth: rising history → g1 = clamped CAGR, faded, three-stage ────────
+// ── 2. growth: rising history, no revenue/sustainable_growth evidence → falls back to
+//      CAGR clamped by the non-franchise cap (0.07) ──────────────────────────
 {
-  // net income 100→133.1 over FY2021→2024 (3 periods) = 10% CAGR exactly.
+  // net income 100→133.1 over FY2021→2024 (3 periods) = 10% CAGR exactly; no revenue field
+  // supplied (gRaw undefined) and no floor.sustainable_growth (gFund undefined) → candidates
+  // reduce to cagrFallback=0.10, clamped by the default non-franchise cap GROWTH_CAP_BASE=0.07.
   const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
   const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), years, { value: 4.25, date: "2026-06-19" }, price(120));
   assert.ok(r.assessable, "rising history assessable");
-  assert.ok(Math.abs(r.growth_g1! - 0.1) < 1e-9, `g1≈0.10 got ${r.growth_g1}`);
-  assert.ok(r.growth_g1! <= GROWTH_CAP, "g1 capped");
+  assert.ok(Math.abs(r.growth_g1! - GROWTH_CAP_BASE) < 1e-9, `g1≈0.07 (base cap) got ${r.growth_g1}`);
+  assert.ok(r.growth_g1! <= GROWTH_CAP_BASE, "g1 capped");
   // three ordered tiers
   assert.ok(r.per_share_low! < r.tiers!.neutral.per_share, "pess < neutral");
   assert.ok(r.tiers!.neutral.per_share < r.per_share_high!, "neutral < opt");
   // pessimistic uses ½g1 and strict discount
-  assert.ok(Math.abs(r.tiers!.pessimistic.growth_stage1 - 0.05) < 1e-9, "pess g = ½g1");
+  assert.ok(Math.abs(r.tiers!.pessimistic.growth_stage1 - GROWTH_CAP_BASE / 2) < 1e-9, "pess g = ½g1");
   assert.strictEqual(r.tiers!.pessimistic.discount_rate, R_STRICT, "pess r = strict");
 }
 
-// ── 3. g1 capped at 10% when CAGR exceeds cap ────────────────────────────────
+// ── 3. g1 capped at the non-franchise base cap (0.07) when CAGR exceeds it ───
 {
   const years = [yr(2024, 400), yr(2023, 200), yr(2022, 100)]; // ~100% CAGR
   const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), years, { value: 4, date: "d" }, null);
-  assert.strictEqual(r.growth_g1, GROWTH_CAP, "g1 hard-capped at 0.10");
+  assert.strictEqual(r.growth_g1, GROWTH_CAP_BASE, "g1 hard-capped at base cap 0.07 (non-strong moat)");
 }
 
 // ── 4. declining history → g1 = 0 ────────────────────────────────────────────
@@ -364,9 +389,13 @@ function oeStub(low: number, high: number): OeDcfAssessment {
 // derived here explicitly via deriveMoatCap — the same function epvFloor now calls once.
 {
   const buffett = lamp(1000, 100, [2022, 2023, 2024]);
+  // 5% net-income CAGR — below both GROWTH_CAP_BASE (0.07) and GROWTH_CAP_FRANCHISE (0.20), so
+  // g1 is identical for the strong and commodity fixtures below (no revenue/sustainable_growth
+  // supplied → falls back to cagr). This isolates the test's real target: that moat-CAP only
+  // extends the display capYears (10→20), and never leaks into the anchored quick-check baseline.
   const yearsFull: ValuationFloorYear[] = [
-    { fiscal_year: 2024, net_income: 121, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
-    { fiscal_year: 2023, net_income: 110, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
+    { fiscal_year: 2024, net_income: 110.25, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
+    { fiscal_year: 2023, net_income: 105, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
     { fiscal_year: 2022, net_income: 100, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
   ];
   const dgs10 = { value: 4.25, date: "2026-06-19" };
@@ -410,10 +439,71 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   assert.strictEqual(rStrong.per_share_low, rCommodity.per_share_low, "pessimistic per_share_low identical regardless of moat-CAP");
   assert.deepStrictEqual(rStrong.tiers!.pessimistic, rCommodity.tiers!.pessimistic, "pessimistic tier object identical regardless of moat-CAP");
 
+  // 前提校验：本测试用 5% CAGR fixture 特意让 g1 在 strong/commodity 两档相等(均在 base cap 之下)，
+  // 这样下面的 quick-check 恒等断言只归因于 capYears 解耦，而非 franchise cap 恰好也让 g1 相等。
+  assert.strictEqual(rStrong.growth_g1, rCommodity.growth_g1, "fixture isolation: g1 identical across moat grades (5% < both caps)");
+
   // reliable 逐位不变：quick-check 诊断锚定在基线 cap=10，与展示用 neutralCap（可能 20）完全解耦
   assert.strictEqual(rStrong.diagnostics!.quick_check_per_share, rCommodity.diagnostics!.quick_check_per_share, "quick-check baseline identical (anchored to cap=10)");
   assert.strictEqual(rStrong.diagnostics!.quick_check_deviation_pct, rCommodity.diagnostics!.quick_check_deviation_pct, "quick-check deviation identical");
   assert.strictEqual(rStrong.diagnostics!.quick_check_flag, rCommodity.diagnostics!.quick_check_flag, "quick_check_flag identical → reliable unaffected by moat-CAP");
+}
+
+// ── D. g_used 证据驱动 + franchise 分档封顶(Task 2, K–P) ────────────────────
+// candidates = [gRaw(历史营收 log 回归,全样本), gFund(floor.sustainable_growth), cagrFallback(仅
+// cagr>0 时纳入)].filter(有限且≥0); g_used = declined ? 0 : clamp(min(candidates), 0, cap);
+// cap = moat_cap.grade==="strong" ? GROWTH_CAP_FRANCHISE(0.20) : GROWTH_CAP_BASE(0.07)。
+// 下面用等比数列构造的 revenue 序列使 log 回归精确复现设定的年化增速(x 等间距时log-线性回归对
+// 完美等比序列精确求解),避免测试引入近似误差。
+
+// K) strong 档 + 历史 15% + 基本面 25% → min(15%,25%)=15%,franchise cap 20% 不咬 → 0.15
+{
+  const years = [yrRev(2024, 152.0875), yrRev(2023, 132.25), yrRev(2022, 115), yrRev(2021, 100)]; // 15%/yr exactly
+  const floor = floorWithMoat(lamp(1000, 100, [2022, 2023, 2024]), { sustainable_growth: 0.25, grade: "strong" });
+  const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
+  assert.ok(r.assessable, "K: assessable");
+  assert.ok(Math.abs(r.growth_g1! - 0.15) < 1e-6, `K: g_used≈0.15 got ${r.growth_g1}`);
+}
+
+// L) strong 档 + 历史 25% + 基本面 25% → min=25%,被 franchise cap 20% 封顶 → 0.20
+{
+  const years = [yrRev(2024, 195.3125), yrRev(2023, 156.25), yrRev(2022, 125), yrRev(2021, 100)]; // 25%/yr exactly
+  const floor = floorWithMoat(lamp(1000, 100, [2022, 2023, 2024]), { sustainable_growth: 0.25, grade: "strong" });
+  const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
+  assert.ok(Math.abs(r.growth_g1! - GROWTH_CAP_FRANCHISE) < 1e-6, `L: g_used capped at franchise 0.20, got ${r.growth_g1}`);
+}
+
+// M) 非 strong(moderate)+ 历史 12% → 被 GROWTH_CAP_BASE 0.07 封顶 → 0.07
+{
+  const years = [yrRev(2024, 140.4928), yrRev(2023, 125.44), yrRev(2022, 112), yrRev(2021, 100)]; // 12%/yr exactly
+  const floor = floorWithMoat(lamp(1000, 100, [2022, 2023, 2024]), { grade: "moderate" });
+  const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
+  assert.ok(Math.abs(r.growth_g1! - GROWTH_CAP_BASE) < 1e-6, `M: g_used capped at base 0.07, got ${r.growth_g1}`);
+}
+
+// N) 基本面 5% < 历史 15%(无 franchise 支撑的历史外推)→ min 咬住基本面上限 → 0.05
+{
+  const years = [yrRev(2024, 152.0875), yrRev(2023, 132.25), yrRev(2022, 115), yrRev(2021, 100)]; // 15%/yr exactly
+  const floor = floorWithMoat(lamp(1000, 100, [2022, 2023, 2024]), { sustainable_growth: 0.05, grade: "moderate" });
+  const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
+  assert.ok(Math.abs(r.growth_g1! - 0.05) < 1e-6, `N: fundamental cap binds, g_used≈0.05, got ${r.growth_g1}`);
+}
+
+// O) declined(净利下滑)→ g_used = 0(与 declined 判定解耦,先于 candidates 生效)
+{
+  const years = [yr(2024, 80), yr(2023, 90), yr(2022, 100)];
+  const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), years, { value: 4, date: "d" }, null);
+  assert.strictEqual(r.growth_g1, 0, "O: declined → g_used 0");
+  assert.strictEqual(r.declined, true, "O: declined flag true");
+}
+
+// P) gRaw 与 gFund 都缺(无 revenue、无 sustainable_growth)→ 退回 clamp(netIncomeCagr,0,cap)
+{
+  // 6% net-income CAGR, no revenue field → gRaw undefined; no floor.sustainable_growth → gFund
+  // undefined; candidates reduces to cagrFallback=0.06, under the 0.07 base cap → unclamped.
+  const years = [yr(2024, 112.36), yr(2023, 106), yr(2022, 100)];
+  const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), years, { value: 4, date: "d" }, null);
+  assert.ok(Math.abs(r.growth_g1! - 0.06) < 1e-6, `P: fallback to cagr, g_used≈0.06, got ${r.growth_g1}`);
 }
 
 console.log("ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK");
