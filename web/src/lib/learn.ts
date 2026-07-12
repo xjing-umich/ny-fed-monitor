@@ -521,12 +521,153 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       ],
     },
   },
+  "what-is-intrinsic-value": {
+    en: {
+      slug: "what-is-intrinsic-value",
+      title: "What Is a Stock Actually Worth?",
+      description:
+        "Intrinsic value is the one idea underneath all of value investing. What it actually means, why it can't be calculated to a number, and how Graham, Buffett, Li Lu, and Duan Yongping each sharpened it.",
+      updated: "2026-07-12",
+      intro:
+        "Everyone wants investing to come down to a number. The stock price is one, and it's the wrong one: it only tells you what the crowd will pay today. Intrinsic value looks like the better number, the real one hiding under the price. But you can't get that number either, not exactly. And that's the whole point. Intrinsic value isn't something you calculate. It's a way of admitting you can't know for sure what a business is worth, plus a few habits that let you invest well anyway. Graham, [[investor:berkshire-hathaway|Buffett]], [[investor:himalaya-capital|Li Lu]], and [[investor:hh-international|Duan Yongping]] all reach the same idea in different words. That idea, and everything it forces on you, is the rest of this piece.",
+      sections: [
+        {
+          heading: "Price is not value",
+          paragraphs: [
+            "Graham's first move was to pull apart two words most people use as if they mean the same thing. The market hands you a price. It never hands you the value. In the short run, he said, the market is a voting machine; in the long run it's a weighing machine. Price swings on mood and on who's buying and selling that day. Value sits underneath, in the business itself.",
+            "He made it concrete with Mr. Market: a moody partner who knocks every day with a new price, set by whatever mood he woke up in. He's there to serve you, not to advise you. Trade with him when his price suits you, ignore him when it doesn't. The one thing you can't let him do is tell you what your business is worth.",
+          ],
+        },
+        {
+          heading: "What intrinsic value actually is",
+          paragraphs: [
+            "The definition is simpler than most people expect. A business is worth the cash it will pay its owners over its life, counted in today's money. Buffett says it in one line: the discounted value of the cash that can be taken out of a business during its remaining life. [[investor:hh-international|Duan Yongping]] puts it plainer still: 'Buying a stock is buying the company, and buying the company is buying the discounted value of its future cash.' (2012)",
+            "So value isn't the share price, and it isn't the book value on the balance sheet. It's the cash the business will actually produce. Buffett liked Aesop's version of this: a bird in the hand is worth two in the bush. The whole job is counting the birds in the bush and judging how sure you are they're there.",
+            "That cash is in the future, so the value is never a hard fact. It's an estimate. Duan is blunt: 'intrinsic value is not calculated.' You don't solve for it with a formula. You make a rough, honest judgment about a business you understand.",
+          ],
+        },
+        {
+          heading: "The discount rate is your opportunity cost",
+          paragraphs: [
+            "'Discounted' is the word most people skip, and it's the one that carries the weight. In that 1999 Sun Valley talk, Buffett stripped investing down to a sentence: laying out money today to get more money back tomorrow. If that's the deal, a dollar the business earns ten years from now can't be worth a full dollar to you today. You'd rather have the dollar now and put it to work in the meantime. So you knock future cash down to reflect the wait, and how far you knock it down is the discount rate.",
+            "That rate is anything but a technicality. In the same talk, [[investor:berkshire-hathaway|Buffett]] called interest rates the gravity of finance: 'interest rates act as gravity behaves in the physical world. At all times, in all markets, in all parts of the world, the tiniest change in rates changes the value of every financial asset.' A dollar arriving years from now is worth far less when rates are 13% than when they're 4%. Push rates up and every valuation gets pulled down; let them fall and everything floats higher.",
+            "Where does the rate come from? Duan gives the ground-level answer: it's really your opportunity cost, and the floor under it is the risk-free rate, something close to the yield on U.S. Treasuries. That's why the ten-year Treasury yield turns up under every serious valuation, including the value estimates on this site. It's the gravity the rest of your money gets weighed against.",
+          ],
+        },
+        {
+          heading: "You can only value what you understand",
+          paragraphs: [
+            "The four-concept version of value investing has a fourth leg that Graham didn't lean on and Buffett added from fifty years at it: the circle of competence. You can only estimate the future cash of a business you truly understand, and for most of us, most businesses sit outside that circle.",
+            "[[investor:himalaya-capital|Li Lu]]'s version cuts to the edge of it: 'a competence without a boundary isn't real competence.' A view you actually hold is one where you can name the conditions that would prove you wrong. Duan gives the working test. Understanding a company means you can roughly estimate its future cash, and the honest sign that you can is that you stop asking other people whether you understand it. What makes that cash estimable at all is the business model underneath it, and the culture running it. A durable business model, Duan says, is what keeps the future cash coming.",
+            "If you can't understand a business, you have no way to know what it's worth. So you leave it alone, even when the price looks cheap.",
+          ],
+        },
+        {
+          heading: "A range, not a number",
+          paragraphs: [
+            "Because the value is a guess about the future, it lands as a range, not a point. Two honest, careful people will come out with different numbers, and that's fine. Buffett's standard is to be roughly right instead of precisely wrong. Duan is blunter still: if you need a calculator to see that something's cheap, it isn't cheap enough. He calls his own approach a rough eyeball estimate, and he means it as a compliment. A detailed spreadsheet looks rigorous, but it lays a coat of false precision over what are still guesses about the future.",
+            "These investors mostly use the number for one thing: sizing up the downside, so they know what they'd lose if they're wrong. The real return comes from the judgment call: is this a good business, run by honest people, that will still be strong in ten years? That's the hard part, and no formula makes the call for you.",
+          ],
+        },
+        {
+          heading: "The golden rule: margin of safety",
+          paragraphs: [
+            "You've got a range for a business you understand, and you know the range can be wrong. That's the whole reason for the one rule you can't skip, Graham's margin of safety: buy far enough below your estimate that being wrong won't hurt you much. Pay right up to your estimate and you've left yourself no room to be human.",
+            "Li Lu reframes what you're really defending against. The risk that matters isn't the price bouncing around. It's the permanent loss of your capital, and the margin of safety is the wall you build against it. Duan takes it one step further, to a line worth sitting with: the margin of safety is really about the circle of competence, not just the price. A cheap price on a business you don't understand is no margin of safety at all. The safety comes from knowing what you own.",
+          ],
+        },
+        {
+          heading: "How this shows up on Compounder",
+          paragraphs: [
+            "This is the frame behind what you see on a stock page here. The value estimate shows up as a band, not a single target, because an honest estimate is a range. The margin-of-safety figure only appears when a stock sits genuinely below that band, since flashing a discount on a fairly priced stock would just be noise. And the ten-year Treasury yield sits under all of it as the discount anchor, because that's the opportunity cost everything gets measured against.",
+            "None of this tells you to buy or sell anything. It's the list of questions worth asking before you decide, and the deciding is yours.",
+            "Sources: Benjamin Graham, The Intelligent Investor; Warren Buffett, Berkshire Hathaway shareholder letters and \"Mr. Buffett on the Stock Market\" (Fortune, Nov. 22, 1999); Li Lu, lecture at Peking University (Oct. 23, 2015); Duan Yongping, published investment Q&A.",
+          ],
+        },
+      ],
+      related: [
+        { kind: "investor", id: "himalaya-capital", label: "Li Lu" },
+        { kind: "investor", id: "hh-international", label: "Duan Yongping" },
+        { kind: "investor", id: "berkshire-hathaway", label: "Berkshire Hathaway" },
+      ],
+    },
+    zh: {
+      slug: "what-is-intrinsic-value",
+      title: "一只股票到底值多少钱",
+      description:
+        "内在价值,是价值投资底下最根本的一个概念。它到底是什么、为什么算不出一个精确的数字,以及格雷厄姆、巴菲特、李录、段永平如何一步步把它讲清楚。",
+      updated: "2026-07-12",
+      intro:
+        "每个人都想把投资归结成一个数字。股价就是个数字,可它是错的那个:它只告诉你此刻人群愿意出多少。内在价值看着像那个更好的、藏在价格底下的「真」数字。可你同样得不到这个数字,至少得不到准的。而这正是关键。内在价值不是你算出来的。它是一种态度:承认你没法确切知道一门生意值多少;再加上几条规矩,让你照样能投得好。格雷厄姆、[[investor:berkshire-hathaway|巴菲特]]、[[investor:himalaya-capital|李录]]、[[investor:hh-international|段永平]],说法不同,说的是同一件事。下面讲的就是这件事,和它逼你养成的那些习惯。",
+      sections: [
+        {
+          heading: "价格不是价值",
+          paragraphs: [
+            "格雷厄姆做的第一件事,是把大多数人当同义词用的两个词拆开。市场递给你的是价格,从不递给你价值。用他的话说,市场短期是投票机,长期是称重机。价格随情绪、随当天谁在买谁在卖上下跳;价值沉在底下,在生意本身里。",
+            "他打了个比方,叫「市场先生」:一个情绪化的生意伙伴,每天来敲你的门报个价,那价全看他当天什么心情。他是来服务你的,不是来给你出主意的。他的价合适你就跟他做,不合适就不理他。唯一不能让他做的,是由他来告诉你,你的生意值多少钱。",
+          ],
+        },
+        {
+          heading: "内在价值到底是什么",
+          paragraphs: [
+            "这个定义比大多数人以为的简单。一门生意值多少,就是它一生能付给所有者的现金,用今天的钱来算。巴菲特一句话:它是一家企业在余下的寿命史中可以产生的现金的折现值。[[investor:hh-international|段永平]]说得更白:「买股票就是买公司,买公司就是买其未来现金流(的折现)。」(2012)",
+            "所以价值不是股价,也不是资产负债表上的账面净资产。它是这门生意将来真正能产出的现金。巴菲特喜欢用伊索的说法:一鸟在手,胜过二鸟在林。全部的活儿,就是数清林子里有几只鸟,再判断你有多大把握它们真在。",
+            "这笔现金在未来,所以价值永远不是铁一样的事实,它是个估计。段永平说得直白:「内在价值不是算出来的。」你不是拿公式去解它,而是对一门你看得懂的生意,做一个粗略而诚实的判断。",
+          ],
+        },
+        {
+          heading: "折现率就是你的机会成本",
+          paragraphs: [
+            "「折现」这两个字大多数人会跳过,可它才是最要紧的。就在 1999 年太阳谷那场演讲里,巴菲特把投资剥到只剩一句:今天付出钱,是为了明天收回更多的钱。如果是这么个买卖,那么生意十年后赚到的一块钱,今天对你就不可能值满满一块。你宁愿现在就拿到,好让它在这中间去干活。所以你把未来的现金往下打个折,来抵这段等待;打多深,就是折现率。",
+            "这个折现率绝不是什么技术细节。还是那场演讲,[[investor:berkshire-hathaway|巴菲特]]把利率叫作金融世界的地心引力:「利率之于金融,如同地心引力之于物质。任何时候、任何市场、世界任何角落,利率哪怕最微小的变动,都会改变每一项金融资产的价值。」同样一块多年后才到手的钱,利率 13% 时远不如 4% 时值钱。利率往上顶,所有估值都被往下拽;利率一落,一切又往上浮。",
+            "折现率从哪儿来?段永平给的答案最实在:它其实就是你的机会成本,而它的底,是无风险回报率,差不多就是美国国债的利率。这就是为什么十年期美国国债收益率会垫在每一个严肃估值的底下,也垫在你在这个站上看到的价值估算底下。它就是你其余的钱用来称重的那股地心引力。",
+          ],
+        },
+        {
+          heading: "你只能给看得懂的生意估值",
+          paragraphs: [
+            "把价值投资讲成四个基本概念,第四条是格雷厄姆没倚重、巴菲特干了五十年才补上的:能力圈。你只能估出一门你真正看得懂的生意的未来现金,而对我们大多数人来说,大多数生意都在这个圈子外头。",
+            "[[investor:himalaya-capital|李录]]的说法直指它的边:「没有边界的能力,就不是真的能力。」你真正持有的观点,是你说得出什么条件会证明它错。段永平给了可上手的判据:看懂一家公司,就是你能大致估出它的未来现金流;而你真能估的诚实信号,是你不再想去问别人「我到底看懂了没」。让这笔现金变得可估的,是它底下的生意模式,和运营它的企业文化。段永平说,好的生意模式,才能让现金一年年不断地流出来。",
+            "所以一门你看不懂的生意,你根本无从知道它值多少。这不是价值低,是没有价值可谈。哪怕价格看着便宜,也放着别碰。",
+          ],
+        },
+        {
+          heading: "是一个区间,不是一个数",
+          paragraphs: [
+            "因为价值是对未来的一个猜测,它落下来是一个区间,不是一个点。两个诚实、认真的人,会算出不一样的数,这很正常。巴菲特的标准是:宁可大致对,也不要精确地错。段永平更冲:要用计算器才算得出来的便宜,就不够便宜。他把自己的路子叫「毛估估」,而且是当褒义词讲的。一张精细的表格看着严谨,其实是在一堆对未来的猜测上,又刷了一层虚假的精确。",
+            "这些人用这个数,主要就干一件事:估一估万一错了、最坏会亏多少。真正的回报来自定性的判断:这是不是一门好生意,由诚实的人经营,十年后还依然强壮?这才是最难的地方,没有公式替你拿主意。",
+          ],
+        },
+        {
+          heading: "黄金法则:安全边际",
+          paragraphs: [
+            "你手里有一门确实看得懂的生意的一个区间,你也知道它可能错。正因为可能错,才有那条不能省的法则,格雷厄姆的安全边际:买得比你估的价值低足够多,错了也伤不到你。要是买到贴着你的估值,你就没给自己留一点犯错的余地。",
+            "李录把你真正要防的东西重新定义了:要紧的风险,不是股价上上下下,而是你的本金永久性地没了,而安全边际就是你为它砌的那堵墙。段永平再往前推一步:安全边际的本质,其实是能力圈,不只是价格。一门你看不懂的生意,再便宜的价也算不上安全边际。安全,来自你知道自己买的是什么。",
+          ],
+        },
+        {
+          heading: "这些在 Compounder 上怎么体现",
+          paragraphs: [
+            "这就是你在这里个股页上看到的东西背后的框架。价值估算显示成一条带,不是单一目标价,因为诚实的估计本就是个区间。安全边际的数字,只在股价确实落到这条带以下时才出现,因为给一只定价合理的股票标个「折扣」,只是噪音。而十年期美国国债收益率垫在这一切底下,作为折现的锚,因为那是一切用来衡量的机会成本。",
+            "这里没有一句叫你买或卖什么。它只是你自己下判断前该先问的一组问题。这四个人都是亏过钱才想明白的;答案,没人能替你给。",
+            "参考来源:格雷厄姆《聪明的投资者》;巴菲特致伯克希尔股东的信,以及《Mr. Buffett on the Stock Market》(Fortune,1999-11-22);李录北京大学演讲(2015-10-23);段永平公开投资问答。",
+          ],
+        },
+      ],
+      related: [
+        { kind: "investor", id: "himalaya-capital", label: "李录" },
+        { kind: "investor", id: "hh-international", label: "段永平" },
+        { kind: "investor", id: "berkshire-hathaway", label: "Berkshire Hathaway" },
+      ],
+    },
+  },
 };
 
 // Display order on the index page.
 export const ARTICLE_SLUGS: string[] = [
   "how-to-read-a-13f",
   "what-is-a-superinvestor",
+  "what-is-intrinsic-value",
   "reading-cross-fund-consensus",
   "q1-2026-superinvestor-consensus",
   "reading-business-quality",
