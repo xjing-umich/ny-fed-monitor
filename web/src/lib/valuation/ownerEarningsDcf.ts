@@ -7,7 +7,10 @@ import type {
   DiscountBandProvenance,
   MethodReconciliation,
   ConsistencyReading,
+  MoatReading,
 } from "./types";
+import { deriveMoatCap, roicStability } from "./moatCap";
+import { normalizedTaxRate } from "./epvFloor";
 
 export const GROWTH_CAP = 0.1;
 // audit #3: 股权风险溢价从 2.5% 提到 4.5%(历史 ~4.5–5.5%),strict 端 10%→12%,
@@ -20,6 +23,7 @@ export const OE_YIELD_FLAG_BPS = 300;
 export const QUICK_CHECK_DEV_FLAG = 0.5;
 export const R_MINUS_G_FLAG = 0.04; // (r − g) below this → explicit-phase value is sensitive
 export const PROJECTION_YEARS = 10;
+export const HIGH_GROWTH_YEARS = 5; // 有界高增长子段（其后线性 fade 到 0）
 export const GDP_NOMINAL_CAP = 0.03; // 名义 GDP 长期上限 —— 永续增长 g 的封顶之一（Damodaran 铁律）
 export const MIN_RG_SPREAD = 0.03;   // r − g 最小间距，防终值爆炸；触及则退回零增长
 const INVERSION_DGS10 = 0.075; // DGS10 ≥ 7.5% inverts the band
@@ -65,38 +69,56 @@ function netIncomeCagr(years: ValuationFloorYear[]): {
   return { cagr, window: [oldest.fy, latest.fy] };
 }
 
-/** Project OE for years 1..10: stage1 constant g1 (Y1–5), stage2 linear fade g1→0 (Y6–10). */
-function projectOe(oe0: number, g1: number): number[] {
+/**
+ * 投影 OE 至 capYears 年：前 min(highGrowthYears,capYears) 年恒 g1，其后线性 fade g1→0 到
+ * 第 capYears 年。默认参数（capYears=10, highGrowthYears=5）与原 10 年三段式实现逐年相等
+ * ——moat-CAP 参数化的向后兼容点。
+ */
+export function projectOe(
+  oe0: number,
+  g1: number,
+  capYears: number = PROJECTION_YEARS,
+  highGrowthYears: number = HIGH_GROWTH_YEARS,
+): number[] {
+  const H = Math.min(highGrowthYears, capYears);
+  const fadeSpan = Math.max(0, capYears - H);
   const path: number[] = [];
   let prev = oe0;
-  for (let t = 1; t <= 5; t++) {
+  for (let t = 1; t <= H; t++) {
     prev = prev * (1 + g1);
     path.push(prev);
   }
-  for (let t = 6; t <= PROJECTION_YEARS; t++) {
-    const g = (g1 * (PROJECTION_YEARS - t)) / 5; // t=6 → g1·4/5 … t=10 → 0
+  for (let t = 1; t <= fadeSpan; t++) {
+    const g = (g1 * (fadeSpan - t)) / fadeSpan;
     prev = prev * (1 + g);
     path.push(prev);
   }
-  return path; // length 10, path[9] = OE_10
+  return path; // length = capYears；cap=10,H=5 时与原实现逐年相等
 }
 
-/** One tier: PV(explicit OE 1–10) + PV(terminal value at end of year 10). */
-export function dcfTier(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
+/** One tier: PV(explicit OE 1..capYears) + PV(terminal value at end of year capYears). */
+export function dcfTier(
+  oe0: number,
+  g1: number,
+  r: number,
+  shares: number,
+  gTerminal: number,
+  capYears: number = PROJECTION_YEARS,
+): {
   equity: number;
   perShare: number;
   pvTv: number;
 } {
-  const oe = projectOe(oe0, g1);
+  const oe = projectOe(oe0, g1, capYears);
   let pvExplicit = 0;
-  for (let t = 1; t <= PROJECTION_YEARS; t++) {
+  for (let t = 1; t <= capYears; t++) {
     pvExplicit += oe[t - 1] / Math.pow(1 + r, t);
   }
-  const oe10 = oe[PROJECTION_YEARS - 1];
+  const oeN = oe[capYears - 1];
   // 带上限 Gordon：g 与贴现率同源、且 r−g 足够宽时用 Gordon；否则退回零增长（安全兜底）。
   const useGordon = gTerminal > 0 && r - gTerminal >= MIN_RG_SPREAD;
-  const tv = useGordon ? (oe10 * (1 + gTerminal)) / (r - gTerminal) : oe10 / r;
-  const pvTv = tv / Math.pow(1 + r, PROJECTION_YEARS);
+  const tv = useGordon ? (oeN * (1 + gTerminal)) / (r - gTerminal) : oeN / r;
+  const pvTv = tv / Math.pow(1 + r, capYears);
   const equity = pvExplicit + pvTv;
   return { equity, perShare: equity / shares, pvTv };
 }
@@ -152,11 +174,18 @@ function discountBand(dgs10: { value: number; date: string } | null): DiscountBa
   };
 }
 
-function tierValues(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
+function tierValues(
+  oe0: number,
+  g1: number,
+  r: number,
+  shares: number,
+  gTerminal: number,
+  capYears?: number,
+): {
   equity_value: number;
   per_share: number;
 } {
-  const run = dcfTier(oe0, g1, r, shares, gTerminal);
+  const run = dcfTier(oe0, g1, r, shares, gTerminal, capYears);
   return { equity_value: run.equity, per_share: run.perShare };
 }
 
@@ -257,12 +286,45 @@ export function deriveOeDcf(
   const gCap = Math.min(discount.dgs10_value ?? 0.025, GDP_NOMINAL_CAP);
   const gTerminal = declined || floor.high_leverage_warning ? 0 : Math.min(gCap, g1);
 
+  // ── Moat → competitive-advantage-period (CAP，Phase 2)───────────────────────
+  // ROIC 稳定性：NOPAT/投入资本口径复用 growthValue/epvFloor（金融股 operating_income
+  // 缺 → NOPAT undefined → 年份跳过 → <3 年 → roicStable=undefined → strong 自动降 moderate）。
+  const roicTaxRate = normalizedTaxRate(years).rate;
+  const nopatOf = (y: ValuationFloorYear): number | undefined =>
+    y.operating_income != null ? y.operating_income * (1 - roicTaxRate) : undefined;
+  const investedCapitalOf = (y: ValuationFloorYear): number | undefined => {
+    if (y.shareholders_equity == null) return undefined;
+    const nd = y.net_debt ?? ((y.total_debt ?? 0) - (y.cash ?? 0));
+    return nd + y.shareholders_equity;
+  };
+  const roicStable = roicStability({
+    fyYears: windowYears,
+    investedCapitalOf,
+    nopatOf,
+    discountRate: discount.midpoint,
+  });
+  // 缺 moat_reading（防御性兜底，理论上真实 ValuationFloor 恒有）→ 视作非-franchise，CAP 不延长。
+  const moat: MoatReading = floor.moat_reading ?? { signal: "not_assessable", label: "", basis_note: "" };
+  const epvAvRatio =
+    moat.epv_per_share_compared != null &&
+    moat.asset_per_share_compared != null &&
+    moat.asset_per_share_compared > 0
+      ? moat.epv_per_share_compared / moat.asset_per_share_compared
+      : undefined;
+  const suppressedFlags = floor.high_leverage_warning === true || floor.ai_capex_distortion_warning === true;
+  const moatCap = deriveMoatCap({ moat, epvAvRatio, declined, suppressedFlags, roicStable });
+  // CAP→显式期翻译：commodity/moderate(0/10) 一律保持基线 10 年（值不变）；strong(20) 才抬上沿。
+  const neutralCap = Math.max(PROJECTION_YEARS, moatCap.capYears);
+
   const pessimistic: OeDcfTier = {
     growth_stage1: g1 / 2,
     discount_rate: discount.r_high,
-    ...tierValues(oe0, g1 / 2, discount.r_high, shares, 0), // 悲观档保留零增长底
+    ...tierValues(oe0, g1 / 2, discount.r_high, shares, 0), // 悲观档保留零增长底，不接 CAP，值逐位不变
   };
-  const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal);
+  // 基线 cap=10（今天的行为）：quick-check 诊断锚点，与 CAP 抬升解耦，保证 reliable 逐位不变。
+  const neutralBaselineRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal);
+  // 展示用：moat-CAP 允许把中枢/乐观档投影抬到 20 年（strong 档）。
+  const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal, neutralCap);
   const neutral: OeDcfTier = {
     growth_stage1: g1,
     discount_rate: discount.midpoint,
@@ -272,18 +334,18 @@ export function deriveOeDcf(
   const optimistic: OeDcfTier = {
     growth_stage1: g1,
     discount_rate: discount.r_low,
-    ...tierValues(oe0, g1, discount.r_low, shares, gTerminal),
+    ...tierValues(oe0, g1, discount.r_low, shares, gTerminal, neutralCap),
   };
 
-  // terminal share computed at the neutral tier (reuse neutralRun)
+  // terminal share computed at the (CAP-adjusted) neutral tier
   const terminalShare = neutralRun.pvTv / neutralRun.equity;
 
   // diagnostics
   const oePerShare = oe0 / shares;
-  // quick-check 基线：与 neutral 档同增长假设的 H-model 闭式解（非零增长资本化），
-  // 使偏离只在模型真不稳定时才大 —— 成长股不再被误判 unreliable（Phase A 皱褶修复）。
+  // quick-check 基线：与基线 cap=10 的 neutral 档（非展示用 neutralRun）比较同增长假设的
+  // H-model 闭式解 —— 诊断口径与今天逐字一致，quick_check_flag/reliable 与 CAP 抬升完全解耦。
   const quickPerShare = hModelValue(oe0, g1, gTerminal, discount.midpoint) / shares;
-  const quickDev = Math.abs(neutral.per_share - quickPerShare) / quickPerShare;
+  const quickDev = Math.abs(neutralBaselineRun.perShare - quickPerShare) / quickPerShare;
   const rMinusG = discount.midpoint - g1;
   let oeYield: number | undefined;
   let oeYieldBps: number | undefined;
@@ -312,7 +374,7 @@ export function deriveOeDcf(
     terminal_dependency_flag: terminalShare > TERMINAL_SHARE_FLAG,
     terminal_growth: gTerminal,
     terminal_method: gTerminal > 0 ? "gordon_capped" : "zero_growth",
-    expectations_inputs: { oe0, shares, r: discount.midpoint, gTerminal },
+    expectations_inputs: { oe0, shares, r: discount.midpoint, gTerminal, capYears: neutralCap },
     diagnostics: {
       oe_yield: oeYield,
       oe_yield_vs_dgs10_bps: oeYieldBps,

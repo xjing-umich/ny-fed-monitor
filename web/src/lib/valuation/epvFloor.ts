@@ -61,7 +61,7 @@ function selectEarningsYears(years: ValuationFloorYear[]): ValuationFloorYear[] 
 }
 
 /** Multi-year average effective tax rate, clamped to [0, statutory 21%]; flat 21% fallback when no rate data. */
-function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; basis: string } {
+export function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; basis: string } {
   const rates: number[] = [];
   for (const y of years) {
     let r = y.effective_tax_rate;
