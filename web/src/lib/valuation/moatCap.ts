@@ -80,3 +80,39 @@ export function durabilityDeclined(fyYears: ValuationFloorYear[]): boolean {
   const oldestNi = oldest.net_income;
   return latestNi != null && oldestNi != null && latestNi < oldestNi;
 }
+
+// ── ROIC 趋势闸(Phase 2.5:回报型久期判据) ────────────────────────────────────
+export const ROIC_TREND_LAG = 2;        // 排除最新 N 年未成熟投资(与 growthValue.ROIIC_ENDPOINT_LAG 同哲学)
+export const ROIC_TREND_MIN_YEARS = 4;  // 成熟序列(去 lag 后)至少 N 年才评估趋势;否则 undefined
+export const ROIC_TREND_DROP = 0.15;    // 较新半段均值 < 较旧半段均值 ×(1−此值)判 "declining"
+
+/**
+ * 成熟资本上的 ROIC 趋势(Phase 2.5)。capex 激增会立刻抬「投入资本」分母、但回报滞后进 NOPAT
+ * 分子 → surge 当年 ROIC 机械性下滑(哪怕投资很好)。故本函数**排除最新 ROIC_TREND_LAG 年**,只看
+ * 成熟资本的 ROIC 是否早已在跌,避免把健康烧钱股误判 declining(自我拆台)。有效性过滤同 roicStability。
+ */
+export function roicTrend(input: {
+  fyYears: ValuationFloorYear[];
+  investedCapitalOf: (y: ValuationFloorYear) => number | undefined;
+  nopatOf: (y: ValuationFloorYear) => number | undefined;
+}): "declining" | "stable" | undefined {
+  const { fyYears, investedCapitalOf, nopatOf } = input;
+  const series: { fy: number; roic: number }[] = [];
+  for (const y of fyYears) {
+    const ic = investedCapitalOf(y), np = nopatOf(y);
+    if (ic == null || np == null || !(ic > 0)) continue;
+    const roic = np / ic;
+    if (!Number.isFinite(roic) || Math.abs(roic) > ROIC_SANITY) continue;
+    series.push({ fy: y.fiscal_year, roic });
+  }
+  series.sort((a, b) => b.fy - a.fy); // most-recent-first
+  const matured = series.slice(ROIC_TREND_LAG); // 丢弃最新 LAG 年未成熟投资
+  if (matured.length < ROIC_TREND_MIN_YEARS) return undefined;
+  const half = Math.floor(matured.length / 2);
+  const newer = matured.slice(0, half);                 // 较新的成熟年
+  const older = matured.slice(matured.length - half);   // 较旧的成熟年
+  const mean = (xs: { roic: number }[]) => xs.reduce((s, x) => s + x.roic, 0) / xs.length;
+  const olderMean = mean(older);
+  if (!(olderMean > 0)) return "stable"; // 负/零基不做比值判定(非 franchise,交 roicStable/signal 兜)
+  return mean(newer) < olderMean * (1 - ROIC_TREND_DROP) ? "declining" : "stable";
+}

@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_share_compared: 10, dual_test_passed: true } as any; // ratio 3.0
@@ -133,5 +133,48 @@ function fyYears(n: number): ValuationFloorYear[] {
 
   assert(durabilityDeclined([]) === false, "durabilityDeclined: empty input → false, no crash");
 }
+
+// ── roicTrend(Phase 2.5:回报型久期闸,排除最新2年 surge) ──────────────────────
+// 用固定 IC=100 的合成序列;nopat 映射直接给 ROIC(nopat/100)。fyYears(n) 造 2020..2020+n-1。
+function roicYears(nopatByFyDesc: number[]): { years: ValuationFloorYear[]; np: Map<number, number> } {
+  // nopatByFyDesc 为 most-recent-first;构造升序 fiscal_year 的 years,np 按 fiscal_year 映射。
+  const n = nopatByFyDesc.length;
+  const years = Array.from({ length: n }, (_, i) => ({ fiscal_year: 2020 + i })) as ValuationFloorYear[];
+  const np = new Map<number, number>();
+  years.forEach((y, i) => { np.set(y.fiscal_year, nopatByFyDesc[n - 1 - i]); }); // 升序索引 ↔ most-recent-first 值
+  return { years, np };
+}
+const ic100 = () => 100;
+
+// A) 稳定但最新2年 surge(分母压低)→ 排除后成熟段全稳 → "stable"
+{ const { years, np } = roicYears([5, 5, 20, 20, 20, 20]); // most-recent-first:2025,2024 surge;2023..2020 稳
+  const r = roicTrend({ fyYears: years, investedCapitalOf: ic100, nopatOf: (y) => np.get(y.fiscal_year) });
+  assert(r === "stable", "roicTrend: 最新2年 surge 被排除,成熟段稳 → stable(不自我拆台)"); }
+
+// B) 成熟段真下滑 → "declining"
+{ const { years, np } = roicYears([5, 5, 10, 11, 20, 22]); // 成熟 most-recent-first:0.10,0.11,0.20,0.22
+  const r = roicTrend({ fyYears: years, investedCapitalOf: ic100, nopatOf: (y) => np.get(y.fiscal_year) });
+  assert(r === "declining", "roicTrend: 成熟段较新均值 << 较旧均值 → declining"); }
+
+// C) 成熟段 <4 年(总5年,去2 → 3)→ undefined
+{ const { years, np } = roicYears([5, 5, 20, 20, 20]);
+  const r = roicTrend({ fyYears: years, investedCapitalOf: ic100, nopatOf: (y) => np.get(y.fiscal_year) });
+  assert(r === undefined, "roicTrend: 成熟段<ROIC_TREND_MIN_YEARS → undefined(不可评估→不压)"); }
+
+// D) 成熟段小幅波动(未过阈值)→ "stable"
+{ const { years, np } = roicYears([5, 5, 18, 20, 19, 21]); // 成熟 newer 0.19 vs older 0.20,跌幅<15%
+  const r = roicTrend({ fyYears: years, investedCapitalOf: ic100, nopatOf: (y) => np.get(y.fiscal_year) });
+  assert(r === "stable", "roicTrend: 成熟段小幅波动未破 ROIC_TREND_DROP → stable"); }
+
+// E) 较旧段均值 ≤ 0(历史即不盈利)→ "stable"(不做负值比值,交给 roicStable/signal 兜)
+{ const { years, np } = roicYears([5, 5, -3, -4, -5, -6]);
+  const r = roicTrend({ fyYears: years, investedCapitalOf: ic100, nopatOf: (y) => np.get(y.fiscal_year) });
+  assert(r === "stable", "roicTrend: 较旧段 ROIC≤0 → stable(负基不判下滑)"); }
+
+// F) 有效性过滤:一年 IC≤0(投入资本无效)被跳过,不破坏趋势判定
+{ const { years, np } = roicYears([5, 5, 20, 20, 20, 20]);
+  const ic = (y: ValuationFloorYear) => (y.fiscal_year === 2022 ? undefined : 100); // 跳过一年
+  const r = roicTrend({ fyYears: years, investedCapitalOf: ic, nopatOf: (y) => np.get(y.fiscal_year) });
+  assert(r === undefined || r === "stable", "roicTrend: 无效年跳过后仍不误报 declining"); }
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");
