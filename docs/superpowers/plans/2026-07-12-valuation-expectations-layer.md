@@ -13,6 +13,7 @@
 - 分支：`plan/valuation-expectations-layer`，off `db-foundation` @ 3cc6fa8。
 - **地基层禁改**：`deriveValuationVerdict` 的 bucket/rangeLo/rangeHi/reliable 全部不动；预期层是**并联新增**。
 - **只用 SEC 历史 + 已持久化 DGS10 锚**，禁引入分析师预估/同业 base-rate（后者留 Phase 3）。
+- **数据准确性硬门（historicalGrowth/CAGR）**：三态判定完全押在历史增长 base-rate 上，CAGR 错则结论错、直接毁信任。硬规：① base-rate **只吃 `fiscal_period=FY` 年报行**，禁用派生 Q4 行（[[cusip-corruption-episode]]/[[graham-net-net-floor]] 已证派生行会造假信号）；② 用**全 FY 点的 log-线性回归年化斜率**，**禁**端点对端点 CAGR（对单个异常年极敏感）；③ 用**营收**而非净利做 base-rate（最不可篡改、端点最稳；隐含盈利增长若超历史营收增长=还需利润率扩张，判「苛刻」正确）；④ 不足 3 个正 FY 点 → undefined → 抑制不出结论；⑤ 交付前对 AAPL/KO/一只周期股打印原始 FY 营收序列 + 算出的 base-rate，人工比对 SEC 确认。**禁**复用驱动正向引擎的 `netIncomeCagr`（另立稳健函数，别改正向引擎行为）。
 - **禁**买卖/目标价/评级措辞；隐含数字**永远与历史对照并排**，禁单独展示。守 [[valuation-philosophy-constraint]]。
 - 复用现有抑制闸：`assessReliability`（`declined`/`high_leverage_warning`/`ai_capex_distortion_warning`/极端 OE 收益率）、`isImplausibleBand`、`oe0 ≤ 0`。任一触发 → 预期层 `assessable=false`，页面空缺（非报错）。
 - 终值封顶 `GDP_NOMINAL_CAP`（0.03）；贴现用 `discountBand` midpoint（DGS10 锚，last-good 持久化）。
@@ -210,6 +211,65 @@ export function deriveExpectations(input: SolveInput & {
 }
 ```
 
+- [ ] **Step 4b: 稳健历史增长 base-rate（数据准确性硬门）**
+
+在 `impliedExpectations.ts` 追加（**禁**复用 `netIncomeCagr`——那个驱动正向引擎，别改其行为）：
+
+```ts
+import type { ValuationFloorYear } from "./types";
+
+export const MIN_BASE_RATE_YEARS = 3;
+
+/**
+ * 稳健历史增长 base-rate：对 FY 营收做 log-线性回归的年化斜率(最小二乘)，
+ * 而非端点对端点 CAGR——端点法对单个异常年(疫情谷/一次性)极敏感，是准确性最大风险。
+ * 用营收(最不可篡改、端点最稳)而非净利：隐含盈利增长若超历史营收增长=还需利润率扩张，判「苛刻」正确。
+ * 要求 ≥3 个正 FY 点，否则 undefined(→ 抑制，不出结论)。
+ * 调用方须保证传入的是 fiscal_period=FY 行(非派生 Q4)——见 Global Constraints 数据准确性硬门。
+ */
+export function historicalGrowthBaseRate(years: ValuationFloorYear[]): number | undefined {
+  const pts = years
+    .filter((y) => y.revenue != null && Number.isFinite(y.revenue) && (y.revenue as number) > 0)
+    .map((y) => ({ x: y.fiscal_year, y: Math.log(y.revenue as number) }));
+  if (pts.length < MIN_BASE_RATE_YEARS) return undefined;
+  const n = pts.length;
+  const sx = pts.reduce((s, p) => s + p.x, 0);
+  const sy = pts.reduce((s, p) => s + p.y, 0);
+  const sxx = pts.reduce((s, p) => s + p.x * p.x, 0);
+  const sxy = pts.reduce((s, p) => s + p.x * p.y, 0);
+  const denom = n * sxx - sx * sx;
+  if (!(denom > 0)) return undefined;
+  const slope = (n * sxy - sx * sy) / denom; // ln(revenue) 对 fiscal_year 的斜率
+  const g = Math.exp(slope) - 1;             // 年化增长
+  return Number.isFinite(g) ? g : undefined;
+}
+```
+
+在 `impliedExpectations.check.ts` 追加断言（放在最终 `console.log` 之前）：
+
+```ts
+// 6) base-rate：干净 10%/年营收序列 → ≈0.10
+{
+  const yrs = [2019, 2020, 2021, 2022, 2023, 2024].map((fy, i) => ({
+    fiscal_year: fy, revenue: 100 * Math.pow(1.10, i),
+  })) as unknown as import("./types").ValuationFloorYear[];
+  const g = historicalGrowthBaseRate(yrs);
+  assert(g != null && Math.abs(g - 0.10) < 5e-3, "回归 base-rate 复原 10%/年");
+}
+// 7) base-rate 稳健性：中间插一个异常年，斜率仍接近真值(端点法会崩，回归不会)
+{
+  const rev = [100, 110, 55, 133, 146, 161]; // 第三年异常腰斩
+  const yrs = rev.map((r, i) => ({ fiscal_year: 2019 + i, revenue: r })) as unknown as import("./types").ValuationFloorYear[];
+  const g = historicalGrowthBaseRate(yrs)!;
+  assert(g > 0.03 && g < 0.13, "单异常年不把回归 base-rate 带偏到离谱");
+}
+// 8) 不足 3 点 → undefined
+{
+  const yrs = [{ fiscal_year: 2023, revenue: 100 }, { fiscal_year: 2024, revenue: 110 }] as unknown as import("./types").ValuationFloorYear[];
+  assert(historicalGrowthBaseRate(yrs) === undefined, "少于3个FY点→undefined→抑制");
+}
+```
+
 - [ ] **Step 5: 运行测试确认通过**
 
 Run（`web/` 下）：`npx tsx src/lib/valuation/impliedExpectations.check.ts`
@@ -249,20 +309,23 @@ git commit -m "feat(valuation): 反向DCF隐含预期纯函数引擎(二分解g*
 在 `web/scripts/valuation-ingest.ts` 每 ticker 组装 `payload` 处，加：
 
 ```ts
-import { deriveExpectations } from "@/lib/valuation/impliedExpectations";
+import { deriveExpectations, historicalGrowthBaseRate } from "@/lib/valuation/impliedExpectations";
 // ...
+// fyYears：喂给地基引擎的同一批 FY 年报行(ValuationFloorYear[])。
+// 数据准确性硬门：确认这些是 fiscal_period=FY(非派生 Q4)——见 Global Constraints。
+const historicalGrowth = historicalGrowthBaseRate(fyYears); // 稳健回归 base-rate，非端点 CAGR
 const ei = oeDcf?.expectations_inputs;
 const expectations = ei
   ? deriveExpectations({
       oe0: ei.oe0, shares: ei.shares, r: ei.r, gTerminal: ei.gTerminal,
       price: strikeZone.price.close,
-      historicalGrowth: /* 公司自身 CAGR：取 netIncomeCagr 的 cagr，见下 */ historicalCagr,
+      historicalGrowth,           // undefined(点不足/缺营收) → deriveExpectations 内部判 assessable=false
       suppressed: !verdict.reliable,
     })
   : { assessable: false as const, reason: "no_oe_dcf" };
 // payload.expectations = expectations;
 ```
-`historicalCagr` 取自现有 OE-DCF 计算里已得的 `netIncomeCagr(windowYears).cagr`——若未透出，一并在 Step 1 的 `expectations_inputs` 里带上 `historicalGrowth`。**只写 `assessable=true` 或带 `reason` 的对象**，保持 payload 自解释。
+`fyYears` 用地基引擎已加载的 `ValuationFloorYear[]`（`selectYears` 过滤后的 FY 行）。`expectations_inputs`（Step 1 透出）只需带 `oe0/shares/r/gTerminal` 四个 OE-DCF 中间量——**历史增长不走它，改由 `historicalGrowthBaseRate(fyYears)` 稳健重算**。**只写 `assessable=true` 或带 `reason` 的对象**，保持 payload 自解释。
 
 - [ ] **Step 3: 读回强类型**
 
@@ -333,7 +396,8 @@ git commit -m "feat(valuation): 个股页预期微徽章+「价格在赌什么�
 
 1. 三个 Task 的 `.check.ts` 全 PASS、`npx tsc --noEmit` 零错。
 2. 跑 `npm run valuation:ingest`（授权后）→ `valuation_snapshot.payload.expectations` 落字段。
-3. 真数据抽查：
+3. **CAGR 准确性对账（硬门）**：写一次性 tsx 脚本，对 AAPL / KO / 一只周期股（如 CVX）打印①喂入的 FY 行（含 `fiscal_year`/`revenue`/`fiscal_period`）②`historicalGrowthBaseRate` 算出的年化增长；人工核对：FY 行确为年报非派生 Q4、营收序列与 SEC 一致、算出的增长与手算量级相符。有一处对不上就停下查根因，别放行。
+4. 真数据抽查：
    - AAPL/GOOGL 等优质股：masthead 出现「预期 · 温和/公允/苛刻」微徽章、估值小节出现「价格在赌什么」块（不再是空缺）。
    - 巴菲特页：估值列语义仍由地基 bucket 决定（本 Phase 不改投资人页），但个股详情页优质股不再无估值话可说。
    - 周期/高杠杆/缺 oe0 名：预期块优雅空缺、无报错。
@@ -346,3 +410,4 @@ git commit -m "feat(valuation): 个股页预期微徽章+「价格在赌什么�
 - **占位扫描**：无 TBD/TODO；纯函数有完整实现代码，集成任务给出明确 seam（透出 `expectations_inputs`）与真实函数名（`dcfTier`/`netIncomeCagr`/`discountBand`/`GDP_NOMINAL_CAP`）。「逐年表可选」已显式标注为非阻塞，非占位。
 - **类型一致**：`ExpectationsAssessment`（Task 1 定义）→ Task 2 payload / Task 3 消费全用同名字段（`assessable`/`impliedGrowth`/`impliedGrowthBounded`/`historicalGrowth`/`impliedCapYears`/`tier`/`reason`）；`deriveExpectations`/`solveImpliedGrowth`/`dcfTier` 签名跨任务一致。
 - **顺序正确**：Task 1（纯引擎+导出）→ Task 2（接入写入）→ Task 3（读回呈现），每步可独立编译/测试，任一提交点不破坏构建。
+- **数据准确性**：三态结论的唯一支点 `historicalGrowth` 走稳健 `historicalGrowthBaseRate`（FY 营收 log-回归、非端点 CAGR、非 `netIncomeCagr`），有单异常年稳健性测试（Step 4b #7）+ 交付前对 AAPL/KO/周期股 SEC 对账（验收 #3）。缺点/缺营收 → undefined → 抑制，不出错结论。守 CLAUDE.md 数据准确性规。
