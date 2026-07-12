@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
@@ -42,6 +43,35 @@ export default async function ArticlePage({
 
   const updatedLabel = lang === "zh" ? "最后更新" : "Last updated";
   const backLabel = lang === "zh" ? "← 返回 学习" : "← Back to Learn";
+
+  // Inline entity tokens in article prose — [[investor:slug|Label]] / [[stock:TICKER|Label]] —
+  // render as internal links to the investor/stock pages. Passes article authority to those
+  // pages (SEO internal linking) and gives the reader a path from the idea into the live data.
+  const renderParagraph = (text: string): ReactNode => {
+    const token = /\[\[(investor|stock):([^|\]]+)\|([^\]]+)\]\]/g;
+    const nodes: ReactNode[] = [];
+    let last = 0;
+    let key = 0;
+    let m: RegExpExecArray | null;
+    while ((m = token.exec(text)) !== null) {
+      if (m.index > last) nodes.push(text.slice(last, m.index));
+      const [, kind, id, label] = m;
+      const href = kind === "investor" ? investorPath(lang, id) : stockPath(lang, id);
+      nodes.push(
+        <Link
+          key={`ent-${key++}`}
+          href={href}
+          className="text-[var(--tt-text)] underline decoration-[var(--tt-faint)] underline-offset-2 transition-colors hover:text-[var(--tt-accent)] hover:decoration-[var(--tt-accent)]"
+        >
+          {label}
+        </Link>,
+      );
+      last = m.index + m[0].length;
+    }
+    if (nodes.length === 0) return text;
+    if (last < text.length) nodes.push(text.slice(last));
+    return nodes;
+  };
 
   // Article structured data — helps Google/AI engines attribute and cite the piece.
   const jsonLd = {
@@ -101,7 +131,7 @@ export default async function ArticlePage({
           {backLabel}
         </Link>
       </div>
-      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={article.updated} updatedLabel={updatedLabel} />
+      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={article.updated} updatedLabel={updatedLabel} renderParagraph={renderParagraph} />
 
       {/* 文中点名实体的内链(SEO 内链: 把文章权重传给对应实体页) */}
       {article.related && article.related.length > 0 && (

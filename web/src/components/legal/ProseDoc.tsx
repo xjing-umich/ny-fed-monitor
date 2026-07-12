@@ -8,13 +8,19 @@ interface ProseDocProps {
   /** Optional "Last updated" date line shown under the title. */
   updated?: string;
   updatedLabel?: string;
+  /**
+   * Optional per-paragraph renderer. When supplied, intro and every section
+   * paragraph pass through it (used by /learn to turn inline entity tokens into
+   * internal links). Legal/About omit it and render plain text unchanged.
+   */
+  renderParagraph?: (text: string) => React.ReactNode;
 }
 
 // Shared prose layout for the legal pages and the About page. Pure presentation —
 // content (title / intro / sections) is supplied by the caller, so the pages stay
 // one-liners. Masthead mirrors PageHeader: green-mono eyebrow → Fraunces title →
 // mono dateline → hairline rule.
-export default function ProseDoc({ doc, eyebrow, updated, updatedLabel }: ProseDocProps) {
+export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderParagraph }: ProseDocProps) {
   return (
     <article className="max-w-[720px] mx-auto py-8 sm:py-10">
       <header className="border-b border-[var(--tt-border)] pb-6">
@@ -34,7 +40,7 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel }: ProseD
       </header>
 
       <p className="mt-6 text-sm leading-relaxed text-[var(--tt-muted)]">
-        {doc.intro}
+        {renderParagraph ? renderParagraph(doc.intro) : doc.intro}
       </p>
 
       {doc.sections.map((section, i) => (
@@ -47,7 +53,7 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel }: ProseD
               key={j}
               className="mt-2 text-sm leading-relaxed text-[var(--tt-muted)]"
             >
-              {p}
+              {renderParagraph ? renderParagraph(p) : p}
             </p>
           ))}
         </section>
