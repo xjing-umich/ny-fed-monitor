@@ -3,6 +3,7 @@ import { cache } from "react";
 import { hasSupabaseEnv, getDb, withRetry } from "@/lib/managers/db";
 import type { VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
 import { isImplausibleBand } from "./deriveValuationVerdict";
+import type { ExpectationsAssessment } from "./types";
 
 export type SnapshotVerdict = {
   ticker: string;
@@ -16,6 +17,7 @@ export type SnapshotVerdict = {
   coverage: VerdictCoverage;
   reliable: boolean;
   computedAt: string;
+  expectations?: ExpectationsAssessment;
 };
 
 type Row = {
@@ -30,6 +32,7 @@ type Row = {
   coverage: string;
   reliable: boolean;
   computed_at: string;
+  payload?: { expectations?: ExpectationsAssessment } | null;
 };
 
 /**
@@ -68,6 +71,7 @@ export const readValuationVerdicts = cache(
           coverage: r.coverage as VerdictCoverage,
           reliable: r.reliable ?? true,
           computedAt: r.computed_at,
+          expectations: r.payload?.expectations,
         };
         // 读层防御:坏数据行(价值带与现价严重脱节 / >80% 假安全边际)不发徽章 → 该行降级 "—"
         // (覆盖诚实),与 screener 各视图统一过 isImplausibleBand 同口径(即便快照尚有旧脏行)。

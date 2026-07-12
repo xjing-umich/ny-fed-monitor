@@ -47,6 +47,8 @@ import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
+import { deriveExpectations, historicalGrowthBaseRate } from "@/lib/valuation/impliedExpectations";
+import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockGlossary, stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
 import { Sparkline } from "@/components/common/Sparkline";
@@ -405,6 +407,19 @@ export default async function StockTickerPage({
       ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation })
       : null;
 
+  // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照,
+  // 快照写入是 Task 2 给其他消费面用的)——直接复用上面已算出的 oeDcf.expectations_inputs +
+  // handoffVerdict.price + FY-only 历史 base rate。抑制口径与 verdict 的 reliable 闸同源。
+  const expectations =
+    oeDcf?.assessable && oeDcf.expectations_inputs && handoffVerdict
+      ? deriveExpectations({
+          ...oeDcf.expectations_inputs,
+          price: handoffVerdict.price,
+          historicalGrowth: historicalGrowthBaseRate(floorInput.years),
+          suppressed: !handoffVerdict.reliable,
+        })
+      : undefined;
+
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
   const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
 
@@ -515,6 +530,7 @@ export default async function StockTickerPage({
           </Link>
         }
         verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
+        verdictExtra={expectationsBadge(expectations, lang) ?? undefined}
         keyFacts={[
           { label: page.price, value: fmtPriceFact(latestPrice) },
           // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——
@@ -603,6 +619,9 @@ export default async function StockTickerPage({
                   showStatus={false}
                 />
               </div>
+              {expectations?.assessable && (
+                <PriceBetBlock expectations={expectations} lang={lang} />
+              )}
             </section>
           )}
 

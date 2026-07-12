@@ -290,6 +290,8 @@ export type OeDcfAssessment = {
   terminal_dependency_flag?: boolean; // > 0.70
   terminal_growth?: number;   // 中枢/乐观档永续增长 g = min(dgs10, 3% GDP, g1)；悲观档恒 0
   terminal_method?: "gordon_capped" | "zero_growth"; // 中枢档终值口径
+  /** 透传给反向 DCF 预期层反解用的中枢档中间量（oe0/shares/r/gTerminal）；仅 assessable=true 时存在。 */
+  expectations_inputs?: { oe0: number; shares: number; r: number; gTerminal: number };
   diagnostics?: {
     oe_yield?: number;             // (OE_0 / shares) / price
     oe_yield_vs_dgs10_bps?: number;
@@ -319,4 +321,18 @@ export type MethodReconciliation = {
   consistency?: ConsistencyReading;
   divergence_pct?: number;  // |gwMid − bfMid| / mean
   divergence_flag?: boolean; // > 0.20 — assumptions need review
+};
+
+// ── Reverse-DCF implied expectations (parallel layer) ────────────────────
+
+export type ExpectationsTier = "modest" | "fair" | "demanding";
+
+export type ExpectationsAssessment = {
+  assessable: boolean;
+  impliedGrowth?: number;          // g*（小数）
+  impliedGrowthBounded?: "below" | "above"; // 越界标记（不外插）
+  historicalGrowth?: number;       // 公司自身 CAGR
+  impliedCapYears?: number;        // 次级：历史增长下撑住现价所需超额回报年数
+  tier?: ExpectationsTier;
+  reason?: string;                 // 不可评估时的原因（供注脚）
 };

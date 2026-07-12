@@ -82,7 +82,7 @@ function projectOe(oe0: number, g1: number): number[] {
 }
 
 /** One tier: PV(explicit OE 1–10) + PV(terminal value at end of year 10). */
-function dcfTier(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
+export function dcfTier(oe0: number, g1: number, r: number, shares: number, gTerminal: number): {
   equity: number;
   perShare: number;
   pvTv: number;
@@ -312,6 +312,7 @@ export function deriveOeDcf(
     terminal_dependency_flag: terminalShare > TERMINAL_SHARE_FLAG,
     terminal_growth: gTerminal,
     terminal_method: gTerminal > 0 ? "gordon_capped" : "zero_growth",
+    expectations_inputs: { oe0, shares, r: discount.midpoint, gTerminal },
     diagnostics: {
       oe_yield: oeYield,
       oe_yield_vs_dgs10_bps: oeYieldBps,
