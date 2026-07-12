@@ -12,6 +12,8 @@ import assert from "node:assert";
 import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW } from "./epvFloor";
 import { maintenanceCapex } from "./maintenanceCapex";
+import { deriveOeDcf } from "./ownerEarningsDcf";
+import { CAP_STRONG, CAP_MODERATE } from "./moatCap";
 
 function year(fy: number, o: Partial<ValuationFloorYear>): ValuationFloorYear {
   return { fiscal_year: fy, ...o };
@@ -403,6 +405,76 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
       `${lamp.label}: AI-hog note reflects D&A-cap / growth-spike treatment`,
     );
   }
+}
+
+// ── BUG1: negative-equity invested capital doesn't blow up ROIC into a false "stable" read ────
+// A buyback-driven negative-equity name (AZO/HD/MCD/DPZ-style): shareholders_equity < 0 every
+// year. Pre-fix, investedCapitalOf = net_debt + equity could land on a tiny positive number
+// (ROIC in the thousands of percent, a false "stable" read) or on a negative IC (silently
+// skipped every year → undefined, a false-negative). Post-fix, investedCapitalOf explicitly
+// returns undefined whenever equity <= 0, so these years never enter the ROIC sample at all —
+// moat_cap must not crash and must not read the distorted ROIC as "stable".
+{
+  const buyback: ValuationFloorInput = {
+    ticker: "BUYBACK",
+    years: [
+      year(2025, { revenue: 20_000, operating_margin: 0.30, operating_income: 6_000, net_income: 4_500, effective_tax_rate: 0.21, shareholders_equity: -3_000, cash: 500, total_debt: 4_500, net_debt: 4_000, shares_diluted: 1_000 }),
+      year(2024, { revenue: 18_000, operating_margin: 0.30, operating_income: 5_400, net_income: 4_000, effective_tax_rate: 0.21, shareholders_equity: -2_500, cash: 500, total_debt: 4_500, net_debt: 4_000, shares_diluted: 1_000 }),
+      year(2023, { revenue: 16_000, operating_margin: 0.30, operating_income: 4_800, net_income: 3_600, effective_tax_rate: 0.21, shareholders_equity: -2_000, cash: 500, total_debt: 4_500, net_debt: 4_000, shares_diluted: 1_000 }),
+    ],
+  };
+  const bb = floorOf(computeValuationFloor(buyback));
+  assert.ok(bb.moat_cap, "BUG1: negative-equity fixture still produces a moat_cap (no crash)");
+  assert.strictEqual(bb.moat_cap.roicStable, undefined, "BUG1: negative-equity years all skipped → <3 valid ROIC years → roicStable undefined, not a false-positive true");
+  assert.notStrictEqual(bb.moat_cap.grade, "strong", "BUG1: negative-equity fixture must never read as a strong durable moat off a distorted ROIC");
+}
+
+// ── BUG2: single source of truth — growth_value and the owner-earnings DCF can no longer
+// disagree on moat grade, even when fed a `years` history for deriveOeDcf that (pre-fix) would
+// have flipped the CAGR-based `declined` read used only for the OE-DCF-side grade recomputation.
+{
+  const growYears: ValuationFloorYear[] = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 1_800, ppe_net: 6_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 1_600, ppe_net: 5_500, working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 1_400, ppe_net: 5_000, working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 650, capex: 1_200, ppe_net: 4_500, working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 600, capex: 1_000, ppe_net: 4_000, working_capital: 1_000 },
+  ];
+  const gFloor = floorOf(computeValuationFloor({ ticker: "BUG2", years: growYears }));
+  assert.strictEqual(gFloor.moat_reading.signal, "franchise", "BUG2 fixture reads franchise (reused GROW fixture)");
+  assert.ok(gFloor.moat_cap.grade === "strong" || gFloor.moat_cap.grade === "moderate", "BUG2 fixture franchise → moat_cap grade strong/moderate");
+
+  // growth_value duration must map from THIS SAME floor.moat_cap.grade (single source).
+  const expectedDuration = gFloor.moat_cap.grade === "strong" ? CAP_STRONG : CAP_MODERATE;
+  assert.strictEqual(gFloor.growth_value.duration_years, expectedDuration, "BUG2: growth_value.duration_years derives from floor.moat_cap.grade");
+
+  const dgs10 = { value: 4.25, date: "2026-06-19" };
+  const price = { close: 100, date: "2026-06-19", currency: "USD" };
+
+  // Same fiscal years as growYears, but net_income REVERSED (latest lowest, oldest highest) —
+  // pre-fix this would have flipped OE-DCF's local CAGR-based `declined` to true and, through the
+  // old self-computed deriveMoatCap call, downgraded ITS OWN moatCap to "moderate" — independent
+  // of (and possibly disagreeing with) growthValue's grade. Post-fix, moatCap is read verbatim
+  // from floor.moat_cap and is therefore immune to this parameter.
+  const declinedHistoryYears: ValuationFloorYear[] = [
+    { fiscal_year: 2025, net_income: 1_000 },
+    { fiscal_year: 2024, net_income: 2_000 },
+    { fiscal_year: 2023, net_income: 3_000 },
+    { fiscal_year: 2022, net_income: 4_000 },
+    { fiscal_year: 2021, net_income: 6_000 },
+  ];
+
+  const oeNormal = deriveOeDcf(gFloor, growYears, dgs10, price);
+  const oeDeclinedHistory = deriveOeDcf(gFloor, declinedHistoryYears, dgs10, price);
+  assert.ok(oeNormal.assessable && oeDeclinedHistory.assessable, "BUG2: both OE-DCF reads assessable (assessability is floor-sourced, not years-sourced)");
+  assert.strictEqual(oeNormal.declined, false, "BUG2 fixture sanity: growYears CAGR is positive (not declined)");
+  assert.strictEqual(oeDeclinedHistory.declined, true, "BUG2 fixture sanity: declinedHistoryYears CAGR is negative (declined) — proves the fixture actually flips the old signal");
+
+  // The regression: despite `declined` flipping between the two calls, moatCap.grade does NOT.
+  assert.strictEqual(oeNormal.moatCap?.grade, gFloor.moat_cap.grade, "BUG2 fix: OE-DCF moatCap.grade === floor.moat_cap.grade (normal years)");
+  assert.strictEqual(oeDeclinedHistory.moatCap?.grade, gFloor.moat_cap.grade, "BUG2 fix: OE-DCF moatCap.grade === floor.moat_cap.grade even when fed a declining-history `years` param");
+  assert.deepStrictEqual(oeNormal.moatCap, oeDeclinedHistory.moatCap, "BUG2 fix: moatCap object is bit-for-bit identical regardless of the years param (no local recomputation)");
+  assert.deepStrictEqual(oeNormal.moatCap, gFloor.moat_cap, "BUG2 fix: OE-DCF's exposed moatCap IS floor.moat_cap, not a re-derived copy");
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");

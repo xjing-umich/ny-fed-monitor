@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_share_compared: 10, dual_test_passed: true } as any; // ratio 3.0
@@ -71,5 +71,67 @@ function fyYears(n: number): ValuationFloorYear[] {
     discountRate: 0.09,
   });
   assert(r === undefined, `<${ROIC_MIN_YEARS} 年 → undefined`); }
+
+// ── BUG1: negative-equity invested-capital → investedCapitalOf undefined → all years skipped ──
+// (This is the epvFloor-layer investedCapitalOf contract under test, not roicStability's own
+// filtering — roicStability just proves it degrades gracefully when the caller supplies undefined
+// consistently, exactly as epvFloor's fixed investedCapitalOf now does for equity<=0.)
+{
+  const years = fyYears(4);
+  // Simulate the FIXED investedCapitalOf: equity<=0 (buyback-driven negative equity, e.g. AZO/HD/MCD/DPZ)
+  // → undefined for every year, never a tiny/negative denominator that would blow up ROIC.
+  const negativeEquityInvestedCapitalOf = () => undefined;
+  const npMap = new Map(years.map((y) => [y.fiscal_year, 15]));
+  const r = roicStability({
+    fyYears: years,
+    investedCapitalOf: negativeEquityInvestedCapitalOf,
+    nopatOf: (y) => npMap.get(y.fiscal_year),
+    discountRate: 0.10,
+  });
+  assert(r === undefined, "BUG1: all-negative-equity years → investedCapitalOf undefined throughout → roicStability undefined (not a false-positive stable=true)");
+}
+
+// ── BUG1: ROIC sanity — a year with ROIC > 300% (tiny positive invested capital, the
+// near-zero-equity edge just before it flips negative) is culled from the stability sample ────
+{
+  const years = fyYears(4);
+  // 3 normal years (ROIC 15% > hurdle) + 1 distorted year (IC=1, NOPAT=50 → ROIC 5000% >> ROIC_SANITY).
+  const icByYear = [100, 100, 100, 1];
+  const npByYear = [15, 15, 15, 50];
+  const icMap = new Map(years.map((y, i) => [y.fiscal_year, icByYear[i]]));
+  const npMap = new Map(years.map((y, i) => [y.fiscal_year, npByYear[i]]));
+  const r = roicStability({
+    fyYears: years,
+    investedCapitalOf: (y) => icMap.get(y.fiscal_year),
+    nopatOf: (y) => npMap.get(y.fiscal_year),
+    discountRate: 0.10,
+  });
+  // The distorted year (ROIC 5000% > ROIC_SANITY=300%) is culled → only 3 (all-stable) years remain → true.
+  // Without the BUG1 sanity fix, that year would count toward "above" and still read true, masking
+  // that the underlying IC=1 was a basis-distortion artifact rather than a real capital-light franchise.
+  assert(r === true, `BUG1 sanity: >${ROIC_SANITY * 100}% ROIC year culled, remaining 3 normal years → stable=true`);
+}
+
+// ── BUG2: durabilityDeclined — single-source endpoint comparison (max/min fiscal_year, order-agnostic) ──
+{
+  const rising: ValuationFloorYear[] = [
+    { fiscal_year: 2021, net_income: 100 },
+    { fiscal_year: 2022, net_income: 110 },
+    { fiscal_year: 2023, net_income: 121 },
+  ];
+  assert(durabilityDeclined(rising) === false, "durabilityDeclined: rising NI (latest > oldest) → false");
+
+  const declining: ValuationFloorYear[] = [
+    { fiscal_year: 2023, net_income: 80 }, // out of order on purpose — function must not assume sorted input
+    { fiscal_year: 2021, net_income: 100 },
+    { fiscal_year: 2022, net_income: 90 },
+  ];
+  assert(durabilityDeclined(declining) === true, "durabilityDeclined: latest NI (80) < oldest (100) → true, order-agnostic");
+
+  const missing: ValuationFloorYear[] = [{ fiscal_year: 2023, net_income: 80 }, { fiscal_year: 2021 }];
+  assert(durabilityDeclined(missing) === false, "durabilityDeclined: missing endpoint net_income → false (no false decline)");
+
+  assert(durabilityDeclined([]) === false, "durabilityDeclined: empty input → false, no crash");
+}
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

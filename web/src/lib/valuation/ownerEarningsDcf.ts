@@ -7,10 +7,8 @@ import type {
   DiscountBandProvenance,
   MethodReconciliation,
   ConsistencyReading,
-  MoatReading,
+  MoatCapAssessment,
 } from "./types";
-import { deriveMoatCap, roicStability } from "./moatCap";
-import { normalizedTaxRate } from "./epvFloor";
 
 export const GROWTH_CAP = 0.1;
 // audit #3: 股权风险溢价从 2.5% 提到 4.5%(历史 ~4.5–5.5%),strict 端 10%→12%,
@@ -286,33 +284,12 @@ export function deriveOeDcf(
   const gCap = Math.min(discount.dgs10_value ?? 0.025, GDP_NOMINAL_CAP);
   const gTerminal = declined || floor.high_leverage_warning ? 0 : Math.min(gCap, g1);
 
-  // ── Moat → competitive-advantage-period (CAP，Phase 2)───────────────────────
-  // ROIC 稳定性：NOPAT/投入资本口径复用 growthValue/epvFloor（金融股 operating_income
-  // 缺 → NOPAT undefined → 年份跳过 → <3 年 → roicStable=undefined → strong 自动降 moderate）。
-  const roicTaxRate = normalizedTaxRate(years).rate;
-  const nopatOf = (y: ValuationFloorYear): number | undefined =>
-    y.operating_income != null ? y.operating_income * (1 - roicTaxRate) : undefined;
-  const investedCapitalOf = (y: ValuationFloorYear): number | undefined => {
-    if (y.shareholders_equity == null) return undefined;
-    const nd = y.net_debt ?? ((y.total_debt ?? 0) - (y.cash ?? 0));
-    return nd + y.shareholders_equity;
-  };
-  const roicStable = roicStability({
-    fyYears: windowYears,
-    investedCapitalOf,
-    nopatOf,
-    discountRate: discount.midpoint,
-  });
-  // 缺 moat_reading（防御性兜底，理论上真实 ValuationFloor 恒有）→ 视作非-franchise，CAP 不延长。
-  const moat: MoatReading = floor.moat_reading ?? { signal: "not_assessable", label: "", basis_note: "" };
-  const epvAvRatio =
-    moat.epv_per_share_compared != null &&
-    moat.asset_per_share_compared != null &&
-    moat.asset_per_share_compared > 0
-      ? moat.epv_per_share_compared / moat.asset_per_share_compared
-      : undefined;
-  const suppressedFlags = floor.high_leverage_warning === true || floor.ai_capex_distortion_warning === true;
-  const moatCap = deriveMoatCap({ moat, epvAvRatio, declined, suppressedFlags, roicStable });
+  // ── Moat → competitive-advantage-period (CAP，Phase 2) ─────────────────────
+  // Single source of truth: floor.moat_cap, computed once in epvFloor.computeValuationFloor
+  // (durabilityDeclined + ROIC_HURDLE shared with growthValue) — no local recomputation here,
+  // so this leg and the Greenwald growth-value leg can no longer disagree on grade (BUG2 fix).
+  // 防御性兜底（理论上真实 ValuationFloor 恒有 moat_cap）：缺失 → 视作非-franchise，CAP 不延长。
+  const moatCap: MoatCapAssessment = floor.moat_cap ?? { grade: "none", capYears: 0, durablePassed: false, basis: "" };
   // CAP→显式期翻译：commodity/moderate(0/10) 一律保持基线 10 年（值不变）；strong(20) 才抬上沿。
   const neutralCap = Math.max(PROJECTION_YEARS, moatCap.capYears);
 

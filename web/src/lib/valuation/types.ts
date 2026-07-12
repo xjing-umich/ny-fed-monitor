@@ -105,6 +105,12 @@ export type ValuationFloor = {
    * Lifted from maintenanceCapex — drives reliability=false and GV gated_to_zero (scheme C).
    */
   ai_capex_distortion_warning?: boolean;
+  /**
+   * Moat → competitive-advantage-period (CAP，Phase 2 耐久性闸) — computed ONCE here (single
+   * source of truth) and read by both growth_value (via moatGrade) and the owner-earnings DCF
+   * (deriveOeDcf reads floor.moat_cap directly), so the two legs can no longer disagree on grade.
+   */
+  moat_cap: MoatCapAssessment;
   provenance: ValuationFloorProvenance;
 };
 

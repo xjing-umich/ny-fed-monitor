@@ -13,7 +13,7 @@ import {
   projectOe,
   PROJECTION_YEARS,
 } from "./ownerEarningsDcf";
-import { CAP_STRONG, MOAT_STRONG_RATIO } from "./moatCap";
+import { CAP_STRONG, MOAT_STRONG_RATIO, deriveMoatCap } from "./moatCap";
 import type { OeDcfAssessment } from "./types";
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -358,6 +358,10 @@ function oeStub(low: number, high: number): OeDcfAssessment {
 
 // ── C5. moat-CAP 接线：strong 护城河把 neutral/optimistic 抬到 20 年；
 //       悲观档 + reliable(quick-check 诊断) 逐位不变（基线锚定，头号硬门）──────
+// Post-BUG2-fix: deriveOeDcf reads floor.moat_cap directly (single source of truth, computed
+// once in epvFloor.computeValuationFloor) rather than recomputing grade from moat_reading/years
+// itself. These hand-built fixtures don't go through computeValuationFloor, so moat_cap is
+// derived here explicitly via deriveMoatCap — the same function epvFloor now calls once.
 {
   const buffett = lamp(1000, 100, [2022, 2023, 2024]);
   const yearsFull: ValuationFloorYear[] = [
@@ -377,8 +381,19 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   };
   const commodityMoat: MoatReading = { signal: "commodity", label: "x", basis_note: "x" };
 
-  const floorStrong = { kind: "floor", buffett_epv: buffett, moat_reading: strongMoat, high_leverage_warning: false } as unknown as ValuationFloor;
-  const floorCommodity = { kind: "floor", buffett_epv: buffett, moat_reading: commodityMoat, high_leverage_warning: false } as unknown as ValuationFloor;
+  const strongMoatCap = deriveMoatCap({
+    moat: strongMoat,
+    epvAvRatio: strongMoat.epv_per_share_compared! / strongMoat.asset_per_share_compared!,
+    declined: false, suppressedFlags: false, roicStable: true,
+  });
+  assert.strictEqual(strongMoatCap.grade, "strong", "fixture: strongMoat derives grade=strong");
+  const commodityMoatCap = deriveMoatCap({
+    moat: commodityMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined,
+  });
+  assert.strictEqual(commodityMoatCap.grade, "none", "fixture: commodityMoat derives grade=none");
+
+  const floorStrong = { kind: "floor", buffett_epv: buffett, moat_reading: strongMoat, high_leverage_warning: false, moat_cap: strongMoatCap } as unknown as ValuationFloor;
+  const floorCommodity = { kind: "floor", buffett_epv: buffett, moat_reading: commodityMoat, high_leverage_warning: false, moat_cap: commodityMoatCap } as unknown as ValuationFloor;
 
   const rStrong = deriveOeDcf(floorStrong, yearsFull, dgs10, price(120));
   const rCommodity = deriveOeDcf(floorCommodity, yearsFull, dgs10, price(120));

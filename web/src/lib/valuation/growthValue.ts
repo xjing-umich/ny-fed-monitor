@@ -1,6 +1,6 @@
 import { maintenanceCapex } from "./maintenanceCapex";
-import { deriveMoatCap, roicStability, CAP_STRONG, CAP_MODERATE, MOAT_STRONG_RATIO } from "./moatCap";
-import type { GrowthScenarioSet, GrowthValue, MoatReading, MoatSignal, ValuationFloorYear } from "./types";
+import { CAP_STRONG, CAP_MODERATE, MOAT_STRONG_RATIO } from "./moatCap";
+import type { GrowthScenarioSet, GrowthValue, MoatGrade, MoatSignal, ValuationFloorYear } from "./types";
 
 export const GV_WINDOW = 5;                  // years in the ROIIC window
 export const ROIIC_ENDPOINT_LAG = 2;         // exclude the last N years' not-yet-matured growth investment (audit fix #4)
@@ -27,10 +27,13 @@ export type GrowthValueArgs = {
   avPerShare?: number;
   /** AI-hog scheme C: force GV gated_to_zero even when moat is franchise. */
   aiCapexDistortion?: boolean;
-  /** Dual asset-value franchise test (moat_reading.dual_test_passed) — required for the strong CAP grade. */
-  dualTestPassed?: boolean;
-  /** Net-debt/equity above the leverage-warn ratio — suppresses the strong CAP grade (same as OE-DCF). */
-  highLeverage?: boolean;
+  /**
+   * Moat grade (strong/moderate/none), computed ONCE in epvFloor.computeValuationFloor
+   * (floor.moat_cap — single source of truth) and passed in here. growthValue no longer
+   * recomputes declined/roicStable/deriveMoatCap itself, so this leg and the owner-earnings
+   * DCF leg can no longer disagree on grade (BUG2 fix).
+   */
+  moatGrade: MoatGrade;
 };
 
 const ZERO: GrowthScenarioSet = { pessimistic: 0, neutral: 0, optimistic: 0 };
@@ -49,7 +52,7 @@ function annuityFactor(r: number, n: number): number {
  * maintenance is not assessable).
  */
 export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
-  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion, dualTestPassed, highLeverage } = args;
+  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion, moatGrade } = args;
   const notes: string[] = [];
   const waccBand: [number, number] = [GV_DISCOUNT_OPTIMISTIC, GV_DISCOUNT_PESSIMISTIC];
 
@@ -158,28 +161,11 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   const baselineDuration = ratio != null && ratio >= MOAT_STRONG_MULTIPLE ? DURATION_STRONG_BASELINE : DURATION_MODERATE_BASELINE;
   const durShort = Math.max(1, baselineDuration - DURATION_PESSIMISTIC_DELTA); // 8 (strong) / 6 (moderate), unchanged
 
-  // ② Neutral/optimistic scenarios: grade-based moat-CAP (same durability gate as OE-DCF, moatCap.ts) —
-  // a declined/unstable-ROIC franchise no longer earns the long duration through the GV leg alone.
-  const latestNI = window[0].net_income;
-  const oldestNI = window[window.length - 1].net_income;
-  const declined = latestNI != null && oldestNI != null && latestNI < oldestNI;
-
-  const nopatOf = (y: ValuationFloorYear): number | undefined =>
-    y.operating_income != null ? y.operating_income * (1 - taxRate) : undefined;
-  const investedCapitalOf = (y: ValuationFloorYear): number | undefined =>
-    y.shareholders_equity == null ? undefined : (y.net_debt ?? ((y.total_debt ?? 0) - (y.cash ?? 0))) + y.shareholders_equity;
-  const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: GV_DISCOUNT_NEUTRAL });
-
-  const grade = deriveMoatCap({
-    moat: { signal: moatSignal, dual_test_passed: dualTestPassed } as MoatReading,
-    epvAvRatio: ratio,
-    declined,
-    // aiCapexDistortion is always false/undefined here (the AI-hog gate above already returned
-    // gated_to_zero when true); kept for symmetry with OE-DCF's suppressedFlags formula.
-    suppressedFlags: !!aiCapexDistortion || highLeverage === true,
-    roicStable,
-  }).grade; // franchise already gated above → grade ∈ {strong, moderate}, never "none"
-  const extendedDuration = grade === "strong" ? DURATION_STRONG : DURATION_MODERATE; // 20 / 10
+  // ② Neutral/optimistic scenarios: grade-based moat-CAP (single source of truth — floor.moat_cap,
+  // computed once in epvFloor.computeValuationFloor and passed in as moatGrade; no local
+  // recomputation of declined/roicStable here, so this leg can no longer disagree with the
+  // owner-earnings DCF leg on grade (BUG2 fix)).
+  const extendedDuration = moatGrade === "strong" ? DURATION_STRONG : DURATION_MODERATE; // 20 / 10
 
   // GV = annual growth reinvestment × (ROIIC − r)/r × annuityFactor(r, N). Floor at 0 per scenario.
   function gv(roiicScenario: number, r: number, n: number): number {

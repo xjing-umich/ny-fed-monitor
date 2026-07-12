@@ -33,16 +33,17 @@ const grower: ValuationFloorYear[] = [
 ];
 
 // Franchise gate: non-franchise → GV forced to 0 (gated_to_zero true, NOT "missing data").
-const commodity = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "commodity", epvPerShare: 50, avPerShare: 40 });
+// moatGrade is irrelevant here (gate fires on moatSignal before grade is ever read) — "none" documents that.
+const commodity = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "commodity", epvPerShare: 50, avPerShare: 40, moatGrade: "none" });
 assert.strictEqual(commodity.gated_to_zero, true, "commodity → GV gated to zero");
 assert.strictEqual(commodity.scenarios.neutral, 0, "commodity → neutral GV = 0");
 assert.strictEqual(commodity.per_share.optimistic, 0, "commodity → optimistic GV = 0");
 
-const vd = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "value_destruction", epvPerShare: 10, avPerShare: 40 });
+const vd = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "value_destruction", epvPerShare: 10, avPerShare: 40, moatGrade: "none" });
 assert.strictEqual(vd.gated_to_zero, true, "value_destruction → GV gated to zero");
 
 // Franchise: GV > 0, ordered pessimistic ≤ neutral ≤ optimistic.
-const fr = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40 });
+const fr = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "moderate" });
 assert.ok(fr.assessable, "franchise grower is assessable");
 assert.strictEqual(fr.gated_to_zero, false, "franchise not gated");
 assert.ok(fr.roiic != null && fr.roiic > 0, "positive ROIIC");
@@ -53,7 +54,7 @@ assert.ok(fr.per_share.neutral <= fr.per_share.optimistic + 1e-9, "neutral ≤ o
 // AI-hog scheme C: franchise + aiCapexDistortion → still gated_to_zero (growth premium closed).
 const aiGate = computeGrowthValue({
   years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
-  epvPerShare: 80, avPerShare: 40, aiCapexDistortion: true,
+  epvPerShare: 80, avPerShare: 40, aiCapexDistortion: true, moatGrade: "strong",
 });
 assert.strictEqual(aiGate.gated_to_zero, true, "franchise + AI distortion → GV gated to zero");
 assert.strictEqual(aiGate.scenarios.neutral, 0, "AI gate → neutral GV = 0");
@@ -72,10 +73,10 @@ const growerFull: ValuationFloorYear[] = [
   { fiscal_year: 2021, revenue: 11_000, operating_income: 2_000, capex: 1_800, d_and_a: 750, working_capital: 1_800, shareholders_equity: 14_000, net_income: 1_580 },
 ];
 
-// Strong franchise (EPV/AV ≥ 2.0, dual test passed, not declined, ROIC stable) uses the
+// Strong franchise (moatGrade passed in from floor.moat_cap, single source of truth) uses the
 // longer duration (grade-based CAP) than a moderate one.
-const strong = computeGrowthValue({ years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 100, avPerShare: 40, dualTestPassed: true });
-const moderate = computeGrowthValue({ years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 50, avPerShare: 40, dualTestPassed: true });
+const strong = computeGrowthValue({ years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 100, avPerShare: 40, moatGrade: "strong" });
+const moderate = computeGrowthValue({ years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 50, avPerShare: 40, moatGrade: "moderate" });
 assert.strictEqual(strong.duration_years, DURATION_STRONG, "strong franchise → duration = CAP_STRONG (20)");
 assert.strictEqual(moderate.duration_years, DURATION_MODERATE, "sub-2.0-ratio franchise → duration = CAP_MODERATE (10)");
 assert.ok((strong.duration_years ?? 0) > (moderate.duration_years ?? 0), "strong franchise → longer duration");
@@ -88,7 +89,7 @@ const lowReturn: ValuationFloorYear[] = [
   { fiscal_year: 2022, revenue: 14_000, operating_income: 2_020, capex: 3_500, d_and_a: 850, working_capital: 2_400 },
   { fiscal_year: 2021, revenue: 12_000, operating_income: 2_010, capex: 3_000, d_and_a: 800, working_capital: 2_200 },
 ];
-const lr = computeGrowthValue({ years: lowReturn, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40 });
+const lr = computeGrowthValue({ years: lowReturn, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "strong" });
 assert.strictEqual(lr.scenarios.neutral, 0, "ROIIC ≤ WACC → neutral GV = 0");
 
 // Degradation: no operating income (bank-like) → not assessable, GV 0, no crash.
@@ -96,12 +97,12 @@ const noOpInc: ValuationFloorYear[] = [
   { fiscal_year: 2025, net_income: 3_000, capex: 1_000, d_and_a: 800 },
   { fiscal_year: 2024, net_income: 2_800, capex: 900, d_and_a: 750 },
 ];
-const noi = computeGrowthValue({ years: noOpInc, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40 });
+const noi = computeGrowthValue({ years: noOpInc, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "moderate" });
 assert.strictEqual(noi.assessable, false, "no operating income → GV not assessable");
 assert.strictEqual(noi.scenarios.neutral, 0, "not assessable → GV 0");
 
 // Empty / too-short window → not assessable, no crash.
-const empty = computeGrowthValue({ years: [], shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40 });
+const empty = computeGrowthValue({ years: [], shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "moderate" });
 assert.strictEqual(empty.assessable, false, "empty years → not assessable, no crash");
 assert.strictEqual(empty.scenarios.neutral, 0, "empty years → GV 0");
 
@@ -109,7 +110,7 @@ assert.strictEqual(empty.scenarios.neutral, 0, "empty years → GV 0");
 const oneYear: ValuationFloorYear[] = [
   { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000 },
 ];
-const single = computeGrowthValue({ years: oneYear, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40 });
+const single = computeGrowthValue({ years: oneYear, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "moderate" });
 assert.strictEqual(single.assessable, false, "single year → not assessable, no crash");
 assert.strictEqual(single.scenarios.neutral, 0, "single year → GV 0");
 
@@ -146,7 +147,7 @@ const maintDivergent: ValuationFloorYear[] = [
   const expectedAnnual = maintBased / n;
   const md = computeGrowthValue({
     years: maintDivergent, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
-    epvPerShare: 80, avPerShare: 40,
+    epvPerShare: 80, avPerShare: 40, moatGrade: "moderate",
   });
   assert.ok(md.assessable && !md.gated_to_zero, "maint-divergent franchise is assessable");
   assert.ok(
@@ -164,7 +165,11 @@ const maintDivergent: ValuationFloorYear[] = [
   );
 }
 
-// ── Phase 2 Task 3: duration → moat-CAP (task-3-controller-notes.md §G) ─────────────────
+// ── Phase 2 Task 3 / BUG2-fix: duration → moat-CAP (single source of truth) ─────────────────
+// growthValue no longer computes grade itself (declined/roicStable/deriveMoatCap moved to
+// epvFloor.computeValuationFloor → floor.moat_cap, shared with the owner-earnings DCF leg —
+// see epvFloor.check.ts's BUG2 regression test for the cross-leg-agreement assertion). Here we
+// only verify growthValue correctly TRANSLATES a given moatGrade into duration/pessimistic-freeze.
 
 // §G.1 Pessimistic scenario is FROZEN: it must reproduce the pre-Phase-2 ratio-only
 // selection (durShort = DURATION_STRONG_BASELINE(10) − DURATION_PESSIMISTIC_DELTA(2) = 8),
@@ -172,7 +177,7 @@ const maintDivergent: ValuationFloorYear[] = [
 {
   const strongGraded = computeGrowthValue({
     years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
-    epvPerShare: 100, avPerShare: 40, dualTestPassed: true,
+    epvPerShare: 100, avPerShare: 40, moatGrade: "strong",
   });
   assert.ok(strongGraded.roiic != null && strongGraded.annual_growth_reinvestment != null, "strongGraded assessable with roiic/annualReinvest disclosed");
   const durShort = DURATION_STRONG_BASELINE - DURATION_PESSIMISTIC_DELTA; // 8
@@ -184,71 +189,32 @@ const maintDivergent: ValuationFloorYear[] = [
     `pessimistic must equal the durShort=8 baseline gv (got ${strongGraded.scenarios.pessimistic}, want ${expectedPess})`,
   );
 
-  // Same fixture/ratio, but WITHOUT dual_test_passed → grade degrades to moderate (extendedDuration 10
+  // Same fixture/ratio, but moatGrade="moderate" instead of "strong" (extendedDuration 10
   // instead of 20). Pessimistic must be bit-for-bit identical regardless — it never reads grade at all.
   const moderateGraded = computeGrowthValue({
     years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
-    epvPerShare: 100, avPerShare: 40, // dualTestPassed omitted → grade=moderate
+    epvPerShare: 100, avPerShare: 40, moatGrade: "moderate",
   });
   assert.strictEqual(strongGraded.scenarios.pessimistic, moderateGraded.scenarios.pessimistic, "pessimistic scenario is identical across grades (frozen, decoupled from CAP)");
   assert.strictEqual(strongGraded.per_share.pessimistic, moderateGraded.per_share.pessimistic, "pessimistic per-share is identical across grades (frozen)");
 
   // §G.2 Only the ceiling moves: the strong-grade optimistic (extendedDuration=20) must exceed the
   // moderate-grade optimistic (extendedDuration=10, same as the pre-Phase-2 baseDuration for a ≥2.0 ratio).
-  assert.strictEqual(moderateGraded.duration_years, DURATION_MODERATE, "ungraded dual test → moderate duration (10)");
-  assert.strictEqual(strongGraded.duration_years, DURATION_STRONG, "graded strong → duration (20)");
+  assert.strictEqual(moderateGraded.duration_years, DURATION_MODERATE, "moatGrade=moderate → duration (10)");
+  assert.strictEqual(strongGraded.duration_years, DURATION_STRONG, "moatGrade=strong → duration (20)");
   assert.ok(strongGraded.scenarios.optimistic > moderateGraded.scenarios.optimistic, "strong-grade optimistic > moderate-grade optimistic (only the ceiling was raised)");
   assert.ok(strongGraded.scenarios.neutral > moderateGraded.scenarios.neutral, "strong-grade neutral > moderate-grade neutral (extended duration raises neutral too)");
 }
 
-// §G.3 declined (latest net_income < oldest) blocks the strong grade even with a ≥2.0 ratio +
-// dual test passed — the OE-DCF durability gate can't be bypassed through the GV leg.
-{
-  const growerDeclinedNI: ValuationFloorYear[] = growerFull.map((y) => ({ ...y }));
-  // Reverse the net_income series so the latest year is the lowest (declining earnings).
-  const niReversed = growerFull.map((y) => y.net_income).reverse();
-  growerDeclinedNI.forEach((y, i) => { y.net_income = niReversed[i]; });
-
-  const declinedGrade = computeGrowthValue({
-    years: growerDeclinedNI, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
-    epvPerShare: 100, avPerShare: 40, dualTestPassed: true,
-  });
-  assert.strictEqual(declinedGrade.duration_years, DURATION_MODERATE, "declined net income → grade downgraded to moderate (10), not strong (20)");
-  // Pessimistic is still frozen (ratio-only, unaffected by declined).
-  const declinedBaseline = computeGrowthValue({
-    years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
-    epvPerShare: 100, avPerShare: 40, dualTestPassed: true,
-  });
-  assert.strictEqual(declinedGrade.scenarios.pessimistic, declinedBaseline.scenarios.pessimistic, "declined → pessimistic still frozen (identical to non-declined fixture)");
-}
-
-// §G.4 Unstable ROIC (fewer than 2/3 of window years clear the discount rate) also blocks the
-// strong grade even with a ≥2.0 ratio + dual test passed + no earnings decline.
-{
-  const growerUnstableRoic: ValuationFloorYear[] = growerFull.map((y) => ({ ...y }));
-  // Blow up equity in 2 of 5 years so ROIC (nopat/equity) drops well below the 10% discount rate,
-  // leaving only 3/5 years above threshold (< 2/3).
-  const idx2024 = growerUnstableRoic.findIndex((y) => y.fiscal_year === 2024);
-  const idx2022 = growerUnstableRoic.findIndex((y) => y.fiscal_year === 2022);
-  growerUnstableRoic[idx2024].shareholders_equity = 100_000; // nopat 3160 / 100000 = 3.16% < 10%
-  growerUnstableRoic[idx2022].shareholders_equity = 100_000; // nopat 2054 / 100000 = 2.05% < 10%
-
-  const unstableGrade = computeGrowthValue({
-    years: growerUnstableRoic, shares: 1_000, taxRate: 0.21, moatSignal: "franchise",
-    epvPerShare: 100, avPerShare: 40, dualTestPassed: true,
-  });
-  assert.strictEqual(unstableGrade.duration_years, DURATION_MODERATE, "unstable ROIC (< 2/3 years above discount rate) → grade downgraded to moderate (10)");
-}
-
-// §G.5 Non-franchise still gates to zero regardless of the new grade-related args (dualTestPassed
-// alone can't manufacture a growth value without a moat).
+// §G.5 Non-franchise still gates to zero regardless of moatGrade (a "strong" grade alone can't
+// manufacture a growth value without a moat signal — the franchise gate runs first).
 {
   const nonFranchiseGraded = computeGrowthValue({
     years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "commodity",
-    epvPerShare: 100, avPerShare: 40, dualTestPassed: true, highLeverage: false,
+    epvPerShare: 100, avPerShare: 40, moatGrade: "strong",
   });
-  assert.strictEqual(nonFranchiseGraded.gated_to_zero, true, "non-franchise still gated_to_zero even with dualTestPassed=true");
-  assert.strictEqual(nonFranchiseGraded.scenarios.neutral, 0, "non-franchise → neutral GV = 0 regardless of grade args");
+  assert.strictEqual(nonFranchiseGraded.gated_to_zero, true, "non-franchise still gated_to_zero even with moatGrade=strong");
+  assert.strictEqual(nonFranchiseGraded.scenarios.neutral, 0, "non-franchise → neutral GV = 0 regardless of moatGrade");
 }
 
 console.log("growthValue.check.ts: OK");
