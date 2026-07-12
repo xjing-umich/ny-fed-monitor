@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_share_compared: 10, dual_test_passed: true } as any; // ratio 3.0
@@ -176,5 +176,27 @@ const ic100 = () => 100;
   const ic = (y: ValuationFloorYear) => (y.fiscal_year === 2022 ? undefined : 100); // 跳过一年
   const r = roicTrend({ fyYears: years, investedCapitalOf: ic, nopatOf: (y) => np.get(y.fiscal_year) });
   assert(r === undefined || r === "stable", "roicTrend: 无效年跳过后仍不误报 declining"); }
+
+// ── sustainableGrowth(Task 1:g = ROIC × 净再投资率,基本面上限) ──────────────
+
+// G) 稳健:ROIC 20% × 净再投资率 40% → g ≈ 8%
+{ const years = [2020,2021,2022,2023].map((fy,i)=>({ fiscal_year: fy,
+    operating_income: 20, income_tax_expense: 0, capex: 12, d_and_a: 4, working_capital: 0,
+  })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years,
+    nopatOf: () => 20, investedCapitalOf: () => 100 });
+  assert(r != null && Math.abs(r - 0.20*((12-4)/20)) < 1e-6, "sustainableGrowth = ROIC×净再投资率 (0.20×0.40=0.08)"); }
+// H) NOPAT≤0 的年被有效性过滤;有效年 <SUSTAINABLE_MIN_YEARS → undefined
+{ const years = [2022,2023].map((fy)=>({ fiscal_year: fy, capex: 10, d_and_a: 3 })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => 100 });
+  assert(r === undefined, `<${SUSTAINABLE_MIN_YEARS} 有效年 → undefined`); }
+// I) 再投资率为负(D&A>capex,净收缩)→ clamp 到 0(不给负增长,交给 declined 处理)
+{ const years = [2020,2021,2022,2023].map((fy)=>({ fiscal_year: fy, capex: 2, d_and_a: 8, working_capital: 0 })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => 100 });
+  assert(r === 0, "净再投资率<0 → g clamp 到 0"); }
+// J) investedCapital 全 undefined(负权益)→ undefined
+{ const years = [2020,2021,2022,2023].map((fy)=>({ fiscal_year: fy, capex: 12, d_and_a: 4 })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => undefined });
+  assert(r === undefined, "investedCapital 不可得 → undefined"); }
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

@@ -116,3 +116,43 @@ export function roicTrend(input: {
   if (!(olderMean > 0)) return "stable"; // 负/零基不做比值判定(非 franchise,交 roicStable/signal 兜)
   return mean(newer) < olderMean * (1 - ROIC_TREND_DROP) ? "declining" : "stable";
 }
+
+// ── 可持续增长率(Task 1:g_used 的基本面上限,Damodaran 增长内生化) ──────────────
+export const SUSTAINABLE_MIN_YEARS = 3;
+/**
+ * 可持续增长率 g = ROIC × 净再投资率(Damodaran 增长内生化)。用作 g_used 的基本面上限。
+ * ROIC = 成熟段 NOPAT/投入资本(复用有效性过滤:investedCapital 负/零权益→undefined;剔非有限);
+ * 净再投资率 = mean((capex − d_and_a + ΔWC) / NOPAT);ΔWC 缺失年按 0。负再投资率 clamp 到 0。
+ * 上限用途,偏低不偏高;有效年 <SUSTAINABLE_MIN_YEARS 或分母不成立 → undefined。
+ */
+export function sustainableGrowth(input: {
+  fyYears: ValuationFloorYear[];
+  nopatOf: (y: ValuationFloorYear) => number | undefined;
+  investedCapitalOf: (y: ValuationFloorYear) => number | undefined;
+}): number | undefined {
+  const { fyYears, nopatOf, investedCapitalOf } = input;
+  const sorted = [...fyYears].sort((a, b) => a.fiscal_year - b.fiscal_year); // 升序,供 ΔWC
+  const roics: number[] = [];
+  const reinvest: number[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const y = sorted[i];
+    const nopat = nopatOf(y);
+    const ic = investedCapitalOf(y);
+    if (nopat == null || ic == null || !(ic > 0) || !Number.isFinite(nopat)) continue;
+    const roic = nopat / ic;
+    if (!Number.isFinite(roic) || Math.abs(roic) > ROIC_SANITY) continue;
+    if (!(nopat > 0)) continue; // 净再投资率分母须正
+    roics.push(roic);
+    const capex = y.capex ?? 0;
+    const da = y.d_and_a ?? 0;
+    const prevWc = i > 0 ? sorted[i - 1].working_capital : undefined;
+    const dWc = y.working_capital != null && prevWc != null ? y.working_capital - prevWc : 0;
+    const rate = (capex - da + dWc) / nopat;
+    reinvest.push(Math.max(0, rate)); // 负再投资率(净收缩)→ 0
+  }
+  if (roics.length < SUSTAINABLE_MIN_YEARS) return undefined;
+  const meanRoic = roics.reduce((s, v) => s + v, 0) / roics.length;
+  const meanReinvest = reinvest.reduce((s, v) => s + v, 0) / reinvest.length;
+  const g = meanRoic * meanReinvest;
+  return Number.isFinite(g) ? Math.max(0, g) : undefined;
+}

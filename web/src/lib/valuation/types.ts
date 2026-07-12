@@ -111,6 +111,11 @@ export type ValuationFloor = {
    * (deriveOeDcf reads floor.moat_cap directly), so the two legs can no longer disagree on grade.
    */
   moat_cap: MoatCapAssessment;
+  /**
+   * 可持续增长率 g = ROIC × 净再投资率(Task 1,Damodaran 增长内生化)。用作 g_used 的基本面
+   * 上限(下游 Task 消费);不可评估(有效年不足/投入资本无效)→ undefined。
+   */
+  sustainable_growth?: number;
   provenance: ValuationFloorProvenance;
 };
 
