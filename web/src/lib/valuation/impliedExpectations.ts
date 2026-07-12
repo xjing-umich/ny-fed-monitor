@@ -62,13 +62,18 @@ export function deriveExpectations(input: SolveInput & {
   }
   const { g, bounded } = solveImpliedGrowth(input);
   const impliedCapYears = solveImpliedCap({ ...input, historicalGrowth });
+  // 越界时 g 被 clamp 到搜索边界(真实隐含增长在界外)——不能拿 clamp 值 classify:
+  // - above: 真实隐含 > IMPLIED_G_MAX(>30%/yr), 恒是「苛刻」(否则高历史增长股会被 classify(0.30,h) 误判 fair/modest, 与「高于30%」文字自相矛盾)。
+  // - below: 真实隐含 < IMPLIED_G_MIN(≤-10%/yr), 恒是「温和」(现价已很便宜, 市场要求极低)。
+  const tier: ExpectationsTier =
+    bounded === "above" ? "demanding" : bounded === "below" ? "modest" : classify(g, historicalGrowth);
   return {
     assessable: true,
     impliedGrowth: g,
     ...(bounded ? { impliedGrowthBounded: bounded } : {}),
     historicalGrowth,
     ...(impliedCapYears != null ? { impliedCapYears } : {}),
-    tier: classify(g, historicalGrowth),
+    tier,
   };
 }
 

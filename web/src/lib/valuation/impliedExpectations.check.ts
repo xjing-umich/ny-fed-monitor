@@ -50,6 +50,16 @@ const base = { oe0: 100, shares: 10, r: 0.09, gTerminal: 0.03 };
   assert(deriveExpectations({ ...base, price: 300, historicalGrowth: 0, suppressed: false }).assessable === false, "历史增长=0 → 不可评估");
 }
 
+// 5a) 越界 tier：向上恒 demanding(不能拿 clamp 到 0.30 的值 classify 成 fair/modest)、向下恒 modest
+{
+  const aboveHiH = deriveExpectations({ ...base, price: 1e9, historicalGrowth: 0.28, suppressed: false });
+  assert(aboveHiH.impliedGrowthBounded === "above" && aboveHiH.tier === "demanding", "bounded above + h=0.28 → demanding(非 fair)");
+  const aboveVeryHiH = deriveExpectations({ ...base, price: 1e9, historicalGrowth: 0.40, suppressed: false });
+  assert(aboveVeryHiH.impliedGrowthBounded === "above" && aboveVeryHiH.tier === "demanding", "bounded above + h=0.40 → demanding(非 modest)");
+  const below = deriveExpectations({ ...base, price: 0.01, historicalGrowth: 0.08, suppressed: false });
+  assert(below.impliedGrowthBounded === "below" && below.tier === "modest", "bounded below → modest");
+}
+
 // 5b) 次级量 impliedCapYears（solveImpliedCap 覆盖）
 {
   const h = 0.08;
