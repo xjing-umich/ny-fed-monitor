@@ -33,6 +33,7 @@ import {
   isFundamentalsStale,
   FUNDAMENTALS_MAX_AGE_MONTHS,
 } from "@/lib/valuation";
+import { deriveExpectations, historicalGrowthBaseRate } from "@/lib/valuation/impliedExpectations";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import { getLatestDgs10, persistDgs10 } from "@/lib/managers/treasuryRead";
 
@@ -162,6 +163,21 @@ async function main() {
         intentionallyUnvaluable.add(ticker);
         continue;
       }
+      // 反向 DCF 预期层:历史 base-rate 必须来自 FY-only 营收(floorInput.years),不得复用
+      // netIncomeCagr(那是前向引擎的驱动量,改它会动地基)。见 CAGR 准确性硬门。
+      const historicalGrowth = historicalGrowthBaseRate(floorInput.years);
+      const ei = oeDcf.assessable ? oeDcf.expectations_inputs : undefined;
+      const expectations = ei
+        ? deriveExpectations({
+            oe0: ei.oe0,
+            shares: ei.shares,
+            r: ei.r,
+            gTerminal: ei.gTerminal,
+            price: v.price,
+            historicalGrowth,
+            suppressed: !v.reliable,
+          })
+        : { assessable: false as const, reason: "no_oe_dcf" };
       rows.push({
         ticker,
         verdict_bucket: v.bucket,
@@ -174,7 +190,7 @@ async function main() {
         coverage: v.coverage,
         reliable: v.reliable,
         computed_at: computedAt,
-        payload: v,
+        payload: { ...v, expectations },
         updated_at: computedAt,
       });
       valued++;
