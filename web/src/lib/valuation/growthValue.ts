@@ -1,5 +1,5 @@
 import { maintenanceCapex } from "./maintenanceCapex";
-import { deriveMoatCap, roicStability, CAP_STRONG, CAP_MODERATE } from "./moatCap";
+import { deriveMoatCap, roicStability, CAP_STRONG, CAP_MODERATE, MOAT_STRONG_RATIO } from "./moatCap";
 import type { GrowthScenarioSet, GrowthValue, MoatReading, MoatSignal, ValuationFloorYear } from "./types";
 
 export const GV_WINDOW = 5;                  // years in the ROIIC window
@@ -12,7 +12,7 @@ export const DURATION_STRONG_BASELINE = 10;
 export const DURATION_MODERATE_BASELINE = 8;
 export const DURATION_PESSIMISTIC_DELTA = 2; // pessimistic scenario shortens duration by this many years
 export const ROIIC_SENSITIVITY = 0.25;       // ±25% band on ROIIC for the scenarios (heuristic, disclosed)
-export const MOAT_STRONG_MULTIPLE = 2.0;     // EPV/AV at/above this → strong franchise
+export const MOAT_STRONG_MULTIPLE = MOAT_STRONG_RATIO; // 单一来源=moatCap.MOAT_STRONG_RATIO，防两处 2.0 漂移
 // audit #3: 与 EPV/OE-DCF 提高的股权成本保持一致(各 +1%),增长溢价层不比基础便宜。
 export const GV_DISCOUNT_PESSIMISTIC = 0.11;
 export const GV_DISCOUNT_NEUTRAL = 0.10;

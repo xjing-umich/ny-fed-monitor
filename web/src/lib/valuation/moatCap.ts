@@ -3,7 +3,7 @@ import type { MoatReading, MoatCapAssessment, ValuationFloorYear } from "./types
 export const CAP_STRONG = 20;
 export const CAP_MODERATE = 10;
 export const CAP_NONE = 0;
-export const MOAT_STRONG_RATIO = 2.0; // 与 growthValue.MOAT_STRONG_MULTIPLE 对齐
+export const MOAT_STRONG_RATIO = 2.0; // EPV/AV 强档阈值·单一来源(growthValue.MOAT_STRONG_MULTIPLE 复用本值)
 
 export function deriveMoatCap(input: {
   moat: MoatReading;
