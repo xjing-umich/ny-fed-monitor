@@ -336,3 +336,15 @@ export type ExpectationsAssessment = {
   tier?: ExpectationsTier;
   reason?: string;                 // 不可评估时的原因（供注脚）
 };
+
+// ── Moat → competitive-advantage-period (CAP) mapping (Phase 2) ──────────────
+
+export type MoatGrade = "strong" | "moderate" | "none";
+
+export type MoatCapAssessment = {
+  grade: MoatGrade;
+  capYears: number;          // strong→CAP_STRONG / moderate→CAP_MODERATE / none→0
+  durablePassed: boolean;    // 耐久性闸是否通过（strong 必需）
+  basis: string;             // 一句话判据（披露用）
+  roicStable?: boolean;      // ROIC>资本成本稳定（可算时）
+};
