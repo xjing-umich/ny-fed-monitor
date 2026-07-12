@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend } from "./moatCap";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -156,6 +156,7 @@ function assembleFloor(
     return nd + y.shareholders_equity;
   };
   const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
+  const roicDeclining = roicTrend({ fyYears: years, investedCapitalOf, nopatOf }) === "declining";
   const epvAvRatio =
     moatReading.epv_per_share_compared != null &&
     moatReading.asset_per_share_compared != null &&
@@ -166,7 +167,7 @@ function assembleFloor(
     moat: moatReading,
     epvAvRatio,
     declined: durabilityDeclined(years),
-    suppressedFlags: highLeverage === true || aiCapexDistortion === true,
+    suppressedFlags: highLeverage === true || (aiCapexDistortion === true && roicDeclining),
     roicStable,
   });
 

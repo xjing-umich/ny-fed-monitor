@@ -477,4 +477,36 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   assert.deepStrictEqual(oeNormal.moatCap, gFloor.moat_cap, "BUG2 fix: OE-DCF's exposed moatCap IS floor.moat_cap, not a re-derived copy");
 }
 
+// ── Phase 2.5:capex 激增与护城河 CAP 解耦(回报型判据) ──────────────────────────
+{
+  // base:6 年高毛利 R&D franchise,capex 平(不翻倍),cash=0 → IC=equity,ROIC 稳定高。
+  const mk = (fy: number, oi: number, eq: number, capex: number): ValuationFloorYear => ({
+    fiscal_year: fy, revenue: oi / 0.4, operating_margin: 0.4, operating_income: oi, net_income: oi * 0.75,
+    effective_tax_rate: 0.15, shareholders_equity: eq, goodwill: 200, intangibles: 100, cash: 0, total_debt: 0,
+    net_debt: 0, shares_diluted: 1_000, rd_expense: oi * 0.25, d_and_a: 800, capex, ppe_net: 5_000, working_capital: 1_000,
+  });
+  // ROIC = 0.85*oi/eq;设成稳定 ~0.30。capex 平(1500 上下,无翻倍)。
+  const baseYears: ValuationFloorYear[] = [
+    mk(2025, 3_600, 10_200, 1_500), mk(2024, 3_200, 9_100, 1_450), mk(2023, 2_850, 8_100, 1_400),
+    mk(2022, 2_550, 7_200, 1_350), mk(2021, 2_250, 6_400, 1_300), mk(2020, 2_000, 5_700, 1_250),
+  ];
+  const fBase = floorOf(computeValuationFloor({ ticker: "DEC_BASE", years: baseYears }));
+  assert.strictEqual(fBase.moat_reading.signal, "franchise", "解耦-base:读 franchise");
+  assert.notStrictEqual(fBase.ai_capex_distortion_warning, true, "解耦-base:capex 平,未触发 ai_capex");
+  // base 必须 strong-eligible,解耦测试才有意义。若这里读 moderate(epvAvRatio<2),上调 operating_margin
+  // 或下调 goodwill+intangibles 直到 franchise+strong(与现有 epvFloor 夹具同款人工校准)。
+  assert.strictEqual(fBase.moat_cap.grade, "strong", "解耦-base:稳定高 ROIC franchise → strong/20");
+
+  // surge:仅最新 2 年 capex ×3(4500/1400≈3.2 ≥2)触发 ai_capex;equity/op_income 不变 → ROIC 与 base 逐位同。
+  const surgeYears = baseYears.map((y) =>
+    y.fiscal_year >= 2024 ? { ...y, capex: 4_500 } : y);
+  const fSurge = floorOf(computeValuationFloor({ ticker: "DEC_SURGE", years: surgeYears }));
+  assert.strictEqual(fSurge.ai_capex_distortion_warning, true, "解耦-surge:capex 翻倍 → ai_capex 触发(reliable 输入不变)");
+  assert.strictEqual(fSurge.moat_cap.grade, "strong", "★解耦:ROIC 稳定时 capex 激增不再降护城河(仍 strong,非 moderate)");
+  assert.strictEqual(fSurge.growth_value.gated_to_zero, true, "解耦-surge:GV 归零路径未动(仍 gated)");
+
+  // 地基不变:surge 只该抬中性/乐观上沿,valueFloor(悲观资产底)与 base 逐位相同。
+  assert.strictEqual(fSurge.asset_floor.per_share, fBase.asset_floor.per_share, "地基:surge 不改 valueFloor(asset floor per share 不变)");
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");
