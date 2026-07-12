@@ -71,6 +71,23 @@ const base = { oe0: 100, shares: 10, r: 0.09, gTerminal: 0.03 };
   assert(hi.impliedCapYears != null && lo.impliedCapYears != null && hi.impliedCapYears >= lo.impliedCapYears, "price↑ → 隐含 CAP 年数不减");
 }
 
+// 5c) moat-CAP 接线（Phase 2 组合）：capYears 向后兼容 + 自洽(capYears↑ → 隐含 g↓)
+{
+  const base10 = solveImpliedGrowth({ ...base, price: 300 });
+  const baseExplicit10 = solveImpliedGrowth({ ...base, price: 300, capYears: 10 });
+  assert(
+    base10.g === baseExplicit10.g && base10.bounded === baseExplicit10.bounded,
+    "向后兼容：capYears 缺省 === capYears=10（显式）",
+  );
+
+  const price = dcfTier(base.oe0, 0.10, base.r, base.shares, base.gTerminal, 10).perShare;
+  const g10 = solveImpliedGrowth({ ...base, price, capYears: 10 }).g;
+  const g20 = solveImpliedGrowth({ ...base, price, capYears: 20 }).g;
+  assert(Math.abs(g10 - 0.10) < 1e-3, "capYears=10 反解回真值 g≈0.10");
+  assert(g20 < g10, "自洽：同价、投影更长(capYears↑) → 要求增长更低(隐含 g↓)");
+  console.log(`  g10=${g10.toFixed(4)} g20=${g20.toFixed(4)}`);
+}
+
 // 6) base-rate：干净 10%/年营收序列 → ≈0.10
 {
   const yrs = [2019, 2020, 2021, 2022, 2023, 2024].map((fy, i) => ({

@@ -167,12 +167,11 @@ async function main() {
       // netIncomeCagr(那是前向引擎的驱动量,改它会动地基)。见 CAGR 准确性硬门。
       const historicalGrowth = historicalGrowthBaseRate(floorInput.years);
       const ei = oeDcf.assessable ? oeDcf.expectations_inputs : undefined;
+      // ei.capYears（Task 2 已暴露，= deriveMoatCap(...).capYears，中性/乐观档同一 CAP）随
+      // spread 透传给 deriveExpectations → 优质股（capYears=20）隐含增长自动比基线(10)更低。
       const expectations = ei
         ? deriveExpectations({
-            oe0: ei.oe0,
-            shares: ei.shares,
-            r: ei.r,
-            gTerminal: ei.gTerminal,
+            ...ei,
             price: v.price,
             historicalGrowth,
             suppressed: !v.reliable,
@@ -190,7 +189,11 @@ async function main() {
         coverage: v.coverage,
         reliable: v.reliable,
         computed_at: computedAt,
-        payload: { ...v, expectations },
+        payload: {
+          ...v,
+          expectations,
+          ...(oeDcf.assessable && oeDcf.moatCap ? { moatCap: oeDcf.moatCap } : {}),
+        },
         updated_at: computedAt,
       });
       valued++;

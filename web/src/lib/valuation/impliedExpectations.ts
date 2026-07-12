@@ -7,12 +7,20 @@ export const DEMANDING_BUFFER = 0.25; // g* > h·(1+buffer) → 苛刻
 const SOLVE_ITERS = 60;               // 二分迭代（2^-60 收敛，远超需要）
 const CAP_MAX_YEARS = 40;             // 隐含 CAP 搜索上限
 
-type SolveInput = { oe0: number; shares: number; r: number; gTerminal: number; price: number };
+type SolveInput = {
+  oe0: number;
+  shares: number;
+  r: number;
+  gTerminal: number;
+  price: number;
+  /** moat-CAP（Phase 2）：显式投影年数。undefined → dcfTier 默认 PROJECTION_YEARS（向后兼容）。 */
+  capYears?: number;
+};
 
 /** 反解隐含增长 g*：dcfTier(...).perShare 关于 g 单调递增 → 二分。越界返回边界+标记，不外插。 */
 export function solveImpliedGrowth(input: SolveInput): { g: number; bounded: "below" | "above" | null } {
-  const { oe0, shares, r, gTerminal, price } = input;
-  const val = (g: number) => dcfTier(oe0, g, r, shares, gTerminal).perShare;
+  const { oe0, shares, r, gTerminal, price, capYears } = input;
+  const val = (g: number) => dcfTier(oe0, g, r, shares, gTerminal, capYears).perShare;
   if (price <= val(IMPLIED_G_MIN)) return { g: IMPLIED_G_MIN, bounded: "below" };
   if (price >= val(IMPLIED_G_MAX)) return { g: IMPLIED_G_MAX, bounded: "above" };
   let lo = IMPLIED_G_MIN, hi = IMPLIED_G_MAX;

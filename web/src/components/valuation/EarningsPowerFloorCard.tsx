@@ -2,7 +2,7 @@ import type { Lang } from "@/lib/nav";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
 import { deriveValuationVerdict } from "@/lib/valuation";
 import { isNetNetAssetFloor, isNetNetBuy } from "@/lib/valuation/netNet";
-import type { OeDcfAssessment, MethodReconciliation } from "@/lib/valuation/types";
+import type { OeDcfAssessment, MethodReconciliation, MoatCapAssessment } from "@/lib/valuation/types";
 import { fmtValueBand } from "@/lib/format";
 
 // USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
@@ -202,6 +202,21 @@ function growthSummary(floor: ValuationFloor, lang: Lang): string {
   return `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (neutral ${perShare(gv.per_share.neutral)}). Conservative, not a forecast.`;
 }
 
+// moat → 竞争优势期（CAP，Phase 2）披露：仅 grade!=="none" 渲染。文案在组件内按 locale 构建
+// ——禁用 moatCap.basis（那是中文单语判据串，直接塞进 en 会串味）。无买卖/目标价。
+function capDisclosure(moatCap: MoatCapAssessment | undefined, lang: Lang): string | null {
+  if (!moatCap || moatCap.grade === "none") return null;
+  const y = moatCap.capYears;
+  if (moatCap.grade === "strong") {
+    return lang === "zh"
+      ? `假设宽护城河 · 竞争优势期约 ${y} 年（盈利未衰退、ROIC 历史稳定）。`
+      : `Assumes a wide moat · competitive-advantage period ≈ ${y} years (earnings intact, ROIC stable over history).`;
+  }
+  return lang === "zh"
+    ? `假设一般护城河 · 竞争优势期约 ${y} 年。`
+    : `Assumes a narrow moat · competitive-advantage period ≈ ${y} years.`;
+}
+
 // Where the price sits relative to the combined value range — three plain buckets.
 // (bucket derivation lives in the shared deriveValuationVerdict pure fn — single source of truth.)
 type Bucket = "below" | "within" | "above";
@@ -371,6 +386,7 @@ function MethodDetails({
   const netNetAssetFloor = sz?.price ? isNetNetAssetFloor(floor.net_net, sz.price.close) : false;
   const netNetBuy = sz?.price ? isNetNetBuy(floor.net_net, sz.price.close) : false;
   const cautions = valuationCautions(oeDcf, reconciliation, lang, floor);
+  const capNote = oeDcf?.assessable ? capDisclosure(oeDcf.moatCap, lang) : null;
   return (
     <details className="text-xs text-[var(--tt-muted)]">
       <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">{t.methodSummary}</summary>
@@ -430,6 +446,7 @@ function MethodDetails({
           <p>{zh ? "资产地板：" : "Asset floor: "}{asset_floor.basis}</p>
         )}
         <p>{zh ? "护城河读数：" : "Moat reading: "}{moat_reading.basis_note}</p>
+        {capNote ? <p>{capNote}</p> : null}
         <p>{growthSummary(floor, lang)}</p>
         <p>
           {zh ? "窗口 FY " : "Window FY "}{provenance.years_used.join(", ")}{zh ? " · 贴现带 " : " · discount band "}{pct(provenance.discount_rate_band[0])}–

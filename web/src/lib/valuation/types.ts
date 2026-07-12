@@ -292,6 +292,8 @@ export type OeDcfAssessment = {
   terminal_method?: "gordon_capped" | "zero_growth"; // 中枢档终值口径
   /** 透传给反向 DCF 预期层反解用的中枢档中间量（oe0/shares/r/gTerminal）；仅 assessable=true 时存在。 */
   expectations_inputs?: { oe0: number; shares: number; r: number; gTerminal: number; capYears: number };
+  /** moat → 竞争优势期（CAP，Phase 2）；仅 assessable=true 时存在。 */
+  moatCap?: MoatCapAssessment;
   diagnostics?: {
     oe_yield?: number;             // (OE_0 / shares) / price
     oe_yield_vs_dgs10_bps?: number;

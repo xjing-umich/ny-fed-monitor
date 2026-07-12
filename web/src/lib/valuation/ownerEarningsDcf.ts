@@ -375,6 +375,7 @@ export function deriveOeDcf(
     terminal_growth: gTerminal,
     terminal_method: gTerminal > 0 ? "gordon_capped" : "zero_growth",
     expectations_inputs: { oe0, shares, r: discount.midpoint, gTerminal, capYears: neutralCap },
+    moatCap,
     diagnostics: {
       oe_yield: oeYield,
       oe_yield_vs_dgs10_bps: oeYieldBps,
