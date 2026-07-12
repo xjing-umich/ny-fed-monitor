@@ -23,6 +23,8 @@ export type EntityPageProps = {
   titleMeta?: string;
   subtitle: string;
   verdict?: { label: string; tone: Tone };
+  /** 可选：紧跟主 verdict 徽章之后并列渲染的第二枚徽章(如反向 DCF 隐含预期档位)。不替换主徽章。 */
+  verdictExtra?: { label: string; tone: Tone };
   keyFacts: KeyFact[];
   /** 顶部醒目提示(如数据陈旧告示), 紧跟标题之下渲染 */
   notice?: React.ReactNode;
@@ -49,6 +51,7 @@ export function EntityPage({
   titleMeta,
   subtitle,
   verdict,
+  verdictExtra,
   keyFacts,
   notice,
   topAction,
@@ -80,6 +83,7 @@ export function EntityPage({
             </span>
           )}
           {verdict && <VerdictChip label={verdict.label} tone={verdict.tone} />}
+          {verdictExtra && <VerdictChip label={verdictExtra.label} tone={verdictExtra.tone} />}
           {headerAction && <div className="ml-auto self-center">{headerAction}</div>}
         </div>
         <p className="max-w-3xl text-[15px] leading-relaxed text-[var(--tt-muted)]">
