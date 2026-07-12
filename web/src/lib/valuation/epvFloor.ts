@@ -137,6 +137,8 @@ function assembleFloor(
   const epvMid = moatRefLamp.assessable && moatRefLamp.per_share_low != null && moatRefLamp.per_share_high != null
     ? (moatRefLamp.per_share_low + moatRefLamp.per_share_high) / 2
     : undefined;
+  const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
+  const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
   const growthValue = computeGrowthValue({
     years,
     shares,
@@ -145,9 +147,9 @@ function assembleFloor(
     epvPerShare: epvMid,
     avPerShare: assetFloor.per_share,
     aiCapexDistortion,
+    dualTestPassed: moatReading.dual_test_passed,
+    highLeverage,
   });
-  const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
-  const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
   return {
     kind: "floor",
     graham_epv: grahamEpv,

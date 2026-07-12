@@ -1,10 +1,15 @@
 import { maintenanceCapex } from "./maintenanceCapex";
-import type { GrowthScenarioSet, GrowthValue, MoatSignal, ValuationFloorYear } from "./types";
+import { deriveMoatCap, roicStability, CAP_STRONG, CAP_MODERATE } from "./moatCap";
+import type { GrowthScenarioSet, GrowthValue, MoatReading, MoatSignal, ValuationFloorYear } from "./types";
 
 export const GV_WINDOW = 5;                  // years in the ROIIC window
 export const ROIIC_ENDPOINT_LAG = 2;         // exclude the last N years' not-yet-matured growth investment (audit fix #4)
-export const DURATION_STRONG = 10;           // strong franchise (EPV/AV ≥ MOAT_STRONG_MULTIPLE)
-export const DURATION_MODERATE = 8;          // moderate franchise
+// Phase 2: neutral/optimistic duration extends to the moat-CAP (same durability gate as OE-DCF, moatCap.ts).
+export const DURATION_STRONG = CAP_STRONG;   // strong franchise, durability-gated (grade-based; Phase 2)
+export const DURATION_MODERATE = CAP_MODERATE; // franchise but not durability-strong
+// Pessimistic-scenario baseline (Phase 2 前的旧值)：只给悲观档冻结用，别用于中性/乐观档。
+export const DURATION_STRONG_BASELINE = 10;
+export const DURATION_MODERATE_BASELINE = 8;
 export const DURATION_PESSIMISTIC_DELTA = 2; // pessimistic scenario shortens duration by this many years
 export const ROIIC_SENSITIVITY = 0.25;       // ±25% band on ROIIC for the scenarios (heuristic, disclosed)
 export const MOAT_STRONG_MULTIPLE = 2.0;     // EPV/AV at/above this → strong franchise
@@ -22,6 +27,10 @@ export type GrowthValueArgs = {
   avPerShare?: number;
   /** AI-hog scheme C: force GV gated_to_zero even when moat is franchise. */
   aiCapexDistortion?: boolean;
+  /** Dual asset-value franchise test (moat_reading.dual_test_passed) — required for the strong CAP grade. */
+  dualTestPassed?: boolean;
+  /** Net-debt/equity above the leverage-warn ratio — suppresses the strong CAP grade (same as OE-DCF). */
+  highLeverage?: boolean;
 };
 
 const ZERO: GrowthScenarioSet = { pessimistic: 0, neutral: 0, optimistic: 0 };
@@ -40,7 +49,7 @@ function annuityFactor(r: number, n: number): number {
  * maintenance is not assessable).
  */
 export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
-  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion } = args;
+  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion, dualTestPassed, highLeverage } = args;
   const notes: string[] = [];
   const waccBand: [number, number] = [GV_DISCOUNT_OPTIMISTIC, GV_DISCOUNT_PESSIMISTIC];
 
@@ -142,7 +151,35 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
 
   // Duration by franchise strength (EPV/AV).
   const ratio = epvPerShare != null && avPerShare != null && avPerShare > 0 ? epvPerShare / avPerShare : undefined;
-  const baseDuration = ratio != null && ratio >= MOAT_STRONG_MULTIPLE ? DURATION_STRONG : DURATION_MODERATE;
+
+  // ① Pessimistic scenario: FROZEN to the pre-Phase-2 ratio-only selection + baseline constants.
+  // This scenario feeds gwLow → deriveValuationVerdict's reconciliation.consistency → bucket, a
+  // 地基-locked read; it must reproduce today's value bit-for-bit (see task-3-controller-notes §0/§C①).
+  const baselineDuration = ratio != null && ratio >= MOAT_STRONG_MULTIPLE ? DURATION_STRONG_BASELINE : DURATION_MODERATE_BASELINE;
+  const durShort = Math.max(1, baselineDuration - DURATION_PESSIMISTIC_DELTA); // 8 (strong) / 6 (moderate), unchanged
+
+  // ② Neutral/optimistic scenarios: grade-based moat-CAP (same durability gate as OE-DCF, moatCap.ts) —
+  // a declined/unstable-ROIC franchise no longer earns the long duration through the GV leg alone.
+  const latestNI = window[0].net_income;
+  const oldestNI = window[window.length - 1].net_income;
+  const declined = latestNI != null && oldestNI != null && latestNI < oldestNI;
+
+  const nopatOf = (y: ValuationFloorYear): number | undefined =>
+    y.operating_income != null ? y.operating_income * (1 - taxRate) : undefined;
+  const investedCapitalOf = (y: ValuationFloorYear): number | undefined =>
+    y.shareholders_equity == null ? undefined : (y.net_debt ?? ((y.total_debt ?? 0) - (y.cash ?? 0))) + y.shareholders_equity;
+  const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: GV_DISCOUNT_NEUTRAL });
+
+  const grade = deriveMoatCap({
+    moat: { signal: moatSignal, dual_test_passed: dualTestPassed } as MoatReading,
+    epvAvRatio: ratio,
+    declined,
+    // aiCapexDistortion is always false/undefined here (the AI-hog gate above already returned
+    // gated_to_zero when true); kept for symmetry with OE-DCF's suppressedFlags formula.
+    suppressedFlags: !!aiCapexDistortion || highLeverage === true,
+    roicStable,
+  }).grade; // franchise already gated above → grade ∈ {strong, moderate}, never "none"
+  const extendedDuration = grade === "strong" ? DURATION_STRONG : DURATION_MODERATE; // 20 / 10
 
   // GV = annual growth reinvestment × (ROIIC − r)/r × annuityFactor(r, N). Floor at 0 per scenario.
   function gv(roiicScenario: number, r: number, n: number): number {
@@ -154,12 +191,11 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
 
   const roiicLow = roiic * (1 - ROIIC_SENSITIVITY);
   const roiicHigh = roiic * (1 + ROIIC_SENSITIVITY);
-  const durShort = Math.max(1, baseDuration - DURATION_PESSIMISTIC_DELTA);
 
   const scenarios: GrowthScenarioSet = {
     pessimistic: gv(roiicLow, GV_DISCOUNT_PESSIMISTIC, durShort),
-    neutral: gv(roiic, GV_DISCOUNT_NEUTRAL, baseDuration),
-    optimistic: gv(roiicHigh, GV_DISCOUNT_OPTIMISTIC, baseDuration),
+    neutral: gv(roiic, GV_DISCOUNT_NEUTRAL, extendedDuration),
+    optimistic: gv(roiicHigh, GV_DISCOUNT_OPTIMISTIC, extendedDuration),
   };
   const per_share: GrowthScenarioSet = {
     pessimistic: scenarios.pessimistic / shares,
@@ -178,7 +214,7 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
     roiic,
     wacc_band: waccBand,
     annual_growth_reinvestment: annualReinvest,
-    duration_years: baseDuration,
+    duration_years: extendedDuration,
     scenarios,
     per_share,
     notes,
