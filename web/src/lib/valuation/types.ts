@@ -105,6 +105,12 @@ export type ValuationFloor = {
    * Lifted from maintenanceCapex — drives reliability=false and GV gated_to_zero (scheme C).
    */
   ai_capex_distortion_warning?: boolean;
+  /**
+   * Moat → competitive-advantage-period (CAP，Phase 2 耐久性闸) — computed ONCE here (single
+   * source of truth) and read by both growth_value (via moatGrade) and the owner-earnings DCF
+   * (deriveOeDcf reads floor.moat_cap directly), so the two legs can no longer disagree on grade.
+   */
+  moat_cap: MoatCapAssessment;
   provenance: ValuationFloorProvenance;
 };
 
@@ -291,7 +297,9 @@ export type OeDcfAssessment = {
   terminal_growth?: number;   // 中枢/乐观档永续增长 g = min(dgs10, 3% GDP, g1)；悲观档恒 0
   terminal_method?: "gordon_capped" | "zero_growth"; // 中枢档终值口径
   /** 透传给反向 DCF 预期层反解用的中枢档中间量（oe0/shares/r/gTerminal）；仅 assessable=true 时存在。 */
-  expectations_inputs?: { oe0: number; shares: number; r: number; gTerminal: number };
+  expectations_inputs?: { oe0: number; shares: number; r: number; gTerminal: number; capYears: number };
+  /** moat → 竞争优势期（CAP，Phase 2）；仅 assessable=true 时存在。 */
+  moatCap?: MoatCapAssessment;
   diagnostics?: {
     oe_yield?: number;             // (OE_0 / shares) / price
     oe_yield_vs_dgs10_bps?: number;
@@ -335,4 +343,16 @@ export type ExpectationsAssessment = {
   impliedCapYears?: number;        // 次级：历史增长下撑住现价所需超额回报年数
   tier?: ExpectationsTier;
   reason?: string;                 // 不可评估时的原因（供注脚）
+};
+
+// ── Moat → competitive-advantage-period (CAP) mapping (Phase 2) ──────────────
+
+export type MoatGrade = "strong" | "moderate" | "none";
+
+export type MoatCapAssessment = {
+  grade: MoatGrade;
+  capYears: number;          // strong→CAP_STRONG / moderate→CAP_MODERATE / none→0
+  durablePassed: boolean;    // 耐久性闸是否通过（strong 必需）
+  basis: string;             // 一句话判据（披露用）
+  roicStable?: boolean;      // ROIC>资本成本稳定（可算时）
 };

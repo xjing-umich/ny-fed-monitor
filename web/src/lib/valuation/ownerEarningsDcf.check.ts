@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import type { ValuationFloor, ValuationFloorYear, LatestPrice } from "./types";
+import type { ValuationFloor, ValuationFloorYear, LatestPrice, MoatReading } from "./types";
 import {
   deriveOeDcf,
   pickLatestFredPoint,
@@ -9,7 +9,11 @@ import {
   FALLBACK_BAND,
   reconcileMethods,
   hModelValue,
+  dcfTier,
+  projectOe,
+  PROJECTION_YEARS,
 } from "./ownerEarningsDcf";
+import { CAP_STRONG, MOAT_STRONG_RATIO, deriveMoatCap } from "./moatCap";
 import type { OeDcfAssessment } from "./types";
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -305,6 +309,111 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   const r = deriveOeDcf(floorWith(lamp(1000, 100, [2022, 2023, 2024])), [yr(2024, 100), yr(2023, 100)], { value: 4, date: "d" }, null);
   assert.strictEqual(r.diagnostics!.quick_check_flag, false, "flat earnings not flagged");
   assert.ok(Math.abs(r.diagnostics!.quick_check_per_share! - 1000 / r.discount!.midpoint / 100) < 1e-9, "g1=0 baseline unchanged vs zero-growth");
+}
+
+// ── C1. moat-CAP 向后兼容：默认参数 = 原 10 年行为（同一 g 下逐位相等）──────────
+{
+  const a = dcfTier(100, 0.08, 0.09, 10, 0.03);
+  const b = dcfTier(100, 0.08, 0.09, 10, 0.03, 10);
+  assert.deepStrictEqual(a, b, "dcfTier default capYears === explicit 10");
+  assert.deepStrictEqual(projectOe(100, 0.08), projectOe(100, 0.08, 10), "projectOe default === explicit 10");
+}
+
+// ── C2. 抬上沿：capYears=20 的 perShare 严格大于 capYears=10（正增长 + 正终值增长）──
+{
+  const cap10 = dcfTier(100, 0.08, 0.09, 10, 0.03, 10).perShare;
+  const cap20 = dcfTier(100, 0.08, 0.09, 10, 0.03, 20).perShare;
+  assert.ok(cap20 > cap10, `cap20 (${cap20}) should exceed cap10 (${cap10})`);
+}
+
+// ── C3. 零增长 cap-不变（gTerminal=0：零增长资本化恒等式，与显式期长短无关）──────
+{
+  const cap10 = dcfTier(100, 0, 0.09, 10, 0, 10).perShare;
+  const cap20 = dcfTier(100, 0, 0.09, 10, 0, 20).perShare;
+  assert.ok(Math.abs(cap10 - cap20) < 1e-6, `zero-growth perShare must be cap-invariant, got ${cap10} vs ${cap20}`);
+}
+
+// ── C4. projectOe 形状：cap=20 长度20/前5年恒g1/其后线性fade到第20年g≈0；
+//       cap=10 与原 10 年三段式实现逐年相等（防回归） ─────────────────────────
+{
+  const p20 = projectOe(100, 0.1, 20);
+  assert.strictEqual(p20.length, 20, "capYears=20 → length 20");
+  for (let t = 1; t <= 5; t++) {
+    assert.ok(Math.abs(p20[t - 1] - 100 * Math.pow(1.1, t)) < 1e-6, `year ${t} constant g1`);
+  }
+  const lastRatio = p20[19] / p20[18];
+  assert.ok(Math.abs(lastRatio - 1) < 1e-9, `year 20 growth ≈ 0, ratio=${lastRatio}`);
+  const midRatio = p20[9] / p20[8];
+  assert.ok(midRatio > 1 && midRatio < 1.1, "mid-fade growth strictly between 0 and g1");
+
+  const p10 = projectOe(100, 0.1, 10);
+  const expected10: number[] = [];
+  let prev = 100;
+  for (let t = 1; t <= 5; t++) { prev *= 1.1; expected10.push(prev); }
+  for (let t = 6; t <= PROJECTION_YEARS; t++) { const g = (0.1 * (10 - t)) / 5; prev *= 1 + g; expected10.push(prev); }
+  for (let i = 0; i < 10; i++) {
+    assert.ok(Math.abs(p10[i] - expected10[i]) < 1e-9, `capYears=10 year ${i + 1} matches original three-stage impl`);
+  }
+}
+
+// ── C5. moat-CAP 接线：strong 护城河把 neutral/optimistic 抬到 20 年；
+//       悲观档 + reliable(quick-check 诊断) 逐位不变（基线锚定，头号硬门）──────
+// Post-BUG2-fix: deriveOeDcf reads floor.moat_cap directly (single source of truth, computed
+// once in epvFloor.computeValuationFloor) rather than recomputing grade from moat_reading/years
+// itself. These hand-built fixtures don't go through computeValuationFloor, so moat_cap is
+// derived here explicitly via deriveMoatCap — the same function epvFloor now calls once.
+{
+  const buffett = lamp(1000, 100, [2022, 2023, 2024]);
+  const yearsFull: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 121, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
+    { fiscal_year: 2023, net_income: 110, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
+    { fiscal_year: 2022, net_income: 100, operating_income: 300, shareholders_equity: 1000, total_debt: 0, cash: 0 },
+  ];
+  const dgs10 = { value: 4.25, date: "2026-06-19" };
+
+  const strongMoat: MoatReading = {
+    signal: "franchise",
+    label: "x",
+    basis_note: "x",
+    epv_per_share_compared: 200,
+    asset_per_share_compared: 200 / (MOAT_STRONG_RATIO * 2), // ratio = 2×MOAT_STRONG_RATIO, comfortably clears the strong gate
+    dual_test_passed: true,
+  };
+  const commodityMoat: MoatReading = { signal: "commodity", label: "x", basis_note: "x" };
+
+  const strongMoatCap = deriveMoatCap({
+    moat: strongMoat,
+    epvAvRatio: strongMoat.epv_per_share_compared! / strongMoat.asset_per_share_compared!,
+    declined: false, suppressedFlags: false, roicStable: true,
+  });
+  assert.strictEqual(strongMoatCap.grade, "strong", "fixture: strongMoat derives grade=strong");
+  const commodityMoatCap = deriveMoatCap({
+    moat: commodityMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined,
+  });
+  assert.strictEqual(commodityMoatCap.grade, "none", "fixture: commodityMoat derives grade=none");
+
+  const floorStrong = { kind: "floor", buffett_epv: buffett, moat_reading: strongMoat, high_leverage_warning: false, moat_cap: strongMoatCap } as unknown as ValuationFloor;
+  const floorCommodity = { kind: "floor", buffett_epv: buffett, moat_reading: commodityMoat, high_leverage_warning: false, moat_cap: commodityMoatCap } as unknown as ValuationFloor;
+
+  const rStrong = deriveOeDcf(floorStrong, yearsFull, dgs10, price(120));
+  const rCommodity = deriveOeDcf(floorCommodity, yearsFull, dgs10, price(120));
+
+  assert.ok(rStrong.assessable && rCommodity.assessable, "both assessable");
+  assert.strictEqual(rCommodity.expectations_inputs?.capYears, PROJECTION_YEARS, "non-franchise → baseline 10-year cap (value unchanged)");
+  assert.strictEqual(rStrong.expectations_inputs?.capYears, CAP_STRONG, "strong moat (ROIC stable) → CAP raised to 20 years");
+
+  // 只抬上沿：strong 的 neutral/optimistic 严格高于同输入下的 commodity 基线
+  assert.ok(rStrong.tiers!.neutral.per_share > rCommodity.tiers!.neutral.per_share, "strong neutral > baseline neutral");
+  assert.ok(rStrong.per_share_high! > rCommodity.per_share_high!, "strong optimistic > baseline optimistic");
+
+  // 悲观档逐位不变：CAP 完全不影响 pessimistic
+  assert.strictEqual(rStrong.per_share_low, rCommodity.per_share_low, "pessimistic per_share_low identical regardless of moat-CAP");
+  assert.deepStrictEqual(rStrong.tiers!.pessimistic, rCommodity.tiers!.pessimistic, "pessimistic tier object identical regardless of moat-CAP");
+
+  // reliable 逐位不变：quick-check 诊断锚定在基线 cap=10，与展示用 neutralCap（可能 20）完全解耦
+  assert.strictEqual(rStrong.diagnostics!.quick_check_per_share, rCommodity.diagnostics!.quick_check_per_share, "quick-check baseline identical (anchored to cap=10)");
+  assert.strictEqual(rStrong.diagnostics!.quick_check_deviation_pct, rCommodity.diagnostics!.quick_check_deviation_pct, "quick-check deviation identical");
+  assert.strictEqual(rStrong.diagnostics!.quick_check_flag, rCommodity.diagnostics!.quick_check_flag, "quick_check_flag identical → reliable unaffected by moat-CAP");
 }
 
 console.log("ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK");

@@ -3,6 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE } from "./moatCap";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -61,7 +62,7 @@ function selectEarningsYears(years: ValuationFloorYear[]): ValuationFloorYear[] 
 }
 
 /** Multi-year average effective tax rate, clamped to [0, statutory 21%]; flat 21% fallback when no rate data. */
-function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; basis: string } {
+export function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; basis: string } {
   const rates: number[] = [];
   for (const y of years) {
     let r = y.effective_tax_rate;
@@ -137,6 +138,38 @@ function assembleFloor(
   const epvMid = moatRefLamp.assessable && moatRefLamp.per_share_low != null && moatRefLamp.per_share_high != null
     ? (moatRefLamp.per_share_low + moatRefLamp.per_share_high) / 2
     : undefined;
+  const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
+  const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
+
+  // ── Moat → competitive-advantage-period (CAP，Phase 2 耐久性闸) — SINGLE SOURCE OF TRUTH ──
+  // Computed once here; growth_value (via moatGrade) and the owner-earnings DCF (reads
+  // floor.moat_cap directly) both consume this same reading, so the two legs can no longer
+  // diverge on grade (BUG2). NOPAT/investedCapital share the ROIC_HURDLE=10% hurdle (BUG1
+  // fix: investedCapitalOf returns undefined for negative/zero equity — a basis-invalid year,
+  // not a false-positive-stable one).
+  const roicTax = tax.rate;
+  const nopatOf = (y: ValuationFloorYear): number | undefined =>
+    y.operating_income != null ? y.operating_income * (1 - roicTax) : undefined;
+  const investedCapitalOf = (y: ValuationFloorYear): number | undefined => {
+    if (!(y.shareholders_equity != null && y.shareholders_equity > 0)) return undefined; // BUG1: 负/零权益→口径无效,跳过
+    const nd = y.net_debt ?? ((y.total_debt ?? 0) - (y.cash ?? 0));
+    return nd + y.shareholders_equity;
+  };
+  const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
+  const epvAvRatio =
+    moatReading.epv_per_share_compared != null &&
+    moatReading.asset_per_share_compared != null &&
+    moatReading.asset_per_share_compared > 0
+      ? moatReading.epv_per_share_compared / moatReading.asset_per_share_compared
+      : undefined;
+  const moatCap = deriveMoatCap({
+    moat: moatReading,
+    epvAvRatio,
+    declined: durabilityDeclined(years),
+    suppressedFlags: highLeverage === true || aiCapexDistortion === true,
+    roicStable,
+  });
+
   const growthValue = computeGrowthValue({
     years,
     shares,
@@ -145,9 +178,8 @@ function assembleFloor(
     epvPerShare: epvMid,
     avPerShare: assetFloor.per_share,
     aiCapexDistortion,
+    moatGrade: moatCap.grade,
   });
-  const netDebtToEquity = equity != null && equity > 0 ? netDebt / equity : undefined;
-  const highLeverage = netDebtToEquity != null && netDebtToEquity > LEVERAGE_WARN_RATIO;
   return {
     kind: "floor",
     graham_epv: grahamEpv,
@@ -167,6 +199,7 @@ function assembleFloor(
       : undefined,
     net_debt_to_equity: netDebtToEquity,
     ai_capex_distortion_warning: aiCapexDistortion || undefined,
+    moat_cap: moatCap,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

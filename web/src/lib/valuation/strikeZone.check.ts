@@ -27,6 +27,7 @@ function asset(o: Partial<AssetFloor>): AssetFloor {
 const MOAT: MoatReading = { signal: "not_assessable", label: "—", basis_note: "—" };
 const STUB_NET_NET: ValuationFloor["net_net"] = { assessable: false, reason: "test stub" };
 const STUB_GROWTH_VALUE: GrowthValue = { assessable: false, gated_to_zero: false, wacc_band: [0.08, 0.1], scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 }, notes: [] };
+const STUB_MOAT_CAP: ValuationFloor["moat_cap"] = { grade: "none", capYears: 0, durablePassed: false, basis: "test stub" };
 function makeFloor(o: { graham?: Partial<EpvLamp>; buffett?: Partial<EpvLamp>; asset?: Partial<AssetFloor>; growth?: Partial<GrowthValue> }): ValuationFloor {
   return {
     kind: "floor",
@@ -37,6 +38,7 @@ function makeFloor(o: { graham?: Partial<EpvLamp>; buffett?: Partial<EpvLamp>; a
     moat_reading: MOAT,
     growth_value: { ...STUB_GROWTH_VALUE, ...o.growth },
     high_leverage_warning: false,
+    moat_cap: STUB_MOAT_CAP,
     provenance: {
       years_used: [2023, 2024, 2025], discount_rate_band: [0.08, 0.1],
       normalized_tax_rate: 0.15, normalized_tax_rate_basis: "avg",
