@@ -44,10 +44,10 @@ Learn(眉标) · 读懂生意,而非代码(标题) · 一句话短导语     ←
 
 只增不改类型:
 
-1. **`BRAND` 常量**(双语),品牌块文案。提炼自 `/about` 的「我们的理念」,已按去 AI 味重写:
+1. **`BRAND` 常量**(双语),品牌块文案。提炼自 `/about` 的「我们的理念」,已对照权威文案准则 `web/docs/copy-voice.md` 自检:落到北极星句 *"make it readable, so the thinking is left to you"* 的声音;不与页眉标题「读懂生意,而非代码」字面重复;em-dash 仅作同位澄清(列举传统内容),非煽情:
 
-   - EN:*Compounder is built for people who read businesses, not tickers. We come out of the value-investing tradition: Graham's margin of safety, and Buffett's habit of buying good businesses at fair prices and holding them. The bet is simple — understanding a business is worth more than guessing where its price goes next. Everything here is for learning, not investment advice.*
-   - ZH:*Compounder 是给「读生意、不读代码」的人做的。我们出自价值投资这一脉:格雷厄姆的安全边际,巴菲特那种以合理价格买好生意、然后拿住的偏好。我们赌的很简单:把一门生意搞懂,比猜它价格下一步往哪走更值钱。这里的一切只供学习,不构成投资建议。*
+   - EN:*Compounder comes out of the value-investing tradition — Graham's margin of safety, Buffett's preference for good businesses at fair prices held for years. We pull superinvestors' 13F filings, valuation, and the macro backdrop into one place and keep it readable, so the judgment stays yours. Everything here is for learning, not investment advice.*
+   - ZH:*Compounder 出自价值投资这一脉:格雷厄姆的安全边际,巴菲特那种以合理价格买好生意、然后拿住多年的偏好。我们把超级投资者的 13F、估值和宏观背景归到一处、做得可读,判断留给你。这里的一切只供学习,不构成投资建议。*
 
 2. **`FEATURED_SLUG = "what-is-intrinsic-value"`** —— 手挑门面,一行可改。
 
@@ -59,7 +59,7 @@ Learn(眉标) · 读懂生意,而非代码(标题) · 一句话短导语     ←
 ## 页面渲染(`web/src/app/[lang]/learn/page.tsx`)
 
 - `COPY` 增本地文案键:品牌块的「关于 Compounder」链接文案、门面眉标「Start here / 从这里开始」、最新标签「Latest / 最新」。
-- 页眉导语(`COPY.intro`)**收短成一句纯定位**,理念交给品牌块,避免与品牌块重复。
+- 页眉导语(`COPY.intro`)**收短成一句纯定位**,理念交给品牌块,避免与品牌块重复(品牌块已承载 13F/估值/宏观 + 免责,页眉不再重复这些)。建议:EN *"Plain guides to reading businesses the way serious investors do."* / ZH *"像严肃投资者那样读懂生意的大白话指南。"*
 - 依次渲染:PageHeader → 品牌块 → 门面大卡 → 最新卡 → 全部指南列表。
 - 品牌块用 `--tt-*` 令牌,accent 左描边或细框,区别于纯列表;门面卡标题字号略大 + 眉标;最新卡挂 mono 小标签。全部走 `localePath` 生成链接。
 
@@ -81,4 +81,5 @@ Learn(眉标) · 读懂生意,而非代码(标题) · 一句话短导语     ←
 - `npx tsc --noEmit` 干净(本地 `next build` 因 Google Fonts 屏蔽会失败,不作门)。
 - 双语各自纯语言,无中英混排。
 - 品牌块、门面、最新、列表四区块层级清晰,去重正确。
-- 文案无 AI 味(无空洞对偶/三元排比/金句收尾/填充词),不构成投资建议。
+- 文案过 `web/docs/copy-voice.md` 6 条 checklist(无空洞对偶/三元排比/煽情 em-dash/SaaS 腔/对冲词),不构成投资建议。
+- 布局用 `--tt-*` 令牌 + PageHeader,不引入 shadcn Card,绿色克制(仅眉标/标签),符合前端设计语言。
