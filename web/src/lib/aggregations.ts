@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange } from "@/lib/managers/types";
-import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
+import { effectiveMovesPeriod, freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
 
 export type ScanRow = {
   slug: string;
@@ -35,10 +35,11 @@ export function excludeInactive(scan: ScanRow[]): ScanRow[] {
   return scan.filter((r) => freshness13F(r.period, gl) !== "inactive");
 }
 
-/** 只留全局最新季有申报者。季度变动(buys/sells/holderDeltas)口径(spec freshness-guard §C2)。 */
-export function currentQuarterOnly(scan: ScanRow[]): ScanRow[] {
-  const gl = globalLatestPeriod(scan.map((r) => r.period));
-  return scan.filter((r) => r.period === gl);
+/** 只留有效变动季有申报者。季度变动(buys/sells/holderDeltas)口径(spec freshness-guard §C2 + effective-moves-period)。 */
+export function currentQuarterOnly(scan: ScanRow[], today: Date = new Date()): ScanRow[] {
+  const { period } = effectiveMovesPeriod(scan.map((r) => r.period), today);
+  if (!period) return [];
+  return scan.filter((r) => r.period === period);
 }
 
 export function computeMostHeld(scan: ScanRow[], limit: number): HeldRow[] {
