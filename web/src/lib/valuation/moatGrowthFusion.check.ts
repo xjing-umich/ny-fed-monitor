@@ -43,12 +43,12 @@ function runChain(input: ValuationFloorInput, priceClose: number) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// ⚠️ 前置发现(验证过程中暴露,非本文件制造):ROIC_MOAT_MIN_YEARS=6(pathB 门槛)在真实
-// computeValuationFloor 全链路中永远不可达 —— epvFloor.TARGET_YEARS=5 把喂进 assembleFloor
-// 的 fyYears 硬截到 5 年(selectYears/selectEarningsYears 都 slice(0,5)),不论 ValuationFloorInput
-// 提供多少年历史。roicLongTermStrong 需要 ≥6 个有效 FY 年才可能返回 true,而 assembleFloor 内部
-// 永远只看得到 ≤5 年 —— 也就是说 Task 3 引入的 pathB 是死代码,GOOGL/META 若真升 strong,必然是
-// pathA(经营资产 EPV/AV 剔超额现金)在起作用,不可能是 pathB。下面用 8 年"完美"数据实证复现:
+// pathB(roicLongTermStrong)修复回归(Task 5b):此前 epvFloor.TARGET_YEARS=5 把喂进
+// assembleFloor 的 EPV lamp 年份(marginYears/earningsYears)硬截到 5 年,而 roicLongTermStrong
+// 需要 ROIC_MOAT_MIN_YEARS=6 个有效 FY 年 —— pathB 曾经是死代码。修复:computeValuationFloor
+// 现在把未截断的 input.years(完整可得历史)单独喂给 roicLongTermStrong,EPV 各 lamp 仍用
+// 5 年 marginYears/earningsYears(不动)。下面用 8 年"完美"数据验证:EPV 侧仍只用 5 年
+// (provenance.years_used 不变),但 pathB 现在真能让 moat 升 strong。
 // ════════════════════════════════════════════════════════════════════════════
 {
   const revs = [8_000, 8_800, 9_680, 10_648, 11_713, 12_884, 14_172, 15_590];
@@ -66,17 +66,17 @@ function runChain(input: ValuationFloorInput, priceClose: number) {
     });
   }).reverse(); // most-recent-first(与 fundamentalsToFloorInput 的真实排序一致;netIncomeCagr 假设此序)
   const floor = floorOf(computeValuationFloor({ ticker: "PATHB_TRAP", sic: 7370, years: perfectPathBYears }));
-  console.log(`[发现:pathB不可达] 供给 ${perfectPathBYears.length} 年,floor.provenance.years_used 只用 ${floor.provenance.years_used.length} 年;moat_cap.grade=${floor.moat_cap.grade}`);
+  console.log(`[pathB修复回归] 供给 ${perfectPathBYears.length} 年,floor.provenance.years_used 用 ${floor.provenance.years_used.length} 年(EPV lamp 仍 5 年不变);moat_cap.grade=${floor.moat_cap.grade}`);
   assert.strictEqual(
     floor.provenance.years_used.length, 5,
-    "★发现: TARGET_YEARS=5 把 assembleFloor 的 fyYears 截到 5 年(即使传入 8 年完美 ROIC 历史)",
+    "pathB修复不动 EPV lamp 口径: provenance.years_used(marginYears)仍是 TARGET_YEARS=5,不因 roicLongTermStrong 改喂完整历史而变化",
   );
-  assert.notStrictEqual(
+  assert.strictEqual(
     floor.moat_cap.grade, "strong",
-    "★发现(潜在 bug,非本文件引入): 即使 8 年 ROIC 恒定 25%+dual-AV franchise(pathB 的教科书场景),moat_cap.grade 仍不是 strong —— " +
-    "证明 roicLongTermStrong(需 ≥6 有效年)在真实全链路里永远拿不到 ≥6 年输入,pathB 是死代码。" +
-    "若未来把 TARGET_YEARS 提到 ≥6 或 pathB 改用未截断的年份来源,这条断言会先失败——提醒同步更新本用例与线上校验。",
+    "pathB修复生效: 8 年 ROIC 恒定 25%+dual-AV franchise(教科书 pathB 场景,原始 ratio<2 不足以走 pathA)现在应升 strong —— " +
+    "证明 roicLongTermStrong 现在吃的是完整 input.years(8年 ≥ ROIC_MOAT_MIN_YEARS=6),不再被 EPV 的 5 年窗口卡死。",
   );
+  assert.strictEqual(floor.moat_cap.durablePassed, true, "pathB修复: durablePassed=true(经 roicLongTermStrong 通过)");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
