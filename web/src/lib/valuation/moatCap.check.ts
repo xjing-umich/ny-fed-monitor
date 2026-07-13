@@ -199,4 +199,19 @@ const ic100 = () => 100;
   const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => undefined });
   assert(r === undefined, "investedCapital 不可得 → undefined"); }
 
+// ── pathA:经营资产 EPV/AV(剔超额现金)判 strong ──────────────────────────────
+
+// K) GOOGL-like:epvAvRatio(全资产)=1.42<2 但 epvAvRatioOperating(剔现金)=2.3≥2 → pathA 过
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 2.3,
+    declined:false, suppressedFlags:false, roicStable:true, roicLongTermStrong:false });
+  assert(r.grade==="strong", "经营资产 EPV/AV≥2 → pathA 放行 strong"); }
+// L) 两个比值都<2 且 ROIC 路径不过 → moderate
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 1.6,
+    declined:false, suppressedFlags:false, roicStable:true, roicLongTermStrong:false });
+  assert(r.grade==="moderate", "两比值<2 且无 ROIC 路径 → moderate"); }
+// M) 兼容回退:epvAvRatioOperating 缺失 → 用旧 epvAvRatio 判(与 Step 0 强档用例等价行为)
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0,
+    declined:false, suppressedFlags:false, roicStable:true });
+  assert(r.grade==="strong", "epvAvRatioOperating 缺失 → 回退 epvAvRatio,行为不变(AAPL 类不受影响)"); }
+
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

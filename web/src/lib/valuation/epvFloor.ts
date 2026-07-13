@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, OPERATING_CASH_PCT } from "./moatCap";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -164,9 +164,24 @@ function assembleFloor(
     moatReading.asset_per_share_compared > 0
       ? moatReading.epv_per_share_compared / moatReading.asset_per_share_compared
       : undefined;
+  // 经营资产 EPV/AV(剔除超额现金,pathA):千亿现金撑大资产重置价值分母、压低 EPV/AV 会把 GOOGL/META
+  // 这类真护城河股误判 moderate。excessCash = max(0, latest.cash − OPERATING_CASH_PCT×最新年营收)。
+  // 只服务 moat 判定,不改 asset_floor/reproduction 本身的展示。
+  const latestRevenue = years.find((y) => y.fiscal_year === Math.max(...years.map((y2) => y2.fiscal_year)))?.revenue;
+  const excessCashPerShare =
+    latest.cash != null && latestRevenue != null && shares > 0
+      ? Math.max(0, latest.cash - OPERATING_CASH_PCT * latestRevenue) / shares
+      : 0;
+  const assetOperating =
+    moatReading.asset_per_share_compared != null
+      ? moatReading.asset_per_share_compared - excessCashPerShare
+      : undefined;
+  const epvAvRatioOperating =
+    epvMid != null && assetOperating != null && assetOperating > 0 ? epvMid / assetOperating : undefined;
   const moatCap = deriveMoatCap({
     moat: moatReading,
     epvAvRatio,
+    epvAvRatioOperating,
     declined: durabilityDeclined(years),
     suppressedFlags: highLeverage === true || (aiCapexDistortion === true && roicDeclining),
     roicStable,

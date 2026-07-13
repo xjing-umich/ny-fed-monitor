@@ -6,23 +6,37 @@ export const CAP_NONE = 0;
 export const MOAT_STRONG_RATIO = 2.0; // EPV/AV 强档阈值·单一来源(growthValue.MOAT_STRONG_MULTIPLE 复用本值)
 export const ROIC_HURDLE = 0.10; // 两腿(growthValue/ownerEarningsDcf)共享的 ROIC 门槛·单一来源
 export const ROIC_SANITY = 3.0; // ROIC 上限 sanity：>300% 视口径失真(通常是负/近零投入资本口径错误)，剔除该年
+export const OPERATING_CASH_PCT = 0.02; // Damodaran 经营性现金占营收比例;超出部分视为「超额现金」,从资产分母剔除(pathA)
 
 export function deriveMoatCap(input: {
   moat: MoatReading;
   epvAvRatio: number | undefined;
+  /**
+   * 经营资产口径的 EPV/AV(剔除超额现金后的资产分母,Greenwald EPV 框架既有调整项)。传入时优先
+   * 于 epvAvRatio 用于 pathA 判定(千亿现金撑大资产重置价值、压低比率的 GOOGL/META 类误判解药);
+   * 缺失(cash/revenue 不可得)时回退旧 epvAvRatio，保证无数据时行为不变。
+   */
+  epvAvRatioOperating?: number;
   declined: boolean;
   suppressedFlags: boolean;
   roicStable: boolean | undefined;
+  /** ROIC 长期回报型久期判据(Task 3 填真值);本 Task 只接参数，默认当 false 用。 */
+  roicLongTermStrong?: boolean;
 }): MoatCapAssessment {
-  const { moat, epvAvRatio, declined, suppressedFlags, roicStable } = input;
-  if (moat.signal !== "franchise" || epvAvRatio == null || !Number.isFinite(epvAvRatio)) {
+  const { moat, epvAvRatio, epvAvRatioOperating, declined, suppressedFlags, roicStable, roicLongTermStrong } = input;
+  if (moat.signal !== "franchise" || (epvAvRatio == null && epvAvRatioOperating == null)) {
     return { grade: "none", capYears: CAP_NONE, durablePassed: false, basis: "无护城河信号，不延长竞争优势期。" };
   }
-  const strongRatio = epvAvRatio >= MOAT_STRONG_RATIO && moat.dual_test_passed === true;
-  const durablePassed = strongRatio && !declined && !suppressedFlags && roicStable === true;
+  const ratioForMoat = epvAvRatioOperating ?? epvAvRatio;
+  if (ratioForMoat == null || !Number.isFinite(ratioForMoat)) {
+    return { grade: "none", capYears: CAP_NONE, durablePassed: false, basis: "无护城河信号，不延长竞争优势期。" };
+  }
+  const strongRatio = ratioForMoat >= MOAT_STRONG_RATIO && moat.dual_test_passed === true;
+  const franchiseCore = moat.signal === "franchise" && !declined && !suppressedFlags && roicStable === true;
+  const durablePassed = franchiseCore && (strongRatio || roicLongTermStrong === true);
   if (durablePassed) {
     return { grade: "strong", capYears: CAP_STRONG, durablePassed: true, roicStable: true,
-      basis: `强护城河（EPV/AV ${epvAvRatio.toFixed(1)}×、双资产测试通过、ROIC 历史稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
+      basis: `强护城河（EPV/AV ${ratioForMoat.toFixed(1)}×、双资产测试通过、ROIC 历史稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
   }
   // franchise 但未达强档或耐久性未过 → 中档
   const reason = !strongRatio ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支/杠杆红旗" : "ROIC 稳定性不足";
