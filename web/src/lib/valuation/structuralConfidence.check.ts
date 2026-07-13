@@ -1,6 +1,16 @@
 import assert from "node:assert";
 import type { ValuationFloorYear } from "./types";
-import { logSlope, earningsTrendFittedLatest, revenueDrivenRatio, MIN_STRUCT_YEARS } from "./structuralConfidence";
+import {
+  logSlope,
+  earningsTrendFittedLatest,
+  revenueDrivenRatio,
+  validatedEarningsLevel,
+  untestedPeakCap,
+  DOWNTURN_DROP,
+  UNVALIDATED_JUMP_RATIO,
+  UNTESTED_S_CAP,
+  MIN_STRUCT_YEARS,
+} from "./structuralConfidence";
 
 function yr(fiscal_year: number, net_income: number): ValuationFloorYear {
   return { fiscal_year, net_income } as ValuationFloorYear;
@@ -56,3 +66,23 @@ function yrRev(fiscal_year: number, revenue: number, net_income: number): Valuat
   assert.ok(revenueDrivenRatio(years) > 0.95, "margin drag → revenue ~1");
 }
 console.log("Task2 revenueDrivenRatio: OK");
+
+// validatedEarningsLevel: NVDA 型(FY22 9.8 峰 → FY23 4.4 崩 55% → 爆发)→ 验证水平=9.8
+{
+  const years = [yr(2021, 4.3), yr(2022, 9.8), yr(2023, 4.4), yr(2024, 30), yr(2025, 73)];
+  assert.strictEqual(validatedEarningsLevel(years, DOWNTURN_DROP), 9.8, "validated = pre-crash peak 9.8");
+}
+// validatedEarningsLevel: 纯上行无下行 → undefined
+{
+  const years = [2020, 2021, 2022, 2023].map((y, i) => yr(y, 100 * Math.pow(1.15, i)));
+  assert.strictEqual(validatedEarningsLevel(years, DOWNTURN_DROP), undefined, "no downturn → undefined");
+}
+// untestedPeakCap: NVDA(target 120, validated 9.8)→ 120 > 3×9.8 → 封 0.5
+assert.strictEqual(untestedPeakCap({ target: 120, avg: 47, validatedLevel: 9.8 }), UNTESTED_S_CAP, "NVDA capped");
+// untestedPeakCap: GOOGL(target 132, validated 76)→ 132 < 3×76=228 → 不封 =1
+assert.strictEqual(untestedPeakCap({ target: 132, avg: 88, validatedLevel: 76 }), 1, "GOOGL uncapped");
+// untestedPeakCap: 平滑复利(target 112, avg 99, 无验证水平)→ 112 < 3×99 → 不封
+assert.strictEqual(untestedPeakCap({ target: 112, avg: 99, validatedLevel: undefined }), 1, "smooth uncapped");
+// untestedPeakCap: 无下行史但爆炸(target 300, avg 90)→ 300 > 3×90=270 → 封
+assert.strictEqual(untestedPeakCap({ target: 300, avg: 90, validatedLevel: undefined }), UNTESTED_S_CAP, "explosive no-history capped");
+console.log("Task3 untestedPeakCap: OK");
