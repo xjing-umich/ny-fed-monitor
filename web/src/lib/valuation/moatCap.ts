@@ -205,3 +205,46 @@ export function sustainableGrowth(input: {
   const g = meanRoic * meanReinvest;
   return Number.isFinite(g) ? Math.max(0, g) : undefined;
 }
+
+// ── 金融股识别 + SGR(Task 4:收紧假增长,金融股用可持续增长率封顶而非扁平 7% cap) ──────
+
+/** 银行(National/State Commercial Banks 等)SIC 区间。 */
+export const SIC_BANK_RANGE: [number, number] = [6020, 6099];
+/** 保险(Fire/Marine/Casualty、Life 等)SIC 区间。 */
+export const SIC_INSURANCE_RANGE: [number, number] = [6300, 6399];
+
+/** is_financial = sic∈[6020,6099]∪[6300,6399](银行+保险，Task 1 真数据校准，无歧义)。 */
+export function isFinancialSic(sic: number | null | undefined): boolean {
+  if (sic == null || !Number.isFinite(sic)) return false;
+  return (
+    (sic >= SIC_BANK_RANGE[0] && sic <= SIC_BANK_RANGE[1]) ||
+    (sic >= SIC_INSURANCE_RANGE[0] && sic <= SIC_INSURANCE_RANGE[1])
+  );
+}
+
+/**
+ * 金融股可持续增长率(SGR，Task 1/4 口径)：SGR = ROE × 留存率
+ *   ROE = net_income / shareholders_equity(逐 FY 年)
+ *   留存率 = 1 − ((dividends_paid ?? 0) + (share_repurchases ?? 0)) / net_income，clamp 到 [0,1]
+ * net_income ≤ 0 的年跳过(ROE/留存率口径均失效)；股东权益 ≤ 0 的年跳过。
+ * 逐年 SGR 取均值(近数年代表值)；无有效年 → undefined(不降级到 5%，交给调用方决定 fallback)。
+ */
+export function sustainableGrowthRateFinancial(fyYears: ValuationFloorYear[]): number | undefined {
+  const sgrs: number[] = [];
+  for (const y of fyYears) {
+    const ni = y.net_income;
+    const equity = y.shareholders_equity;
+    if (ni == null || !(ni > 0) || equity == null || !(equity > 0)) continue;
+    const roe = ni / equity;
+    const payout = (y.dividends_paid ?? 0) + (y.share_repurchases ?? 0);
+    const retention = clampUnit(1 - payout / ni);
+    const sgr = roe * retention;
+    if (Number.isFinite(sgr)) sgrs.push(sgr);
+  }
+  if (sgrs.length === 0) return undefined;
+  return sgrs.reduce((s, v) => s + v, 0) / sgrs.length;
+}
+
+function clampUnit(x: number): number {
+  return Math.min(1, Math.max(0, x));
+}

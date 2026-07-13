@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial } from "./moatCap";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -90,11 +90,12 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
 
   // Full path uses the margin-qualified year subset for BOTH lamps so years_used is consistent.
   const marginYears = selectYears(input.years);
-  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares);
-  return buildSingleLampFloor(earningsYears, shares);
+  const isFinancial = isFinancialSic(input.sic);
+  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial);
+  return buildSingleLampFloor(earningsYears, shares, isFinancial);
 }
 
-function buildFullFloor(years: ValuationFloorYear[], shares: number): ValuationFloor {
+function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
@@ -102,14 +103,14 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number): ValuationF
   const tax = normalizedTaxRate(years);
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined, isFinancial);
 }
 
-function buildSingleLampFloor(years: ValuationFloorYear[], shares: number): ValuationFloor {
+function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean): ValuationFloor {
   const yearsUsed = years.map((y) => y.fiscal_year);
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE, isFinancial);
 }
 
 // Shared scaffold: asset floor, moat (off the supplied reference lamp), leverage
@@ -122,6 +123,7 @@ function assembleFloor(
   buffettEpv: EpvLamp,
   moatRefLamp: EpvLamp,
   earningsBasisNote: string | undefined,
+  isFinancial: boolean,
 ): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
@@ -158,6 +160,9 @@ function assembleFloor(
   const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
   const roicDeclining = roicTrend({ fyYears: years, investedCapitalOf, nopatOf }) === "declining";
   const sustainableGrowthRate = sustainableGrowth({ fyYears: years, nopatOf, investedCapitalOf });
+  // 金融股(银行/保险,Task 4):非经营性口径(operating_income 不适用)→ 用 SGR = ROE × 留存率
+  // 封顶 g_used,取代对无护城河名字系统性放水的扁平 7% cap。sector 不可得 → is_financial=false(退 none 5%)。
+  const financialSgr = isFinancial ? sustainableGrowthRateFinancial(years) : undefined;
   // strong pathB(Task 3):ROIC 长期极高且稳 → 让经营资产 EPV/AV 也不够 2× 的 GOOGL/META 类仍可凭 ROIC 走 strong。
   const roicLongStrong = roicLongTermStrong({ fyYears: years, nopatOf, investedCapitalOf });
   const epvAvRatio =
@@ -221,6 +226,8 @@ function assembleFloor(
     ai_capex_distortion_warning: aiCapexDistortion || undefined,
     moat_cap: moatCap,
     sustainable_growth: sustainableGrowthRate,
+    is_financial: isFinancial,
+    financial_sgr: financialSgr,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

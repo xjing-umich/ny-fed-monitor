@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_INSURANCE_RANGE } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_share_compared: 10, dual_test_passed: true } as any; // ratio 3.0
@@ -243,5 +243,69 @@ const ic100 = () => 100;
 { const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 1.6,
     declined:true, suppressedFlags:false, roicStable:true, roicLongTermStrong:true });
   assert(r.grade==="moderate", "roicLongTermStrong=true 但 declined(franchiseCore假)→ 仍 moderate,不误放行"); }
+
+// ── isFinancialSic(Task 4:金融股识别,sic∈[6020,6099]∪[6300,6399]) ─────────────
+{ assert(isFinancialSic(6021)===true, "isFinancialSic: JPM SIC 6021(National Commercial Banks) → true"); }
+{ assert(isFinancialSic(6022)===true, "isFinancialSic: 6022(State Commercial Banks) → true"); }
+{ assert(isFinancialSic(6331)===true, "isFinancialSic: 6331(Fire/Marine/Casualty Insurance) → true"); }
+{ assert(isFinancialSic(SIC_BANK_RANGE[0])===true && isFinancialSic(SIC_BANK_RANGE[1])===true, "isFinancialSic: 银行区间端点 → true"); }
+{ assert(isFinancialSic(SIC_INSURANCE_RANGE[0])===true && isFinancialSic(SIC_INSURANCE_RANGE[1])===true, "isFinancialSic: 保险区间端点 → true"); }
+{ assert(isFinancialSic(3571)===false, "isFinancialSic: AAPL SIC 3571(Electronic Computers) → false"); }
+{ assert(isFinancialSic(7370)===false, "isFinancialSic: GOOGL SIC 7370(services) → false"); }
+{ assert(isFinancialSic(2911)===false, "isFinancialSic: CVX SIC 2911(石油) → false"); }
+{ assert(isFinancialSic(6100)===false, "isFinancialSic: 6100(区间外,银行区间上界之外) → false"); }
+{ assert(isFinancialSic(null)===false && isFinancialSic(undefined)===false, "isFinancialSic: sic 缺失 → false(不走 5% 兜底,即 non-financial)"); }
+
+// ── sustainableGrowthRateFinancial(Task 4:SGR = ROE × 留存率) ────────────────
+// JPM 型:net_income 100,shareholders_equity 1000(ROE 10%),dividends_paid 20 + share_repurchases 30
+// → payout 50,retention=1−50/100=0.5 → SGR = 0.10×0.5 = 0.05,单年即代表值。
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 20, share_repurchases: 30 },
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0.05) < 1e-9, `sustainableGrowthRateFinancial: 单年 ROE10%×留存50% → 0.05, got ${sgr}`); }
+
+// 多年取均值:年1 SGR=0.05(如上),年2 ROE 8%、无 payout(留存100%)→ SGR=0.08 → 均值 0.065
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 20, share_repurchases: 30 },
+    { fiscal_year: 2023, net_income: 80, shareholders_equity: 1000 },
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0.065) < 1e-9, `sustainableGrowthRateFinancial: 多年均值 (0.05+0.08)/2=0.065, got ${sgr}`); }
+
+// net_income ≤ 0 的年跳过(不计入均值,不让负年份污染 SGR)
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 20, share_repurchases: 30 }, // SGR 0.05
+    { fiscal_year: 2023, net_income: -50, shareholders_equity: 1000 }, // 跳过
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0.05) < 1e-9, `sustainableGrowthRateFinancial: net_income≤0 年跳过 → 只用有效年, got ${sgr}`); }
+
+// 单项 payout 缺失(如探针 BAC 缺 dividends_paid、HBAN 缺 share_repurchases)→ null→0 兜底,不整年跳过
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, share_repurchases: 30 }, // dividends_paid 缺 → 当 0
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  // payout=30, retention=1-30/100=0.7, SGR=0.10*0.7=0.07
+  assert(sgr !== undefined && Math.abs(sgr - 0.07) < 1e-9, `sustainableGrowthRateFinancial: 单项 payout 缺失 null→0 兜底, got ${sgr}`); }
+
+// 权益缺失/非正的年跳过(ROE 口径无效)
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: -50, dividends_paid: 0, share_repurchases: 0 },
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr === undefined, "sustainableGrowthRateFinancial: 权益非正的年跳过,无有效年 → undefined"); }
+
+// 无有效年(全跳过)→ undefined(不降级到 5%,交给调用方决定 fallback)
+{ const years: ValuationFloorYear[] = [{ fiscal_year: 2024, net_income: -10, shareholders_equity: 1000 }];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr === undefined, "sustainableGrowthRateFinancial: 无有效年 → undefined"); }
+
+// payout 超过 net_income(留存率 clamp 到 0,不产生负 SGR)
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 80, share_repurchases: 50 }, // payout 130 > 100
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0) < 1e-9, `sustainableGrowthRateFinancial: payout>net_income → retention clamp 0 → SGR 0, got ${sgr}`); }
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

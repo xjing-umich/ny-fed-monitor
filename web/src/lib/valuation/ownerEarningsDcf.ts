@@ -12,7 +12,8 @@ import type {
 import { historicalGrowthBaseRate } from "./growthBaseRate";
 
 export const GROWTH_CAP_FRANCHISE = 0.20; // 已验证 franchise(moat strong):Mauboussin 上沿,须 ROIC×再投资支撑
-export const GROWTH_CAP_BASE = 0.07;      // 非 franchise:贴近名义 GDP+小幅;主流不认无护城河的长期高增长
+export const GROWTH_CAP_MODERATE = 0.07;  // moderate(非 strong 但有 franchise 信号):贴近名义 GDP+小幅;原 GROWTH_CAP_BASE 改名,值不变
+export const GROWTH_CAP_NONE = 0.05;      // 非金融、无护城河(none):比 moderate 更收紧;主流不认无护城河的长期高增长
 // audit #3: 股权风险溢价从 2.5% 提到 4.5%(历史 ~4.5–5.5%),strict 端 10%→12%,
 // fallback 带 8–10%→9–11%。原 2.5% 溢价系统性低估贴现率 → 高估所有名字,对高风险名字最甚。
 export const R_STRICT = 0.12;
@@ -282,7 +283,19 @@ export function deriveOeDcf(
   // 证据驱动增长:历史营收 log 回归(抗端点)与基本面上限(ROIC×再投资)取小,再受 franchise 分档量级封顶。
   const gRaw = historicalGrowthBaseRate(years);                 // 全历史 FY 营收 log 回归
   const gFund = floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
-  const cap = floor.moat_cap?.grade === "strong" ? GROWTH_CAP_FRANCHISE : GROWTH_CAP_BASE;
+  // cap 四分档(Task 4,收紧假增长):strong franchise 20% > 金融股(银行/保险)SGR 封顶 > moderate 7% > 非金融无护城河 5%。
+  // 金融股走 SGR(ROE×留存率)而非扁平 7% —— 原扁平 cap 把无护城河的区域银行/保险统一抬高含增长估值。
+  const grade = floor.moat_cap?.grade;
+  const cap =
+    grade === "strong"
+      ? GROWTH_CAP_FRANCHISE
+      : floor.is_financial
+      ? floor.financial_sgr != null && floor.financial_sgr > 0
+        ? Math.min(floor.financial_sgr, GROWTH_CAP_MODERATE)
+        : GROWTH_CAP_NONE
+      : grade === "moderate"
+      ? GROWTH_CAP_MODERATE
+      : GROWTH_CAP_NONE;
   const cagrFallback = cagr != null && cagr > 0 ? cagr : undefined;
   const candidates = [gRaw, gFund, cagrFallback].filter(
     (n): n is number => n != null && Number.isFinite(n) && n >= 0,
