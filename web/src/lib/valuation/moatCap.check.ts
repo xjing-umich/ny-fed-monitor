@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_share_compared: 10, dual_test_passed: true } as any; // ratio 3.0
@@ -213,5 +213,35 @@ const ic100 = () => 100;
 { const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0,
     declined:false, suppressedFlags:false, roicStable:true });
   assert(r.grade==="strong", "epvAvRatioOperating 缺失 → 回退 epvAvRatio,行为不变(AAPL 类不受影响)"); }
+
+// ── roicLongTermStrong(Task 3:strong pathB,ROIC 长期极高且稳) ──────────────
+// ROIC_MOAT_MIN_YEARS=6(真数据校准:每票最多 6 个有效 FY 年,不是 plan 草稿的 8)
+
+// Q) 近8年 ROIC 均值 25% 波动小 → true(GOOGL/META 路径)
+{ const years = fyYears(8); const np = new Map(years.map(y=>[y.fiscal_year,25]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===true, "roicLongTermStrong: ROIC 均值25%>22% 且稳 → strong pathB"); }
+// R) ROIC 均值 15%<22% → false
+{ const years = fyYears(8); const np = new Map(years.map(y=>[y.fiscal_year,15]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===false, "roicLongTermStrong: ROIC 均值15%<门槛 → 不过"); }
+// S) 均值高但剧烈波动(CV 超阈)→ false(周期股)
+{ const years=fyYears(8); const vals=[50,5,45,8,40,6,48,4]; const np=new Map(years.map((y,i)=>[y.fiscal_year,vals[i]]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===false, "roicLongTermStrong: 均值高但 CV 超阈(周期股)→ 不过"); }
+// T) 有效年 <ROIC_MOAT_MIN_YEARS(6) → false
+{ const years=fyYears(5); const np=new Map(years.map(y=>[y.fiscal_year,25]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===false, `roicLongTermStrong: <${ROIC_MOAT_MIN_YEARS} 有效年 → false(不可评估不放行)`); }
+
+// ── strong pathB 接入 deriveMoatCap:两比值<2 但 roicLongTermStrong=true → strong ──
+// U) GOOGL/META 场景:pathA(比率)不过,pathB(ROIC 长期强)过 → strong
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 1.6,
+    declined:false, suppressedFlags:false, roicStable:true, roicLongTermStrong:true });
+  assert(r.grade==="strong", "两比值<2 但 roicLongTermStrong=true(pathB)→ strong"); }
+// V) pathB 过但 franchiseCore 假(declined)→ 仍不放行,moderate
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 1.6,
+    declined:true, suppressedFlags:false, roicStable:true, roicLongTermStrong:true });
+  assert(r.grade==="moderate", "roicLongTermStrong=true 但 declined(franchiseCore假)→ 仍 moderate,不误放行"); }
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

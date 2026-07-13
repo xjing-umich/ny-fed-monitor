@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, OPERATING_CASH_PCT } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT } from "./moatCap";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -158,6 +158,8 @@ function assembleFloor(
   const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
   const roicDeclining = roicTrend({ fyYears: years, investedCapitalOf, nopatOf }) === "declining";
   const sustainableGrowthRate = sustainableGrowth({ fyYears: years, nopatOf, investedCapitalOf });
+  // strong pathB(Task 3):ROIC 长期极高且稳 → 让经营资产 EPV/AV 也不够 2× 的 GOOGL/META 类仍可凭 ROIC 走 strong。
+  const roicLongStrong = roicLongTermStrong({ fyYears: years, nopatOf, investedCapitalOf });
   const epvAvRatio =
     moatReading.epv_per_share_compared != null &&
     moatReading.asset_per_share_compared != null &&
@@ -185,6 +187,7 @@ function assembleFloor(
     declined: durabilityDeclined(years),
     suppressedFlags: highLeverage === true || (aiCapexDistortion === true && roicDeclining),
     roicStable,
+    roicLongTermStrong: roicLongStrong,
   });
 
   const growthValue = computeGrowthValue({

@@ -39,6 +39,7 @@ export function deriveMoatCap(input: {
       basis: `强护城河（EPV/AV ${ratioForMoat.toFixed(1)}×、双资产测试通过、ROIC 历史稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
   }
   // franchise 但未达强档或耐久性未过 → 中档
+  // 注:!strongRatio 分支覆盖 pathA(比率)与 pathB(roicLongTermStrong)均未通过的情形，文案对两条路径都成立。
   const reason = !strongRatio ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支/杠杆红旗" : "ROIC 稳定性不足";
   return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
     ...(roicStable != null ? { roicStable } : {}),
@@ -129,6 +130,40 @@ export function roicTrend(input: {
   const olderMean = mean(older);
   if (!(olderMean > 0)) return "stable"; // 负/零基不做比值判定(非 franchise,交 roicStable/signal 兜)
   return mean(newer) < olderMean * (1 - ROIC_TREND_DROP) ? "declining" : "stable";
+}
+
+// ── ROIC 长期极高且稳(Task 3:strong pathB,Morningstar/Mauboussin 主判据) ─────
+export const ROIC_MOAT_MIN_YEARS = 6; // 真数据校准(mTask 1):getSecCompanyData 每票最多 6 个有效 FY 年，用 8 会让 GOOGL/META 永远进不了 pathB
+export const ROIC_MOAT_STRONG = 0.22;  // Task 1 真数据校准:GOOGL 25%/META 28.6% 过，F −4.7%/T 4.6% 拦
+export const ROIC_MOAT_CV = 0.35;      // 变异系数阈值:GOOGL CV0.17/META CV0.22 过，F CV7.60/T CV0.76(周期股)拦
+
+/**
+ * ROIC 长期回报型久期判据(Phase 3 strong pathB)：近 ROIC_MOAT_MIN_YEARS 个有效 FY 年 ROIC 均值
+ * ≥ ROIC_MOAT_STRONG 且变异系数(CV=std/|mean|) < ROIC_MOAT_CV → true。用于让 ROIC 长期极高且稳但
+ * 经营资产 EPV/AV 达不到 pathA 阈值的公司(GOOGL/META)仍可凭 ROIC 走 strong。有效性过滤复用
+ * roicStability 同款(investedCapital 负/零→跳过该年；ROIC_SANITY>300%→剔除失真年)。
+ * 有效年 <ROIC_MOAT_MIN_YEARS → false(不可评估不放行，保守)。
+ */
+export function roicLongTermStrong(input: {
+  fyYears: ValuationFloorYear[];
+  nopatOf: (y: ValuationFloorYear) => number | undefined;
+  investedCapitalOf: (y: ValuationFloorYear) => number | undefined;
+}): boolean {
+  const rs: number[] = [];
+  for (const y of input.fyYears) {
+    const nopat = input.nopatOf(y);
+    const ic = input.investedCapitalOf(y);
+    if (nopat == null || ic == null || !(ic > 0)) continue;
+    const roic = nopat / ic;
+    if (!Number.isFinite(roic) || Math.abs(roic) > ROIC_SANITY) continue;
+    rs.push(roic);
+  }
+  if (rs.length < ROIC_MOAT_MIN_YEARS) return false;
+  const mean = rs.reduce((s, v) => s + v, 0) / rs.length;
+  if (!(mean >= ROIC_MOAT_STRONG)) return false;
+  const sd = Math.sqrt(rs.reduce((s, v) => s + (v - mean) ** 2, 0) / rs.length);
+  const cv = mean !== 0 ? sd / Math.abs(mean) : Infinity;
+  return cv < ROIC_MOAT_CV;
 }
 
 // ── 可持续增长率(Task 1:g_used 的基本面上限,Damodaran 增长内生化) ──────────────
