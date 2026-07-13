@@ -34,3 +34,29 @@ export function earningsTrendFittedLatest(years: ValuationFloorYear[]): number |
   const v = Math.exp(fit.intercept + fit.slope * maxYear);
   return Number.isFinite(v) ? v : undefined;
 }
+
+function clamp01(x: number): number {
+  return Math.min(1, Math.max(0, x));
+}
+
+/**
+ * 收入驱动度 ∈[0,1]:盈利上行来自营收扩张(真需求,结构性)还是净利润率扩张(可能是周期定价峰值)。
+ * gRev=营收 log 斜率,gMar=净利润率(ni/rev)log 斜率;ratio=clamp01(gRev/(gRev+max(0,gMar)))。
+ * 利润率收缩(gMar<0,营收扛起增长)→ 分母=gRev → ratio=1。营收不增(gRev≤0)或点不足 → 0(保守)。
+ */
+export function revenueDrivenRatio(years: ValuationFloorYear[]): number {
+  const revPts = years
+    .filter((y) => y.revenue != null && (y.revenue as number) > 0)
+    .map((y) => ({ x: y.fiscal_year, y: Math.log(y.revenue as number) }));
+  const marPts = years
+    .filter((y) => y.revenue != null && (y.revenue as number) > 0 && y.net_income != null && (y.net_income as number) > 0)
+    .map((y) => ({ x: y.fiscal_year, y: Math.log((y.net_income as number) / (y.revenue as number)) }));
+  if (revPts.length < MIN_STRUCT_YEARS || marPts.length < MIN_STRUCT_YEARS) return 0;
+  const rev = logSlope(revPts);
+  const mar = logSlope(marPts);
+  if (!rev || !mar) return 0;
+  const gRev = rev.slope;
+  const gMar = mar.slope;
+  if (gRev <= 0) return 0;
+  return clamp01(gRev / (gRev + Math.max(0, gMar)));
+}
