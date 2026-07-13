@@ -92,8 +92,8 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
   const shareUrl = absoluteUrl(localePath(lang, `/investors/${shareSlug}`));
   const shareText = buildShareText(
     side === "buy"
-      ? { kind: "buys", topName: top?.issuer ?? null, count: top?.primary ?? null }
-      : { kind: "sells", topName: top?.issuer ?? null, count: top?.primary ?? null },
+      ? { kind: "buys", topName: top?.issuer ?? null, count: top?.primary ?? null, quarterLabel: qLabel }
+      : { kind: "sells", topName: top?.issuer ?? null, count: top?.primary ?? null, quarterLabel: qLabel },
     lang,
     heading,
   );
@@ -134,7 +134,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
             {movesFootnote(lang, effective, lagged)}
           </p>
         </div>
-        <AggregateBlurb text={movesBlurb(blurbRows, side, lang)} />
+        <AggregateBlurb text={movesBlurb(blurbRows, side, lang, qLabel)} />
         <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "位投资者" : "managers"} />
       </div>
     </>

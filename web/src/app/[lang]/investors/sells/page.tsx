@@ -11,8 +11,8 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const alternates = altFor(lang, "/investors/sells");
   return lang === "zh"
-    ? { title: "本季最多人卖 · 超级投资者 — Compounder · 复利", description: "本季被最多顶级投资者清仓或减仓的股票（13F）。", alternates }
-    : { title: "Top sells · Superinvestors — Compounder", description: "Stocks most superinvestors exited or trimmed this quarter (13F).", alternates };
+    ? { title: "最多人卖 · 超级投资者 — Compounder · 复利", description: "按最新可比 13F 申报季，被最多顶级投资者清仓或减仓的股票。", alternates }
+    : { title: "Top sells · Superinvestors — Compounder", description: "Stocks most superinvestors exited or trimmed in the latest comparable 13F quarter.", alternates };
 }
 
 export default async function SellsPage({ params }: { params: Promise<{ lang: string }> }) {
