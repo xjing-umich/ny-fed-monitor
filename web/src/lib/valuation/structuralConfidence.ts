@@ -68,6 +68,8 @@ export function validatedEarningsLevel(years: ValuationFloorYear[], downturnDrop
  * 未验证峰值顶:s 上限。ref = 已验证水平 ?? avg;当前拟合水平 target 若 > UNVALIDATED_JUMP_RATIO×ref
  * = 未验证爆炸峰值 → 封 UNTESTED_S_CAP;否则不封(=1)。
  * ★ GOOGL/NVDA 都高于各自验证水平,靠"跳升倍数"(GOOGL~1.7× vs NVDA~12×)才分得开——不是"是否高于"。
+ * 注:spec §5.2 曾列"温和抬幅豁免"(target≤1.3×avg 不封)为第二条子句;实现中省略,因跳升倍数判据
+ * 已包含它——平滑复利股 target 通常 ~1.1–1.3×avg,远不及 UNVALIDATED_JUMP_RATIO×ref,天然不封(校准 AAPL 坐实)。
  */
 export function untestedPeakCap(input: { target: number; avg: number; validatedLevel: number | undefined }): number {
   const ref = input.validatedLevel ?? input.avg;
