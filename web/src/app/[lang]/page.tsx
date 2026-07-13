@@ -6,6 +6,7 @@ import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { investorPath, localePath } from "@/lib/urls";
 import { altFor, ogFor } from "@/lib/seo";
+import { effectiveMovesPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import { DataStrip } from "@/components/common/DataStrip";
@@ -68,6 +69,10 @@ export default async function HomePage({
 
   const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
   const period = topManagers[0]?.period ?? "";
+  const movesEffective = effectiveMovesPeriod(
+    topManagers.map((m) => m.period),
+    new Date(),
+  );
 
   // Link the philosophy band's featured quote to Buffett's page if we track him.
   const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
@@ -104,7 +109,13 @@ export default async function HomePage({
     <div className="mx-auto max-w-5xl px-2 pb-16 pt-6 sm:pb-20 sm:pt-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <HeroMasthead lang={lang} period={period} moves={moves} investorCount={topManagers.length} />
+      <HeroMasthead
+        lang={lang}
+        period={period}
+        movesPeriod={movesEffective.period ?? ""}
+        moves={moves}
+        investorCount={topManagers.length}
+      />
 
       {/* Real-data stat bar — carries the 10Y macro signal + real-data proof (own top margin, no wrapper). */}
       <DataStrip lang={lang} consensusCount={heldCount} dgs10={dgs10} />
