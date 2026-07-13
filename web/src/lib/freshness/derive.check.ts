@@ -9,6 +9,9 @@ import {
   globalLatestPeriod,
   quarterLag,
   freshness13F,
+  effectiveMovesPeriod,
+  priorQuarterEnd,
+  MOVES_COVERAGE_MIN,
 } from "./derive";
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
@@ -79,4 +82,53 @@ assert.equal(freshness13F("2025-06-30", "2026-03-31"), "stale", "3季=stale");
 assert.equal(freshness13F("2025-03-31", "2026-03-31"), "inactive", "4季=inactive");
 assert.equal(freshness13F(null, "2026-03-31"), "inactive", "缺失按最严");
 
-console.log("derive.check.ts: all assertions passed ✓ (incl. freshness13F)");
+assert.equal(MOVES_COVERAGE_MIN, 0.5, "coverage min");
+assert.equal(priorQuarterEnd("2026-06-30"), "2026-03-31");
+assert.equal(priorQuarterEnd("2026-03-31"), "2025-12-31");
+assert.equal(priorQuarterEnd("2025-12-31"), "2025-09-30");
+assert.equal(priorQuarterEnd("2025-09-30"), "2025-06-30");
+
+// Production-like: 12 filed Q2, 64 on Q1; today 2026-07-12 → before Q2 deadline (06-30+45=08-14)
+{
+  const periods = [
+    ...Array(12).fill("2026-06-30"),
+    ...Array(64).fill("2026-03-31"),
+  ];
+  const r = effectiveMovesPeriod(periods, d("2026-07-12"));
+  assert.equal(r.period, "2026-03-31", "before deadline → prior");
+  assert.equal(r.reason, "before_deadline");
+  assert.equal(r.maxPeriod, "2026-06-30");
+  assert.equal(r.coverage.filed, 12);
+  assert.equal(r.coverage.total, 76);
+}
+
+// After deadline, still low coverage → low_coverage
+{
+  const periods = [
+    ...Array(20).fill("2026-06-30"),
+    ...Array(56).fill("2026-03-31"),
+  ];
+  const r = effectiveMovesPeriod(periods, d("2026-08-15")); // day after 08-14
+  assert.equal(r.period, "2026-03-31");
+  assert.equal(r.reason, "low_coverage");
+}
+
+// After deadline, ≥50% → due_and_covered
+{
+  const periods = [
+    ...Array(40).fill("2026-06-30"),
+    ...Array(36).fill("2026-03-31"),
+  ];
+  const r = effectiveMovesPeriod(periods, d("2026-08-15"));
+  assert.equal(r.period, "2026-06-30");
+  assert.equal(r.reason, "due_and_covered");
+}
+
+// Empty
+{
+  const r = effectiveMovesPeriod([], d("2026-07-12"));
+  assert.equal(r.period, null);
+  assert.equal(r.reason, "empty");
+}
+
+console.log("derive.check.ts: all assertions passed ✓ (incl. freshness13F, effectiveMovesPeriod)");

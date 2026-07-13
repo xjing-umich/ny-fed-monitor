@@ -97,6 +97,64 @@ export function globalLatestPeriod(periods: Array<string | null | undefined>): s
   return max;
 }
 
+export const MOVES_COVERAGE_MIN = 0.5;
+
+export type EffectiveMovesReason =
+  | "due_and_covered"
+  | "before_deadline"
+  | "low_coverage"
+  | "empty";
+
+export type EffectiveMovesPeriod = {
+  period: string | null;
+  reason: EffectiveMovesReason;
+  maxPeriod: string | null;
+  coverage: { filed: number; total: number };
+};
+
+/** Prior calendar quarter-end for a YYYY-MM-DD quarter-end string. Illegal → null. */
+export function priorQuarterEnd(period: string): string | null {
+  const p = parseUTC(period);
+  if (!p) return null;
+  const y = p.getUTCFullYear();
+  const m = p.getUTCMonth(); // 0-based: 2=Mar, 5=Jun, 8=Sep, 11=Dec
+  if (m === 2) return `${y - 1}-12-31`;
+  if (m === 5) return `${y}-03-31`;
+  if (m === 8) return `${y}-06-30`;
+  if (m === 11) return `${y}-09-30`;
+  return null;
+}
+
+/**
+ * Moves baseline quarter: do not follow early filers until SEC deadline passed
+ * AND coverage of maxPeriod among tracked periods ≥ MOVES_COVERAGE_MIN.
+ */
+export function effectiveMovesPeriod(
+  periods: Array<string | null | undefined>,
+  today: Date,
+): EffectiveMovesPeriod {
+  const valid = periods.filter((p): p is string => !!p && !!parseUTC(p));
+  const total = valid.length;
+  const maxPeriod = globalLatestPeriod(valid);
+  if (!maxPeriod || total === 0) {
+    return { period: null, reason: "empty", maxPeriod: null, coverage: { filed: 0, total: 0 } };
+  }
+  const filed = valid.filter((p) => p === maxPeriod).length;
+  const coverage = { filed, total };
+  const maxDate = parseUTC(maxPeriod)!;
+  const deadline = addDays(maxDate, FILING_DEADLINE_DAYS);
+  // Same strictness as mostRecentDueQuarter: due only when today is strictly after deadline day.
+  const due = utcDay(today) > utcDay(deadline);
+  const prior = priorQuarterEnd(maxPeriod);
+  if (!due) {
+    return { period: prior, reason: "before_deadline", maxPeriod, coverage };
+  }
+  if (filed / total < MOVES_COVERAGE_MIN) {
+    return { period: prior, reason: "low_coverage", maxPeriod, coverage };
+  }
+  return { period: maxPeriod, reason: "due_and_covered", maxPeriod, coverage };
+}
+
 /** period 落后 globalLatest 的季数(非负)。任一非法 → null。 */
 export function quarterLag(period: string | null, globalLatest: string | null): number | null {
   const p = parseUTC(period);
