@@ -11,8 +11,8 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const alternates = altFor(lang, "/investors/buys");
   return lang === "zh"
-    ? { title: "本季最多人买 · 超级投资者 — Compounder · 复利", description: "本季被最多顶级投资者新建仓或加仓的股票（13F）。", alternates }
-    : { title: "Top buys · Superinvestors — Compounder", description: "Stocks most superinvestors opened or added this quarter (13F).", alternates };
+    ? { title: "最多人买 · 超级投资者 — Compounder · 复利", description: "按最新可比 13F 申报季，被最多顶级投资者新建仓或加仓的股票。", alternates }
+    : { title: "Top buys · Superinvestors — Compounder", description: "Stocks most superinvestors opened or added in the latest comparable 13F quarter.", alternates };
 }
 
 export default async function BuysPage({ params }: { params: Promise<{ lang: string }> }) {

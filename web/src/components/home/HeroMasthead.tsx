@@ -16,13 +16,11 @@ const COPY = {
     headline: (n: number) => `${n} 位投资者，上季度刚上报的每一笔持仓。`,
     headlineNoCount: (q: string) => `${q}，超级投资者刚上报的每一笔持仓。`,
     headlineMuted: "逐笔对齐第一性原理估值。",
-    quarterTag: "本季",
     sub: (n: number) =>
       `聚合本站追踪的 ${n} 位超级投资者的 SEC 13F 季度持仓，按 CUSIP 逐票归并。数据来源 SEC EDGAR。`,
     subFallback:
       "聚合本站追踪的超级投资者 SEC 13F 季度持仓，按 CUSIP 逐票归并。数据来源 SEC EDGAR。",
     cta: "看个股估值",
-    panelTitle: "本季显著动向",
     bought: "最多人增持",
     sold: "最多人减持",
     asOf: (p: string) => `截至 ${p} · 来源 SEC 13F · 上报延迟 45 天`,
@@ -32,13 +30,11 @@ const COPY = {
     headline: (n: number) => `${n} investors. One quarter. Every position they just reported.`,
     headlineNoCount: (q: string) => `${q}. Every position the smart money just reported.`,
     headlineMuted: "Each holding checked against a first-principles valuation.",
-    quarterTag: "This quarter",
     sub: (n: number) =>
       `SEC 13F holdings from the ${n} superinvestors we track, aggregated by CUSIP. Source: SEC EDGAR.`,
     subFallback:
       "SEC 13F holdings from the superinvestors we track, aggregated by CUSIP. Source: SEC EDGAR.",
     cta: "See per-stock valuation",
-    panelTitle: "Notable moves this quarter",
     bought: "Most bought",
     sold: "Most sold",
     asOf: (p: string) => `As of ${p} · Source SEC 13F · 45-day reporting lag`,
@@ -82,15 +78,19 @@ function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
 export default function HeroMasthead({
   lang,
   period,
+  movesPeriod,
   moves,
   investorCount,
 }: {
   lang: Lang;
   period: string;
+  movesPeriod: string;
   moves: NotableMoves;
   investorCount?: number;
 }): React.ReactElement {
   const c = COPY[lang];
+  const q = quarterLabel(movesPeriod) || movesPeriod;
+  const panelTitle = lang === "zh" ? `${q} 显著动向` : `Notable moves · ${q}`;
   const headline =
     typeof investorCount === "number" && investorCount > 0
       ? c.headline(investorCount)
@@ -134,9 +134,9 @@ export default function HeroMasthead({
       {(moves.mostBought.length > 0 || moves.mostSold.length > 0) && (
         <aside className="md:pl-2">
           <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
-            <span className="text-sm font-medium text-[var(--tt-text)]">{c.panelTitle}</span>
+            <span className="text-sm font-medium text-[var(--tt-text)]">{panelTitle}</span>
             <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">
-              {c.quarterTag}
+              {q}
             </span>
           </div>
           {moves.mostBought.length > 0 && (

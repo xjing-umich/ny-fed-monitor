@@ -4,8 +4,8 @@ import type { Lang } from "@/lib/nav";
 export type ShareInput =
   | { kind: "investor"; managerName: string; topHolding: string | null; addedName: string | null }
   | { kind: "consensus"; topName: string | null; holderCount: number | null; managerCount: number }
-  | { kind: "buys"; topName: string | null; count: number | null }
-  | { kind: "sells"; topName: string | null; count: number | null };
+  | { kind: "buys"; topName: string | null; count: number | null; quarterLabel?: string }
+  | { kind: "sells"; topName: string | null; count: number | null; quarterLabel?: string };
 
 const VIA = "via @thecompounder";
 
@@ -35,15 +35,27 @@ export function buildShareText(input: ShareInput, lang: Lang, fallbackTitle: str
     }
     case "buys": {
       if (!input.topName || input.count == null) return fallback;
-      return lang === "zh"
-        ? `本季 ${input.topName} 获最多顶级投资者买入（${input.count} 位）。${VIA}`
-        : `${input.topName} drew the most buying from top investors this quarter (${input.count}). ${VIA}`;
+      const q = input.quarterLabel;
+      if (lang === "zh") {
+        return q
+          ? `${q} ${input.topName} 获最多顶级投资者买入（${input.count} 位）。${VIA}`
+          : `${input.topName} 获最多顶级投资者买入（${input.count} 位）。${VIA}`;
+      }
+      return q
+        ? `In ${q}, ${input.topName} drew the most buying from top investors (${input.count}). ${VIA}`
+        : `${input.topName} drew the most buying from top investors (${input.count}). ${VIA}`;
     }
     case "sells": {
       if (!input.topName || input.count == null) return fallback;
-      return lang === "zh"
-        ? `本季 ${input.topName} 遭最多顶级投资者减持（${input.count} 位）。${VIA}`
-        : `${input.topName} saw the most selling from top investors this quarter (${input.count}). ${VIA}`;
+      const q = input.quarterLabel;
+      if (lang === "zh") {
+        return q
+          ? `${q} ${input.topName} 遭最多顶级投资者减持（${input.count} 位）。${VIA}`
+          : `${input.topName} 遭最多顶级投资者减持（${input.count} 位）。${VIA}`;
+      }
+      return q
+        ? `In ${q}, ${input.topName} saw the most selling from top investors (${input.count}). ${VIA}`
+        : `${input.topName} saw the most selling from top investors (${input.count}). ${VIA}`;
     }
   }
 }

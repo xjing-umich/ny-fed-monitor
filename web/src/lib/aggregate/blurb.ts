@@ -24,7 +24,7 @@ export function consensusBlurb(rows: BlurbRow[], managerCount: number, lang: Lan
 }
 
 /** 买/卖页解读句。 */
-export function movesBlurb(rows: BlurbRow[], side: "buy" | "sell", lang: Lang): string | null {
+export function movesBlurb(rows: BlurbRow[], side: "buy" | "sell", lang: Lang, quarterLabel: string): string | null {
   if (rows.length === 0) return null;
   const [a, b, c] = rows;
   const sep = lang === "zh" ? "、" : " and ";
@@ -32,9 +32,9 @@ export function movesBlurb(rows: BlurbRow[], side: "buy" | "sell", lang: Lang): 
   if (lang === "zh") {
     const verb = side === "buy" ? "买入（新建仓或加仓）" : "卖出（清仓或减仓）";
     const tail = names ? `，其后是 ${names}` : "";
-    return `本季 ${subjectName(a)} 获最多投资者${verb}——${a.primary} 位${tail}。`;
+    return `${quarterLabel}，${subjectName(a)} 获最多投资者${verb}——${a.primary} 位${tail}。`;
   }
   const verb = side === "buy" ? "buying — opened or added" : "selling — sold or trimmed";
   const tail = names ? `, followed by ${names}` : "";
-  return `This quarter, ${subjectName(a)} drew the most ${verb} (${a.primary} superinvestors)${tail}.`;
+  return `In ${quarterLabel}, ${subjectName(a)} drew the most ${verb} (${a.primary} superinvestors)${tail}.`;
 }
