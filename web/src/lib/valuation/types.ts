@@ -111,6 +111,23 @@ export type ValuationFloor = {
    * (deriveOeDcf reads floor.moat_cap directly), so the two legs can no longer disagree on grade.
    */
   moat_cap: MoatCapAssessment;
+  /**
+   * 可持续增长率 g = ROIC × 净再投资率(Task 1,Damodaran 增长内生化)。用作 g_used 的基本面
+   * 上限(下游 Task 消费);不可评估(有效年不足/投入资本无效)→ undefined。
+   */
+  sustainable_growth?: number;
+  /**
+   * true when the issuer is a bank or insurer by SIC (Task 4: sic∈[6020,6099]∪[6300,6399]).
+   * Drives the g_used cap onto sustainable-growth-rate (SGR) instead of the flat franchise/
+   * moderate/none tiers — the flat 7% cap otherwise systematically overstates no-moat
+   * regional banks/insurers into the "cheap" bucket.
+   */
+  is_financial?: boolean;
+  /**
+   * Sustainable growth rate for financial issuers: SGR = ROE × (1 − payout/net_income)
+   * (Task 4, Task 1 data-verified口径). undefined when is_financial=false or no valid FY year.
+   */
+  financial_sgr?: number;
   provenance: ValuationFloorProvenance;
 };
 
@@ -211,6 +228,7 @@ export type ValuationFloorYear = {
   ppe_net?: number;
   operating_cash_flow?: number;
   share_repurchases?: number;
+  dividends_paid?: number;
   current_assets?: number;
   current_liabilities?: number;
   total_liabilities?: number;
@@ -221,6 +239,8 @@ export type ValuationFloorInput = {
   ticker: string;
   company_name?: string;
   years: ValuationFloorYear[]; // most-recent-first
+  /** SEC sic code (Task 4: is_financial = sic∈[6020,6099]∪[6300,6399]，银行+保险). */
+  sic?: number;
 };
 
 // ── Maintenance capex (spec §1.1) ────────────────────────────────────────────

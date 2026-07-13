@@ -88,6 +88,9 @@ const COPY = {
     highLeverageWarning: "High leverage — ranges are a degraded approximation (see method).",
     methodSummary: "Method & numbers",
     perSh: "/ sh",
+    ivHeadline: "growth-anchored intrinsic value",
+    zeroGrowthHeadline: "zero-growth intrinsic value",
+    lowConfidence: "This year's numbers read low-confidence, so this isn't a strike-zone trigger.",
     netNet: (ps: string) =>
       `⚑ Price is below net current asset value (${ps}/share) — a Graham "net-net". Historically rare and usually a sign of business distress; beware the value trap.`,
     netNetBuy: (ps: string) =>
@@ -128,8 +131,44 @@ const COPY = {
     netNetBuy: (ps: string) =>
       `⚑ 现价已跌至每股净流动资产的三分之二以下（${ps}）— 格雷厄姆经典买入线，安全边际充分。历史极罕见，常伴随经营困境，须警惕价值陷阱。`,
     buybackOffsetsSbc: "所示年度的回购大体只抵消了股权激励（SBC）造成的稀释 — 应视为维持股本、而非净额回馈股东。",
+    ivHeadline: "含增长中枢内在价值",
+    zeroGrowthHeadline: "零增长内在价值",
+    lowConfidence: "当年数字低信心，不触发击球区。",
   },
 } as const;
+
+// 假设明示行:头条 IV 的依据一次说清 —— 增长率来源(历史/基本面较小值·护城河封顶)、
+// 护城河年数、折现率、零增长下行(F)。无中枢 IV(单灯兜底)时只显零增长口径,不虚构增长假设。
+function assumptionsLine(
+  oeDcf: OeDcfAssessment | undefined,
+  rangeLo: number,
+  lang: Lang,
+  hasIv: boolean,
+): string {
+  const zh = lang === "zh";
+  const floorPart = zh ? `零增长下行 ${usd0(rangeLo)}` : `Zero-growth downside ${usd0(rangeLo)}`;
+  if (!hasIv || !oeDcf?.assessable) return floorPart;
+
+  const g1 = oeDcf.growth_g1;
+  const growthPart = oeDcf.declined
+    ? zh
+      ? "营收增 0%（历史下滑，封顶为零）"
+      : "Revenue growth 0% (history declining, capped at zero)"
+    : g1 != null
+      ? zh
+        ? `营收增 ${pct(g1)}（历史增长与基本面上限的较小值，受护城河封顶）`
+        : `Revenue growth ${pct(g1)} (lower of historical trend and fundamental cap, capped by moat)`
+      : null;
+  const moatPart =
+    oeDcf.moatCap?.capYears != null ? (zh ? `护城河 ${oeDcf.moatCap.capYears} 年` : `moat ${oeDcf.moatCap.capYears} yr`) : null;
+  const discountPart =
+    oeDcf.discount?.midpoint != null
+      ? zh
+        ? `折现 ${pct1(oeDcf.discount.midpoint)}`
+        : `discount ${pct1(oeDcf.discount.midpoint)}`
+      : null;
+  return [growthPart, moatPart, discountPart, floorPart].filter((p): p is string => !!p).join(" · ");
+}
 
 // Model-caution sentences — bilingual; renders the engine's already-computed
 // fragility flags in plain language. Observation of model sensitivity, never advice.
@@ -262,6 +301,15 @@ function ValueSpine({
   const bothMethods = !!conservative && !!epv.ceilings;
   const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
+  // Growth-anchored intrinsic value (headline number) — mirrors deriveValuationVerdict's own
+  // hasIv/IV derivation so the headline can never disagree with the bucket it's inside of.
+  // No IV (oeDcf not assessable / tiers missing) → single-lamp fallback, headline drops to the
+  // zero-growth floor F (today's number), same as the verdict's own fallback anchor.
+  const ivRaw = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
+  const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
+  const IV = hasIv ? (ivRaw as number) : undefined;
+  const headline = hasIv ? IV! : rangeLo;
+
   const bucket = verdict.bucket;
   const onMethods = bothMethods ? t.bothMethods : t.thisMethod;
 
@@ -281,13 +329,17 @@ function ValueSpine({
         : `${who}A conservative earnings-power estimate, ${valueRange}; today’s price sits ${bucket === "below" ? "below" : bucket === "within" ? "inside" : "above"} it${asOf}.`;
 
   // gauge: three categorical zones (cheaper · fair · pricier); marker placed within the
-  // active zone by how far the price runs through the value range.
-  const spanRange = rangeHi - rangeLo || 1;
+  // active zone by how far the price runs through the value range. The below/within split
+  // is the IV boundary when a growth-anchored IV exists (matches the verdict's own bucket
+  // logic) — falls back to the zero-growth floor F when there's no IV (single-lamp path,
+  // identical to today's placement).
+  const belowBoundary = hasIv ? IV! : rangeLo;
+  const spanWithin = rangeHi - belowBoundary || 1;
   const marker =
     bucket === "below"
-      ? 33 * clamp(price / (rangeLo || 1), 0, 1)
+      ? 33 * clamp(price / (belowBoundary || 1), 0, 1)
       : bucket === "within"
-        ? 33 + 33 * clamp((price - rangeLo) / spanRange, 0, 1)
+        ? 33 + 33 * clamp((price - belowBoundary) / spanWithin, 0, 1)
         : 66 + 33 * clamp((price - rangeHi) / (rangeHi || 1), 0, 1);
   const markerPct = clamp(marker, 2, 98);
   const zones: { key: Bucket; label: string }[] = [
@@ -298,6 +350,13 @@ function ValueSpine({
 
   return (
     <div className="space-y-3">
+      {/* headline — single anchor number for this card. Growth-anchored IV when assessable,
+          otherwise the zero-growth floor F (single-lamp fallback, today's number). */}
+      <div className="flex items-baseline gap-2">
+        <span className="font-mono text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{usd0(headline)}</span>
+        <span className="text-xs text-[var(--tt-muted)]">{t.perSh} · {hasIv ? t.ivHeadline : t.zeroGrowthHeadline}</span>
+      </div>
+
       {/* status — 个股页把结论上提到区块标题时(showStatus=false)不再在卡内重复 */}
       {showStatus && (
         <div className="flex items-center gap-2 flex-wrap">
@@ -328,18 +387,35 @@ function ValueSpine({
               );
             })}
           </div>
+          {/* IV marker — the below/within boundary; only drawn when a growth-anchored IV exists. */}
+          {hasIv ? (
+            <div
+              className="absolute bottom-0 top-3 w-px border-l border-dashed border-[var(--tt-faint)]"
+              style={{ left: "33%" }}
+              title={`IV ${perShare(IV)}`}
+            />
+          ) : null}
           {/* price marker */}
           <div className="absolute bottom-0 top-3 w-0.5 bg-[var(--tt-accent)]" style={{ left: `${markerPct}%` }} title={`${t.priceAsOf} ${perShare(price)}`} />
           <span className="absolute top-0 -translate-x-1/2 font-mono text-[10px] text-[var(--tt-text)]" style={{ left: `${markerPct}%` }}>{usd0(price)}</span>
         </div>
         <div className="mt-1 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
           <span>{t.cheaper}</span>
-          <span>{t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}</span>
+          <span>
+            {hasIv
+              ? `${usd0(rangeLo)} ── IV ${usd0(IV)} ── ${usd0(rangeHi)}`
+              : t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}
+          </span>
           <span>{t.pricier}</span>
         </div>
       </div>
 
       <p className="text-sm text-[var(--tt-text)]">{sentence}</p>
+
+      {/* assumptions — what the headline IV rests on: growth source, moat CAP, discount, and
+          the zero-growth downside if growth doesn't show up. */}
+      <p className="text-[10px] text-[var(--tt-faint)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>
+      {!verdict.reliable ? <p className="text-[10px] text-[var(--tt-warn)]">{t.lowConfidence}</p> : null}
 
       <p className="text-[10px] text-[var(--tt-faint)]">
         {t.priceAsOf} {sz.price.date}

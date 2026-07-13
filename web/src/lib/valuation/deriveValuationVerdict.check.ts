@@ -13,7 +13,7 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
-import { deriveValuationVerdict, assessReliability } from "./deriveValuationVerdict";
+import { deriveValuationVerdict, assessReliability, isImplausibleBand, MOS_BASE, MOS_MAX } from "./deriveValuationVerdict";
 
 // 仅 deriveValuationVerdict 真正读取的字段被填实；其余用最小 stub 满足类型。
 function floorStub(): ValuationFloor {
@@ -49,6 +49,22 @@ function sz(
 }
 function oe(): OeDcfAssessment {
   return { assessable: true, per_share_low: 90, per_share_high: 150, no_bridge_note: "" } as OeDcfAssessment;
+}
+// 含增长中枢 IV 的 oeDcf stub：tiers.neutral.per_share = 中枢 IV。其余字段与 oe() 一致(per_share_low/high
+// 供 rangeHi 的两法端点计算)。opts 可覆盖 neutral 中枢与 declined 标志。
+function oeWithIv(neutral: number, opts?: { declined?: boolean }): OeDcfAssessment {
+  return {
+    assessable: true,
+    per_share_low: 90,
+    per_share_high: 150,
+    no_bridge_note: "",
+    declined: opts?.declined,
+    tiers: {
+      pessimistic: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: neutral * 0.8 },
+      neutral: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: neutral },
+      optimistic: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: neutral * 1.2 },
+    },
+  } as OeDcfAssessment;
 }
 const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   ({ comparable: true, consistency: c } as MethodReconciliation);
@@ -182,6 +198,173 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
     reconciliation: recon("above_both_values"),
   });
   assert(v && v.netNet && v.netNet.perShare === 95 && v.netNet.assetFloor === false && v.netNet.buy === false, "price > per_share → neither");
+}
+
+// ── 判定改锚:含增长中枢 IV + 浮动 MOS(Task 3) ──────────────────────────────
+
+// Q) 纯价值股:IV≈F(growthReliance≈0)→ MOS=MOS_BASE(1/3);price ≤ IV×2/3 → inStrikeZone。
+{
+  const F = 120;
+  const IV = 120; // IV=F → growthReliance=0
+  const v = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: F, price: 79 }), // 79 < 120×2/3=80
+    oeDcf: oeWithIv(IV),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(v, "pure-value IV≈F still resolves");
+  const expectedMos = MOS_BASE; // growthReliance=0 → mos floors at MOS_BASE
+  assert(Math.abs(IV * (1 - expectedMos) - 80) < 1e-9, "sanity: IV×(1-MOS_BASE)=80");
+  assert(v!.inStrikeZone === true, "price 79 ≤ IV×2/3=80 → inStrikeZone at MOS_BASE");
+  assert(v!.bucket === "below", "price < IV → below");
+}
+// R) 重增长股:IV=2×F(growthReliance=0.5)→ MOS=MOS_BASE+(MOS_MAX-MOS_BASE)×0.5;price 需更低才 inStrikeZone。
+{
+  const F = 120;
+  const IV = 240; // growthReliance = (240-120)/240 = 0.5
+  const expectedMos = MOS_BASE + (MOS_MAX - MOS_BASE) * 0.5; // ≈0.391667
+  const threshold = IV * (1 - expectedMos); // ≈146.0
+  assert(Math.abs(threshold - 146) < 0.01, "sanity: threshold ≈146 for IV=240,mos≈0.39167");
+  // 老 MOS_BASE 口径下阈值会是 IV×2/3=160 —— price=150 在老口径下会被标 inStrikeZone,
+  // 但浮动 MOS 下 150 > 146 阈值,不再标。证明重增长股需要更低价才达标。
+  const vAbove = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: F, price: 150 }),
+    oeDcf: oeWithIv(IV),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(vAbove && vAbove.inStrikeZone === false, "growth-heavy: price 150 > 浮动 MOS 阈值 146 → 不再 inStrikeZone");
+  const vBelow = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: F, price: 145 }),
+    oeDcf: oeWithIv(IV),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(vBelow && vBelow.inStrikeZone === true, "growth-heavy: price 145 ≤ 146 阈值 → inStrikeZone");
+}
+// S) bucket:price<IV→below;IV≤price≤rangeHi→within;price>rangeHi→above。IV=200,rangeHi=320(两法端点最大值)。
+{
+  const IV = 200;
+  const vBelow = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: 120, price: 100 }),
+    oeDcf: oeWithIv(IV),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(vBelow && vBelow.bucket === "below" && vBelow.rangeHi === 320, "price 100 < IV 200 → below");
+  const vWithin = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("moat_band", { valueFloor: 120, price: 250 }),
+    oeDcf: oeWithIv(IV),
+    reconciliation: recon("within_value_range"),
+  });
+  assert(vWithin && vWithin.bucket === "within", "IV 200 ≤ price 250 ≤ rangeHi 320 → within");
+  const vAbove = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("above_optimistic", { valueFloor: 120, price: 350 }),
+    oeDcf: oeWithIv(IV),
+    reconciliation: recon("above_both_values"),
+  });
+  assert(vAbove && vAbove.bucket === "above", "price 350 > rangeHi 320 → above");
+}
+// T) marginPct = (IV−price)/IV(锚 IV,非 valueFloor)。IV=200,F=120,price=100 → margin=(200-100)/200=0.5,
+//    与旧口径(valueFloor-price)/valueFloor=(120-100)/120≈0.1667 明显不同,证明确实换锚。
+{
+  const v = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: 120, price: 100 }),
+    oeDcf: oeWithIv(200),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(v, "marginPct case resolves");
+  assert(Math.abs(v!.marginPct! - 0.5) < 1e-9, "marginPct anchored to IV: (200-100)/200=0.5");
+  assert(Math.abs(v!.marginPct! - (120 - 100) / 120) > 0.1, "marginPct materially differs from old valueFloor anchor");
+}
+// U) 单灯兜底:oeDcf 不可评估 / tiers 缺 → 退回 epv.position 锚(今天行为逐位不变)。
+{
+  // U1) 完全无 oeDcf → 既有 test 4 已覆盖(single_lamp via position),这里补 assessable=true 但 tiers 缺的情形。
+  const vNoTiers = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone"),
+    oeDcf: oe(), // assessable=true 但无 tiers → hasIv=false
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  // 无 tiers 时应完全走两法 consistency 分支(与 test 1 一致):below + inStrikeZone(position="in_strike_zone")。
+  assert(vNoTiers && vNoTiers.bucket === "below" && vNoTiers.inStrikeZone === true, "assessable but no tiers → single-lamp fallback (bucketFromConsistency)");
+  // U2) oeDcf.assessable=false 但 tiers 字段意外存在 → 仍必须走单灯兜底(hasIv 判据先看 assessable)。
+  const vNotAssessable = {
+    assessable: false,
+    per_share_low: 90,
+    per_share_high: 150,
+    no_bridge_note: "",
+    tiers: {
+      pessimistic: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: 160 },
+      neutral: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: 200 },
+      optimistic: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: 240 },
+    },
+  } as OeDcfAssessment;
+  const v2 = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { ceilings: false, price: 50 }),
+    oeDcf: vNotAssessable,
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  // 与 test 8(同参数,无 oeDcf)完全一致的结果 → 证明 assessable=false 时 tiers 被忽略,不误用为 IV。
+  assert(v2 && v2.bucket === "below" && Math.abs(v2.marginPct! - (120 - 50) / 120) < 1e-9, "assessable=false ignores tiers → falls back to valueFloor anchor");
+}
+// V) reliable=false(如 declined)时,inStrikeZone/bucket 仍按 IV 锚正常计算(不被 reliable 污染或抑制)—— 四闸(assessReliability
+//    等)与判定锚是两套独立机制,换锚前后都是下游(如 ValuationBadge)自行 `inStrikeZone && reliable` 组合,函数本身从不因
+//    reliable=false 就静默改写 inStrikeZone。断言:declined 下 IV 锚正常给出 inStrikeZone=true,同时 reliable 如实报 false。
+{
+  const F = 120;
+  const IV = 200; // growthReliance=(200-120)/200=0.4 → mos=1/3+(0.45-1/3)*0.4≈0.38
+  const v = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: F, price: 100 }), // threshold=200*(1-0.38)=124 → 100 ≤ 124
+    oeDcf: oeWithIv(IV, { declined: true }),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(v, "declined + IV anchor still resolves");
+  assert(v!.inStrikeZone === true, "IV-anchored inStrikeZone computed independent of reliable");
+  assert(v!.reliable === false, "declined → reliable=false preserved (four gates untouched)");
+}
+// W) 地基回归:isImplausibleBand / netNet / coverage 在换锚前后逐位不变(纯函数本身未改,构造对照证明)。
+{
+  // W1) isImplausibleBand 本身零改动:直接单元断言,行为与换锚前完全一致。
+  assert(isImplausibleBand({ rangeLo: 120, rangeHi: 320, price: 100, marginPct: 0.5 }) === false, "isImplausibleBand: 正常带不抑制");
+  assert(isImplausibleBand({ rangeLo: 0, rangeHi: 320, price: 100, marginPct: 0.5 }) === true, "isImplausibleBand: rangeLo<=0 退化带仍抑制");
+  assert(isImplausibleBand({ rangeLo: 120, rangeHi: 100, price: 100, marginPct: 0.5 }) === true, "isImplausibleBand: rangeHi<rangeLo 退化带仍抑制");
+  assert(isImplausibleBand({ rangeLo: 120, rangeHi: 320, price: 0, marginPct: 0.5 }) === true, "isImplausibleBand: price<=0 退化带仍抑制");
+  assert(isImplausibleBand({ rangeLo: 120, rangeHi: 320, price: 100, marginPct: 0.85 }) === true, "isImplausibleBand: marginPct>0.8 仍抑制(健壮性闸未松)");
+
+  // W2) coverage 只看 bothMethods(两法都可评估),与判定锚(IV vs valueFloor)无关 —— IV 路径下 conservative 缺失仍 single_lamp。
+  const vFullWithIv = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: 120, price: 100 }),
+    oeDcf: oeWithIv(200),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(vFullWithIv && vFullWithIv.coverage === "full", "IV 路径下 bothMethods 仍决定 coverage=full");
+  const noConservative = { assessable: true, tiers: { pessimistic: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: 160 }, neutral: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: 200 }, optimistic: { growth_stage1: 0, discount_rate: 0.1, equity_value: 0, per_share: 240 } }, no_bridge_note: "" } as OeDcfAssessment; // 无 per_share_low/high → conservative=null
+  const vSingleWithIv = deriveValuationVerdict({
+    floor: floorStub(),
+    strikeZone: sz("in_strike_zone", { valueFloor: 120, price: 100 }),
+    oeDcf: noConservative,
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(vSingleWithIv && vSingleWithIv.coverage === "single_lamp" && vSingleWithIv.bucket === "below", "IV 路径下 conservative 缺失仍 single_lamp(coverage 与锚选择解耦)");
+
+  // W3) netNet 完全独立于判定锚(price vs NCAV,与 IV/valueFloor 无关)——IV 路径下结果与既有单灯路径(test 14)一致。
+  const vNetNetWithIv = deriveValuationVerdict({
+    floor: floorStubWithNetNet(),
+    strikeZone: sz("in_strike_zone", { price: 80 }),
+    oeDcf: oeWithIv(200),
+    reconciliation: recon("both_margin_of_safety"),
+  });
+  assert(
+    vNetNetWithIv && vNetNetWithIv.netNet && vNetNetWithIv.netNet.perShare === 95 && vNetNetWithIv.netNet.assetFloor === true && vNetNetWithIv.netNet.buy === false,
+    "IV 路径下 netNet 判定与换锚前(test 14)逐位一致",
+  );
 }
 
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");

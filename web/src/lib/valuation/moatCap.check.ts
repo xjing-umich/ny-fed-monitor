@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_INSURANCE_RANGE } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_share_compared: 10, dual_test_passed: true } as any; // ratio 3.0
@@ -176,5 +176,136 @@ const ic100 = () => 100;
   const ic = (y: ValuationFloorYear) => (y.fiscal_year === 2022 ? undefined : 100); // 跳过一年
   const r = roicTrend({ fyYears: years, investedCapitalOf: ic, nopatOf: (y) => np.get(y.fiscal_year) });
   assert(r === undefined || r === "stable", "roicTrend: 无效年跳过后仍不误报 declining"); }
+
+// ── sustainableGrowth(Task 1:g = ROIC × 净再投资率,基本面上限) ──────────────
+
+// G) 稳健:ROIC 20% × 净再投资率 40% → g ≈ 8%
+{ const years = [2020,2021,2022,2023].map((fy,i)=>({ fiscal_year: fy,
+    operating_income: 20, income_tax_expense: 0, capex: 12, d_and_a: 4, working_capital: 0,
+  })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years,
+    nopatOf: () => 20, investedCapitalOf: () => 100 });
+  assert(r != null && Math.abs(r - 0.20*((12-4)/20)) < 1e-6, "sustainableGrowth = ROIC×净再投资率 (0.20×0.40=0.08)"); }
+// H) NOPAT≤0 的年被有效性过滤;有效年 <SUSTAINABLE_MIN_YEARS → undefined
+{ const years = [2022,2023].map((fy)=>({ fiscal_year: fy, capex: 10, d_and_a: 3 })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => 100 });
+  assert(r === undefined, `<${SUSTAINABLE_MIN_YEARS} 有效年 → undefined`); }
+// I) 再投资率为负(D&A>capex,净收缩)→ clamp 到 0(不给负增长,交给 declined 处理)
+{ const years = [2020,2021,2022,2023].map((fy)=>({ fiscal_year: fy, capex: 2, d_and_a: 8, working_capital: 0 })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => 100 });
+  assert(r === 0, "净再投资率<0 → g clamp 到 0"); }
+// J) investedCapital 全 undefined(负权益)→ undefined
+{ const years = [2020,2021,2022,2023].map((fy)=>({ fiscal_year: fy, capex: 12, d_and_a: 4 })) as ValuationFloorYear[];
+  const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => undefined });
+  assert(r === undefined, "investedCapital 不可得 → undefined"); }
+
+// ── pathA:经营资产 EPV/AV(剔超额现金)判 strong ──────────────────────────────
+
+// K) GOOGL-like:epvAvRatio(全资产)=1.42<2 但 epvAvRatioOperating(剔现金)=2.3≥2 → pathA 过
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 2.3,
+    declined:false, suppressedFlags:false, roicStable:true, roicLongTermStrong:false });
+  assert(r.grade==="strong", "经营资产 EPV/AV≥2 → pathA 放行 strong"); }
+// L) 两个比值都<2 且 ROIC 路径不过 → moderate
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 1.6,
+    declined:false, suppressedFlags:false, roicStable:true, roicLongTermStrong:false });
+  assert(r.grade==="moderate", "两比值<2 且无 ROIC 路径 → moderate"); }
+// M) 兼容回退:epvAvRatioOperating 缺失 → 用旧 epvAvRatio 判(与 Step 0 强档用例等价行为)
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0,
+    declined:false, suppressedFlags:false, roicStable:true });
+  assert(r.grade==="strong", "epvAvRatioOperating 缺失 → 回退 epvAvRatio,行为不变(AAPL 类不受影响)"); }
+
+// ── roicLongTermStrong(Task 3:strong pathB,ROIC 长期极高且稳) ──────────────
+// ROIC_MOAT_MIN_YEARS=6(真数据校准:每票最多 6 个有效 FY 年,不是 plan 草稿的 8)
+
+// Q) 近8年 ROIC 均值 25% 波动小 → true(GOOGL/META 路径)
+{ const years = fyYears(8); const np = new Map(years.map(y=>[y.fiscal_year,25]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===true, "roicLongTermStrong: ROIC 均值25%>22% 且稳 → strong pathB"); }
+// R) ROIC 均值 15%<22% → false
+{ const years = fyYears(8); const np = new Map(years.map(y=>[y.fiscal_year,15]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===false, "roicLongTermStrong: ROIC 均值15%<门槛 → 不过"); }
+// S) 均值高但剧烈波动(CV 超阈)→ false(周期股)
+{ const years=fyYears(8); const vals=[50,5,45,8,40,6,48,4]; const np=new Map(years.map((y,i)=>[y.fiscal_year,vals[i]]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===false, "roicLongTermStrong: 均值高但 CV 超阈(周期股)→ 不过"); }
+// T) 有效年 <ROIC_MOAT_MIN_YEARS(6) → false
+{ const years=fyYears(5); const np=new Map(years.map(y=>[y.fiscal_year,25]));
+  const r = roicLongTermStrong({ fyYears: years, nopatOf:(y)=>np.get(y.fiscal_year), investedCapitalOf:()=>100 });
+  assert(r===false, `roicLongTermStrong: <${ROIC_MOAT_MIN_YEARS} 有效年 → false(不可评估不放行)`); }
+
+// ── strong pathB 接入 deriveMoatCap:两比值<2 但 roicLongTermStrong=true → strong ──
+// U) GOOGL/META 场景:pathA(比率)不过,pathB(ROIC 长期强)过 → strong
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 1.6,
+    declined:false, suppressedFlags:false, roicStable:true, roicLongTermStrong:true });
+  assert(r.grade==="strong", "两比值<2 但 roicLongTermStrong=true(pathB)→ strong"); }
+// V) pathB 过但 franchiseCore 假(declined)→ 仍不放行,moderate
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 1.42, epvAvRatioOperating: 1.6,
+    declined:true, suppressedFlags:false, roicStable:true, roicLongTermStrong:true });
+  assert(r.grade==="moderate", "roicLongTermStrong=true 但 declined(franchiseCore假)→ 仍 moderate,不误放行"); }
+
+// ── isFinancialSic(Task 4:金融股识别,sic∈[6020,6099]∪[6300,6399]) ─────────────
+{ assert(isFinancialSic(6021)===true, "isFinancialSic: JPM SIC 6021(National Commercial Banks) → true"); }
+{ assert(isFinancialSic(6022)===true, "isFinancialSic: 6022(State Commercial Banks) → true"); }
+{ assert(isFinancialSic(6331)===true, "isFinancialSic: 6331(Fire/Marine/Casualty Insurance) → true"); }
+{ assert(isFinancialSic(SIC_BANK_RANGE[0])===true && isFinancialSic(SIC_BANK_RANGE[1])===true, "isFinancialSic: 银行区间端点 → true"); }
+{ assert(isFinancialSic(SIC_INSURANCE_RANGE[0])===true && isFinancialSic(SIC_INSURANCE_RANGE[1])===true, "isFinancialSic: 保险区间端点 → true"); }
+{ assert(isFinancialSic(3571)===false, "isFinancialSic: AAPL SIC 3571(Electronic Computers) → false"); }
+{ assert(isFinancialSic(7370)===false, "isFinancialSic: GOOGL SIC 7370(services) → false"); }
+{ assert(isFinancialSic(2911)===false, "isFinancialSic: CVX SIC 2911(石油) → false"); }
+{ assert(isFinancialSic(6100)===false, "isFinancialSic: 6100(区间外,银行区间上界之外) → false"); }
+{ assert(isFinancialSic(null)===false && isFinancialSic(undefined)===false, "isFinancialSic: sic 缺失 → false(不走 5% 兜底,即 non-financial)"); }
+
+// ── sustainableGrowthRateFinancial(Task 4:SGR = ROE × 留存率) ────────────────
+// JPM 型:net_income 100,shareholders_equity 1000(ROE 10%),dividends_paid 20 + share_repurchases 30
+// → payout 50,retention=1−50/100=0.5 → SGR = 0.10×0.5 = 0.05,单年即代表值。
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 20, share_repurchases: 30 },
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0.05) < 1e-9, `sustainableGrowthRateFinancial: 单年 ROE10%×留存50% → 0.05, got ${sgr}`); }
+
+// 多年取均值:年1 SGR=0.05(如上),年2 ROE 8%、无 payout(留存100%)→ SGR=0.08 → 均值 0.065
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 20, share_repurchases: 30 },
+    { fiscal_year: 2023, net_income: 80, shareholders_equity: 1000 },
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0.065) < 1e-9, `sustainableGrowthRateFinancial: 多年均值 (0.05+0.08)/2=0.065, got ${sgr}`); }
+
+// net_income ≤ 0 的年跳过(不计入均值,不让负年份污染 SGR)
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 20, share_repurchases: 30 }, // SGR 0.05
+    { fiscal_year: 2023, net_income: -50, shareholders_equity: 1000 }, // 跳过
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0.05) < 1e-9, `sustainableGrowthRateFinancial: net_income≤0 年跳过 → 只用有效年, got ${sgr}`); }
+
+// 单项 payout 缺失(如探针 BAC 缺 dividends_paid、HBAN 缺 share_repurchases)→ null→0 兜底,不整年跳过
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, share_repurchases: 30 }, // dividends_paid 缺 → 当 0
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  // payout=30, retention=1-30/100=0.7, SGR=0.10*0.7=0.07
+  assert(sgr !== undefined && Math.abs(sgr - 0.07) < 1e-9, `sustainableGrowthRateFinancial: 单项 payout 缺失 null→0 兜底, got ${sgr}`); }
+
+// 权益缺失/非正的年跳过(ROE 口径无效)
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: -50, dividends_paid: 0, share_repurchases: 0 },
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr === undefined, "sustainableGrowthRateFinancial: 权益非正的年跳过,无有效年 → undefined"); }
+
+// 无有效年(全跳过)→ undefined(不降级到 5%,交给调用方决定 fallback)
+{ const years: ValuationFloorYear[] = [{ fiscal_year: 2024, net_income: -10, shareholders_equity: 1000 }];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr === undefined, "sustainableGrowthRateFinancial: 无有效年 → undefined"); }
+
+// payout 超过 net_income(留存率 clamp 到 0,不产生负 SGR)
+{ const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 100, shareholders_equity: 1000, dividends_paid: 80, share_repurchases: 50 }, // payout 130 > 100
+  ];
+  const sgr = sustainableGrowthRateFinancial(years);
+  assert(sgr !== undefined && Math.abs(sgr - 0) < 1e-9, `sustainableGrowthRateFinancial: payout>net_income → retention clamp 0 → SGR 0, got ${sgr}`); }
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

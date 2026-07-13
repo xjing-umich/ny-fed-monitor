@@ -15,11 +15,11 @@ export type VerdictBucket = "below" | "within" | "above";
 export type VerdictCoverage = "full" | "single_lamp";
 
 export type ValuationVerdict = {
-  /** 现价相对保守价值带的位置：below=有安全边际 / within=带内 / above=高于。 */
+  /** 现价相对保守价值带的位置：below=有安全边际 / within=带内 / above=高于。有中枢 IV 时锚 IV；单灯退回零增长底(valueFloor)。 */
   bucket: VerdictBucket;
-  /** below 的深折扣子集：现价 ≤ 价值带下沿 ×(1−1/3)。引擎权威标志。 */
+  /** below 的深折扣子集：有中枢 IV 时 = 现价 ≤ IV×(1−MOS)，MOS 随 growthReliance 在 1/3~45% 间浮动；单灯退回 epv.position === "in_strike_zone"（零增长底 ×2/3，今天行为不变）。引擎权威标志。 */
   inStrikeZone: boolean;
-  /** 展示用价值带下沿（每股，= epv.valueFloor 保守底，与 inStrikeZone/marginPct 同锚）。 */
+  /** 展示用价值带下沿（每股，= epv.valueFloor 零增长保守底 F；无论是否有中枢 IV 均不变）。 */
   rangeLo: number;
   /** 展示用价值带上沿（每股，= 两法各端的最大值）。 */
   rangeHi: number;
@@ -27,7 +27,7 @@ export type ValuationVerdict = {
   price: number;
   /** 价格 as-of（ISO date）。 */
   priceDate: string;
-  /** 安全边际 %（vs epv.valueFloor，即 inStrikeZone/position 同一保守底；仅 below/strike zone 有意义）；valueFloor≤0 → null。 */
+  /** 安全边际 %：有中枢 IV 时 = (IV−price)/IV（含增长中枢锚）；单灯退回 (valueFloor−price)/valueFloor（零增长底锚，今天行为不变）。仅 below/strike zone 有意义；分母≤0 → null。 */
   marginPct: number | null;
   /** full=两法夹逼 / single_lamp=仅单法（金融单灯或缺一法）。 */
   coverage: VerdictCoverage;
@@ -78,6 +78,15 @@ export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcf
  * (典型:Yahoo 拆股价 vs 申报老股数 → per-share 带被抬高 10×)。
  */
 export const SANE_MARGIN_MAX = 0.8;
+
+/** Graham 经典折价(纯价值股，growthReliance≈0 时的安全边际)。 */
+export const MOS_BASE = 1 / 3;
+/** 重增长/长 CAP 依赖时折价上限(growthReliance→1 时的安全边际，Graham 随激进度浮动)。 */
+export const MOS_MAX = 0.45;
+
+function clamp01(x: number): number {
+  return Math.min(1, Math.max(0, x));
+}
 
 /**
  * 价值带与现价严重脱节 = 坏数据,判定应整条抑制(返回 null,即"无可信判定")。
@@ -136,16 +145,34 @@ export function deriveValuationVerdict(input: {
   const rangeHi = Math.max(...ends);
   const rangeLo = epv.valueFloor;
   const bothMethods = !!conservative && !!epv.ceilings;
-
-  // bucket：优先两法 consistency，否则单法 position（与卡片同序）。
-  const bucket =
-    (bothMethods ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
-  const inStrikeZone = epv.position === "in_strike_zone";
-  // 安全边际相对 valueFloor(与 inStrikeZone/epv.position 同一个底),而非 rangeLo(OE-DCF+增长最小端)。
-  // 二者可差 10× → 旧口径下 below 名显示天文负 margin(GCO −566%/HLX −1307%)且污染 strike 排序。
-  const valueFloor = epv.valueFloor;
-  const marginPct = valueFloor > 0 ? (valueFloor - price) / valueFloor : null;
   const coverage: VerdictCoverage = bothMethods ? "full" : "single_lamp";
+
+  // 判定锚:有含增长中枢的 IV(oeDcf 中枢档 per_share)时,bucket/inStrikeZone/marginPct 锚 IV,
+  // 安全边际随 growthReliance(IV 相对零增长底 F 的增量占比)在 MOS_BASE~MOS_MAX 间浮动
+  // (纯价值股 IV≈F → MOS≈1/3;重增长/长 CAP 依赖股 IV≫F → MOS 抬高，防止用远期增长自我合理化买点)。
+  // 无 IV(oeDcf 不可评估/tiers 缺)→ 单灯兜底,逐字保留今天基于零增长底 F 的判定(见 else 分支)。
+  const F = epv.valueFloor;
+  const ivRaw = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
+  const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
+  const IV = hasIv ? (ivRaw as number) : undefined;
+
+  let bucket: VerdictBucket;
+  let inStrikeZone: boolean;
+  let marginPct: number | null;
+  if (IV != null) {
+    const growthReliance = IV > F ? clamp01((IV - F) / IV) : 0;
+    const mos = MOS_BASE + (MOS_MAX - MOS_BASE) * growthReliance;
+    bucket = price < IV ? "below" : price <= rangeHi ? "within" : "above";
+    inStrikeZone = price <= IV * (1 - mos);
+    marginPct = IV > 0 ? (IV - price) / IV : null;
+  } else {
+    // 单灯兜底:无含增长中枢 IV → 退回今天的 EPV 锚(零增长底 F，逐字保留)。
+    bucket =
+      (bothMethods ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
+    inStrikeZone = epv.position === "in_strike_zone";
+    const valueFloor = epv.valueFloor;
+    marginPct = valueFloor > 0 ? (valueFloor - price) / valueFloor : null;
+  }
 
   // 数据健壮性闸:价值带与现价严重脱节(坏 shares / 拆股不一致)→ 无可信判定,不污染最敏感的面。
   if (isImplausibleBand({ rangeLo, rangeHi, price, marginPct })) return null;

@@ -9,6 +9,7 @@ export function fundamentalsToFloorInput(
   companyName: string | null | undefined,
   rows: FundamentalPeriod[] | undefined,
   adsRatio: number = 1,
+  sic?: number | null,
 ): ValuationFloorInput {
   const years: ValuationFloorYear[] = (rows ?? [])
     .filter((r) => r.fiscal_period === "FY" && r.fiscal_year != null)
@@ -41,10 +42,11 @@ export function fundamentalsToFloorInput(
       ppe_net: u(r.ppe_net),
       operating_cash_flow: u(r.operating_cash_flow),
       share_repurchases: u(r.share_repurchases),
+      dividends_paid: u(r.dividends_paid),
       current_assets: u(r.current_assets),
       current_liabilities: u(r.current_liabilities),
       total_liabilities: u(r.total_liabilities),
       preferred_equity: u(r.preferred_equity),
     }));
-  return { ticker, company_name: companyName ?? undefined, years };
+  return { ticker, company_name: companyName ?? undefined, years, sic: sic ?? undefined };
 }

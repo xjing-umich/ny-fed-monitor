@@ -134,7 +134,12 @@ async function main() {
         continue;
       }
       // company_name 不影响判定(仅卡片 who 前缀用), 投资人页只读 verdict, 故传 ticker 即可。
-      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio);
+      // sic(Task 4):驱动 is_financial 识别(银行/保险走 SGR 封顶而非扁平 7% cap)。
+      // sic 在 DB 是 text（"6022"），须运行时转 number（镜像 page.tsx），否则 isFinancialSic 对字符串恒 false。
+      const sicRaw = (sec.company as { sic?: unknown } | null)?.sic;
+      const sicNum = sicRaw == null ? undefined : Number(sicRaw);
+      const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
+      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic);
       const floor = computeValuationFloor(floorInput);
       if (!floor || floor.kind !== "floor") {
         skipped++;

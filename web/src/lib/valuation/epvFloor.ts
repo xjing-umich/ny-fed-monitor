@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial } from "./moatCap";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -90,11 +90,17 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
 
   // Full path uses the margin-qualified year subset for BOTH lamps so years_used is consistent.
   const marginYears = selectYears(input.years);
-  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares);
-  return buildSingleLampFloor(earningsYears, shares);
+  const isFinancial = isFinancialSic(input.sic);
+  // pathB(roicLongTermStrong)判据须吃"完整可得历史"而非 EPV 的 5 年正常化窗口(TARGET_YEARS)——
+  // 否则 ROIC_MOAT_MIN_YEARS=6 在 marginYears/earningsYears(均 slice 到 5)下永远拿不到 6 年输入,
+  // pathB 变成死代码。input.years 是 fundamentalsToFloorInput 已按 fiscal_period=FY 过滤、未截断
+  // 的全量年份,只喂给 roicLongTermStrong;EPV 各 lamp 仍用 marginYears/earningsYears(不动)。
+  const allYears = input.years;
+  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears);
+  return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears);
 }
 
-function buildFullFloor(years: ValuationFloorYear[], shares: number): ValuationFloor {
+function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[]): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
@@ -102,14 +108,14 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number): ValuationF
   const tax = normalizedTaxRate(years);
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined, isFinancial, allYears);
 }
 
-function buildSingleLampFloor(years: ValuationFloorYear[], shares: number): ValuationFloor {
+function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[]): ValuationFloor {
   const yearsUsed = years.map((y) => y.fiscal_year);
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE, isFinancial, allYears);
 }
 
 // Shared scaffold: asset floor, moat (off the supplied reference lamp), leverage
@@ -122,6 +128,8 @@ function assembleFloor(
   buffettEpv: EpvLamp,
   moatRefLamp: EpvLamp,
   earningsBasisNote: string | undefined,
+  isFinancial: boolean,
+  allYears: ValuationFloorYear[],
 ): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
@@ -157,18 +165,43 @@ function assembleFloor(
   };
   const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
   const roicDeclining = roicTrend({ fyYears: years, investedCapitalOf, nopatOf }) === "declining";
+  const sustainableGrowthRate = sustainableGrowth({ fyYears: years, nopatOf, investedCapitalOf });
+  // 金融股(银行/保险,Task 4):非经营性口径(operating_income 不适用)→ 用 SGR = ROE × 留存率
+  // 封顶 g_used,取代对无护城河名字系统性放水的扁平 7% cap。sector 不可得 → is_financial=false(退 none 5%)。
+  const financialSgr = isFinancial ? sustainableGrowthRateFinancial(years) : undefined;
+  // strong pathB(Task 3):ROIC 长期极高且稳 → 让经营资产 EPV/AV 也不够 2× 的 GOOGL/META 类仍可凭 ROIC 走 strong。
+  // 吃完整 allYears(非本函数的 5 年 marginYears/earningsYears 正常化窗口)——pathB 判的是"长期回报型久期",
+  // 应看能拿到的全部历史,不受 EPV lamp 的 TARGET_YEARS 限制;nopatOf/investedCapitalOf 内部对缺字段年份
+  // 自然跳过,不会因为多喂了年份就产生假数据。
+  const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
   const epvAvRatio =
     moatReading.epv_per_share_compared != null &&
     moatReading.asset_per_share_compared != null &&
     moatReading.asset_per_share_compared > 0
       ? moatReading.epv_per_share_compared / moatReading.asset_per_share_compared
       : undefined;
+  // 经营资产 EPV/AV(剔除超额现金,pathA):千亿现金撑大资产重置价值分母、压低 EPV/AV 会把 GOOGL/META
+  // 这类真护城河股误判 moderate。excessCash = max(0, latest.cash − OPERATING_CASH_PCT×最新年营收)。
+  // 只服务 moat 判定,不改 asset_floor/reproduction 本身的展示。
+  const latestRevenue = years.find((y) => y.fiscal_year === Math.max(...years.map((y2) => y2.fiscal_year)))?.revenue;
+  const excessCashPerShare =
+    latest.cash != null && latestRevenue != null && shares > 0
+      ? Math.max(0, latest.cash - OPERATING_CASH_PCT * latestRevenue) / shares
+      : 0;
+  const assetOperating =
+    moatReading.asset_per_share_compared != null
+      ? moatReading.asset_per_share_compared - excessCashPerShare
+      : undefined;
+  const epvAvRatioOperating =
+    epvMid != null && assetOperating != null && assetOperating > 0 ? epvMid / assetOperating : undefined;
   const moatCap = deriveMoatCap({
     moat: moatReading,
     epvAvRatio,
+    epvAvRatioOperating,
     declined: durabilityDeclined(years),
     suppressedFlags: highLeverage === true || (aiCapexDistortion === true && roicDeclining),
     roicStable,
+    roicLongTermStrong: roicLongStrong,
   });
 
   const growthValue = computeGrowthValue({
@@ -201,6 +234,9 @@ function assembleFloor(
     net_debt_to_equity: netDebtToEquity,
     ai_capex_distortion_warning: aiCapexDistortion || undefined,
     moat_cap: moatCap,
+    sustainable_growth: sustainableGrowthRate,
+    is_financial: isFinancial,
+    financial_sgr: financialSgr,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

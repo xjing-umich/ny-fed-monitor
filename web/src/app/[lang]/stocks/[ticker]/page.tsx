@@ -369,7 +369,12 @@ export default async function StockTickerPage({
   // ADR/ADS 归一化:ADR 用每 ADS 口径;ADR 但比例未策展 → 视同无地板(卡片走 no-floor 分支,不显示错带)。
   const { securityType, adsRatio } = await getSecurityMeta(ticker);
   const ads = resolveAds(securityType, adsRatio);
-  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio);
+  // SIC 用于金融股(银行/保险)判定 → 引擎改用可持续增长率封顶而非扁平 moderate。
+  // sec_companies.sic 可能是字符串或 null;安全转 number,NaN/null → undefined(不误触闸)。
+  const sicRaw = sec.company?.sic;
+  const sicNum = sicRaw == null ? undefined : Number(sicRaw);
+  const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
+  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic);
   // 基本面过期闸:与 ingest 同语义 — 最新 FY 期末超阈值 → 抑制估值(不造陈旧幻觉)。
   const fundamentalsStale = isFundamentalsStale(
     sec.annual?.[0]?.period_end ?? null,
