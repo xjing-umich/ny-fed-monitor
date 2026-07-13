@@ -4,6 +4,7 @@ import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
 import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial, roicHelpers } from "./moatCap";
+import { structuralConfidence } from "./structuralConfidence";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -34,10 +35,25 @@ function avg(values: number[]): number {
  * 不把已过去的繁荣峰值资本化进价值带 —— Greenwald 对周期股的纪律。稳定/增长股(最新 ≥ 均值)
  * 仍用均值，行为不变(无回归)。这是 SEC 只存 ~6 年、拉不到完整周期时的下行保护。
  */
-function conservativeNormalized(series: number[], latest: number | undefined): { value: number; capped: boolean } {
+function conservativeNormalized(
+  series: number[],
+  latest: number | undefined,
+  lift?: { s: number; target: number | undefined },
+): { value: number; capped: boolean; basisLift?: number } {
   const a = avg(series);
   if (latest != null && Number.isFinite(latest) && latest < a) return { value: latest, capped: true };
-  return { value: a, capped: false };
+  // 上行成长股:无 lift / s≤0 / target≤avg(守卫)→ 今天行为(取 avg,只上不下)。
+  if (!lift || !(lift.s > 0) || lift.target == null || !(lift.target > a)) return { value: a, capped: false };
+  return { value: a + lift.s * (lift.target - a), capped: false, basisLift: lift.s };
+}
+
+// 测试钩子(仅 .check.ts 用;不改变生产行为)。
+export function conservativeNormalizedForTest(
+  series: number[],
+  latest: number | undefined,
+  lift?: { s: number; target: number | undefined },
+) {
+  return conservativeNormalized(series, latest, lift);
 }
 
 function marginOf(y: ValuationFloorYear): number | undefined {
@@ -106,16 +122,23 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial
   const totalDebt = latest.total_debt ?? 0;
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
+  const { nopatOf, investedCapitalOf } = roicHelpers(tax.rate);
+  const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
+  const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
-  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined, isFinancial, allYears);
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, { s: sc.s, target: sc.target });
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined, isFinancial, allYears, sc.s);
 }
 
 function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[]): ValuationFloor {
   const yearsUsed = years.map((y) => y.fiscal_year);
+  const tax = normalizedTaxRate(years);
+  const { nopatOf, investedCapitalOf } = roicHelpers(tax.rate);
+  const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
+  const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
-  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed);
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE, isFinancial, allYears);
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, { s: sc.s, target: sc.target });
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE, isFinancial, allYears, sc.s);
 }
 
 // Shared scaffold: asset floor, moat (off the supplied reference lamp), leverage
@@ -130,6 +153,7 @@ function assembleFloor(
   earningsBasisNote: string | undefined,
   isFinancial: boolean,
   allYears: ValuationFloorYear[],
+  structuralConfidenceScore?: number,
 ): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
@@ -231,6 +255,7 @@ function assembleFloor(
     sustainable_growth: sustainableGrowthRate,
     is_financial: isFinancial,
     financial_sgr: financialSgr,
+    structural_confidence: structuralConfidenceScore,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,
@@ -329,11 +354,17 @@ function grahamNotApplicableLamp(yearsUsed: number[]): EpvLamp {
   };
 }
 
-function buildBuffettLamp(years: ValuationFloorYear[], shares: number, yearsUsed: number[]): EpvLamp {
+function buildBuffettLamp(
+  years: ValuationFloorYear[],
+  shares: number,
+  yearsUsed: number[],
+  lift?: { s: number; target: number | undefined },
+): EpvLamp {
   const mc = maintenanceCapex(years);
   const niSeries = years.map((y) => y.net_income!);
-  // 周期保守:净利下滑时压到当前运行率,不资本化繁荣峰值均值(audit #2)。
-  const normNi = conservativeNormalized(niSeries, niSeries[0]);
+  // 周期保守:净利下滑时压到当前运行率,不资本化繁荣峰值均值(audit #2)。上行成长股:结构性置信分 s
+  // 驱动的连续加权(Phase 3.7)—— s 高 + target(趋势拟合)> avg → 抬基数;s=0/target≤avg → 今天行为(avg)。
+  const normNi = conservativeNormalized(niSeries, niSeries[0], lift);
   const daVals = years.map((y) => y.d_and_a).filter((v): v is number => v != null);
   const avgDa = daVals.length ? avg(daVals) : undefined;
   // Real owner earnings = net income + D&A − maintenance capex, WITHOUT ΔNWC (maintenance ΔNWC ≈ 0;

@@ -10,7 +10,7 @@
  */
 import assert from "node:assert";
 import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
-import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW } from "./epvFloor";
+import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW, conservativeNormalizedForTest } from "./epvFloor";
 import { maintenanceCapex } from "./maintenanceCapex";
 import { deriveOeDcf } from "./ownerEarningsDcf";
 import { CAP_STRONG, CAP_MODERATE } from "./moatCap";
@@ -63,11 +63,17 @@ assert.ok(g.method.bridge.includes("cash") && g.method.bridge.includes("debt"), 
 assert.ok(/unlevered/i.test(g.method.leverage_treatment), "graham unlevered");
 
 // ── Buffett owner-earnings lamp, NO bridge ───────────────────────────────────
-// avg net income 2_400; eq_high 2400/r_low (no bridge), eq_low 2400/r_high
+// avg net income 2_400, latest 3_000 (upward branch). This fixture is a textbook
+// revenue-driven grower (net income 1800→3000 in step with revenue, margins flat),
+// so Phase 3.7's structural-confidence basis lift engages: s=0.6, target=3_000
+// (log-trend fit ≥ latest) → normalized = 2400 + 0.6×(3000−2400) = 2_760.
+// eq_high 2760/r_low (no bridge), eq_low 2760/r_high.
 const b = floor.buffett_epv;
 assert.ok(b.assessable, "buffett assessable");
-assert.ok(Math.abs(b.equity_value_high! - 2_400 / DISCOUNT_RATE_LOW) < 1, `buffett eq_high (no bridge) got ${b.equity_value_high}`);
-assert.ok(Math.abs(b.equity_value_low! - 2_400 / DISCOUNT_RATE_HIGH) < 1, `buffett eq_low got ${b.equity_value_low}`);
+assert.ok(Math.abs(floor.structural_confidence! - 0.6) < 1e-9, `structural_confidence≈0.6 got ${floor.structural_confidence}`);
+assert.ok(Math.abs(b.normalized_earnings! - 2_760) < 1, `buffett normalized_earnings≈2760 (s-lifted) got ${b.normalized_earnings}`);
+assert.ok(Math.abs(b.equity_value_high! - 2_760 / DISCOUNT_RATE_LOW) < 1, `buffett eq_high (no bridge) got ${b.equity_value_high}`);
+assert.ok(Math.abs(b.equity_value_low! - 2_760 / DISCOUNT_RATE_HIGH) < 1, `buffett eq_low got ${b.equity_value_low}`);
 assert.ok(/no .*bridge/i.test(b.method.bridge), "buffett states no bridge");
 assert.ok(/levered/i.test(b.method.leverage_treatment), "buffett levered");
 
@@ -81,8 +87,12 @@ const levered: ValuationFloorInput = {
   ],
 };
 const lf = floorOf(computeValuationFloor(levered));
-// avg NI 950 → buffett eq_high 950/r_low (debt NOT subtracted)
-assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 950 / DISCOUNT_RATE_LOW) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
+// avg NI 950, latest 1_000 (upward branch, revenue-driven grower like the compounder
+// fixture above) → Phase 3.7 structural-confidence lift engages: s=0.6, target=1_000 →
+// normalized = 950 + 0.6×(1000−950) = 980. eq_high 980/r_low (debt NOT subtracted).
+assert.ok(Math.abs(lf.structural_confidence! - 0.6) < 1e-9, `levered structural_confidence≈0.6 got ${lf.structural_confidence}`);
+assert.ok(Math.abs(lf.buffett_epv.normalized_earnings! - 980) < 1, `levered buffett normalized_earnings≈980 (s-lifted) got ${lf.buffett_epv.normalized_earnings}`);
+assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 980 / DISCOUNT_RATE_LOW) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
 // graham bridges: nopat 0.2×10000×(1−0.21)=1580; /r_low +500 −8000
 assert.ok(Math.abs(lf.graham_epv.equity_value_high! - (1_580 / DISCOUNT_RATE_LOW + 500 - 8_000)) < 1, `levered graham eq_high (bridged) got ${lf.graham_epv.equity_value_high}`);
 assert.strictEqual(lf.high_leverage_warning, true, "levered trips high-leverage warning");
@@ -158,10 +168,18 @@ const fin = floorOf(computeValuationFloor(financial));
 assert.strictEqual(fin.graham_epv.assessable, false, "financial: graham not assessable (no operating income)");
 assert.ok(/operating income is not reported/i.test(fin.graham_epv.not_assessable_reason ?? ""), "financial: graham reason names missing operating income");
 assert.ok(fin.buffett_epv.assessable, "financial: buffett lamp assessable");
-// avg NI 2800 → eq_high 2800/r_low (no bridge), per share /1000
-const finHigh = 2_800 / DISCOUNT_RATE_LOW;
-assert.ok(Math.abs(fin.buffett_epv.equity_value_high! - finHigh) < 1, `financial buffett eq_high≈${finHigh.toFixed(0)} got ${fin.buffett_epv.equity_value_high}`);
-assert.ok(Math.abs(fin.buffett_epv.per_share_high! - finHigh / 1_000) < 1e-9, `financial buffett ps_high got ${fin.buffett_epv.per_share_high}`);
+// avg NI 2800, latest 3000 (upward branch) → Phase 3.7 basis lift may raise the net-income
+// basis above the plain average, bounded in [avg, latest] by construction.
+const finHighNoLift = 2_800 / DISCOUNT_RATE_LOW;
+const finHighFullLift = 3_000 / DISCOUNT_RATE_LOW;
+assert.ok(
+  fin.buffett_epv.equity_value_high! >= finHighNoLift - 1 && fin.buffett_epv.equity_value_high! <= finHighFullLift + 1,
+  `financial buffett eq_high in [${finHighNoLift.toFixed(0)},${finHighFullLift.toFixed(0)}] got ${fin.buffett_epv.equity_value_high}`,
+);
+assert.ok(
+  Math.abs(fin.buffett_epv.per_share_high! - fin.buffett_epv.equity_value_high! / 1_000) < 1e-9,
+  `financial buffett ps_high got ${fin.buffett_epv.per_share_high}`,
+);
 assert.strictEqual(fin.asset_floor.assessable, true, "financial: asset floor still emitted");
 assert.ok(fin.provenance.earnings_basis_note && /owner[- ]earnings/i.test(fin.provenance.earnings_basis_note), "financial: provenance carries single-lamp basis note");
 assert.notStrictEqual(fin.moat_reading.signal, "not_assessable", "financial: moat reads off buffett lamp, not stuck unassessable");
@@ -222,12 +240,19 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
     const avgNi = (2_000 + 1_800 + 1_600) / 3;
     const avgDa = (1_000 + 950 + 900) / 3;
     const mc = maintenanceCapex(years as any).value!;
-    const oe = avgNi + avgDa - mc; // NO ΔNWC term (audit fix #3)
-    assert.ok(Math.abs(b.normalized_earnings! - oe) < 1e-6, "owner earnings = net income + D&A − maintenance capex, no ΔNWC");
+    const oeNoLift = avgNi + avgDa - mc; // NO ΔNWC term (audit fix #3)
+    const oeFullLift = 2_000 + avgDa - mc; // upper bound: net-income basis capped at latest year
+    // Phase 3.7: this fixture's net income is monotonically increasing (latest ≥ avg), so the
+    // structural-confidence lift may raise the net-income basis above the plain average; by
+    // construction (structuralConfidence.ts) the lifted basis is bounded in [avg, latest].
+    assert.ok(
+      b.normalized_earnings! >= oeNoLift - 1e-6 && b.normalized_earnings! <= oeFullLift + 1e-6,
+      `owner earnings = net income + D&A − maintenance capex, no ΔNWC, basis in [avg,latest] got ${b.normalized_earnings} vs [${oeNoLift},${oeFullLift}]`,
+    );
     // SBC is NOT added back (audit fix #6) but disclosed.
     assert.ok(b.sbc_to_oe_pct != null && b.sbc_to_oe_pct > 0, "SBC/OE disclosed");
     const avgSbc = (200 + 180 + 160) / 3;
-    assert.ok(Math.abs(b.sbc_to_oe_pct! - avgSbc / oe) < 1e-6, "SBC/OE% = avg SBC / owner earnings");
+    assert.ok(Math.abs(b.sbc_to_oe_pct! - avgSbc / b.normalized_earnings!) < 1e-6, "SBC/OE% = avg SBC / owner earnings");
   }
 }
 
@@ -507,6 +532,41 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
 
   // 地基不变:surge 只该抬中性/乐观上沿,valueFloor(悲观资产底)与 base 逐位相同。
   assert.strictEqual(fSurge.asset_floor.per_share, fBase.asset_floor.per_share, "地基:surge 不改 valueFloor(asset floor per share 不变)");
+}
+
+// ── Task 6: conservativeNormalized 连续加权(lift)────────────────────────────
+{
+  // 上行 + s=1 → 抬到 target
+  {
+    const r = conservativeNormalizedForTest([120, 60, 40, 30], 120, { s: 1, target: 100 });
+    assert.ok(Math.abs(r.value - 100) < 1e-9, `s=1 → target, got ${r.value}`);
+    assert.strictEqual(r.capped, false);
+  }
+  // 上行 + s=0.5 → avg + 0.5×(target−avg)
+  {
+    const series = [120, 60, 40, 30]; const a = (120 + 60 + 40 + 30) / 4; // 62.5
+    const r = conservativeNormalizedForTest(series, 120, { s: 0.5, target: 100 });
+    assert.ok(Math.abs(r.value - (a + 0.5 * (100 - a))) < 1e-9, `half lift, got ${r.value}`);
+  }
+  // 无 lift → 今天行为(上行取 avg)
+  {
+    const series = [120, 60, 40, 30]; const a = 62.5;
+    const r = conservativeNormalizedForTest(series, 120, undefined);
+    assert.ok(Math.abs(r.value - a) < 1e-9, "no lift → avg");
+  }
+  // 下行分支(latest<avg)+ 即便传 lift → 逐字保留 capped(取 latest)
+  {
+    const r = conservativeNormalizedForTest([30, 80, 100, 90], 30, { s: 1, target: 999 });
+    assert.strictEqual(r.value, 30, "down-branch unchanged");
+    assert.strictEqual(r.capped, true);
+  }
+  // 单调性:target≤avg(守卫回退)→ 不降,取 avg
+  {
+    const series = [70, 60, 40, 30]; const a = 50;
+    const r = conservativeNormalizedForTest(series, 70, { s: 1, target: 40 }); // target<avg
+    assert.ok(Math.abs(r.value - a) < 1e-9, "target<=avg → avg, never below");
+  }
+  console.log("Task6 conservativeNormalized lift: OK");
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");
