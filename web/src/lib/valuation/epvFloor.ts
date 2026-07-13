@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial, roicHelpers } from "./moatCap";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -156,13 +156,7 @@ function assembleFloor(
   // fix: investedCapitalOf returns undefined for negative/zero equity — a basis-invalid year,
   // not a false-positive-stable one).
   const roicTax = tax.rate;
-  const nopatOf = (y: ValuationFloorYear): number | undefined =>
-    y.operating_income != null ? y.operating_income * (1 - roicTax) : undefined;
-  const investedCapitalOf = (y: ValuationFloorYear): number | undefined => {
-    if (!(y.shareholders_equity != null && y.shareholders_equity > 0)) return undefined; // BUG1: 负/零权益→口径无效,跳过
-    const nd = y.net_debt ?? ((y.total_debt ?? 0) - (y.cash ?? 0));
-    return nd + y.shareholders_equity;
-  };
+  const { nopatOf, investedCapitalOf } = roicHelpers(roicTax);
   const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
   const roicDeclining = roicTrend({ fyYears: years, investedCapitalOf, nopatOf }) === "declining";
   const sustainableGrowthRate = sustainableGrowth({ fyYears: years, nopatOf, investedCapitalOf });
