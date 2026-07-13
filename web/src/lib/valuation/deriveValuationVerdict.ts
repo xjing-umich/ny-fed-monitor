@@ -52,6 +52,9 @@ function finitePositive(n: number | undefined): n is number {
 /** OE 收益率上限：>33%(≈P/OE<3x) 几乎必是 per-share/ADR 口径错（如 ADS:普通股比例未对齐）。 */
 export const EXTREME_OE_YIELD = 0.33;
 
+/** Phase 3.7:结构性置信分 ≥ 此阈值 → ai_capex 敞口不再一票否决可靠性(高置信结构性盈利,非顺周期脉冲)。 */
+export const S_RELIABLE = 0.8;
+
 /**
  * 估值可靠性：把引擎**已经算出**的红旗收口成一个布尔。任一触发 → 不可靠：
  *  - high_leverage_warning：净负债/权益>1，9–11% 单率股权桥失真。
@@ -64,7 +67,10 @@ export const EXTREME_OE_YIELD = 0.33;
 export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcfAssessment }): boolean {
   const { floor, oeDcf } = input;
   if (floor?.high_leverage_warning) return false;
-  if (floor?.ai_capex_distortion_warning) return false;
+  // Phase 3.7:ai_capex 只在**未达结构性高置信**时才杀可靠性;s≥S_RELIABLE(如 GOOGL,结构性盈利、
+  // 非顺周期脉冲)推翻否决。NVDA 型 s≈0.5<0.8 仍被挡在聚合面(个股页 IV 已按 s 半抬,互不冲突)。
+  if (floor?.ai_capex_distortion_warning && !(floor?.structural_confidence != null && floor.structural_confidence >= S_RELIABLE))
+    return false;
   if (oeDcf?.declined) return false;
   if (oeDcf?.diagnostics?.quick_check_flag) return false;
   const oeY = oeDcf?.diagnostics?.oe_yield;

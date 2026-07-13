@@ -128,6 +128,8 @@ export type ValuationFloor = {
    * (Task 4, Task 1 data-verified口径). undefined when is_financial=false or no valid FY year.
    */
   financial_sgr?: number;
+  /** Phase 3.7 结构性置信分 s∈[0,1];驱动净利基数连续加权 + assessReliability 的 ai_capex 解耦。 */
+  structural_confidence?: number;
   provenance: ValuationFloorProvenance;
 };
 

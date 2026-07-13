@@ -248,3 +248,21 @@ export function sustainableGrowthRateFinancial(fyYears: ValuationFloorYear[]): n
 function clampUnit(x: number): number {
   return Math.min(1, Math.max(0, x));
 }
+
+/**
+ * ROIC 口径闭包工厂(逐字提取自 epvFloor.assembleFloor,供结构性置信分 s 与 assembleFloor 共用,
+ * 避免两处重复定义)。nopatOf=税后经营利润;investedCapitalOf 对负/零权益年返回 undefined(BUG1 口径守卫)。
+ */
+export function roicHelpers(taxRate: number): {
+  nopatOf: (y: ValuationFloorYear) => number | undefined;
+  investedCapitalOf: (y: ValuationFloorYear) => number | undefined;
+} {
+  const nopatOf = (y: ValuationFloorYear): number | undefined =>
+    y.operating_income != null ? y.operating_income * (1 - taxRate) : undefined;
+  const investedCapitalOf = (y: ValuationFloorYear): number | undefined => {
+    if (!(y.shareholders_equity != null && y.shareholders_equity > 0)) return undefined;
+    const nd = y.net_debt ?? ((y.total_debt ?? 0) - (y.cash ?? 0));
+    return nd + y.shareholders_equity;
+  };
+  return { nopatOf, investedCapitalOf };
+}
