@@ -6,6 +6,7 @@ import {
   revenueDrivenRatio,
   validatedEarningsLevel,
   untestedPeakCap,
+  structuralConfidence,
   DOWNTURN_DROP,
   UNVALIDATED_JUMP_RATIO,
   UNTESTED_S_CAP,
@@ -86,3 +87,27 @@ assert.strictEqual(untestedPeakCap({ target: 112, avg: 99, validatedLevel: undef
 // untestedPeakCap: 无下行史但爆炸(target 300, avg 90)→ 300 > 3×90=270 → 封
 assert.strictEqual(untestedPeakCap({ target: 300, avg: 90, validatedLevel: undefined }), UNTESTED_S_CAP, "explosive no-history capped");
 console.log("Task3 untestedPeakCap: OK");
+
+function gy(fiscal_year: number, revenue: number, net_income: number): ValuationFloorYear {
+  return { fiscal_year, revenue, net_income } as ValuationFloorYear;
+}
+// GOOGL 型:营收驱动 + roicLongTermStrong=true + 稳升(验证过)→ s 接近 1
+{
+  const years = [2024, 2023, 2022, 2021, 2020].map((y, i) => gy(y, 300000 * Math.pow(1.12, -i), 90000 * Math.pow(1.12, -i)));
+  const r = structuralConfidence({ years, allYears: years, roicLongTermStrong: true });
+  assert.ok(r.s > 0.85, `GOOGL-like s high, got ${r.s}`);
+  assert.ok(r.target! > 0, "target positive");
+}
+// NVDA 型:爆炸(验证水平被 12× 甩开)→ 顶封 0.5,即便 rawScore 高
+{
+  const years = [gy(2025, 130000, 73000), gy(2024, 60000, 30000), gy(2023, 27000, 4400), gy(2022, 27000, 9800), gy(2021, 17000, 4300)];
+  const r = structuralConfidence({ years, allYears: years, roicLongTermStrong: true });
+  assert.ok(r.s <= 0.5 + 1e-9, `NVDA-like s capped ≤0.5, got ${r.s}`);
+}
+// 下行股(latest<avg 由调用方走 capped 分支;此处 target≤avg → s=0)
+{
+  const years = [gy(2024, 1000, 30), gy(2023, 1000, 80), gy(2022, 1000, 100), gy(2021, 1000, 90)];
+  const r = structuralConfidence({ years, allYears: years, roicLongTermStrong: false });
+  assert.strictEqual(r.s, 0, "declining latest → s=0");
+}
+console.log("Task4 structuralConfidence: OK");

@@ -96,3 +96,43 @@ export function revenueDrivenRatio(years: ValuationFloorYear[]): number {
   if (gRev <= 0) return 0;
   return clamp01(gRev / (gRev + Math.max(0, gMar)));
 }
+
+export const W_REVENUE_DRIVEN = 0.6;
+export const W_ROIC_DURABILITY = 0.4;
+
+function avg(xs: number[]): number {
+  return xs.reduce((s, v) => s + v, 0) / xs.length;
+}
+
+/**
+ * 结构性置信分 s∈[0,1](连续加权基数用)。s 高 = 当前盈利结构性、可作正常化基数 + ai_capex 未扭曲可靠性。
+ * 加分:收入驱动度 + ROIC 久期(roicLongTermStrong,调用方从原始 ROIC 算好传入)。
+ * 硬顶:未验证峰值跳升倍数(NVDA 半放)。全部输入为原始 revenue/net_income/ROIC 序列——不碰 normalized/moat/EPV(破循环依赖)。
+ * target(连续加权用)= max(avg, min(latest, trendFit)),保证 ≥avg(单调、只上不下);trendFit 不可算 → 回退 latest。
+ */
+export function structuralConfidence(input: {
+  years: ValuationFloorYear[];
+  allYears: ValuationFloorYear[];
+  roicLongTermStrong: boolean;
+}): { s: number; target: number | undefined } {
+  const nis = input.years.map((y) => y.net_income).filter((v): v is number => v != null && Number.isFinite(v));
+  if (nis.length === 0) return { s: 0, target: undefined };
+  const a = avg(nis);
+  const latest = input.years[0]?.net_income;
+  const trendFit = earningsTrendFittedLatest(input.years);
+  let target: number | undefined;
+  if (trendFit != null) target = Math.max(a, Math.min(latest ?? trendFit, trendFit));
+  else if (latest != null && Number.isFinite(latest)) target = Math.max(a, latest);
+  else target = undefined;
+
+  if (target == null || target <= a) return { s: 0, target };
+
+  const rawScore =
+    W_REVENUE_DRIVEN * revenueDrivenRatio(input.years) + W_ROIC_DURABILITY * (input.roicLongTermStrong ? 1 : 0);
+  const cap = untestedPeakCap({
+    target,
+    avg: a,
+    validatedLevel: validatedEarningsLevel(input.allYears, DOWNTURN_DROP),
+  });
+  return { s: clamp01(Math.min(rawScore, cap)), target };
+}
