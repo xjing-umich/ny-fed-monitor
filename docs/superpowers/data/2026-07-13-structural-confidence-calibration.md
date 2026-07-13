@@ -26,13 +26,12 @@ cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/probe-structural-conf
 | MSFT | 1.0000 | 91.39B | true | **true** | undefined(无下行年) | 99.37B | 1.254 | 1.000 | true |
 | NVDA | 0.4396 | 78.27B | true | **false** | 9.75B | 120.07B | 2.535 | 0.733 | false |
 | AAPL | 0.9474 | 106.09B | false | true | undefined(无下行年) | 104.81B | 1.054 | 0.912 | true |
-| CVX | 0 | 7.87B | false | true | 35.47B | 20.48B | — | 1.000 | false |
-| NUE | 0 | 1.18B | false | true | 7.61B | 4.55B | — | 0.000 | false |
-| FCX | 0 | 0.24B | false | true | 3.47B | 2.74B | — | 1.000 | false |
+| CVX | 0 | 7.87B | false | true | 35.47B | 20.48B | 1.000 | 1.000 | false |
+| NUE | 0 | 1.18B | false | true | 7.61B | 4.55B | 1.000 | 0.000 | false |
+| FCX | 0 | 0.24B | false | true | 3.47B | 2.74B | 1.000 | 1.000 | false |
 
-CVX/NUE/FCX 的 `target/avg` 标"—":s=0 分支下 `target ≤ avg`(下行 capped,见
-`structuralConfidence()`:`if (target == null || target <= a) return { s: 0, target }`),
-比值本身无意义(已在下行分支被拦,不进入 rawScore/cap 计算)。
+CVX/NUE/FCX 的 `target/avg` 标 `1.000`:s=0 分支下 `target = avg`(capped-to-avg 机制确认值),
+已在下行分支被拦,不进入 rawScore/cap 计算。
 
 ## 三类判据核验
 
@@ -41,6 +40,7 @@ CVX/NUE/FCX 的 `target/avg` 标"—":s=0 分支下 `target ≤ avg`(下行 capp
 `ai_capex_distortion_warning=true`,但因 `s≥S_RELIABLE(0.8)`,Phase 2.5 的 s 解耦逻辑
 (`deriveValuationVerdict.assessReliability`)推翻了单灯 ai_capex 否决,`reliable` 仍判
 true——这正是本 Phase 3.7 要交付的行为(结构性高置信盈利不该被顺周期 capex 闸误伤)。
+⚠️ GOOGL s=0.8105 距阈值仅 +1.3%,边际薄,后续 SEC 数据/ingest 波动可能翻档;不为留余量调 S_RELIABLE(拟合单票);留观测。
 **GREEN,达标。**
 
 **半放预期(NVDA,爆炸未验证):** 判据 = `s≈0.5` 且 `reliable=false`。实测 `s=0.4396`,
