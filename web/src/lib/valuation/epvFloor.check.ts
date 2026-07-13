@@ -168,14 +168,14 @@ const fin = floorOf(computeValuationFloor(financial));
 assert.strictEqual(fin.graham_epv.assessable, false, "financial: graham not assessable (no operating income)");
 assert.ok(/operating income is not reported/i.test(fin.graham_epv.not_assessable_reason ?? ""), "financial: graham reason names missing operating income");
 assert.ok(fin.buffett_epv.assessable, "financial: buffett lamp assessable");
-// avg NI 2800, latest 3000 (upward branch) → Phase 3.7 basis lift may raise the net-income
-// basis above the plain average, bounded in [avg, latest] by construction.
-const finHighNoLift = 2_800 / DISCOUNT_RATE_LOW;
-const finHighFullLift = 3_000 / DISCOUNT_RATE_LOW;
-assert.ok(
-  fin.buffett_epv.equity_value_high! >= finHighNoLift - 1 && fin.buffett_epv.equity_value_high! <= finHighFullLift + 1,
-  `financial buffett eq_high in [${finHighNoLift.toFixed(0)},${finHighFullLift.toFixed(0)}] got ${fin.buffett_epv.equity_value_high}`,
-);
+// This fixture has no `revenue` field, so revenueDrivenRatio=0; it also has no
+// `operating_income`, so nopatOf/roicLongTermStrong can never see a valid year →
+// roicLongTermStrong=false. Both structural-confidence inputs are zero, so s=0 and the
+// Phase 3.7 basis lift never engages — behavior is bit-for-bit the pre-Task-6 average:
+// avg NI 2800, no D&A/capex data → owner earnings degrades to avg NI = 2800 exactly.
+assert.strictEqual(fin.structural_confidence, 0, `financial: s=0 (no revenue, no operating_income) got ${fin.structural_confidence}`);
+assert.ok(Math.abs(fin.buffett_epv.normalized_earnings! - 2_800) < 1, `financial buffett normalized_earnings=2800 (s=0, no lift) got ${fin.buffett_epv.normalized_earnings}`);
+assert.ok(Math.abs(fin.buffett_epv.equity_value_high! - 2_800 / DISCOUNT_RATE_LOW) < 1, `financial buffett eq_high got ${fin.buffett_epv.equity_value_high}`);
 assert.ok(
   Math.abs(fin.buffett_epv.per_share_high! - fin.buffett_epv.equity_value_high! / 1_000) < 1e-9,
   `financial buffett ps_high got ${fin.buffett_epv.per_share_high}`,
@@ -227,27 +227,29 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
 
 // ── Owner Earnings (spec §1.3) ───────────────────────────────────────────────
 {
+  // Net income held flat (latest == avg, not monotonically increasing) so that the
+  // Phase 3.7 structural-confidence lift never engages (s=0; see structuralConfidence.ts:
+  // target=max(avg, min(latest,trendFit)) <= avg whenever latest<=avg) — this fixture's job
+  // is auditing ΔNWC exclusion (#3) and SBC non-add-back (#6), not the earnings-lift path, so
+  // it deliberately does not need a rising net-income series.
   const years = [
-    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 2_000, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 500, total_debt: 0, shares_diluted: 1_000, capex: 1_500, d_and_a: 1_000, ppe_net: 9_000, stock_based_comp: 200, working_capital: 1_000 },
+    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 500, total_debt: 0, shares_diluted: 1_000, capex: 1_500, d_and_a: 1_000, ppe_net: 9_000, stock_based_comp: 200, working_capital: 1_000 },
     { fiscal_year: 2024, revenue: 9_500, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_800, cash: 450, total_debt: 0, shares_diluted: 1_000, capex: 1_400, d_and_a: 950, ppe_net: 8_500, stock_based_comp: 180, working_capital: 800 },
-    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_600, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 400, total_debt: 0, shares_diluted: 1_000, capex: 1_300, d_and_a: 900, ppe_net: 8_000, stock_based_comp: 160, working_capital: 600 },
+    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 400, total_debt: 0, shares_diluted: 1_000, capex: 1_300, d_and_a: 900, ppe_net: 8_000, stock_based_comp: 160, working_capital: 600 },
   ];
   const floor = computeValuationFloor({ ticker: "OE", years });
   assert.ok(floor && "kind" in floor && floor.kind === "floor");
   if (floor && "kind" in floor && floor.kind === "floor") {
     const b = floor.buffett_epv;
     assert.ok(b.assessable, "buffett lamp assessable");
-    const avgNi = (2_000 + 1_800 + 1_600) / 3;
+    assert.strictEqual(floor.structural_confidence, 0, `OE fixture: s=0 (flat net income, latest==avg) got ${floor.structural_confidence}`);
+    const avgNi = (1_800 + 1_800 + 1_800) / 3;
     const avgDa = (1_000 + 950 + 900) / 3;
     const mc = maintenanceCapex(years as any).value!;
-    const oeNoLift = avgNi + avgDa - mc; // NO ΔNWC term (audit fix #3)
-    const oeFullLift = 2_000 + avgDa - mc; // upper bound: net-income basis capped at latest year
-    // Phase 3.7: this fixture's net income is monotonically increasing (latest ≥ avg), so the
-    // structural-confidence lift may raise the net-income basis above the plain average; by
-    // construction (structuralConfidence.ts) the lifted basis is bounded in [avg, latest].
+    const oe = avgNi + avgDa - mc; // NO ΔNWC term (audit fix #3)
     assert.ok(
-      b.normalized_earnings! >= oeNoLift - 1e-6 && b.normalized_earnings! <= oeFullLift + 1e-6,
-      `owner earnings = net income + D&A − maintenance capex, no ΔNWC, basis in [avg,latest] got ${b.normalized_earnings} vs [${oeNoLift},${oeFullLift}]`,
+      Math.abs(b.normalized_earnings! - oe) < 1e-6,
+      `owner earnings = net income + D&A − maintenance capex, no ΔNWC, got ${b.normalized_earnings} expected ${oe}`,
     );
     // SBC is NOT added back (audit fix #6) but disclosed.
     assert.ok(b.sbc_to_oe_pct != null && b.sbc_to_oe_pct > 0, "SBC/OE disclosed");
