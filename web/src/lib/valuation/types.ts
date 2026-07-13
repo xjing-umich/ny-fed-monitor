@@ -239,8 +239,6 @@ export type ValuationFloorInput = {
   ticker: string;
   company_name?: string;
   years: ValuationFloorYear[]; // most-recent-first
-  /** SEC sector/SIC description (Task 4: financial-sector identification input). */
-  sector?: string;
   /** SEC sic code (Task 4: is_financial = sic∈[6020,6099]∪[6300,6399]，银行+保险). */
   sic?: number;
 };
