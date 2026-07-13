@@ -13,7 +13,7 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
-import { deriveValuationVerdict, assessReliability, isImplausibleBand, MOS_BASE, MOS_MAX } from "./deriveValuationVerdict";
+import { deriveValuationVerdict, assessReliability, isImplausibleBand, MOS_BASE, MOS_MAX, S_RELIABLE } from "./deriveValuationVerdict";
 
 // 仅 deriveValuationVerdict 真正读取的字段被填实；其余用最小 stub 满足类型。
 function floorStub(): ValuationFloor {
@@ -177,6 +177,32 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   } as unknown as ValuationFloor;
   assert(assessReliability({ floor: aiFloor, oeDcf: oe() }) === false, "ai_capex_distortion_warning → unreliable");
   assert(assessReliability({ floor: floorStub(), oeDcf: oe() }) === true, "no AI warning → reliable");
+}
+
+// 13c) Task 7: assessReliability 按 s 解耦 ai_capex 否决
+{
+  const baseFloor = { kind: "floor", high_leverage_warning: false } as any;
+  // ai_capex + s≥0.8(GOOGL 型)→ 否决被推翻 → reliable=true
+  assert.strictEqual(
+    assessReliability({ floor: { ...baseFloor, ai_capex_distortion_warning: true, structural_confidence: 0.9 } }),
+    true, "ai_capex + high s → reliable",
+  );
+  // ai_capex + s<0.8(NVDA 型 0.5)→ 仍 false
+  assert.strictEqual(
+    assessReliability({ floor: { ...baseFloor, ai_capex_distortion_warning: true, structural_confidence: 0.5 } }),
+    false, "ai_capex + mid s → still unreliable",
+  );
+  // ai_capex + 无 s → 逐字旧行为 false
+  assert.strictEqual(
+    assessReliability({ floor: { ...baseFloor, ai_capex_distortion_warning: true } }),
+    false, "ai_capex + no s → unreliable (legacy)",
+  );
+  // 其余条件不动:high_leverage 仍一票否决(即便 s 高)
+  assert.strictEqual(
+    assessReliability({ floor: { ...baseFloor, high_leverage_warning: true, structural_confidence: 0.95 } }),
+    false, "high leverage still vetoes regardless of s",
+  );
+  console.log("Task7 assessReliability s-decouple: OK");
 }
 
 // 14) net-net:price(80) 在 (⅔NCAV, NCAV) 之间 → assetFloor=true, buy=false。
