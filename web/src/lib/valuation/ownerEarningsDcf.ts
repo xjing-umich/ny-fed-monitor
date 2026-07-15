@@ -139,22 +139,29 @@ export function hModelValue(oe0: number, gS: number, gL: number, r: number): num
   return (oe0 * ((1 + gL) + H * (gS - gL))) / denom;
 }
 
-function discountBand(dgs10: { value: number; date: string } | null): DiscountBandProvenance {
+// leveragePremium：由 epvFloor.assembleFloor 算一次并发布在 floor.leverage_premium 上,这里只读、不重算
+// （单一真相源,防两条腿分歧——沿用 moat_cap 的模式）。owner earnings 是股权流,贴现率随杠杆
+// 上升（MM Prop II）。同量平移 r_low/r_high,不改变二者的大小关系,倒挂 flag 判据不受影响。
+function discountBand(
+  dgs10: { value: number; date: string } | null,
+  leveragePremium = 0,
+): DiscountBandProvenance {
   if (!dgs10 || !Number.isFinite(dgs10.value)) {
     return {
-      r_low: FALLBACK_BAND[0],
-      r_high: FALLBACK_BAND[1],
-      midpoint: (FALLBACK_BAND[0] + FALLBACK_BAND[1]) / 2,
+      r_low: FALLBACK_BAND[0] + leveragePremium,
+      r_high: FALLBACK_BAND[1] + leveragePremium,
+      midpoint: (FALLBACK_BAND[0] + FALLBACK_BAND[1]) / 2 + leveragePremium,
       anchored: false,
       inverted: false,
       note: "DGS10 unavailable — discount band falls back to the 9–11% engine range (not anchored to live treasury).",
     };
   }
   const dgs10Dec = dgs10.value / 100; // FRED percent → decimal
-  const rAggressive = dgs10Dec + DGS10_PREMIUM;
-  const inverted = dgs10Dec >= INVERSION_DGS10; // rAggressive ≥ R_STRICT (0.12)
-  const rLow = Math.min(rAggressive, R_STRICT);
-  const rHigh = Math.max(rAggressive, R_STRICT);
+  const rAggressive = dgs10Dec + DGS10_PREMIUM + leveragePremium;
+  const inverted = dgs10Dec >= INVERSION_DGS10; // rAggressive ≥ R_STRICT (0.12), 判据只看 DGS10,不受溢价平移影响
+  const rStrictShifted = R_STRICT + leveragePremium;
+  const rLow = Math.min(rAggressive, rStrictShifted);
+  const rHigh = Math.max(rAggressive, rStrictShifted);
   // Local staleness check (do NOT import isPriceStale from @/lib/managers/priceRead —
   // that module is server-only and this valuation module must stay pure).
   const dgs10Stale =
@@ -303,7 +310,8 @@ export function deriveOeDcf(
   // gRaw/gFund 皆缺 → candidates 仅剩 cagrFallback(退回今天行为,但用新 cap);全缺 → 0。
   const g1 = declined ? 0 : candidates.length ? clamp(Math.min(...candidates), 0, cap) : 0;
 
-  const discount = discountBand(dgs10);
+  // owner earnings 是股权流,读 floor.leverage_premium(epvFloor 已发布,单一真相源)——不本地重算。
+  const discount = discountBand(dgs10, floor.leverage_premium ?? 0);
 
   // 终值增长（中枢/乐观档）：g = min(10Y国债, 3%名义GDP) 且不快于近期 g1；恶化/高杠杆股不给终值增长。
   const gCap = Math.min(discount.dgs10_value ?? 0.025, GDP_NOMINAL_CAP);

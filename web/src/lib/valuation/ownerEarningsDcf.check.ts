@@ -606,4 +606,27 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   assert.ok(Math.abs(r.growth_g1! - 0.06) < 1e-6, `P: fallback to cagr, g_used≈0.06, got ${r.growth_g1}`);
 }
 
+// ── 杠杆溢价进 OE-DCF 贴现带(spec Task 3) ──────────────────────────────────
+{
+  const dgs10 = { value: 4.25, date: "2026-06-19" };
+  const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
+  const floorFixture = () => floorWith(lamp(1000, 100, [2022, 2023, 2024]));
+  const base = deriveOeDcf(floorFixture(), years, dgs10, price(120));
+  const levFloor = { ...floorFixture(), leverage_premium: 0.02 } as unknown as ValuationFloor;
+  const lev = deriveOeDcf(levFloor, years, dgs10, price(120));
+
+  assert.ok(Math.abs(lev.discount!.r_low - (base.discount!.r_low + 0.02)) < 1e-9, "r_low += 溢价");
+  assert.ok(Math.abs(lev.discount!.r_high - (base.discount!.r_high + 0.02)) < 1e-9, "r_high += 溢价");
+  // 溢价真的压低了 IV(端到端)
+  assert.ok(lev.tiers!.neutral.per_share < base.tiers!.neutral.per_share, "溢价 → 中枢 IV 更低");
+  // 缺溢价字段 → 退化成今天行为(逐位不变)
+  const noField = deriveOeDcf(
+    { ...floorFixture(), leverage_premium: undefined } as unknown as ValuationFloor,
+    years,
+    dgs10,
+    price(120),
+  );
+  assert.strictEqual(noField.discount!.r_low, base.discount!.r_low, "缺字段 → 行为不变");
+}
+
 console.log("ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK");
