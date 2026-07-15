@@ -98,10 +98,12 @@ assert.ok(Math.abs(justAbove - justBelow) < 0.001, `L0 处有悬崖:${justBelow}
 assert.strictEqual(leveragePremium({ netDebt: 6_000, ownerEarnings: 1_000 }).leverage, 6, "L 透出");
 
 // 8. 斜率符合声明(L0 之上每多 1 年偿债久期)
-const at5 = leveragePremium({ netDebt: 5_000, ownerEarnings: 1_000 }).premium;
-const at6 = leveragePremium({ netDebt: 6_000, ownerEarnings: 1_000 }).premium;
-if (at6 < LEVERAGE_PREMIUM_CAP) {
-  assert.ok(Math.abs((at6 - at5) - LEVERAGE_SLOPE) < 1e-9, `斜率不符:${at6 - at5} ≠ ${LEVERAGE_SLOPE}`);
+// ⚠️ 锚在 L0+1 / L0+2 而非写死的 L=5/6:Task 8 校准会改 L0,写死的点可能双双落进
+// 不加价区(溢价都是 0 → 差值 0 ≠ SLOPE → 伪失败)。用 L0 相对定位对任何 L0 都成立。
+const rampA = leveragePremium({ netDebt: (LEVERAGE_L0 + 1) * 1_000, ownerEarnings: 1_000 }).premium;
+const rampB = leveragePremium({ netDebt: (LEVERAGE_L0 + 2) * 1_000, ownerEarnings: 1_000 }).premium;
+if (rampB < LEVERAGE_PREMIUM_CAP) {
+  assert.ok(Math.abs((rampB - rampA) - LEVERAGE_SLOPE) < 1e-9, `斜率不符:${rampB - rampA} ≠ ${LEVERAGE_SLOPE}`);
 }
 
 console.log("leveragePremium.check.ts: all assertions passed.");
