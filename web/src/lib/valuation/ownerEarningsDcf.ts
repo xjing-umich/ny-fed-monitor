@@ -317,9 +317,10 @@ export function deriveOeDcf(
   // owner earnings 是股权流,读 floor.leverage_premium(epvFloor 已发布,单一真相源)——不本地重算。
   const discount = discountBand(dgs10, floor.leverage_premium ?? 0);
 
-  // 终值增长（中枢/乐观档）：g = min(10Y国债, 3%名义GDP) 且不快于近期 g1；恶化/高杠杆股不给终值增长。
+  // 终值增长（中枢/乐观档）：g = min(10Y国债, 3%名义GDP) 且不快于近期 g1；恶化的生意不给终值增长。
+  // 杠杆已由股权成本溢价(floor.leverage_premium)承担,不再在此二次归零 —— 见 spec §3.3。
   const gCap = Math.min(discount.dgs10_value ?? 0.025, GDP_NOMINAL_CAP);
-  const gTerminal = declined || floor.high_leverage_warning ? 0 : Math.min(gCap, g1);
+  const gTerminal = declined ? 0 : Math.min(gCap, g1);
 
   // ── Moat → competitive-advantage-period (CAP，Phase 2) ─────────────────────
   // Single source of truth: floor.moat_cap, computed once in epvFloor.computeValuationFloor
