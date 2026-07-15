@@ -404,7 +404,9 @@ function buildBuffettLamp(
   simplifications.push(
     lev.premium > 0
       ? `Capitalized at the 9–11% base band plus a ${(lev.premium * 100).toFixed(1)}pp leverage premium (cost of equity rises with leverage — MM Proposition II). ${lev.basis}`
-      : "Capitalized at the 9–11% band as a cost-of-equity proxy; no leverage premium applied (net cash or debt within the no-charge range).",
+      : lev.leverage === undefined
+        ? `Capitalized at the 9–11% band as a cost-of-equity proxy; no leverage premium applied. ${lev.basis}`
+        : "Capitalized at the 9–11% band as a cost-of-equity proxy; no leverage premium applied (net cash or debt within the no-charge range).",
   );
 
   const method = {

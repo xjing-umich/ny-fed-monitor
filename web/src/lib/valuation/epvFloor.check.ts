@@ -14,6 +14,7 @@ import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW, conservat
 import { maintenanceCapex } from "./maintenanceCapex";
 import { deriveOeDcf } from "./ownerEarningsDcf";
 import { CAP_STRONG, CAP_MODERATE } from "./moatCap";
+import { LEVERAGE_L0, LEVERAGE_SLOPE, LEVERAGE_PREMIUM_CAP } from "./leveragePremium";
 
 function year(fy: number, o: Partial<ValuationFloorYear>): ValuationFloorYear {
   return { fiscal_year: fy, ...o };
@@ -99,6 +100,11 @@ assert.ok(Math.abs(lf.buffett_epv.normalized_earnings! - 980) < 1, `levered buff
 assert.ok((lf.leverage_premium ?? 0) > 0, "levered fixture: net-debt-heavy → nonzero leverage premium");
 assert.strictEqual(lf.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW + lf.leverage_premium!, "levered buffett r_low = base + premium");
 assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 980 / lf.buffett_epv.method.discount_rate_low) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
+// Pin the premium itself against the slope formula (symbolic in the exported constants so
+// Task 8's recalibration of LEVERAGE_L0/LEVERAGE_SLOPE/LEVERAGE_PREMIUM_CAP doesn't break this):
+// netDebt 7_500 / ownerEarnings 980 ≈ 7.7yr coverage, inside the linear slope region (not capped).
+const expectedLeveredPremium = Math.min(LEVERAGE_PREMIUM_CAP, Math.max(0, (7_500 / 980 - LEVERAGE_L0) * LEVERAGE_SLOPE));
+assert.ok(Math.abs(lf.leverage_premium! - expectedLeveredPremium) < 1e-9, `levered premium matches the slope formula, expected≈${expectedLeveredPremium} got ${lf.leverage_premium}`);
 // graham bridges: nopat 0.2×10000×(1−0.21)=1580; /r_low +500 −8000
 assert.ok(Math.abs(lf.graham_epv.equity_value_high! - (1_580 / DISCOUNT_RATE_LOW + 500 - 8_000)) < 1, `levered graham eq_high (bridged) got ${lf.graham_epv.equity_value_high}`);
 assert.strictEqual(lf.high_leverage_warning, true, "levered trips high-leverage warning");
