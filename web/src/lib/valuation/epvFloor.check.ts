@@ -635,4 +635,36 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   assert.ok((negEquity.leverage_premium ?? 0) > 0, "硬伤①已修:负权益名拿到非零溢价");
 }
 
+// ── Task 2 补丁:leverage 第三分支(数据不可得/owner earnings 非正)不得渲染
+// 「净现金或杠杆内档」假话 —— 这句话恰好在最该诚实的人群(重债 + 非正 owner earnings 的困境企业)
+// 上最误导。leveragePremium() 的 undefined 分支只在 basis 里说「不可得」,buildBuffettLamp 的
+// simplifications 三元必须选中同一分支(见 epvFloor.ts ~:404-409)。
+{
+  // 重债(total_debt 5000 远超 cash 0)+ 净利连续为负且逐年恶化(latest<avg 触发 audit#2 下行压边,
+  // 即便有 s 提升也走不到升档分支)→ normalized owner earnings ≤ 0 → leveragePremium 走「不可得」
+  // 分支(leverage=undefined),而不是 netDebt<=0 的「净现金」分支,也不是杠杆内档分支。
+  const distressed: ValuationFloorInput = {
+    ticker: "DISTRESSED",
+    years: [
+      year(2025, { revenue: 5_000, operating_margin: -0.10, net_income: -1_000, shareholders_equity: 1_000, cash: 0, total_debt: 5_000, shares_diluted: 1_000 }),
+      year(2024, { revenue: 5_200, operating_margin: -0.08, net_income: -900, shareholders_equity: 1_500, cash: 0, total_debt: 5_000, shares_diluted: 1_000 }),
+      year(2023, { revenue: 5_400, operating_margin: -0.05, net_income: -700, shareholders_equity: 1_900, cash: 0, total_debt: 5_000, shares_diluted: 1_000 }),
+    ],
+  };
+  const df = floorOf(computeValuationFloor(distressed));
+  // 先核实夹具真的踩中 case 3(不可得),不是误踩「净现金」或「杠杆内档」分支。
+  assert.strictEqual(df.buffett_epv.assessable, false, "distressed 夹具:owner earnings 非正 → buffett 灯不可估(核验夹具确实够困境)");
+  assert.strictEqual(df.net_debt_to_owner_earnings, undefined, "distressed 夹具:leverage=undefined(命中不可得分支,非杠杆内档)");
+  assert.strictEqual(df.leverage_premium, 0, "spec §4.2:数据不可得 → 溢价 0,不因缺数据而惩罚");
+  const joined = df.buffett_epv.method.simplifications.join(" | ");
+  assert.ok(
+    !joined.includes("net cash or debt within the no-charge range"),
+    "distressed 名(重债+非正 owner earnings)不得渲染「净现金/杠杆内档」假话 —— 这句话在此人群上最误导",
+  );
+  assert.ok(
+    joined.includes("Net debt or owner earnings is unavailable"),
+    "distressed 名须用诚实的「数据不可得」披露文案(来自 leveragePremium 的 undefined 分支 basis)",
+  );
+}
+
 console.log("epvFloor.check.ts: all assertions passed.");
