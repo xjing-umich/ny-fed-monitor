@@ -19,6 +19,12 @@ const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_
 { const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0, declined: false, suppressedFlags: true, roicStable: true });
   assert(r.grade==="moderate", "红旗 → 不给强档 CAP"); }
 
+// 有红旗(ai_capex 降档) → basis 文案为"资本开支红旗"(moatCap.ts:43 降档理由本 Task 从
+// "资本开支/杠杆红旗"收窄;顺带守住全库 moat_cap.basis 不再残留"杠杆"字样)
+{ const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0, declined: false, suppressedFlags: true, roicStable: true });
+  assert(r.basis.includes("资本开支红旗"), `basis 应含"资本开支红旗" got ${r.basis}`);
+  assert(!r.basis.includes("杠杆"), `basis 不应再含"杠杆" got ${r.basis}`); }
+
 // 中franchise（ratio 1.5）→ 中档
 { const mid = { signal:"franchise", epv_per_share_compared:15, asset_per_share_compared:10, dual_test_passed:true } as any;
   const r = deriveMoatCap({ moat: mid, epvAvRatio: 1.5, declined:false, suppressedFlags:false, roicStable:true });
