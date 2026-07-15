@@ -90,9 +90,15 @@ const lf = floorOf(computeValuationFloor(levered));
 // avg NI 950, latest 1_000 (upward branch, revenue-driven grower like the compounder
 // fixture above) → Phase 3.7 structural-confidence lift engages: s=0.6, target=1_000 →
 // normalized = 950 + 0.6×(1000−950) = 980. eq_high 980/r_low (debt NOT subtracted).
+// This fixture is net-debt heavy (netDebt 7_500 vs ownerEarnings 980 → ~7.7yr coverage,
+// above LEVERAGE_L0=3) so, post-Task-2, the Buffett lamp's r_low now carries a nonzero
+// leverage premium — read it off method.discount_rate_low rather than the bare
+// DISCOUNT_RATE_LOW constant (asserted separately below).
 assert.ok(Math.abs(lf.structural_confidence! - 0.6) < 1e-9, `levered structural_confidence≈0.6 got ${lf.structural_confidence}`);
 assert.ok(Math.abs(lf.buffett_epv.normalized_earnings! - 980) < 1, `levered buffett normalized_earnings≈980 (s-lifted) got ${lf.buffett_epv.normalized_earnings}`);
-assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 980 / DISCOUNT_RATE_LOW) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
+assert.ok((lf.leverage_premium ?? 0) > 0, "levered fixture: net-debt-heavy → nonzero leverage premium");
+assert.strictEqual(lf.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW + lf.leverage_premium!, "levered buffett r_low = base + premium");
+assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 980 / lf.buffett_epv.method.discount_rate_low) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
 // graham bridges: nopat 0.2×10000×(1−0.21)=1580; /r_low +500 −8000
 assert.ok(Math.abs(lf.graham_epv.equity_value_high! - (1_580 / DISCOUNT_RATE_LOW + 500 - 8_000)) < 1, `levered graham eq_high (bridged) got ${lf.graham_epv.equity_value_high}`);
 assert.strictEqual(lf.high_leverage_warning, true, "levered trips high-leverage warning");
@@ -569,6 +575,58 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
     assert.ok(Math.abs(r.value - a) < 1e-9, "target<=avg → avg, never below");
   }
   console.log("Task6 conservativeNormalized lift: OK");
+}
+
+// ── 杠杆 → 股权成本溢价(spec Task 2) ───────────────────────────────────────
+{
+  const mk = (over: Partial<ValuationFloorYear>): ValuationFloorYear => ({
+    fiscal_year: 2024, revenue: 10_000, operating_income: 2_000, net_income: 1_000,
+    shares_diluted: 1_000, cash: 0, total_debt: 0, d_and_a: 500, shareholders_equity: 5_000,
+    ...over,
+  });
+  const yrs = (over: Partial<ValuationFloorYear>) => [
+    mk({ fiscal_year: 2024, ...over }), mk({ fiscal_year: 2023, ...over }), mk({ fiscal_year: 2022, ...over }),
+  ];
+
+  // 净现金名:溢价 0,Buffett 灯折现率 = 基线带(逐位不变)
+  const netCash = computeValuationFloor({ ticker: "NETCASH", years: yrs({ cash: 20_000, total_debt: 0 }) }) as ValuationFloor;
+  assert.strictEqual(netCash.leverage_premium, 0, "净现金 → 溢价 0");
+  assert.strictEqual(netCash.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW, "净现金 Buffett 低端 = 基线");
+  assert.strictEqual(netCash.buffett_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH, "净现金 Buffett 高端 = 基线");
+
+  // 重杠杆名:溢价 > 0,Buffett 灯折现率 = 基线 + 溢价
+  const levered = computeValuationFloor({ ticker: "LEVERED", years: yrs({ cash: 0, total_debt: 40_000 }) }) as ValuationFloor;
+  assert.ok((levered.leverage_premium ?? 0) > 0, "重杠杆 → 溢价 > 0");
+  assert.strictEqual(
+    levered.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW + levered.leverage_premium!,
+    "Buffett 低端 = 基线 + 溢价",
+  );
+  assert.strictEqual(
+    levered.buffett_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH + levered.leverage_premium!,
+    "Buffett 高端 = 基线 + 溢价",
+  );
+  // 溢价真的压低了每股值(单调性的端到端证明)
+  assert.ok(
+    levered.buffett_epv.per_share_high! < netCash.buffett_epv.per_share_high!,
+    "重杠杆 Buffett 每股值 < 净现金名",
+  );
+
+  // ⚠️ spec D4 回归门:Graham 灯折现率**逐位不变**(WACC 口径,杠杆已由桥承担)
+  assert.strictEqual(levered.graham_epv.method.discount_rate_low, DISCOUNT_RATE_LOW, "D4:Graham 低端不动");
+  assert.strictEqual(levered.graham_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH, "D4:Graham 高端不动");
+  assert.deepStrictEqual(
+    levered.provenance.discount_rate_band, [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH],
+    "D4:provenance 基线带不动",
+  );
+
+  // ⚠️ spec §4.5 硬伤① 回归门:负权益名**不再逃逸**,必须拿到非零溢价
+  const negEquity = computeValuationFloor({
+    ticker: "NEGEQ",
+    years: yrs({ cash: 0, total_debt: 40_000, shareholders_equity: -2_000 }),
+  }) as ValuationFloor;
+  assert.strictEqual(negEquity.net_debt_to_equity, undefined, "负权益:旧指标仍 undefined(未改)");
+  assert.strictEqual(negEquity.high_leverage_warning, false, "负权益:旧 flag 仍逃逸(未改,仅不再驱动惩罚)");
+  assert.ok((negEquity.leverage_premium ?? 0) > 0, "硬伤①已修:负权益名拿到非零溢价");
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");
