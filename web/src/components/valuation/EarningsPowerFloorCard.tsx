@@ -202,9 +202,13 @@ function leveragePremiumDisclosure(floor: ValuationFloor, lang: Lang): string | 
   const L = floor.net_debt_to_owner_earnings;
   const years = L != null && Number.isFinite(L) ? L.toFixed(1) : "—";
   const pp = (premium * 100).toFixed(1);
+  // 精度对齐引擎 method.denominator(Buffett 灯自己拼的句子,epvFloor.ts 用 toFixed(1))：
+  // 基线 9%/11% 本身是整数常量,pct()(0位小数)原样显示不失真;但 baseline+premium 之和
+  // 只有在「实际」也按 1 位小数四舍五入时才等式成立 —— 否则 9+2.6=11.6 被现实中的 pct()
+  // 圆整成 12,句子自证不了自己的加法。改用 pct1 让「实际」与引擎同一精度、同一份数字。
   return lang === "zh"
-    ? `基线 ${pct(baseLo)}–${pct(baseHi)}，净债务约 ${years} 年所有者盈利 → 加 ${pp} 个百分点风险溢价 → 实际 ${pct(actualLo)}–${pct(actualHi)}。`
-    : `Baseline ${pct(baseLo)}–${pct(baseHi)}, net debt ≈ ${years} years of owner earnings → +${pp}pp cost-of-equity premium → effective ${pct(actualLo)}–${pct(actualHi)}.`;
+    ? `基线 ${pct(baseLo)}–${pct(baseHi)}，净债务约 ${years} 年所有者盈利 → 加 ${pp} 个百分点风险溢价 → 实际 ${pct1(actualLo)}–${pct1(actualHi)}。`
+    : `Baseline ${pct(baseLo)}–${pct(baseHi)}, net debt ≈ ${years} years of owner earnings → +${pp}pp cost-of-equity premium → effective ${pct1(actualLo)}–${pct1(actualHi)}.`;
 }
 
 function valuationCautions(
