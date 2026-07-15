@@ -834,7 +834,7 @@ EOF
 - Test: 人工看页面(见 [[no-tests-solo-dev]])
 
 **Interfaces:**
-- Consumes: Task 2 的 `floor.leverage_premium` / `net_debt_to_owner_earnings` / `leverage_premium_basis`
+- Consumes: Task 2 的 `floor.leverage_premium` / `net_debt_to_owner_earnings`(**结构化数字**——`leverage_premium_basis` 是引擎层英文 prose,不得当 UI 文案直接渲染,见 [[no-mixed-language-copy]])
 
 **说明:** 折现率不再全站同一个数,**必须说清为什么这只票被多收**(spec §3.4)。
 
@@ -847,9 +847,9 @@ cd web && grep -rn "discount_rate_low\|discount_rate_band\|9–11\|9-11" src/app
 
 - [ ] **Step 2: 加披露**
 
-在展示折现带处,当 `floor.leverage_premium > 0` 时,展示 `floor.leverage_premium_basis`。
+在展示折现带处,当 `floor.leverage_premium > 0` 时,展示披露文案。**UI 必须从 `leverage_premium` / `net_debt_to_owner_earnings` 这两个结构化数字为每个 locale 各自拼句**,不得读取或渲染 `leverage_premium_basis`(那是引擎层英文 prose,拼进 `simplifications` 给内部消费,不是本地化来源——单语言字符串不可能同时服务中英双语站)。
 
-文案口径(中文站):
+文案口径(中文站,数字取自上述两个字段自行拼接):
 > 基线 9–11%,净债务约 N 年所有者盈利 → 加 X 个百分点风险溢价 → 实际 A–B%
 
 英文站照 `web/docs/copy-voice.md` 独立写,**不要中英混排**(见 [[no-mixed-language-copy]])。守 [[anti-ai-product-sense]]:真数据当主角,无装饰、无 AI 腔。

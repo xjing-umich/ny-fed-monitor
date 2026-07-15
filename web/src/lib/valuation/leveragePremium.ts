@@ -16,7 +16,11 @@ export type LeveragePremiumReading = {
   premium: number;
   /** L = netDebt / ownerEarnings(偿债久期,年)。净现金 → 0;不可得 → undefined。 */
   leverage: number | undefined;
-  /** 披露文案(个股页展示为什么这只票被多收)。 */
+  /**
+   * 引擎层英文披露文案(拼进 epvFloor.ts 的英文 simplifications)。⚠️ 不是 UI 的本地化来源——
+   * 这个站是中英双语,单语言字符串不可能同时服务两个 locale。UI 若要本地化披露,
+   * 必须从 `premium`/`leverage`(结构化数字)各自拼各语言的句子,不得直接渲染这个字段。
+   */
   basis: string;
 };
 
@@ -39,18 +43,18 @@ export function leveragePremium(input: {
     netDebt == null || !Number.isFinite(netDebt) ||
     ownerEarnings == null || !Number.isFinite(ownerEarnings) || !(ownerEarnings > 0)
   ) {
-    return { premium: 0, leverage: undefined, basis: "净债务或所有者盈利不可得 → 不加杠杆溢价,沿用基线带。" };
+    return { premium: 0, leverage: undefined, basis: "Net debt or owner earnings is unavailable, so no adjustment is made." };
   }
 
   if (netDebt <= 0) {
-    return { premium: 0, leverage: 0, basis: "净现金状态 → 不加杠杆溢价。" };
+    return { premium: 0, leverage: 0, basis: "Net cash position; no leverage premium applied." };
   }
 
   const leverage = netDebt / ownerEarnings;
   const premium = Math.min(LEVERAGE_PREMIUM_CAP, Math.max(0, (leverage - LEVERAGE_L0) * LEVERAGE_SLOPE));
   const basis =
     premium > 0
-      ? `净债务约为 ${leverage.toFixed(1)} 年所有者盈利,股权成本加 ${(premium * 100).toFixed(1)} 个百分点风险溢价。`
-      : `净债务约为 ${leverage.toFixed(1)} 年所有者盈利,在不加价区间内(≤ ${LEVERAGE_L0} 年)。`;
+      ? `Net debt is about ${leverage.toFixed(1)} years of owner earnings, adding ${(premium * 100).toFixed(1)}pp of cost-of-equity risk premium.`
+      : `Net debt is about ${leverage.toFixed(1)} years of owner earnings, within the no-charge range (≤ ${LEVERAGE_L0} years).`;
   return { premium, leverage, basis };
 }
