@@ -146,6 +146,10 @@ function discountBand(
   dgs10: { value: number; date: string } | null,
   leveragePremium = 0,
 ): DiscountBandProvenance {
+  // 溢价>0 时必须在 note 里披露,否则文案数字对不上实际返回的 rLow/rHigh(见 spec Task 3 review finding 1);
+  // 溢价=0 时 premiumClause 为空串,拼出的文案与改动前逐字节相同。
+  const premiumClause =
+    leveragePremium > 0 ? `, each +${(leveragePremium * 100).toFixed(2)}pp for leverage premium` : "";
   if (!dgs10 || !Number.isFinite(dgs10.value)) {
     return {
       r_low: FALLBACK_BAND[0] + leveragePremium,
@@ -153,7 +157,7 @@ function discountBand(
       midpoint: (FALLBACK_BAND[0] + FALLBACK_BAND[1]) / 2 + leveragePremium,
       anchored: false,
       inverted: false,
-      note: "DGS10 unavailable — discount band falls back to the 9–11% engine range (not anchored to live treasury).",
+      note: `DGS10 unavailable — discount band falls back to the 9–11% engine range${premiumClause} (not anchored to live treasury).`,
     };
   }
   const dgs10Dec = dgs10.value / 100; // FRED percent → decimal
@@ -178,7 +182,7 @@ function discountBand(
       ? `DGS10 last-good ${dgs10.date} 超 ${DGS10_MAX_AGE_DAYS} 天,贴现带未锚定实时利率。`
       : inverted
       ? `DGS10 ${dgs10.value.toFixed(2)}% pushes the +4.5% end above the 12% strict threshold; band shown as [min,max].`
-      : `Discount band: ${(rLow * 100).toFixed(2)}%–${(rHigh * 100).toFixed(2)}% (DGS10 +4.5% to a 12% strict end, as of ${dgs10.date}).`,
+      : `Discount band: ${(rLow * 100).toFixed(2)}%–${(rHigh * 100).toFixed(2)}% (DGS10 +4.5% to a 12% strict end${premiumClause}, as of ${dgs10.date}).`,
   };
 }
 
