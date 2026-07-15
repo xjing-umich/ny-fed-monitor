@@ -40,7 +40,7 @@ export function deriveMoatCap(input: {
   }
   // franchise 但未达强档或耐久性未过 → 中档
   // 注:!strongRatio 分支覆盖 pathA(比率)与 pathB(roicLongTermStrong)均未通过的情形，文案对两条路径都成立。
-  const reason = !strongRatio ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支/杠杆红旗" : "ROIC 稳定性不足";
+  const reason = !strongRatio ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : "ROIC 稳定性不足";
   return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
     ...(roicStable != null ? { roicStable } : {}),
     basis: `${reason} → 竞争优势期约 ${CAP_MODERATE} 年。` };

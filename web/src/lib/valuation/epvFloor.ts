@@ -225,7 +225,9 @@ function assembleFloor(
     epvAvRatio,
     epvAvRatioOperating,
     declined: durabilityDeclined(years),
-    suppressedFlags: highLeverage === true || (aiCapexDistortion === true && roicDeclining),
+    // 杠杆已由股权成本溢价承担(见 leveragePremium.ts / spec §3.3),不再压制护城河耐久性判定
+    // —— 它此前链式砍 CAP(20→10)并经 moatGrade 压低 GV,是同一风险的第三次惩罚。
+    suppressedFlags: aiCapexDistortion === true && roicDeclining,
     roicStable,
     roicLongTermStrong: roicLongStrong,
   });

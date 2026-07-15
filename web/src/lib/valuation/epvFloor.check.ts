@@ -111,6 +111,81 @@ assert.strictEqual(lf.high_leverage_warning, true, "levered trips high-leverage 
 assert.ok((lf.net_debt_to_equity ?? 0) > 1, "net debt/equity > 1 recorded");
 assert.strictEqual(floor.high_leverage_warning, false, "net-cash compounder no warning");
 
+// ── suppressedFlags 摘掉杠杆那半(spec Task 5) ──────────────────────────────
+// 隔离技巧:直接抬 total_debt 会污染本测试 —— 股权桥(+cash − totalDebt)会压低 Graham 灯
+// → 压低 epvMid → 可能把 franchise 翻成 commodity,那样测的就不是 CAP 而是护城河信号了。
+// 但 netDebt 只喂 netDebtToEquity(epvFloor.ts:162→173),股权桥用的是 cash/totalDebt 另外
+// 两个字段。故直接设 net_debt 可**只翻杠杆 flag、不碰桥与护城河比率**。
+{
+  const leveredFranchise = floorOf(
+    computeValuationFloor({
+      ...compounder,
+      years: compounder.years.map((y) => ({ ...y, net_debt: 1e9 })),
+    }),
+  );
+
+  // 前提自检:fixture 必须真的触发旧杠杆 flag,否则本测试是空转
+  assert.strictEqual(leveredFranchise.high_leverage_warning, true, "前提:旧杠杆 flag 确实被 fixture 触发");
+  // 前提自检:护城河信号未被 fixture 干扰(证明隔离成功,桥没被动)
+  assert.strictEqual(
+    leveredFranchise.moat_reading.signal, floor.moat_reading.signal,
+    "前提:护城河信号未受 fixture 干扰(桥未被污染)",
+  );
+
+  // 本 Task 的真断言:杠杆不再参与护城河耐久性判定
+  // ⚠️ 本组断言在 compounder 夹具上属"退化但不放松"验证:compounder 未设 operating_income →
+  // roicHelpers.nopatOf 恒 undefined → roicStable 恒 undefined → franchiseCore 恒假 →
+  // moat_cap.grade 无论 suppressedFlags 真假都读 moderate/10/false(改前改后逐位相同,曾实测
+  // 确认此断言组在改动前就已通过,不构成 RED)。下面紧接一组用 strong-eligible 夹具(roicStable
+  // 真正为 true)做的判别测试,才是本 Task 的 RED→GREEN 证据;这组保留是因为它仍然验证了前提
+  // 自检 + basis 文案分支(见 moatCap.ts 的 suppressedFlags 三元)不回归,不是无意义代码。
+  assert.strictEqual(leveredFranchise.moat_cap.grade, floor.moat_cap.grade, "杠杆不再压护城河档位");
+  assert.strictEqual(leveredFranchise.moat_cap.capYears, floor.moat_cap.capYears, "杠杆不再砍 CAP(20→10)");
+  assert.strictEqual(leveredFranchise.moat_cap.durablePassed, floor.moat_cap.durablePassed, "杠杆不再否决耐久性");
+}
+
+// ── suppressedFlags 摘掉杠杆那半:strong-eligible 判别夹具(真正的 RED→GREEN)──────
+// 上面 compounder 夹具的断言是空转(见其内注释)。这里复用 Phase 2.5 节(:549 附近)已验证的
+// 「稳定高 ROIC franchise」夹具形状(cash=0/total_debt=0 → 股权桥不吃 net_debt;moatRefLamp 用
+// Graham 灯,免疫 Buffett 灯的杠杆溢价),构造一个真能读到 strong 的夹具,才能看出杠杆摘除的差异。
+//
+// 只改**最新一年**的 net_debt(而非全部年份):
+//   - netDebtOf(latest) 同时驱动 highLeverage 与 leveragePremium(epvFloor.ts:389),一次改动
+//     两处触发,证明隔离成功不需要额外手段；
+//   - investedCapitalOf 逐年读 net_debt 算投入资本(moatCap.ts roicHelpers)。若把全部年份的
+//     net_debt 都拉爆，会连带压垮多年 ROIC、把 roicStable 也带假，失去隔离（曾实测复现：全年覆盖
+//     net_debt=1e9 时 roicStable 从 true 翻 false，与本 Task 无关的另一条通路）。只动最新一年，
+//     其余 5 年 ROIC 不受影响，稳定性判据(6 年里 ≥2/3 过门槛)在烂 1 年时仍然通过。
+{
+  const mk = (fy: number, oi: number, eq: number): ValuationFloorYear => ({
+    fiscal_year: fy, revenue: oi / 0.4, operating_margin: 0.4, operating_income: oi, net_income: oi * 0.75,
+    effective_tax_rate: 0.15, shareholders_equity: eq, goodwill: 200, intangibles: 100, cash: 0, total_debt: 0,
+    net_debt: 0, shares_diluted: 1_000, rd_expense: oi * 0.25, d_and_a: 800, capex: 1_500, ppe_net: 5_000, working_capital: 1_000,
+  });
+  const strongYears: ValuationFloorYear[] = [
+    mk(2025, 3_600, 10_200), mk(2024, 3_200, 9_100), mk(2023, 2_850, 8_100),
+    mk(2022, 2_550, 7_200), mk(2021, 2_250, 6_400), mk(2020, 2_000, 5_700),
+  ];
+  const strongFloor = floorOf(computeValuationFloor({ ticker: "STRONG_UNLEVERED", years: strongYears }));
+  // 前提自检:夹具真的能读到 strong,否则本组测试同样空转
+  assert.strictEqual(strongFloor.moat_cap.grade, "strong", "前提:未杠杆化夹具确实读 strong(否则测不出杠杆摘除)");
+
+  const leveredYears = strongYears.map((y) =>
+    y.fiscal_year === 2025 ? { ...y, net_debt: (y.shareholders_equity ?? 0) * 3 } : y);
+  const leveredStrong = floorOf(computeValuationFloor({ ticker: "STRONG_LEVERED", years: leveredYears }));
+
+  // 前提自检:fixture 真的触发旧杠杆 flag
+  assert.strictEqual(leveredStrong.high_leverage_warning, true, "前提:高杠杆 flag 确实被 fixture 触发");
+  // 前提自检:护城河信号 + roicStable 均未被隔离手法污染(Graham 灯免疫杠杆溢价、IC 多年稳定性未破)
+  assert.strictEqual(leveredStrong.moat_reading.signal, strongFloor.moat_reading.signal, "前提:护城河信号未受污染");
+  assert.strictEqual(leveredStrong.moat_cap.roicStable, true, "前提:roicStable 隔离成功,单年扰动未压垮多年稳定性");
+
+  // 本 Task 的真断言:杠杆不再把 strong-eligible franchise 压成 moderate
+  assert.strictEqual(leveredStrong.moat_cap.grade, "strong", "杠杆不再把 strong franchise 压成 moderate");
+  assert.strictEqual(leveredStrong.moat_cap.capYears, CAP_STRONG, "杠杆不再砍 CAP(20→10)");
+  assert.strictEqual(leveredStrong.moat_cap.durablePassed, true, "杠杆不再否决耐久性");
+}
+
 // ── moat franchise + negative-earnings degradation ───────────────────────────
 assert.strictEqual(floor.moat_reading.signal, "franchise", `compounder franchise got ${floor.moat_reading.signal}`);
 assert.ok(/directional/i.test(floor.moat_reading.basis_note) && /reproduction value/i.test(floor.moat_reading.basis_note), "moat basis note directional + reproduction value");
