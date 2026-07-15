@@ -157,6 +157,18 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   const v = deriveValuationVerdict({ floor: levFloor, strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
   assert(v && v.reliable === false, "financial + high leverage → unreliable");
 }
+// 11b) 高杠杆 floor + 非金融股 → reliable = true（非金融杠杆已由 floor.leverage_premium 计入股权成本，
+//      不再一票否决；这是本轮改动里后果最大的一条路径——首次允许高杠杆非金融股被标"便宜"）。
+{
+  const levFloorNonFin = {
+    kind: "floor",
+    high_leverage_warning: true,
+    is_financial: false,
+    net_net: { assessable: false, reason: "stub" },
+  } as unknown as ValuationFloor;
+  const v = deriveValuationVerdict({ floor: levFloorNonFin, strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
+  assert(v && v.reliable === true, "non-financial + high leverage → reliable (priced via cost-of-equity premium)");
+}
 // 12) 极端 OE 收益率(>33%, 疑似 per-share/ADR 算错)→ reliable = false
 {
   const oeBadYield = { ...oe(), diagnostics: { oe_yield: 0.4 } } as OeDcfAssessment;

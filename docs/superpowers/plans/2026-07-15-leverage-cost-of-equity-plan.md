@@ -947,6 +947,10 @@ cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/leverage-premium-cali
 
 **举证不过 → 常量收紧或回退。** 把清单写进 `docs/superpowers/plans/` 旁的一个 `2026-07-15-leverage-calibration-evidence.md`。
 
+- **SIC 缺失的金融股会漏放**:`is_financial` 来自 `isFinancialSic(input.sic)`,而它在 `sic == null` 时返回 `false`(`epvFloor.ts` 已注明「sector 不可得 → is_financial=false」)。改动前高杠杆被无条件否决,银行因此被动受保护;改动后 SIC 缺失的银行会掉进非金融分支,**可以被标便宜,而其结构性杠杆并未被 `netDebt/ownerEarnings` 溢价覆盖**(该指标对存款型资产负债表无意义)。
+  **必查**:全宇宙有多少票 `sic` 为空?其中有没有金融机构(按名称/行业人工识别)?若有,D7 的保护形同虚设,需在合并前决定:要么补 SIC 覆盖,要么给金融识别加备用判据。
+  ⚠️ 注意这与 spec §4.2「数据缺失 → 不惩罚」存在张力:不能简单地把 `sic == null` 一律当金融股压制。这是**需要真数据分布才能拍板的决策**,不得在代码里拍脑袋。
+
 > 核验铁律(见 [[graham-net-net-floor]]):查 `fiscal_period = FY` 行,**不用 `form = 10-K`**(派生 Q4 行 `shares_diluted` 损坏会造假警报);交验走真引擎,**不手写 SQL**。
 
 - [ ] **Step 8: 常量落定后重跑全部 check**
