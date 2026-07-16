@@ -32,10 +32,11 @@ import {
   reconcileMethods,
   resolveAds,
   isFundamentalsStale,
+  isSplitCoverageStale,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
-import { getLatestPrice, fmtPriceFact } from "@/lib/managers/priceRead";
+import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
 import { resolveStockPagePrice } from "@/lib/stocks/resolveStockPagePrice";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
@@ -406,10 +407,16 @@ export default async function StockTickerPage({
       ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, valuationPrice)
       : undefined;
 
+  // 拆股口径护栏:基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配,整条抑制估值判定。
+  const splitCoverageStale = isSplitCoverageStale({
+    fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
+    latestSplitDate: valuationFloor?.kind === "floor" ? await getLatestSplit(ticker) : null,
+  });
+
   // 上下文出口用的位置档(与估值卡同源, 永不漂移)。kind!=floor / 红旗 → null → 走兜底文案。
   const handoffVerdict =
     valuationFloor?.kind === "floor"
-      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation })
+      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation, splitCoverageStale })
       : null;
 
   // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照,
@@ -612,20 +619,26 @@ export default async function StockTickerPage({
                 eyebrow={page.valuation.eyebrow}
                 title={valuationTitle}
               />
-              <div className="mt-3">
-                <EarningsPowerFloorCard
-                  floor={valuationFloor}
-                  strikeZone={strikeZone}
-                  oeDcf={oeDcf}
-                  reconciliation={reconciliation}
-                  issuer={issuer}
-                  ticker={ticker}
-                  lang={lang}
-                  showStatus={false}
-                />
-              </div>
-              {expectations?.assessable && (
-                <PriceBetBlock expectations={expectations} lang={lang} />
+              {splitCoverageStale ? (
+                <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
+              ) : (
+                <>
+                  <div className="mt-3">
+                    <EarningsPowerFloorCard
+                      floor={valuationFloor}
+                      strikeZone={strikeZone}
+                      oeDcf={oeDcf}
+                      reconciliation={reconciliation}
+                      issuer={issuer}
+                      ticker={ticker}
+                      lang={lang}
+                      showStatus={false}
+                    />
+                  </div>
+                  {expectations?.assessable && (
+                    <PriceBetBlock expectations={expectations} lang={lang} />
+                  )}
+                </>
               )}
             </section>
           )}

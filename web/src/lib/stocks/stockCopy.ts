@@ -76,6 +76,7 @@ export const STOCK_PAGE_COPY = {
       below: "安全边际",
       within: "处于合理价值区间",
       above: "高于合理价值",
+      splitPaused: "该公司近期拆股，每股估值口径待下一份财报对齐后恢复。",
     },
     holders: {
       eyebrow: "SEC 13F · 持有人",
@@ -119,6 +120,7 @@ export const STOCK_PAGE_COPY = {
       below: "Margin of safety",
       within: "In fair-value range",
       above: "Above fair value",
+      splitPaused: "Recent stock split — per-share valuation is paused until the next filing restates the share count.",
     },
     holders: {
       eyebrow: "SEC 13F · holders",
