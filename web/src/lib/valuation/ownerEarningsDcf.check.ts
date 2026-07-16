@@ -217,12 +217,12 @@ assert.strictEqual(pickLatestFredPoint([{ date: "x", value: null }]), null);
   assert.strictEqual(r.terminal_method, "zero_growth", "declined → zero growth terminal");
   assert.strictEqual(r.terminal_growth, 0, "declined → g 0");
 }
-// 16) 高杠杆 floor → 退回零增长（即便净利上升）。
+// 16) 高杠杆但未恶化 → 不再强制清零终值增长（Task 4：杠杆已由折现率溢价承担，见下方新增用例）。
 {
   const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
   const levered = { kind: "floor", buffett_epv: lamp(1000, 100, [2022, 2023, 2024]), high_leverage_warning: true } as unknown as ValuationFloor;
   const r = deriveOeDcf(levered, years, { value: 4.25, date: "d" }, null);
-  assert.strictEqual(r.terminal_method, "zero_growth", "high leverage → zero growth terminal");
+  assert.strictEqual(r.terminal_method, "gordon_capped", "high leverage alone (undeclined) → gordon terminal, not forced to zero");
 }
 // 17) g1=0（净利持平）→ gTerminal=0 → 零增长（行为与现状一致）。
 {
@@ -604,6 +604,107 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   const floor = floorWithMoat(lamp(1000, 100, [2022, 2023, 2024]), { grade: "moderate" });
   const r = deriveOeDcf(floor, years, { value: 4, date: "d" }, null);
   assert.ok(Math.abs(r.growth_g1! - 0.06) < 1e-6, `P: fallback to cagr, g_used≈0.06, got ${r.growth_g1}`);
+}
+
+// ── gTerminal 摘掉杠杆那半(spec Task 4) ────────────────────────────────────
+{
+  const dgs10 = { value: 4.25, date: "2026-06-19" };
+  const yearsFull = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
+  const floorFixture = (overrides: Partial<ValuationFloor> = {}) =>
+    ({ ...floorWith(lamp(1000, 100, [2022, 2023, 2024])), ...overrides } as unknown as ValuationFloor);
+
+  // 高杠杆但未恶化 → 终值增长**不再**被归零(改由折现率溢价承担)
+  const hiLev = deriveOeDcf(
+    floorFixture({ high_leverage_warning: true, leverage_premium: 0.02 }),
+    yearsFull, dgs10, price(120),
+  );
+  assert.ok(hiLev.tiers!.neutral.per_share > 0, "高杠杆仍可评估");
+  const noLev = deriveOeDcf(floorFixture({ high_leverage_warning: false, leverage_premium: 0.02 }), yearsFull, dgs10, price(120));
+  assert.strictEqual(
+    hiLev.tiers!.neutral.per_share, noLev.tiers!.neutral.per_share,
+    "high_leverage_warning 不再影响 gTerminal(同溢价下值相同)",
+  );
+  assert.strictEqual(hiLev.terminal_method, "gordon_capped", "高杠杆但未恶化 → 走 gordon_capped，不再被强制清零");
+
+  // declined 那半**保留**:恶化仍归零终值增长
+  const yearsDeclining = [yr(2024, 80), yr(2023, 90), yr(2022, 100)];
+  const declinedFloor = deriveOeDcf(floorFixture({ high_leverage_warning: false }), yearsDeclining, dgs10, price(120));
+  assert.strictEqual(declinedFloor.tiers?.neutral.per_share != null, true, "declined 仍可评估");
+  assert.strictEqual(declinedFloor.terminal_method, "zero_growth", "declined → 仍归零终值增长(未被本次改动动到)");
+}
+
+// ── 杠杆溢价进 OE-DCF 贴现带(spec Task 3) ──────────────────────────────────
+{
+  const dgs10 = { value: 4.25, date: "2026-06-19" };
+  const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
+  const floorFixture = () => floorWith(lamp(1000, 100, [2022, 2023, 2024]));
+  const base = deriveOeDcf(floorFixture(), years, dgs10, price(120));
+  const levFloor = { ...floorFixture(), leverage_premium: 0.02 } as unknown as ValuationFloor;
+  const lev = deriveOeDcf(levFloor, years, dgs10, price(120));
+
+  assert.ok(Math.abs(lev.discount!.r_low - (base.discount!.r_low + 0.02)) < 1e-9, "r_low += 溢价");
+  assert.ok(Math.abs(lev.discount!.r_high - (base.discount!.r_high + 0.02)) < 1e-9, "r_high += 溢价");
+  // 溢价真的压低了 IV(端到端)
+  assert.ok(lev.tiers!.neutral.per_share < base.tiers!.neutral.per_share, "溢价 → 中枢 IV 更低");
+  // 缺溢价字段 → 与显式 leverage_premium: 0 的行为一致(测真正的退化接缝:调用方把字段
+  // 拼错/漏传时应该 fallback 到零溢价,而不是仅仅证明"同一个输入算两遍结果相同")
+  const noField = deriveOeDcf(
+    { ...floorFixture(), leverage_premium: undefined } as unknown as ValuationFloor,
+    years,
+    dgs10,
+    price(120),
+  );
+  const zeroFloor = { ...floorFixture(), leverage_premium: 0 } as unknown as ValuationFloor;
+  const zero = deriveOeDcf(zeroFloor, years, dgs10, price(120));
+  assert.strictEqual(noField.discount!.r_low, zero.discount!.r_low, "缺字段 → 行为等同显式0溢价");
+  assert.strictEqual(noField.discount!.r_high, zero.discount!.r_high, "缺字段 → r_high 也等同显式0溢价");
+}
+
+// ── 杠杆溢价 × fallback 分支(无 DGS10)、× inverted 分支(spec Task 3 review finding 3) ──
+{
+  const years = [yr(2024, 133.1), yr(2023, 121), yr(2022, 110), yr(2021, 100)];
+  const floorFixture = () => floorWith(lamp(1000, 100, [2022, 2023, 2024]));
+
+  // fallback 分支:dgs10 = null → FALLBACK_BAND,溢价须逐个端点只平移一次
+  const noDgs10Base = deriveOeDcf(floorFixture(), years, null, price(120));
+  const noDgs10Lev = deriveOeDcf(
+    { ...floorFixture(), leverage_premium: 0.02 } as unknown as ValuationFloor,
+    years,
+    null,
+    price(120),
+  );
+  assert.ok(
+    Math.abs(noDgs10Lev.discount!.r_low - (noDgs10Base.discount!.r_low + 0.02)) < 1e-9,
+    "fallback: r_low += 溢价(仅一次)",
+  );
+  assert.ok(
+    Math.abs(noDgs10Lev.discount!.r_high - (noDgs10Base.discount!.r_high + 0.02)) < 1e-9,
+    "fallback: r_high += 溢价(仅一次)",
+  );
+  assert.ok(
+    Math.abs(noDgs10Lev.discount!.midpoint - (noDgs10Base.discount!.midpoint + 0.02)) < 1e-9,
+    "fallback: midpoint += 溢价(仅一次)",
+  );
+
+  // inverted 分支:DGS10 ≥ 7.5% → aggressive 端超过 strict 端,判据只读 dgs10Dec,不受溢价平移干扰
+  const invertedDgs10 = { value: 7.6, date: "2026-06-19" };
+  const invBase = deriveOeDcf(floorFixture(), years, invertedDgs10, price(120));
+  const invLev = deriveOeDcf(
+    { ...floorFixture(), leverage_premium: 0.02 } as unknown as ValuationFloor,
+    years,
+    invertedDgs10,
+    price(120),
+  );
+  assert.strictEqual(invBase.discount!.inverted, true, "inverted: 无溢价时判据成立(前提)");
+  assert.strictEqual(invLev.discount!.inverted, true, "inverted: 溢价平移不改变倒挂判据");
+  assert.ok(
+    Math.abs(invLev.discount!.r_low - (invBase.discount!.r_low + 0.02)) < 1e-9,
+    "inverted: r_low += 溢价(仅一次)",
+  );
+  assert.ok(
+    Math.abs(invLev.discount!.r_high - (invBase.discount!.r_high + 0.02)) < 1e-9,
+    "inverted: r_high += 溢价(仅一次)",
+  );
 }
 
 console.log("ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK");

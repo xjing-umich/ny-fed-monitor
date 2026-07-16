@@ -5,6 +5,7 @@ import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
 import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial, roicHelpers } from "./moatCap";
 import { structuralConfidence } from "./structuralConfidence";
+import { leveragePremium } from "./leveragePremium";
 
 // audit #3: 股权成本带从 8/10% 提到 9/11%。原 8% 隐含的股权风险溢价(对 ~4.5% 国债仅 ~3.5%)
 // 远低于历史 ~4.5–5.5%,系统性高估；提到 9–11% 让 EPV 与提 premium 后的 OE-DCF 一致、更保守。
@@ -28,6 +29,13 @@ const SINGLE_LAMP_BASIS_NOTE =
 
 function avg(values: number[]): number {
   return values.reduce((s, v) => s + v, 0) / values.length;
+}
+
+/** 净债务:优先用申报的 net_debt,缺失则 totalDebt − cash。assembleFloor 与 Buffett 灯共用。 */
+function netDebtOf(latest: ValuationFloorYear): number {
+  const cash = latest.cash ?? 0;
+  const totalDebt = latest.total_debt ?? 0;
+  return latest.net_debt ?? totalDebt - cash;
 }
 
 /**
@@ -126,7 +134,7 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial
   const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
-  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, { s: sc.s, target: sc.target });
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
   return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined, isFinancial, allYears, sc.s);
 }
 
@@ -137,7 +145,7 @@ function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFin
   const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
-  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, { s: sc.s, target: sc.target });
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
   return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE, isFinancial, allYears, sc.s);
 }
 
@@ -159,7 +167,7 @@ function assembleFloor(
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
   const equity = latest.shareholders_equity;
-  const netDebt = latest.net_debt ?? totalDebt - cash;
+  const netDebt = netDebtOf(latest);
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
   const assetFloor = buildReproductionValue(years, shares);
@@ -217,7 +225,9 @@ function assembleFloor(
     epvAvRatio,
     epvAvRatioOperating,
     declined: durabilityDeclined(years),
-    suppressedFlags: highLeverage === true || (aiCapexDistortion === true && roicDeclining),
+    // 杠杆已由股权成本溢价承担(见 leveragePremium.ts / spec §3.3),不再压制护城河耐久性判定
+    // —— 它此前链式砍 CAP(20→10)并经 moatGrade 压低 GV,是同一风险的第三次惩罚。
+    suppressedFlags: aiCapexDistortion === true && roicDeclining,
     roicStable,
     roicLongTermStrong: roicLongStrong,
   });
@@ -246,10 +256,17 @@ function assembleFloor(
     moat_reading: moatReading,
     growth_value: growthValue,
     high_leverage_warning: highLeverage,
-    high_leverage_note: highLeverage
-      ? "High leverage (net debt / shareholders' equity above 1.0): the single 9–11% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
+    // Fix 2(Task 8 whole-branch review):非金融股的高杠杆现已由 leverage_premium 定价进 9–11% 带
+    // (spec D4/D7),不再是"降级近似"——那句 prose 现在只对金融股成立(金融股豁免溢价,唯一杠杆
+    // 处理是可信度闸,9–11% 带对它们仍是未定价的低杠杆近似)。非金融股不再发布这条 note,由
+    // leveragePremiumDisclosure(UI 侧,读 leverage_premium)接替披露。
+    high_leverage_note: highLeverage && isFinancial
+      ? "High leverage (net debt / shareholders' equity above 1.0): for financial issuers the single 9–11% rate band is a low-leverage approximation that is not priced for leverage (financials are exempt from the leverage premium; see the reliability gate instead). The ranges are shown but should be read with that in mind."
       : undefined,
     net_debt_to_equity: netDebtToEquity,
+    leverage_premium: buffettEpv.leverage_reading?.premium ?? 0,
+    net_debt_to_owner_earnings: buffettEpv.leverage_reading?.leverage,
+    leverage_premium_basis: buffettEpv.leverage_reading?.basis,
     ai_capex_distortion_warning: aiCapexDistortion || undefined,
     moat_cap: moatCap,
     sustainable_growth: sustainableGrowthRate,
@@ -358,6 +375,7 @@ function buildBuffettLamp(
   years: ValuationFloorYear[],
   shares: number,
   yearsUsed: number[],
+  isFinancial: boolean,
   lift?: { s: number; target: number | undefined },
 ): EpvLamp {
   const mc = maintenanceCapex(years);
@@ -372,6 +390,17 @@ function buildBuffettLamp(
   const canCorrect = mc.assessable && mc.value != null && avgDa != null;
   const ownerEarnings = canCorrect ? normNi.value + avgDa! - mc.value! : normNi.value;
 
+  // 杠杆 → 股权成本溢价(spec D4):本灯是**股权流 / 股权成本**口径(净利起算、已扣息、无桥),
+  // 股权成本随杠杆上升(MM Prop II)。Graham 灯是无杠杆 NOPAT/WACC + 桥,不加溢价。
+  // 溢价必须在 ownerEarnings 算出后才能算(它是分母),故在灯内部算,再透出给 assembleFloor 发布。
+  // spec D7:金融股(银行/保险)netDebt/ownerEarnings 对存款型资产负债表无意义(deriveValuationVerdict.ts
+  // 的注释同源),豁免溢价 —— 金融股的唯一杠杆处理是可信度闸(Task 6),不再叠加股权成本溢价。
+  const lev = isFinancial
+    ? { premium: 0, leverage: undefined, basis: "Financial issuer (bank/insurer): net debt / owner earnings does not describe a deposit-funded balance sheet, so no leverage premium is applied here; leverage is instead handled by the reliability gate." }
+    : leveragePremium({ netDebt: netDebtOf(years[0]), ownerEarnings });
+  const rLow = DISCOUNT_RATE_LOW + lev.premium;
+  const rHigh = DISCOUNT_RATE_HIGH + lev.premium;
+
   const simplifications: string[] = [];
   if (normNi.capped) simplifications.push("Net income is below its multi-year average (cyclical/declining): normalized owner earnings anchored to the latest year — no peak-earnings capitalization (audit #2).");
   if (canCorrect) {
@@ -383,15 +412,23 @@ function buildBuffettLamp(
   }
   simplifications.push("One-time items are not separately normalized (multi-year averaging smooths them partially).");
   simplifications.push("Share-based compensation is left as a real expense (not added back); see the SBC/OE disclosure.");
-  simplifications.push("Capitalized at the same 9–11% band as a cost-of-equity proxy (theoretically the cost of equity is higher; v2 simplification, v3 to refine).");
+  simplifications.push(
+    lev.premium > 0
+      ? `Capitalized at the 9–11% base band plus a ${(lev.premium * 100).toFixed(1)}pp leverage premium (cost of equity rises with leverage — MM Proposition II). ${lev.basis}`
+      : lev.leverage === undefined
+        ? `Capitalized at the 9–11% band as a cost-of-equity proxy; no leverage premium applied. ${lev.basis}`
+        : "Capitalized at the 9–11% band as a cost-of-equity proxy; no leverage premium applied (net cash or debt within the no-charge range).",
+  );
 
   const method = {
     earnings_basis: "Owner earnings = average net income + average D&A − maintenance capex (zero-growth floor; no ΔNWC).",
     leverage_treatment: "Levered (starts from net income, already after interest — an equity-holder stream).",
-    denominator: "Capitalized at the 9–11% rate band (read as a cost-of-equity proxy).",
+    denominator: lev.premium > 0
+      ? `Capitalized at the ${(rLow * 100).toFixed(1)}–${(rHigh * 100).toFixed(1)}% band (9–11% base + ${(lev.premium * 100).toFixed(1)}pp leverage premium).`
+      : "Capitalized at the 9–11% rate band (read as a cost-of-equity proxy).",
     bridge: "No enterprise→equity bridge: the capitalized result is already equity value (subtracting debt would double-count interest).",
-    discount_rate_low: DISCOUNT_RATE_LOW,
-    discount_rate_high: DISCOUNT_RATE_HIGH,
+    discount_rate_low: rLow,
+    discount_rate_high: rHigh,
     years_used: yearsUsed,
     simplifications,
   };
@@ -413,11 +450,12 @@ function buildBuffettLamp(
       normalized_earnings: ownerEarnings,
       sbc_to_oe_pct: sbcToOe,
       buyback_offsets_sbc: buybackOffsetsSbc,
+      leverage_reading: lev,
       method,
     };
   }
-  const equityLow = ownerEarnings / DISCOUNT_RATE_HIGH;
-  const equityHigh = ownerEarnings / DISCOUNT_RATE_LOW;
+  const equityLow = ownerEarnings / rHigh;
+  const equityHigh = ownerEarnings / rLow;
   return {
     label: "Buffett owner-earnings value",
     assessable: true,
@@ -428,6 +466,7 @@ function buildBuffettLamp(
     per_share_high: equityHigh / shares,
     sbc_to_oe_pct: sbcToOe,
     buyback_offsets_sbc: buybackOffsetsSbc,
+    leverage_reading: lev,
     method,
   };
 }

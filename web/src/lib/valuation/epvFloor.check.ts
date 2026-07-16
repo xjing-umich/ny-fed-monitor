@@ -14,6 +14,7 @@ import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW, conservat
 import { maintenanceCapex } from "./maintenanceCapex";
 import { deriveOeDcf } from "./ownerEarningsDcf";
 import { CAP_STRONG, CAP_MODERATE } from "./moatCap";
+import { LEVERAGE_L0, LEVERAGE_SLOPE, LEVERAGE_PREMIUM_CAP } from "./leveragePremium";
 
 function year(fy: number, o: Partial<ValuationFloorYear>): ValuationFloorYear {
   return { fiscal_year: fy, ...o };
@@ -90,14 +91,66 @@ const lf = floorOf(computeValuationFloor(levered));
 // avg NI 950, latest 1_000 (upward branch, revenue-driven grower like the compounder
 // fixture above) → Phase 3.7 structural-confidence lift engages: s=0.6, target=1_000 →
 // normalized = 950 + 0.6×(1000−950) = 980. eq_high 980/r_low (debt NOT subtracted).
+// This fixture is net-debt heavy (netDebt 7_500 vs ownerEarnings 980 → ~7.7yr coverage,
+// above LEVERAGE_L0=3) so, post-Task-2, the Buffett lamp's r_low now carries a nonzero
+// leverage premium — read it off method.discount_rate_low rather than the bare
+// DISCOUNT_RATE_LOW constant (asserted separately below).
 assert.ok(Math.abs(lf.structural_confidence! - 0.6) < 1e-9, `levered structural_confidence≈0.6 got ${lf.structural_confidence}`);
 assert.ok(Math.abs(lf.buffett_epv.normalized_earnings! - 980) < 1, `levered buffett normalized_earnings≈980 (s-lifted) got ${lf.buffett_epv.normalized_earnings}`);
-assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 980 / DISCOUNT_RATE_LOW) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
+assert.ok((lf.leverage_premium ?? 0) > 0, "levered fixture: net-debt-heavy → nonzero leverage premium");
+assert.strictEqual(lf.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW + lf.leverage_premium!, "levered buffett r_low = base + premium");
+assert.ok(Math.abs(lf.buffett_epv.equity_value_high! - 980 / lf.buffett_epv.method.discount_rate_low) < 1, `levered buffett eq_high got ${lf.buffett_epv.equity_value_high}`);
+// Pin the premium itself against the slope formula (symbolic in the exported constants so
+// Task 8's recalibration of LEVERAGE_L0/LEVERAGE_SLOPE/LEVERAGE_PREMIUM_CAP doesn't break this):
+// netDebt 7_500 / ownerEarnings 980 ≈ 7.7yr coverage, inside the linear slope region (not capped).
+const expectedLeveredPremium = Math.min(LEVERAGE_PREMIUM_CAP, Math.max(0, (7_500 / 980 - LEVERAGE_L0) * LEVERAGE_SLOPE));
+assert.ok(Math.abs(lf.leverage_premium! - expectedLeveredPremium) < 1e-9, `levered premium matches the slope formula, expected≈${expectedLeveredPremium} got ${lf.leverage_premium}`);
 // graham bridges: nopat 0.2×10000×(1−0.21)=1580; /r_low +500 −8000
 assert.ok(Math.abs(lf.graham_epv.equity_value_high! - (1_580 / DISCOUNT_RATE_LOW + 500 - 8_000)) < 1, `levered graham eq_high (bridged) got ${lf.graham_epv.equity_value_high}`);
 assert.strictEqual(lf.high_leverage_warning, true, "levered trips high-leverage warning");
 assert.ok((lf.net_debt_to_equity ?? 0) > 1, "net debt/equity > 1 recorded");
 assert.strictEqual(floor.high_leverage_warning, false, "net-cash compounder no warning");
+
+// ── suppressedFlags 摘掉杠杆那半(spec Task 5):strong-eligible 判别夹具(真正的 RED→GREEN)──────
+// 复用 Phase 2.5 节(:549 附近)已验证的「稳定高 ROIC franchise」夹具形状(cash=0/total_debt=0 → 股权桥不吃 net_debt;moatRefLamp 用
+// Graham 灯,免疫 Buffett 灯的杠杆溢价),构造一个真能读到 strong 的夹具,才能看出杠杆摘除的差异。
+//
+// 只改**最新一年**的 net_debt(而非全部年份):
+//   - netDebtOf(latest) 同时驱动 highLeverage 与 leveragePremium(epvFloor.ts:389),一次改动
+//     两处触发,证明隔离成功不需要额外手段；
+//   - investedCapitalOf 逐年读 net_debt 算投入资本(moatCap.ts roicHelpers)。若把全部年份的
+//     net_debt 都拉爆，会连带压垮多年 ROIC、把 roicStable 也带假，失去隔离（曾实测复现：全年覆盖
+//     net_debt=1e9 时 roicStable 从 true 翻 false，与本 Task 无关的另一条通路）。只动最新一年，
+//     其余 5 年 ROIC 不受影响，稳定性判据(6 年里 ≥2/3 过门槛)在烂 1 年时仍然通过。
+{
+  const mk = (fy: number, oi: number, eq: number): ValuationFloorYear => ({
+    fiscal_year: fy, revenue: oi / 0.4, operating_margin: 0.4, operating_income: oi, net_income: oi * 0.75,
+    effective_tax_rate: 0.15, shareholders_equity: eq, goodwill: 200, intangibles: 100, cash: 0, total_debt: 0,
+    net_debt: 0, shares_diluted: 1_000, rd_expense: oi * 0.25, d_and_a: 800, capex: 1_500, ppe_net: 5_000, working_capital: 1_000,
+  });
+  const strongYears: ValuationFloorYear[] = [
+    mk(2025, 3_600, 10_200), mk(2024, 3_200, 9_100), mk(2023, 2_850, 8_100),
+    mk(2022, 2_550, 7_200), mk(2021, 2_250, 6_400), mk(2020, 2_000, 5_700),
+  ];
+  const strongFloor = floorOf(computeValuationFloor({ ticker: "STRONG_UNLEVERED", years: strongYears }));
+  // 前提自检:夹具真的能读到 strong,否则本组测试同样空转
+  assert.strictEqual(strongFloor.moat_cap.grade, "strong", "前提:未杠杆化夹具确实读 strong(否则测不出杠杆摘除)");
+
+  const leveredYears = strongYears.map((y) =>
+    y.fiscal_year === 2025 ? { ...y, net_debt: y.shareholders_equity! * 3 } : y);
+  const leveredStrong = floorOf(computeValuationFloor({ ticker: "STRONG_LEVERED", years: leveredYears }));
+
+  // 前提自检:fixture 真的触发旧杠杆 flag
+  assert.strictEqual(leveredStrong.high_leverage_warning, true, "前提:高杠杆 flag 确实被 fixture 触发");
+  // 前提自检:护城河信号 + roicStable 均未被隔离手法污染(Graham 灯免疫杠杆溢价、IC 多年稳定性未破)
+  assert.strictEqual(leveredStrong.moat_reading.signal, strongFloor.moat_reading.signal, "前提:护城河信号未受污染");
+  assert.strictEqual(leveredStrong.moat_cap.roicStable, true, "前提:roicStable 隔离成功,单年扰动未压垮多年稳定性");
+
+  // 本 Task 的真断言:杠杆不再把 strong-eligible franchise 压成 moderate
+  assert.strictEqual(leveredStrong.moat_cap.grade, "strong", "杠杆不再把 strong franchise 压成 moderate");
+  assert.strictEqual(leveredStrong.moat_cap.capYears, CAP_STRONG, "杠杆不再砍 CAP(20→10)");
+  assert.strictEqual(leveredStrong.moat_cap.durablePassed, true, "杠杆不再否决耐久性");
+}
 
 // ── moat franchise + negative-earnings degradation ───────────────────────────
 assert.strictEqual(floor.moat_reading.signal, "franchise", `compounder franchise got ${floor.moat_reading.signal}`);
@@ -569,6 +622,134 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
     assert.ok(Math.abs(r.value - a) < 1e-9, "target<=avg → avg, never below");
   }
   console.log("Task6 conservativeNormalized lift: OK");
+}
+
+// ── 杠杆 → 股权成本溢价(spec Task 2) ───────────────────────────────────────
+{
+  const mk = (over: Partial<ValuationFloorYear>): ValuationFloorYear => ({
+    fiscal_year: 2024, revenue: 10_000, operating_income: 2_000, net_income: 1_000,
+    shares_diluted: 1_000, cash: 0, total_debt: 0, d_and_a: 500, shareholders_equity: 5_000,
+    ...over,
+  });
+  const yrs = (over: Partial<ValuationFloorYear>) => [
+    mk({ fiscal_year: 2024, ...over }), mk({ fiscal_year: 2023, ...over }), mk({ fiscal_year: 2022, ...over }),
+  ];
+
+  // 净现金名:溢价 0,Buffett 灯折现率 = 基线带(逐位不变)
+  const netCash = computeValuationFloor({ ticker: "NETCASH", years: yrs({ cash: 20_000, total_debt: 0 }) }) as ValuationFloor;
+  assert.strictEqual(netCash.leverage_premium, 0, "净现金 → 溢价 0");
+  assert.strictEqual(netCash.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW, "净现金 Buffett 低端 = 基线");
+  assert.strictEqual(netCash.buffett_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH, "净现金 Buffett 高端 = 基线");
+
+  // 重杠杆名:溢价 > 0,Buffett 灯折现率 = 基线 + 溢价
+  const levered = computeValuationFloor({ ticker: "LEVERED", years: yrs({ cash: 0, total_debt: 40_000 }) }) as ValuationFloor;
+  assert.ok((levered.leverage_premium ?? 0) > 0, "重杠杆 → 溢价 > 0");
+  assert.strictEqual(
+    levered.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW + levered.leverage_premium!,
+    "Buffett 低端 = 基线 + 溢价",
+  );
+  assert.strictEqual(
+    levered.buffett_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH + levered.leverage_premium!,
+    "Buffett 高端 = 基线 + 溢价",
+  );
+  // 溢价真的压低了每股值(单调性的端到端证明)
+  assert.ok(
+    levered.buffett_epv.per_share_high! < netCash.buffett_epv.per_share_high!,
+    "重杠杆 Buffett 每股值 < 净现金名",
+  );
+
+  // ⚠️ spec D4 回归门:Graham 灯折现率**逐位不变**(WACC 口径,杠杆已由桥承担)
+  assert.strictEqual(levered.graham_epv.method.discount_rate_low, DISCOUNT_RATE_LOW, "D4:Graham 低端不动");
+  assert.strictEqual(levered.graham_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH, "D4:Graham 高端不动");
+  assert.deepStrictEqual(
+    levered.provenance.discount_rate_band, [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH],
+    "D4:provenance 基线带不动",
+  );
+
+  // ⚠️ spec §4.5 硬伤① 回归门:负权益名**不再逃逸**,必须拿到非零溢价
+  const negEquity = computeValuationFloor({
+    ticker: "NEGEQ",
+    years: yrs({ cash: 0, total_debt: 40_000, shareholders_equity: -2_000 }),
+  }) as ValuationFloor;
+  assert.strictEqual(negEquity.net_debt_to_equity, undefined, "负权益:旧指标仍 undefined(未改)");
+  assert.strictEqual(negEquity.high_leverage_warning, false, "负权益:旧 flag 仍逃逸(未改,仅不再驱动惩罚)");
+  assert.ok((negEquity.leverage_premium ?? 0) > 0, "硬伤①已修:负权益名拿到非零溢价");
+}
+
+// ── Task 8 锁定测试(spec D7 + §4.8):金融股(is_financial)豁免杠杆溢价 ──────────
+// 全篇审查发现的跨任务缺陷:is_financial 只接进了可信度闸(Task 6),没接进溢价应用(Task 2)。
+// 银行/保险的 netDebt/ownerEarnings 对存款型资产负债表无意义(deriveValuationVerdict.ts:72 同源
+// 注释),金融股唯一的杠杆处理应是可信度闸,溢价必须恒为 0、折现率逐位 = 裸 DISCOUNT_RATE_LOW/HIGH
+// (§4.8:金融股行为相对 refactor 前逐位不变)。同financials数字喂给非金融股夹具作对照,
+// 证明豁免精确锁定在 is_financial,不是全局关掉溢价。
+{
+  const mkFin = (over: Partial<ValuationFloorYear>): ValuationFloorYear => ({
+    fiscal_year: 2024, revenue: 10_000, operating_income: 2_000, net_income: 1_000,
+    shares_diluted: 1_000, cash: 0, total_debt: 40_000, net_debt: 40_000, d_and_a: 500, shareholders_equity: 5_000,
+    ...over,
+  });
+  const finYrs = [
+    mkFin({ fiscal_year: 2024 }), mkFin({ fiscal_year: 2023 }), mkFin({ fiscal_year: 2022 }),
+  ];
+
+  // 银行 SIC(6022,National Commercial Banks)、高杠杆(netDebt 40_000 远超 ownerEarnings)
+  const bank = computeValuationFloor({ ticker: "BANK", years: finYrs, sic: 6022 }) as ValuationFloor;
+  assert.strictEqual(bank.is_financial, true, "前提:sic=6022 确实判定为金融股");
+  assert.strictEqual(bank.high_leverage_warning, true, "前提:夹具确实触发高杠杆(净债务/权益 > 1.0)");
+  assert.strictEqual(bank.leverage_premium, 0, "D7:金融股 → 溢价恒为 0");
+  assert.strictEqual(
+    bank.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW,
+    "§4.8:金融股 Buffett 低端 = 裸基线(逐位不变,未被溢价污染)",
+  );
+  assert.strictEqual(
+    bank.buffett_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH,
+    "§4.8:金融股 Buffett 高端 = 裸基线(逐位不变)",
+  );
+  // Fix 2:金融股仍是"降级近似"人群(唯一杠杆处理=可信度闸),note 应保留且措辞不再提"溢价定价"矛盾。
+  assert.ok(bank.high_leverage_note != null, "金融股高杠杆 note 仍发布(它是唯一未定价杠杆的人群)");
+
+  // 同一份数字,非金融股(sic 缺省 → is_financial=false)→ 溢价必须非零,证明豁免只挂在 is_financial 上。
+  const nonFin = computeValuationFloor({ ticker: "NONFIN", years: finYrs }) as ValuationFloor;
+  assert.strictEqual(nonFin.is_financial, false, "前提:未提供 sic → 非金融股");
+  assert.ok((nonFin.leverage_premium ?? 0) > 0, "D7 scope:非金融股(同样数字)溢价 > 0 — 豁免未误伤非金融股");
+  assert.ok(
+    nonFin.buffett_epv.method.discount_rate_low > DISCOUNT_RATE_LOW,
+    "非金融股 Buffett 低端 > 裸基线(溢价确实生效)",
+  );
+  // Fix 2:非金融股高杠杆时,note 应为 undefined(不再发"降级"假话;由 leverage_premium 披露接替)。
+  assert.strictEqual(nonFin.high_leverage_note, undefined, "非金融股高杠杆 → 旧 note 不再发布(避免与溢价披露矛盾)");
+}
+
+// ── Task 2 补丁:leverage 第三分支(数据不可得/owner earnings 非正)不得渲染
+// 「净现金或杠杆内档」假话 —— 这句话恰好在最该诚实的人群(重债 + 非正 owner earnings 的困境企业)
+// 上最误导。leveragePremium() 的 undefined 分支只在 basis 里说「不可得」,buildBuffettLamp 的
+// simplifications 三元必须选中同一分支(见 epvFloor.ts ~:404-409)。
+{
+  // 重债(total_debt 5000 远超 cash 0)+ 净利连续为负且逐年恶化(latest<avg 触发 audit#2 下行压边,
+  // 即便有 s 提升也走不到升档分支)→ normalized owner earnings ≤ 0 → leveragePremium 走「不可得」
+  // 分支(leverage=undefined),而不是 netDebt<=0 的「净现金」分支,也不是杠杆内档分支。
+  const distressed: ValuationFloorInput = {
+    ticker: "DISTRESSED",
+    years: [
+      year(2025, { revenue: 5_000, operating_margin: -0.10, net_income: -1_000, shareholders_equity: 1_000, cash: 0, total_debt: 5_000, shares_diluted: 1_000 }),
+      year(2024, { revenue: 5_200, operating_margin: -0.08, net_income: -900, shareholders_equity: 1_500, cash: 0, total_debt: 5_000, shares_diluted: 1_000 }),
+      year(2023, { revenue: 5_400, operating_margin: -0.05, net_income: -700, shareholders_equity: 1_900, cash: 0, total_debt: 5_000, shares_diluted: 1_000 }),
+    ],
+  };
+  const df = floorOf(computeValuationFloor(distressed));
+  // 先核实夹具真的踩中 case 3(不可得),不是误踩「净现金」或「杠杆内档」分支。
+  assert.strictEqual(df.buffett_epv.assessable, false, "distressed 夹具:owner earnings 非正 → buffett 灯不可估(核验夹具确实够困境)");
+  assert.strictEqual(df.net_debt_to_owner_earnings, undefined, "distressed 夹具:leverage=undefined(命中不可得分支,非杠杆内档)");
+  assert.strictEqual(df.leverage_premium, 0, "spec §4.2:数据不可得 → 溢价 0,不因缺数据而惩罚");
+  const joined = df.buffett_epv.method.simplifications.join(" | ");
+  assert.ok(
+    !joined.includes("net cash or debt within the no-charge range"),
+    "distressed 名(重债+非正 owner earnings)不得渲染「净现金/杠杆内档」假话 —— 这句话在此人群上最误导",
+  );
+  assert.ok(
+    joined.includes("Net debt or owner earnings is unavailable"),
+    "distressed 名须用诚实的「数据不可得」披露文案(来自 leveragePremium 的 undefined 分支 basis)",
+  );
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");

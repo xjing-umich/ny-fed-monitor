@@ -189,6 +189,28 @@ const CAUTION = {
   },
 } as const;
 
+// 杠杆 → 股权成本溢价披露(Task 7):折现率不再全站同一个数,必须说清这只票为什么被多收。
+// 只用结构化数字(leverage_premium / net_debt_to_owner_earnings)按 locale 各自拼句——
+// 禁用 leverage_premium_basis(引擎层英文 prose,拼进 buffett_epv.method.simplifications 供
+// 内部消费,不是本地化来源)。净现金 / 数据缺失 → premium 恒为 0,函数返回 null(无噪音)。
+function leveragePremiumDisclosure(floor: ValuationFloor, lang: Lang): string | null {
+  const premium = floor.leverage_premium;
+  if (premium == null || !(premium > 0)) return null;
+  const [baseLo, baseHi] = floor.provenance.discount_rate_band;
+  const actualLo = floor.buffett_epv.method.discount_rate_low;
+  const actualHi = floor.buffett_epv.method.discount_rate_high;
+  const L = floor.net_debt_to_owner_earnings;
+  const years = L != null && Number.isFinite(L) ? L.toFixed(1) : "—";
+  const pp = (premium * 100).toFixed(1);
+  // 精度对齐引擎 method.denominator(Buffett 灯自己拼的句子,epvFloor.ts 用 toFixed(1))：
+  // 基线 9%/11% 本身是整数常量,pct()(0位小数)原样显示不失真;但 baseline+premium 之和
+  // 只有在「实际」也按 1 位小数四舍五入时才等式成立 —— 否则 9+2.6=11.6 被现实中的 pct()
+  // 圆整成 12,句子自证不了自己的加法。改用 pct1 让「实际」与引擎同一精度、同一份数字。
+  return lang === "zh"
+    ? `基线 ${pct(baseLo)}–${pct(baseHi)}，净债务约 ${years} 年所有者盈利 → 加 ${pp} 个百分点风险溢价 → 实际 ${pct1(actualLo)}–${pct1(actualHi)}。`
+    : `Baseline ${pct(baseLo)}–${pct(baseHi)}, net debt ≈ ${years} years of owner earnings → +${pp}pp cost-of-equity premium → effective ${pct1(actualLo)}–${pct1(actualHi)}.`;
+}
+
 function valuationCautions(
   oeDcf: OeDcfAssessment | undefined,
   reconciliation: MethodReconciliation | undefined,
@@ -463,11 +485,15 @@ function MethodDetails({
   const netNetBuy = sz?.price ? isNetNetBuy(floor.net_net, sz.price.close) : false;
   const cautions = valuationCautions(oeDcf, reconciliation, lang, floor);
   const capNote = oeDcf?.assessable ? capDisclosure(oeDcf.moatCap, lang) : null;
+  const leverageNote = leveragePremiumDisclosure(floor, lang);
   return (
     <details className="text-xs text-[var(--tt-muted)]">
       <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">{t.methodSummary}</summary>
       <div className="mt-2 space-y-2">
-        {floor.high_leverage_warning ? (
+        {/* Fix 2(Task 8 whole-branch review):非金融股的高杠杆现已由 leverage_premium 定价进折现带
+            (spec D4/D7,见下方 leverageNote),不再是"降级近似";这条警示只对金融股仍成立
+            (金融股豁免溢价,9–11% 带对它们仍是未定价的低杠杆近似)。*/}
+        {floor.high_leverage_warning && floor.is_financial ? (
           <p className="text-[var(--tt-warn)]">{t.highLeverageWarning}</p>
         ) : null}
         {!(graham_epv.assessable && buffett_epv.assessable) && provenance.earnings_basis_note ? (
@@ -529,6 +555,7 @@ function MethodDetails({
           {pct(provenance.discount_rate_band[1])}{zh ? " · 正常化税率 " : " · normalized tax "}{pct(provenance.normalized_tax_rate)} (
           {provenance.normalized_tax_rate_basis}){zh ? " · 股数 " : " · "}{provenance.share_count_basis}{zh ? "" : " shares"}.
         </p>
+        {leverageNote ? <p>{leverageNote}</p> : null}
         {oeDcf?.assessable ? (
           <p>
             {zh ? "所有者盈利 DCF：增长 g₁ " : "Owner-earnings DCF: growth g₁ "}{pct(oeDcf.growth_g1)}

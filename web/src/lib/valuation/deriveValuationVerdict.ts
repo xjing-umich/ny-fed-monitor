@@ -57,7 +57,8 @@ export const S_RELIABLE = 0.8;
 
 /**
  * 估值可靠性：把引擎**已经算出**的红旗收口成一个布尔。任一触发 → 不可靠：
- *  - high_leverage_warning：净负债/权益>1，9–11% 单率股权桥失真。
+ *  - high_leverage_warning(仅金融股)：结构性杠杆未被股权成本溢价覆盖，便宜信号不可信。
+ *    非金融的杠杆已由 leverage_premium 定价，不再走此闸。
  *  - ai_capex_distortion_warning：资本开支两年翻倍（AI-hog）→ 维持性 CapEx / OE 口径失真。
  *  - declined：盈利下滑 → 滚动均值高估其盈利力（周期峰值幻觉，#2 深修前的护栏）。
  *  - quick_check_flag：DCF 与同增长假设的 H-model 闭式解偏离>50% → 模型对分档/贴现异常敏感、不稳。
@@ -66,7 +67,10 @@ export const S_RELIABLE = 0.8;
  */
 export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcfAssessment }): boolean {
   const { floor, oeDcf } = input;
-  if (floor?.high_leverage_warning) return false;
+  // 杠杆:非金融已由股权成本溢价定价(leveragePremium.ts),此闸的原始理由——「9–11% 单率
+  // 股权桥失真」——已不成立,故摘除。金融股(银行/保险)结构性高杠杆未被该溢价覆盖
+  // (netDebt/OE 对存款型资产负债表无意义),保留原闸,不放开 —— 见 spec D7。
+  if (floor?.high_leverage_warning && floor?.is_financial) return false;
   // Phase 3.7:ai_capex 只在**未达结构性高置信**时才杀可靠性;s≥S_RELIABLE(如 GOOGL,结构性盈利、
   // 非顺周期脉冲)推翻否决。NVDA 型 s≈0.5<0.8 仍被挡在聚合面(个股页 IV 已按 s 半抬,互不冲突)。
   if (floor?.ai_capex_distortion_warning && !(floor?.structural_confidence != null && floor.structural_confidence >= S_RELIABLE))

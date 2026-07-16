@@ -146,15 +146,28 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), oeDcf: oeDeclined, reconciliation: recon("both_margin_of_safety") });
   assert(v && v.bucket === "below" && v.reliable === false, "declined → unreliable but still emitted");
 }
-// 11) 高杠杆 floor → reliable = false
+// 11) 高杠杆 floor + 金融股 → reliable = false（D7:结构性杠杆未被溢价覆盖，保留闸）
 {
   const levFloor = {
     kind: "floor",
     high_leverage_warning: true,
+    is_financial: true,
     net_net: { assessable: false, reason: "stub" },
   } as unknown as ValuationFloor;
   const v = deriveValuationVerdict({ floor: levFloor, strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
-  assert(v && v.reliable === false, "high leverage → unreliable");
+  assert(v && v.reliable === false, "financial + high leverage → unreliable");
+}
+// 11b) 高杠杆 floor + 非金融股 → reliable = true（非金融杠杆已由 floor.leverage_premium 计入股权成本，
+//      不再一票否决；这是本轮改动里后果最大的一条路径——首次允许高杠杆非金融股被标"便宜"）。
+{
+  const levFloorNonFin = {
+    kind: "floor",
+    high_leverage_warning: true,
+    is_financial: false,
+    net_net: { assessable: false, reason: "stub" },
+  } as unknown as ValuationFloor;
+  const v = deriveValuationVerdict({ floor: levFloorNonFin, strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
+  assert(v && v.reliable === true, "non-financial + high leverage → reliable (priced via cost-of-equity premium)");
 }
 // 12) 极端 OE 收益率(>33%, 疑似 per-share/ADR 算错)→ reliable = false
 {
@@ -197,10 +210,10 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
     assessReliability({ floor: { ...baseFloor, ai_capex_distortion_warning: true } }),
     false, "ai_capex + no s → unreliable (legacy)",
   );
-  // 其余条件不动:high_leverage 仍一票否决(即便 s 高)
+  // 金融股 high_leverage 仍一票否决(即便 s 高)——Task 6 后杠杆闸仅对金融股保留(D7)。
   assert.strictEqual(
-    assessReliability({ floor: { ...baseFloor, high_leverage_warning: true, structural_confidence: 0.95 } }),
-    false, "high leverage still vetoes regardless of s",
+    assessReliability({ floor: { ...baseFloor, high_leverage_warning: true, is_financial: true, structural_confidence: 0.95 } }),
+    false, "financial high leverage still vetoes regardless of s",
   );
   console.log("Task7 assessReliability s-decouple: OK");
 }
@@ -390,6 +403,28 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   assert(
     vNetNetWithIv && vNetNetWithIv.netNet && vNetNetWithIv.netNet.perShare === 95 && vNetNetWithIv.netNet.assetFloor === true && vNetNetWithIv.netNet.buy === false,
     "IV 路径下 netNet 判定与换锚前(test 14)逐位一致",
+  );
+}
+
+// ── reliability 闸:非金融摘掉杠杆,金融保留(spec Task 6 / D7) ─────────────
+{
+  const leveredNonFin = { high_leverage_warning: true, is_financial: false } as unknown as ValuationFloor;
+  assert.strictEqual(
+    assessReliability({ floor: leveredNonFin }), true,
+    "非金融高杠杆:不再因杠杆判不可靠(已由折现率溢价定价)",
+  );
+
+  const leveredFin = { high_leverage_warning: true, is_financial: true } as unknown as ValuationFloor;
+  assert.strictEqual(
+    assessReliability({ floor: leveredFin }), false,
+    "D7:金融股高杠杆仍判不可靠(结构性杠杆未被定价,不放开)",
+  );
+
+  // 其余四项**不得**被这次改动碰到
+  assert.strictEqual(
+    assessReliability({ floor: { high_leverage_warning: false, is_financial: false } as unknown as ValuationFloor,
+                        oeDcf: { declined: true } as never }), false,
+    "declined 闸不动",
   );
 }
 

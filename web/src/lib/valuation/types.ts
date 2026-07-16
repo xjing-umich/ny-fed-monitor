@@ -4,6 +4,7 @@
 // stored FundamentalPeriod rows.
 
 import type { NetNetLamp } from "./netNet";
+import type { LeveragePremiumReading } from "./leveragePremium";
 
 export type EpvLampMethod = {
   earnings_basis: string;
@@ -29,6 +30,8 @@ export type EpvLamp = {
   sbc_to_oe_pct?: number;
   /** Buffett lamp only: 多年回购(绝对值)均值 ≤ SBC 均值 → 回购主要抵消稀释、非净回馈(Mauboussin 洞见);数据缺则 undefined。 */
   buyback_offsets_sbc?: boolean;
+  /** 本灯所用的杠杆溢价读数(仅股权成本口径的灯有;Graham 灯恒 undefined)。 */
+  leverage_reading?: LeveragePremiumReading;
   method: EpvLampMethod;
 };
 
@@ -100,6 +103,12 @@ export type ValuationFloor = {
   high_leverage_warning: boolean;
   high_leverage_note?: string;
   net_debt_to_equity?: number;
+  /** 杠杆 → 股权成本溢价(小数)。**单一真相源**:epvFloor 算一次,Buffett 灯与 OE-DCF 共同消费。 */
+  leverage_premium?: number;
+  /** L = 净债务 / 所有者盈利(偿债久期,年)。披露用。 */
+  net_debt_to_owner_earnings?: number;
+  /** 溢价的披露文案。 */
+  leverage_premium_basis?: string;
   /**
    * Capex doubled within two years (AI-hog): maintenance floored then D&A-capped.
    * Lifted from maintenanceCapex — drives reliability=false and GV gated_to_zero (scheme C).
