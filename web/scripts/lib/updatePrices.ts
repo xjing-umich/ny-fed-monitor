@@ -1,4 +1,4 @@
-import { defaultProviders, resolveDaily, type DailyClose } from "../../src/lib/prices/providers/index.js";
+import { defaultProviders, resolveDaily, YahooChartProvider, type DailyClose, type SplitEvent } from "../../src/lib/prices/providers/index.js";
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
 
@@ -33,16 +33,28 @@ export async function updatePrices(
 
     let written = 0, skipped = 0, fallback = 0;
     const rows: PriceRow[] = [];
+    const yahoo = new YahooChartProvider();
+    const splitRows: SplitEvent[] = [];
     for (const ticker of tickers) {
       const d: DailyClose | null = await resolveDaily(ticker, providers);
       if (!d) { skipped++; await sleep(throttle); continue; }
       if (d.source !== "yahoo") fallback++;
       rows.push({ ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: new Date().toISOString() });
       written++;
+      const splits = await yahoo.fetchSplits(ticker).catch(() => [] as SplitEvent[]);
+      if (splits.length) splitRows.push(...splits);
       if (rows.length >= 200) await flush(db, rows.splice(0));
       await sleep(throttle);
     }
     if (rows.length) await flush(db, rows.splice(0));
+
+    if (splitRows.length) {
+      const { error } = await db.from("stock_splits").upsert(
+        splitRows.map((s) => ({ ticker: s.ticker, split_date: s.split_date, ratio: s.ratio })),
+        { onConflict: "ticker,split_date" },
+      );
+      if (error) console.warn(`stock_splits upsert err: ${error.message}`);
+    }
 
     if (runId) await db.from("price_ingest_runs").update({
       status: "success", rows_written: written, tickers_total: tickers.length,

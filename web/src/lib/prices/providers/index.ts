@@ -2,7 +2,7 @@ import type { DailyClose, PriceProvider } from "./types";
 import { YahooChartProvider } from "./yahoo";
 import { EastmoneyProvider } from "./eastmoney";
 
-export type { DailyClose, PriceProvider, PriceSource } from "./types";
+export type { DailyClose, PriceProvider, PriceSource, SplitEvent } from "./types";
 export { YahooChartProvider } from "./yahoo";
 export { EastmoneyProvider } from "./eastmoney";
 export { StooqProvider } from "./stooq"; // 休眠：源已上反爬墙，不进默认链
