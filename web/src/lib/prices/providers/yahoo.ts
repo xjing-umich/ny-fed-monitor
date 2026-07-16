@@ -1,4 +1,4 @@
-import type { DailyClose, PriceProvider } from "./types";
+import type { DailyClose, PriceProvider, SplitEvent } from "./types";
 import { toYahooSymbol } from "./symbol";
 
 type YahooChartJson = {
@@ -35,6 +35,28 @@ export function parseYahooLatest(json: YahooChartJson, ticker: string): DailyClo
   return rows.length ? rows[rows.length - 1] : null;
 }
 
+type YahooSplitsJson = {
+  chart?: { result?: Array<{ events?: { splits?: Record<string, { date?: number; numerator?: number; denominator?: number }> } }> };
+};
+
+// 解析 chart.result[0].events.splits → SplitEvent[]。无 events / 退化输入 → []。
+export function parseYahooSplits(json: unknown, ticker: string): SplitEvent[] {
+  const splits = (json as YahooSplitsJson)?.chart?.result?.[0]?.events?.splits;
+  if (!splits || typeof splits !== "object") return [];
+  const T = ticker.trim().toUpperCase();
+  const out: SplitEvent[] = [];
+  for (const ev of Object.values(splits)) {
+    const num = Number(ev?.numerator);
+    const den = Number(ev?.denominator);
+    const epoch = Number(ev?.date);
+    if (!Number.isFinite(num) || !Number.isFinite(den) || den <= 0 || num <= 0) continue;
+    if (!Number.isFinite(epoch)) continue;
+    const split_date = new Date(epoch * 1000).toISOString().slice(0, 10);
+    out.push({ ticker: T, split_date, ratio: num / den });
+  }
+  return out;
+}
+
 const CHART_URL = "https://query2.finance.yahoo.com/v8/finance/chart/";
 const UA = "Mozilla/5.0 (compatible; CompounderBot/1.0)";
 
@@ -58,5 +80,14 @@ export class YahooChartProvider implements PriceProvider {
   async fetchDaily(ticker: string): Promise<DailyClose | null> {
     const rows = await this.fetchRange(ticker, "5d");
     return rows.length ? rows[rows.length - 1] : null;
+  }
+
+  async fetchSplits(ticker: string, sinceYears = 2): Promise<SplitEvent[]> {
+    const sym = toYahooSymbol(ticker);
+    const range = `${Math.max(1, Math.ceil(sinceYears))}y`;
+    const url = `${CHART_URL}${encodeURIComponent(sym)}?interval=1d&range=${range}&events=splits`;
+    const res = await this.fetchImpl(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
+    if (!res.ok) return [];
+    return parseYahooSplits(await res.json(), ticker);
   }
 }

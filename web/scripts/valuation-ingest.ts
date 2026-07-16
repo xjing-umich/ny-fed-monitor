@@ -31,10 +31,11 @@ import {
   deriveValuationVerdict,
   resolveAds,
   isFundamentalsStale,
+  isSplitCoverageStale,
   FUNDAMENTALS_MAX_AGE_MONTHS,
 } from "@/lib/valuation";
 import { deriveExpectations, historicalGrowthBaseRate } from "@/lib/valuation/impliedExpectations";
-import { getLatestPrice } from "@/lib/managers/priceRead";
+import { getLatestPrice, getLatestSplit } from "@/lib/managers/priceRead";
 import { getLatestDgs10, persistDgs10 } from "@/lib/managers/treasuryRead";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -162,7 +163,11 @@ async function main() {
       const strikeZone = deriveStrikeZone(floor, price);
       const oeDcf = deriveOeDcf(floor, floorInput.years, dgs10, price);
       const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
-      const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation });
+      const splitCoverageStale = isSplitCoverageStale({
+        fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
+        latestSplitDate: await getLatestSplit(ticker),
+      });
+      const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, splitCoverageStale });
       if (!v) {
         skipped++;
         intentionallyUnvaluable.add(ticker);

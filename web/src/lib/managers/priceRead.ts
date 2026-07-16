@@ -38,3 +38,13 @@ export const getPriceHistory = cache(async (ticker: string, days = 365): Promise
   if (error) { console.error(`getPriceHistory(${ticker}) 失败: ${error.message}`); return []; }
   return (data ?? []).map((r: { date: string; close: number }) => ({ date: r.date, close: Number(r.close) }));
 });
+
+/** 某 ticker 最近一次拆股日期(ISO)。无 env / 无表 / 无行 → null。护栏用。 */
+export const getLatestSplit = cache(async (ticker: string): Promise<string | null> => {
+  if (!hasSupabaseEnv()) return null;
+  const { data, error } = await getDb()
+    .from("stock_splits").select("split_date").eq("ticker", ticker)
+    .order("split_date", { ascending: false }).limit(1);
+  if (error) { console.error(`getLatestSplit(${ticker}) 失败: ${error.message}`); return null; }
+  return data?.[0]?.split_date ?? null;
+});
