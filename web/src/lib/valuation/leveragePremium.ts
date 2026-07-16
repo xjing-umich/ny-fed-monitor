@@ -24,11 +24,27 @@ export type LeveragePremiumReading = {
   basis: string;
 };
 
-/** 溢价起点:净债务 ≤ L0 年 owner earnings → 不加价(投资级近似)。⚠️ 临时值,待 Task 8 真数据校准。 */
+/**
+ * 溢价起点:净债务 ≤ L0 年 owner earnings → 不加价(投资级近似)。
+ * 真数据校准(Task 8,非金融 L>0 全市场 n=687):L0=3 落在 p25(2.34)与 p50(4.65)之间——
+ * 卡在这条线以下的名字,净债务真的 ≤3 年 owner earnings 就能还清,是投资级口径。
+ * 34.2% 的名字(235/687)落在这个免费区间。
+ * ⚠️ 这里的 L 是 netDebt/ownerEarnings(税后、扣维护 capex),数值比 netDebt/EBITDA
+ * 大得多,不要拿 EBITDA 杠杆档位的直觉来"修正"这组常量。
+ */
 export const LEVERAGE_L0 = 3;
-/** L0 之上每多 1 年偿债久期,加多少股权成本。⚠️ 临时值,待 Task 8 真数据校准。 */
+/**
+ * L0 之上每多 1 年偿债久期,加多少股权成本。
+ * 真数据校准:该斜率把 p50(L≈4.65)映到 ≈+0.8pp(约投资级利差),
+ * p75(L≈10.85)映到 ≈+3.9pp(约 BB/B 级利差);41.0%(282/687)的名字落在斜率真正起作用的区间。
+ */
 export const LEVERAGE_SLOPE = 0.005;
-/** 溢价上限:防止把价值压到 ~0 造出假「太贵」信号。⚠️ 临时值,待 Task 8 真数据校准。 */
+/**
+ * 溢价上限:防止把价值压到 ~0 造出假「太贵」信号。
+ * 真数据校准:≈ BB→B 级利差上限,L≥11(≈p76)开始封顶,24.7%(170/687)的名字被夹在这里。
+ * 主要作用不是"斜率算错了要兜底",是吸收长尾:owner earnings 趋近 0 时 L 会在近零分母上爆炸
+ * (如 PCG L≈30M),不封顶会把这类名字直接惩罚成假「太贵」。
+ */
 export const LEVERAGE_PREMIUM_CAP = 0.04;
 
 export function leveragePremium(input: {
