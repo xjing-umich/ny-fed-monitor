@@ -1,6 +1,12 @@
 // deriveValuationVerdict.ts — 把"现价相对保守价值带的位置档"判定抽成纯函数（零 I/O）。
 // 逻辑逐字搬运自 EarningsPowerFloorCard 的 ValueSpine：估值卡与投资人页叠加层共用此函数，
 // 保证 bucket 永不漂移。OBSERVATION，非推荐——无 BUY/SELL/目标价。
+// 本函数内的护栏(与 isImplausibleBand / assessReliability 并列登记):
+//  - isImplausibleBand：价值带与现价严重脱节(坏数据/假深度低估)→ 整条抑制为 null。
+//  - assessReliability：引擎自身红旗(高杠杆/ai_capex失真/盈利下滑/DCF不稳/极端OE收益率)→
+//    不整条抑制，只把 reliable 标 false（位置仍展示，只是不标"便宜"）。
+//  - splitCoverageStale（入参，由 isSplitCoverageStale 算出）：拆股口径陈旧，
+//    基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配 → 整条抑制为 null，语义同 isImplausibleBand。
 import type {
   MethodReconciliation,
   OeDcfAssessment,
@@ -132,8 +138,12 @@ export function deriveValuationVerdict(input: {
   strikeZone?: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
+  /** 拆股口径陈旧(基本面 as-of 早于最近拆股)→ 每股口径与拆股后价格错配,整条抑制为无判定。
+   *  语义同 isImplausibleBand,由调用方经 isSplitCoverageStale 算出后传入。 */
+  splitCoverageStale?: boolean;
 }): ValuationVerdict | null {
-  const { floor, strikeZone, oeDcf, reconciliation } = input;
+  const { floor, strikeZone, oeDcf, reconciliation, splitCoverageStale } = input;
+  if (splitCoverageStale) return null; // 拆股口径错配 → 无可信判定(每股带被放大 ~拆股比例倍)
   if (!floor || floor.kind !== "floor") return null; // thin data / per_share_unavailable
   const epv = strikeZone?.epv;
   if (!epv) return null; // 无价格 / 货币不匹配 / 无可比地板 → 无判定

@@ -428,4 +428,16 @@ const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   );
 }
 
+// 拆股口径陈旧 → 整条抑制为 null,即便 floor/strikeZone 完整、位置本可算出。
+assert.strictEqual(
+  deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), splitCoverageStale: true }),
+  null,
+  "splitCoverageStale=true → verdict 抑制为 null",
+);
+// 未传 / false → 行为不变(回归:仍算出非 null 判定)。
+assert.ok(
+  deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), splitCoverageStale: false }) != null,
+  "splitCoverageStale=false → 判定照常算出",
+);
+
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");
