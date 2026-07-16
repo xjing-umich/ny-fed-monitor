@@ -15,3 +15,10 @@ export interface PriceProvider {
   fetchDaily(ticker: string): Promise<DailyClose | null>;
   fetchHistory(ticker: string, sinceYears: number): Promise<DailyClose[]>;
 }
+
+// 拆股事件(仅 Yahoo 提供)。ratio = numerator/denominator(如 10-for-1 → 10)。
+export type SplitEvent = {
+  ticker: string;    // 大写 app ticker
+  split_date: string; // YYYY-MM-DD(拆股生效日,UTC)
+  ratio: number;      // > 0
+};
