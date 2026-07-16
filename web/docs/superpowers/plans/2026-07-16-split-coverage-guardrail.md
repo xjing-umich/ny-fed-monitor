@@ -148,12 +148,7 @@ export function parseYahooSplits(json: unknown, ticker: string): SplitEvent[] {
 Run: `cd web && npx tsx src/lib/prices/providers/yahoo-splits.check.ts`
 Expected: `yahoo-splits.check.ts ✓`
 
-- [ ] **Step 6: tsc 门**
-
-Run: `cd web && npx tsc --noEmit`
-Expected: 无新增错误。
-
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add web/src/lib/prices/providers/types.ts web/src/lib/prices/providers/yahoo.ts web/src/lib/prices/providers/yahoo-splits.check.ts
@@ -250,12 +245,7 @@ export const getLatestSplit = cache(async (ticker: string): Promise<string | nul
 });
 ```
 
-- [ ] **Step 4: tsc 门**
-
-Run: `cd web && npx tsc --noEmit`
-Expected: 无新增错误。
-
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add web/supabase/migrations/20260716_create_stock_splits.sql web/scripts/lib/updatePrices.ts web/src/lib/prices/providers/index.ts web/src/lib/managers/priceRead.ts
@@ -384,15 +374,14 @@ assert.ok(
 export { isSplitCoverageStale } from "./splitCoverage";
 ```
 
-- [ ] **Step 8: 跑两个 check + tsc**
+- [ ] **Step 8: 跑两个 check**
 
 Run:
 ```bash
 cd web && npx tsx src/lib/valuation/splitCoverage.check.ts \
-  && npx tsx src/lib/valuation/deriveValuationVerdict.check.ts \
-  && npx tsc --noEmit
+  && npx tsx src/lib/valuation/deriveValuationVerdict.check.ts
 ```
-Expected: 两个 `✓`,tsc 无新增错误。
+Expected: 两个 `✓`。
 
 - [ ] **Step 9: Commit**
 
@@ -503,12 +492,7 @@ en 的 `valuation` 对象同位加:
 
 理由:卡片在 verdict=null 时仍渲染 `MethodDetails`(每股方法明细),那是被放大 ~拆股比例倍的错数字;故 split-stale 时整卡不渲染,只留一句说明。`valuationTitle` 此时已回退 `titleFallback`(因 `handoffVerdict` 为 null),与说明并列自然。
 
-- [ ] **Step 4: tsc 门**
-
-Run: `cd web && npx tsc --noEmit`
-Expected: 无新增错误。
-
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add "web/src/app/[lang]/stocks/[ticker]/page.tsx" web/src/lib/stocks/stockCopy.ts
@@ -543,17 +527,33 @@ git commit -m "feat(stocks): 个股页拆股口径护栏接线 + 抑制说明文
 
 (下方现有 `if (!v) { skipped++; intentionallyUnvaluable.add(ticker); continue; }` 逻辑不变 —— split-stale → v 为 null → 该票不入快照,screener/投资人页面自动一致抑制。)
 
-- [ ] **Step 2: tsc 门(scripts tsconfig)**
-
-Run: `cd web && npx tsc --noEmit -p scripts/tsconfig.json 2>/dev/null || npx tsc --noEmit`
-Expected: 无新增错误。
-
-- [ ] **Step 3: Commit**
+- [ ] **Step 2: Commit**
 
 ```bash
 git add web/scripts/valuation-ingest.ts
 git commit -m "feat(valuation-ingest): 快照写入接入拆股口径护栏"
 ```
+
+---
+
+### Task 6: 最终代码级门(统一 tsc)
+
+**Files:** 无(仅验证)
+
+- [ ] **Step 1: 全量 tsc**
+
+Run: `cd web && npx tsc --noEmit`
+Expected: 无新增错误。有则回到对应 Task 修。
+
+- [ ] **Step 2: 全量 .check.ts 复跑(确认无回归)**
+
+Run:
+```bash
+cd web && npx tsx src/lib/prices/providers/yahoo-splits.check.ts \
+  && npx tsx src/lib/valuation/splitCoverage.check.ts \
+  && npx tsx src/lib/valuation/deriveValuationVerdict.check.ts
+```
+Expected: 三个 `✓`。
 
 ---
 
