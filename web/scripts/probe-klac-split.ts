@@ -70,8 +70,8 @@ async function main() {
       continue;
     }
     const strikeZone = price ? deriveStrikeZone(floor, price) : undefined;
-    const oeDcf = deriveOeDcf(floorInput, floor, undefined);
-    const reconciliation = strikeZone && oeDcf ? reconcileMethods(strikeZone, oeDcf) : undefined;
+    const oeDcf = deriveOeDcf(floor, floorInput.years, { value: 4.4, date: "2026-07-15" }, price);
+    const reconciliation = strikeZone && oeDcf ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price) : undefined;
     const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation });
 
     console.log(`valueFloor(零增长底/share)= ${strikeZone?.epv?.valueFloor}`);
