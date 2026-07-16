@@ -490,7 +490,10 @@ function MethodDetails({
     <details className="text-xs text-[var(--tt-muted)]">
       <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">{t.methodSummary}</summary>
       <div className="mt-2 space-y-2">
-        {floor.high_leverage_warning ? (
+        {/* Fix 2(Task 8 whole-branch review):非金融股的高杠杆现已由 leverage_premium 定价进折现带
+            (spec D4/D7,见下方 leverageNote),不再是"降级近似";这条警示只对金融股仍成立
+            (金融股豁免溢价,9–11% 带对它们仍是未定价的低杠杆近似)。*/}
+        {floor.high_leverage_warning && floor.is_financial ? (
           <p className="text-[var(--tt-warn)]">{t.highLeverageWarning}</p>
         ) : null}
         {!(graham_epv.assessable && buffett_epv.assessable) && provenance.earnings_basis_note ? (

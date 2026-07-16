@@ -134,7 +134,7 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial
   const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
-  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, { s: sc.s, target: sc.target });
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
   return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined, isFinancial, allYears, sc.s);
 }
 
@@ -145,7 +145,7 @@ function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFin
   const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
-  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, { s: sc.s, target: sc.target });
+  const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
   return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE, isFinancial, allYears, sc.s);
 }
 
@@ -256,8 +256,12 @@ function assembleFloor(
     moat_reading: moatReading,
     growth_value: growthValue,
     high_leverage_warning: highLeverage,
-    high_leverage_note: highLeverage
-      ? "High leverage (net debt / shareholders' equity above 1.0): the single 9–11% rate band is a low-leverage / net-cash approximation and is directionally distorted here. The ranges are shown but should be read as degraded."
+    // Fix 2(Task 8 whole-branch review):非金融股的高杠杆现已由 leverage_premium 定价进 9–11% 带
+    // (spec D4/D7),不再是"降级近似"——那句 prose 现在只对金融股成立(金融股豁免溢价,唯一杠杆
+    // 处理是可信度闸,9–11% 带对它们仍是未定价的低杠杆近似)。非金融股不再发布这条 note,由
+    // leveragePremiumDisclosure(UI 侧,读 leverage_premium)接替披露。
+    high_leverage_note: highLeverage && isFinancial
+      ? "High leverage (net debt / shareholders' equity above 1.0): for financial issuers the single 9–11% rate band is a low-leverage approximation that is not priced for leverage (financials are exempt from the leverage premium; see the reliability gate instead). The ranges are shown but should be read with that in mind."
       : undefined,
     net_debt_to_equity: netDebtToEquity,
     leverage_premium: buffettEpv.leverage_reading?.premium ?? 0,
@@ -371,6 +375,7 @@ function buildBuffettLamp(
   years: ValuationFloorYear[],
   shares: number,
   yearsUsed: number[],
+  isFinancial: boolean,
   lift?: { s: number; target: number | undefined },
 ): EpvLamp {
   const mc = maintenanceCapex(years);
@@ -388,7 +393,11 @@ function buildBuffettLamp(
   // 杠杆 → 股权成本溢价(spec D4):本灯是**股权流 / 股权成本**口径(净利起算、已扣息、无桥),
   // 股权成本随杠杆上升(MM Prop II)。Graham 灯是无杠杆 NOPAT/WACC + 桥,不加溢价。
   // 溢价必须在 ownerEarnings 算出后才能算(它是分母),故在灯内部算,再透出给 assembleFloor 发布。
-  const lev = leveragePremium({ netDebt: netDebtOf(years[0]), ownerEarnings });
+  // spec D7:金融股(银行/保险)netDebt/ownerEarnings 对存款型资产负债表无意义(deriveValuationVerdict.ts
+  // 的注释同源),豁免溢价 —— 金融股的唯一杠杆处理是可信度闸(Task 6),不再叠加股权成本溢价。
+  const lev = isFinancial
+    ? { premium: 0, leverage: undefined, basis: "Financial issuer (bank/insurer): net debt / owner earnings does not describe a deposit-funded balance sheet, so no leverage premium is applied here; leverage is instead handled by the reliability gate." }
+    : leveragePremium({ netDebt: netDebtOf(years[0]), ownerEarnings });
   const rLow = DISCOUNT_RATE_LOW + lev.premium;
   const rHigh = DISCOUNT_RATE_HIGH + lev.premium;
 

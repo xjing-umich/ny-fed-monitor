@@ -676,6 +676,50 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   assert.ok((negEquity.leverage_premium ?? 0) > 0, "硬伤①已修:负权益名拿到非零溢价");
 }
 
+// ── Task 8 锁定测试(spec D7 + §4.8):金融股(is_financial)豁免杠杆溢价 ──────────
+// 全篇审查发现的跨任务缺陷:is_financial 只接进了可信度闸(Task 6),没接进溢价应用(Task 2)。
+// 银行/保险的 netDebt/ownerEarnings 对存款型资产负债表无意义(deriveValuationVerdict.ts:72 同源
+// 注释),金融股唯一的杠杆处理应是可信度闸,溢价必须恒为 0、折现率逐位 = 裸 DISCOUNT_RATE_LOW/HIGH
+// (§4.8:金融股行为相对 refactor 前逐位不变)。同financials数字喂给非金融股夹具作对照,
+// 证明豁免精确锁定在 is_financial,不是全局关掉溢价。
+{
+  const mkFin = (over: Partial<ValuationFloorYear>): ValuationFloorYear => ({
+    fiscal_year: 2024, revenue: 10_000, operating_income: 2_000, net_income: 1_000,
+    shares_diluted: 1_000, cash: 0, total_debt: 40_000, net_debt: 40_000, d_and_a: 500, shareholders_equity: 5_000,
+    ...over,
+  });
+  const finYrs = [
+    mkFin({ fiscal_year: 2024 }), mkFin({ fiscal_year: 2023 }), mkFin({ fiscal_year: 2022 }),
+  ];
+
+  // 银行 SIC(6022,National Commercial Banks)、高杠杆(netDebt 40_000 远超 ownerEarnings)
+  const bank = computeValuationFloor({ ticker: "BANK", years: finYrs, sic: 6022 }) as ValuationFloor;
+  assert.strictEqual(bank.is_financial, true, "前提:sic=6022 确实判定为金融股");
+  assert.strictEqual(bank.high_leverage_warning, true, "前提:夹具确实触发高杠杆(净债务/权益 > 1.0)");
+  assert.strictEqual(bank.leverage_premium, 0, "D7:金融股 → 溢价恒为 0");
+  assert.strictEqual(
+    bank.buffett_epv.method.discount_rate_low, DISCOUNT_RATE_LOW,
+    "§4.8:金融股 Buffett 低端 = 裸基线(逐位不变,未被溢价污染)",
+  );
+  assert.strictEqual(
+    bank.buffett_epv.method.discount_rate_high, DISCOUNT_RATE_HIGH,
+    "§4.8:金融股 Buffett 高端 = 裸基线(逐位不变)",
+  );
+  // Fix 2:金融股仍是"降级近似"人群(唯一杠杆处理=可信度闸),note 应保留且措辞不再提"溢价定价"矛盾。
+  assert.ok(bank.high_leverage_note != null, "金融股高杠杆 note 仍发布(它是唯一未定价杠杆的人群)");
+
+  // 同一份数字,非金融股(sic 缺省 → is_financial=false)→ 溢价必须非零,证明豁免只挂在 is_financial 上。
+  const nonFin = computeValuationFloor({ ticker: "NONFIN", years: finYrs }) as ValuationFloor;
+  assert.strictEqual(nonFin.is_financial, false, "前提:未提供 sic → 非金融股");
+  assert.ok((nonFin.leverage_premium ?? 0) > 0, "D7 scope:非金融股(同样数字)溢价 > 0 — 豁免未误伤非金融股");
+  assert.ok(
+    nonFin.buffett_epv.method.discount_rate_low > DISCOUNT_RATE_LOW,
+    "非金融股 Buffett 低端 > 裸基线(溢价确实生效)",
+  );
+  // Fix 2:非金融股高杠杆时,note 应为 undefined(不再发"降级"假话;由 leverage_premium 披露接替)。
+  assert.strictEqual(nonFin.high_leverage_note, undefined, "非金融股高杠杆 → 旧 note 不再发布(避免与溢价披露矛盾)");
+}
+
 // ── Task 2 补丁:leverage 第三分支(数据不可得/owner earnings 非正)不得渲染
 // 「净现金或杠杆内档」假话 —— 这句话恰好在最该诚实的人群(重债 + 非正 owner earnings 的困境企业)
 // 上最误导。leveragePremium() 的 undefined 分支只在 basis 里说「不可得」,buildBuffettLamp 的
