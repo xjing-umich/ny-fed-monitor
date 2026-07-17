@@ -73,11 +73,17 @@ R&D 是资本支出应资本化:research asset = Σ R&D(t) × 未摊销权重,�
 
 **死角真数据**:MSCI(0/6 有效年,6 年全负权益)、ORLY(1/6 有效年)。用非资本基数机制(毛利率稳定 + 份额 + EPV 强度)救它们 = Phase 2。
 
-### 3.4 层③ GV 成长再投资纳入无形投资
+### 3.4 层③ 成长预期计入(实施阶段重设计 —— 见下方更新)
 
-`成长再投资 = max(0, capex − 维持) + ΔNWC + 无形成长投资`,无形成长投资 = R&D 与销售营销中超"维持现有无形"的增量;`cumulativeReinvest ≤ 0` 仅当有形与无形都不为正时才 not_assessable。ROIIC 分子分母口径一致(见 §6)。
+> **⚠️ 本节初稿(growthValue.ts 纳入 R&D 无形成长投资)经 plan 阶段真数据验证不成立,已重设计。以更新框为准。**
 
-> **验证状态**:层③ 目前仍是设计推理,**MA/SPGI 的 GV 能否真的 >0 尚未经真数据验证**(它们主路径已 franchise,但 GV=0 需层③ 修)。plan 阶段第一步必须真数据验证层③,若无形成长投资仍不足以让 GV>0,层③ 需回到设计。**不假设层③一定成立。**
+初稿设想:`成长再投资 = max(0, capex − 维持) + ΔNWC + 无形成长投资`,把 R&D/营销增量纳入 Greenwald ROIIC 的成长再投资。
+
+> **实施阶段验证结论(2026-07-17,真引擎探针)**:MA/SPGI 的成长**不是 R&D 驱动**(R&D 极少),且 verdict 锚的是 OE-DCF 的 IV 而非 Greenwald GV —— 初稿修 `growthValue.ts` 是**错模块错机制**。真根因在 `ownerEarningsDcf.ts`:g1 = min(gRaw 营收log回归, **gFund=ROIC×净再投资率**, cagr) 受 grade cap 封顶,而 gFund 对近零再投资的轻资产 franchise 结构性≈0 → 经 `Math.min` 把已证实增长封零 → 护城河把 CAP 拉到 20 年却施加在零增长流上(MA/SPGI/NFLX 层①② 后仍判 above 的真机制)。
+>
+> **重设计(已实施)**:非金融 franchise 且 `structural_confidence ≥ S_STRUCTURAL_GROWTH(0.5)` 时,把 gFund 从 g1 候选剔除,改由已证实的 gRaw + cagr 决定(仍受 grade cap + declined 闸)。门槛经全宇宙(1910 票)校准(保住 MA s=0.59/SPGI 0.60/NFLX/ADBE,挡住顺周期 CAT 0.35/KO 0.45)。provenance:`docs/superpowers/calibration/2026-07-17-structural-growth-threshold.md`。详见 plan Task 5(校准)+ Task 6(实施)。
+>
+> **留观测(另开 moat 分档 spec)**:ABNB/MGRC 被 moat 判 strong→得 20% cap,层③ 解封后落"便宜"档 —— 本质是既有 moat 分档的下游放大(层③ 不发明超过已证实 trailing 的增长),上线后观测。
 
 ---
 
