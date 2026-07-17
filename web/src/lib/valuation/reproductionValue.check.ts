@@ -64,12 +64,25 @@ assert.strictEqual(ni.acquired_reset_proxy, undefined, "no dual fields when not 
 assert.strictEqual(ni.reproduction_total_value, undefined, "no reproduction total when not comparable");
 assert.strictEqual(ni.reproduction_per_share, undefined, "no reproduction per share when not comparable");
 
-// negative tangible → not assessable.
-const negTang: ValuationFloorYear[] = [
+// 有形为负但 avCore(含已收购无形代理)仍为负 → 不可评估(proxy 不能无条件翻正)。
+const negCore: ValuationFloorYear[] = [
   { fiscal_year: 2025, shareholders_equity: 1_000, goodwill: 2_000, intangibles: 500 },
 ];
-const ng = buildReproductionValue(negTang, 1_000);
-assert.strictEqual(ng.assessable, false, "negative tangible → not assessable");
+const nc = buildReproductionValue(negCore, 1_000);
+// tangible = 1000 − 2000 − 500 = −1500; proxy = 2500×0.5 = 1250; avCore = −1500 + 1250 = −250 ≤ 0。
+assert.strictEqual(nc.assessable, false, "avCore≤0 → not assessable");
+
+// 有形为负但 avCore 为正(轻资产 franchise)→ 以 avCore 为单一重置底,dual 关闭。
+const negTangPosCore: ValuationFloorYear[] = [
+  { fiscal_year: 2025, shareholders_equity: 1_000, goodwill: 1_200, intangibles: 300 },
+];
+const pc = buildReproductionValue(negTangPosCore, 1_000);
+// tangible = 1000 − 1200 − 300 = −500; proxy = 1500×0.5 = 750; avCore = −500 + 750 = 250 > 0。
+assert.ok(pc.assessable, "avCore>0 → assessable");
+assert.strictEqual(pc.dual_av_comparable, false, "负有形分支关 dual,单-AV 对 avCore 比较");
+approx(pc.tangible_net_assets!, -500, 1e-6, "tangible 仍如实为负");
+approx(pc.acquired_reset_proxy!, 750, 1e-6, "proxy = (gw+intang)×0.5");
+approx(pc.per_share!, 250 / 1_000, 1e-6, "per_share = avCore/shares");
 
 // missing equity → not assessable.
 const noEq = buildReproductionValue([{ fiscal_year: 2025 }], 1_000);

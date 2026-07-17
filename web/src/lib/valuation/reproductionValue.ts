@@ -64,21 +64,40 @@ export function buildReproductionValue(years: ValuationFloorYear[], shares: numb
   const goodwill = latest.goodwill ?? 0;
   const intangibles = latest.intangibles ?? 0;
   const tangible = equity - goodwill - intangibles;
-  const basis = capitalizedRd != null
-    ? "Reproduction value = tangible net assets (equity − goodwill − intangibles) + capitalized R&D (5y straight-line), ÷ diluted shares."
-    : "Tangible net assets = shareholders' equity − goodwill − intangibles, ÷ diluted shares (no R&D history to capitalize).";
-  if (tangible <= 0) {
-    return { assessable: false, not_assessable_reason: "Tangible net assets are negative, so no asset floor is shown.", basis, intangibles_separated: true, dual_av_comparable: false };
-  }
-  const total = tangible + (capitalizedRd ?? 0);
   const acquiredResetProxy = (goodwill + intangibles) * ACQUIRED_RESET_DISCOUNT;
-  const reproductionTotal = total + acquiredResetProxy;
+  const rd = capitalizedRd ?? 0;
+
+  if (tangible > 0) {
+    // 有形为正(MSFT/AAPL 类):保持今天的 dual-AV 结构 byte-for-byte,零漂移(spec §6.4 对照回归守护)。
+    const basis = capitalizedRd != null
+      ? "Reproduction value = tangible net assets (equity − goodwill − intangibles) + capitalized R&D (5y straight-line), ÷ diluted shares."
+      : "Tangible net assets = shareholders' equity − goodwill − intangibles, ÷ diluted shares (no R&D history to capitalize).";
+    const total = tangible + rd;
+    const reproductionTotal = total + acquiredResetProxy;
+    return {
+      assessable: true, basis, intangibles_separated: true, dual_av_comparable: true,
+      tangible_net_assets: tangible, capitalized_rd: capitalizedRd,
+      total_value: total, per_share: total / shares, rd_years_used: capitalizedRd != null ? rdYearsUsed : undefined,
+      acquired_reset_proxy: acquiredResetProxy,
+      reproduction_total_value: reproductionTotal,
+      reproduction_per_share: reproductionTotal / shares,
+    };
+  }
+
+  // 有形为负但净重置为正(NFLX/MA/SPGI/ADBE 类轻资产 franchise):以 avCore 为**单一**重置底。
+  // Greenwald 原意:重建其收购来的品牌/网络/牌照仍有成本 → 剔除无形代理的"avCons"对这类公司恒为负、
+  // 是伪保守。改单-AV 对 avCore 比较(dual 关闭),护城河测试才不被负分母击穿。
+  const avCore = tangible + rd + acquiredResetProxy;
+  const basis = capitalizedRd != null
+    ? "Reproduction value = intangible-inclusive net reproduction (tangible net assets + acquired-intangible reset proxy + capitalized R&D), ÷ diluted shares; tangible net assets alone are negative for this asset-light franchise."
+    : "Reproduction value = tangible net assets + acquired-intangible reset proxy, ÷ diluted shares; tangible net assets alone are negative for this asset-light franchise (no R&D history to capitalize).";
+  if (avCore <= 0) {
+    return { assessable: false, not_assessable_reason: "Intangible-inclusive net reproduction value is negative, so no asset floor is shown.", basis, intangibles_separated: true, dual_av_comparable: false };
+  }
   return {
-    assessable: true, basis, intangibles_separated: true, dual_av_comparable: true,
+    assessable: true, basis, intangibles_separated: true, dual_av_comparable: false,
     tangible_net_assets: tangible, capitalized_rd: capitalizedRd,
-    total_value: total, per_share: total / shares, rd_years_used: capitalizedRd != null ? rdYearsUsed : undefined,
+    total_value: avCore, per_share: avCore / shares, rd_years_used: capitalizedRd != null ? rdYearsUsed : undefined,
     acquired_reset_proxy: acquiredResetProxy,
-    reproduction_total_value: reproductionTotal,
-    reproduction_per_share: reproductionTotal / shares,
   };
 }
