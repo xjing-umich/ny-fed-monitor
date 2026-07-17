@@ -9,8 +9,8 @@
  * high-leverage, N<3 degradation, negative-earnings / negative-book branches.
  */
 import assert from "node:assert";
-import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
-import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW, conservativeNormalizedForTest } from "./epvFloor";
+import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear, EpvLamp, ReproductionValue } from "./types";
+import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW, conservativeNormalizedForTest, buildMoatReading } from "./epvFloor";
 import { maintenanceCapex } from "./maintenanceCapex";
 import { deriveOeDcf } from "./ownerEarningsDcf";
 import { CAP_STRONG, CAP_MODERATE } from "./moatCap";
@@ -204,8 +204,10 @@ assert.ok(/dual reproduction test unavailable/i.test(noIntang.moat_reading.basis
 assert.strictEqual(noIntang.moat_reading.dual_test_passed, undefined, "no dual_test_passed when dual unavailable");
 assert.strictEqual(noIntang.moat_reading.franchise_blocked_by_reproduction, undefined, "no franchise_blocked flag when dual unavailable");
 const negTangible = floorOf(computeValuationFloor({ ticker: "NEGT", years: compounder.years.map((y) => ({ ...y, goodwill: 4_900, intangibles: 300 })) }));
-assert.strictEqual(negTangible.asset_floor.assessable, false, "negative tangible book → not assessable");
-assert.strictEqual(negTangible.asset_floor.per_share, undefined, "no negative per-share floor");
+// 层①(Task 2,42bb21f):有形净资产为负时,不再直接判 not assessable —— 改用 avCore(acquired-intangible
+// reset proxy)作单一重置底,轻资产 franchise(如本 fixture)可算出正值。此断言随 Task 2 行为更新。
+assert.strictEqual(negTangible.asset_floor.assessable, true, "negative tangible-only book, but avCore(reset proxy) assessable → 层①单一重置底");
+assert.ok(negTangible.asset_floor.per_share != null && negTangible.asset_floor.per_share > 0, "avCore per-share floor is positive when reset proxy covers negative tangible book");
 
 // ── 单灯回退：金融股（有净利+股数、无营业利润率）─────────────────────────────
 // 银行式 fixture：无 operating_margin / operating_income，但有 net_income、shares、equity。
@@ -750,6 +752,24 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
     joined.includes("Net debt or owner earnings is unavailable"),
     "distressed 名须用诚实的「数据不可得」披露文案(来自 leveragePremium 的 undefined 分支 basis)",
   );
+}
+
+// ── Task 3:层② ROIC 兜底 franchise + 死角标记 ──────────────────────────────
+{
+  // AV 不可评估 + EPV 强 + roicLongStrong → ROIC 兜底 franchise。
+  const strongEpv: EpvLamp = {
+    label: "x", assessable: true, per_share_low: 80, per_share_high: 120,
+    method: { earnings_basis: "", leverage_treatment: "", denominator: "", bridge: "", discount_rate_low: 0.09, discount_rate_high: 0.11, years_used: [], simplifications: [] },
+  };
+  const noAv: ReproductionValue = { assessable: false, basis: "", intangibles_separated: true, dual_av_comparable: false };
+  const viaRoic = buildMoatReading(strongEpv, noAv, 10, true);
+  assert.strictEqual(viaRoic.signal, "franchise", "AV 不可评估 + roicLongStrong → franchise");
+  assert.strictEqual(viaRoic.moat_via_roic, true, "标记兜底路径");
+
+  // AV 不可评估 + roicLongStrong=false → 死角标记(Task 4 消费)。
+  const distorted = buildMoatReading(strongEpv, noAv, 10, false);
+  assert.strictEqual(distorted.signal, "not_assessable", "AV+ROIC 双不可评估 → not_assessable");
+  assert.strictEqual(distorted.capital_structure_distorted, true, "标记资本结构扭曲");
 }
 
 console.log("epvFloor.check.ts: all assertions passed.");

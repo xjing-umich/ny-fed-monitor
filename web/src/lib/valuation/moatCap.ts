@@ -24,8 +24,23 @@ export function deriveMoatCap(input: {
   roicLongTermStrong?: boolean;
 }): MoatCapAssessment {
   const { moat, epvAvRatio, epvAvRatioOperating, declined, suppressedFlags, roicStable, roicLongTermStrong } = input;
-  if (moat.signal !== "franchise" || (epvAvRatio == null && epvAvRatioOperating == null)) {
+  const roicOnly = moat.moat_via_roic === true;
+  if (moat.signal !== "franchise" || (!roicOnly && epvAvRatio == null && epvAvRatioOperating == null)) {
     return { grade: "none", capYears: CAP_NONE, durablePassed: false, basis: "无护城河信号，不延长竞争优势期。" };
+  }
+  if (roicOnly) {
+    // AV 无值(兜底路径):凭 ROIC 长期极高稳定档。franchiseCore 去掉 strongRatio(无 AV 比率),
+    // 由 roicLongTermStrong 直接承担强档判据;仍受盈利下滑/资本开支红旗/ROIC 不稳降档。
+    const franchiseCore = !declined && !suppressedFlags && roicStable === true;
+    const durablePassed = franchiseCore && roicLongTermStrong === true;
+    if (durablePassed) {
+      return { grade: "strong", capYears: CAP_STRONG, durablePassed: true, roicStable: true,
+        basis: `强护城河（AV 不可评估，但 ROIC 长期极高且稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
+    }
+    const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : "ROIC 稳定性不足";
+    return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
+      ...(roicStable != null ? { roicStable } : {}),
+      basis: `${reason}（AV 不可评估，凭 ROIC 兜底）→ 竞争优势期约 ${CAP_MODERATE} 年。` };
   }
   const ratioForMoat = epvAvRatioOperating ?? epvAvRatio;
   if (ratioForMoat == null || !Number.isFinite(ratioForMoat)) {
