@@ -660,67 +660,130 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 ---
 
-## Task 5:(条件)层③ — 成长再投资纳入无形投资
+## Task 5: 层③ 校准 — S_STRUCTURAL_GROWTH 门槛(已完成)
 
-**目标**:先验证主路径救回的 franchise(MA/SPGI/MCO 等低 capex 名)的成长价值是否仍被"无成长再投资"归零;**仅当验证坐实需要且机制可提供出处**,才把无形成长投资纳入 `growthReinvest`;否则诚实延 Phase 2,不硬造。
+> **本 Task 由控制器 inline 完成并提交(`fb4e833`)**,记录于此供追溯 + 给 Task 6 提供门槛 provenance。
+
+**背景(验证驱动的重设计)**:原计划的层③(在 `growthValue.ts` ROIIC 里纳入 R&D 无形投资)经真数据验证**不成立**:MA/SPGI 的成长非 R&D 驱动(R&D 极少),且 verdict 锚的是 OE-DCF 的 IV 而非 Greenwald GV。真根因在 `ownerEarningsDcf.ts`:g1 = min(gRaw 营收log回归, **gFund=ROIC×净再投资率**, cagr) 受 grade cap 封顶,而 gFund 对近零再投资的轻资产 franchise 结构性≈0 → 经 `Math.min` 把已证实增长盖成 0 → 护城河把 CAP 拉到 20 年却施加在零增长流上(MA/SPGI/NFLX 层①② 后仍判 above 的真机制)。
+
+**已做**:`web/scripts/structural-growth-calibrate.ts`(只读,持仓并集 1910 票全宇宙),统计非金融 franchise 在各 s 门槛下 g1 的移动。provenance 落 `docs/superpowers/calibration/2026-07-17-structural-growth-threshold.md`。
+
+**锁定结论**:门槛 `S_STRUCTURAL_GROWTH = 0.5`。依据:目标票 MA(s=0.59)/SPGI(0.60)/NFLX(0.69)/ADBE(1.00)全放行,提到 0.6 会误伤 MA → 0.5 是保住目标的刚性上界;顺周期 CAT(0.35)/KO(0.45)被挡;63 movers 中位 +4.7pp,仅 6 个 >10pp(INTU/PCTY/ROL/ENSG 真高增长 + ABNB/MGRC 封在既有 20% strong cap 内,列 Task 7 watch-list 复核 moat 分档)。
+
+---
+
+## Task 6: 层③ 实施 — 结构性 franchise 的 g1 不再被 gFund 封零
+
+**目标**:非金融 franchise 且 `structural_confidence ≥ S_STRUCTURAL_GROWTH(0.5)` 时,把 `gFund`(=ROIC×净再投资率,对轻资产恒≈0)从 OE-DCF 的 g1 上限候选里剔除,改由已证实的 `gRaw`(营收 log 回归)+ `cagr` 决定 g1(仍受 grade cap 与 `declined` 闸约束)。金融股走 SGR 不涉及;顺周期股(低 s)保留 gFund。
 
 **Files:**
-- (条件)Modify: `web/src/lib/valuation/growthValue.ts:105-147`
-- (条件)Create: `web/scripts/gv-intangible-calibrate.ts`
-- (条件)Modify: `web/src/lib/valuation/growthValue.check.ts`
+- Modify: `web/src/lib/valuation/ownerEarningsDcf.ts`(常量 + g1 候选装配 `:294-315` 区)
+- Modify: `web/src/lib/valuation/ownerEarningsDcf.check.ts`(断言)
+- Modify: `web/scripts/probe-moat-intangibles.ts`(探针加打印 g1 + IV,供验收)
 
 **Interfaces:**
-- Consumes:Task 2/3 后 franchise 已就位的 floor;`ValuationFloorYear.rd_expense`(已有字段)。
-- Produces:(条件)`growthReinvest` 增项 + 早返回条件放宽,或一份"层③ 本期不做"的决策记录。
+- Consumes:`floor.structural_confidence`(已有)、`floor.moat_cap.grade`、`floor.is_financial`、`floor.sustainable_growth`、`historicalGrowthBaseRate`(已 import)。
+- Produces:`S_STRUCTURAL_GROWTH` 常量;`g1` 对结构性 franchise 剔除 gFund。
 
-- [ ] **Step 1: 验证层③ 是否真的需要**
+- [ ] **Step 1: 加常量**
 
-Run: `cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/probe-moat-intangibles.ts NFLX MA SPGI ADBE MCO`
-读每票 `growth_value`:
-- **若 `assessable=true` 且 `gated_to_zero=false` 且 `neutral_ps>0`** → 层③ 已不需要(capex 型再投资足够,GV 正常)。**跳到 Step 6 记录"层③ 本期不做",本 Task 完成。**
-- **若 `gated_to_zero=false` 但 `not_assessable`(reason=无正成长再投资)** → 该 franchise 靠无形投资成长、capex 补不回 GV,层③ 有必要,进 Step 2。
-- 记录每票落哪类。
+在 `ownerEarningsDcf.ts` 的 `GROWTH_CAP_NONE`(`:16`)之后追加:
 
-- [ ] **Step 2:(条件)双算风险核实**
+```ts
+export const S_STRUCTURAL_GROWTH = 0.5; // 结构性置信门槛:≥此值的非金融 franchise，其 g1 不再受 gFund(=ROIC×净再投资率)封零 —— 近零再投资复利股的成长靠定价权/网络效应而非砸钱。真数据校准(548 franchise，门槛 0.5 保住 MA/SPGI/NFLX/ADBE、挡住 CAT/KO)，provenance 见 docs/superpowers/calibration/2026-07-17-structural-growth-threshold.md。
+```
 
-确认 `rd_expense` 在 `computeGrowthValue` 里未被 ROIIC 分子/分母重复计入:ROIIC 分子 = NOPAT 增量(operating_income 含 R&D 费用化后的口径),分母 = capex 型 growthReinvest。若把 ΔR&D 加进分母、而分子 NOPAT 未按 Damodaran 加回 R&D/扣摊销 → 口径错配(spec §6.3)。**若无法在不动 NOPAT 口径的前提下干净纳入,判定层③ 本期不做**(与品牌 SGA 同类字段/双算约束),进 Step 6。
+- [ ] **Step 2: 写断言(ownerEarningsDcf.check.ts)**
 
-- [ ] **Step 3:(条件)只读校准脚本**
+先读 `ownerEarningsDcf.check.ts` 现有夹具构造方式(它如何造一个 `ValuationFloor` + `deriveOeDcf` 调用)。追加三个用例(用文件内既有夹具工厂;若无,构造最小 floor:`buffett_epv` 可估值、`moat_cap.grade` 可设、`sustainable_growth`/`structural_confidence`/`is_financial` 可设、几年 FY `years` 带 revenue/net_income 使 gRaw/cagr 为正):
 
-若 Step 2 通过,新建 `web/scripts/gv-intangible-calibrate.ts`(骨架照抄 `scripts/leverage-premium-calibrate.ts`:全宇宙、跑真引擎、只读、输出 NDJSON),统计"无形成长投资纳入比例"分位,定一个有 provenance 的常量(如 `INTANGIBLE_GROWTH_INCLUSION`)。禁无出处硬编。
+```ts
+// 结构性 franchise(s≥0.5)+ gFund≈0 + gRaw/cagr 为正 → g1 不被封零(> 0)。
+const structFr = deriveOeDcf(floorWith({ grade: "strong", sustainable_growth: 0, structural_confidence: 0.6, is_financial: false }), yearsGrowing, DGS10, price);
+assert.ok(structFr.assessable && structFr.growth_g1 != null && structFr.growth_g1 > 0, "结构性 franchise g1 不被 gFund 封零");
 
-Run: `cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/gv-intangible-calibrate.ts > /tmp/gv-intang.ndjson`
-Expected: NDJSON 输出,据分位定常量(记 provenance 进常量注释)。
+// 低 s(<0.5)franchise + gFund≈0 → 仍被 gFund 封零(g1 = 0)。
+const lowS = deriveOeDcf(floorWith({ grade: "strong", sustainable_growth: 0, structural_confidence: 0.3, is_financial: false }), yearsGrowing, DGS10, price);
+assert.strictEqual(lowS.growth_g1, 0, "低 s 仍受 gFund 封零(顺周期不计入峰值增长)");
 
-- [ ] **Step 4:(条件)实现 + 断言**
+// 金融 franchise(is_financial) → 不参与本修法,行为不变(gFund 通常 undefined,走 SGR)。
+const finFr = deriveOeDcf(floorWith({ grade: "moderate", sustainable_growth: 0, structural_confidence: 0.9, is_financial: true }), yearsGrowing, DGS10, price);
+// 断言金融路径未因本改动改变(g1 由 gRaw/financial cap 决定,与改前一致)——具体值照现有金融用例。
+```
 
-在 `growthValue.ts` 的 `growthReinvest`(`:108-121`)加无形成长投资增项,放宽 `cumulativeReinvest <= 0` 早返回(`:140`)为"有形与无形都不为正才不可评估"。补 `growthValue.check.ts` 断言无形增项使先前归零的 franchise GV 转正,且零无形票行为不变。
+(以上 `floorWith`/`yearsGrowing`/`DGS10`/`price` 用文件内既有等价夹具;若命名不同照实调整,保持断言语义。)
 
-Run: `cd web && npx tsx src/lib/valuation/growthValue.check.ts`
-Expected: OK。
+- [ ] **Step 3: 跑确认失败**
 
-- [ ] **Step 5:(条件)真数据复跑**
+Run: `cd web && npx tsx src/lib/valuation/ownerEarningsDcf.check.ts`
+Expected: FAIL —— 结构性 franchise 用例现在 g1=0(gFund 仍在 Math.min 里)。
 
-Run: `cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/probe-moat-intangibles.ts MA SPGI MCO MSFT AAPL`
-Expected:MA/SPGI 的 `growth_value.neutral_ps>0`;MSFT/AAPL(capex 型)GV 不显著漂移。
+- [ ] **Step 4: 实现 g1 候选装配改动**
 
-- [ ] **Step 6: 记录决策 + 提交**
+把 `ownerEarningsDcf.ts:310-315`(从 `const cagrFallback = ...` 到 `const g1 = ...`)替换为:
 
-无论实现或延期,把 Step 1 的验证结论写进提交信息。若延期:更新 spec §3.4/§9 标注"层③ 经真数据验证本期不做,理由 X",不留悬空。
+```ts
+  const cagrFallback = cagr != null && cagr > 0 ? cagr : undefined;
+  // 层③(增长率引擎修正):近零再投资的轻资产 franchise，gFund=ROIC×净再投资率 结构性≈0，经 Math.min
+  // 把已证实的营收/盈利增长盖成 0(MA/SPGI 现价被误判远超内在价值的真机制)。非金融 franchise 且
+  // 结构性置信 s≥S_STRUCTURAL_GROWTH 时，gFund 不再作 g1 上限 —— 改由已证实的 gRaw(营收 log 回归)+
+  // cagr 决定，仍受 grade cap 与 declined 闸约束。金融股走 SGR 不涉及；顺周期股(低 s，如 CAT/KO)
+  // 保留 gFund，不给峰值增长计入。门槛 provenance 见 docs/superpowers/calibration/2026-07-17-structural-growth-threshold.md。
+  const structuralFranchise =
+    (grade === "strong" || grade === "moderate") &&
+    floor.is_financial !== true &&
+    floor.structural_confidence != null &&
+    floor.structural_confidence >= S_STRUCTURAL_GROWTH;
+  const fundamentalCeilings = structuralFranchise ? [gRaw, cagrFallback] : [gRaw, gFund, cagrFallback];
+  const candidates = fundamentalCeilings.filter(
+    (n): n is number => n != null && Number.isFinite(n) && n >= 0,
+  );
+  // gRaw/gFund 皆缺 → candidates 仅剩 cagrFallback(退回今天行为,但用新 cap);全缺 → 0。
+  const g1 = declined ? 0 : candidates.length ? clamp(Math.min(...candidates), 0, cap) : 0;
+```
+
+(即只把原 `candidates` 单行拆成 `structuralFranchise` 判定 + `fundamentalCeilings` 选择;`gRaw`/`gFund`/`grade`/`cap`/`cagr`/`declined` 均沿用上文既有声明,不重复定义。)
+
+- [ ] **Step 5: 跑确认通过 + tsc**
+
+Run: `cd web && npx tsx src/lib/valuation/ownerEarningsDcf.check.ts && npx tsc --noEmit`
+Expected: OK + tsc 零错。
+
+- [ ] **Step 6: 探针加 g1 + IV 打印**
+
+在 `probe-moat-intangibles.ts` 的 verdict 打印之前,追加一行打印 OE-DCF 的 g1 与中枢 IV(便于验收):
+
+```ts
+    console.log(`oeDcf: g1=${n(oeDcf?.growth_g1, 3)} cagr_raw=${n(oeDcf?.cagr_raw, 3)} IV(neutral)=${n(oeDcf?.tiers?.neutral.per_share)}`);
+```
+
+(`oeDcf` 变量已在 verdict 上文算出;若探针里名字不同照实取。)
+
+- [ ] **Step 7: 真数据验收**
+
+Run: `cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/probe-moat-intangibles.ts MA SPGI NFLX ADBE MSFT AAPL CAT KO`
+Expected:
+- **MA/SPGI/NFLX/ADBE:`oeDcf.g1 > 0`**(MA≈4.6% / SPGI≈7% / NFLX≈11.6% / ADBE≈10.3%),IV 抬升,`verdict.marginPct` 显著改善(MA 从 ≈−270% 大幅收窄)。
+- **CAT/KO:`oeDcf.g1` 与改前一致**(CAT≈1.7% / KO≈3.4%,gFund 仍生效,峰值增长未计入)。
+- MSFT/AAPL:g1 上升到 ≈13.5% / 4.3%(真实增长如实计入,封在 20% cap 内),不越界。
+
+- [ ] **Step 8: 提交**
 
 ```bash
 cd /Users/junlinzhu/Desktop/yangyang-code/ny-fed-monitor/.claude/worktrees/moat-intangibles
-git add -A
-git commit -m "feat(valuation): 层③ 成长再投资纳入无形投资 (或: 层③ 经验证本期延 Phase 2)
+git add web/src/lib/valuation/ownerEarningsDcf.ts web/src/lib/valuation/ownerEarningsDcf.check.ts web/scripts/probe-moat-intangibles.ts
+git commit -m "feat(valuation): 层③ 结构性 franchise 的 g1 不再被 gFund 封零
 
-<据 Step 1 验证结论二选一填写>
+非金融 franchise 且 structural_confidence≥0.5 时,gFund(ROIC×净再投资率,轻资产恒≈0)
+不再作 g1 上限,改由已证实 gRaw/cagr 决定(仍受 grade cap+declined 闸)。
+MA/SPGI/NFLX 的成长终于计入 IV;CAT/KO 顺周期不动。
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```
 
 ---
 
-## Task 6: 全套回归 + tsc 终验
+## Task 7: 全套回归 + tsc 终验
 
 **目标**:跑全部 `.check.ts` + 13 票探针 AFTER,对齐验收表,确认无回退、无误伤、tsc 零错。
 
@@ -743,17 +806,20 @@ Expected(逐票):
 
 | 组 | 票 | 期望 |
 |---|---|---|
-| 主路径救 | NFLX, MA, SPGI, ADBE | `moat.signal=franchise`;verdict 有 bucket(非 null) |
-| 兜底救 | MCO | `moat.signal=franchise`,`via_roic=true`,`grade=strong` |
-| 死角标注 | MSCI, ORLY | `moat.signal=not_assessable`,`capital_distorted=true`,`verdict=null (suppressed)` |
-| 对照不漂移 | MSFT, AAPL | `moat.signal=franchise`,`per_share(AV)` 与 BEFORE 一致 |
+| 主路径救(层①) | NFLX, MA, SPGI, ADBE | `moat.signal=franchise`;verdict 有 bucket(非 null) |
+| 兜底救(层②) | MCO | `moat.signal=franchise`,`via_roic=true`,`grade=strong` |
+| 死角标注(层②) | MSCI, ORLY | `moat.signal=not_assessable`,`capital_distorted=true`,`verdict=null (suppressed)` |
+| 成长计入(层③) | MA, SPGI, NFLX, ADBE | `oeDcf.g1 > 0`(gFund 不再封零),IV 抬升、marginPct 显著收窄 |
+| 顺周期不动(层③护栏) | CAT, KO | `oeDcf.g1` 与 BEFORE 一致(gFund 仍生效,峰值增长未计入) |
+| 对照不漂移 | MSFT, AAPL | `moat.signal=franchise`,`per_share(AV)` 与 BEFORE 一致;g1 如实计入真实增长、封在 20% cap 内 |
 | 烂账反例 | W, CVNA, PTON | `via_roic=false`;`value_destruction`/`not_assessable`;不误判 franchise |
 | 数据问题 | V | 记录 `per_share_unavailable` 现状(不阻塞;另开排查) |
+| 层③ watch-list | ABNB, MGRC | 复核 moat 分档是否恰当(g1 抬到 20% cap,是 moat 定档问题非本改动;记录不阻塞) |
 
 - [ ] **Step 4: BEFORE↔AFTER diff 复核**
 
 Run: `cd web && diff scripts/.moat-probe-before.txt scripts/.moat-probe-after.txt || true`
-逐行确认:变化只落在目标票(NFLX/MA/SPGI/ADBE/MCO 转 franchise、MSCI/ORLY 转 suppressed),对照/反例票无非预期漂移。
+逐行确认:变化落在目标票(NFLX/MA/SPGI/ADBE/MCO 转 franchise、MSCI/ORLY 转 suppressed、层③ franchise g1>0),顺周期(CAT/KO)与反例票无非预期漂移。
 
 - [ ] **Step 5: 提交验收产物(可选)**
 
@@ -775,6 +841,7 @@ git commit -m "test(valuation): 护城河地基修复 13 票 AFTER 验收对齐"
 
 ## Self-Review
 
-- **Spec coverage**:层①(Task 2)、层②兜底(Task 3)、层②死角+抑制+UI(Task 3+4)、层③(Task 5 条件)、13 票验收(Task 1+6)、对照回归守护(Task 2 Step 5 + Task 6)、双算防护(Task 5 Step 2)、死角展示 en/zh(Task 4 Step 5-6)—— 均有对应 Task。spec §6.2 兜底 grade(Task 3 Step 5)、§6.4 对照守护(Task 2 Step 5)覆盖。
-- **Placeholder scan**:Task 5 为"条件执行",但两分支(实现/延期)均有明确判据(Step 1 探针输出)与动作,非 TBD;例外票(Task 2 Step 6)有明确判据与降级动作。
-- **Type consistency**:`buildMoatReading` 四参签名(Task 3 Step 4)与 check(Step 2)、探针(Task 1)一致;`MoatReading.moat_via_roic`/`capital_structure_distorted`(types.ts Task 3 Step 1)被 epvFloor/moatCap/deriveValuationVerdict/page/ingest 一致消费;`capitalStructureDistorted` 入参名在 deriveValuationVerdict/page/ingest 三处一致。
+- **Spec coverage**:层①(Task 2)、层②兜底(Task 3)、层②死角+抑制+UI(Task 3+4)、层③(Task 5 校准 + Task 6 实施)、13+票验收(Task 1+7)、对照回归守护(Task 2 Step 5 + Task 7)、死角展示 en/zh(Task 4)—— 均有对应 Task。
+- **层③ 重设计说明**:原条件层③(growthValue R&D 无形投资)经 Task 5 前身的真数据验证**不成立**(MA/SPGI 成长非 R&D 驱动,verdict 锚 OE-DCF IV 非 GV);真根因 = OE-DCF g1 被 `gFund=ROIC×再投资` 封零。已按 spec §3.4"层③不假设成立、验证后回到设计"重设计为 Task 5(校准)+ Task 6(g1 实施),门槛 0.5 有全宇宙 provenance,顺周期护栏(s<0.5)+ watch-list(ABNB/MGRC)守住不过度计入。spec §3.4/§9 需在 Task 7 后同步更新为此结论。
+- **Placeholder scan**:无 TBD;Task 6 的 g1 改动、常量、断言、验收数值均具体。
+- **Type consistency**:`buildMoatReading` 四参签名(Task 3)与 check、探针一致;`MoatReading.moat_via_roic`/`capital_structure_distorted`(Task 3)被 epvFloor/moatCap/deriveValuationVerdict/page/ingest 一致消费;`capitalStructureDistorted` 入参名三处一致;`S_STRUCTURAL_GROWTH`(Task 6)在 ownerEarningsDcf 定义并本地消费,探针/校准脚本各自内联同口径。
