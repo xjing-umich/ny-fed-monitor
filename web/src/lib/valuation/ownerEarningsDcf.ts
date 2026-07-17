@@ -14,6 +14,7 @@ import { historicalGrowthBaseRate } from "./growthBaseRate";
 export const GROWTH_CAP_FRANCHISE = 0.20; // 已验证 franchise(moat strong):Mauboussin 上沿,须 ROIC×再投资支撑
 export const GROWTH_CAP_MODERATE = 0.07;  // moderate(非 strong 但有 franchise 信号):贴近名义 GDP+小幅;原 GROWTH_CAP_BASE 改名,值不变
 export const GROWTH_CAP_NONE = 0.05;      // 非金融、无护城河(none):比 moderate 更收紧;主流不认无护城河的长期高增长
+export const S_STRUCTURAL_GROWTH = 0.5; // 结构性置信门槛:≥此值的非金融 franchise，其 g1 不再受 gFund(=ROIC×净再投资率)封零 —— 近零再投资复利股的成长靠定价权/网络效应而非砸钱。真数据校准(548 franchise，门槛 0.5 保住 MA/SPGI/NFLX/ADBE、挡住 CAT/KO)，provenance 见 docs/superpowers/calibration/2026-07-17-structural-growth-threshold.md。
 // audit #3: 股权风险溢价从 2.5% 提到 4.5%(历史 ~4.5–5.5%),strict 端 10%→12%,
 // fallback 带 8–10%→9–11%。原 2.5% 溢价系统性低估贴现率 → 高估所有名字,对高风险名字最甚。
 export const R_STRICT = 0.12;
@@ -308,7 +309,18 @@ export function deriveOeDcf(
       ? GROWTH_CAP_MODERATE
       : GROWTH_CAP_NONE;
   const cagrFallback = cagr != null && cagr > 0 ? cagr : undefined;
-  const candidates = [gRaw, gFund, cagrFallback].filter(
+  // 层③(增长率引擎修正):近零再投资的轻资产 franchise，gFund=ROIC×净再投资率 结构性≈0，经 Math.min
+  // 把已证实的营收/盈利增长盖成 0(MA/SPGI 现价被误判远超内在价值的真机制)。非金融 franchise 且
+  // 结构性置信 s≥S_STRUCTURAL_GROWTH 时，gFund 不再作 g1 上限 —— 改由已证实的 gRaw(营收 log 回归)+
+  // cagr 决定，仍受 grade cap 与 declined 闸约束。金融股走 SGR 不涉及；顺周期股(低 s，如 CAT/KO)
+  // 保留 gFund，不给峰值增长计入。门槛 provenance 见 docs/superpowers/calibration/2026-07-17-structural-growth-threshold.md。
+  const structuralFranchise =
+    (grade === "strong" || grade === "moderate") &&
+    floor.is_financial !== true &&
+    floor.structural_confidence != null &&
+    floor.structural_confidence >= S_STRUCTURAL_GROWTH;
+  const fundamentalCeilings = structuralFranchise ? [gRaw, cagrFallback] : [gRaw, gFund, cagrFallback];
+  const candidates = fundamentalCeilings.filter(
     (n): n is number => n != null && Number.isFinite(n) && n >= 0,
   );
   // gRaw/gFund 皆缺 → candidates 仅剩 cagrFallback(退回今天行为,但用新 cap);全缺 → 0。
