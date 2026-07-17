@@ -1,0 +1,164 @@
+
+======== NFLX ========
+latest FY 2025: equity=26615488000 goodwill=— intangibles=32778392000 shares=4343863000
+asset_floor: assessable=true dual_av_comparable=false tangible=-6162904000 capRd=8876274200 proxy=16389196000 per_share(AV)=4.40 reproduction_per_share=—
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=19.81 asset_ps=4.40
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=true
+growth_value: assessable=true gated_to_zero=false roiic=3.080 neutral_ps=39.11 reason=—
+oeDcf: g1=0.116 cagr_raw=0.210 IV(neutral)=52.56
+verdict: { bucket: 'within', reliable: true, marginPct: '-41.5' }
+
+======== MA ========
+latest FY 2025: equity=7737000000 goodwill=9560000000 intangibles=5554000000 shares=906000000
+asset_floor: assessable=true dual_av_comparable=false tangible=-7377000000 capRd=— proxy=7557000000 per_share(AV)=0.20 reproduction_per_share=—
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=157.62 asset_ps=0.20
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=true
+growth_value: assessable=false gated_to_zero=false roiic=— neutral_ps=0.00 reason=No positive growth reinvestment in the matured window, so ROIIC cannot be computed.
+oeDcf: g1=0.046 cagr_raw=0.146 IV(neutral)=224.35
+verdict: { bucket: 'above', reliable: true, marginPct: '-145.8' }
+
+======== SPGI ========
+latest FY 2025: equity=31127000000 goodwill=36475000000 intangibles=16271000000 shares=305100000
+asset_floor: assessable=true dual_av_comparable=false tangible=-21619000000 capRd=— proxy=26373000000 per_share(AV)=15.58 reproduction_per_share=—
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=163.65 asset_ps=15.58
+moat_cap: grade=moderate capYears=10
+roicLongTermStrong=false
+growth_value: assessable=false gated_to_zero=false roiic=— neutral_ps=0.00 reason=No positive growth reinvestment in the matured window, so ROIIC cannot be computed.
+oeDcf: g1=0.070 cagr_raw=0.103 IV(neutral)=246.33
+verdict: { bucket: 'above', reliable: true, marginPct: '-85.7' }
+
+======== ADBE ========
+latest FY 2025: equity=11623000000 goodwill=12857000000 intangibles=495000000 shares=427000000
+asset_floor: assessable=true dual_av_comparable=false tangible=-1729000000 capRd=— proxy=6676000000 per_share(AV)=11.59 reproduction_per_share=—
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=163.94 asset_ps=11.59
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=true
+growth_value: assessable=true gated_to_zero=false roiic=1.626 neutral_ps=146.85 reason=—
+oeDcf: g1=0.103 cagr_raw=0.103 IV(neutral)=366.01
+verdict: { bucket: 'below', reliable: true, marginPct: '35.7' }
+
+======== MCO ========
+latest FY 2025: equity=4054000000 goodwill=6368000000 intangibles=1866000000 shares=179900000
+asset_floor: assessable=false dual_av_comparable=false tangible=— capRd=— proxy=— per_share(AV)=— reproduction_per_share=—
+moat: signal=franchise via_roic=true capital_distorted=false epv_ps=123.94 asset_ps=—
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=true
+growth_value: assessable=true gated_to_zero=false roiic=1.095 neutral_ps=57.63 reason=—
+oeDcf: g1=0.027 cagr_raw=0.027 IV(neutral)=153.62
+verdict: { bucket: 'above', reliable: true, marginPct: '-237.9' }
+
+======== MSCI ========
+latest FY 2025: equity=-2654540000 goodwill=2923362000 intangibles=832513000 shares=76636000
+asset_floor: assessable=false dual_av_comparable=false tangible=— capRd=— proxy=— per_share(AV)=— reproduction_per_share=—
+moat: signal=not_assessable via_roic=false capital_distorted=true epv_ps=— asset_ps=—
+moat_cap: grade=none capYears=0
+roicLongTermStrong=false
+growth_value: assessable=true gated_to_zero=true roiic=— neutral_ps=0.00 reason=—
+oeDcf: g1=0.050 cagr_raw=0.134 IV(neutral)=186.26
+verdict: null (suppressed)
+
+======== ORLY ========
+latest FY 2025: equity=-763352000 goodwill=948208000 intangibles=71694000 shares=855919000
+asset_floor: assessable=false dual_av_comparable=false tangible=— capRd=— proxy=— per_share(AV)=— reproduction_per_share=—
+moat: signal=not_assessable via_roic=false capital_distorted=true epv_ps=— asset_ps=—
+moat_cap: grade=none capYears=0
+roicLongTermStrong=false
+growth_value: assessable=true gated_to_zero=true roiic=— neutral_ps=0.00 reason=—
+oeDcf: g1=0.041 cagr_raw=0.041 IV(neutral)=36.22
+verdict: null (suppressed)
+
+======== MSFT ========
+latest FY 2024: equity=343479000000 goodwill=119509000000 intangibles=22604000000 shares=7465000000
+asset_floor: assessable=true dual_av_comparable=true tangible=201366000000 capRd=86361000000 proxy=71056500000 per_share(AV)=38.54 reproduction_per_share=48.06
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=135.82 asset_ps=38.54
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=true
+growth_value: assessable=true gated_to_zero=true roiic=— neutral_ps=0.00 reason=—
+oeDcf: g1=0.135 cagr_raw=0.135 IV(neutral)=359.67
+verdict: { bucket: 'within', reliable: true, marginPct: '-11.5' }
+
+======== AAPL ========
+latest FY 2025: equity=73733000000 goodwill=— intangibles=13301000000 shares=15004697000
+asset_floor: assessable=true dual_av_comparable=true tangible=60432000000 capRd=92478200000 proxy=6650500000 per_share(AV)=10.19 reproduction_per_share=10.63
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=69.11 asset_ps=10.19
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=true
+growth_value: assessable=false gated_to_zero=false roiic=— neutral_ps=0.00 reason=No positive growth reinvestment in the matured window, so ROIIC cannot be computed.
+oeDcf: g1=0.043 cagr_raw=0.043 IV(neutral)=99.17
+verdict: { bucket: 'above', reliable: true, marginPct: '-236.1' }
+
+======== W ========
+latest FY 2025: equity=-2782000000 goodwill=400000 intangibles=— shares=128000000
+asset_floor: assessable=false dual_av_comparable=false tangible=— capRd=— proxy=— per_share(AV)=— reproduction_per_share=—
+moat: signal=value_destruction via_roic=false capital_distorted=false epv_ps=— asset_ps=—
+moat_cap: grade=none capYears=0
+roicLongTermStrong=false
+growth_value: assessable=true gated_to_zero=true roiic=— neutral_ps=0.00 reason=—
+oeDcf: g1=— cagr_raw=— IV(neutral)=—
+verdict: null (suppressed)
+
+======== CVNA ========
+latest FY 2025: equity=3441000000 goodwill=10000000 intangibles=47000000 shares=224277000
+asset_floor: assessable=true dual_av_comparable=true tangible=3384000000 capRd=— proxy=28500000 per_share(AV)=15.09 reproduction_per_share=15.22
+moat: signal=value_destruction via_roic=false capital_distorted=false epv_ps=— asset_ps=—
+moat_cap: grade=none capYears=0
+roicLongTermStrong=false
+growth_value: assessable=true gated_to_zero=true roiic=— neutral_ps=0.00 reason=—
+oeDcf: g1=0.050 cagr_raw=— IV(neutral)=13.35
+verdict: { bucket: 'above', reliable: true, marginPct: '-429.3' }
+
+======== PTON ========
+latest FY 2024: equity=-413800000 goodwill=41200000 intangibles=5600000 shares=390037997
+asset_floor: assessable=true dual_av_comparable=false tangible=-460600000 capRd=862440000 proxy=23400000 per_share(AV)=1.09 reproduction_per_share=—
+moat: signal=value_destruction via_roic=false capital_distorted=false epv_ps=— asset_ps=—
+moat_cap: grade=none capYears=0
+roicLongTermStrong=false
+growth_value: assessable=true gated_to_zero=true roiic=— neutral_ps=0.00 reason=—
+oeDcf: g1=— cagr_raw=— IV(neutral)=—
+verdict: null (suppressed)
+
+======== V ========
+latest FY 2025: equity=37909000000 goodwill=19879000000 intangibles=27646000000 shares=—
+floor: not assessable (per_share_unavailable)
+
+======== CAT ========
+latest FY 2025: equity=21318000000 goodwill=5321000000 intangibles=241000000 shares=472300000
+asset_floor: assessable=true dual_av_comparable=true tangible=15756000000 capRd=6161200000 proxy=2781000000 per_share(AV)=46.41 reproduction_per_share=52.29
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=133.17 asset_ps=46.41
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=false
+growth_value: assessable=false gated_to_zero=false roiic=— neutral_ps=0.00 reason=No positive growth reinvestment in the matured window, so ROIIC cannot be computed.
+oeDcf: g1=0.017 cagr_raw=0.082 IV(neutral)=205.69
+verdict: { bucket: 'above', reliable: true, marginPct: '-326.5' }
+
+======== KO ========
+latest FY 2025: equity=32169000000 goodwill=15491000000 intangibles=— shares=4313000000
+asset_floor: assessable=true dual_av_comparable=true tangible=16678000000 capRd=— proxy=7745500000 per_share(AV)=3.87 reproduction_per_share=5.66
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=15.77 asset_ps=3.87
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=false
+growth_value: assessable=true gated_to_zero=false roiic=1.453 neutral_ps=17.22 reason=—
+oeDcf: g1=0.034 cagr_raw=0.076 IV(neutral)=35.25
+verdict: { bucket: 'above', reliable: true, marginPct: '-140.9' }
+
+======== ABNB ========
+latest FY 2025: equity=8199000000 goodwill=754000000 intangibles=16000000 shares=623000000
+asset_floor: assessable=true dual_av_comparable=true tangible=7429000000 capRd=5917809600 proxy=385000000 per_share(AV)=21.42 reproduction_per_share=22.04
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=42.13 asset_ps=21.42
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=false
+growth_value: assessable=true gated_to_zero=false roiic=2.471 neutral_ps=138.64 reason=—
+oeDcf: g1=0.200 cagr_raw=— IV(neutral)=195.71
+verdict: { bucket: 'below', reliable: true, marginPct: '24.5' }
+
+======== MGRC ========
+latest FY 2025: equity=1237023000 goodwill=332584000 intangibles=46605000 shares=24633000
+asset_floor: assessable=true dual_av_comparable=true tangible=857834000 capRd=— proxy=189594500 per_share(AV)=34.82 reproduction_per_share=42.52
+moat: signal=franchise via_roic=false capital_distorted=false epv_ps=107.80 asset_ps=34.82
+moat_cap: grade=strong capYears=20
+roicLongTermStrong=false
+growth_value: assessable=false gated_to_zero=false roiic=— neutral_ps=0.00 reason=No positive growth reinvestment in the matured window, so ROIIC cannot be computed.
+oeDcf: g1=0.149 cagr_raw=0.149 IV(neutral)=302.50
+verdict: { bucket: 'below', reliable: true, marginPct: '60.0' }

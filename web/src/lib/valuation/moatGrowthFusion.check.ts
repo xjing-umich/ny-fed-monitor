@@ -138,10 +138,18 @@ function runChain(input: ValuationFloorInput, priceClose: number) {
   assert.strictEqual(oeDcf.moatCap?.grade, "strong", "融合1: OE-DCF 侧读到同一个 strong(单一真相源,BUG2 不回归)");
   console.log(`[融合1] growth_g1=${(oeDcf.growth_g1! * 100).toFixed(2)}% (cap=${GROWTH_CAP_FRANCHISE * 100}%) gFund=${floor.sustainable_growth != null ? (floor.sustainable_growth * 100).toFixed(2) + "%" : "undefined"}`);
   assert.ok(oeDcf.growth_g1! > 0, "融合1: g_used > 0(有正增长,非零增长退化)");
-  assert.ok(oeDcf.growth_g1! < GROWTH_CAP_FRANCHISE, "融合1: g_used 明显低于 20% 硬顶 → 证明由 gFund(基本面)锁定,非填满 cap");
+  assert.ok(oeDcf.growth_g1! < GROWTH_CAP_FRANCHISE, "融合1: g_used 明显低于 20% 硬顶 → 证明由证实的营收增长锁定,非填满 cap");
+  // 层③(Task 6): CASHCOW 是非金融 strong franchise 且结构性置信 s≥0.5(稳定 10%/yr 营收增长、
+  // 稳定利润率)→ gFund(=ROIC×净再投资率,近零再投资轻资产恒≈0)不再作 g1 上限,改由已证实的
+  // gRaw(营收 log 回归)/cagr(≈10%/yr)决定。g_used 应显著高于 gFund(证明层③解封生效),且约等于
+  // 已知的营收增长率(10%,即 fixture 的 revs 逐年 ×1.1)。
   assert.ok(
-    floor.sustainable_growth != null && Math.abs(oeDcf.growth_g1! - floor.sustainable_growth) < 1e-6,
-    `融合1: g_used 应等于 gFund(候选中最紧,基本面上限锁定),got g1=${oeDcf.growth_g1!} gFund=${floor.sustainable_growth}`,
+    floor.sustainable_growth != null && oeDcf.growth_g1! > floor.sustainable_growth + 0.01,
+    `融合1(层③): g_used 应明显高于 gFund(结构性 franchise 不再被 gFund 封零),got g1=${oeDcf.growth_g1!} gFund=${floor.sustainable_growth}`,
+  );
+  assert.ok(
+    Math.abs(oeDcf.growth_g1! - 0.10) < 0.01,
+    `融合1(层③): g_used 应约等于已证实的营收增长率 10%(gRaw/cagr 主导,非 gFund),got g1=${oeDcf.growth_g1!}`,
   );
 
   const F = floor.buffett_epv.per_share_low!; // 悲观档零增长底附近(非精确 valueFloor,仅作数量级参照)
