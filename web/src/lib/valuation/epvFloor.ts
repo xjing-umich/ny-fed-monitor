@@ -170,8 +170,11 @@ function assembleFloor(
   const netDebt = netDebtOf(latest);
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
+  // roicLongStrongMoat 须在 buildMoatReading 之前算出:层② ROIC 兜底(spec §3.2)靠它在 AV 不可评估时判 franchise。
+  const { nopatOf: nopatMoat, investedCapitalOf: investedCapitalMoat } = roicHelpers(tax.rate);
+  const roicLongStrongMoat = roicLongTermStrong({ fyYears: allYears, nopatOf: nopatMoat, investedCapitalOf: investedCapitalMoat });
   const assetFloor = buildReproductionValue(years, shares);
-  const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares);
+  const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares, roicLongStrongMoat);
   // Shared maint read for floor-level AI-hog flag + GV gate (lamps still compute their own for OE arithmetic).
   const mc = maintenanceCapex(years);
   const aiCapexDistortion = mc.ai_capex_distortion_warning;
@@ -199,7 +202,7 @@ function assembleFloor(
   // 吃完整 allYears(非本函数的 5 年 marginYears/earningsYears 正常化窗口)——pathB 判的是"长期回报型久期",
   // 应看能拿到的全部历史,不受 EPV lamp 的 TARGET_YEARS 限制;nopatOf/investedCapitalOf 内部对缺字段年份
   // 自然跳过,不会因为多喂了年份就产生假数据。
-  const roicLongStrong = roicLongTermStrong({ fyYears: allYears, nopatOf, investedCapitalOf });
+  // (roicLongStrongMoat 已在 buildMoatReading 之前算出,此处复用,不重复计算。)
   const epvAvRatio =
     moatReading.epv_per_share_compared != null &&
     moatReading.asset_per_share_compared != null &&
@@ -229,7 +232,7 @@ function assembleFloor(
     // —— 它此前链式砍 CAP(20→10)并经 moatGrade 压低 GV,是同一风险的第三次惩罚。
     suppressedFlags: aiCapexDistortion === true && roicDeclining,
     roicStable,
-    roicLongTermStrong: roicLongStrong,
+    roicLongTermStrong: roicLongStrongMoat,
   });
 
   const growthValue = computeGrowthValue({
@@ -471,7 +474,7 @@ function buildBuffettLamp(
   };
 }
 
-function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, shares: number): MoatReading {
+export function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, shares: number, roicLongStrong: boolean): MoatReading {
   const dualComparable =
     reproduction.dual_av_comparable === true &&
     reproduction.reproduction_per_share != null &&
@@ -487,7 +490,25 @@ function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, sha
     return { signal: "value_destruction", label: "Normalized earnings are non-positive, so earnings power sits below the reproduction-value base — a value-destruction signal (not a verdict).", basis_note: basisNote };
   }
   if (!reproduction.assessable || reproduction.per_share == null) {
-    return { signal: "not_assessable", label: "The earnings-power vs reproduction-value comparison is unavailable because there is no positive asset base.", basis_note: basisNote };
+    // 层② ROIC 兜底(spec §3.2):AV 因深度负权益/无形主导不可评估,但 EPV 强(本行已过 epvLamp.assessable)
+    // 且 ROIC 长期极高稳 → Greenwald §1.1.1「sustained high ROIC」是护城河终极判据,AV 只是 backstop。
+    if (roicLongStrong && epvLamp.per_share_low != null && epvLamp.per_share_high != null) {
+      const epvMid = (epvLamp.per_share_low + epvLamp.per_share_high) / 2;
+      return {
+        signal: "franchise",
+        label: "Reproduction value is not assessable (capital structure distorted), but sustained high ROIC signals a durable franchise — a moat signal on the returns test, not a verdict.",
+        basis_note: basisNote,
+        epv_per_share_compared: epvMid,
+        moat_via_roic: true,
+      };
+    }
+    // 层② 死角(spec §3.3):AV 与 ROIC 双不可评估 → 资本结构被回购扭曲,护城河不可评估。
+    return {
+      signal: "not_assessable",
+      label: "The earnings-power vs reproduction-value comparison is unavailable: the capital structure is distorted by buybacks (deeply negative equity) and returns history is too short or unstable to judge a moat.",
+      basis_note: basisNote,
+      capital_structure_distorted: true,
+    };
   }
 
   const epvMid = (epvLamp.per_share_low! + epvLamp.per_share_high!) / 2;

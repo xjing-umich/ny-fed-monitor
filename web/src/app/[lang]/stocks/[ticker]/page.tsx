@@ -413,10 +413,14 @@ export default async function StockTickerPage({
     latestSplitDate: valuationFloor?.kind === "floor" ? await getLatestSplit(ticker) : null,
   });
 
+  // 资本结构护栏:多年回购把股东权益压成深度负值 → 重置价值/护城河不可从资产端评估,整条抑制估值判定(Task 3 标记)。
+  const capitalStructureDistorted =
+    valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
+
   // 上下文出口用的位置档(与估值卡同源, 永不漂移)。kind!=floor / 红旗 → null → 走兜底文案。
   const handoffVerdict =
     valuationFloor?.kind === "floor"
-      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation, splitCoverageStale })
+      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted })
       : null;
 
   // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照,
@@ -621,6 +625,8 @@ export default async function StockTickerPage({
               />
               {splitCoverageStale ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
+              ) : capitalStructureDistorted ? (
+                <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.moatDistorted}</p>
               ) : (
                 <>
                   <div className="mt-3">

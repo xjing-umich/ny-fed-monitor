@@ -6,6 +6,7 @@ import {
   GROWTH_CAP_FRANCHISE,
   GROWTH_CAP_MODERATE,
   GROWTH_CAP_NONE,
+  S_STRUCTURAL_GROWTH,
   R_STRICT,
   DGS10_PREMIUM,
   FALLBACK_BAND,
@@ -705,6 +706,66 @@ function oeStub(low: number, high: number): OeDcfAssessment {
     Math.abs(invLev.discount!.r_high - (invBase.discount!.r_high + 0.02)) < 1e-9,
     "inverted: r_high += 溢价(仅一次)",
   );
+}
+
+// ── U. 层③ 结构性 franchise 的 g1 不再被 gFund 封零(S_STRUCTURAL_GROWTH=0.5) ──
+// revenue 15%/yr(log 回归精确复现,同 K 用例的等比序列)+ net_income 10%/yr(cagr,同用例 14)。
+{
+  const years: ValuationFloorYear[] = [
+    { fiscal_year: 2024, net_income: 133.1, revenue: 152.0875 },
+    { fiscal_year: 2023, net_income: 121, revenue: 132.25 },
+    { fiscal_year: 2022, net_income: 110, revenue: 115 },
+    { fiscal_year: 2021, net_income: 100, revenue: 100 },
+  ];
+  const dgs10 = { value: 4.25, date: "2026-06-19" };
+
+  // U1) 结构性 franchise(strong,s=0.6≥0.5,非金融)+ gFund≈0(轻资产恒零)
+  //     → gFund 从候选剔除,g1 由 gRaw(0.15)/cagr(0.10)决定 → min=0.10 > 0(不被 gFund 封零)。
+  {
+    const floor = floorWithMoat(lamp(1000, 100, [2022, 2023, 2024]), {
+      sustainable_growth: 0,
+      grade: "strong",
+    });
+    (floor as unknown as { structural_confidence: number; is_financial: boolean }).structural_confidence = 0.6;
+    (floor as unknown as { structural_confidence: number; is_financial: boolean }).is_financial = false;
+    const r = deriveOeDcf(floor, years, dgs10, price(120));
+    assert.ok(r.assessable, "U1: assessable");
+    assert.ok(r.growth_g1 != null && r.growth_g1 > 0, `U1: 结构性 franchise g1 不被 gFund 封零, got ${r.growth_g1}`);
+    assert.ok(Math.abs(r.growth_g1! - 0.10) < 1e-6, `U1: g1 = min(gRaw 0.15, cagr 0.10) = 0.10, got ${r.growth_g1}`);
+  }
+
+  // U2) 低 s(0.3 < S_STRUCTURAL_GROWTH)+ 同样 gFund≈0 → 仍受 gFund 封零(顺周期不计入峰值增长)。
+  {
+    const floor = floorWithMoat(lamp(1000, 100, [2022, 2023, 2024]), {
+      sustainable_growth: 0,
+      grade: "strong",
+    });
+    (floor as unknown as { structural_confidence: number; is_financial: boolean }).structural_confidence = 0.3;
+    (floor as unknown as { structural_confidence: number; is_financial: boolean }).is_financial = false;
+    const r = deriveOeDcf(floor, years, dgs10, price(120));
+    assert.strictEqual(r.growth_g1, 0, `U2: 低 s(${0.3} < ${S_STRUCTURAL_GROWTH}) 仍被 gFund=0 封零, got ${r.growth_g1}`);
+  }
+
+  // U3) 金融 franchise(is_financial=true,s=0.9 高但不适用)→ gFund 仍参与候选,行为不受本改动影响。
+  //     gFund(sustainable_growth)=0.03 < gRaw(0.15)/cagr(0.10) → min 咬住 gFund → g1=0.03(封顶前),
+  //     financial cap = min(financial_sgr 0.06, GROWTH_CAP_MODERATE 0.07) = 0.06,不咬 0.03。
+  {
+    const floor = {
+      kind: "floor",
+      buffett_epv: lamp(1000, 100, [2022, 2023, 2024]),
+      sustainable_growth: 0.03,
+      is_financial: true,
+      financial_sgr: 0.06,
+      structural_confidence: 0.9,
+      moat_cap: { grade: "moderate", capYears: 10, durablePassed: false, basis: "test fixture" },
+    } as unknown as ValuationFloor;
+    const r = deriveOeDcf(floor, years, dgs10, price(120));
+    assert.ok(r.assessable, "U3: assessable");
+    assert.ok(
+      Math.abs(r.growth_g1! - 0.03) < 1e-6,
+      `U3: 金融 franchise 未被本改动影响,gFund 仍参与 min → g1≈0.03, got ${r.growth_g1}`,
+    );
+  }
 }
 
 console.log("ownerEarningsDcf.check.ts: deriveOeDcf + reconcileMethods OK");

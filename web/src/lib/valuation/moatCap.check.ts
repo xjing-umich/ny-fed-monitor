@@ -314,4 +314,21 @@ const ic100 = () => 100;
   const sgr = sustainableGrowthRateFinancial(years);
   assert(sgr !== undefined && Math.abs(sgr - 0) < 1e-9, `sustainableGrowthRateFinancial: payout>net_income → retention clamp 0 → SGR 0, got ${sgr}`); }
 
+// roicOnly(AV 无值)+ roicLongTermStrong + roicStable + 未下滑 → strong。
+{ const roicOnlyStrong = deriveMoatCap({
+    moat: { signal: "franchise", label: "", basis_note: "", moat_via_roic: true },
+    epvAvRatio: undefined, epvAvRatioOperating: undefined,
+    declined: false, suppressedFlags: false, roicStable: true, roicLongTermStrong: true,
+  });
+  assert(roicOnlyStrong.grade === "strong", "roicOnly + 稳 + 未下滑 → strong");
+  assert(roicOnlyStrong.capYears === CAP_STRONG, "roicOnly strong → CAP_STRONG"); }
+
+// roicOnly 但盈利下滑 → moderate。
+{ const roicOnlyMod = deriveMoatCap({
+    moat: { signal: "franchise", label: "", basis_note: "", moat_via_roic: true },
+    epvAvRatio: undefined, epvAvRatioOperating: undefined,
+    declined: true, suppressedFlags: false, roicStable: true, roicLongTermStrong: true,
+  });
+  assert(roicOnlyMod.grade === "moderate", "roicOnly + 下滑 → moderate"); }
+
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

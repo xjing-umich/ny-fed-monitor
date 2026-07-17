@@ -77,6 +77,7 @@ export const STOCK_PAGE_COPY = {
       within: "处于合理价值区间",
       above: "高于合理价值",
       splitPaused: "该公司近期拆股，每股估值口径待下一份财报对齐后恢复。",
+      moatDistorted: "多年回购已把股东权益压成负数，重置价值和护城河没法从资产端算，这里不给出估值判定。",
     },
     holders: {
       eyebrow: "SEC 13F · 持有人",
@@ -121,6 +122,7 @@ export const STOCK_PAGE_COPY = {
       within: "In fair-value range",
       above: "Above fair value",
       splitPaused: "Recent stock split — per-share valuation is paused until the next filing restates the share count.",
+      moatDistorted: "Years of buybacks have pushed shareholders' equity negative, so reproduction value and the moat can't be assessed from the asset side. No valuation verdict is shown here.",
     },
     holders: {
       eyebrow: "SEC 13F · holders",

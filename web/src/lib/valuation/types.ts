@@ -78,6 +78,10 @@ export type MoatReading = {
   dual_test_passed?: boolean;
   /** true when EPV/AV_cons clears franchise but EPV/AV_repr does not → commodity. */
   franchise_blocked_by_reproduction?: boolean;
+  /** true when the franchise signal came from the ROIC fallback (AV not assessable). */
+  moat_via_roic?: boolean;
+  /** true when both AV (avCore≤0) and the ROIC fallback fail — capital structure distorted by buybacks; moat not assessable. */
+  capital_structure_distorted?: boolean;
 };
 
 export type ValuationFloorProvenance = {
