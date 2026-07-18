@@ -144,20 +144,25 @@ async function main() {
           (y) => y.operating_income != null && Number.isFinite(y.operating_income) && (y.operating_income as number) > 0,
         );
         const { g: opIncLogGrowth, validYears: years } = operatingIncomeLogGrowth(fi.years);
+        // epvAvCons: EPV/AV 保守比值,仅作诊断字段随行输出备查(判断该 commodity 票的盈利力相对
+        // 资产是否已偏高,辅助人工甄别真假 franchise),不参与命中判定 —— 命中只看增长口径三闸。
         const epvAvCons =
           mr.epv_per_share_compared != null && mr.asset_per_share_compared != null && mr.asset_per_share_compared !== 0
             ? mr.epv_per_share_compared / mr.asset_per_share_compared
             : undefined;
 
+        // 命中判定必须含 allOpIncPositive 闸 —— 否则周期低谷回补票(ATI/CELH)会因回归斜率被谷底
+        // 抬高而假阳命中。gridHits/gridStrong 自洽包含此闸,单独重跑脚本即可复现文档命中集。
         const gridHits: Record<string, boolean> = {};
         const gridStrong: Record<string, boolean> = {};
         for (const minCagr of MIN_CAGR_GRID) {
           for (const minYears of MIN_YEARS_GRID) {
             const key = `c${minCagr}_y${minYears}`;
-            const hit = opIncLogGrowth != null && opIncLogGrowth >= minCagr && years >= minYears;
+            const hit = allOpIncPositive && opIncLogGrowth != null && opIncLogGrowth >= minCagr && years >= minYears;
             gridHits[key] = hit;
             if (hit) {
               for (const strongCagr of STRONG_CAGR_GRID) {
+                // strong 再叠加 STRONG_CAGR(STRONG_MIN_YEARS 与基档 MIN_YEARS 同值,已由 hit 保证)
                 gridStrong[`${key}_s${strongCagr}`] = opIncLogGrowth != null && opIncLogGrowth >= strongCagr;
               }
             }
