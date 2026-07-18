@@ -1,5 +1,5 @@
 // 纯确定性正文生成器(无 AI / 无 IO): 从已装配的 ManagerDetail 派生投资人页的服务端可见正文。
-// 与 lib/ai/investorNarrative 的本质区别: 数字直接从 13F 精确算出(非模型生成), 因此正文里
+// 与模型生成叙述的本质区别: 数字直接从 13F 精确算出(非模型生成), 因此正文里
 // 可以、也应当带真实数字 —— 这正是让每页内容彼此独一无二、不被判"薄模板页"的关键(SEO_INDEXING_PLAN 任务 1)。
 // 复用 page.tsx 已加载的 d(filings/latest/prior/changes), 零新增 IO。
 
