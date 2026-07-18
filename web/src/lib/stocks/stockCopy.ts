@@ -124,7 +124,7 @@ export const STOCK_PAGE_COPY = {
       above: "Above fair value",
       splitPaused: "Recent stock split — per-share valuation is paused until the next filing restates the share count.",
       moatDistorted: "Years of buybacks have pushed shareholders' equity negative, so reproduction value and the moat can't be assessed from the asset side. No valuation verdict is shown here.",
-      fundamentalsSuspect: "This company's reported figures contain an impossible value (operating income above revenue), so the data can't be trusted and no valuation verdict is shown until it's corrected.",
+      fundamentalsSuspect: "This company's reported figures contain an impossible value (e.g., operating income above revenue), so the data can't be trusted and no valuation verdict is shown until it's corrected.",
     },
     holders: {
       eyebrow: "SEC 13F · holders",

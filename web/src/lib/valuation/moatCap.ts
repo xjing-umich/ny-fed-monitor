@@ -41,7 +41,7 @@ export function deriveMoatCap(input: {
       return { grade: "strong", capYears: CAP_STRONG, durablePassed: true, roicStable: true,
         basis: `强护城河（AV 不可评估，但 ROIC 长期极高且稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
     }
-    const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : roicStable !== true ? "ROIC 稳定性不足" : "持续盈利年数不足";
+    const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : roicStable !== true ? "ROIC 稳定性不足" : roicLongTermStrong !== true ? "ROIC 未达长期强档" : "持续盈利年数不足";
     return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
       ...(roicStable != null ? { roicStable } : {}),
       basis: `${reason}（AV 不可评估，凭 ROIC 兜底）→ 竞争优势期约 ${CAP_MODERATE} 年。` };
@@ -59,7 +59,7 @@ export function deriveMoatCap(input: {
   }
   // franchise 但未达强档或耐久性未过 → 中档
   // 注:!strongRatio 分支覆盖 pathA(比率)与 pathB(roicLongTermStrong)均未通过的情形，文案对两条路径都成立。
-  const reason = !profitStreakOk ? "持续盈利年数不足强档门槛" : !strongRatio ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : "ROIC 稳定性不足";
+  const reason = (!strongRatio && roicLongTermStrong !== true) ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : roicStable !== true ? "ROIC 稳定性不足" : "持续盈利年数不足强档门槛";
   return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
     ...(roicStable != null ? { roicStable } : {}),
     basis: `${reason} → 竞争优势期约 ${CAP_MODERATE} 年。` };
