@@ -235,6 +235,7 @@ function assembleFloor(
     roicStable,
     roicLongTermStrong: roicLongStrongMoat,
     sustainedProfitYears: sustainedProfitStreak(allYears),
+    growthFranchiseStrong: growthFr.strong,
   });
 
   const growthValue = computeGrowthValue({

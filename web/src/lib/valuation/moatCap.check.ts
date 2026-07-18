@@ -424,4 +424,16 @@ const yr = (fiscal_year: number, operating_income: number): ValuationFloorYear =
 { const g = operatingIncomeLogGrowth([yr(2024,-5), yr(2025,10)]);
   assert(g === undefined, "有效正年不足 → undefined"); }
 
+// ── moat_via_growth 定档 ────────────────────────────────────────────────
+const growthMoat = { signal: "franchise", moat_via_growth: true } as any;
+// strong:growthFranchiseStrong=true → CAP_STRONG
+{ const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: true });
+  assert(r.grade === "strong" && r.capYears === CAP_STRONG, "via_growth + strong → CAP 20"); }
+// moderate:growthFranchiseStrong=false → CAP_MODERATE
+{ const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: false });
+  assert(r.grade === "moderate" && r.capYears === CAP_MODERATE, "via_growth 非 strong → CAP 10"); }
+// via_growth 即便 AV 比率缺失也不落 none（区别于普通 franchise 需要比率）
+{ const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, epvAvRatioOperating: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: false });
+  assert(r.grade !== "none", "via_growth 不因缺 AV 比率落 none"); }
+
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

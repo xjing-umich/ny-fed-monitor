@@ -35,11 +35,14 @@ export function deriveMoatCap(input: {
   roicLongTermStrong?: boolean;
   /** 件① 持续盈利闸:近连续盈利 FY 年数。undefined=放行(兼容旧调用);< STRONG_MIN_PROFIT_STREAK → strong 降 moderate。 */
   sustainedProfitYears?: number;
+  /** 成长型 franchise 强档判据(Task 5):growthFranchise().strong;仅当 moat.moat_via_growth 时有意义。 */
+  growthFranchiseStrong?: boolean;
 }): MoatCapAssessment {
-  const { moat, epvAvRatio, epvAvRatioOperating, declined, suppressedFlags, roicStable, roicLongTermStrong, sustainedProfitYears } = input;
+  const { moat, epvAvRatio, epvAvRatioOperating, declined, suppressedFlags, roicStable, roicLongTermStrong, sustainedProfitYears, growthFranchiseStrong } = input;
   const profitStreakOk = sustainedProfitYears == null || sustainedProfitYears >= STRONG_MIN_PROFIT_STREAK;
+  const viaGrowth = moat.moat_via_growth === true;
   const roicOnly = moat.moat_via_roic === true;
-  if (moat.signal !== "franchise" || (!roicOnly && epvAvRatio == null && epvAvRatioOperating == null)) {
+  if (moat.signal !== "franchise" || (!roicOnly && !viaGrowth && epvAvRatio == null && epvAvRatioOperating == null)) {
     return { grade: "none", capYears: CAP_NONE, durablePassed: false, basis: "无护城河信号，不延长竞争优势期。" };
   }
   if (roicOnly) {
@@ -55,6 +58,18 @@ export function deriveMoatCap(input: {
     return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
       ...(roicStable != null ? { roicStable } : {}),
       basis: `${reason}（AV 不可评估，凭 ROIC 兜底）→ 竞争优势期约 ${CAP_MODERATE} 年。` };
+  }
+  if (viaGrowth) {
+    // 成长型 franchise:当期 EPV/AV 看不出护城河,凭已证实营业利润持续增长定档。
+    // 强档由 growthFranchiseStrong 承担;仍受盈利下滑/红旗降档。gFund 在 OE-DCF 侧兜住 g1,此处只定 cap。
+    const core = !declined && !suppressedFlags;
+    if (core && growthFranchiseStrong === true) {
+      return { grade: "strong", capYears: CAP_STRONG, durablePassed: true,
+        basis: `强护城河（当期 EPV 呈商品化,但营业利润长期持续复利增长）→ 竞争优势期约 ${CAP_STRONG} 年。` };
+    }
+    const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : "利润增速未达强档";
+    return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
+      basis: `${reason}（凭已证实利润增长的成长型护城河）→ 竞争优势期约 ${CAP_MODERATE} 年。` };
   }
   const ratioForMoat = epvAvRatioOperating ?? epvAvRatio;
   if (ratioForMoat == null || !Number.isFinite(ratioForMoat)) {
