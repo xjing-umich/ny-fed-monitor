@@ -72,12 +72,12 @@ function ModePill({ value, lang }: { value: string; lang: Lang }) {
   const color = TONE_COLOR[tone] ?? TONE_COLOR.gray;
   return (
     <span
+      className="rounded-sm"
       style={{
         display: "inline-flex",
         alignItems: "center",
         gap: 4,
         padding: "2px 8px",
-        borderRadius: 4,
         border: `1px solid ${color}`,
         fontSize: 10,
         fontFamily: "var(--font-geist-mono), ui-monospace, monospace",

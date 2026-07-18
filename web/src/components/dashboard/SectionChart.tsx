@@ -1,26 +1,21 @@
 "use client";
 
 import React from "react";
-import { useTheme } from "next-themes";
 import type { ChartSpec } from "@/lib/charts";
 import { formatAxisDate, getFormatter } from "@/lib/charts";
 
-// Treasury Terminal chart palette
-const TT_PALETTE_DARK = ["#6E8BFF", "#3DB8A0", "#D9A642", "#F0616D", "#8A93A6"];
-const TT_PALETTE_LIGHT = ["#3E5BD9", "#0F8E7B", "#9A6700", "#CF222E", "#5A6172"];
-
-function themeTokens(theme: string | undefined) {
-  const dark = theme !== "light";
-  return {
-    bg:      dark ? "#11151F" : "#FFFFFF",
-    border:  dark ? "#1C2230" : "#E6E9EF",
-    grid:    dark ? "#1C2230" : "#E6E9EF",
-    axis:    dark ? "#2A3140" : "#D4D9E2",
-    text:    dark ? "#5A6172" : "#8A93A6",
-    tooltip: dark ? "#0F131C" : "#F4F6F9",
-    palette: dark ? TT_PALETTE_DARK : TT_PALETTE_LIGHT,
-  };
-}
+// Chart colors resolve from the token system (--chart-* series palette,
+// --tt-* text/grid/axis) so the SVG follows the active theme via CSS alone.
+const CHART_PALETTE = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+];
+const GRID_COLOR = "var(--tt-border)";
+const AXIS_COLOR = "var(--tt-border-strong)";
+const TEXT_COLOR = "var(--tt-faint)";
 
 function finiteValue(value: unknown): number | null {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
@@ -58,8 +53,6 @@ function linePath(
 }
 
 export default function SectionChart({ spec }: { spec: ChartSpec }) {
-  const { resolvedTheme } = useTheme();
-  const t = themeTokens(resolvedTheme);
   const { data, series, format } = spec;
   const valueFormatter = getFormatter(format);
   const showLegend = series.length > 1;
@@ -69,10 +62,10 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
 
-  // Apply TT palette to series
+  // Apply token palette to series
   const themedSeries = series.map((s, i) => ({
     ...s,
-    color: t.palette[i % t.palette.length],
+    color: CHART_PALETTE[i % CHART_PALETTE.length],
   }));
 
   const values = data.flatMap((row) =>
@@ -83,7 +76,7 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
 
   if (!data.length || !values.length) {
     return (
-      <div style={{ minHeight: 220, display: "grid", placeItems: "center", color: t.text, fontSize: 13 }}>
+      <div style={{ minHeight: 220, display: "grid", placeItems: "center", color: TEXT_COLOR, fontSize: 13 }}>
         No chart data
       </div>
     );
@@ -117,13 +110,13 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
           const y = yForValue(tick);
           return (
             <g key={tick}>
-              <line x1={margin.left} x2={width - margin.right} y1={y} y2={y} stroke={t.grid} strokeWidth={1} />
+              <line x1={margin.left} x2={width - margin.right} y1={y} y2={y} style={{ stroke: GRID_COLOR }} strokeWidth={1} />
               <text
                 x={margin.left - 10}
                 y={y + 4}
                 textAnchor="end"
                 fontSize={11}
-                fill={t.text}
+                style={{ fill: TEXT_COLOR }}
                 fontFamily="var(--font-geist-mono), ui-monospace, monospace"
               >
                 {valueFormatter(tick)}
@@ -131,7 +124,7 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
             </g>
           );
         })}
-        <line x1={margin.left} x2={width - margin.right} y1={height - margin.bottom} y2={height - margin.bottom} stroke={t.axis} />
+        <line x1={margin.left} x2={width - margin.right} y1={height - margin.bottom} y2={height - margin.bottom} style={{ stroke: AXIS_COLOR }} />
         {xTickIndexes.map((index) => (
           <text
             key={index}
@@ -139,7 +132,7 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
             y={height - 10}
             textAnchor={index === 0 ? "start" : index === data.length - 1 ? "end" : "middle"}
             fontSize={11}
-            fill={t.text}
+            style={{ fill: TEXT_COLOR }}
             fontFamily="var(--font-geist-mono), ui-monospace, monospace"
           >
             {formatAxisDate(data[index]?.date)}
@@ -150,7 +143,7 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
             key={item.key}
             d={linePath(data, item.key, xForIndex, yForValue)}
             fill="none"
-            stroke={item.color}
+            style={{ stroke: item.color }}
             strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -161,7 +154,7 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
           if (lastIndex === undefined) return null;
           const value = finiteValue(data[lastIndex]?.[item.key]);
           if (value === null) return null;
-          return <circle key={`${item.key}-last`} cx={xForIndex(lastIndex)} cy={yForValue(value)} r={3} fill={item.color} />;
+          return <circle key={`${item.key}-last`} cx={xForIndex(lastIndex)} cy={yForValue(value)} r={3} style={{ fill: item.color }} />;
         })}
       </svg>
       {showLegend && (
@@ -173,7 +166,7 @@ export default function SectionChart({ spec }: { spec: ChartSpec }) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                color: t.text,
+                color: TEXT_COLOR,
                 fontSize: 11,
                 fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
               }}
