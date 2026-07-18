@@ -116,6 +116,10 @@
   --glow-primary: none;
   --glow-warn: none;
 
+  /* Motion */
+  --tt-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --tt-dur: 0.5s;
+
   --sidebar:             #FCFBF7;
   --sidebar-foreground:  #1C1917;
   --sidebar-primary:     #1B5E3F;
