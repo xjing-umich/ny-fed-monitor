@@ -98,6 +98,31 @@
 - **AMZN 数字**：g1 从 0.05 升到 ~0.07–0.105（视定档），IV 与 verdict 记录 BEFORE/AFTER 实际值（诚实回填，不承诺翻正——AMZN 可能仍诚实判 above，但量级与定性错误消除）。
 - tsc 零错；相关 check 文件全绿（含新增 growthFranchise 纯函数断言 + 标杆分离断言）。
 
+### 7.1 验收结果（Task 7 回填，探针 2026-07-18，DGS10=4.57% as of 2026-07-16 via market_rates last-good）
+
+BEFORE 取自 `web/scripts/.growth-franchise-before.txt`（Task 1 基线），AFTER 取自 `npx tsx --tsconfig scripts/tsconfig.json scripts/probe-growth-franchise.ts`（2026-07-18 本次跑）。
+
+**救回标杆**（signal / grade / via_growth / g1% / IV / bucket / margin%）：
+
+| ticker | BEFORE | AFTER | 结论 |
+|---|---|---|---|
+| AMZN | commodity/none/false/g1=5.0/IV=41.21/above/-499.9% | franchise/**strong**/**true**/g1=**10.5**/IV=**64.16**/above/-285.3% | 救回：signal+grade+via_growth 全部翻转，g1 落在预期 7–10.5 区间上沿（gFund≈10.5% 兜住），IV 量级由 41.21 升到 64.16；verdict 诚实仍为 above（未翻正，量级/定性错误已消除，符合 spec §7 不承诺翻正的约定），margin 荒谬度从 -499.9% 收敛到 -285.3% |
+| ARM | commodity/none/false/g1=5.0/IV=8.74/above/-2955.8% | franchise/**moderate**/**true**/g1=7.0/IV=9.75/above/-2641.5% | 救回：signal+via_growth 翻转，grade=moderate（非 strong，10 年 CAP），IV 8.74→9.75，margin 仍极端负（-2641.5%，价格远超任何内在值估计，与业务本身无关，属预期内） |
+| EQIX | commodity/none/false/g1=5.0/IV=68.16/above/-1396.5% | franchise/**moderate**/**true**/g1=6.1/IV=72.50/above/-1306.9% | 救回：同上，signal+via_growth 翻转，grade=moderate |
+| EW | commodity/none/false/g1=0.0/IV=17.23/above/-397.7% | commodity/none/**false**/g1=0.0/IV=17.23/above/-397.7% | **未救回，如实记录**：Task 2 校准里 EW 实际 CAGR≈2.8%，低于 GROWTH_FRANCHISE_MIN_CAGR=5% 下限，未命中判别器，非本次改动可及范围（spec §7 已预先注明"若校准落其外则记录实际"，不算验收失败） |
+
+**零误放对照**（须仍 commodity）：EMN / AGCO / DINO / ARW / ATI 五只 AFTER 全部维持 `commodity/none/false`，数值与 BEFORE 逐位相同（无漂移）。CELH 同样维持 commodity/none/false。
+
+**零漂移标杆**（既有 franchise，走原 pathA/ROIC，不应受旁路影响）：MSFT（strong/20年/false/g1=13.5/IV=354.92/within/-11.0%）、NFLX（strong/20年/false/g1=11.6/IV=51.89/within/-32.9%）、MA（strong/20年/false/g1=4.6/IV=221.91/above/-145.0%）—— 三者 signal/grade/capYears/via_growth/g1/IV/bucket/margin BEFORE→AFTER 逐位一致，零漂移确认。
+
+**副作用观测**（非标杆集内，探针自带，AFTER 新增）：AMD 同样从 commodity 翻转为 `franchise/moderate/true`（g1 5.0→7.0，IV 20.45→22.80），是判别器对同类半导体轻资产成长股的合理泛化，非误伤（AMD 全年营业利润为正、增速通过 log 回归门槛）。
+
+**check 文件**：`src/lib/valuation/*.check.ts` 全 21 个文件跑通，逐一 `all ok`，无 FAIL/Error；特别确认 `moatGrowthFusion.check.ts`、`ownerEarningsDcf.check.ts`、`deriveValuationVerdict.check.ts` 三个关键链路未被打破。
+
+**tsc**：`npx tsc --noEmit -p tsconfig.json`（过滤 google 字体噪音）零错误。
+
+**遗留观测（非本次可修，记入待后续 spec）**：Task 2 校准过程中发现 strong 档残留一批**周期成长股**（HOG、半导体设备簇 ACLS/ACMR/ONTO/MTSI/NPO/RBC 等）——全年营业利润为正、高度周期，log 回归斜率被低谷期/COVID 回补抬高，`allOpIncPositive` 闸放行但增速可能被高估。这是判别器对"周期性"缺乏识别的已知盲点，本次 spec 范围未覆盖，需另开 spec 处理（例如引入周期性方差/回撤幅度作为第二判据）。
+
 ## 8. 风险与开放项
 
 - **阈值校准是成败关键**：GROWTH_FRANCHISE_MIN_CAGR 定太低会放进温和周期股，定太高会漏掉 EW 类温和 franchise。校准须在全 universe 上看命中集与真大宗对照集的分离度，不靠单点。
