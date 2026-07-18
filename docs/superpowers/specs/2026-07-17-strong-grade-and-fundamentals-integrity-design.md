@@ -112,11 +112,11 @@ Base: origin/db-foundation @ e870702（护城河地基修复 PR #173 已合并�
 
 1. **件① 单测**（`moatCap.check.ts` / `epvFloor.check.ts`）：`sustainedProfitStreak` 计数正确（含最新年亏损=0、中间断裂、全正）；`deriveMoatCap` 在 streak<5 时两条 strong 路径都降 moderate、streak≥5 时行为不变。
 2. **件② 单测**（`fundamentalsIntegrity.check.ts` / `deriveValuationVerdict.check.ts`）：谓词对 opInc>rev、gross>rev、干净数据、缺字段各分支正确；verdict 在 `fundamentalsCorrupt=true` 时返回 null，false 时行为不变。
-3. **真引擎验收**（探针，`.claude/worktrees` 有 env）：
-   - ABNB：grade strong→moderate，verdict below→（预期 within 附近，记录实际）。
-   - MGRC + 抽查 AMT/ESS/SBAC：verdict → null（暂不评估）。
-   - INTU/ENSG/MA/MSFT/NFLX/ADBE 等干净 strong：grade 与 verdict **零漂移**。
-4. `tsc` 全绿；本地 `next build` 受 google fonts 屏蔽不作门（[[local-build-google-fonts-blocked]]）。
+3. **真引擎验收（探针实测，2026-07-17）**：
+   - **ABNB：grade strong→moderate（capYears 20→10），g1 0.20→0.07，IV(neutral) 195.71→63.62，verdict below +24.5% → within −129.5%**（假便宜信号消失）。✅
+   - **坏数据抑制**：MGRC / AMT / ESS / SBAC / DEI / FCFS / IPAR / UDR 全部 `verdict → null（暂不评估）`；其中 DEI/FCFS/IPAR 仅靠 `gross>revenue` 触发，证明该不变量生效。✅
+   - **干净 strong 零漂移**：INTU/ENSG/PCTY/ROL/MA/SPGI/NFLX/ADBE/MSFT/AAPL/MCO/COST/NVDA/PYPL 全部 grade 不变、**IV(neutral) 与改动前逐一相同**（引擎逻辑零漂移）；个别 marginPct/bucket 边界的微小变化纯为 live price 日间波动（如 ENSG 现价恰越过 IV 边界 within→below，IV 172.67 未变、grade 仍 strong）。✅ ABNB 是全宇宙唯一降级。
+4. `tsc` 全绿；4 个 `.check.ts`（moatCap/fundamentalsToFloorInput/fundamentalsIntegrity/deriveValuationVerdict）全 PASS；本地 `next build` 受 google fonts 屏蔽不作门（[[local-build-google-fonts-blocked]]）。
 
 ## 遗留 / 独立待办（不在本 spec）
 
