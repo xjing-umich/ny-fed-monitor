@@ -128,3 +128,8 @@ BEFORE 取自 `web/scripts/.growth-franchise-before.txt`（Task 1 基线），AF
 - **阈值校准是成败关键**：GROWTH_FRANCHISE_MIN_CAGR 定太低会放进温和周期股，定太高会漏掉 EW 类温和 franchise。校准须在全 universe 上看命中集与真大宗对照集的分离度，不靠单点。
 - **营业利润口径**：须确认 `operating_income` 字段在 fyYears 里的覆盖与一致性（金融股无营业利润口径——金融股 `is_financial` 应排除在本旁路外，走既有 SGR/pathB）。
 - **strong 档谨慎**：AMZN 拿 strong（20 年 CAP）是本设计最激进的一步；靠 gFund 兜住 g1 与校准的高 strong 阈值双重约束。若校准显示 strong 命中集含可疑名，退回"旁路一律 moderate"。
+
+### 7.2 复核修复（GV 零闸,commit 9f65ded）
+
+独立 code-review 发现:旁路把 signal 改成 franchise 后,连带解开了 `computeGrowthValue` 的零闸(growthValue.ts),给救回票经 ROIIC 路径计入 Greenwald 成长价值——超出本 spec §5 声明的"只动 OE-DCF g1"范围。实测 GV 达 EPV 的 100–456%(ACA 456%/NOW 240%/GLPI 239%),会翻转 verdict、构成放水,且判别器刻意不碰 ROIC/ROIIC 与此矛盾。**已修**:`computeGrowthValue` 加 `moatViaGrowth` 闸,via_growth 票 GV 保持 `gated_to_zero`,旁路效果严格限制在 OE-DCF g1(受 gFund 兜住)。验证:ACA/NOW/GLPI/AAON/AMZN 的 GV 全部归零;真 franchise(NFLX GVneu=39)不受影响;AMZN g1=10.5%/IV=64.16 救回完好;21 check + tsc 全绿。
+
