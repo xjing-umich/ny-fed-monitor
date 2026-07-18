@@ -220,6 +220,7 @@ export type StrikeZoneAssessment = {
 export type ValuationFloorYear = {
   fiscal_year: number;
   revenue?: number;
+  gross_profit?: number;
   operating_income?: number;
   operating_margin?: number;
   net_income?: number;
