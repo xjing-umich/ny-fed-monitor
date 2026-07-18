@@ -762,14 +762,48 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
     method: { earnings_basis: "", leverage_treatment: "", denominator: "", bridge: "", discount_rate_low: 0.09, discount_rate_high: 0.11, years_used: [], simplifications: [] },
   };
   const noAv: ReproductionValue = { assessable: false, basis: "", intangibles_separated: true, dual_av_comparable: false };
-  const viaRoic = buildMoatReading(strongEpv, noAv, 10, true);
+  const gfNone = { passes: false, strong: false, opIncLogGrowth: undefined, years: 0 } as any;
+  const viaRoic = buildMoatReading(strongEpv, noAv, 10, true, gfNone);
   assert.strictEqual(viaRoic.signal, "franchise", "AV 不可评估 + roicLongStrong → franchise");
   assert.strictEqual(viaRoic.moat_via_roic, true, "标记兜底路径");
 
   // AV 不可评估 + roicLongStrong=false → 死角标记(Task 4 消费)。
-  const distorted = buildMoatReading(strongEpv, noAv, 10, false);
+  const distorted = buildMoatReading(strongEpv, noAv, 10, false, gfNone);
   assert.strictEqual(distorted.signal, "not_assessable", "AV+ROIC 双不可评估 → not_assessable");
   assert.strictEqual(distorted.capital_structure_distorted, true, "标记资本结构扭曲");
 }
+
+// ── Task 4:成长型 franchise 旁路(moat_via_growth)────────────────────────────
+// EPV/AV_cons 落 commodity 区间(1.14),但 growthFr.passes → 改判 franchise via growth
+{ const epvLamp = { assessable: true, per_share_low: 39, per_share_high: 41 } as any; // epvMid≈40
+  const repro = { assessable: true, per_share: 35, dual_av_comparable: true, reproduction_per_share: 36, intangibles_separated: true } as any; // ratioCons≈1.14
+  const gfPass = { passes: true, strong: true, opIncLogGrowth: 0.25, years: 6 } as any;
+  const gfFail = { passes: false, strong: false, opIncLogGrowth: 0.01, years: 6 } as any;
+  const withGrowth = buildMoatReading(epvLamp, repro, 1000, false, gfPass);
+  assert(withGrowth.signal === "franchise" && withGrowth.moat_via_growth === true, "commodity 区间 + growthFr.passes → franchise via growth");
+  assert(withGrowth.dual_test_passed !== true, "via growth 不声称通过 dual EPV 测试");
+  const noGrowth = buildMoatReading(epvLamp, repro, 1000, false, gfFail);
+  assert(noGrowth.signal === "commodity", "同票 growthFr 不过 → 仍 commodity"); }
+
+// 机制2:EPV/AV_cons≥1.25 但被 reproduction 挡(blocked_by_reproduction)+ growthFr.passes → franchise
+{ const epvLamp = { assessable: true, per_share_low: 47, per_share_high: 49 } as any; // epvMid≈48
+  const repro = { assessable: true, per_share: 30, dual_av_comparable: true, reproduction_per_share: 45, intangibles_separated: true } as any; // ratioCons 1.6, ratioRepr 1.07
+  const gfPass = { passes: true, strong: false, opIncLogGrowth: 0.10, years: 6 } as any;
+  const r = buildMoatReading(epvLamp, repro, 1000, false, gfPass);
+  assert(r.signal === "franchise" && r.moat_via_growth === true, "reproduction 挡下 + growthFr.passes → franchise via growth"); }
+
+// value_destruction(EPV<AV commodity floor 之下)即便 growthFr.passes 也不救(优先级更高)
+{ const epvLamp = { assessable: true, per_share_low: 20, per_share_high: 22 } as any; // epvMid 21, ratioCons 0.6
+  const repro = { assessable: true, per_share: 35, dual_av_comparable: true, reproduction_per_share: 36, intangibles_separated: true } as any;
+  const gfPass = { passes: true, strong: true, opIncLogGrowth: 0.3, years: 6 } as any;
+  const r = buildMoatReading(epvLamp, repro, 1000, false, gfPass);
+  assert(r.signal === "value_destruction", "value_destruction 优先,growthFr 不救"); }
+
+// 零漂移:真 franchise(ratioCons 3.0 双过)不受影响
+{ const epvLamp = { assessable: true, per_share_low: 100, per_share_high: 110 } as any;
+  const repro = { assessable: true, per_share: 35, dual_av_comparable: true, reproduction_per_share: 36, intangibles_separated: true } as any;
+  const gfFail = { passes: false, strong: false, opIncLogGrowth: 0, years: 0 } as any;
+  const r = buildMoatReading(epvLamp, repro, 1000, false, gfFail);
+  assert(r.signal === "franchise" && r.moat_via_growth !== true, "真 franchise 走 dual,不打 via_growth"); }
 
 console.log("epvFloor.check.ts: all assertions passed.");
