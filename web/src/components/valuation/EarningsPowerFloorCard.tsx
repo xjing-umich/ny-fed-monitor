@@ -471,7 +471,7 @@ function ValueSpine({
 
       {/* assumptions — what the headline IV rests on: growth source, moat CAP, discount, and
           the zero-growth downside if growth doesn't show up. */}
-      <p className="text-[10px] text-[var(--tt-faint)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>
+      <p className="text-[10px] text-[var(--tt-muted)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>
       {!verdict.reliable ? <p className="text-[10px] text-[var(--tt-warn)]">{t.lowConfidence}</p> : null}
 
       <p className="text-[10px] text-[var(--tt-faint)]">
