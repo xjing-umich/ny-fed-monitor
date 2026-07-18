@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_INSURANCE_RANGE, sustainedProfitStreak, STRONG_MIN_PROFIT_STREAK } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_INSURANCE_RANGE, sustainedProfitStreak, STRONG_MIN_PROFIT_STREAK, growthFranchise, operatingIncomeLogGrowth, GROWTH_FRANCHISE_MIN_YEARS } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -387,5 +387,53 @@ assert.strictEqual(STRONG_MIN_PROFIT_STREAK, 5, "常量=5");
   });
   assert.strictEqual(roicOnlyGated.grade, "moderate", "roicOnly + streak<5 → moderate");
 }
+
+// ── growthFranchise（成长型 franchise 判别器）─────────────────────────────
+const yr = (fiscal_year: number, operating_income: number): ValuationFloorYear =>
+  ({ fiscal_year, operating_income } as ValuationFloorYear);
+
+// 各年营业利润全正 + log 增速达标 + 年数够 → passes；极高增速 + 年数够 → strong
+{ const fy = [yr(2020,23), yr(2021,25), yr(2022,12), yr(2023,37), yr(2024,69), yr(2025,80)]; // AMZN 型
+  const r = growthFranchise({ fyYears: fy, isFinancial: false });
+  assert(r.passes === true, "各年利润全正+高增速 → passes");
+  assert(r.strong === true, "利润增速极高+年数够 → strong"); }
+
+// 有一年营业利润 ≤0 → 不 passes（周期坑,DINO/EMN 型）
+{ const fy = [yr(2020,10), yr(2021,-2), yr(2022,15), yr(2023,20), yr(2024,25), yr(2025,30)];
+  const r = growthFranchise({ fyYears: fy, isFinancial: false });
+  assert(r.passes === false, "有亏损年 → 不 passes"); }
+
+// 利润全正但平/降 → 不 passes（AGCO/ARW 型）
+{ const fy = [yr(2020,30), yr(2021,29), yr(2022,28), yr(2023,30), yr(2024,29), yr(2025,30)];
+  const r = growthFranchise({ fyYears: fy, isFinancial: false });
+  assert(r.passes === false, "利润平/降 → 不 passes"); }
+
+// 年数不足 GROWTH_FRANCHISE_MIN_YEARS → 不 passes（不可评估不放行,保守）
+{ const fy = [yr(2023,10), yr(2024,20), yr(2025,40)];
+  const r = growthFranchise({ fyYears: fy, isFinancial: false });
+  assert(r.passes === false, "年数不足 → 不 passes"); }
+
+// 金融股 → 不进旁路
+{ const fy = [yr(2020,10), yr(2021,12), yr(2022,15), yr(2023,20), yr(2024,25), yr(2025,35)];
+  const r = growthFranchise({ fyYears: fy, isFinancial: true });
+  assert(r.passes === false, "金融股 → 不进旁路"); }
+
+// operatingIncomeLogGrowth：全正序列返回有限正值,含非正年跳过后不足则 undefined
+{ const g = operatingIncomeLogGrowth([yr(2021,10), yr(2022,12), yr(2023,14), yr(2024,17), yr(2025,20)]);
+  assert(g != null && g > 0.1 && g < 0.3, "log 增速在合理区间"); }
+{ const g = operatingIncomeLogGrowth([yr(2024,-5), yr(2025,10)]);
+  assert(g === undefined, "有效正年不足 → undefined"); }
+
+// ── moat_via_growth 定档 ────────────────────────────────────────────────
+const growthMoat = { signal: "franchise", moat_via_growth: true } as any;
+// strong:growthFranchiseStrong=true → CAP_STRONG
+{ const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: true });
+  assert(r.grade === "strong" && r.capYears === CAP_STRONG, "via_growth + strong → CAP 20"); }
+// moderate:growthFranchiseStrong=false → CAP_MODERATE
+{ const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: false });
+  assert(r.grade === "moderate" && r.capYears === CAP_MODERATE, "via_growth 非 strong → CAP 10"); }
+// via_growth 即便 AV 比率缺失也不落 none（区别于普通 franchise 需要比率）
+{ const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, epvAvRatioOperating: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: false });
+  assert(r.grade !== "none", "via_growth 不因缺 AV 比率落 none"); }
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

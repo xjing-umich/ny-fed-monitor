@@ -42,6 +42,13 @@ assert.strictEqual(commodity.per_share.optimistic, 0, "commodity → optimistic 
 const vd = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "value_destruction", epvPerShare: 10, avPerShare: 40, moatGrade: "none" });
 assert.strictEqual(vd.gated_to_zero, true, "value_destruction → GV gated to zero");
 
+// moat_via_growth gate: a franchise established via the operating-income-growth bypass does NOT earn
+// Greenwald growth value (its growth credit is carried in OE-DCF g1). Signal is "franchise" yet GV=0.
+const viaGrowth = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", moatViaGrowth: true, epvPerShare: 50, avPerShare: 40, moatGrade: "strong" });
+assert.strictEqual(viaGrowth.gated_to_zero, true, "moat_via_growth franchise → GV gated to zero");
+assert.strictEqual(viaGrowth.scenarios.neutral, 0, "moat_via_growth → neutral GV = 0");
+assert.strictEqual(viaGrowth.per_share.optimistic, 0, "moat_via_growth → optimistic GV = 0");
+
 // Franchise: GV > 0, ordered pessimistic ≤ neutral ≤ optimistic.
 const fr = computeGrowthValue({ years: grower, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "moderate" });
 assert.ok(fr.assessable, "franchise grower is assessable");

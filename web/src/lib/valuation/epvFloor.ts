@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial, roicHelpers, sustainedProfitStreak } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial, roicHelpers, sustainedProfitStreak, growthFranchise, type GrowthFranchiseResult } from "./moatCap";
 import { structuralConfidence } from "./structuralConfidence";
 import { leveragePremium } from "./leveragePremium";
 
@@ -174,7 +174,8 @@ function assembleFloor(
   const { nopatOf: nopatMoat, investedCapitalOf: investedCapitalMoat } = roicHelpers(tax.rate);
   const roicLongStrongMoat = roicLongTermStrong({ fyYears: allYears, nopatOf: nopatMoat, investedCapitalOf: investedCapitalMoat });
   const assetFloor = buildReproductionValue(years, shares);
-  const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares, roicLongStrongMoat);
+  const growthFr = growthFranchise({ fyYears: allYears, isFinancial });
+  const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares, roicLongStrongMoat, growthFr);
   // Shared maint read for floor-level AI-hog flag + GV gate (lamps still compute their own for OE arithmetic).
   const mc = maintenanceCapex(years);
   const aiCapexDistortion = mc.ai_capex_distortion_warning;
@@ -234,9 +235,11 @@ function assembleFloor(
     roicStable,
     roicLongTermStrong: roicLongStrongMoat,
     sustainedProfitYears: sustainedProfitStreak(allYears),
+    growthFranchiseStrong: growthFr.strong,
   });
 
   const growthValue = computeGrowthValue({
+    moatViaGrowth: moatReading.moat_via_growth === true,
     years,
     shares,
     taxRate: tax.rate,
@@ -475,7 +478,7 @@ function buildBuffettLamp(
   };
 }
 
-export function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, shares: number, roicLongStrong: boolean): MoatReading {
+export function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionValue, shares: number, roicLongStrong: boolean, growthFr: GrowthFranchiseResult): MoatReading {
   const dualComparable =
     reproduction.dual_av_comparable === true &&
     reproduction.reproduction_per_share != null &&
@@ -516,6 +519,16 @@ export function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionVal
   const avCons = reproduction.per_share;
   const ratioCons = epvMid / avCons;
 
+  // 成长型 franchise 旁路（spec §3）:纯比率本会判 commodity,但已证实营业利润持续增长 → 改判 franchise。
+  // 保留原 dual/single 展示字段,dual_test_passed 保持 false（非经 dual EPV 测试而来）。
+  const viaGrowth = (extraFields: Partial<MoatReading>): MoatReading => ({
+    signal: "franchise",
+    label: "Earnings power looks commodity-like today, but operating income has compounded for years — a franchise (moat) signal on proven earnings growth, not a verdict.",
+    basis_note: basisNote,
+    moat_via_growth: true,
+    ...extraFields,
+  });
+
   // Dual-AV franchise gate: both EPV/AV_cons and EPV/AV_repr must clear the franchise multiple.
   if (dualComparable) {
     const avRepr = reproduction.reproduction_per_share!;
@@ -537,6 +550,7 @@ export function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionVal
       };
     }
     if (ratioCons >= MOAT_FRANCHISE_MULTIPLE && ratioRepr < MOAT_FRANCHISE_MULTIPLE) {
+      if (growthFr.passes) return viaGrowth({ ...dualFields, franchise_value: (epvMid - avCons) * shares });
       return {
         signal: "commodity",
         label: "Earnings power clears the conservative asset floor but not the reproduction (acquired-reset) floor — treated as commodity-like, not a franchise.",
@@ -548,6 +562,7 @@ export function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionVal
     }
     // Conservative path for commodity / value_destruction floors (unchanged thresholds).
     if (ratioCons >= MOAT_COMMODITY_FLOOR) {
+      if (growthFr.passes) return viaGrowth({ ...dualFields, franchise_value: (epvMid - avCons) * shares });
       return {
         signal: "commodity",
         label: "Earnings power sits near reproduction value — a commodity-like profile with no clear moat signal.",
@@ -577,6 +592,7 @@ export function buildMoatReading(epvLamp: EpvLamp, reproduction: ReproductionVal
     };
   }
   if (ratioCons >= MOAT_COMMODITY_FLOOR) {
+    if (growthFr.passes) return viaGrowth({ epv_per_share_compared: epvMid, asset_per_share_compared: avCons, franchise_value: (epvMid - avCons) * shares });
     return { signal: "commodity", label: "Earnings power sits near reproduction value — a commodity-like profile with no clear moat signal.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: avCons };
   }
   return { signal: "value_destruction", label: "Earnings power sits below reproduction value — a value-destruction signal, not a verdict.", basis_note: basisNote, epv_per_share_compared: epvMid, asset_per_share_compared: avCons };

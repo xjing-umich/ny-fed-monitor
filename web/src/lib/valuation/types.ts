@@ -80,6 +80,8 @@ export type MoatReading = {
   franchise_blocked_by_reproduction?: boolean;
   /** true when the franchise signal came from the ROIC fallback (AV not assessable). */
   moat_via_roic?: boolean;
+  /** true when the franchise signal came from proven operating-income growth (EPV/AV test would call it commodity). */
+  moat_via_growth?: boolean;
   /** true when both AV (avCore≤0) and the ROIC fallback fail — capital structure distorted by buybacks; moat not assessable. */
   capital_structure_distorted?: boolean;
 };

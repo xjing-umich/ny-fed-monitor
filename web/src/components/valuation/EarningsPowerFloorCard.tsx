@@ -58,6 +58,11 @@ const MOAT_SHORT: Record<Lang, Record<MoatSignal, string>> = {
   },
 };
 
+const MOAT_VIA_GROWTH: Record<Lang, string> = {
+  en: "Franchise (via earnings growth)",
+  zh: "特许经营（凭盈利增长）",
+};
+
 const COPY = {
   en: {
     statusBelow: "Margin of safety",
@@ -530,7 +535,7 @@ function MethodDetails({
           {sz?.assetFloor ? ` · ${zh ? "重置" : "reproduction"} ${perShare(sz.assetFloor.perShare)}` : null}
         </p>
         <p>
-          {t.moat} {MOAT_SHORT[lang][moat_reading.signal]}
+          {t.moat} {moat_reading.signal === "franchise" && moat_reading.moat_via_growth === true ? MOAT_VIA_GROWTH[lang] : MOAT_SHORT[lang][moat_reading.signal]}
           {oeDcf?.assessable && oeDcf.terminal_share_pct != null ? ` · ${zh ? "终值占现值" : "terminal value"} ${pct(oeDcf.terminal_share_pct)}${zh ? "" : " of present value"}${oeDcf.terminal_dependency_flag ? (zh ? "（>70% — 依赖遥远未来）" : " (>70% — leans on the distant future)") : ""}` : ""}
           {oeDcf?.diagnostics?.oe_yield != null ? ` · ${zh ? "所有者盈利收益率" : "owner-earnings yield"} ${pct(oeDcf.diagnostics.oe_yield)}${oeDcf.discount?.dgs10_value != null ? ` ${zh ? "对 10Y" : "vs 10Y"} ${pct1(oeDcf.discount.dgs10_value)}` : ""}` : ""}.
         </p>

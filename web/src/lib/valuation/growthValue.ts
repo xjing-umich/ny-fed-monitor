@@ -28,6 +28,14 @@ export type GrowthValueArgs = {
   /** AI-hog scheme C: force GV gated_to_zero even when moat is franchise. */
   aiCapexDistortion?: boolean;
   /**
+   * True when the franchise signal came from the operating-income-growth bypass (moat_via_growth).
+   * Such a moat is established WITHOUT the ROIC/ROIIC test on purpose; crediting a ROIIC-based
+   * growth value here would leak the bypass into a path it deliberately avoids and produce large,
+   * uncalibrated band widening. The bypass's growth credit lives solely in OE-DCF g1 (bounded by
+   * gFund) — GV stays gated for these. See docs/superpowers/specs/2026-07-18-growth-franchise-moat-signal-design.md §5.
+   */
+  moatViaGrowth?: boolean;
+  /**
    * Moat grade (strong/moderate/none), computed ONCE in epvFloor.computeValuationFloor
    * (floor.moat_cap — single source of truth) and passed in here. growthValue no longer
    * recomputes declined/roicStable/deriveMoatCap itself, so this leg and the owner-earnings
@@ -52,7 +60,7 @@ function annuityFactor(r: number, n: number): number {
  * maintenance is not assessable).
  */
 export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
-  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion, moatGrade } = args;
+  const { years, shares, taxRate, moatSignal, epvPerShare, avPerShare, aiCapexDistortion, moatGrade, moatViaGrowth } = args;
   const notes: string[] = [];
   const waccBand: [number, number] = [GV_DISCOUNT_OPTIMISTIC, GV_DISCOUNT_PESSIMISTIC];
 
@@ -62,6 +70,18 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
       assessable: true, gated_to_zero: true, wacc_band: waccBand,
       scenarios: { ...ZERO }, per_share: { ...ZERO },
       notes: ["Growth value applies only to a franchise; without a moat, growth creates no durable value (GV = 0)."],
+    };
+  }
+
+  // moat_via_growth gate: an operating-income-growth franchise is established WITHOUT the ROIC/ROIIC
+  // test on purpose; its growth credit lives solely in OE-DCF g1 (bounded by gFund). Crediting a
+  // ROIIC-based growth value here would leak the bypass into a path it avoids and blow up the band
+  // (measured 100–450% of EPV). Keep GV gated for these. See spec §5.
+  if (moatViaGrowth) {
+    return {
+      assessable: true, gated_to_zero: true, wacc_band: waccBand,
+      scenarios: { ...ZERO }, per_share: { ...ZERO },
+      notes: ["Franchise established via proven operating-income growth (not the EPV/AV or ROIC test); its growth credit is carried in the owner-earnings DCF, so Greenwald growth value stays gated to avoid double-counting on an uncalibrated ROIIC path."],
     };
   }
 
