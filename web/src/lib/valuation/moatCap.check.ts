@@ -1,6 +1,12 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_INSURANCE_RANGE } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_INSURANCE_RANGE, sustainedProfitStreak, STRONG_MIN_PROFIT_STREAK } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace assert {
+  export function strictEqual<T>(actual: T, expected: T, m: string): void {
+    assert(actual === expected, `${m} (expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)})`);
+  }
+}
 const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_share_compared: 10, dual_test_passed: true } as any; // ratio 3.0
 
 // 强档：强franchise + 未下滑 + 无红旗 + ROIC 稳定 → CAP_STRONG
@@ -330,5 +336,56 @@ const ic100 = () => 100;
     declined: true, suppressedFlags: false, roicStable: true, roicLongTermStrong: true,
   });
   assert(roicOnlyMod.grade === "moderate", "roicOnly + 下滑 → moderate"); }
+
+// ── 件① 持续盈利闸 ────────────────────────────────────────────────────────
+// sustainedProfitStreak: 从最新年起数连续盈利年。
+{
+  const yrs = [
+    { fiscal_year: 2020, net_income: -100 },
+    { fiscal_year: 2021, net_income: -5 },
+    { fiscal_year: 2022, net_income: 10 },
+    { fiscal_year: 2023, net_income: 20 },
+    { fiscal_year: 2024, net_income: 30 },
+    { fiscal_year: 2025, net_income: 25 },
+  ] as ValuationFloorYear[];
+  assert.strictEqual(sustainedProfitStreak(yrs), 4, "ABNB 型:最新4年连续盈利,2021亏损断裂");
+}
+{
+  const allPos = [2020, 2021, 2022, 2023, 2024, 2025].map((y) => ({ fiscal_year: y, net_income: 10 })) as ValuationFloorYear[];
+  assert.strictEqual(sustainedProfitStreak(allPos), 6, "全正 → 6");
+}
+{
+  const latestLoss = [
+    { fiscal_year: 2024, net_income: 10 },
+    { fiscal_year: 2025, net_income: -1 },
+  ] as ValuationFloorYear[];
+  assert.strictEqual(sustainedProfitStreak(latestLoss), 0, "最新年亏损 → 0");
+}
+assert.strictEqual(STRONG_MIN_PROFIT_STREAK, 5, "常量=5");
+
+// deriveMoatCap: 正常路径 strong,streak<5 → 降 moderate。
+{
+  const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0, declined: false, suppressedFlags: false, roicStable: true, sustainedProfitYears: 4 });
+  assert.strictEqual(r.grade, "moderate", "streak=4 <5 → moderate（正常路径）");
+}
+// deriveMoatCap: 正常路径 strong,streak>=5 → 保持 strong。
+{
+  const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0, declined: false, suppressedFlags: false, roicStable: true, sustainedProfitYears: 6 });
+  assert.strictEqual(r.grade, "strong", "streak=6 → strong 不变");
+}
+// deriveMoatCap: undefined 视为放行（兼容旧调用）。
+{
+  const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0, declined: false, suppressedFlags: false, roicStable: true });
+  assert.strictEqual(r.grade, "strong", "sustainedProfitYears 缺省 → 放行,strong 不变");
+}
+// deriveMoatCap: roicOnly 兜底路径也受闸约束。
+{
+  const roicOnlyGated = deriveMoatCap({
+    moat: { signal: "franchise", label: "", basis_note: "", moat_via_roic: true },
+    epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: true,
+    roicLongTermStrong: true, sustainedProfitYears: 4,
+  });
+  assert.strictEqual(roicOnlyGated.grade, "moderate", "roicOnly + streak<5 → moderate");
+}
 
 console.log(process.exitCode ? "SOME TESTS FAILED" : "ALL PASS");

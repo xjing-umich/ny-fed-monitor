@@ -3,7 +3,7 @@ import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
 import { computeNetNet } from "./netNet";
-import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial, roicHelpers } from "./moatCap";
+import { deriveMoatCap, roicStability, durabilityDeclined, ROIC_HURDLE, roicTrend, sustainableGrowth, roicLongTermStrong, OPERATING_CASH_PCT, isFinancialSic, sustainableGrowthRateFinancial, roicHelpers, sustainedProfitStreak } from "./moatCap";
 import { structuralConfidence } from "./structuralConfidence";
 import { leveragePremium } from "./leveragePremium";
 
@@ -233,6 +233,7 @@ function assembleFloor(
     suppressedFlags: aiCapexDistortion === true && roicDeclining,
     roicStable,
     roicLongTermStrong: roicLongStrongMoat,
+    sustainedProfitYears: sustainedProfitStreak(allYears),
   });
 
   const growthValue = computeGrowthValue({
