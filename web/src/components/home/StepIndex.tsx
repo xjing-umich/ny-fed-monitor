@@ -4,6 +4,7 @@ import type { ManagerSummary } from "@/lib/managers/types";
 import type { HeldRow } from "@/lib/aggregations";
 import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { EntityName } from "@/components/common/EntityName";
+import { Display } from "@/components/common/Display";
 import { formatUSD } from "@/lib/format";
 import { investorPath, localePath, stockPath } from "@/lib/urls";
 import StrikeLeadersCard from "@/components/home/StrikeLeadersCard";
@@ -74,7 +75,7 @@ function StepRow({
   return (
     <div className="grid grid-cols-1 gap-6 border-t border-[var(--tt-border)] pt-10 first:border-0 first:pt-0 md:grid-cols-[0.38fr_0.62fr] md:gap-10">
       <div>
-        <span className="block font-mono text-4xl leading-none text-[var(--tt-faint)]">{serial}</span>
+        <Display as="span" size="xl" className="block font-mono text-[var(--ink-3)]">{serial}</Display>
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
         <h2 className="mt-3 text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {title}
