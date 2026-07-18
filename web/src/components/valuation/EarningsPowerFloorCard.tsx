@@ -4,6 +4,7 @@ import { deriveValuationVerdict } from "@/lib/valuation";
 import { isNetNetAssetFloor, isNetNetBuy } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation, MoatCapAssessment } from "@/lib/valuation/types";
 import { fmtValueBand } from "@/lib/format";
+import { Display } from "@/components/common/Display";
 
 // USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
 // and "en-US" (not undefined) keeps server/client output deterministic (zh-CN groups
@@ -394,19 +395,33 @@ function ValueSpine({
         </div>
       )}
 
-      {/* neutral cheaper → pricier gauge */}
+      {/* neutral cheaper → pricier gauge — instrument-dial signature render:
+          击球区段绿底描边 + 发光价格游标 + Display 大号读数。 */}
       <div>
-        <div className="relative pt-4">
+        <div className="relative pt-14">
           <div className="flex h-7 overflow-hidden rounded-md">
             {zones.map((z) => {
               const active = z.key === bucket;
+              // 击球区段(below=安全边际,与 deriveValuationVerdict.inStrikeZone 同侧):
+              // var(--tt-positive) 15% 底 + 1px 边缘 50%,刻度盘上的"可行动区"。
+              const strike = z.key === "below";
               return (
                 <div
                   key={z.key}
                   className="flex flex-1 items-center justify-center text-[10px]"
                   style={{
-                    backgroundColor: `color-mix(in srgb, var(--tt-faint) ${active ? 16 : 7}%, transparent)`,
+                    backgroundColor: strike
+                      ? "color-mix(in srgb, var(--tt-positive) 15%, transparent)"
+                      : `color-mix(in srgb, var(--tt-faint) ${active ? 16 : 7}%, transparent)`,
                     color: active ? "var(--tt-text)" : "var(--tt-faint)",
+                    ...(strike
+                      ? {
+                          borderLeft:
+                            "1px solid color-mix(in srgb, var(--tt-positive) 50%, transparent)",
+                          borderRight:
+                            "1px solid color-mix(in srgb, var(--tt-positive) 50%, transparent)",
+                        }
+                      : null),
                   }}
                 >
                   {z.label}
@@ -417,14 +432,29 @@ function ValueSpine({
           {/* IV marker — the below/within boundary; only drawn when a growth-anchored IV exists. */}
           {hasIv ? (
             <div
-              className="absolute bottom-0 top-3 w-px border-l border-dashed border-[var(--tt-faint)]"
+              className="absolute bottom-0 top-12 w-px border-l border-dashed border-[var(--tt-faint)]"
               style={{ left: "33%" }}
               title={`IV ${perShare(IV)}`}
             />
           ) : null}
-          {/* price marker */}
-          <div className="absolute bottom-0 top-3 w-0.5 bg-[var(--tt-accent)]" style={{ left: `${markerPct}%` }} title={`${t.priceAsOf} ${perShare(price)}`} />
-          <span className="absolute top-0 -translate-x-1/2 font-mono text-[10px] text-[var(--tt-text)]" style={{ left: `${markerPct}%` }}>{usd0(price)}</span>
+          {/* price cursor — 全站唯一 glow(box-shadow: var(--glow-primary))落点;
+              动效白名单:仅 left 过渡(var(--tt-dur) var(--tt-ease)),无循环/关键帧。 */}
+          <div
+            className="absolute bottom-0 top-12 w-0.5 bg-[var(--tt-accent)]"
+            style={{
+              left: `${markerPct}%`,
+              boxShadow: "var(--glow-primary)",
+              transition: "left var(--tt-dur) var(--tt-ease)",
+            }}
+            title={`${t.priceAsOf} ${perShare(price)}`}
+          />
+          {/* 价格读数:Display xl 刻度盘读数窗,跟随游标;max/min 钳制防贴边溢出。 */}
+          <span
+            className="absolute top-0 -translate-x-1/2"
+            style={{ left: `max(5.5rem, min(calc(100% - 5.5rem), ${markerPct}%))` }}
+          >
+            <Display as="span" size="xl">{usd0(price)}</Display>
+          </span>
         </div>
         <div className="mt-1 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
           <span>{t.cheaper}</span>
