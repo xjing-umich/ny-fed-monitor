@@ -32,6 +32,7 @@ import {
   resolveAds,
   isFundamentalsStale,
   isSplitCoverageStale,
+  fundamentalsIntegrityViolated,
   FUNDAMENTALS_MAX_AGE_MONTHS,
 } from "@/lib/valuation";
 import { deriveExpectations, historicalGrowthBaseRate } from "@/lib/valuation/impliedExpectations";
@@ -169,7 +170,8 @@ async function main() {
       });
       // 资本结构护栏:多年回购把股东权益压成深度负值 → 重置价值/护城河不可从资产端评估(Task 3 标记),整条抑制。
       const capitalStructureDistorted = floor.moat_reading.capital_structure_distorted === true;
-      const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted });
+      const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
+      const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt });
       if (!v) {
         skipped++;
         intentionallyUnvaluable.add(ticker);

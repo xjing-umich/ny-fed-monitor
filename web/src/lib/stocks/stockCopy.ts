@@ -78,6 +78,7 @@ export const STOCK_PAGE_COPY = {
       above: "高于合理价值",
       splitPaused: "该公司近期拆股，每股估值口径待下一份财报对齐后恢复。",
       moatDistorted: "多年回购已把股东权益压成负数，重置价值和护城河没法从资产端算，这里不给出估值判定。",
+      fundamentalsSuspect: "这家公司的财报数据存在口径问题（如营业利润高于营收），数值不可靠，暂不给出估值判定，待数据修正后恢复。",
     },
     holders: {
       eyebrow: "SEC 13F · 持有人",
@@ -123,6 +124,7 @@ export const STOCK_PAGE_COPY = {
       above: "Above fair value",
       splitPaused: "Recent stock split — per-share valuation is paused until the next filing restates the share count.",
       moatDistorted: "Years of buybacks have pushed shareholders' equity negative, so reproduction value and the moat can't be assessed from the asset side. No valuation verdict is shown here.",
+      fundamentalsSuspect: "This company's reported figures contain an impossible value (operating income above revenue), so the data can't be trusted and no valuation verdict is shown until it's corrected.",
     },
     holders: {
       eyebrow: "SEC 13F · holders",
