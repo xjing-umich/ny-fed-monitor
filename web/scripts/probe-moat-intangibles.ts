@@ -16,6 +16,7 @@ import {
   deriveOeDcf,
   reconcileMethods,
   deriveValuationVerdict,
+  fundamentalsIntegrityViolated,
 } from "@/lib/valuation";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import { roicHelpers, roicLongTermStrong } from "@/lib/valuation/moatCap";
@@ -104,7 +105,8 @@ async function main() {
     const reconciliation = strikeZone && oeDcf ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price) : undefined;
     // Task 4:死角(资本结构扭曲)与生产 page.tsx/valuation-ingest.ts 同源传入,否则探针会漏显 above 假信号。
     const capitalStructureDistorted = floor.moat_reading.capital_structure_distorted === true;
-    const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, capitalStructureDistorted });
+    const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
+    const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, capitalStructureDistorted, fundamentalsCorrupt });
     console.log(`verdict:`, verdict ? { bucket: verdict.bucket, reliable: verdict.reliable, marginPct: n(verdict.marginPct == null ? undefined : verdict.marginPct * 100, 1) } : "null (suppressed)");
   }
 }

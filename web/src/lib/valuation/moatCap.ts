@@ -7,6 +7,7 @@ export const MOAT_STRONG_RATIO = 2.0; // EPV/AV 强档阈值·单一来源(growt
 export const ROIC_HURDLE = 0.10; // 两腿(growthValue/ownerEarningsDcf)共享的 ROIC 门槛·单一来源
 export const ROIC_SANITY = 3.0; // ROIC 上限 sanity：>300% 视口径失真(通常是负/近零投入资本口径错误)，剔除该年
 export const OPERATING_CASH_PCT = 0.02; // Damodaran 经营性现金占营收比例;超出部分视为「超额现金」,从资产分母剔除(pathA)
+export const STRONG_MIN_PROFIT_STREAK = 5; // strong 分档前置闸:近连续 FY 年 net_income>0 的最小年数。
 
 export function deriveMoatCap(input: {
   moat: MoatReading;
@@ -22,8 +23,11 @@ export function deriveMoatCap(input: {
   roicStable: boolean | undefined;
   /** ROIC 长期回报型久期判据(Task 3 填真值);本 Task 只接参数，默认当 false 用。 */
   roicLongTermStrong?: boolean;
+  /** 件① 持续盈利闸:近连续盈利 FY 年数。undefined=放行(兼容旧调用);< STRONG_MIN_PROFIT_STREAK → strong 降 moderate。 */
+  sustainedProfitYears?: number;
 }): MoatCapAssessment {
-  const { moat, epvAvRatio, epvAvRatioOperating, declined, suppressedFlags, roicStable, roicLongTermStrong } = input;
+  const { moat, epvAvRatio, epvAvRatioOperating, declined, suppressedFlags, roicStable, roicLongTermStrong, sustainedProfitYears } = input;
+  const profitStreakOk = sustainedProfitYears == null || sustainedProfitYears >= STRONG_MIN_PROFIT_STREAK;
   const roicOnly = moat.moat_via_roic === true;
   if (moat.signal !== "franchise" || (!roicOnly && epvAvRatio == null && epvAvRatioOperating == null)) {
     return { grade: "none", capYears: CAP_NONE, durablePassed: false, basis: "无护城河信号，不延长竞争优势期。" };
@@ -32,12 +36,12 @@ export function deriveMoatCap(input: {
     // AV 无值(兜底路径):凭 ROIC 长期极高稳定档。franchiseCore 去掉 strongRatio(无 AV 比率),
     // 由 roicLongTermStrong 直接承担强档判据;仍受盈利下滑/资本开支红旗/ROIC 不稳降档。
     const franchiseCore = !declined && !suppressedFlags && roicStable === true;
-    const durablePassed = franchiseCore && roicLongTermStrong === true;
+    const durablePassed = franchiseCore && roicLongTermStrong === true && profitStreakOk;
     if (durablePassed) {
       return { grade: "strong", capYears: CAP_STRONG, durablePassed: true, roicStable: true,
         basis: `强护城河（AV 不可评估，但 ROIC 长期极高且稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
     }
-    const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : "ROIC 稳定性不足";
+    const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : roicStable !== true ? "ROIC 稳定性不足" : roicLongTermStrong !== true ? "ROIC 未达长期强档" : "持续盈利年数不足";
     return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
       ...(roicStable != null ? { roicStable } : {}),
       basis: `${reason}（AV 不可评估，凭 ROIC 兜底）→ 竞争优势期约 ${CAP_MODERATE} 年。` };
@@ -48,17 +52,32 @@ export function deriveMoatCap(input: {
   }
   const strongRatio = ratioForMoat >= MOAT_STRONG_RATIO && moat.dual_test_passed === true;
   const franchiseCore = moat.signal === "franchise" && !declined && !suppressedFlags && roicStable === true;
-  const durablePassed = franchiseCore && (strongRatio || roicLongTermStrong === true);
+  const durablePassed = franchiseCore && (strongRatio || roicLongTermStrong === true) && profitStreakOk;
   if (durablePassed) {
     return { grade: "strong", capYears: CAP_STRONG, durablePassed: true, roicStable: true,
       basis: `强护城河（EPV/AV ${ratioForMoat.toFixed(1)}×、双资产测试通过、ROIC 历史稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
   }
   // franchise 但未达强档或耐久性未过 → 中档
   // 注:!strongRatio 分支覆盖 pathA(比率)与 pathB(roicLongTermStrong)均未通过的情形，文案对两条路径都成立。
-  const reason = !strongRatio ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : "ROIC 稳定性不足";
+  const reason = (!strongRatio && roicLongTermStrong !== true) ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : roicStable !== true ? "ROIC 稳定性不足" : "持续盈利年数不足强档门槛";
   return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
     ...(roicStable != null ? { roicStable } : {}),
     basis: `${reason} → 竞争优势期约 ${CAP_MODERATE} 年。` };
+}
+
+/**
+ * 持续盈利轨迹(件①):按 fiscal_year 降序,从最新年起数连续 net_income>0 的 FY 年数。
+ * strong 分档前置闸——"刚转盈"的名字(ABNB:最早年巨亏、连续盈利仅 4 年)不该拿 20 年 CAP。
+ * 只吃 FY 行(调用方已过滤);最新年亏损/缺失 → 0。fyYears 不假设已排序。
+ */
+export function sustainedProfitStreak(fyYears: ValuationFloorYear[]): number {
+  const sorted = [...fyYears].sort((a, b) => b.fiscal_year - a.fiscal_year);
+  let streak = 0;
+  for (const y of sorted) {
+    if (y.net_income != null && y.net_income > 0) streak++;
+    else break;
+  }
+  return streak;
 }
 
 // ── ROIC 稳定性度量（数据准确性硬门） ────────────────────────────────────────

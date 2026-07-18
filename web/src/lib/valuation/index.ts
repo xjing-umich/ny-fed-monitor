@@ -12,3 +12,4 @@ export type { ValuationVerdict, VerdictBucket, VerdictCoverage } from "./deriveV
 export { resolveAds } from "./adsNormalization";
 export { isFundamentalsStale, FUNDAMENTALS_MAX_AGE_MONTHS } from "./fundamentalsStale";
 export { isSplitCoverageStale } from "./splitCoverage";
+export { fundamentalsIntegrityViolated } from "./fundamentalsIntegrity";

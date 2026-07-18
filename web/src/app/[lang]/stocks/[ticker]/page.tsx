@@ -33,6 +33,7 @@ import {
   resolveAds,
   isFundamentalsStale,
   isSplitCoverageStale,
+  fundamentalsIntegrityViolated,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
@@ -417,10 +418,14 @@ export default async function StockTickerPage({
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
 
+  // 基本面口径护栏:opInc>revenue / gross>revenue 物理不可能 → 数据损坏,整条抑制估值判定。
+  const fundamentalsCorrupt =
+    valuationFloor?.kind === "floor" && fundamentalsIntegrityViolated(floorInput.years);
+
   // 上下文出口用的位置档(与估值卡同源, 永不漂移)。kind!=floor / 红旗 → null → 走兜底文案。
   const handoffVerdict =
     valuationFloor?.kind === "floor"
-      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted })
+      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt })
       : null;
 
   // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照,
@@ -627,6 +632,8 @@ export default async function StockTickerPage({
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
               ) : capitalStructureDistorted ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.moatDistorted}</p>
+              ) : fundamentalsCorrupt ? (
+                <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.fundamentalsSuspect}</p>
               ) : (
                 <>
                   <div className="mt-3">

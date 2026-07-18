@@ -17,6 +17,7 @@ export function fundamentalsToFloorInput(
     .map((r) => ({
       fiscal_year: r.fiscal_year as number,
       revenue: u(r.revenue),
+      gross_profit: u(r.gross_profit),
       operating_income: u(r.operating_income),
       operating_margin: u(r.operating_margin),
       net_income: u(r.net_income),

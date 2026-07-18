@@ -74,4 +74,12 @@ assert.strictEqual(fundamentalsToFloorInput("X", undefined, undefined).years.len
   assert.strictEqual(one.years[0].shares_diluted, 5_929_576_000, "adsRatio=1 → 恒等");
 }
 
+// gross_profit 透传(件② 口径护栏需要)。
+{
+  const inp = fundamentalsToFloorInput("X", "X", [
+    { fiscal_period: "FY", fiscal_year: 2024, period_end: "2024-12-31", revenue: 1000, gross_profit: 400 } as never,
+  ], 1);
+  assert.strictEqual(inp.years[0].gross_profit, 400, "gross_profit 透传");
+}
+
 console.log("fundamentalsToFloorInput.check.ts: OK");

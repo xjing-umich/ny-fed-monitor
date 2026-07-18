@@ -9,6 +9,8 @@
 //    基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配 → 整条抑制为 null，语义同 isImplausibleBand。
 //  - capitalStructureDistorted（入参，由 floor.moat_reading.capital_structure_distorted 算出）：
 //    多年回购把股东权益打成深度负值 → 重置价值/护城河不可从资产端评估 → 整条抑制为 null，语义同上。
+//  - fundamentalsCorrupt（入参，由 fundamentalsIntegrityViolated 算出）：基本面口径损坏
+//    (opInc>revenue / gross>revenue,物理不可能,通常是 SEC XBRL 营收概念取错)→ 整条抑制为 null。
 import type {
   MethodReconciliation,
   OeDcfAssessment,
@@ -146,10 +148,14 @@ export function deriveValuationVerdict(input: {
   /** 资本结构被回购扭曲(深度负权益,AV 与 ROIC 双不可评估)→ 护城河不可评估,不判 above/太贵,整条抑制。
    *  语义同 splitCoverageStale,由调用方从 floor.moat_reading.capital_structure_distorted 传入。 */
   capitalStructureDistorted?: boolean;
+  /** 基本面口径损坏(opInc>revenue / gross>revenue,物理不可能)→ 每股口径不可信,整条抑制。
+   *  语义同 splitCoverageStale/capitalStructureDistorted,由调用方经 fundamentalsIntegrityViolated 算出后传入。 */
+  fundamentalsCorrupt?: boolean;
 }): ValuationVerdict | null {
-  const { floor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted } = input;
+  const { floor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt } = input;
   if (splitCoverageStale) return null; // 拆股口径错配 → 无可信判定(每股带被放大 ~拆股比例倍)
   if (capitalStructureDistorted) return null; // 资本结构扭曲 → 无可信判定(护城河/成长价值不可评估,零增长底会假判太贵)
+  if (fundamentalsCorrupt) return null; // 口径损坏(opInc/gross>revenue)→ 无可信判定
   if (!floor || floor.kind !== "floor") return null; // thin data / per_share_unavailable
   const epv = strikeZone?.epv;
   if (!epv) return null; // 无价格 / 货币不匹配 / 无可比地板 → 无判定
