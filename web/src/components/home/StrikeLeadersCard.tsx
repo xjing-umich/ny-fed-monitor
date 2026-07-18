@@ -58,7 +58,7 @@ export default function StrikeLeadersCard({
           ))}
         </tbody>
       </table>
-      <p className="mt-3 text-[11px] leading-relaxed text-[var(--tt-faint)]">{c.note}</p>
+      <p className="mt-3 text-[11px] leading-relaxed text-[var(--tt-muted)]">{c.note}</p>
     </div>
   );
 }

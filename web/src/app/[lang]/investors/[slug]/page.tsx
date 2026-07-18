@@ -239,7 +239,7 @@ function HoldingsTable({
         />
       </div>
       {truncated && (
-        <p className="mt-2 text-xs text-[var(--tt-faint)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
+        <p className="mt-2 text-xs text-[var(--tt-muted)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
       )}
 
       {exits.length > 0 && (

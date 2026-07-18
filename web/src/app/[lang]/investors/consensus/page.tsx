@@ -89,7 +89,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
             }
           />
           {staleManagers.length > 0 && (
-            <p className="mt-3 text-xs text-[var(--tt-faint)]">
+            <p className="mt-3 text-xs text-[var(--tt-muted)]">
               {isZh
                 ? `注：${staleManagers.map((m) => `${m.person}（数据截至 ${m.period}）`).join("、")} 的持仓按其最新申报计入，环比变动不计。`
                 : `Note: ${staleManagers.map((m) => `${m.person} (as of ${m.period})`).join(", ")} counted per their latest filing; excluded from QoQ deltas.`}

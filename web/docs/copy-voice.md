@@ -62,3 +62,6 @@ AI / 营销腔。本文件是权威准则,新文案落地前对照它自检。�
 4. 念出声:像人说话,还是像发布会旁白?
 5. em-dash 在澄清,而不是煽情?
 6. 中、英是否各按本语感判过(不是逐字互译)?
+
+- [ ] 没有任何一整段正文使用 faint/muted 灰度（ink-3 只给时间戳与来源标注）。
+- [ ] No full paragraph is set in faint/muted gray (ink-3 is for timestamps and sourcing only).

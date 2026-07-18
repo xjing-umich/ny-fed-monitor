@@ -60,7 +60,7 @@ export function HolderTrend({
         </p>
         <Sparkline series={series} color="var(--tt-muted)" />
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-[var(--tt-faint)]">{t.backfill}</p>
+      <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">{t.backfill}</p>
     </>
   );
   if (bare) return body;
