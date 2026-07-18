@@ -1,7 +1,6 @@
 import React from "react";
 import { VerdictChip } from "./VerdictChip";
 import { KeyFacts, type KeyFact } from "./KeyFacts";
-import { AINarrative } from "./AINarrative";
 import { SourceFooter } from "./SourceFooter";
 import type { Source } from "./SourceFooter";
 import { RelatedLinks, type RelatedItem } from "./RelatedLinks";
@@ -30,9 +29,6 @@ export type EntityPageProps = {
   notice?: React.ReactNode;
   /** Optional page-level action rendered above the title, e.g. a back link. */
   topAction?: React.ReactNode;
-  aiPageKey?: string;
-  /** 若提供, 用服务端渲染的叙述节点替代客户端 AINarrative(SEO/GEO 可见) */
-  aiNarrative?: React.ReactNode;
   children: React.ReactNode;
   sources: Source[];
   related?: RelatedItem[];
@@ -55,8 +51,6 @@ export function EntityPage({
   keyFacts,
   notice,
   topAction,
-  aiPageKey,
-  aiNarrative,
   children,
   sources,
   related,
@@ -100,9 +94,6 @@ export function EntityPage({
           <KeyFacts facts={keyFacts} />
         </div>
       )}
-
-      {/* ③ AI narrative — 服务端节点优先(SEO可见), 否则回退客户端 AINarrative(仅当 aiPageKey 显式启用) */}
-      {aiNarrative ?? (aiPageKey ? <AINarrative lang={lang} pageKey={aiPageKey} /> : null)}
 
       {/* ④ Data body (tables / charts passed as children) */}
       <div className="space-y-6 sm:space-y-7">{children}</div>
