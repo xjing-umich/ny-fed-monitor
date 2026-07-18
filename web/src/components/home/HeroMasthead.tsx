@@ -8,6 +8,7 @@ import { FreshnessDot } from "@/components/entity/FreshnessDot";
 import { filingFreshness, quarterLabel } from "@/lib/freshness/derive";
 import { stockPath, localePath } from "@/lib/urls";
 import RevealStagger from "@/components/home/RevealStagger";
+import { Display } from "@/components/common/Display";
 
 const COPY = {
   zh: {
@@ -106,10 +107,15 @@ export default function HeroMasthead({
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
           {c.asOf(quarterLabel(period) || period)}
         </p>
-        <h1 className="mt-4 max-w-[18ch] font-display text-4xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-5xl md:text-6xl">
+        {typeof investorCount === "number" && investorCount > 0 && (
+          <Display size="3xl" glow className="mt-6 font-display">
+            {investorCount}
+          </Display>
+        )}
+        <h1 className="mt-4 max-w-[18ch] font-display text-2xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-3xl">
           {headline}
         </h1>
-        <p className="mt-5 max-w-[30ch] text-xl leading-snug text-[var(--tt-faint)] sm:text-2xl">
+        <p className="mt-5 max-w-[30ch] text-xl leading-snug text-[var(--ink-2)] sm:text-2xl">
           {c.headlineMuted}
         </p>
         <p className="mt-4 max-w-[42ch] text-sm leading-relaxed text-[var(--tt-muted)]">

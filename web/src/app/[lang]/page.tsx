@@ -15,6 +15,7 @@ import FoundationsGrid from "@/components/home/FoundationsGrid";
 import PhilosophyQuote from "@/components/home/PhilosophyQuote";
 import LearnTeaser from "@/components/home/LearnTeaser";
 import ClosingCTA from "@/components/home/ClosingCTA";
+import { Section } from "@/components/common/Section";
 
 // 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
 export const revalidate = 86400;
@@ -121,25 +122,25 @@ export default async function HomePage({
       <DataStrip lang={lang} consensusCount={heldCount} dgs10={dgs10} />
 
       {/* Near-full-width to break the max-w-5xl rhythm. */}
-      <section className="mx-auto mt-28 max-w-6xl">
+      <Section rhythm="xl" className="mx-auto max-w-6xl">
         <StepIndex lang={lang} investors={topManagers.slice(0, 12)} held={heldTop} strike={strike} />
-      </section>
+      </Section>
 
-      <div className="mt-32">
+      <Section rhythm="lg">
         <FoundationsGrid lang={lang} />
-      </div>
+      </Section>
 
-      <div className="mt-24">
+      <Section rhythm="md">
         <PhilosophyQuote lang={lang} featuredHref={buffettHref} />
-      </div>
+      </Section>
 
-      <div className="mt-20">
+      <Section rhythm="md">
         <LearnTeaser lang={lang} />
-      </div>
+      </Section>
 
-      <div className="mt-28">
+      <Section rhythm="xl">
         <ClosingCTA lang={lang} />
-      </div>
+      </Section>
     </div>
   );
 }
