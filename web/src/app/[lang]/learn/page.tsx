@@ -83,7 +83,7 @@ export default async function LearnIndexPage({
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
             {c.startHere}
           </span>
-          <h2 className="mt-2 font-display text-2xl font-medium leading-tight text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
+          <h2 className="mt-2 text-2xl font-medium leading-tight text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
             {featured.title}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
