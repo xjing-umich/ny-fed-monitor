@@ -239,6 +239,7 @@ function assembleFloor(
   });
 
   const growthValue = computeGrowthValue({
+    moatViaGrowth: moatReading.moat_via_growth === true,
     years,
     shares,
     taxRate: tax.rate,
