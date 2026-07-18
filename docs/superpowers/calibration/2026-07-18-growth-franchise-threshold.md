@@ -10,13 +10,19 @@
 - **数据新鲜度**: 依赖上一次 `valuation`/`sec` ingest 落表的 FY 基本面;本校准为只读快照,未触发新 ingest。
 
 ## Universe 规模
-- 全宇宙: **1910** 票 → 扫描后落 `commodity` 信号且非金融: **149** 票(校准样本 = 这 149 行 NDJSON,`/tmp/gfcal.ndjson`)。
+- 全宇宙: **1910** 票 → 校准池(commodity 群,见下)且非金融: **149** 票(校准样本)。
 
-## 判别器算法(与 Task 3 将落地的 `operatingIncomeLogGrowth` 逐字一致)
-- `opIncLogGrowth`: 取各 FY 年 `operating_income`,**过滤 >0 且有限**的点,对 `ln(operating_income)` 做 FY log-线性回归(最小二乘),年化 `g = exp(slope) - 1`;有效正点数 `< 3` 返回不可得。**回归口径,非端点 CAGR**(CAGR 准确性硬门),与 `src/lib/valuation/growthBaseRate.ts::historicalGrowthBaseRate` 同写法,仅 revenue→operating_income。
-- `years`: 参与回归的有效正 FY 点数。
-- `allOpIncPositive`: **全部** FY 年 operating_income 均 >0(关键甄别闸,见下)。
-- 命中规则: `allOpIncPositive && opIncLogGrowth >= MIN_CAGR && years >= MIN_YEARS`;strong 分档: 再叠加 `opIncLogGrowth >= STRONG_CAGR && years >= STRONG_MIN_YEARS`。
+## 校准池定义(旁路生效前的 commodity 群)
+成长旁路(Task 3-5)落地后,`growthFranchise` 命中的票在 `buildMoatReading`(`epvFloor.ts`)里 signal 会从 `"commodity"` 变成 `"franchise"` 并带 `moat_via_growth:true`(viaGrowth 仅替换 commodity 分支)。因此校准池 = **当前仍判 `commodity` 的票 ∪ `moat_via_growth===true` 的票** —— 这重构了旁路生效前的 commodity 群,使脚本无论旁路是否接线都复现同一 149 票池与命中集(自洽可复现)。所有池内票均非金融(`is_financial!==true`)。
+
+## 判别器算法(与生产 `moatCap.ts::growthFranchise` 逐字一致)
+**口径 = drop-null,与生产 `growthFranchise` 完全一致**:
+- `withOi`: 先滤掉 operating_income 为 null / 非有限的年(drop-null),`years = withOi.length`。
+- `allOpIncPositive`: 对**滤后**各年 `every(operating_income > 0)`(含缺失年但其余全正的票不会被误排除 —— 这是与生产对齐的关键;此前用 `fi.years.every`(含 null → false)会误伤,是已修的口径分歧)。
+- `opIncLogGrowth`: 对 `withOi` 里 >0 的点(log 定义域)做 `ln(operating_income)` 的 FY log-线性回归(最小二乘),年化 `g = exp(slope) - 1`。**回归口径,非端点 CAGR**(CAGR 准确性硬门),与 `growthBaseRate.ts::historicalGrowthBaseRate` 同写法,仅 revenue→operating_income;有效正点 < 3 返回不可得(校准用回归有效性下限 3,与网格 MIN_YEARS 阈值相互独立,保证 minYears=4 列可被真实测试)。
+- 命中规则: `非金融 && allOpIncPositive && years >= MIN_YEARS && opIncLogGrowth >= MIN_CAGR`;strong 分档: 再叠加 `opIncLogGrowth >= STRONG_CAGR && years >= STRONG_MIN_YEARS`。
+
+**交叉核对(强一致性证据)**:最终配置 0.05/5/0.15/5 下,本脚本网格命中集(43 票)与生产 `growthFranchise` 提升集(`moat_via_growth`,43 票)**完全相等,双向零差异** —— 校准口径与生产判据逐字一致得证。drop-null 修复在本宇宙未改动任一命中票(无"缺失年+其余全正"的边际票),但为口径正确性/健壮性所必须。
 
 ## 候选阈值网格
 - `MIN_CAGR ∈ {0.04, 0.05, 0.06, 0.07, 0.08}`

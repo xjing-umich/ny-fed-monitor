@@ -136,14 +136,25 @@ async function main() {
         const floor = computeValuationFloor(fi);
         if (!floor || floor.kind !== "floor") continue;
         const mr = floor.moat_reading;
-        if (mr.signal !== "commodity") continue;
+        // 校准池 = 旁路生效前的 commodity 群 = 当前仍判 commodity 的票 ∪ 已被成长旁路提升为
+        // franchise 的票(moat_via_growth)。Task 3-5 落地后,growthFranchise 命中票的 signal 会从
+        // "commodity" 变成 "franchise"(viaGrowth 仅替换 commodity 分支,见 epvFloor.ts §521-597),
+        // 若只筛 signal==="commodity" 会漏掉正被校准的那批票。取并集使本脚本无论旁路是否接线都能
+        // 复现同一 149 票池、同一命中集(自洽可复现)。
+        const inCommodityCohort = mr.signal === "commodity" || mr.moat_via_growth === true;
+        if (!inCommodityCohort) continue;
         if (floor.is_financial === true) continue;
         commodityCount++;
 
-        const allOpIncPositive = fi.years.length > 0 && fi.years.every(
-          (y) => y.operating_income != null && Number.isFinite(y.operating_income) && (y.operating_income as number) > 0,
+        // 判别口径与生产 growthFranchise(moatCap.ts)逐字一致:先 drop-null(滤掉 operating_income
+        // 为 null/非有限的年),再对剩余年 every(>0),years 用滤后计数 withOi.length。含缺失年但其余
+        // 全正的票不会被误排除(此前用 fi.years.every 含 null → false 会误伤,是与生产的口径分歧)。
+        const withOi = fi.years.filter(
+          (y) => y.operating_income != null && Number.isFinite(y.operating_income),
         );
-        const { g: opIncLogGrowth, validYears: years } = operatingIncomeLogGrowth(fi.years);
+        const years = withOi.length;
+        const allOpIncPositive = years > 0 && withOi.every((y) => (y.operating_income as number) > 0);
+        const { g: opIncLogGrowth } = operatingIncomeLogGrowth(withOi);
         // epvAvCons: EPV/AV 保守比值,仅作诊断字段随行输出备查(判断该 commodity 票的盈利力相对
         // 资产是否已偏高,辅助人工甄别真假 franchise),不参与命中判定 —— 命中只看增长口径三闸。
         const epvAvCons =
@@ -172,6 +183,7 @@ async function main() {
         const row = {
           ticker,
           signal: mr.signal,
+          moatViaGrowth: mr.moat_via_growth === true, // 生产判据结果,供与本脚本网格命中交叉核对
           allOpIncPositive,
           opIncLogGrowth,
           years,
