@@ -9,6 +9,16 @@ export const ROIC_SANITY = 3.0; // ROIC 上限 sanity：>300% 视口径失真(�
 export const OPERATING_CASH_PCT = 0.02; // Damodaran 经营性现金占营收比例;超出部分视为「超额现金」,从资产分母剔除(pathA)
 export const STRONG_MIN_PROFIT_STREAK = 5; // strong 分档前置闸:近连续 FY 年 net_income>0 的最小年数。
 
+// ── 成长型 franchise 判别(moat_via_growth，spec §3)───────────────────────────
+// 当期 EPV/AV 判 commodity、但历史营业利润已证实持续复利增长 → 给护城河信号。
+// 阈值经全 universe 校准锁定,provenance: docs/superpowers/calibration/2026-07-18-growth-franchise-threshold.md
+export const GROWTH_FRANCHISE_MIN_CAGR = 0.05;        // 营业利润 log 年化增速下限
+export const GROWTH_FRANCHISE_MIN_YEARS = 5;          // 证实性:参与回归的有效 FY 年数下限
+export const GROWTH_FRANCHISE_STRONG_CAGR = 0.15;     // 强档利润增速阈值
+export const GROWTH_FRANCHISE_STRONG_MIN_YEARS = 5;   // 强档年数下限
+
+export type GrowthFranchiseResult = { passes: boolean; strong: boolean; opIncLogGrowth: number | undefined; years: number };
+
 export function deriveMoatCap(input: {
   moat: MoatReading;
   epvAvRatio: number | undefined;
@@ -78,6 +88,46 @@ export function sustainedProfitStreak(fyYears: ValuationFloorYear[]): number {
     else break;
   }
   return streak;
+}
+
+/**
+ * 营业利润 FY log-线性回归年化增速(CAGR 准确性硬门:回归非端点)。各年 operating_income 须 >0
+ * 才计入(log 定义域);有效正点 <GROWTH_FRANCHISE_MIN_YEARS → undefined。与 growthBaseRate 同口径。
+ */
+export function operatingIncomeLogGrowth(fyYears: ValuationFloorYear[]): number | undefined {
+  const pts = fyYears
+    .filter((y) => y.operating_income != null && Number.isFinite(y.operating_income) && (y.operating_income as number) > 0)
+    .map((y) => ({ x: y.fiscal_year, y: Math.log(y.operating_income as number) }));
+  if (pts.length < GROWTH_FRANCHISE_MIN_YEARS) return undefined;
+  const n = pts.length;
+  const sx = pts.reduce((s, p) => s + p.x, 0);
+  const sy = pts.reduce((s, p) => s + p.y, 0);
+  const sxx = pts.reduce((s, p) => s + p.x * p.x, 0);
+  const sxy = pts.reduce((s, p) => s + p.x * p.y, 0);
+  const denom = n * sxx - sx * sx;
+  if (!(denom > 0)) return undefined;
+  const slope = (n * sxy - sx * sy) / denom;
+  const g = Math.exp(slope) - 1;
+  return Number.isFinite(g) ? g : undefined;
+}
+
+/**
+ * 成长型 franchise 判别器(spec §3)。非金融 + 窗口内各年营业利润全正 + 营业利润 log 增速 ≥ 下限
+ * + 有效年数 ≥ 下限 → passes(改判 franchise 的资格)。增速 ≥ 强档阈值且年数够 → strong。
+ * 判别器不依赖 ROIC/structural_confidence(被划出范围的机制);只用已证实的营业利润轨迹。
+ */
+export function growthFranchise(input: { fyYears: ValuationFloorYear[]; isFinancial: boolean }): GrowthFranchiseResult {
+  const fail: GrowthFranchiseResult = { passes: false, strong: false, opIncLogGrowth: undefined, years: 0 };
+  if (input.isFinancial) return fail;
+  const withOi = input.fyYears.filter((y) => y.operating_income != null && Number.isFinite(y.operating_income));
+  const years = withOi.length;
+  if (years < GROWTH_FRANCHISE_MIN_YEARS) return fail;
+  if (!withOi.every((y) => (y.operating_income as number) > 0)) return fail; // G1 各年利润全正
+  const g = operatingIncomeLogGrowth(withOi);
+  if (g == null) return fail;
+  const passes = g >= GROWTH_FRANCHISE_MIN_CAGR;
+  const strong = passes && g >= GROWTH_FRANCHISE_STRONG_CAGR && years >= GROWTH_FRANCHISE_STRONG_MIN_YEARS;
+  return { passes, strong, opIncLogGrowth: g, years };
 }
 
 // ── ROIC 稳定性度量（数据准确性硬门） ────────────────────────────────────────
