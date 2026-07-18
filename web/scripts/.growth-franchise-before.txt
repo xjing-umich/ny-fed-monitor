@@ -1,0 +1,17 @@
+DGS10(实时/last-good, 来源 FRED via market_rates 或直连): 4.57% as of 2026-07-16
+ticker  signal          grade    capYears  via_growth  g1(%)  IV(neutral)  bucket    marginPct(%)
+AMZN    commodity       none     0         false       5.0    41.21        above     -499.9
+ARM     commodity       none     0         false       5.0    8.74         above     -2955.8
+EQIX    commodity       none     0         false       5.0    68.16        above     -1396.5
+EW      commodity       none     0         false       0.0    17.23        above     -397.7
+AMD     commodity       none     0         false       5.0    20.45        above     -2323.7
+CEG     commodity       none     0         false       4.4    94.64        above     -166.7
+CELH    commodity       none     0         false       5.0    3.53         above     -721.8
+EMN     commodity       none     0         false       0.0    24.83        above     -176.2
+AGCO    commodity       none     0         false       0.0    67.75        above     -70.2
+DINO    commodity       none     0         false       0.9    20.90        above     -323.9
+ARW     commodity       none     0         false       0.0    119.50       above     -72.9
+ATI     commodity       none     0         false       3.3    19.51        above     -854.2
+MSFT    franchise       strong   20        false       13.5   354.92       within    -11.0
+NFLX    franchise       strong   20        false       11.6   51.89        within    -32.9
+MA      franchise       strong   20        false       4.6    221.91       above     -145.0
