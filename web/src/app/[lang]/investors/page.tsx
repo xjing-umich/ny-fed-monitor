@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
@@ -55,7 +56,15 @@ export default async function InvestorsPage({
   return (
     <>
       <SubNav lang={lang} section="investors" active="all" />
-      <InvestorListClient lang={lang} managers={managers} />
+      <Suspense
+        fallback={
+          <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+            …
+          </p>
+        }
+      >
+        <InvestorListClient lang={lang} managers={managers} />
+      </Suspense>
     </>
   );
 }

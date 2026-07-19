@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import type { ManagerSummary, ManagerQoQ } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
@@ -9,6 +9,20 @@ import { displayFundName } from "@/lib/managers/profileProse";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge, type BadgeTone } from "@/components/common/Badge";
 import PageHeader from "@/components/common/PageHeader";
+import { ListToolbar } from "@/components/list/ListToolbar";
+import { ListPagination } from "@/components/list/ListPagination";
+import { useListState } from "@/components/list/useListState";
+import {
+  LIST_PAGE_SIZE,
+  clampPage,
+  type VerdictFilter,
+} from "@/components/list/listQuery";
+import {
+  filterInvestors,
+  pageCount,
+  sortByKey,
+  visibleSlice,
+} from "@/components/list/listRows";
 
 type Row = ManagerSummary & { qoq?: ManagerQoQ };
 
@@ -18,8 +32,6 @@ const COPY = {
     heading: "超级投资者",
     subtitle: "按组合市值排列 · 最新 13F 季",
     search: "搜索投资人或机构…",
-    sortValue: "按市值",
-    sortCount: "按持仓数",
     cols: {
       investor: "投资人 / 机构",
       portfolio: "组合市值",
@@ -36,14 +48,16 @@ const COPY = {
     filterBuying: "加仓",
     filterSelling: "减仓",
     filterMixed: "微调",
+    more: "加载更多",
+    prev: "上一页",
+    next: "下一页",
+    pageOf: (p: number, n: number) => `第 ${p} / ${n} 页`,
   },
   en: {
     eyebrow: "SEC 13F · quarterly filings",
     heading: "Superinvestors",
     subtitle: "Ranked by portfolio value · latest 13F quarter",
     search: "Search by name or firm…",
-    sortValue: "By value",
-    sortCount: "By count",
     cols: {
       investor: "Investor / Firm",
       portfolio: "Portfolio",
@@ -60,11 +74,12 @@ const COPY = {
     filterBuying: "Buying",
     filterSelling: "Selling",
     filterMixed: "Held",
+    more: "Load more",
+    prev: "Prev",
+    next: "Next",
+    pageOf: (p: number, n: number) => `Page ${p} of ${n}`,
   },
 } as const;
-
-type SortKey = "value" | "count";
-type VerdictFilter = "all" | "buying" | "selling" | "mixed";
 
 // 市值环比%: 非空且非 0 才显, 绿涨橙跌。
 function fmtPctDelta(p: number | null | undefined): { text: string; cls: string } | null {
@@ -93,32 +108,33 @@ const KIND_CLASS: Record<NonNullable<ManagerQoQ["topMoveKind"]>, string> = {
   exited: "text-[var(--tt-negative)]",
 };
 
-export function InvestorListClient({
-  lang,
-  managers,
-}: {
+type Props = {
   lang: Lang;
   managers: Row[];
-}): React.ReactElement {
-  const t = COPY[lang];
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortKey>("value");
-  const [vf, setVf] = useState<VerdictFilter>("all");
+};
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const base = q
-      ? managers.filter(
-          (m) =>
-            m.person.toLowerCase().includes(q) ||
-            m.name.toLowerCase().includes(q)
-        )
-      : managers;
-    const afterVf = vf === "all" ? base : base.filter((m) => m.qoq?.verdict === vf);
-    return [...afterVf].sort((a, b) =>
-      sort === "value" ? b.totalValue - a.totalValue : b.holdingCount - a.holdingCount
-    );
-  }, [managers, query, sort, vf]);
+export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
+  const t = COPY[lang];
+  const params = useListState({
+    defaultSort: "value",
+    allowedSorts: ["value", "count"],
+    hasVf: true,
+  });
+
+  const filteredSorted = useMemo(() => {
+    let rows = filterInvestors(managers, params.q);
+    if (params.vf !== "all") rows = rows.filter((m) => m.qoq?.verdict === params.vf);
+    return sortByKey(rows, params.sort, params.dir, {
+      value: (m) => m.totalValue,
+      count: (m) => m.holdingCount,
+    });
+  }, [managers, params.q, params.sort, params.dir, params.vf]);
+
+  const pages = pageCount(filteredSorted.length);
+  const page = clampPage(params.page, pages);
+  const desktopRows = visibleSlice(filteredSorted, page, "desktop");
+  const mobileRows = visibleSlice(filteredSorted, page, "mobile");
+  const desktopRankStart = (page - 1) * LIST_PAGE_SIZE;
 
   const columns: Column<Row>[] = [
     {
@@ -139,6 +155,7 @@ export function InvestorListClient({
       header: t.cols.portfolio,
       align: "right",
       width: "w-36",
+      sortKey: "value",
       cell: (m) => {
         const pd = fmtPctDelta(m.qoq?.valueDeltaPct);
         return (
@@ -154,6 +171,7 @@ export function InvestorListClient({
       header: t.cols.holdings,
       align: "right",
       width: "w-24",
+      sortKey: "count",
       cell: (m) => {
         const cd = fmtCountDelta(m.qoq?.countDelta);
         return (
@@ -203,91 +221,65 @@ export function InvestorListClient({
     <div className="space-y-4">
       <PageHeader eyebrow={t.eyebrow} title={t.heading} intro={t.subtitle} />
 
-      {/* Controls — quiet hairline style */}
-      <div className="space-y-3">
-        {/* Row 1: 搜索 + 计数 */}
-        <div className="flex flex-wrap gap-4 items-center">
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.search}
-            aria-label={t.search}
-            className="flex-1 min-w-[200px] border-0 border-b border-[var(--tt-border)] bg-transparent px-0 py-1.5 text-sm text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] focus:outline-none focus:border-[var(--tt-accent)]"
-          />
-          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
-            {t.count(filtered.length, managers.length)}
-          </span>
-        </div>
+      <ListToolbar
+        searchLabel={t.search}
+        searchPlaceholder={t.search}
+        q={params.qInput}
+        onQChange={params.setQInput}
+        onQSubmit={params.commitQNow}
+        countText={t.count(filteredSorted.length, managers.length)}
+        chips={[
+          { key: "all", label: t.filterAll },
+          { key: "buying", label: t.filterBuying },
+          { key: "selling", label: t.filterSelling },
+          { key: "mixed", label: t.filterMixed },
+        ]}
+        activeChip={params.vf}
+        onChip={(k) => params.setVf(k as VerdictFilter)}
+      />
 
-        {/* Row 2: 本季动作快筛 + 排序 */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap gap-1">
-            {(
-              [
-                ["all", t.filterAll],
-                ["buying", t.filterBuying],
-                ["selling", t.filterSelling],
-                ["mixed", t.filterMixed],
-              ] as const
-            ).map(([k, label]) => (
-              <button
-                key={k}
-                onClick={() => setVf(k as VerdictFilter)}
-                aria-pressed={vf === k}
-                className={[
-                  "max-sm:min-h-[44px] px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
-                  "max-sm:border sm:border-0 sm:border-b",
-                  vf === k
-                    ? "text-[var(--tt-accent)] max-sm:border-[var(--tt-accent)] max-sm:bg-[var(--tt-accent)]/10 sm:border-[var(--tt-accent)]"
-                    : "text-[var(--tt-muted)] max-sm:border-[var(--tt-border)] hover:text-[var(--tt-text)] sm:border-transparent hover:sm:border-[var(--tt-border)]",
-                ].join(" ")}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-1 text-xs">
-            <button
-              onClick={() => setSort("value")}
-              aria-pressed={sort === "value"}
-              className={[
-                "max-sm:min-h-[44px] px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
-                "max-sm:border sm:border-0 sm:border-b",
-                sort === "value"
-                  ? "text-[var(--tt-accent)] max-sm:border-[var(--tt-accent)] max-sm:bg-[var(--tt-accent)]/10 sm:border-[var(--tt-accent)]"
-                  : "text-[var(--tt-muted)] max-sm:border-[var(--tt-border)] hover:text-[var(--tt-text)] sm:border-transparent hover:sm:border-[var(--tt-border)]",
-              ].join(" ")}
-            >
-              {t.sortValue}
-            </button>
-            <button
-              onClick={() => setSort("count")}
-              aria-pressed={sort === "count"}
-              className={[
-                "max-sm:min-h-[44px] px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
-                "max-sm:border sm:border-0 sm:border-b",
-                sort === "count"
-                  ? "text-[var(--tt-accent)] max-sm:border-[var(--tt-accent)] max-sm:bg-[var(--tt-accent)]/10 sm:border-[var(--tt-accent)]"
-                  : "text-[var(--tt-muted)] max-sm:border-[var(--tt-border)] hover:text-[var(--tt-text)] sm:border-transparent hover:sm:border-[var(--tt-border)]",
-              ].join(" ")}
-            >
-              {t.sortCount}
-            </button>
-          </div>
-        </div>
+      <div className="hidden md:block">
+        <DataTable
+          columns={columns}
+          rows={desktopRows}
+          getKey={(m) => m.cik}
+          rowHref={(m) => investorPath(lang, m.slug)}
+          breakpoint="lg"
+          showRank
+          rankStart={desktopRankStart}
+          sortKey={params.sort}
+          sortDir={params.dir}
+          onSort={params.setSortKey}
+          emptyText={t.noResults}
+        />
       </div>
 
-      {/* Responsive table → 移动端堆叠卡片 */}
-      <DataTable
-        columns={columns}
-        rows={filtered}
-        getKey={(m) => m.cik}
-        rowHref={(m) => investorPath(lang, m.slug)}
-        breakpoint="lg"
-        showRank
-        emptyText={t.noResults}
+      <div className="md:hidden">
+        <DataTable
+          columns={columns}
+          rows={mobileRows}
+          getKey={(m) => m.cik}
+          rowHref={(m) => investorPath(lang, m.slug)}
+          breakpoint="lg"
+          showRank
+          rankStart={0}
+          sortKey={params.sort}
+          sortDir={params.dir}
+          onSort={params.setSortKey}
+          emptyText={t.noResults}
+        />
+      </div>
+
+      <ListPagination
+        page={page}
+        pageCount={pages}
+        onPage={params.setPage}
+        moreLabel={t.more}
+        remaining={filteredSorted.length - mobileRows.length}
+        prevLabel={t.prev}
+        nextLabel={t.next}
+        pageLabel={t.pageOf}
       />
     </div>
   );
-}
+};

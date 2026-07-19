@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:price-providers": "tsx scripts/tests/price-providers.ts",
+    "test:list-query": "tsx scripts/tests/list-query.ts",
     "ingest": "tsx scripts/ingest-13f.ts",
     "enrich": "tsx scripts/enrich-securities.ts",
     "enrich:security-type": "tsx scripts/backfill-security-type.ts",

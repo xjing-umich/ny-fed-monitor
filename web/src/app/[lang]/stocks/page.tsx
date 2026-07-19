@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
@@ -103,7 +104,15 @@ export default async function StocksIndexPage({
         />
       </div>
 
-      <StocksTable lang={lang} rows={tableRows} />
+      <Suspense
+        fallback={
+          <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+            …
+          </p>
+        }
+      >
+        <StocksTable lang={lang} rows={tableRows} />
+      </Suspense>
     </>
   );
 }
