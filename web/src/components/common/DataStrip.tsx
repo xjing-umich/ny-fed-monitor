@@ -65,7 +65,6 @@ export function DataStrip({
         label={t.dgs10}
         value={dgs10 ? `${dgs10.value.toFixed(2)}%` : "—"}
         sub={dgs10 ? (lang === "zh" ? `截至 ${dgs10.date}` : `as of ${dgs10.date}`) : undefined}
-        href={localePath(lang, "/macro")}
       />
     </section>
   );

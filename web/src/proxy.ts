@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { INVESTOR_ALIASES } from "@/lib/investor-seo-aliases";
 
 // hide-default-locale 路由:
 //  1. /zh 或 /zh/… → 放行(中文带前缀)
@@ -23,6 +24,19 @@ export function proxy(request: NextRequest) {
   }
 
   // 3. 裸英文路径:内部 rewrite 到 /en(URL 不变)
+  // 例外:投资人别名裸 URL 先 301 到规范 slug。本版 Next 的 config redirects 正则
+  // 强制要求 zh|en 前缀段(/:lang(zh|en)/investors/<alias> 只接 /zh、/en 两种形态),
+  // 裸形态只能在 proxy rewrite 之前在此接住;别名表与 next.config.ts 共享。
+  const aliasMatch = pathname.match(/^\/investors\/([a-z0-9-]+)\/?$/);
+  if (aliasMatch) {
+    const canonical = INVESTOR_ALIASES[aliasMatch[1]];
+    if (canonical) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/investors/${canonical}`;
+      return NextResponse.redirect(url, 301);
+    }
+  }
+
   const url = request.nextUrl.clone();
   url.pathname = `/en${pathname === "/" ? "" : pathname}`;
   return NextResponse.rewrite(url);

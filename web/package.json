@@ -20,7 +20,6 @@
     "sec:ingest": "tsx scripts/sec-ingest-company.ts",
     "sec:ingest:all": "tsx scripts/sec-ingest-all.ts",
     "sec:ingest:holdings": "tsx scripts/sec-ingest-holdings.ts",
-    "macro:ingest": "tsx scripts/macro-ingest.ts",
     "valuation:ingest": "tsx --tsconfig scripts/tsconfig.json scripts/valuation-ingest.ts"
   },
   "dependencies": {

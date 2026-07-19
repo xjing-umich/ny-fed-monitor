@@ -4,7 +4,7 @@
 import { mostRecentDueQuarter, parseUTC } from "../freshness/derive";
 
 export type HealthProblem = {
-  pipeline: "13f" | "macro" | "prices";
+  pipeline: "13f" | "prices";
   source: string;
   message: string;
   asOf: string | null;
@@ -17,29 +17,6 @@ export type HealthReport = {
   problems: HealthProblem[];
   info: string[];
 };
-
-// 宏观判定的最小输入(由 gather.ts 从 MarketFreshnessStatusRow 映射而来,
-// 故纯函数不依赖 server-only 类型)。id===0 表示 getFreshnessStatus 合成的
-// "该源无真实状态记录"占位行。
-export type MacroStatusInput = {
-  id: number;
-  name: string;
-  isManual: boolean;
-  freshnessStatus: string;
-  latestObservationDate: string | null;
-  checkedAt: string;
-};
-
-const MACRO_ALERT_STATUSES = new Set(["failed", "empty"]); // 真失败才告警;stale(天然滞后)仅作参考
-const MACRO_STALE_CHECKED_DAYS = 2;
-
-// UTC 日历天差(向下取整)。from 为空 → Infinity(视为极陈)。
-function daysBetweenUTC(from: Date | null, to: Date): number {
-  if (!from) return Infinity;
-  const a = Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate());
-  const b = Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate());
-  return Math.floor((b - a) / 86400000);
-}
 
 // 13F「整体落后」判定。latestPeriod=库内最新季度; perManagerPeriods=每户最新季度。
 export function evaluate13F(
@@ -65,32 +42,4 @@ export function evaluate13F(
     };
   }
   return { problems: [], info };
-}
-
-// 宏观判定。信号1: 真实行(id!==0)的 max(checkedAt) 超阈 → 停跑;
-// 信号2: 非手动源 freshnessStatus ∈ {failed,empty} → 报; stale → 进 info(天然滞后,不告警)。
-export function evaluateMacro(rows: MacroStatusInput[], today: Date): { problems: HealthProblem[]; info: string[] } {
-  const problems: HealthProblem[] = [];
-  const info: string[] = [];
-  const real = rows.filter((r) => r.id !== 0);
-  if (real.length === 0) {
-    problems.push({ pipeline: "macro", source: "宏观整体", message: "freshness 从未写入(管道或未跑过)", asOf: null, expected: "应有每日刷新" });
-  } else {
-    const maxChecked = real.reduce((m, r) => (r.checkedAt > m ? r.checkedAt : m), real[0].checkedAt);
-    const days = daysBetweenUTC(parseUTC(maxChecked), today);
-    if (days > MACRO_STALE_CHECKED_DAYS) {
-      problems.push({ pipeline: "macro", source: "宏观整体", message: `管道可能停跑: 状态 ${days} 天未刷新`, asOf: maxChecked.slice(0, 10), expected: `应 ≤ ${MACRO_STALE_CHECKED_DAYS} 天` });
-    }
-  }
-  const staleSrc: string[] = [];
-  for (const r of rows) {
-    if (r.isManual) continue;
-    if (MACRO_ALERT_STATUSES.has(r.freshnessStatus)) {
-      problems.push({ pipeline: "macro", source: r.name, message: `状态 ${r.freshnessStatus}`, asOf: r.latestObservationDate, expected: "应 fresh" });
-    } else if (r.freshnessStatus === "stale") {
-      staleSrc.push(`${r.name}(${r.latestObservationDate ?? "—"})`);
-    }
-  }
-  if (staleSrc.length) info.push(`宏观滞后(参考,不告警): ${staleSrc.join(", ")}`);
-  return { problems, info };
 }

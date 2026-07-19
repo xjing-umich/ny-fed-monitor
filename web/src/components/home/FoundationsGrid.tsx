@@ -1,6 +1,4 @@
-import Link from "next/link";
 import type { Lang } from "@/lib/nav";
-import { localePath } from "@/lib/urls";
 import TrustLockup from "@/components/home/TrustLockup";
 
 const COPY = {
@@ -13,7 +11,6 @@ const COPY = {
       { label: "披露延迟", value: "45 天申报延迟" },
       { label: "立场", value: "不荐股 · 不预测" },
     ],
-    macroLabel: "宏观流动性 →",
   },
   en: {
     eyebrow: "Built on primary sources",
@@ -24,7 +21,6 @@ const COPY = {
       { label: "Disclosure lag", value: "45-day filing lag" },
       { label: "Stance", value: "No recommendations, no forecasts" },
     ],
-    macroLabel: "Macro & liquidity →",
   },
 } as const;
 
@@ -38,14 +34,6 @@ export default function FoundationsGrid({ lang }: { lang: Lang }): React.ReactEl
         {c.lockups.map((item) => (
           <TrustLockup key={item.label} label={item.label} value={item.value} />
         ))}
-      </div>
-      <div className="mt-6">
-        <Link
-          href={localePath(lang, "/macro")}
-          className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
-        >
-          {c.macroLabel}
-        </Link>
       </div>
     </section>
   );

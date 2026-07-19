@@ -24,7 +24,7 @@ type ChangeFreq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 // the on-page <link rel="alternate"> tags and is the correct way to pair
 // localized URLs in a sitemap — better than emitting duplicate en/zh entries.
 // lastModified: 取真实的 13F 报告期(YYYY-MM-DD) —— 新一季数据进库时该日期自动前移,
-// 是诚实的"内容版本"信号(避免凭空造日期)。无真实日期的纯编辑页(about/learn/macro)不带 lastmod。
+// 是诚实的"内容版本"信号(避免凭空造日期)。无真实日期的纯编辑页(about/learn)不带 lastmod。
 function entry(
   path: string,
   changeFrequency: ChangeFreq,
@@ -63,8 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/stocks", "weekly", 0.8, globalLatest),
     entry("/stocks/screener", "weekly", 0.7, globalLatest),
     // 编辑/外部数据页:无诚实的 13F 变更日期 → 不带 lastmod。
-    entry("/macro", "daily", 0.7),
-    entry("/macro/methodology", "weekly", 0.5),
     entry("/about", "monthly", 0.4),
     entry("/learn", "weekly", 0.6),
   ];

@@ -6,7 +6,7 @@ import { localePath } from "@/lib/urls";
 
 interface SubNavProps {
   lang: Lang;
-  section: "investors" | "stocks" | "macro";
+  section: "investors" | "stocks";
   active?: string;
 }
 
