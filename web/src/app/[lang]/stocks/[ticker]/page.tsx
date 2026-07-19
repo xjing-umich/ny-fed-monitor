@@ -530,7 +530,13 @@ export default async function StockTickerPage({
           </Link>
         }
         verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
-        verdictExtra={expectationsBadge(expectations, lang) ?? undefined}
+        // 红旗档：正文 PriceBetBlock 仍可对照预期并标 lowConfidence；masthead 微徽章只在
+        // reliable 时挂出，避免无 caveats 的「预期 · 苛刻」与未确认便宜信号抢视线。
+        verdictExtra={
+          handoffVerdict?.reliable
+            ? expectationsBadge(expectations, lang) ?? undefined
+            : undefined
+        }
         keyFacts={[
           { label: page.price, value: fmtPriceFact(latestPrice) },
           // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——

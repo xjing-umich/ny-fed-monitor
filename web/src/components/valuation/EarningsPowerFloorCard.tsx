@@ -382,8 +382,16 @@ function ValueSpine({
       : suppliedVerdict;
   if (!verdict) return null;
 
-  const oeOk = verdict.methods.oeDcf;
-  const conservative = oeOk ? { lo: oeDcf!.per_share_low!, hi: oeDcf!.per_share_high! } : null;
+  const oeOk =
+    verdict.methods.oeDcf &&
+    oeDcf?.assessable === true &&
+    oeDcf.per_share_low != null &&
+    oeDcf.per_share_high != null &&
+    Number.isFinite(oeDcf.per_share_low) &&
+    Number.isFinite(oeDcf.per_share_high) &&
+    oeDcf.per_share_low > 0 &&
+    oeDcf.per_share_high > 0;
+  const conservative = oeOk ? { lo: oeDcf.per_share_low, hi: oeDcf.per_share_high } : null;
   const rangeLo = verdict.rangeLo;
   const rangeHi = verdict.rangeHi;
   const bothMethods = verdict.methods.oeDcf && verdict.methods.greenwaldGrowthCeilings;
@@ -745,18 +753,22 @@ export const EarningsPowerFloorCard: FC<{
     );
   }
 
-  const hasSpine = verdict !== null && !!strikeZone?.epv && !strikeZone.currencyMismatch;
+  // 可比价格轴：有 epv 且币种匹配。权威 verdict=null 只抑制脊柱，不误报「缺价格」
+  // （旧行为：ValueSpine 内 return null，MethodDetails 仍在）。
+  const canCompare = !!strikeZone?.epv && !strikeZone.currencyMismatch;
+  const showSpine = canCompare && verdict !== null;
+  const showCompactFloor = !canCompare;
 
   return (
     <div className="space-y-3">
-      {hasSpine ? (
+      {showSpine ? (
         <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} />
-      ) : (
+      ) : showCompactFloor ? (
         <CompactFloor
           suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
           lang={lang}
         />
-      )}
+      ) : null}
 
       <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} />
     </div>

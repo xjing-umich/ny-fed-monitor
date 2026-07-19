@@ -73,5 +73,13 @@ const run = (overrides: Partial<Parameters<typeof runValuation>[0]> = {}) =>
   assert.equal(result.methods.oeDcf, true);
   assert.equal(result.verdict.coverage, "full");
 }
+{
+  // suppressExpectations：默认/false 不因 reliable 闸掉预期；true → assessable=false。
+  const open = run({ suppressExpectations: false });
+  assert.equal(open.expectations.assessable, true, "suppressExpectations=false → expectations assessable");
+  const gated = run({ suppressExpectations: true });
+  assert.equal(gated.expectations.assessable, false, "suppressExpectations=true → expectations gated");
+  assert.equal(gated.expectations.reason, "reliability_or_robustness_gate");
+}
 
 console.log("runValuation.check.ts OK");
