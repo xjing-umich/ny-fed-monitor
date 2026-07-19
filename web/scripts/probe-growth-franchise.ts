@@ -20,6 +20,7 @@ import {
   deriveStrikeZone,
   deriveOeDcf,
   reconcileMethods,
+  deriveValuationMethods,
   deriveValuationVerdict,
   fundamentalsIntegrityViolated,
 } from "@/lib/valuation";
@@ -96,11 +97,13 @@ async function main() {
           strikeZone && oeDcf ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price) : undefined;
         const capitalStructureDistorted = mr.capital_structure_distorted === true;
         const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
+        const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
         const verdict = deriveValuationVerdict({
           floor,
           strikeZone,
           oeDcf,
           reconciliation,
+          methods,
           capitalStructureDistorted,
           fundamentalsCorrupt,
         });

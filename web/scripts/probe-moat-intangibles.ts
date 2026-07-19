@@ -15,6 +15,7 @@ import {
   deriveStrikeZone,
   deriveOeDcf,
   reconcileMethods,
+  deriveValuationMethods,
   deriveValuationVerdict,
   fundamentalsIntegrityViolated,
 } from "@/lib/valuation";
@@ -106,7 +107,16 @@ async function main() {
     // Task 4:死角(资本结构扭曲)与生产 page.tsx/valuation-ingest.ts 同源传入,否则探针会漏显 above 假信号。
     const capitalStructureDistorted = floor.moat_reading.capital_structure_distorted === true;
     const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
-    const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, capitalStructureDistorted, fundamentalsCorrupt });
+    const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
+    const verdict = deriveValuationVerdict({
+      floor,
+      strikeZone,
+      oeDcf,
+      reconciliation,
+      methods,
+      capitalStructureDistorted,
+      fundamentalsCorrupt,
+    });
     console.log(`verdict:`, verdict ? { bucket: verdict.bucket, reliable: verdict.reliable, marginPct: n(verdict.marginPct == null ? undefined : verdict.marginPct * 100, 1) } : "null (suppressed)");
   }
 }

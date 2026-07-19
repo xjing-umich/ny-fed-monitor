@@ -5,7 +5,9 @@ import type { ValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 
 const v = (over: Partial<ValuationVerdict>): ValuationVerdict => ({
   bucket: "below", inStrikeZone: false, rangeLo: 1, rangeHi: 2, price: 1,
-  priceDate: "2026-01-01", marginPct: 0.2, coverage: "full", reliable: true, ...over,
+  priceDate: "2026-01-01", marginPct: 0.2, coverage: "full", reliable: true,
+  methods: { zeroGrowthEpv: true, oeDcf: true, greenwaldGrowthCeilings: true },
+  ...over,
 });
 
 // 1) 进击球区 → strike_zone 视图, 大写 ticker
