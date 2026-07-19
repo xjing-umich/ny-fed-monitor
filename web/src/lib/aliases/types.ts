@@ -2,7 +2,7 @@
 // 统一实体别名解析层的类型(spec §3.1)。
 
 // URL 的 section 天然隔离命名空间:/investors/* 只查 investor,/stocks/* 只查 stock,
-// 互不冲突(如 "brk" 在两侧各自命中)。预留 "macro"。
+// 互不冲突(如 "brk" 在两侧各自命中)。
 export type EntityType = "investor" | "stock";
 
 // confidence: "high" 才触发 301/308 重定向;"loose" 只进结构化数据(v1 无 loose 来源,
