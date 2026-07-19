@@ -27,6 +27,7 @@ import {
   deriveStrikeZone,
   deriveOeDcf,
   reconcileMethods,
+  deriveValuationMethods,
   deriveValuationVerdict,
   resolveAds,
   isFundamentalsStale,
@@ -124,7 +125,8 @@ async function main() {
       const strikeZone = deriveStrikeZone(floor, price);
       const oeDcf = deriveOeDcf(floor, floorInput.years, dgs10, price);
       const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
-      const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation });
+      const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
+      const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, methods });
       if (!v) continue;
 
       const latest = floorInput.years[0];

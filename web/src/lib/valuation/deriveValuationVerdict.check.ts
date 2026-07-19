@@ -13,7 +13,15 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
-import { deriveValuationVerdict, assessReliability, isImplausibleBand, MOS_BASE, MOS_MAX, S_RELIABLE } from "./deriveValuationVerdict";
+import {
+  deriveValuationVerdict as deriveValuationVerdictBase,
+  assessReliability,
+  isImplausibleBand,
+  MOS_BASE,
+  MOS_MAX,
+  S_RELIABLE,
+} from "./deriveValuationVerdict";
+import { deriveValuationMethods } from "./deriveValuationMethods";
 
 // 仅 deriveValuationVerdict 真正读取的字段被填实；其余用最小 stub 满足类型。
 function floorStub(): ValuationFloor {
@@ -68,13 +76,28 @@ function oeWithIv(neutral: number, opts?: { declined?: boolean }): OeDcfAssessme
 }
 const recon = (c: MethodReconciliation["consistency"]): MethodReconciliation =>
   ({ comparable: true, consistency: c } as MethodReconciliation);
+function deriveValuationVerdict(input: Omit<Parameters<typeof deriveValuationVerdictBase>[0], "methods">) {
+  return deriveValuationVerdictBase({
+    ...input,
+    methods: deriveValuationMethods({
+      floor: input.floor,
+      strikeZone: input.strikeZone,
+      oeDcf: input.oeDcf,
+    }),
+  });
+}
 
 // 1) 两法 below（both_margin_of_safety）
 {
-  const v = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone"), oeDcf: oe(), reconciliation: recon("both_margin_of_safety") });
+  const floor = floorStub();
+  const strikeZone = sz("in_strike_zone", { ceilings: false });
+  const oeDcf = oe();
+  const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
+  const v = deriveValuationVerdictBase({ floor, strikeZone, oeDcf, reconciliation: recon("both_margin_of_safety"), methods });
   assert(v && v.bucket === "below" && v.inStrikeZone === true && v.coverage === "full", "two-method below + strike zone");
+  assert.deepStrictEqual(v!.methods, methods, "verdict preserves the supplied method flags");
   // rangeLo 现 = epv.valueFloor（sz 默认 120，与 margin/strike 同底）；rangeHi = max 两法端点 = 320。
-  assert(v!.rangeLo === 120 && v!.rangeHi === 320, "rangeLo=valueFloor, rangeHi=optimistic top");
+  assert(v!.rangeLo === 120 && v!.rangeHi === 200, "rangeLo=valueFloor, rangeHi=zero-growth top");
 }
 // 2) 两法 within
 {

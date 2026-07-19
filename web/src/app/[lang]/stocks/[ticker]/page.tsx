@@ -26,30 +26,24 @@ import { StockProse } from "@/components/entity/StockProse";
 import { getSecCompanyData } from "@/lib/sec/read";
 import {
   fundamentalsToFloorInput,
-  computeValuationFloor,
-  deriveStrikeZone,
-  deriveOeDcf,
-  reconcileMethods,
   resolveAds,
   isFundamentalsStale,
   isSplitCoverageStale,
   fundamentalsIntegrityViolated,
+  runValuation,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
-import { resolveStockPagePrice } from "@/lib/stocks/resolveStockPagePrice";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
-import { deriveValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
-import { deriveExpectations, historicalGrowthBaseRate } from "@/lib/valuation/impliedExpectations";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockGlossary, stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
@@ -382,64 +376,49 @@ export default async function StockTickerPage({
     sec.annual?.[0]?.period_end ?? null,
     new Date().toISOString(),
   );
-  const valuationFloor =
-    ads.suppressed || fundamentalsStale ? undefined : computeValuationFloor(floorInput);
 
   // Always load market price for masthead keyFacts (V / BRK.B multi-class still show Price).
-  // Valuation consumers only when kind === "floor"; stale price → 按无价(与 valuation-ingest 同语义)。
+  // A stale quote is never used for valuation, but is still shown as the latest key fact.
   const fetchedPrice = await getLatestPrice(ticker);
-  const { keyFact: latestPrice, valuation: valuationPriceRaw } = resolveStockPagePrice({
-    floorKind: valuationFloor?.kind,
-    fetched: fetchedPrice,
+  const latestPrice = fetchedPrice;
+  const priceStale = fetchedPrice?.stale === true;
+  const valuationPrice = priceStale ? null : fetchedPrice;
+
+  // 拆股口径护栏:基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配,整条抑制估值判定。
+  const latestSplitDate = await getLatestSplit(ticker);
+  const splitCoverageStale = isSplitCoverageStale({
+    fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
+    latestSplitDate,
   });
-  const valuationPrice = valuationPriceRaw?.stale ? null : valuationPriceRaw;
-  const strikeZone =
-    valuationFloor?.kind === "floor" ? deriveStrikeZone(valuationFloor, valuationPrice) : undefined;
+
+  // 基本面口径护栏:opInc>revenue / gross>revenue 物理不可能 → 数据损坏,整条抑制估值判定。
+  const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
 
   // Second intrinsic-value method (Buffett owner-earnings DCF) + two-method cross-check.
   // DGS10 read is best-effort; null → DCF uses the 9–11% fallback band (flagged in-card).
-  const dgs10 = valuationFloor?.kind === "floor" ? await getLatestDgs10() : null;
-  const oeDcf =
-    valuationFloor?.kind === "floor"
-      ? deriveOeDcf(valuationFloor, floorInput.years, dgs10, valuationPrice)
-      : undefined;
-  const reconciliation =
-    valuationFloor?.kind === "floor"
-      ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, valuationPrice)
-      : undefined;
-
-  // 拆股口径护栏:基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配,整条抑制估值判定。
-  const splitCoverageStale = isSplitCoverageStale({
-    fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
-    latestSplitDate: valuationFloor?.kind === "floor" ? await getLatestSplit(ticker) : null,
+  const dgs10 = await getLatestDgs10();
+  const run = runValuation({
+    floorInput,
+    price: valuationPrice,
+    dgs10,
+    guards: {
+      adsSuppressed: ads.suppressed,
+      fundamentalsStale,
+      priceStale,
+      splitCoverageStale,
+      fundamentalsCorrupt,
+    },
+    suppressExpectations: false,
   });
-
-  // 资本结构护栏:多年回购把股东权益压成深度负值 → 重置价值/护城河不可从资产端评估,整条抑制估值判定(Task 3 标记)。
+  const { floor: valuationFloor, strikeZone, oeDcf, reconciliation } = run;
+  const handoffVerdict = run.verdict;
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
 
-  // 基本面口径护栏:opInc>revenue / gross>revenue 物理不可能 → 数据损坏,整条抑制估值判定。
-  const fundamentalsCorrupt =
-    valuationFloor?.kind === "floor" && fundamentalsIntegrityViolated(floorInput.years);
-
-  // 上下文出口用的位置档(与估值卡同源, 永不漂移)。kind!=floor / 红旗 → null → 走兜底文案。
-  const handoffVerdict =
-    valuationFloor?.kind === "floor"
-      ? deriveValuationVerdict({ floor: valuationFloor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt })
-      : null;
-
-  // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照,
-  // 快照写入是 Task 2 给其他消费面用的)——直接复用上面已算出的 oeDcf.expectations_inputs +
-  // handoffVerdict.price + FY-only 历史 base rate。抑制口径与 verdict 的 reliable 闸同源。
-  const expectations =
-    oeDcf?.assessable && oeDcf.expectations_inputs && handoffVerdict
-      ? deriveExpectations({
-          ...oeDcf.expectations_inputs,
-          price: handoffVerdict.price,
-          historicalGrowth: historicalGrowthBaseRate(floorInput.years),
-          suppressed: !handoffVerdict.reliable,
-        })
-      : undefined;
+  // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照)。
+  // 个股页即使 reliable=false 仍展示「价格在赌什么」(对照用,非确认便宜);ingest/快照仍可
+  // 用 suppressed 闸聚合面——此处不写库。
+  const expectations = run.expectations;
 
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
   const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
@@ -551,7 +530,13 @@ export default async function StockTickerPage({
           </Link>
         }
         verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
-        verdictExtra={expectationsBadge(expectations, lang) ?? undefined}
+        // 红旗档：正文 PriceBetBlock 仍可对照预期并标 lowConfidence；masthead 微徽章只在
+        // reliable 时挂出，避免无 caveats 的「预期 · 苛刻」与未确认便宜信号抢视线。
+        verdictExtra={
+          handoffVerdict?.reliable
+            ? expectationsBadge(expectations, lang) ?? undefined
+            : undefined
+        }
         keyFacts={[
           { label: page.price, value: fmtPriceFact(latestPrice) },
           // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——
@@ -646,11 +631,21 @@ export default async function StockTickerPage({
                       ticker={ticker}
                       lang={lang}
                       showStatus={false}
+                      verdict={run.verdict}
                     />
                   </div>
                   {expectations?.assessable && (
-                    <PriceBetBlock expectations={expectations} lang={lang} />
+                    <PriceBetBlock
+                      expectations={expectations}
+                      lang={lang}
+                      lowConfidence={!handoffVerdict?.reliable}
+                    />
                   )}
+                  <LearnLink
+                    lang={lang}
+                    slug="what-is-intrinsic-value"
+                    label={page.valuation.learn}
+                  />
                 </>
               )}
             </section>

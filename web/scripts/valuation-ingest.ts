@@ -3,8 +3,8 @@
  * 用法: cd web && npm run valuation:ingest(本地读仓库根 .env.local;CI 用 env)。
  *
  * Universe = 所有被追踪投资人最新持仓的 ticker 并集(= 任何持仓表可能出现的全集)。
- * 逐 ticker 复用个股页同一编排: getSecCompanyData → computeValuationFloor → strikeZone →
- * oeDcf → reconcile → deriveValuationVerdict。可估值才入表;不可估值跳过(读取侧缺行=" —")。
+ * 逐 ticker 复用个股页同一编排: getSecCompanyData → runValuation。可估值才入表;
+ * 不可估值跳过(读取侧缺行=" —")。
  * 这是**唯一**批量算估值的地方 —— 投资人页只读快照, 故 SSG 构建期零额外 SEC 计算。
  *
  * 注: 本脚本经 `--tsconfig scripts/tsconfig.json` 跑(见 npm script), 该 tsconfig 把 `server-only`
@@ -24,18 +24,13 @@ import { isOperatingSecurity } from "@/lib/securities/openfigi";
 import { getSecCompanyData } from "@/lib/sec/read";
 import {
   fundamentalsToFloorInput,
-  computeValuationFloor,
-  deriveStrikeZone,
-  deriveOeDcf,
-  reconcileMethods,
-  deriveValuationVerdict,
   resolveAds,
   isFundamentalsStale,
   isSplitCoverageStale,
   fundamentalsIntegrityViolated,
   FUNDAMENTALS_MAX_AGE_MONTHS,
+  runValuation,
 } from "@/lib/valuation";
-import { deriveExpectations, historicalGrowthBaseRate } from "@/lib/valuation/impliedExpectations";
 import { getLatestPrice, getLatestSplit } from "@/lib/managers/priceRead";
 import { getLatestDgs10, persistDgs10 } from "@/lib/managers/treasuryRead";
 
@@ -142,55 +137,39 @@ async function main() {
       const sicNum = sicRaw == null ? undefined : Number(sicRaw);
       const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
       const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic);
-      const floor = computeValuationFloor(floorInput);
-      if (!floor || floor.kind !== "floor") {
-        skipped++;
-        intentionallyUnvaluable.add(ticker);
-        continue;
-      }
       // 基本面过期闸:最新 FY 年报距今超阈值(停报/退市/外股 ADR 覆盖不了)→ 抑制,
       // 不拿今天的价配多年前基本面造"陈旧幻觉"verdict。与 price.stale 同类护栏。
-      if (isFundamentalsStale(sec.annual?.[0]?.period_end ?? null, computedAt)) {
+      const fundamentalsStale = isFundamentalsStale(sec.annual?.[0]?.period_end ?? null, computedAt);
+      if (fundamentalsStale) {
         staleFundamentals++;
-        intentionallyUnvaluable.add(ticker);
-        continue;
       }
-      const price = await getLatestPrice(ticker);
-      if (price?.stale) {
-        skipped++;
-        intentionallyUnvaluable.add(ticker);
-        continue;
-      } // 陈旧价(>PRICE_MAX_AGE_DAYS天)不当现价喂 strike-zone/OE-DCF
-      const strikeZone = deriveStrikeZone(floor, price);
-      const oeDcf = deriveOeDcf(floor, floorInput.years, dgs10, price);
-      const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
+      const fetchedPrice = await getLatestPrice(ticker);
+      const priceStale = fetchedPrice?.stale === true;
+      const valuationPrice = priceStale ? null : fetchedPrice;
       const splitCoverageStale = isSplitCoverageStale({
         fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
         latestSplitDate: await getLatestSplit(ticker),
       });
-      // 资本结构护栏:多年回购把股东权益压成深度负值 → 重置价值/护城河不可从资产端评估(Task 3 标记),整条抑制。
-      const capitalStructureDistorted = floor.moat_reading.capital_structure_distorted === true;
       const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
-      const v = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt });
-      if (!v) {
+      const run = runValuation({
+        floorInput,
+        price: valuationPrice,
+        dgs10,
+        guards: {
+          adsSuppressed: false,
+          fundamentalsStale,
+          priceStale,
+          splitCoverageStale,
+          fundamentalsCorrupt,
+        },
+        suppressExpectations: false,
+      });
+      if (!run.verdict) {
         skipped++;
         intentionallyUnvaluable.add(ticker);
         continue;
       }
-      // 反向 DCF 预期层:历史 base-rate 必须来自 FY-only 营收(floorInput.years),不得复用
-      // netIncomeCagr(那是前向引擎的驱动量,改它会动地基)。见 CAGR 准确性硬门。
-      const historicalGrowth = historicalGrowthBaseRate(floorInput.years);
-      const ei = oeDcf.assessable ? oeDcf.expectations_inputs : undefined;
-      // ei.capYears（Task 2 已暴露，= deriveMoatCap(...).capYears，中性/乐观档同一 CAP）随
-      // spread 透传给 deriveExpectations → 优质股（capYears=20）隐含增长自动比基线(10)更低。
-      const expectations = ei
-        ? deriveExpectations({
-            ...ei,
-            price: v.price,
-            historicalGrowth,
-            suppressed: !v.reliable,
-          })
-        : { assessable: false as const, reason: "no_oe_dcf" };
+      const v = run.verdict;
       rows.push({
         ticker,
         verdict_bucket: v.bucket,
@@ -205,8 +184,9 @@ async function main() {
         computed_at: computedAt,
         payload: {
           ...v,
-          expectations,
-          ...(oeDcf.assessable && oeDcf.moatCap ? { moatCap: oeDcf.moatCap } : {}),
+          expectations: run.expectations,
+          methods: run.methods,
+          ...(run.oeDcf?.assessable && run.oeDcf.moatCap ? { moatCap: run.oeDcf.moatCap } : {}),
         },
         updated_at: computedAt,
       });

@@ -15,6 +15,7 @@ import {
   deriveStrikeZone,
   deriveOeDcf,
   reconcileMethods,
+  deriveValuationMethods,
   deriveValuationVerdict,
   pickLatestFredPoint,
 } from "@/lib/valuation";
@@ -72,7 +73,8 @@ async function main() {
     const strikeZone = price ? deriveStrikeZone(floor, price) : undefined;
     const oeDcf = deriveOeDcf(floor, floorInput.years, { value: 4.4, date: "2026-07-15" }, price);
     const reconciliation = strikeZone && oeDcf ? reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price) : undefined;
-    const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation });
+    const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
+    const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, methods });
 
     console.log(`valueFloor(零增长底/share)= ${strikeZone?.epv?.valueFloor}`);
     console.log(`IV(oeDcf neutral per_share)= ${oeDcf?.tiers?.neutral.per_share}`);

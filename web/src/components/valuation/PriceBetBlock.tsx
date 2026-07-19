@@ -1,3 +1,4 @@
+import type { FC } from "react";
 import type { Lang } from "@/lib/nav";
 import type { Tone } from "@/components/entity/types";
 import type { ExpectationsAssessment, ExpectationsTier } from "@/lib/valuation/types";
@@ -24,7 +25,7 @@ export function expectationsBadge(
   return { label: BADGE_LABEL[lang][e.tier], tone: "neutral" };
 }
 
-// ── 估值小节内的「价格在赌什么」块 ───────────────────────────────────────────
+// ── 估值章节内的「价格在赌什么」块 ───────────────────────────────────────────
 const COPY = {
   zh: {
     label: "价格在赌什么",
@@ -41,6 +42,8 @@ const COPY = {
     } as Record<ExpectationsTier, string>,
     capPrefix: "粗略地说，现价要它按历史营收增速再增长约 ",
     capSuffix: " 年，才刚好撑得起。",
+    lowConfidence:
+      "价值带信心不足时仍可对照：这里只说明市场在赌多快，不把它当成「确认便宜」。",
   },
   en: {
     label: "What the price is betting",
@@ -57,17 +60,23 @@ const COPY = {
     } as Record<ExpectationsTier, string>,
     capPrefix: "Roughly, the price needs its historical revenue growth to run about ",
     capSuffix: " more years to hold up.",
+    lowConfidence:
+      "Even when the value band is low-confidence: use this to see what the price assumes — not as a cheapness confirmation.",
   },
 } as const;
 
-export function PriceBetBlock({
-  expectations,
-  lang,
-}: {
+export const PriceBetBlock: FC<{
   expectations: ExpectationsAssessment;
   lang: Lang;
-}) {
-  if (!expectations.assessable || expectations.impliedGrowth == null || expectations.historicalGrowth == null || !expectations.tier) {
+  /** 价值带 reliable=false 时仍展示本块，但加一句「只读预期、不确认便宜」。 */
+  lowConfidence?: boolean;
+}> = ({ expectations, lang, lowConfidence = false }) => {
+  if (
+    !expectations.assessable ||
+    expectations.impliedGrowth == null ||
+    expectations.historicalGrowth == null ||
+    !expectations.tier
+  ) {
     return null;
   }
   const t = COPY[lang];
@@ -83,7 +92,7 @@ export function PriceBetBlock({
   return (
     <div className="mt-4 border-t border-[var(--tt-border)] pt-4">
       <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">{t.label}</p>
-      <p className="mt-1.5 text-sm text-[var(--tt-text)]">
+      <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-text)]">
         {t.sentencePrefix}
         <span className="font-semibold font-mono">{impliedLabel}</span>
         {bounded ? t.outOfRange : ""}
@@ -93,12 +102,15 @@ export function PriceBetBlock({
       </p>
       <p className="mt-1 text-sm text-[var(--tt-muted)]">{t.tierNote[expectations.tier]}</p>
       {expectations.impliedCapYears != null ? (
-        <p className="mt-2 text-xs text-[var(--tt-muted)]">
+        <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
           {t.capPrefix}
           <span className="font-semibold font-mono text-[var(--tt-muted)]">{expectations.impliedCapYears}</span>
           {t.capSuffix}
         </p>
       ) : null}
+      {lowConfidence ? (
+        <p className="mt-2 text-xs leading-relaxed text-[var(--tt-warn)]">{t.lowConfidence}</p>
+      ) : null}
     </div>
   );
-}
+};

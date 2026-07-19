@@ -7,6 +7,8 @@
 **基线：** `origin/db-foundation`（引擎 v2 已产 `buffett_epv.normalized_earnings`=真OE、`growth_value`、Greenwald 合理价头条=`max(AV,EPV)+GV` 区间；macro 层有 DGS10）
 **前序：** `2026-06-22-greenwald-fair-value-headline-design.md`（Spec A 头条，已上线，文末引用本 Spec B）
 
+> **勘误（2026-07-19）：** `coverage` 不等于 Greenwald 成长上限与 OE-DCF 的“夹逼”/对账。`coverage=full` 表示零增长 EPV 与 OE-DCF 均在；夹逼是否可用看 `reconciliation.comparable`。完整定义见[估值编排清晰化设计](2026-07-19-valuation-orchestration-clarity-design.md#32-coverage-新定义非-null-verdict-时)。
+
 ---
 
 ## 0. 为什么做这个（补两法夹逼）

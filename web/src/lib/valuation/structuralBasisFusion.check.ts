@@ -22,6 +22,7 @@ import { computeValuationFloor, conservativeNormalizedForTest } from "./epvFloor
 import { deriveStrikeZone } from "./strikeZone";
 import { deriveOeDcf, reconcileMethods } from "./ownerEarningsDcf";
 import { deriveValuationVerdict, assessReliability, isImplausibleBand, SANE_MARGIN_MAX, S_RELIABLE } from "./deriveValuationVerdict";
+import { deriveValuationMethods } from "./deriveValuationMethods";
 
 function floorOf(r: ReturnType<typeof computeValuationFloor>): ValuationFloor {
   assert.ok(r && "kind" in r && r.kind === "floor", "expected a full floor result");
@@ -45,7 +46,8 @@ function runChain(input: ValuationFloorInput, priceClose: number) {
   const strikeZone = deriveStrikeZone(floor, p);
   const oeDcf = deriveOeDcf(floor, input.years, DGS10, p);
   const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, p);
-  const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation });
+  const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
+  const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, methods });
   return { floor, strikeZone, oeDcf, reconciliation, verdict };
 }
 
