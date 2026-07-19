@@ -7,6 +7,8 @@
 **权威口径来源：** `/Users/junlinzhu/.claude/skills/_shared/value-investing/formulas.md`（§1–§10，三个估值 skill 共用单一真相源）+ `greenwald-valuation` / `buffett-valuation` SKILL.md
 **基线：** `origin/db-foundation`（已含 `web/src/lib/valuation/` v1 引擎、`company_fundamentals_periods` 富表、`getLatestPrice`/`getPriceHistory`）
 
+> **勘误（2026-07-19）：** 运行时代码的折现带为 **9–11%**；本文遗留的 8–10% 表述已过时。编排与口径说明见 [估值编排清晰化计划](../plans/2026-07-19-valuation-orchestration-clarity.md)及其[设计](2026-07-19-valuation-orchestration-clarity-design.md)。
+
 ---
 
 ## 0. 为什么做这个（诊断）
