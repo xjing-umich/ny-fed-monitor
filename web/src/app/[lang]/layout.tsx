@@ -97,8 +97,8 @@ export async function generateMetadata({
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF8F3" },
-    { media: "(prefers-color-scheme: dark)", color: "#16130F" },
+    { media: "(prefers-color-scheme: dark)", color: "#0E1411" },
+    { media: "(prefers-color-scheme: light)", color: "#0E1411" },
   ],
 };
 
@@ -154,7 +154,7 @@ export default async function LangLayout({
       <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

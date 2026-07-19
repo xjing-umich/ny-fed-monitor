@@ -3,15 +3,86 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
 
-/* ── Design system tokens ───────────────────────────────────────────────────── */
-/* LIGHT is the default theme — a FINANCIAL EDITORIAL palette: warm paper, warm   */
-/* ink, hairline rules, and one deep money-green accent (fits "Compounder/复利").  */
-/* The shadcn semantic tokens are the single source of truth; the legacy          */
-/* --tt-* terminal variables are re-mapped onto them so existing inline-style      */
-/* components inherit the new look automatically.                                  */
+/* DARK is the default theme — "The Ledger in the Dark": warm ink-green near-black,
+   semantic data glow, hairlines. Light theme survives as .light opt-in (usable, not polished). */
 :root {
-  /* Surfaces — warm paper background, near-white warm cards */
+  --background:          #0E1411; /* 墨绿近黑，从品牌绿长出 */
+  --foreground:          #EDE7DA;
+  --card:                #151B17;
+  --card-foreground:     #EDE7DA;
+  --popover:             #151B17;
+  --popover-foreground:  #EDE7DA;
+
+  --primary:             #4FBF8A; /* lifted money-green */
+  --primary-foreground:  #0E1A13;
+
+  --secondary:           #1D2420;
+  --secondary-foreground:#DDD5C6;
+  --muted:               #1A201C;
+  --muted-foreground:    #A89C8A;
+  --accent:              #1C2B25;
+  --accent-foreground:   #9FE0BE;
+
+  --destructive:         #D9756A;
+  --positive:            #4FBF8A;
+  --warn:                #D9AF63;
+
+  --border:              #26302A; /* 半透明发丝线的实体等价 */
+  --border-strong:       #3A453D;
+  --input:               #3A453D;
+  --ring:                #4FBF8A;
+  --radius:              0.375rem; /* 6px — 深色上更锐利 */
+
+  /* Ink hierarchy — 三级正文层级，替代 muted/faint 的模糊用法 */
+  --ink-1:               #EDE7DA; /* 正文 */
+  --ink-2:               #A89C8A; /* 辅助 */
+  --ink-3:               #6E6656; /* 仅时间戳/来源 */
+
+  /* Data glow — 全站唯一允许的发光，只服务数据 */
+  --glow-primary:        0 0 24px rgba(79, 191, 138, 0.35);
+  --glow-warn:           0 0 24px rgba(217, 175, 99, 0.30);
+
+  /* Motion */
+  --tt-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --tt-dur: 0.5s;
+
+  /* Sidebar */
+  --sidebar:             #151B17;
+  --sidebar-foreground:  #EDE7DA;
+  --sidebar-primary:     #4FBF8A;
+  --sidebar-primary-foreground: #0E1A13;
+  --sidebar-accent:      #1C2B25;
+  --sidebar-accent-foreground: #9FE0BE;
+  --sidebar-border:      #26302A;
+  --sidebar-ring:        #4FBF8A;
+
+  /* Chart palette — 深色底校色 */
+  --chart-1: #4FBF8A;
+  --chart-2: #D9756A;
+  --chart-3: #D9AF63;
+  --chart-4: #C9BCA6;
+  --chart-5: #BE9468;
+
+  /* Legacy terminal tokens — 名称不变, 映射到深色语义值 */
+  --tt-bg:            var(--background);
+  --tt-panel:         var(--card);
+  --tt-panel-2:       var(--muted);
+  --tt-surface:       var(--accent);
+  --tt-border:        var(--border);
+  --tt-border-strong: var(--border-strong);
+  --tt-text:          var(--ink-1);
+  --tt-muted:         var(--ink-2);
+  --tt-faint:         var(--ink-3);
+  --tt-accent:        var(--primary);
+  --tt-positive:      var(--positive);
+  --tt-negative:      var(--destructive);
+  --tt-warn:          var(--warn);
+}
+
+/* ── Light theme (opt-in) — original "financial editorial": warm paper, warm ink ── */
+.light {
   --background:          #FAF8F3; /* warm off-white "paper" */
   --foreground:          #1C1917; /* warm near-black "ink" */
   --card:                #FCFBF7; /* warm near-white surface */
@@ -19,11 +90,9 @@
   --popover:             #FCFBF7;
   --popover-foreground:  #1C1917;
 
-  /* One rich accent — deep money green (compounding) */
   --primary:             #1B5E3F;
   --primary-foreground:  #FAF8F3; /* paper on green */
 
-  /* Quiet secondary / muted surfaces — warm, not slate */
   --secondary:           #F0ECE2;
   --secondary-foreground:#2C2722;
   --muted:               #F2EEE4;
@@ -31,23 +100,26 @@
   --accent:              #ECF1ED; /* soft green-tinted hover/selected surface */
   --accent-foreground:   #1B5E3F;
 
-  /* Semantic state colors — money green / oxblood / muted gold */
   --destructive:         #8A2B22; /* negative — oxblood/burgundy */
   --positive:            #1B7A4B; /* positive — green */
   --warn:                #9A6B1E; /* warn — muted gold */
 
-  /* Lines & controls — warm HAIRLINE rules */
   --border:              #E7E1D5; /* warm, subtle hairline */
   --border-strong:       #D8D0C0;
   --input:               #D8D0C0;
   --ring:                #1B5E3F;
   --radius:              0.4375rem; /* ~7px — quiet, editorial */
 
-  /* Motion — 全站统一过渡曲线/时长(动效稀疏化的单一真相) */
+  --ink-1: #1C1917;
+  --ink-2: #6B6157;
+  --ink-3: #998F82;
+  --glow-primary: none;
+  --glow-warn: none;
+
+  /* Motion */
   --tt-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
   --tt-dur: 0.5s;
 
-  /* Sidebar */
   --sidebar:             #FCFBF7;
   --sidebar-foreground:  #1C1917;
   --sidebar-primary:     #1B5E3F;
@@ -57,82 +129,22 @@
   --sidebar-border:      #E7E1D5;
   --sidebar-ring:        #1B5E3F;
 
-  /* Chart palette — green, oxblood, gold, ink, warm clay */
   --chart-1: #1B5E3F;
   --chart-2: #8A2B22;
   --chart-3: #9A6B1E;
   --chart-4: #4A4039;
   --chart-5: #A8794E;
 
-  /* ── Legacy terminal tokens → semantic tokens (single source of truth) ──── */
+  /* Legacy terminal tokens inherit the light semantic values */
   --tt-bg:            var(--background);
   --tt-panel:         var(--card);
   --tt-panel-2:       var(--muted);
   --tt-surface:       var(--accent); /* soft hover/selected surface (rows, nav) */
   --tt-border:        var(--border);
   --tt-border-strong: var(--border-strong);
-  --tt-text:          var(--foreground);
-  --tt-muted:         var(--muted-foreground);
+  --tt-text:          var(--ink-1);
+  --tt-muted:         var(--ink-2);
   --tt-faint:         #998F82; /* warm faint tertiary text */
-  --tt-accent:        var(--primary);
-  --tt-positive:      var(--positive);
-  --tt-negative:      var(--destructive);
-  --tt-warn:          var(--warn);
-}
-
-/* ── Dark theme (opt-in) — complementary "ink paper": warm dark, paper text ───── */
-.dark {
-  --background:          #16130F; /* warm near-black "ink paper" */
-  --foreground:          #EDE7DA; /* warm paper text */
-  --card:                #1E1A15;
-  --card-foreground:     #EDE7DA;
-  --popover:             #1E1A15;
-  --popover-foreground:  #EDE7DA;
-
-  --primary:             #4FBF8A; /* lifted money-green for dark surfaces */
-  --primary-foreground:  #0E1A13;
-
-  --secondary:           #26211B;
-  --secondary-foreground:#DDD5C6;
-  --muted:               #221E18;
-  --muted-foreground:    #A89C8A;
-  --accent:              #20302A;
-  --accent-foreground:   #9FE0BE;
-
-  --destructive:         #D9756A; /* warm oxblood, lifted */
-  --positive:            #4FBF8A;
-  --warn:                #D9AF63;
-
-  --border:              #2E281F;
-  --border-strong:       #403828;
-  --input:               #403828;
-  --ring:                #4FBF8A;
-
-  --sidebar:             #1E1A15;
-  --sidebar-foreground:  #EDE7DA;
-  --sidebar-primary:     #4FBF8A;
-  --sidebar-primary-foreground: #0E1A13;
-  --sidebar-accent:      #20302A;
-  --sidebar-accent-foreground: #9FE0BE;
-  --sidebar-border:      #2E281F;
-  --sidebar-ring:        #4FBF8A;
-
-  --chart-1: #4FBF8A;
-  --chart-2: #D9756A;
-  --chart-3: #D9AF63;
-  --chart-4: #C9BCA6;
-  --chart-5: #BE9468;
-
-  /* Legacy terminal tokens inherit the dark semantic values */
-  --tt-bg:            var(--background);
-  --tt-panel:         var(--card);
-  --tt-panel-2:       var(--muted);
-  --tt-surface:       var(--accent); /* soft hover/selected surface (rows, nav) */
-  --tt-border:        var(--border);
-  --tt-border-strong: var(--border-strong);
-  --tt-text:          var(--foreground);
-  --tt-muted:         var(--muted-foreground);
-  --tt-faint:         #7A715F;
   --tt-accent:        var(--primary);
   --tt-positive:      var(--positive);
   --tt-negative:      var(--destructive);

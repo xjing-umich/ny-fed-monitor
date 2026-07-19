@@ -130,7 +130,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
               />
             }
           />
-          <p className="mt-3 text-xs text-[var(--tt-faint)]">
+          <p className="mt-3 text-xs text-[var(--tt-muted)]">
             {movesFootnote(lang, effective, lagged)}
           </p>
         </div>

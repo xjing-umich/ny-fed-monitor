@@ -42,7 +42,7 @@ export default function LocaleNotFound() {
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <Link
           href={localePath(lang, "")}
-          className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-[var(--tt-accent)] text-white no-underline transition-opacity hover:opacity-90"
+          className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-[var(--tt-accent)] text-[var(--primary-foreground)] no-underline transition-opacity hover:opacity-90"
         >
           {t.home}
         </Link>

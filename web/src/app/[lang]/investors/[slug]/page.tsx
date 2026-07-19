@@ -34,6 +34,7 @@ import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONE
 import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
 import { LearnLink } from "@/components/common/LearnLink";
 import { SectionHeading } from "@/components/common/SectionHeading";
+import { Display } from "@/components/common/Display";
 
 const MAX_HOLDINGS = 25;
 
@@ -238,7 +239,7 @@ function HoldingsTable({
         />
       </div>
       {truncated && (
-        <p className="mt-2 text-xs text-[var(--tt-faint)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
+        <p className="mt-2 text-xs text-[var(--tt-muted)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
       )}
 
       {exits.length > 0 && (
@@ -332,6 +333,10 @@ export default async function InvestorSlugPage({
   // Verdict
   const buying = longChanges.filter((c) => c.kind === "new" || c.kind === "increased").length;
   const selling = longChanges.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
+  // 本季动作三计数(纯 JS 派生自已加载的 longChanges, 零新增 IO; 口径与 verdict 一致, 长仓 only)
+  const added = longChanges.filter((c) => c.kind === "new").length;
+  const increased = longChanges.filter((c) => c.kind === "increased").length;
+  const exited = longChanges.filter((c) => c.kind === "exited").length;
   let verdict: { label: string; tone: Tone } | undefined;
   if (longChanges.length > 0 && prior) {
     if (buying > selling) {
@@ -514,6 +519,23 @@ export default async function InvestorSlugPage({
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
         <>
+          {/* 本季动作摘要 — masthead/key-facts 之下的第一个重音时刻；计数纯 JS 派生，零新增数据请求；与 verdict 同口径 gating：无 prior 或无变化时不显示，避免 0/0/0 假精确 */}
+          {prior && longChanges.length > 0 && (
+            <div className="grid grid-cols-3 gap-4 border-y border-[var(--tt-border)] py-6">
+              {[
+                { label: lang === "zh" ? "新建" : "New", value: added, color: "var(--tt-positive)" },
+                { label: lang === "zh" ? "加仓" : "Added", value: increased, color: "var(--ink-1)" },
+                { label: lang === "zh" ? "清仓" : "Exited", value: exited, color: "var(--tt-negative)" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="tt-label">{s.label}</p>
+                  <Display size="2xl" className="mt-2" glow={s.label === "新建" || s.label === "New"}>
+                    <span style={{ color: s.color }}>{s.value}</span>
+                  </Display>
+                </div>
+              ))}
+            </div>
+          )}
           {posture.cheap.length > 0 && (
             <section aria-label={lang === "zh" ? "估值姿态" : "Valuation posture"}>
               <SectionHeading

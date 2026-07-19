@@ -11,7 +11,7 @@ export const OG_SIZE = { width: 1200, height: 630 } as const;
 export const OG_CONTENT_TYPE = "image/png";
 
 // Dark theme (matches the site's dark palette in globals.css).
-const BG = "#16130F"; // warm near-black ground
+const BG = "#0E1411"; // dark green-black ground
 const FG = "#EDE7DA"; // paper text
 const GREEN = "#4FBF8A"; // lifted money-green for dark surfaces
 const MUTED = "#A89C8A"; // secondary text

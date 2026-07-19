@@ -93,7 +93,7 @@ export function PriceBetBlock({
       </p>
       <p className="mt-1 text-sm text-[var(--tt-muted)]">{t.tierNote[expectations.tier]}</p>
       {expectations.impliedCapYears != null ? (
-        <p className="mt-2 text-xs text-[var(--tt-faint)]">
+        <p className="mt-2 text-xs text-[var(--tt-muted)]">
           {t.capPrefix}
           <span className="font-semibold font-mono text-[var(--tt-muted)]">{expectations.impliedCapYears}</span>
           {t.capSuffix}

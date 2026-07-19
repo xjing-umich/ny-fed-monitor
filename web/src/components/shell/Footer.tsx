@@ -76,7 +76,7 @@ export default function Footer({ lang }: { lang: Lang }) {
               Compounder
             </span>
           </span>
-          <span className="flex-1 min-w-[200px] text-[11px] text-[var(--tt-faint)]">
+          <span className="flex-1 min-w-[200px] text-[11px] text-[var(--tt-muted)]">
             © {year} Compounder · {c.rights} {c.notAffiliated} {c.noAdvice}
           </span>
           <ScrollToTop label={c.backToTop} />

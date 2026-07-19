@@ -152,7 +152,7 @@ export default async function ScreenerPage({
 
       <ScreenerTable lang={lang} rows={sortedRows} />
 
-      <p className="mt-8 text-xs leading-relaxed text-[var(--tt-faint)]">
+      <p className="mt-8 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh
           ? `估值${asOf ? `截至 ${asOf}` : "刷新中"} · 方法：保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼。安全边际只是现价与保守价值带的距离，不含质量或时机判断；仅供参考，非投资建议。`
           : `Valuation ${asOf ? `as of ${asOf}` : "refreshing"} · method: conservative Greenwald value band + Owner-Earnings DCF. Margin of safety is the distance from the conservative value band, not a quality or timing judgment. For reference only, not investment advice.`}

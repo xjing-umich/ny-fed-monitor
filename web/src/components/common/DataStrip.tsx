@@ -24,7 +24,10 @@ function Tile({
   const inner = (
     <>
       <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-faint)]">{label}</span>
-      <span className="font-mono text-lg font-medium tabular-nums leading-none text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
+      <span
+        className="font-mono text-2xl font-medium tabular-nums leading-none text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]"
+        style={{ textShadow: "var(--glow-primary)" }}
+      >
         {value}
       </span>
       {sub ? <span className="font-mono text-[10px] text-[var(--tt-faint)]">{sub}</span> : null}
@@ -52,7 +55,7 @@ export function DataStrip({
 }): React.ReactElement {
   const t = COPY[lang];
   return (
-    <section className="mt-12 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-1">
+    <section className="mt-12 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-2">
       <Tile
         label={t.consensus}
         value={consensusCount > 0 ? String(consensusCount) : "—"}

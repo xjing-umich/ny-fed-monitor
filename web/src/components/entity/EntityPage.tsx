@@ -101,7 +101,7 @@ export function EntityPage({
       {/* ⑤ Source footer + optional compliance line (kept out of masthead to free the standfirst) */}
       <SourceFooter lang={lang} sources={sources} />
       {disclaimer && (
-        <p className="-mt-4 max-w-3xl text-xs leading-relaxed text-[var(--tt-faint)]">
+        <p className="-mt-4 max-w-3xl text-xs leading-relaxed text-[var(--tt-muted)]">
           {disclaimer}
         </p>
       )}
