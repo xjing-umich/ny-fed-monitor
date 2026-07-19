@@ -1,6 +1,7 @@
+import type { FC } from "react";
 import type { Lang } from "@/lib/nav";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
-import { deriveValuationVerdict } from "@/lib/valuation";
+import { deriveValuationMethods, deriveValuationVerdict, type ValuationVerdict } from "@/lib/valuation";
 import { isNetNetAssetFloor, isNetNetBuy } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation, MoatCapAssessment } from "@/lib/valuation/types";
 import { fmtValueBand } from "@/lib/format";
@@ -80,10 +81,19 @@ const COPY = {
     cheaper: "cheaper",
     pricier: "pricier",
     valueEstimate: (r: string) => `${r} value estimate`,
-    capexRamp: "Capex doubled within two years: maintenance is floored then capped at D&A (OE may look optimistic); growth value is closed.",
+    capexRamp: "Capex doubled within two years: maintenance is floored then capped at D&A (OE may look optimistic); Greenwald growth value is closed — growth credit stays in the owner-earnings DCF only.",
+    capexRampShort: "Capex doubled in two years, so maintenance is hard to pin down — read the band conservatively.",
+    earningsDeclinedShort: "Recent earnings are below the multi-year average, so the band uses the lower run-rate.",
+    modelSensitiveShort: "The DCF is sensitive to its staging assumptions — treat the band as a range, not a point.",
+    highLeverageShort: "High financial leverage: the equity value here is a degraded approximation.",
+    lowConfidenceFallback: "Inputs look fragile this year — we won't mark this as confirmed cheap.",
+    bandHowToRead: "The middle figure is the main read. The right end is the optimistic case under the same conservative caps — not an absolute ceiling.",
+    legendFloor: "Zero-growth floor",
+    legendIv: "Central IV",
+    legendHi: "Optimistic top",
     assetBelow: (ps: string) => `Price is at or below the reproducible tangible asset base (${ps} / sh) — a rarer, harder floor.`,
     modelCautions: "Model cautions",
-    methodDisclaimer: "Zero-growth intrinsic ranges and a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
+    methodDisclaimer: "A conservative intrinsic-value band (zero-growth floor to growth-capped DCF) plus a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
     priceUnavailable: "No usable market price is available, so this page does not place price on the value gauge.",
     priceAsOf: "Price as of",
     mayBeStale: "may be stale",
@@ -96,7 +106,6 @@ const COPY = {
     perSh: "/ sh",
     ivHeadline: "growth-anchored intrinsic value",
     zeroGrowthHeadline: "zero-growth intrinsic value",
-    lowConfidence: "This year's numbers read low-confidence, so this isn't a strike-zone trigger.",
     netNet: (ps: string) =>
       `⚑ Price is below net current asset value (${ps}/share) — a Graham "net-net". Historically rare and usually a sign of business distress; beware the value trap.`,
     netNetBuy: (ps: string) =>
@@ -118,10 +127,19 @@ const COPY = {
     cheaper: "更便宜",
     pricier: "更贵",
     valueEstimate: (r: string) => `${r} 价值估计`,
-    capexRamp: "资本开支两年翻倍：维持性 CapEx 下限后按 D&A 封顶（OE 可能偏乐观）；增长价值已关闭。",
+    capexRamp: "资本开支两年翻倍：维持性 CapEx 下限后按 D&A 封顶（OE 可能偏乐观）；Greenwald 增长价值已关闭 — 成长只留在所有者盈利 DCF。",
+    capexRampShort: "资本开支两年翻倍，维持性投入难分清，价值带按保守口径读。",
+    earningsDeclinedShort: "最新盈利低于多年均值，价值带按更低的运行率计。",
+    modelSensitiveShort: "DCF 对分档假设敏感 — 当作区间读，不要当成一个点。",
+    highLeverageShort: "金融股高杠杆：这里的股权价值是降级近似。",
+    lowConfidenceFallback: "今年输入偏脆，不把便宜当成确认信号。",
+    bandHowToRead: "中间是主读数；右侧上沿是同一套保守假设下的乐观档，不是绝对上限。",
+    legendFloor: "零增长底",
+    legendIv: "中枢 IV",
+    legendHi: "乐观上沿",
     assetBelow: (ps: string) => `现价已等于或低于可重置的有形资产基础（${ps} / 股）— 一道更罕见、更硬的地板。`,
     modelCautions: "模型警示",
-    methodDisclaimer: "零增长内在价值区间加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
+    methodDisclaimer: "保守内在价值带（零增长底到增速封顶的 DCF）加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
     priceUnavailable: "缺少可用市场价格，因此不把现价放进价值带位置条。",
     priceAsOf: "价格截至",
     mayBeStale: "可能已过时",
@@ -139,9 +157,24 @@ const COPY = {
     buybackOffsetsSbc: "所示年度的回购大体只抵消了股权激励（SBC）造成的稀释 — 应视为维持股本、而非净额回馈股东。",
     ivHeadline: "含增长中枢内在价值",
     zeroGrowthHeadline: "零增长内在价值",
-    lowConfidence: "当年数字低信心，不触发击球区。",
   },
 } as const;
+
+/** 首屏可见的低信心原因（最多 2 条）；折叠区保留完整模型警示。 */
+function confidenceCallouts(
+  floor: ValuationFloor,
+  oeDcf: OeDcfAssessment | undefined,
+  lang: Lang,
+): string[] {
+  const t = COPY[lang];
+  const out: string[] = [];
+  if (floor.ai_capex_distortion_warning) out.push(t.capexRampShort);
+  if (oeDcf?.declined) out.push(t.earningsDeclinedShort);
+  if (oeDcf?.diagnostics?.quick_check_flag) out.push(t.modelSensitiveShort);
+  if (floor.high_leverage_warning && floor.is_financial) out.push(t.highLeverageShort);
+  if (out.length === 0) out.push(t.lowConfidenceFallback);
+  return out.slice(0, 2);
+}
 
 // 假设明示行:头条 IV 的依据一次说清 —— 增长率来源(历史/基本面较小值·护城河封顶)、
 // 护城河年数、折现率、零增长下行(F)。无中枢 IV(单灯兜底)时只显零增长口径,不虚构增长假设。
@@ -253,20 +286,35 @@ function LampMethod({ lamp, lang }: { lamp: EpvLamp; lang: Lang }) {
 }
 
 // Compact growth-value provenance for the folded method section (assumptions externalized).
+// gated_to_zero 按结构化原因本地化（AI-hog / moat_via_growth / 无护城河），禁止写死错因。
 function growthSummary(floor: ValuationFloor, lang: Lang): string {
   const gv = floor.growth_value;
-  if (lang === "zh") {
-    if (!gv.assessable) return `增长价值无法评估${gv.not_assessable_reason ? ` — ${gv.not_assessable_reason}` : "。"}`;
-    if (gv.gated_to_zero) return "增长价值被闸至零 — 无护城河 / ROIIC ≤ WACC，故不计入任何增长价值。";
-    const dur = gv.duration_years != null ? `${gv.duration_years} 年` : "建模窗口期";
-    const roiic = gv.roiic != null ? `ROIIC ≈ ${pct(gv.roiic)}` : "建模 ROIIC";
-    return `增长价值：若护城河在 ${dur} 内维持于 ${roiic}，则 ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / 股（中性 ${perShare(gv.per_share.neutral)}）。保守估计，非预测。`;
+  const zh = lang === "zh";
+  if (!gv.assessable) {
+    return zh
+      ? `增长价值无法评估${gv.not_assessable_reason ? ` — ${gv.not_assessable_reason}` : "。"}`
+      : `Growth value not assessable${gv.not_assessable_reason ? ` — ${gv.not_assessable_reason}` : "."}`;
   }
-  if (!gv.assessable) return `Growth value not assessable${gv.not_assessable_reason ? ` — ${gv.not_assessable_reason}` : "."}`;
-  if (gv.gated_to_zero) return "Growth value gated to zero — no moat / ROIIC ≤ WACC, so no growth value is credited.";
-  const dur = gv.duration_years != null ? `${gv.duration_years} yr` : "the modeled window";
-  const roiic = gv.roiic != null ? `ROIIC ≈ ${pct(gv.roiic)}` : "the modeled ROIIC";
-  return `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (neutral ${perShare(gv.per_share.neutral)}). Conservative, not a forecast.`;
+  if (gv.gated_to_zero) {
+    if (floor.ai_capex_distortion_warning) {
+      return zh
+        ? "增长价值被闸至零 — 资本开支两年翻倍（AI-hog），成长只留在所有者盈利 DCF，避免双重计入。"
+        : "Growth value gated to zero — capex doubled within two years (AI-hog); growth credit stays in the owner-earnings DCF only.";
+    }
+    if (floor.moat_reading.moat_via_growth) {
+      return zh
+        ? "增长价值被闸至零 — 护城河来自盈利增长旁路，成长只留在所有者盈利 DCF。"
+        : "Growth value gated to zero — franchise via earnings-growth bypass; growth credit stays in the owner-earnings DCF only.";
+    }
+    return zh
+      ? "增长价值被闸至零 — 无护城河或 ROIIC ≤ WACC，故不计入增长价值。"
+      : "Growth value gated to zero — no moat or ROIIC ≤ WACC, so no growth value is credited.";
+  }
+  const dur = gv.duration_years != null ? (zh ? `${gv.duration_years} 年` : `${gv.duration_years} yr`) : zh ? "建模窗口期" : "the modeled window";
+  const roiic = gv.roiic != null ? `ROIIC ≈ ${pct(gv.roiic)}` : zh ? "建模 ROIIC" : "the modeled ROIIC";
+  return zh
+    ? `增长价值：若护城河在 ${dur} 内维持于 ${roiic}，则 ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / 股（中性 ${perShare(gv.per_share.neutral)}）。保守估计，非预测。`
+    : `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (neutral ${perShare(gv.per_share.neutral)}). Conservative, not a forecast.`;
 }
 
 // moat → 竞争优势期（CAP，Phase 2）披露：仅 grade!=="none" 渲染。文案在组件内按 locale 构建
@@ -300,6 +348,7 @@ function ValueSpine({
   ticker,
   lang,
   showStatus = true,
+  verdict: suppliedVerdict,
 }: {
   floor: ValuationFloor;
   sz: StrikeZoneAssessment;
@@ -311,6 +360,8 @@ function ValueSpine({
   /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 Fraunces
    *  标题时传 false, 避免与标题重复 —— 位置带与句子仍留在卡内。 */
   showStatus?: boolean;
+  /** undefined 保留遗留自算；null 或对象使用编排层的权威结论。 */
+  verdict?: ValuationVerdict | null;
 }) {
   const t = COPY[lang];
   const epv = sz.epv;
@@ -319,14 +370,23 @@ function ValueSpine({
 
   // Single source of truth: bucket + range come from the shared pure verdict (extracted from
   // this very logic), so the card and the investor-page overlay can never drift apart.
-  const verdict = deriveValuationVerdict({ floor, strikeZone: sz, oeDcf, reconciliation });
+  const verdict =
+    suppliedVerdict === undefined
+      ? deriveValuationVerdict({
+          floor,
+          strikeZone: sz,
+          oeDcf,
+          reconciliation,
+          methods: deriveValuationMethods({ floor, strikeZone: sz, oeDcf }),
+        })
+      : suppliedVerdict;
   if (!verdict) return null;
 
-  const oeOk = oeDcf?.assessable && finitePositive(oeDcf.per_share_low) && finitePositive(oeDcf.per_share_high);
+  const oeOk = verdict.methods.oeDcf;
   const conservative = oeOk ? { lo: oeDcf!.per_share_low!, hi: oeDcf!.per_share_high! } : null;
   const rangeLo = verdict.rangeLo;
   const rangeHi = verdict.rangeHi;
-  const bothMethods = !!conservative && !!epv.ceilings;
+  const bothMethods = verdict.methods.oeDcf && verdict.methods.greenwaldGrowthCeilings;
   const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
   // Growth-anchored intrinsic value (headline number) — mirrors deriveValuationVerdict's own
@@ -339,6 +399,8 @@ function ValueSpine({
   const headline = hasIv ? IV! : rangeLo;
 
   const bucket = verdict.bucket;
+  // OE-DCF 可评估但 Greenwald GV 被闸（如 AI-hog）→ 仍是「含增长价值带」，勿写成单灯一项估计。
+  const hasGrowthBand = !!conservative;
   const onMethods = bothMethods ? t.bothMethods : t.thisMethod;
 
   const status = bucket === "below" ? t.statusBelow : bucket === "within" ? t.statusWithin : t.statusAbove;
@@ -347,14 +409,24 @@ function ValueSpine({
   const who = issuer ? `${issuer}${ticker ? (lang === "zh" ? `（${ticker}）` : ` (${ticker})`) : ""}${lang === "zh" ? "：" : ": "}` : "";
   const valueRange = `${fmtValueBand(rangeLo, rangeHi, usd0)} ${t.perSh}`;
   const asOf = sz.price?.date ? (lang === "zh" ? `（价格 ${usd0(price)} 截至 ${sz.price.date}）` : ` (price ${usd0(price)} as of ${sz.price.date})`) : "";
+  const posZh =
+    bucket === "below" ? "低于" : bucket === "within" ? "落在" : "高于";
+  const posEn =
+    bucket === "below" ? "below" : bucket === "within" ? "inside" : "above";
   const sentence =
     lang === "zh"
       ? bothMethods
         ? `${who}两种方法为该业务估值 — 一为保守的所有者盈利 DCF，一为计入增长的 Greenwald 估计，${valueRange}。今日价格${bucket === "below" ? "低于二者" : bucket === "within" ? "落在二者之间" : "高于二者"}${asOf}。`
-        : `${who}一项保守的盈利能力估计，${valueRange}；今日价格${bucket === "below" ? "低于" : bucket === "within" ? "落在其中" : "高于"}它${asOf}。`
+        : hasGrowthBand && hasIv
+          ? `${who}保守价值带 ${valueRange}（零增长底到增速封顶的乐观上沿），中枢约 ${usd0(IV)}。今日价格${bucket === "within" ? "落在这条带内" : `${posZh}这条带`}${asOf}。`
+          : `${who}一项保守的盈利能力估计，${valueRange}；今日价格${posZh}${bucket === "within" ? "其中" : "它"}${asOf}。`
       : bothMethods
         ? `${who}Two methods value the business — a conservative owner-earnings DCF and a growth-credited Greenwald estimate, ${valueRange}. Today’s price sits ${bucket === "below" ? "below both" : bucket === "within" ? "inside both" : "above both"}${asOf}.`
-        : `${who}A conservative earnings-power estimate, ${valueRange}; today’s price sits ${bucket === "below" ? "below" : bucket === "within" ? "inside" : "above"} it${asOf}.`;
+        : hasGrowthBand && hasIv
+          ? `${who}A conservative value band ${valueRange} (zero-growth floor to growth-capped optimistic top); central read about ${usd0(IV)}. Today’s price sits ${posEn} that band${asOf}.`
+          : `${who}A conservative earnings-power estimate, ${valueRange}; today’s price sits ${posEn} it${asOf}.`;
+
+  const callouts = !verdict.reliable ? confidenceCallouts(floor, oeDcf, lang) : [];
 
   // gauge: three categorical zones (cheaper · fair · pricier); marker placed within the
   // active zone by how far the price runs through the value range. The below/within split
@@ -398,8 +470,8 @@ function ValueSpine({
       {/* neutral cheaper → pricier gauge — instrument-dial signature render:
           击球区段绿底描边 + 发光价格游标 + Display 大号读数。 */}
       <div>
-        <div className="relative pt-14">
-          <div className="flex h-7 overflow-hidden rounded-md">
+        <div className="relative pt-12 sm:pt-14">
+          <div className="flex h-8 overflow-hidden rounded-md sm:h-7">
             {zones.map((z) => {
               const active = z.key === bucket;
               // 击球区段(below=安全边际,与 deriveValuationVerdict.inStrikeZone 同侧):
@@ -408,7 +480,7 @@ function ValueSpine({
               return (
                 <div
                   key={z.key}
-                  className="flex flex-1 items-center justify-center text-[10px]"
+                  className="flex flex-1 items-center justify-center px-0.5 text-[10px] leading-tight sm:text-[11px]"
                   style={{
                     backgroundColor: strike
                       ? "color-mix(in srgb, var(--tt-positive) 15%, transparent)"
@@ -432,7 +504,7 @@ function ValueSpine({
           {/* IV marker — the below/within boundary; only drawn when a growth-anchored IV exists. */}
           {hasIv ? (
             <div
-              className="absolute bottom-0 top-12 w-px border-l border-dashed border-[var(--tt-faint)]"
+              className="absolute bottom-0 top-10 w-px border-l border-dashed border-[var(--tt-faint)] sm:top-12"
               style={{ left: "33%" }}
               title={`IV ${perShare(IV)}`}
             />
@@ -440,7 +512,7 @@ function ValueSpine({
           {/* price cursor — 全站唯一 glow(box-shadow: var(--glow-primary))落点;
               动效白名单:仅 left 过渡(var(--tt-dur) var(--tt-ease)),无循环/关键帧。 */}
           <div
-            className="absolute bottom-0 top-12 w-0.5 bg-[var(--tt-accent)]"
+            className="absolute bottom-0 top-10 w-0.5 bg-[var(--tt-accent)] sm:top-12"
             style={{
               left: `${markerPct}%`,
               boxShadow: "var(--glow-primary)",
@@ -451,30 +523,57 @@ function ValueSpine({
           {/* 价格读数:Display xl 刻度盘读数窗,跟随游标;max/min 钳制防贴边溢出。 */}
           <span
             className="absolute top-0 -translate-x-1/2"
-            style={{ left: `max(5.5rem, min(calc(100% - 5.5rem), ${markerPct}%))` }}
+            style={{ left: `max(4.5rem, min(calc(100% - 4.5rem), ${markerPct}%))` }}
           >
             <Display as="span" size="xl">{usd0(price)}</Display>
           </span>
         </div>
-        <div className="mt-1 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
+        <div className="mt-1.5 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
           <span>{t.cheaper}</span>
-          <span>
-            {hasIv
-              ? `${usd0(rangeLo)} ── IV ${usd0(IV)} ── ${usd0(rangeHi)}`
-              : t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}
-          </span>
           <span>{t.pricier}</span>
         </div>
+        {/* 三锚点图例：H5 三列等宽，避免一条长破折号在窄屏挤成一团。 */}
+        {hasIv ? (
+          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendFloor}</p>
+              <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeLo)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendIv}</p>
+              <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums text-[var(--tt-text)] sm:text-sm">{usd0(IV)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendHi}</p>
+              <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeHi)}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-2 text-center font-mono text-[11px] text-[var(--tt-faint)]">
+            {t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}
+          </p>
+        )}
       </div>
 
-      <p className="text-sm text-[var(--tt-text)]">{sentence}</p>
+      <p className="text-sm leading-relaxed text-[var(--tt-text)]">{sentence}</p>
+
+      {/* 首屏可读：价值带怎么读 + 低信心具体原因（不进折叠）。 */}
+      {hasIv ? <p className="text-sm leading-relaxed text-[var(--tt-muted)]">{t.bandHowToRead}</p> : null}
+      {callouts.length > 0 ? (
+        <ul className="space-y-1.5 border-l-2 border-[color-mix(in_srgb,var(--tt-warn)_55%,transparent)] pl-3">
+          {callouts.map((line) => (
+            <li key={line} className="text-sm leading-relaxed text-[var(--tt-warn)]">
+              {line}
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {/* assumptions — what the headline IV rests on: growth source, moat CAP, discount, and
           the zero-growth downside if growth doesn't show up. */}
-      <p className="text-[10px] text-[var(--tt-muted)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>
-      {!verdict.reliable ? <p className="text-[10px] text-[var(--tt-warn)]">{t.lowConfidence}</p> : null}
+      <p className="text-xs leading-relaxed text-[var(--tt-muted)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>
 
-      <p className="text-[10px] text-[var(--tt-faint)]">
+      <p className="text-[11px] leading-relaxed text-[var(--tt-faint)]">
         {t.priceAsOf} {sz.price.date}
         {sz.price.source ? ` · ${sz.price.source}` : ""}
         {sz.stale ? ` · ${t.mayBeStale}` : ""}
@@ -607,26 +706,29 @@ function MethodDetails({
   );
 }
 
-export function EarningsPowerFloorCard({
-  floor,
-  strikeZone,
-  oeDcf,
-  reconciliation,
-  issuer,
-  ticker,
-  lang,
-  showStatus = true,
-}: {
+export const EarningsPowerFloorCard: FC<{
   floor: ValuationFloor | PerShareUnavailable | undefined;
   strikeZone?: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
+  /** `undefined` keeps legacy self-derivation; `null` suppresses the value spine. */
+  verdict?: ValuationVerdict | null;
   issuer?: string;
   ticker?: string;
   lang: Lang;
   /** false → 卡内不渲染结论状态行(个股页把结论上提到区块 Fraunces 标题)。 */
   showStatus?: boolean;
-}) {
+}> = ({
+  floor,
+  strikeZone,
+  oeDcf,
+  reconciliation,
+  verdict,
+  issuer,
+  ticker,
+  lang,
+  showStatus = true,
+}) => {
   if (!floor) return null;
   const t = COPY[lang];
   if (floor.kind === "per_share_unavailable") {
@@ -643,12 +745,12 @@ export function EarningsPowerFloorCard({
     );
   }
 
-  const hasSpine = !!strikeZone?.epv && !strikeZone.currencyMismatch;
+  const hasSpine = verdict !== null && !!strikeZone?.epv && !strikeZone.currencyMismatch;
 
   return (
     <div className="space-y-3">
       {hasSpine ? (
-        <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} />
+        <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} />
       ) : (
         <CompactFloor
           suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
@@ -659,4 +761,4 @@ export function EarningsPowerFloorCard({
       <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} />
     </div>
   );
-}
+};
