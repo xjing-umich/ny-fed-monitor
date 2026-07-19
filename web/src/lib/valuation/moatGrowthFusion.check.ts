@@ -14,6 +14,7 @@ import { computeValuationFloor } from "./epvFloor";
 import { deriveStrikeZone } from "./strikeZone";
 import { deriveOeDcf, reconcileMethods, GROWTH_CAP_FRANCHISE, GROWTH_CAP_MODERATE, GROWTH_CAP_NONE } from "./ownerEarningsDcf";
 import { deriveValuationVerdict, assessReliability, isImplausibleBand } from "./deriveValuationVerdict";
+import { deriveValuationMethods } from "./deriveValuationMethods";
 import { CAP_STRONG, CAP_NONE, isFinancialSic } from "./moatCap";
 
 function floorOf(r: ReturnType<typeof computeValuationFloor>): ValuationFloor {
@@ -38,7 +39,8 @@ function runChain(input: ValuationFloorInput, priceClose: number) {
   const strikeZone = deriveStrikeZone(floor, p);
   const oeDcf = deriveOeDcf(floor, input.years, DGS10, p);
   const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, p);
-  const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation });
+  const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
+  const verdict = deriveValuationVerdict({ floor, strikeZone, oeDcf, reconciliation, methods });
   return { floor, strikeZone, oeDcf, reconciliation, verdict };
 }
 

@@ -19,6 +19,7 @@ import type {
   ValuationFloor,
   ValuePosition,
 } from "./types";
+import type { ValuationMethods } from "./deriveValuationMethods";
 import { isNetNetAssetFloor, isNetNetBuy } from "./netNet";
 
 export type VerdictBucket = "below" | "within" | "above";
@@ -39,8 +40,10 @@ export type ValuationVerdict = {
   priceDate: string;
   /** 安全边际 %：有中枢 IV 时 = (IV−price)/IV（含增长中枢锚）；单灯退回 (valueFloor−price)/valueFloor（零增长底锚，今天行为不变）。仅 below/strike zone 有意义；分母≤0 → null。 */
   marginPct: number | null;
-  /** full=两法夹逼 / single_lamp=仅单法（金融单灯或缺一法）。 */
+  /** 覆盖度：full=零增长 EPV 与 OE-DCF 均可用；single_lamp=缺其中一法。 */
   coverage: VerdictCoverage;
+  /** 本判定采用的估值方法可用性快照。 */
+  methods: ValuationMethods;
   /**
    * 估值可靠性：引擎自身诊断无红旗 → true。false 表示"位置可算、但便宜信号不可信"
    * （盈利下滑致滚动均值高估的周期峰值幻觉 / 高杠杆股权值失真 / DCF 模型不稳 / per-share 疑似算错）。
@@ -142,6 +145,7 @@ export function deriveValuationVerdict(input: {
   strikeZone?: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
+  methods: ValuationMethods;
   /** 拆股口径陈旧(基本面 as-of 早于最近拆股)→ 每股口径与拆股后价格错配,整条抑制为无判定。
    *  语义同 isImplausibleBand,由调用方经 isSplitCoverageStale 算出后传入。 */
   splitCoverageStale?: boolean;
@@ -152,7 +156,7 @@ export function deriveValuationVerdict(input: {
    *  语义同 splitCoverageStale/capitalStructureDistorted,由调用方经 fundamentalsIntegrityViolated 算出后传入。 */
   fundamentalsCorrupt?: boolean;
 }): ValuationVerdict | null {
-  const { floor, strikeZone, oeDcf, reconciliation, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt } = input;
+  const { floor, strikeZone, oeDcf, reconciliation, methods, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt } = input;
   if (splitCoverageStale) return null; // 拆股口径错配 → 无可信判定(每股带被放大 ~拆股比例倍)
   if (capitalStructureDistorted) return null; // 资本结构扭曲 → 无可信判定(护城河/成长价值不可评估,零增长底会假判太贵)
   if (fundamentalsCorrupt) return null; // 口径损坏(opInc/gross>revenue)→ 无可信判定
@@ -176,8 +180,8 @@ export function deriveValuationVerdict(input: {
   // "安全边际"参照不同底、三处展示自相矛盾(GCO 带 $5–$50 却标 33%)。rangeHi 仍是乐观上沿。
   const rangeHi = Math.max(...ends);
   const rangeLo = epv.valueFloor;
-  const bothMethods = !!conservative && !!epv.ceilings;
-  const coverage: VerdictCoverage = bothMethods ? "full" : "single_lamp";
+  const canReconcile = methods.oeDcf && methods.greenwaldGrowthCeilings;
+  const coverage: VerdictCoverage = methods.oeDcf && methods.zeroGrowthEpv ? "full" : "single_lamp";
 
   // 判定锚:有含增长中枢的 IV(oeDcf 中枢档 per_share)时,bucket/inStrikeZone/marginPct 锚 IV,
   // 安全边际随 growthReliance(IV 相对零增长底 F 的增量占比)在 MOS_BASE~MOS_MAX 间浮动
@@ -200,7 +204,7 @@ export function deriveValuationVerdict(input: {
   } else {
     // 单灯兜底:无含增长中枢 IV → 退回今天的 EPV 锚(零增长底 F，逐字保留)。
     bucket =
-      (bothMethods ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
+      (canReconcile ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
     inStrikeZone = epv.position === "in_strike_zone";
     const valueFloor = epv.valueFloor;
     marginPct = valueFloor > 0 ? (valueFloor - price) / valueFloor : null;
@@ -219,5 +223,5 @@ export function deriveValuationVerdict(input: {
       ? { perShare: nn.per_share, assetFloor: isNetNetAssetFloor(nn, price), buy: isNetNetBuy(nn, price) }
       : undefined;
 
-  return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, reliable, netNet };
+  return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, methods, reliable, netNet };
 }
