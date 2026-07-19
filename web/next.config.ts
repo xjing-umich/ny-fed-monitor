@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { INVESTOR_ALIASES } from "./src/lib/investor-seo-aliases";
 
 // All legacy bare section slugs that must 301 → /[lang]/macro/[slug]
 const LEGACY_SECTION_SLUGS = [
@@ -27,7 +28,16 @@ const nextConfig: NextConfig = {
       permanent: true,
     }));
 
+    const investorAliasRedirects = Object.entries(INVESTOR_ALIASES).map(
+      ([alias, slug]) => ({
+        source: `/:lang(zh|en)/investors/${alias}`,
+        destination: `/:lang/investors/${slug}`,
+        permanent: true,
+      })
+    );
+
     return [
+      ...investorAliasRedirects,
       {
         source: "/:lang(zh|en)/managers",
         destination: "/:lang/investors",
