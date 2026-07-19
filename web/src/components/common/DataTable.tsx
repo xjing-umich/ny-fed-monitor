@@ -23,6 +23,8 @@ export type Column<T> = {
   mobileLabel?: React.ReactNode;
   /** 仅桌面显示,不进卡片 */
   hideOnMobile?: boolean;
+  /** When set, header is a sort control; value is the URL sort key passed to onSort. */
+  sortKey?: string;
 };
 
 export type DataTableProps<T> = {
@@ -40,11 +42,11 @@ export type DataTableProps<T> = {
    * 否则在平板/大屏手机(640–1024px)区间表格仍会挤。默认 "md"。
    */
   breakpoint?: "sm" | "md" | "lg";
-  /**
-   * "加载更多"渐进披露:全部行照常渲染(SSR 即含全部 <a>),但索引 ≥ visibleCount
-   * 的行用 CSS 隐藏,由外层(Paginated)递增 visibleCount 逐步揭示。不传则全显。
-   */
-  visibleCount?: number;
+  sortKey?: string;
+  sortDir?: "asc" | "desc";
+  onSort?: (sortKey: string) => void;
+  /** Rank display offset (filtered global index). Default 0 → ranks start at 1. */
+  rankStart?: number;
   emptyText?: string;
 };
 
@@ -66,11 +68,13 @@ export function DataTable<T>({
   showRank,
   hideHeader,
   breakpoint = "md",
-  visibleCount,
+  sortKey,
+  sortDir,
+  onSort,
+  rankStart,
   emptyText,
 }: DataTableProps<T>) {
   const bp = BP[breakpoint];
-  const isOverflow = (i: number) => visibleCount != null && i >= visibleCount;
   if (rows.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-[var(--tt-muted)]">
@@ -106,18 +110,47 @@ export function DataTable<T>({
                   #
                 </th>
               )}
-              {columns.map((c) => (
-                <th
-                  key={c.key}
-                  className={cn(
-                    "pb-2 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]",
-                    alignClass(c.align),
-                    c.width
-                  )}
-                >
-                  {c.header}
-                </th>
-              ))}
+              {columns.map((c) => {
+                const isSortable = Boolean(c.sortKey && onSort);
+                const isActive = isSortable && sortKey === c.sortKey;
+                const ariaSort = isSortable
+                  ? isActive
+                    ? sortDir === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : "none"
+                  : undefined;
+
+                return (
+                  <th
+                    key={c.key}
+                    aria-sort={ariaSort}
+                    className={cn(
+                      "pb-2 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]",
+                      alignClass(c.align),
+                      c.width
+                    )}
+                  >
+                    {isSortable ? (
+                      <button
+                        type="button"
+                        onClick={() => onSort!(c.sortKey!)}
+                        className={cn(
+                          "font-mono text-[10px] font-medium uppercase tracking-[0.1em] transition-colors",
+                          isActive
+                            ? "text-[var(--tt-accent)]"
+                            : "text-[var(--tt-muted)] hover:text-[var(--tt-text)]"
+                        )}
+                      >
+                        {c.header}
+                        {isActive && (sortDir === "asc" ? " ↑" : " ↓")}
+                      </button>
+                    ) : (
+                      c.header
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -126,15 +159,11 @@ export function DataTable<T>({
               return (
                 <tr
                   key={getKey(row, i)}
-                  className={cn(
-                    // 行间不画满宽下划线——密表里会变成「下划线墙」；靠 hover 面区分行。
-                    "group transition-colors hover:bg-[var(--tt-surface)]",
-                    isOverflow(i) && "hidden"
-                  )}
+                  className="group transition-colors hover:bg-[var(--tt-surface)]"
                 >
                   {showRank && (
                     <td className="py-2.5 pr-3 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
-                      {i + 1}
+                      {(rankStart ?? 0) + i + 1}
                     </td>
                   )}
                   {columns.map((c, ci) => {
@@ -181,7 +210,7 @@ export function DataTable<T>({
             <span className="flex min-w-0 flex-1 items-center gap-2">
               {showRank && (
                 <span className="shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
-                  {i + 1}
+                  {(rankStart ?? 0) + i + 1}
                 </span>
               )}
               {leadCols.map((c) => (
@@ -195,10 +224,7 @@ export function DataTable<T>({
             </span>
           );
           return (
-            <li
-              key={getKey(row, i)}
-              className={cn("py-3", isOverflow(i) && "hidden")}
-            >
+            <li key={getKey(row, i)} className="py-3">
               <div className="flex items-start justify-between gap-3">
                 {href ? (
                   <Link href={href} className="min-w-0 flex-1 no-underline">
