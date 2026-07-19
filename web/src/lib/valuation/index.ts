@@ -9,6 +9,8 @@ export * from "./growthValue";
 export { deriveOeDcf, reconcileMethods, pickLatestFredPoint } from "./ownerEarningsDcf";
 export { deriveValuationVerdict } from "./deriveValuationVerdict";
 export type { ValuationVerdict, VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
+export { deriveValuationMethods } from "./deriveValuationMethods";
+export type { ValuationMethods } from "./deriveValuationMethods";
 export { resolveAds } from "./adsNormalization";
 export { isFundamentalsStale, FUNDAMENTALS_MAX_AGE_MONTHS } from "./fundamentalsStale";
 export { isSplitCoverageStale } from "./splitCoverage";
