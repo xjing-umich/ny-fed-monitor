@@ -89,6 +89,62 @@ export const readValuationVerdicts = cache(
   },
 );
 
+export type BargainVerdict = { inStrikeZone: boolean; marginPct: number };
+
+/**
+ * 读"便宜"票(击球区 或 低于价值带, reliable)的按-ticker map, 供 /stocks 列表高亮稀有便宜。
+ * 行数有界(击球区 + 低于价值, 去重后 ≤~110), 无 IN 巨列表 → 无 URL 超长风险。
+ * 前景闸: reliable(SQL) + (inStrikeZone||below)(SQL) + marginPct>0(JS) + !isImplausibleBand(JS),
+ * 与 readValuationVerdicts / stocks/[ticker] marginShown 同源。
+ * 任何异常/表未迁移(42P01/PGRST205)→ 空 Map 优雅降级(列表零标记, 不抛)。
+ */
+export const readBargainVerdicts = cache(
+  async (): Promise<Map<string, BargainVerdict>> => {
+    const out = new Map<string, BargainVerdict>();
+    if (!hasSupabaseEnv()) return out;
+    const isMissingTable = (e: unknown) => {
+      const code = (e as { code?: string }).code;
+      return code === "42P01" || code === "PGRST205";
+    };
+    try {
+      const { data, error } = await withRetry(() =>
+        getDb()
+          .from("valuation_snapshot")
+          .select("ticker,range_lo,range_hi,price,margin_pct,in_strike_zone,verdict_bucket")
+          .eq("reliable", true)
+          .or("in_strike_zone.eq.true,verdict_bucket.eq.below")
+          .limit(500),
+      );
+      if (error) {
+        if (!isMissingTable(error))
+          console.error(`readBargainVerdicts 失败: ${(error as Error).message}`);
+        return out;
+      }
+      for (const r of (data ?? []) as Record<string, unknown>[]) {
+        const marginPct = r.margin_pct == null ? null : Number(r.margin_pct);
+        if (marginPct == null || marginPct <= 0) continue;
+        if (
+          isImplausibleBand({
+            rangeLo: Number(r.range_lo),
+            rangeHi: Number(r.range_hi),
+            price: Number(r.price),
+            marginPct,
+          })
+        )
+          continue;
+        out.set(String(r.ticker).toUpperCase(), {
+          inStrikeZone: Boolean(r.in_strike_zone),
+          marginPct,
+        });
+      }
+      return out;
+    } catch (err) {
+      console.error(`readBargainVerdicts 异常: ${err instanceof Error ? err.message : String(err)}`);
+      return out;
+    }
+  },
+);
+
 export type StrikeLeader = {
   ticker: string;
   rangeLo: number;
