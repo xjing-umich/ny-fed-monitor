@@ -692,12 +692,12 @@ export const FEATURED_SLUG = "what-is-intrinsic-value";
 export const BRAND: Record<Lang, { body: string; aboutLabel: string }> = {
   en: {
     body:
-      "Compounder comes out of the value-investing tradition — Graham's margin of safety, Buffett's preference for good businesses at fair prices held for years. We pull superinvestors' 13F filings, valuation, and the macro backdrop into one place and keep it readable, so the judgment stays yours. Everything here is for learning, not investment advice.",
+      "Compounder comes out of the value-investing tradition — Graham's margin of safety, Buffett's preference for good businesses at fair prices held for years. We pull superinvestors' 13F filings and valuation into one place and keep it readable, so the judgment stays yours. Everything here is for learning, not investment advice.",
     aboutLabel: "About Compounder",
   },
   zh: {
     body:
-      "Compounder 出自价值投资这一脉:格雷厄姆的安全边际,巴菲特那种以合理价格买好生意、然后拿住多年的偏好。我们把超级投资者的 13F、估值和宏观背景归到一处、做得可读,判断留给你。这里的一切只供学习,不构成投资建议。",
+      "Compounder 出自价值投资这一脉:格雷厄姆的安全边际,巴菲特那种以合理价格买好生意、然后拿住多年的偏好。我们把超级投资者的 13F 和估值归到一处、做得可读,判断留给你。这里的一切只供学习,不构成投资建议。",
     aboutLabel: "关于 Compounder",
   },
 };

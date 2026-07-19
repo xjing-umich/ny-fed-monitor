@@ -1,12 +1,9 @@
 import "server-only";
 import { getDb } from "@/lib/managers/db";
-import { getFreshnessStatus } from "@/lib/db/freshness";
 import {
   evaluate13F,
-  evaluateMacro,
   type HealthProblem,
   type HealthReport,
-  type MacroStatusInput,
 } from "./checks";
 
 // 读 filings,算库内最新季度 + 每户最新季度。
@@ -30,24 +27,6 @@ async function gather13F(today: Date): Promise<{ problems: HealthProblem[]; info
       problems: [{ pipeline: "13f", source: "13F 核查", message: `核查自身出错: ${e instanceof Error ? e.message : String(e)}`, asOf: null, expected: "核查应成功" }],
       info: [],
     };
-  }
-}
-
-// 读 market_freshness_status(含 source 关联),映射成纯函数输入。
-async function gatherMacro(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
-  try {
-    const rows = await getFreshnessStatus();
-    const inputs: MacroStatusInput[] = rows.map((r) => ({
-      id: r.id,
-      name: r.source?.name ?? `source#${r.source_id}`,
-      isManual: r.source?.is_manual ?? false,
-      freshnessStatus: r.freshness_status,
-      latestObservationDate: r.latest_observation_date,
-      checkedAt: r.checked_at,
-    }));
-    return evaluateMacro(inputs, today);
-  } catch (e) {
-    return { problems: [{ pipeline: "macro", source: "宏观核查", message: `核查自身出错: ${e instanceof Error ? e.message : String(e)}`, asOf: null, expected: "核查应成功" }], info: [] };
   }
 }
 
@@ -75,8 +54,8 @@ async function gatherPrices(today: Date): Promise<{ problems: HealthProblem[]; i
 }
 
 export async function gatherHealth(today: Date): Promise<HealthReport> {
-  const [r13, rMacro, rPrices] = await Promise.all([gather13F(today), gatherMacro(today), gatherPrices(today)]);
-  const problems = [...r13.problems, ...rMacro.problems, ...rPrices.problems];
-  const info = [...r13.info, ...rMacro.info, ...rPrices.info];
+  const [r13, rPrices] = await Promise.all([gather13F(today), gatherPrices(today)]);
+  const problems = [...r13.problems, ...rPrices.problems];
+  const info = [...r13.info, ...rPrices.info];
   return { ok: problems.length === 0, checkedAt: today.toISOString(), problems, info };
 }

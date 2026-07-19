@@ -63,8 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/stocks", "weekly", 0.8, globalLatest),
     entry("/stocks/screener", "weekly", 0.7, globalLatest),
     // 编辑/外部数据页:无诚实的 13F 变更日期 → 不带 lastmod。
-    entry("/macro", "daily", 0.7),
-    entry("/macro/methodology", "weekly", 0.5),
     entry("/about", "monthly", 0.4),
     entry("/learn", "weekly", 0.6),
   ];
