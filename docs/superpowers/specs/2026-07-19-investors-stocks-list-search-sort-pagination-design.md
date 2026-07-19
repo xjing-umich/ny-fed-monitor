@@ -89,8 +89,16 @@ Page (RSC)
 
 **Sort fields (Phase A)**
 
-- Investors: `value` \| `count`
-- Stocks: `holders` \| `value`
+URL `sort` is the canonical key (stable for sharing). Column definitions expose an optional `sortKey` that maps header clicks → URL `sort` (column `key` may differ for layout/i18n).
+
+| Page | URL `sort` | Column `key` (current) | Sorted field |
+|------|------------|------------------------|--------------|
+| Investors | `value` | `portfolio` | `totalValue` |
+| Investors | `count` | `holdings` | `holdingCount` |
+| Stocks | `holders` | `holders` | `holderCount` |
+| Stocks | `value` | `value` | `totalValue` |
+
+`onSort` receives the URL `sort` key (via column `sortKey`), not the display column `key`.
 
 Clicking a sortable header selects that field; clicking the active field toggles `dir`. Switching field resets `dir` to that field’s default (`desc` for all Phase A numeric fields).
 
@@ -162,9 +170,11 @@ Do **not** SSR thousands of compact long-tail `<a>` nodes on `/stocks` (previous
 
 ## Implementation notes (for planning)
 
-- Prefer `router.replace` for param updates to avoid history spam while typing.
-- Extend `DataTable` sort API in a backward-compatible way so other tables stay static headers.
-- Reuse or replace `Paginated`: either wrap its behavior inside `ListPagination` or retire the unused export once mobile load-more lands — avoid two parallel APIs.
+- Prefer `router.replace` for **all** list-param updates (`q`, `sort`, `dir`, `page`, `vf`) so typing and paging do not spam history.
+- Extend `DataTable` sort API in a backward-compatible way so other tables stay static headers. Add optional per-column `sortKey` aligned with the URL table above.
+- **`Paginated` must not wrap the full universe:** today’s helper keeps all rows in the DOM and toggles CSS via `visibleCount`. That conflicts with “pass visible rows only” and would reintroduce the stocks payload failure mode. Phase A **retires or rewrites** it: `ListPagination` slices the array *before* `DataTable`; load-more only appends the next slice into the rendered set. Do not keep two parallel pagination APIs.
+- `ListShell` in the architecture diagram is conceptual (`*ListClient` + shared modules), not a required extra wrapper component.
+- If `showRank` remains on investors, rank is over the **filtered + sorted** result set (global index), not reset per page.
 - i18n: extend existing page `COPY` / `stockUi` dictionaries for pagination and sort `aria-label`s; follow `docs/copy-voice.md`.
 - Tests: unit-test query parse/serialize + filter/sort helpers; light component tests for “change sort resets page” and alias match.
 
