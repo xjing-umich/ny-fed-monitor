@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
-import { formatUSD, cleanIssuer } from "@/lib/format";
+import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
@@ -14,7 +14,34 @@ export type StockRow = {
   totalValue: number;
   /** 持有人数条宽(px),服务端按榜首归一化预算 */
   barWidth: number;
+  /** 落在击球区/低于价值带(reliable)才非空 —— 稀有便宜高亮;服务端按前景闸预算 */
+  bargain: { inStrikeZone: boolean; marginPct: number } | null;
 };
+
+// 稀有便宜绿标:击球区显 chip「击球区/Strike zone」+ 安全边际%;低于价值带(非严格击球区)只显绿%。
+// 颜色不单独承义 —— 整体 aria-label 念全, chip/数字 aria-hidden。
+function BargainMark({ bargain, lang }: { bargain: { inStrikeZone: boolean; marginPct: number }; lang: Lang }) {
+  const isZh = lang === "zh";
+  const pct = fmtMarginPct(bargain.marginPct);
+  const label = bargain.inStrikeZone
+    ? isZh ? `击球区，安全边际 ${pct}` : `In strike zone, margin of safety ${pct}`
+    : isZh ? `低于价值带，安全边际 ${pct}` : `Below value band, margin of safety ${pct}`;
+  return (
+    <span className="inline-flex items-baseline gap-1.5" aria-label={label}>
+      {bargain.inStrikeZone && (
+        <span
+          aria-hidden
+          className="rounded-sm border border-[var(--tt-accent)] px-1 py-px font-mono text-[9px] uppercase leading-none tracking-[0.08em] text-[var(--tt-accent)]"
+        >
+          {isZh ? "击球区" : "Strike zone"}
+        </span>
+      )}
+      <span aria-hidden className="font-mono text-[11px] tabular-nums text-[var(--tt-positive)]">
+        {pct}
+      </span>
+    </span>
+  );
+}
 
 // 前 N 名走完整富榜(响应式表 + 卡片);其余折叠为紧凑链接列表。
 // 全部行均为服务端渲染:零 hydration JS、长尾不再"桌面表 + 移动卡"双份富渲染
@@ -39,7 +66,12 @@ export function StocksTable({
       key: "security",
       header: g.security,
       role: "primary",
-      cell: (r) => <EntityName issuer={r.issuer} ticker={r.ticker} />,
+      cell: (r) => (
+        <span className="inline-flex items-baseline gap-2">
+          <EntityName issuer={r.issuer} ticker={r.ticker} />
+          {r.bargain ? <BargainMark bargain={r.bargain} lang={lang} /> : null}
+        </span>
+      ),
     },
     {
       key: "holders",
@@ -100,6 +132,11 @@ export function StocksTable({
                 >
                   {cleanIssuer(r.issuer)}
                   <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{r.ticker}</span>
+                  {r.bargain ? (
+                    <span className="ml-1.5 font-mono text-[11px] tabular-nums text-[var(--tt-positive)]">
+                      {fmtMarginPct(r.bargain.marginPct)}
+                    </span>
+                  ) : null}
                 </Link>
                 <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
                   {r.holderCount}

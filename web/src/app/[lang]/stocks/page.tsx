@@ -12,6 +12,7 @@ import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { StocksTable, type StockRow } from "./StocksTable";
 import { stockUi } from "@/lib/stocks/stockCopy";
+import { readBargainVerdicts } from "@/lib/valuation/valuationSnapshot";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 日级 ISR → 列表页 CDN 秒开,
 // 且不会每小时把 consensusHeld(最多 5000 行)反复读出(egress)。
@@ -59,10 +60,11 @@ export default async function StocksIndexPage({
   // an internal link from this hub. Single-holder long tail stays out (crawlable
   // but not promoted). Shared source with the sitemap so the two never drift.
   // getManagerIndex 有 cache()，与站内其他页共享，只为 dateline 取全局最新季。
-  const [rows, cusipMap, idx] = await Promise.all([
+  const [rows, cusipMap, idx, bargains] = await Promise.all([
     consensusHeld(),
     getCusipMap(),
     getManagerIndex(),
+    readBargainVerdicts(),
   ]);
 
   const isZh = lang === "zh";
@@ -82,6 +84,7 @@ export default async function StocksIndexPage({
       holderCount: row.holderCount,
       totalValue: row.totalValue,
       barWidth: Math.round((row.holderCount / maxHolders) * 32),
+      bargain: bargains.get(ticker.toUpperCase()) ?? null,
     };
   });
 
@@ -95,8 +98,8 @@ export default async function StocksIndexPage({
           title={ui.stocksTitle}
           dateline={<DataAsOfBadge lang={lang} asOf={asOfLabel} />}
           intro={isZh
-            ? "按持有机构数排列，数据来源：SEC 13F 持仓披露。"
-            : "Ranked by number of superinvestors holding the security. Source: SEC 13F filings."}
+            ? "按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（现价低于保守价值带）的以绿色标出。"
+            : "Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price below our conservative value band — are marked in green."}
         />
       </div>
 
