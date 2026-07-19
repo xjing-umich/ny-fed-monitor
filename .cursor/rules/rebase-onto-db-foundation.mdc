@@ -1,0 +1,26 @@
+---
+description: Feature branches must rebase onto latest origin/db-foundation before continue/review/PR
+alwaysApply: true
+---
+
+# Rebase onto latest db-foundation
+
+`db-foundation` is the integration base for ongoing work.
+
+**When to rebase (do this without waiting to be asked again):**
+- Before opening a PR, or when the user asks to sync / pull latest / continue after a pause
+- Before merging locally back into `db-foundation`
+- When starting or resuming feature work on a branch that diverged from `db-foundation`
+
+**Commands:**
+
+```bash
+git fetch origin db-foundation
+git rebase origin/db-foundation
+```
+
+**Rules:**
+- Prefer `rebase` onto `origin/db-foundation`, not merge of `db-foundation` into the feature branch
+- Resolve conflicts, re-run relevant tests, then continue
+- Do not force-push unless the user explicitly asks (and never force-push `main`/`master`/`db-foundation`)
+- If the branch was already pushed and rebase rewrote history, tell the user a force-with-lease push will be needed before they approve it
