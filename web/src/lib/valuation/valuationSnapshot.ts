@@ -3,6 +3,7 @@ import { cache } from "react";
 import { hasSupabaseEnv, getDb, withRetry } from "@/lib/managers/db";
 import type { VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
 import { isImplausibleBand } from "./deriveValuationVerdict";
+import type { ValuationMethods } from "./deriveValuationMethods";
 import type { ExpectationsAssessment, MoatCapAssessment } from "./types";
 
 export type SnapshotVerdict = {
@@ -19,6 +20,7 @@ export type SnapshotVerdict = {
   computedAt: string;
   expectations?: ExpectationsAssessment;
   moatCap?: MoatCapAssessment;
+  methods?: ValuationMethods;
 };
 
 type Row = {
@@ -33,7 +35,11 @@ type Row = {
   coverage: string;
   reliable: boolean;
   computed_at: string;
-  payload?: { expectations?: ExpectationsAssessment; moatCap?: MoatCapAssessment } | null;
+  payload?: {
+    expectations?: ExpectationsAssessment;
+    moatCap?: MoatCapAssessment;
+    methods?: ValuationMethods;
+  } | null;
 };
 
 /**
@@ -74,6 +80,7 @@ export const readValuationVerdicts = cache(
           computedAt: r.computed_at,
           expectations: r.payload?.expectations,
           moatCap: r.payload?.moatCap,
+          methods: r.payload?.methods,
         };
         // 读层防御:坏数据行(价值带与现价严重脱节 / >80% 假安全边际)不发徽章 → 该行降级 "—"
         // (覆盖诚实),与 screener 各视图统一过 isImplausibleBand 同口径(即便快照尚有旧脏行)。
