@@ -10,7 +10,6 @@ import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
 import { useListState } from "@/components/list/useListState";
-import { useMediaQueryMd } from "@/components/list/useMediaQueryMd";
 import { LIST_PAGE_SIZE, clampPage } from "@/components/list/listQuery";
 import {
   filterStocks,
@@ -81,9 +80,7 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
   const page = clampPage(params.page, pages);
   const desktopRows = visibleSlice(filteredSorted, page, "desktop");
   const mobileRows = visibleSlice(filteredSorted, page, "mobile");
-  const isDesktop = useMediaQueryMd();
-  const visible = isDesktop ? desktopRows : mobileRows;
-  const rankStart = isDesktop ? (page - 1) * LIST_PAGE_SIZE : 0;
+  const desktopRankStart = (page - 1) * LIST_PAGE_SIZE;
 
   // 榜单只回答"规模"——持有机构数与合计市值;基本面属个股详情页(参考 Google Finance 列表)。
   const columns: Column<StockRow>[] = [
@@ -137,18 +134,35 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
         countText={ui.count(filteredSorted.length, rows.length)}
       />
 
-      <DataTable
-        columns={columns}
-        rows={visible}
-        getKey={(r) => r.ticker}
-        rowHref={(r) => stockPath(lang, r.ticker)}
-        showRank
-        rankStart={rankStart}
-        sortKey={params.sort}
-        sortDir={params.dir}
-        onSort={params.setSortKey}
-        emptyText={ui.noResults}
-      />
+      <div className="hidden md:block">
+        <DataTable
+          columns={columns}
+          rows={desktopRows}
+          getKey={(r) => r.ticker}
+          rowHref={(r) => stockPath(lang, r.ticker)}
+          showRank
+          rankStart={desktopRankStart}
+          sortKey={params.sort}
+          sortDir={params.dir}
+          onSort={params.setSortKey}
+          emptyText={ui.noResults}
+        />
+      </div>
+
+      <div className="md:hidden">
+        <DataTable
+          columns={columns}
+          rows={mobileRows}
+          getKey={(r) => r.ticker}
+          rowHref={(r) => stockPath(lang, r.ticker)}
+          showRank
+          rankStart={0}
+          sortKey={params.sort}
+          sortDir={params.dir}
+          onSort={params.setSortKey}
+          emptyText={ui.noResults}
+        />
+      </div>
 
       <ListPagination
         page={page}

@@ -12,7 +12,6 @@ import PageHeader from "@/components/common/PageHeader";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
 import { useListState } from "@/components/list/useListState";
-import { useMediaQueryMd } from "@/components/list/useMediaQueryMd";
 import {
   LIST_PAGE_SIZE,
   clampPage,
@@ -135,9 +134,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
   const page = clampPage(params.page, pages);
   const desktopRows = visibleSlice(filteredSorted, page, "desktop");
   const mobileRows = visibleSlice(filteredSorted, page, "mobile");
-  const isDesktop = useMediaQueryMd();
-  const rows = isDesktop ? desktopRows : mobileRows;
-  const rankStart = isDesktop ? (page - 1) * LIST_PAGE_SIZE : 0;
+  const desktopRankStart = (page - 1) * LIST_PAGE_SIZE;
 
   const columns: Column<Row>[] = [
     {
@@ -241,19 +238,37 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
         onChip={(k) => params.setVf(k as VerdictFilter)}
       />
 
-      <DataTable
-        columns={columns}
-        rows={rows}
-        getKey={(m) => m.cik}
-        rowHref={(m) => investorPath(lang, m.slug)}
-        breakpoint="lg"
-        showRank
-        rankStart={rankStart}
-        sortKey={params.sort}
-        sortDir={params.dir}
-        onSort={params.setSortKey}
-        emptyText={t.noResults}
-      />
+      <div className="hidden md:block">
+        <DataTable
+          columns={columns}
+          rows={desktopRows}
+          getKey={(m) => m.cik}
+          rowHref={(m) => investorPath(lang, m.slug)}
+          breakpoint="lg"
+          showRank
+          rankStart={desktopRankStart}
+          sortKey={params.sort}
+          sortDir={params.dir}
+          onSort={params.setSortKey}
+          emptyText={t.noResults}
+        />
+      </div>
+
+      <div className="md:hidden">
+        <DataTable
+          columns={columns}
+          rows={mobileRows}
+          getKey={(m) => m.cik}
+          rowHref={(m) => investorPath(lang, m.slug)}
+          breakpoint="lg"
+          showRank
+          rankStart={0}
+          sortKey={params.sort}
+          sortDir={params.dir}
+          onSort={params.setSortKey}
+          emptyText={t.noResults}
+        />
+      </div>
 
       <ListPagination
         page={page}
