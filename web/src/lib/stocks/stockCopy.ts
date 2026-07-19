@@ -38,6 +38,13 @@ export const STOCK_UI = {
     alsoOn: "也可在",
     stocksTitle: "个股",
     emptyScreener: "当前档暂无可估值股票。",
+    search: "搜索代码或公司…",
+    noResults: "无匹配结果",
+    count: (m: number, n: number) => (m === n ? `共 ${n} 只` : `匹配 ${m} / 共 ${n} 只`),
+    more: "加载更多",
+    prev: "上一页",
+    next: "下一页",
+    pageOf: (p: number, n: number) => `第 ${p} / ${n} 页`,
   },
   en: {
     collapse: "Collapse",
@@ -46,6 +53,13 @@ export const STOCK_UI = {
     alsoOn: "Also on",
     stocksTitle: "Stocks",
     emptyScreener: "No valued stocks in this view yet.",
+    search: "Search ticker or name…",
+    noResults: "No results",
+    count: (m: number, n: number) => (m === n ? `${n} stocks` : `${m} of ${n}`),
+    more: "Load more",
+    prev: "Prev",
+    next: "Next",
+    pageOf: (p: number, n: number) => `Page ${p} of ${n}`,
   },
 } as const;
 

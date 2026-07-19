@@ -1,11 +1,23 @@
-import React from "react";
-import Link from "next/link";
+"use client";
+
+import React, { useMemo } from "react";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
-import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
+import { formatUSD, fmtMarginPct } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
+import { ListToolbar } from "@/components/list/ListToolbar";
+import { ListPagination } from "@/components/list/ListPagination";
+import { useListState } from "@/components/list/useListState";
+import { useMediaQueryMd } from "@/components/list/useMediaQueryMd";
+import { LIST_PAGE_SIZE, clampPage } from "@/components/list/listQuery";
+import {
+  filterStocks,
+  pageCount,
+  sortByKey,
+  visibleSlice,
+} from "@/components/list/listRows";
 
 export type StockRow = {
   ticker: string;
@@ -43,22 +55,35 @@ function BargainMark({ bargain, lang }: { bargain: { inStrikeZone: boolean; marg
   );
 }
 
-// 前 N 名走完整富榜(响应式表 + 卡片);其余折叠为紧凑链接列表。
-// 全部行均为服务端渲染:零 hydration JS、长尾不再"桌面表 + 移动卡"双份富渲染
-// (那是 /stocks 4.3MB 的根因)。长尾仍是真 <a>,爬虫可见 → 不回退孤儿修复。
-const TOP_N = 50;
-
-export function StocksTable({
-  lang,
-  rows,
-}: {
+type Props = {
   lang: Lang;
   rows: StockRow[];
-}) {
+};
+
+export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
-  const head = rows.slice(0, TOP_N);
-  const tail = rows.slice(TOP_N);
+  const params = useListState({
+    defaultSort: "holders",
+    allowedSorts: ["holders", "value"],
+    hasVf: false,
+  });
+
+  const filteredSorted = useMemo(() => {
+    const filtered = filterStocks(rows, params.q);
+    return sortByKey(filtered, params.sort, params.dir, {
+      holders: (r) => r.holderCount,
+      value: (r) => r.totalValue,
+    });
+  }, [rows, params.q, params.sort, params.dir]);
+
+  const pages = pageCount(filteredSorted.length);
+  const page = clampPage(params.page, pages);
+  const desktopRows = visibleSlice(filteredSorted, page, "desktop");
+  const mobileRows = visibleSlice(filteredSorted, page, "mobile");
+  const isDesktop = useMediaQueryMd();
+  const visible = isDesktop ? desktopRows : mobileRows;
+  const rankStart = isDesktop ? (page - 1) * LIST_PAGE_SIZE : 0;
 
   // 榜单只回答"规模"——持有机构数与合计市值;基本面属个股详情页(参考 Google Finance 列表)。
   const columns: Column<StockRow>[] = [
@@ -79,6 +104,7 @@ export function StocksTable({
       align: "right",
       width: "w-20 sm:w-28",
       mobileLabel: g.holdersInstitutionShort,
+      sortKey: "holders",
       cell: (r) => (
         <span className="inline-flex items-center justify-end gap-1.5 text-[var(--tt-text)]">
           <span
@@ -95,57 +121,45 @@ export function StocksTable({
       align: "right",
       width: "w-24 sm:w-36",
       mobileLabel: g.totalValueShort,
+      sortKey: "value",
       cell: (r) => formatUSD(r.totalValue),
     },
   ];
 
   return (
-    <>
+    <div className="space-y-4">
+      <ListToolbar
+        searchLabel={ui.search}
+        searchPlaceholder={ui.search}
+        q={params.qInput}
+        onQChange={params.setQInput}
+        onQSubmit={params.commitQNow}
+        countText={ui.count(filteredSorted.length, rows.length)}
+      />
+
       <DataTable
         columns={columns}
-        rows={head}
+        rows={visible}
         getKey={(r) => r.ticker}
         rowHref={(r) => stockPath(lang, r.ticker)}
         showRank
+        rankStart={rankStart}
+        sortKey={params.sort}
+        sortDir={params.dir}
+        onSort={params.setSortKey}
+        emptyText={ui.noResults}
       />
 
-      {/* 长尾:原生 <details> 折叠的紧凑链接清单(零 JS);所有 <a> 仍在 SSR HTML 中,爬虫可见。 */}
-      {tail.length > 0 && (
-        <details className="group mt-4">
-          <summary className="cursor-pointer list-none py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
-            <span className="group-open:hidden">
-              {ui.showMore(tail.length)} ▸
-            </span>
-            <span className="hidden group-open:inline">
-              {ui.collapse} ▾
-            </span>
-          </summary>
-          <ul className="mt-3 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2 lg:grid-cols-3">
-            {tail.map((r, i) => (
-              <li key={r.ticker} className="flex items-baseline gap-2 text-sm">
-                <span className="w-8 shrink-0 text-right font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
-                  {TOP_N + i + 1}
-                </span>
-                <Link
-                  href={stockPath(lang, r.ticker)}
-                  className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
-                >
-                  {cleanIssuer(r.issuer)}
-                  <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{r.ticker}</span>
-                  {r.bargain ? (
-                    <span className="ml-1.5 font-mono text-[11px] tabular-nums text-[var(--tt-positive)]">
-                      {fmtMarginPct(r.bargain.marginPct)}
-                    </span>
-                  ) : null}
-                </Link>
-                <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
-                  {r.holderCount}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
-    </>
+      <ListPagination
+        page={page}
+        pageCount={pages}
+        onPage={params.setPage}
+        moreLabel={ui.more}
+        remaining={filteredSorted.length - mobileRows.length}
+        prevLabel={ui.prev}
+        nextLabel={ui.next}
+        pageLabel={ui.pageOf}
+      />
+    </div>
   );
-}
+};
