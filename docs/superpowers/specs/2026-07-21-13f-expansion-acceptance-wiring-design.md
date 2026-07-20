@@ -123,7 +123,7 @@ Jensen、Mairs & Power、Third Avenue、Torray、Phil Town / Rule One、Abrams B
 ### 3.3 每波管线（顺序固定）
 
 ```
-1. 采基线指标（DB）
+1. 采基线指标（DB）：Wave 2a 开始时采并锁定 B0（同时作为本波 Bw）；之后每波只采 Bw，禁止覆盖 B0
 2. CIK 校验 → 追加 managers.json
 3. INGEST_ONLY=<slugs> npm run ingest
    （含 OpenFIGI enrich + consensus：holdings / moves / stock_holders / trend / coownership）
