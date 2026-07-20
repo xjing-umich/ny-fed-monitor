@@ -33,7 +33,7 @@
 
 4. 共识：扩后重算 `consensus_holdings` / `consensus_moves`（及个股快照表，见 §2）。  
 5. Fundamentals：扩后新增且 `holder_count ≥ 2` 的 ticker，尽量进 `sec_companies` + fundamentals（ADR / 外股 / 非经营性等引擎拒收允许）。  
-6. Valuation：能算的 ≥2 票尽量进 `valuation_snapshot`；**valued / consensus 比例相对扩前基线不明显下降**（硬门见 §3.3 M5）。  
+6. Valuation：能算的 ≥2 票尽量进 `valuation_snapshot`；fill-rate 硬门见 §3.4 M5（分波）与 §5（整次累计，均相对**最初基线**）。  
 7. Lean SEO 不变：`CONSENSUS_MIN_HOLDERS = 2`；独门票不进 sitemap / `/stocks` hub。
 
 ### 1.3 串联（必须能点通）
@@ -102,17 +102,20 @@ en 全做；zh 抽 1 个新 slug 即可。
 - 种子约 **87**；13F 已 upsert；共识约 **2175** 行（以实施时再采的 DB 数字为准）。  
 - 工程附带：`INGEST_ONLY` 支持部分 ingest 并合并写 `index.json` / `former-names.json`（`web/scripts/ingest-13f.ts`）。
 
-实施第一步采扩前基线：`consensus_n`、`ge2_n`、`lonely_n`、`valued_n`、`valued/consensus`。
+**最初基线（B0）**：在 Wave 2a 开始前采一次并锁定（GMO + Wave 1 已入库之后）：`consensus_n`、`ge2_n`、`lonely_n`、`valued_n`、`valued_ratio = valued_n / consensus_n`。  
+**本波扩前基线（Bw）**：每一波开始前再采一次，仅用于 M3 / M4 的「本波不塌」与独门增量；**M5 与 §5 只对照 B0**，避免 2b 用 post-2a 当新基线掩盖累计掉点。
 
-### 3.2 后续波次
+### 3.2 后续波次（= Policy A 下拟关闭的 Valuesider 有人脸缺口全集）
 
-**Wave 2a — 中等宽度（先跑，约 5 户）**  
-Hillman、Muhlenkamp、Turtle Creek、Arbiter、Check Capital（Dataroma 缺口优先 + 宽度可控）。
+已收：GMO + Wave 1（10）。下面两波为剩余拟收集合；门禁剔减须记入附录 C。
 
-**Wave 2b — 宽组合（2a 门禁绿后再跑，约 5 户）**  
+**Wave 2a — 中等宽度（先跑，5 户）**  
+Hillman、Muhlenkamp、Turtle Creek、Arbiter、Check Capital。
+
+**Wave 2b — 宽组合（2a 门禁绿后再跑，5 户）**  
 Donald Smith、Eagle Capital、Disciplined Growth、Lountzis、Cullen。
 
-**Policy A 明确不收**  
+**Policy A 明确不收**（附录 B）  
 Jensen、Mairs & Power、Third Avenue、Torray、Phil Town / Rule One、Abrams Bison（无人脸）、Independent Franchise、Parnassus。
 
 每户仍走：SEC 解析 CIK → 13F-HR ≥ 2024-06-30 → 写入 `managers.json`。CIK 以实施时 `validate-13f-filers` / submissions API 为准，本 spec 不锁死 CIK 表（避免过期）。
@@ -130,16 +133,18 @@ Jensen、Mairs & Power、Third Avenue、Torray、Phil Town / Rule One、Abrams B
 7. 门禁绿 → 下一波；红 → 停、缩名单或修 enrich/ADR，不带病进 2b
 ```
 
-### 3.4 数字门禁（相对本波扩前基线）
+### 3.4 数字门禁
 
-| 门 | 条件 |
-|---|---|
-| M1 种子一致 | `managers.json` 数 = DB 活跃 managers = 抽查 index |
-| M2 13F 成功 | 本波 `INGEST_ONLY` 成功比 ≥ 90%（沿用 `MIN_SUCCESS_RATIO`） |
-| M3 共识不塌 | `consensus_n` 不下降；`ge2_n` 不下降 |
-| M4 独门可控 | `Δlonely / Δconsensus` ≤ 0.6（宁可重叠、少倾倒独门） |
-| M5 估值 fill | `valued/consensus` 降幅 ≤ **3pp**，或 `valued_n` 不降 |
-| M6 串联 | §2.1 抽查清单全过（每波至少 2 个新 slug + 1 个其 Top 持股） |
+对照约定：Δ 量对 **Bw（本波扩前）**；fill-rate 对 **B0（最初基线）**。
+
+| 门 | 对照 | 条件 |
+|---|---|---|
+| M1 种子一致 | — | `managers.json` 数 = DB 活跃 managers = 抽查 index |
+| M2 13F 成功 | — | 本波 `INGEST_ONLY` 成功比 ≥ 90%（沿用 `MIN_SUCCESS_RATIO`） |
+| M3 共识不塌 | Bw | `consensus_n` 不下降；`ge2_n` 不下降 |
+| M4 独门可控 | Bw | 若 `Δconsensus = 0`：当 `Δlonely = 0` 则 **N/A 通过**，当 `Δlonely > 0` 则 **红**；若 `Δconsensus > 0`：`Δlonely / Δconsensus` ≤ 0.6 |
+| M5 估值 fill | **B0** | `valued_ratio` 相对 B0 降幅 ≤ **3pp**，**或** `valued_n` ≥ B0 的 `valued_n` |
+| M6 串联 | — | §2.1 抽查清单全过（每波至少 2 个新 slug + 1 个其 Top 持股；路径形如 `/[lang]/investors/...`） |
 
 M4 / M5 红时：优先丢掉本波最宽、独门最多的 1–2 户，而不是放宽门禁。
 
@@ -179,9 +184,9 @@ M4 / M5 红时：优先丢掉本波最宽、独门最多的 1–2 户，而不�
 
 ## 5. 成功标准（整次扩容结束）
 
-- Policy A 内 Valuesider 有人脸缺口已收（Wave 1 + 2a + 2b，或按门禁缩减后的最终名单）并在附录记录实收 / 剔减原因。  
-- M1–M6 在最后一波通过。  
-- 生产可读路径上，新经理人出现在 `/investors`、详情、相关个股持有人表；新 ≥2 票出现在 hub / sitemap；估值 fill 相对最初基线满足 M5。
+- Policy A 拟收集合（Wave 1 + §3.2 的 2a/2b）已收，或按门禁剔减后的最终名单写入 **附录 C**（实收 slug + 剔减原因）。  
+- 最后一波 M1–M6 通过；且整次结束时 **M5 相对 B0** 仍成立（累计 fill 不靠换基线蒙混）。  
+- 生产可读路径上，新经理人出现在 `/[lang]/investors`、详情、相关个股持有人表；新 ≥2 票出现在 hub / sitemap。
 
 ---
 
@@ -207,5 +212,12 @@ M4 / M5 红时：优先丢掉本波最宽、独门最多的 1–2 户，而不�
 | Abrams Bison | Dataroma 无人脸 |
 | Independent Franchise Partners | 机构壳 |
 | Parnassus | 机构壳 |
+
+## 附录 C：实收 / 门禁剔减（实施期填写）
+
+| 波次 | slug | 结果 | 原因（若剔） |
+|---|---|---|---|
+| Wave 1 | （已收 10 + GMO） | 收 | — |
+| Wave 2a / 2b | _待填_ | | |
 
 相关：[[product-direction]] [[valuation-philosophy-constraint]] [[lean-index-coverage]] [[no-tests-solo-dev]] [[sec-valuation-ingest-ops]]
