@@ -38,7 +38,7 @@
   /* Ink hierarchy — 三级正文层级，替代 muted/faint 的模糊用法 */
   --ink-1:               #EDE7DA; /* 正文 */
   --ink-2:               #A89C8A; /* 辅助 */
-  --ink-3:               #6E6656; /* 仅时间戳/来源 */
+  --ink-3:               #877E66; /* 仅时间戳/来源 — 深底 4.6:1，压线过 WCAG AA */
 
   /* Data glow — 全站唯一允许的发光，只服务数据 */
   --glow-primary:        0 0 24px rgba(79, 191, 138, 0.35);
@@ -112,7 +112,7 @@
 
   --ink-1: #1C1917;
   --ink-2: #6B6157;
-  --ink-3: #998F82;
+  --ink-3: #7A7060; /* 纸底 4.6:1，过 WCAG AA */
   --glow-primary: none;
   --glow-warn: none;
 
@@ -144,7 +144,7 @@
   --tt-border-strong: var(--border-strong);
   --tt-text:          var(--ink-1);
   --tt-muted:         var(--ink-2);
-  --tt-faint:         #998F82; /* warm faint tertiary text */
+  --tt-faint:         var(--ink-3); /* warm faint tertiary text */
   --tt-accent:        var(--primary);
   --tt-positive:      var(--positive);
   --tt-negative:      var(--destructive);
