@@ -33,6 +33,7 @@ import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
 import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
 import { LearnLink } from "@/components/common/LearnLink";
+import { FoldedSection } from "@/components/entity/FoldedSection";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Display } from "@/components/common/Display";
 
@@ -251,7 +252,7 @@ function HoldingsTable({
             {exits.slice(0, EXIT_CAP).map((c, i) => (
               <React.Fragment key={holdingKey(c)}>
                 {i > 0 && "、"}
-                <Link href={stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip)} className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
+                <Link href={stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip)} className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
               </React.Fragment>
             ))}
             {exits.length > EXIT_CAP && <span className="text-[var(--tt-faint)]">{t.more(exits.length - EXIT_CAP)}</span>}
@@ -386,8 +387,9 @@ export default async function InvestorSlugPage({
       {formatUSD(longTotalValue)}
       {valDeltaPct != null && valDeltaPct !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
-          （{lang === "zh" ? "环比 " : ""}{sign(valDeltaPct)}
-          {Math.abs(valDeltaPct * 100).toFixed(0)}%）
+          {lang === "zh"
+            ? `（环比 ${sign(valDeltaPct)}${Math.abs(valDeltaPct * 100).toFixed(0)}%）`
+            : ` (${sign(valDeltaPct)}${Math.abs(valDeltaPct * 100).toFixed(0)}%)`}
         </span>
       )}
     </span>
@@ -397,7 +399,9 @@ export default async function InvestorSlugPage({
       {longHoldings.length}
       {cntDelta !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(cntDelta)}`}>
-          （{sign(cntDelta)}{Math.abs(cntDelta)}）
+          {lang === "zh"
+            ? `（${sign(cntDelta)}${Math.abs(cntDelta)}）`
+            : ` (${sign(cntDelta)}${Math.abs(cntDelta)})`}
         </span>
       )}
     </span>
@@ -498,7 +502,7 @@ export default async function InvestorSlugPage({
         topAction={
           <Link
             href={localePath(lang, "/investors")}
-            className="inline-block text-xs text-[var(--tt-faint)] no-underline transition-colors hover:text-[var(--tt-text)]"
+            className="inline-block text-xs text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-text)] max-sm:flex max-sm:min-h-[44px] max-sm:items-center"
           >
             {lang === "zh" ? "← 超级投资者" : "← Superinvestors"}
           </Link>
@@ -526,10 +530,10 @@ export default async function InvestorSlugPage({
                 { label: lang === "zh" ? "新建" : "New", value: added, color: "var(--tt-positive)" },
                 { label: lang === "zh" ? "加仓" : "Added", value: increased, color: "var(--ink-1)" },
                 { label: lang === "zh" ? "清仓" : "Exited", value: exited, color: "var(--tt-negative)" },
-              ].map((s) => (
+              ].map((s, i) => (
                 <div key={s.label}>
                   <p className="tt-label">{s.label}</p>
-                  <Display size="2xl" className="mt-2" glow={s.label === "新建" || s.label === "New"}>
+                  <Display size="2xl" className="mt-2" glow={i === 0}>
                     <span style={{ color: s.color }}>{s.value}</span>
                   </Display>
                 </div>
@@ -552,7 +556,7 @@ export default async function InvestorSlugPage({
                   <li key={h.ticker} className="flex items-baseline gap-2 text-sm">
                     <Link
                       href={stockPath(lang, h.ticker)}
-                      className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                      className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
                       {cleanIssuer(h.issuer)}
                       <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{h.ticker}</span>
@@ -590,7 +594,7 @@ export default async function InvestorSlugPage({
                   <li key={h.ticker} className="flex items-baseline gap-2 text-sm">
                     <Link
                       href={stockPath(lang, h.ticker)}
-                      className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                      className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
                       {cleanIssuer(h.issuer)}
                       <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{h.ticker}</span>
@@ -609,15 +613,9 @@ export default async function InvestorSlugPage({
             slug="what-is-a-superinvestor"
             label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"}
           />
-          <details className="group mt-6">
-            <summary className="cursor-pointer list-none text-lg font-medium tracking-tight text-[var(--tt-text)] [&::-webkit-details-marker]:hidden">
-              <span className="group-open:hidden">{lang === "zh" ? "关于这位投资者 ▸" : "About this investor ▸"}</span>
-              <span className="hidden group-open:inline">{lang === "zh" ? "关于这位投资者 ▾" : "About this investor ▾"}</span>
-            </summary>
-            <div className="mt-3">
-              <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
-            </div>
-          </details>
+          <FoldedSection title={lang === "zh" ? "关于这位投资者" : "About this investor"}>
+            <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
+          </FoldedSection>
           <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang)} />
         </>
       </EntityPage>

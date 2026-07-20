@@ -136,14 +136,23 @@ export function DataTable<T>({
                         type="button"
                         onClick={() => onSort!(c.sortKey!)}
                         className={cn(
-                          "font-mono text-[10px] font-medium uppercase tracking-[0.1em] transition-colors",
+                          "group/sort font-mono text-[10px] font-medium uppercase tracking-[0.1em] transition-colors",
                           isActive
                             ? "text-[var(--tt-accent)]"
                             : "text-[var(--tt-muted)] hover:text-[var(--tt-text)]"
                         )}
                       >
                         {c.header}
-                        {isActive && (sortDir === "asc" ? " ↑" : " ↓")}
+                        {isActive ? (
+                          sortDir === "asc" ? " ↑" : " ↓"
+                        ) : (
+                          <span
+                            aria-hidden
+                            className="opacity-0 transition-opacity group-hover/sort:opacity-60 group-focus-visible/sort:opacity-60"
+                          >
+                            {" "}↕
+                          </span>
+                        )}
                       </button>
                     ) : (
                       c.header
@@ -248,7 +257,7 @@ export function DataTable<T>({
                       key={c.key}
                       className="flex items-baseline gap-1.5 text-xs"
                     >
-                      <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
                         {c.mobileLabel ?? c.header}
                       </span>
                       <span className="font-mono tabular-nums text-[var(--tt-muted)]">
