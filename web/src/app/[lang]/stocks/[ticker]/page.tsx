@@ -118,9 +118,9 @@ const TABLE_COPY = {
       investor: "投资人",
       value: "市值",
       shares: "持股",
-      weight: "权重(上季→本季)",
+      weight: "权重（上季→本季）",
     },
-    exitedTitle: (n: number) => `本季清仓 (${n})`,
+    exitedTitle: (n: number) => `本季清仓（${n}）`,
     more: (n: number) => `… 等 ${n} 位`,
     showAll: (n: number) => `展开全部 ${n} 位持有人`,
     meta: (n: number, total: string, opened: number, exited: number) =>
@@ -146,8 +146,6 @@ const EXIT_CAP = 12;
 const HOLDERS_VISIBLE = 10;
 
 function HoldersTable({
-  issuer,
-  ticker,
   holders,
   exited,
   totalValue,
@@ -155,8 +153,6 @@ function HoldersTable({
   lang,
   trend,
 }: {
-  issuer: string;
-  ticker: string;
   holders: HolderRow[];
   exited: ExitedHolder[];
   totalValue: number;
@@ -232,7 +228,7 @@ function HoldersTable({
               <Link
                 key={e.slug}
                 href={investorPath(lang, e.slug)}
-                className="inline-flex items-center rounded-md border border-[var(--tt-border)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
+                className="inline-flex items-center rounded-md border border-[var(--tt-border)] px-2 py-0.5 max-sm:min-h-[44px] font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
               >
                 {e.person}
               </Link>
@@ -524,7 +520,7 @@ export default async function StockTickerPage({
         topAction={
           <Link
             href={localePath(lang, "/stocks")}
-            className="inline-block text-xs text-[var(--tt-faint)] no-underline transition-colors hover:text-[var(--tt-text)]"
+            className="inline-block text-xs text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-text)]"
           >
             {ui.backToStocks}
           </Link>
@@ -654,8 +650,6 @@ export default async function StockTickerPage({
           {/* 支柱② 谁持有 — 表 + 文字说明同簇，避免与表双份叙事抢独立一节 */}
           <div>
             <HoldersTable
-              issuer={issuer}
-              ticker={ticker}
               holders={holders}
               exited={exitedHolders}
               totalValue={totalValue}

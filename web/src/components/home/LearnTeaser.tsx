@@ -12,9 +12,9 @@ export default function LearnTeaser({ lang }: { lang: Lang }): React.ReactElemen
   const c = COPY[lang];
   const articles = listArticles(lang).slice(0, 3);
   return (
-    <section className="mt-24 border-t border-[var(--tt-border)] pt-8">
+    <section className="border-t border-[var(--tt-border)] pt-8">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
-      <h2 className="mt-3 text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{c.title}</h2>
+      <h2 className="mt-3 text-balance text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{c.title}</h2>
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
         {articles.map((a) => (
           <Link key={a.slug} href={localePath(lang, `/learn/${a.slug}`)} className="group block no-underline">
@@ -23,7 +23,7 @@ export default function LearnTeaser({ lang }: { lang: Lang }): React.ReactElemen
           </Link>
         ))}
       </div>
-      <Link href={localePath(lang, "/learn")} className="mt-6 inline-block font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">{c.cta}</Link>
+      <Link href={localePath(lang, "/learn")} className="mt-6 inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">{c.cta}</Link>
     </section>
   );
 }

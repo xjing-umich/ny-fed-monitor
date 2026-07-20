@@ -23,9 +23,9 @@ export function InvestorProfileProse({
   return (
     <section>
       <div className="pb-3">
-        <span className="text-lg font-medium tracking-tight text-[var(--tt-text)]">
+        <h2 className="text-lg font-medium tracking-tight text-[var(--tt-text)]">
           {heading}
-        </span>
+        </h2>
       </div>
       <div className="max-w-3xl space-y-3">
         {paragraphs.map((p, i) => (

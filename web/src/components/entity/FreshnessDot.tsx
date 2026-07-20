@@ -2,10 +2,11 @@ import type { FreshnessStatus } from "@/lib/freshness/derive";
 
 type Lang = "zh" | "en";
 
+// 圆点用语义 token（positive/warn/faint），不硬编码 Tailwind 色板 —— 深浅主题都正确。
 const COLOR: Record<FreshnessStatus, string> = {
-  fresh: "bg-emerald-500",
-  stale: "bg-amber-500",
-  empty: "bg-zinc-400",
+  fresh: "bg-[var(--tt-positive)]",
+  stale: "bg-[var(--tt-warn)]",
+  empty: "bg-[var(--tt-faint)]",
 };
 
 const LABEL: Record<FreshnessStatus, { zh: string; en: string }> = {
