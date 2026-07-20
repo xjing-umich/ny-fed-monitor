@@ -36,16 +36,16 @@ export default function PhilosophyQuote({
 }): React.ReactElement {
   const c = COPY[lang];
   return (
-    <section className="mt-24 border-t border-[var(--tt-border)] pt-12">
+    <section className="border-t border-[var(--tt-border)] pt-12">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
 
       {/* Hero quote — left rule only; no oversized decorative glyph (collides with the rule). */}
       <figure className="mt-8">
         <blockquote className="border-l-2 border-[var(--tt-accent)] pl-6 sm:pl-8">
-          <p className="text-3xl font-medium leading-[1.16] tracking-tight text-[var(--tt-text)] sm:text-4xl">
+          <p className="text-balance text-3xl font-medium leading-[1.16] tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {c.hero}
           </p>
-          <figcaption className="mt-5 flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+          <figcaption className="mt-5 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
             <span className="inline-block h-px w-6 bg-[var(--tt-accent)]" />
             <span>
               {featuredHref ? (

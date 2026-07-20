@@ -27,7 +27,7 @@ const COPY = {
 export default function FoundationsGrid({ lang }: { lang: Lang }): React.ReactElement {
   const c = COPY[lang];
   return (
-    <section className="mt-24 border-t border-[var(--tt-border)] pt-8">
+    <section className="border-t border-[var(--tt-border)] pt-8">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
       <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-[var(--tt-muted)]">{c.statement}</p>
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">

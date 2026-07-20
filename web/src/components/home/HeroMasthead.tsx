@@ -112,7 +112,7 @@ export default function HeroMasthead({
             {investorCount}
           </Display>
         )}
-        <h1 className="mt-4 max-w-[18ch] font-display text-2xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-3xl">
+        <h1 className="mt-4 max-w-[18ch] text-balance font-display text-2xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-3xl">
           {headline}
         </h1>
         <p className="mt-5 max-w-[30ch] text-xl leading-snug text-[var(--ink-2)] sm:text-2xl">
@@ -125,9 +125,9 @@ export default function HeroMasthead({
         </p>
         <Link
           href={localePath(lang, "/stocks/screener")}
-          className="group mt-7 inline-flex items-center gap-1.5 text-[15px] text-[var(--tt-text)] no-underline [border-bottom:1px_solid_var(--tt-accent)] [transition:color_var(--tt-dur)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
+          className="group mt-7 inline-flex min-h-11 items-center gap-1.5 text-[15px] text-[var(--tt-text)] no-underline [transition:color_var(--tt-dur)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
         >
-          {c.cta}
+          <span className="[border-bottom:1px_solid_var(--tt-accent)] pb-0.5">{c.cta}</span>
           <span
             aria-hidden
             className="inline-block [transition:transform_var(--tt-dur)_var(--tt-ease)] group-hover:translate-x-1"
@@ -141,13 +141,13 @@ export default function HeroMasthead({
         <aside className="md:pl-2">
           <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
             <span className="text-sm font-medium text-[var(--tt-text)]">{panelTitle}</span>
-            <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">
+            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">
               {q}
             </span>
           </div>
           {moves.mostBought.length > 0 && (
             <div>
-              <p className="pt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+              <p className="pt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
                 {c.bought}
               </p>
               <PanelRows lang={lang} rows={moves.mostBought.slice(0, 3)} />
@@ -155,7 +155,7 @@ export default function HeroMasthead({
           )}
           {moves.mostSold.length > 0 && (
             <div>
-              <p className="pt-4 font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+              <p className="pt-4 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
                 {c.sold}
               </p>
               <PanelRows lang={lang} rows={moves.mostSold.slice(0, 2)} />

@@ -34,7 +34,7 @@ export default function StrikeLeadersCard({
     <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
       <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
         <span className="text-sm font-medium text-[var(--tt-text)]">{c.title(total)}</span>
-        <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.margin}</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.margin}</span>
       </div>
       <table className="mt-2 w-full border-collapse text-sm">
         <tbody>

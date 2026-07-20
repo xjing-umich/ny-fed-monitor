@@ -21,7 +21,6 @@ const COPY = {
     step2: {
       eyebrow: "跨基金共识",
       title: "多少只重仓落在同一张桌子上",
-      body: "",
       cta: "查看共识持仓",
     },
     step3: {
@@ -42,7 +41,6 @@ const COPY = {
     step2: {
       eyebrow: "Cross-fund consensus",
       title: "How many managers sit at the same table",
-      body: "",
       cta: "See consensus holdings",
     },
     step3: {
@@ -77,13 +75,13 @@ function StepRow({
       <div>
         <Display as="span" size="xl" className="block font-mono text-[var(--ink-3)]">{serial}</Display>
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
-        <h2 className="mt-3 text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
+        <h2 className="mt-3 text-balance text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {title}
         </h2>
         {body ? <p className="mt-4 max-w-[42ch] text-sm leading-relaxed text-[var(--tt-muted)]">{body}</p> : null}
         <Link
           href={href}
-          className="mt-5 inline-block font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
+          className="mt-5 inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
         >
           {ctaLabel}
         </Link>
@@ -122,7 +120,7 @@ export default function StepIndex({
             <Link
               key={m.cik}
               href={investorPath(lang, m.slug)}
-              className="group flex items-baseline justify-between gap-3 border-b border-[var(--tt-border)] py-2 no-underline"
+              className="group flex min-h-11 items-center justify-between gap-3 border-b border-[var(--tt-border)] py-2 no-underline sm:min-h-0 sm:items-baseline"
             >
               <span className="truncate text-sm text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
                 {m.person}
