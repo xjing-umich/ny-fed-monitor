@@ -20,7 +20,7 @@ const COPY = {
     strike: "击球区", below: "低于价值带", within: "带内", above: "高于价值", none: "—",
     unconfirmed: "未确认",
     lamp: "单法口径（无所有者盈利 DCF）",
-    flag: "估值带红旗(盈利下滑/高杠杆/模型不稳/每股口径疑错),边际不可信，未计入便宜信号。",
+    flag: "估值带红旗（盈利下滑/高杠杆/模型不稳/每股口径疑错），边际不可信，未计入便宜信号。",
   },
   en: {
     strike: "Strike zone", below: "Below value", within: "Within band", above: "Above value", none: "—",

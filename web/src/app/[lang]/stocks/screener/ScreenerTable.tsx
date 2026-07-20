@@ -48,9 +48,9 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
           ) : (
             <span
               className="font-mono tabular-nums text-[var(--tt-faint)]"
-              title={isZh ? "估值带红旗(盈利下滑/高杠杆/模型不稳/每股口径疑错),边际不可信，未计入便宜信号。" : "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal."}
+              title={isZh ? "估值带红旗（盈利下滑/高杠杆/模型不稳/每股口径疑错），边际不可信，未计入便宜信号。" : "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal."}
             >
-              {fmtMarginPct(r.marginPct)}<span aria-hidden className="ml-0.5 text-[var(--tt-warning,#b58900)]">⚠</span>
+              {fmtMarginPct(r.marginPct)}<span aria-hidden className="ml-0.5 text-[var(--tt-warn)]">⚠</span>
             </span>
           )
         ) : (
@@ -112,7 +112,19 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
                 <Link href={stockPath(lang, r.ticker)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                   {cleanIssuer(r.issuer)}
                   <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{r.ticker}</span>
-                  {r.marginPct != null && r.marginPct > 0 ? <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span> : null}
+                  {r.marginPct != null && r.marginPct > 0 ? (
+                    r.reliable ? (
+                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
+                    ) : (
+                      // 与表头列同一诚实口径:红旗票的安全边际弱化 + ⚠,不冒充分确认便宜。
+                      <span
+                        className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]"
+                        title={isZh ? "估值带红旗（盈利下滑/高杠杆/模型不稳/每股口径疑错），边际不可信，未计入便宜信号。" : "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal."}
+                      >
+                        {fmtMarginPct(r.marginPct)}<span aria-hidden className="ml-0.5 text-[var(--tt-warn)]">⚠</span>
+                      </span>
+                    )
+                  ) : null}
                 </Link>
               </li>
             ))}
