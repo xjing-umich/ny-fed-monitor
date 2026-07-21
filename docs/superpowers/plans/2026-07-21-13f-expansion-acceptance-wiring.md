@@ -216,7 +216,7 @@ function check(b0: Metrics, cur: Metrics, bw: Metrics | null): number {
   gate("M5", m5,
     `ratio ${pp(b0.valued_ratio)}→${pp(cur.valued_ratio)} (Δ=${dropPp.toFixed(2)}pp); valued_n ${b0.valued_n}→${cur.valued_n}`);
 
-  console.log("SKIP M6 | 手工页面抽查（见 plan Task 4）");
+  console.log("SKIP M6 | 手工页面抽查（每波：Task 2/3 Step M6；最终回归：Task 4）");
   return failed;
 }
 
@@ -391,6 +391,7 @@ Expected: M1/M3/M4/M5 PASS。若 M4/M5 FAIL：从本波剔除最宽 1–2 户 �
 4. `holder_count≥2` → 在 `/en/stocks` 与 sitemap；`=1` → 不在 sitemap  
 5. 有快照则估值卡/screener 诚实（非假有数）  
 6. `managers.json` 人数 = DB managers =（可选）本地 index 人数  
+7. 另抽 1 个本波 slug 的 `/zh/investors/<slug>` 能开  
 
 任一条失败 → 修 enrich/consensus 或剔 slug，**禁止开始 Task 3**。
 
