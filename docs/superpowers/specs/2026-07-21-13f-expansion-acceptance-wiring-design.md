@@ -217,7 +217,8 @@ M4 / M5 红时：优先丢掉本波最宽、独门最多的 1–2 户，而不�
 
 | 波次 | slug | 结果 | 原因（若剔） |
 |---|---|---|---|
-| Wave 1 | （已收 10 + GMO） | 收 | — |
-| Wave 2a / 2b | _待填_ | | |
+| Wave 1 | gmo, altarock-partners, adw-capital, alta-fox-capital, joho-capital, greenbrier-partners, 7g-capital, ancient-art, triple-frond, meritage-group, bares-capital | 收 | — |
+| Wave 2a | hillman-capital, muhlenkamp, turtle-creek, arbiter-partners, check-capital | 收 | M1–M5 PASS（2026-07-21；Δlonely/Δcons=0.559；valued_ratio −1.18pp vs B0）；M6 抽查 hillman→BIIB、turtle→BFH 串联通过 |
+| Wave 2b | _待填_ | | |
 
 相关：[[product-direction]] [[valuation-philosophy-constraint]] [[lean-index-coverage]] [[no-tests-solo-dev]] [[sec-valuation-ingest-ops]]
