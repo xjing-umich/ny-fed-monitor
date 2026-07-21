@@ -324,10 +324,28 @@ async function ingestManager(seed: Omit<Manager, "name">): Promise<ManagerDetail
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
+  // Optional partial run: INGEST_ONLY=gmo,baupost-group — only those slugs;
+  // index.json / former-names.json are merged so the rest of the seed set stays intact.
+  const onlySlugs = (process.env.INGEST_ONLY ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const seeds =
+    onlySlugs.length > 0
+      ? SEED_MANAGERS.filter((m) => onlySlugs.includes(m.slug))
+      : SEED_MANAGERS;
+  if (onlySlugs.length > 0) {
+    const missing = onlySlugs.filter((s) => !SEED_MANAGERS.some((m) => m.slug === s));
+    if (missing.length > 0) {
+      throw new Error(`INGEST_ONLY unknown slug(s): ${missing.join(", ")}`);
+    }
+    console.log(`INGEST_ONLY active: ${seeds.map((s) => s.slug).join(", ")}`);
+  }
+
   const summaries: ManagerSummary[] = [];
   const allDetails: ManagerDetail[] = [];
 
-  for (const seed of SEED_MANAGERS) {
+  for (const seed of seeds) {
     try {
       const detail = await ingestManager(seed);
       if (!detail) continue;
@@ -359,19 +377,42 @@ async function main() {
     await sleep(500);
   }
 
+  const indexPath = path.join(OUT_DIR, "index.json");
+  let indexManagers = summaries;
+  if (onlySlugs.length > 0 && !fs.existsSync(indexPath)) {
+    console.warn(`Index not found at ${indexPath}; writing seed-only index from this run.`);
+  }
+  if (onlySlugs.length > 0 && fs.existsSync(indexPath)) {
+    const existing = JSON.parse(fs.readFileSync(indexPath, "utf8")) as ManagerIndex;
+    const bySlug = new Map(existing.managers.map((m) => [m.slug, m]));
+    for (const s of summaries) bySlug.set(s.slug, s);
+    // Keep seed order; drop orphans no longer in managers.json.
+    indexManagers = SEED_MANAGERS.map((m) => bySlug.get(m.slug)).filter(
+      (m): m is ManagerSummary => Boolean(m)
+    );
+  }
   const index: ManagerIndex = {
     generatedAt: new Date().toISOString(),
-    managers: summaries,
+    managers: indexManagers,
   };
 
-  const indexPath = path.join(OUT_DIR, "index.json");
   fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
   console.log(`\nIndex written to ${indexPath}`);
-  console.log(`Total managers processed: ${summaries.length}`);
+  console.log(`Total managers in index: ${indexManagers.length} (this run: ${summaries.length})`);
 
   const formerPath = path.join(OUT_DIR, "former-names.json");
-  fs.writeFileSync(formerPath, JSON.stringify(FORMER_NAMES, null, 2));
-  console.log(`Former names written to ${formerPath} (${Object.keys(FORMER_NAMES).length} managers with history)`);
+  let formerOut = FORMER_NAMES;
+  if (onlySlugs.length > 0 && fs.existsSync(formerPath)) {
+    const existingFormer = JSON.parse(fs.readFileSync(formerPath, "utf8")) as Record<
+      string,
+      string[]
+    >;
+    formerOut = { ...existingFormer, ...FORMER_NAMES };
+  }
+  fs.writeFileSync(formerPath, JSON.stringify(formerOut, null, 2));
+  console.log(
+    `Former names written to ${formerPath} (${Object.keys(formerOut).length} managers with history)`
+  );
 
   // 凭据优先用 process.env(CI/GitHub Actions secrets)，本地回退仓库根 .env.local。
   const fileEnv: Record<string, string> = {};
@@ -419,7 +460,8 @@ async function main() {
 
   // 护栏:成功经理人占比低于阈值 → 标红。已落库的部分数据保留(上面已写),
   // 但 exit 1 让 GitHub Actions 显示失败,杜绝静默部分失败伪装成功。
-  const expected = SEED_MANAGERS.length;
+  // Partial runs (INGEST_ONLY) gate against the filtered seed subset only.
+  const expected = seeds.length;
   const succeeded = summaries.length;
   const ratio = expected > 0 ? succeeded / expected : 0;
   if (ratio < MIN_SUCCESS_RATIO) {
