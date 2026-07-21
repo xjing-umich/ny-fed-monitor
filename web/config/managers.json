@@ -84,5 +84,33 @@
   { "cik": "0000846222", "slug": "greenhaven-associates", "person": "Edgar Wachenheim" },
   { "cik": "0001376879", "slug": "ako-capital", "person": "Nicolai Tangen" },
   { "cik": "0001142062", "slug": "century-management", "person": "Arnold Van Den Berg" },
-  { "cik": "0000898382", "slug": "cooperman-family-office", "person": "Leon Cooperman" }
+  { "cik": "0000898382", "slug": "cooperman-family-office", "person": "Leon Cooperman" },
+  {
+    "cik": "0001352662",
+    "slug": "gmo",
+    "person": "Jeremy Grantham",
+    "people": [{ "name": "Jeremy Grantham", "zh": "格兰瑟姆" }],
+    "aliases": ["GMO", "Grantham Mayo", "杰里米格兰瑟姆", "格兰瑟姆"]
+  },
+  { "cik": "0001631014", "slug": "altarock-partners", "person": "Mark Massey" },
+  { "cik": "0001745214", "slug": "adw-capital", "person": "Adam Wyden" },
+  { "cik": "0001858353", "slug": "alta-fox-capital", "person": "Connor Haley" },
+  { "cik": "0001106500", "slug": "joho-capital", "person": "Robert Karr" },
+  {
+    "cik": "0001532262",
+    "slug": "greenbrier-partners",
+    "person": "Shad Rowe",
+    "people": [{ "name": "Shad Rowe" }, { "name": "Frederick Rowe", "role": "legal" }],
+    "aliases": ["Greenbrier", "Frederick Rowe"]
+  },
+  { "cik": "0001720350", "slug": "7g-capital", "person": "Charles Jigarjian" },
+  {
+    "cik": "0001426749",
+    "slug": "ancient-art",
+    "person": "Quincy Lee",
+    "aliases": ["Teton Capital", "Ancient Art"]
+  },
+  { "cik": "0001454502", "slug": "triple-frond", "person": "Stuart Mclaughlin" },
+  { "cik": "0001427119", "slug": "meritage-group", "person": "Nathaniel Simons" },
+  { "cik": "0001340807", "slug": "bares-capital", "person": "Brian Bares" }
 ]
