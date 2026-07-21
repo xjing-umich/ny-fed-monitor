@@ -660,5 +660,30 @@
     "cik": "0001032814",
     "slug": "check-capital",
     "person": "Steven Check"
+  },
+  {
+    "cik": "0000814375",
+    "slug": "donald-smith",
+    "person": "Donald Smith"
+  },
+  {
+    "cik": "0000945631",
+    "slug": "eagle-capital",
+    "person": "Ravenel Boykin Curry"
+  },
+  {
+    "cik": "0001050442",
+    "slug": "disciplined-growth",
+    "person": "Fred Martin"
+  },
+  {
+    "cik": "0001821168",
+    "slug": "lountzis-asset",
+    "person": "Paul Lountzis"
+  },
+  {
+    "cik": "0001362535",
+    "slug": "cullen-value",
+    "person": "Jim Cullen"
   }
 ]
