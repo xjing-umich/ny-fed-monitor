@@ -379,19 +379,17 @@ async function main() {
 
   const indexPath = path.join(OUT_DIR, "index.json");
   let indexManagers = summaries;
+  if (onlySlugs.length > 0 && !fs.existsSync(indexPath)) {
+    console.warn(`Index not found at ${indexPath}; writing seed-only index from this run.`);
+  }
   if (onlySlugs.length > 0 && fs.existsSync(indexPath)) {
     const existing = JSON.parse(fs.readFileSync(indexPath, "utf8")) as ManagerIndex;
     const bySlug = new Map(existing.managers.map((m) => [m.slug, m]));
     for (const s of summaries) bySlug.set(s.slug, s);
     // Keep seed order; drop orphans no longer in managers.json.
-    const seedSlugs = new Set(SEED_MANAGERS.map((m) => m.slug));
-    indexManagers = [
-      ...SEED_MANAGERS.map((m) => bySlug.get(m.slug)).filter(
-        (m): m is ManagerSummary => Boolean(m)
-      ),
-      // Preserve any unexpected leftovers outside seed (shouldn't happen).
-      ...[...bySlug.values()].filter((m) => !seedSlugs.has(m.slug)),
-    ];
+    indexManagers = SEED_MANAGERS.map((m) => bySlug.get(m.slug)).filter(
+      (m): m is ManagerSummary => Boolean(m)
+    );
   }
   const index: ManagerIndex = {
     generatedAt: new Date().toISOString(),
