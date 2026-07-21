@@ -306,7 +306,21 @@ EOF
 
 - [ ] **Step 1: 解析 CIK 并写入 candidates**
 
-对每户用 efts / submissions 找到 13F filer CIK（与先前 Wave1 同法）。写入：
+对每户基金名用 SEC 全文检索定位 13F filer CIK，再拉 submissions 确认活跃：
+
+```bash
+# 例：检索
+curl -sL -A "NYFedMonitor research junlinzhu@jobright.ai" \
+  "https://efts.sec.gov/LATEST/search-index?q=%22HILLMAN%22&forms=13F-HR&dateRange=custom&startdt=2024-01-01&enddt=2026-07-21" \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print([(h['_source'].get('ciks'), h['_source'].get('display_names'), h['_source'].get('file_date')) for h in d.get('hits',{}).get('hits',[])[:8]])"
+
+# 例：确认 reportDate
+curl -sL -A "NYFedMonitor research junlinzhu@jobright.ai" \
+  "https://data.sec.gov/submissions/CIK##########.json" \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); f=d['filings']['recent']; print(d['name']); print([(a,b) for a,b in zip(f['form'],f['reportDate']) if '13F' in a][:3])"
+```
+
+写入：
 
 ```json
 [
@@ -367,7 +381,20 @@ cd web && npx tsx scripts/expansion-acceptance.ts check \
 
 Expected: M1/M3/M4/M5 PASS。若 M4/M5 FAIL：从本波剔除最宽 1–2 户 → `retire-manager.ts` → 从 JSON 删除 → 重跑 ingest consensus（或全波 `INGEST_ONLY` 剩余）+ valuation → 再 check；剔减写入附录 C。
 
-- [ ] **Step 8: Commit 种子 + 附录 C 更新**
+- [ ] **Step 8: M6 本波页面抽查（不过不进 2b）[需连库]**
+
+`npm run dev`（或 preview）。对本波至少 **2 个新 slug** + 各 1 个 Top 持股：
+
+1. `/en/investors` 能搜到  
+2. `/en/investors/<slug>` 持仓非空、季报可切换、Top1 → `/en/stocks/<TICKER>`  
+3. 个股持有人表含该 slug；有 Related/同持则点回投资人页  
+4. `holder_count≥2` → 在 `/en/stocks` 与 sitemap；`=1` → 不在 sitemap  
+5. 有快照则估值卡/screener 诚实（非假有数）  
+6. `managers.json` 人数 = DB managers =（可选）本地 index 人数  
+
+任一条失败 → 修 enrich/consensus 或剔 slug，**禁止开始 Task 3**。
+
+- [ ] **Step 9: Commit 种子 + 附录 C 更新**
 
 ```bash
 git add web/config/managers.json docs/superpowers/specs/2026-07-21-13f-expansion-acceptance-wiring-design.md
@@ -384,11 +411,11 @@ EOF
 
 ### Task 3: Wave 2b（宽组合 5 户）全链路
 
-仅在 Task 2 门禁绿后开始。名单：Donald Smith、Eagle Capital、Disciplined Growth、Lountzis、Cullen。
+仅在 Task 2 **数字门禁 + M6** 全绿后开始。名单：Donald Smith、Eagle Capital、Disciplined Growth、Lountzis、Cullen。
 
 **Files:** 同 Task 2。
 
-- [ ] **Step 1: CIK + validate**（同 Task 2 Steps 1–2）
+- [ ] **Step 1: CIK + validate**（同 Task 2 Steps 1–2，含 efts curl）
 
 建议 slug：`donald-smith`、`eagle-capital`、`disciplined-growth`、`lountzis-asset`、`cullen-value`（以 SEC 名为准防撞）。
 
@@ -422,7 +449,11 @@ cd web && npx tsx scripts/expansion-acceptance.ts check \
 
 M4/M5 红 → 按 spec 缩名单（优先 Eagle / Donald Smith / Disciplined Growth 中独门贡献最大者），记附录 C。
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: M6 本波页面抽查 [需连库]**
+
+同 Task 2 Step 8（至少 2 个本波新 slug + Top 持股串联）。不过则缩名单或修数据，勿开 PR。
+
+- [ ] **Step 7: Commit**
 
 ```bash
 git add web/config/managers.json docs/superpowers/specs/2026-07-21-13f-expansion-acceptance-wiring-design.md
@@ -447,17 +478,18 @@ EOF
 cd web && npm run dev
 ```
 
-- [ ] **Step 2: 按 spec §2.1 抽查（至少）**
+- [ ] **Step 2: 最终串联回归（Task 2/3 每波 M6 已做过；此处做跨波抽查）**
 
 | # | URL | 期望 |
 |---|---|---|
 | 1 | `/en/investors` | 能搜到 Wave1 + 2a/2b 新人 |
-| 2 | `/en/investors/gmo` | 持仓非空；点 Top1 → 个股 |
-| 3 | `/en/investors/<wave2-slug>` | 同上；zh 抽 1 个 |
-| 4 | 上一步个股 `/en/stocks/<TICKER>` | 持有人表含该 slug |
+| 2 | `/en/investors/gmo` | 持仓非空；季报切换；Top1 → 个股 |
+| 3 | `/en/investors/<wave2-slug>` | 同上；另抽 1 个 `/zh/investors/<slug>` |
+| 4 | 上一步个股 `/en/stocks/<TICKER>` | 持有人表含该 slug；有 Related/同持则点回 |
 | 5 | 若 `holder_count≥2` | 出现在 `/en/stocks`；sitemap 含该 ticker |
 | 6 | 若 `holder_count=1` | **不在** sitemap 股票段 |
 | 7 | 有 `valuation_snapshot` 的票 | 卡片/screener 非假有数 |
+| 8 | 计数 | `managers.json` = DB managers（M1） |
 
 - [ ] **Step 3: 最终 M5 vs B0 [需连库]**
 
