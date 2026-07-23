@@ -104,6 +104,8 @@ async function main() {
 
   let valued = 0, skipped = 0, excludedNonOperating = 0, adrSuppressed = 0, staleFundamentals = 0;
   let exceptionSkipped = 0;
+  // 数据缺口导致算不出 verdict(缺价/陈旧价/陈旧基本面):与瞬时故障同类,保留历史行。
+  let suppressedByDataGap = 0;
   // 引擎有意抑制(该删旧行)vs 瞬时异常(保留历史行)。catch / 抓取失败不进此集。
   const intentionallyUnvaluable = new Set<string>();
   const rows: Record<string, unknown>[] = [];
@@ -166,6 +168,12 @@ async function main() {
       });
       if (!run.verdict) {
         skipped++;
+        // 数据缺口(缺价/陈旧价/陈旧基本面)计入熔断分子:全 universe 无价时熔断会拦下清理,
+        // 防止价格 cron 断更把整张表删空。但「是否真删」统一交给熔断裁决 —— 零星死票
+        // (退市/停报/长期无价)仍须能被清理,否则旧 price/verdict 会无限期挂在榜单上,
+        // 而读取侧不按 computed_at 过滤陈旧行。故此处始终加入候选集,不做豁免。
+        const dataGap = priceStale || !fetchedPrice || fundamentalsStale;
+        if (dataGap) suppressedByDataGap++;
         intentionallyUnvaluable.add(ticker);
         continue;
       }
@@ -207,15 +215,29 @@ async function main() {
 
   // 清理陈旧行:只删「引擎有意抑制」且本轮未写入的 ticker。catch / 抓取异常的 ticker
   // 不进 intentionallyUnvaluable → 保留历史行,避免抖动期误删后读取侧变"—"。
+  // 数据缺口(缺价/陈旧价/陈旧基本面)则进候选集,由下面两道闸统一裁决是否真删。
   // 另:异常跳过率熔断 —— 超过阈值则整轮跳过清理,防大面积误删。
-  const MAX_EXCEPTION_SKIP_RATIO = 0.05;
+  // 熔断分子含两类「非结构性」跳过:异常 + 数据缺口(缺价/陈旧价/陈旧基本面)。
+  // 单看 exceptionSkipped 会漏掉价格 cron 断更这类场景(getLatestPrice 返回 null 不抛异常)。
+  const MAX_NON_STRUCTURAL_SKIP_RATIO = 0.15;
+  // 绝对地板:本轮写入覆盖率断崖即视为系统性故障,无论比率如何都不清理。
+  // 注意这不是覆盖率目标 —— 分母 universe 含大量结构性排除项(ETP/基金/权证、
+  // 未策展 ADR、薄数据),它们永远不计入分子,故常态覆盖率本就远低于 100%。
+  // 真实基准(2026-07-23 生产跑):universe 2142、入表 1037 = 48.4%。地板必须
+  // 显著低于该基准,否则每轮都触发、清理永久静默停摆。调整前请以真实一轮日志为准。
+  const MIN_WRITTEN_RATIO = 0.35;
   const written = new Set(rows.map((r) => r.ticker as string));
-  const exceptionRatio = universe.length > 0 ? exceptionSkipped / universe.length : 0;
+  const nonStructuralSkipped = exceptionSkipped + suppressedByDataGap;
+  const skipRatio = universe.length > 0 ? nonStructuralSkipped / universe.length : 0;
+  const writtenRatio = universe.length > 0 ? written.size / universe.length : 0;
   let deleted = 0;
-  if (exceptionRatio > MAX_EXCEPTION_SKIP_RATIO) {
+  if (skipRatio > MAX_NON_STRUCTURAL_SKIP_RATIO || writtenRatio < MIN_WRITTEN_RATIO) {
     console.warn(
-      `陈旧行清理已跳过:本轮异常跳过率 ${(exceptionRatio * 100).toFixed(1)}% ` +
-        `(${exceptionSkipped}/${universe.length}) > ${(MAX_EXCEPTION_SKIP_RATIO * 100).toFixed(0)}% 阈值。` +
+      `陈旧行清理已跳过:非结构性跳过率 ${(skipRatio * 100).toFixed(1)}% ` +
+        `(异常 ${exceptionSkipped} + 数据缺口 ${suppressedByDataGap} = ${nonStructuralSkipped}/${universe.length}, ` +
+        `阈值 ${(MAX_NON_STRUCTURAL_SKIP_RATIO * 100).toFixed(0)}%)、` +
+        `写入覆盖率 ${(writtenRatio * 100).toFixed(1)}% (${written.size}/${universe.length}, ` +
+        `地板 ${(MIN_WRITTEN_RATIO * 100).toFixed(0)}%)。` +
         `保留全部既有 valuation_snapshot 行,避免抖动期误删。`
     );
   } else {
@@ -231,9 +253,13 @@ async function main() {
   }
   console.log(
     `估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据/陈旧价), ` +
-      `异常跳过 ${exceptionSkipped}, 过期基本面抑制 ${staleFundamentals}(最新FY距今>${FUNDAMENTALS_MAX_AGE_MONTHS}月), ` +
+      `异常跳过 ${exceptionSkipped}, 数据缺口抑制 ${suppressedByDataGap}(缺价/陈旧价/陈旧基本面,保留历史行), ` +
+      `过期基本面抑制 ${staleFundamentals}(最新FY距今>${FUNDAMENTALS_MAX_AGE_MONTHS}月), ` +
       `排除非经营性 ${excludedNonOperating}(ETP/基金/权证), ADR未策展抑制 ${adrSuppressed}, ` +
-      `清理陈旧 ${deleted}, computed_at ${computedAt}`
+      `清理陈旧 ${deleted}, computed_at ${computedAt}\n` +
+      // 常态也打印,让距离熔断/地板的余量平时可观测,而不是等它咬人才发现。
+      `覆盖率: 写入 ${(writtenRatio * 100).toFixed(1)}% (${written.size}/${universe.length}, 地板 ${(MIN_WRITTEN_RATIO * 100).toFixed(0)}%), ` +
+      `非结构性跳过 ${(skipRatio * 100).toFixed(1)}% (阈值 ${(MAX_NON_STRUCTURAL_SKIP_RATIO * 100).toFixed(0)}%)`
   );
 }
 
