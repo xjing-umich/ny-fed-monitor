@@ -27,6 +27,11 @@ export type TtmSynthesis = {
   quarters_used: string[];
   /** 单项回退 FY 原值的流量字段(revenue/net_income 落入即整体 null,不会出现在成功结果里)。 */
   degraded_fields: string[];
+  /**
+   * 最新 10-Q 无 shares_diluted → 每股股数回退 FY0 原值(拆股前口径)。true 时拆股闸的 as-of
+   * 不可前滚到 TTM 期末(否则拆股落在 (FY0期末, TTM期末] 时会漏抑制假"便宜"信号,见 spec §6)。
+   */
+  shares_from_fy: boolean;
 };
 
 const isRealQ = (r: FundamentalPeriod): boolean =>
@@ -102,6 +107,7 @@ export function buildTtm(
   if (fin(flow.gross_profit) && flow.gross_profit > rev) return null;
 
   const lastQ = dedupNew[dedupNew.length - 1];
+  const sharesFromFy = lastQ.shares_diluted == null;          // 最新10-Q缺股数 → 回退 FY(拆股前口径)
   const stock = Object.fromEntries(
     STOCK_FIELDS.map((f) => [f, lastQ[f] ?? fy0[f]]),        // 存量:最新10-Q,单项 null 回退 FY
   );
@@ -135,5 +141,5 @@ export function buildTtm(
     // (`...fy0` 会带入 FY 的 is_derived=false,语义错误,须显式覆盖)。
     is_derived: true,
   };
-  return { row, period_end: lastQ.period_end, quarters_used: dedupNew.map((q) => q.period_end), degraded_fields: degraded };
+  return { row, period_end: lastQ.period_end, quarters_used: dedupNew.map((q) => q.period_end), degraded_fields: degraded, shares_from_fy: sharesFromFy };
 }

@@ -100,11 +100,20 @@ export function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; 
   return { rate: clamped, basis: `Average effective tax rate over ${rates.length} year(s), capped at the statutory 21%.` };
 }
 
+/**
+ * 工作序列(spec §5):TTM 生效时 = [TTM, FY-1…](TTM 顶替 FY0,窗口与 FY-1 不重叠),
+ * 否则纯 FY。**单一真相源** —— computeValuationFloor 与 deriveOeDcf 的增长窗都经此取序列,
+ * 保证 oe0 与增长窗吃同一批年份(否则 oeDcf 用纯 FY 与 workYears 标签集取交集会丢 FY0 又不含 TTM)。
+ */
+export function workingYears(input: ValuationFloorInput): ValuationFloorYear[] {
+  return input.ttm ? [input.ttm.year, ...input.years.slice(1)] : input.years;
+}
+
 export function computeValuationFloor(input: ValuationFloorInput): ValuationFloor | PerShareUnavailable | undefined {
   // TTM 基点(spec §5):工作序列 = [TTM, FY-1…](TTM 顶替 FY0,窗口与 FY-1 不重叠);
   // allYears 保持纯 FY —— 回归型判据(roicLongTermStrong/growthFranchise/结构性趋势)审计地基不动。
   const fyYears = input.years;
-  const workYears = input.ttm ? [input.ttm.year, ...fyYears.slice(1)] : fyYears;
+  const workYears = workingYears(input);
   const earningsYears = selectEarningsYears(workYears);
   if (earningsYears.length < MIN_YEARS) return undefined;
 

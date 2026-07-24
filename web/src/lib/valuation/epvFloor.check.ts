@@ -830,6 +830,7 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
       year: year(2027, { revenue: 999, operating_margin: 0.3, net_income: 300, effective_tax_rate: 0.21, shareholders_equity: 500, cash: 200, total_debt: 100, net_debt: -100, shares_diluted: 100 }),
       period_end: "2099-01-01",
       quarters_used: [],
+      shares_from_fy: false,
     },
   };
   const ttmFloor = floorOf(computeValuationFloor(ttmInput));

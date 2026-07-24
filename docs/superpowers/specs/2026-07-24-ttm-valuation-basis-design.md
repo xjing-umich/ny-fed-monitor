@@ -76,6 +76,8 @@ buildTtmYear(input: {
   - `earningsYears/marginYears/shares` 选取全部改跑 `workYears`(TTM 顶替 FY0,窗口与 FY-1 不重叠,不双计)。
   - `allYears = fyYears` **保持纯 FY**(roicLongTermStrong、structuralConfidence 趋势、growthFranchise、strong 盈利闸的既有语义逐字不动)。
 - 下游(EPV 最新营收×正常化利润率、净债/权益/超额现金、重置价值、net-net 流动资产、structuralConfidence 的 `years[0].net_income` target、oeDcf、maintenanceCapex、moatCap declined)**零代码改动**,经 `years[0]` 自动吃到 TTM。
+- **如实记载(终审 Minor,方向保守可 ship)**:`structuralConfidence` 的入参 `years` 是 `workYears` 派生的 `marginYears`,故其内部"趋势"部分(revenueDrivenRatio / 峰值跳升检测等吃 `years` 头者)实际吃到 **TTM 头**,而非上文 §5「保持纯 FY」所暗示的 allYears——只有显式吃 `allYears` 的 `roicLongTermStrong` 才是纯 FY。TTM 头前滚只会把结构性置信分推向"更成立",对"优质股永远太贵"是保守方向(不会凭空放水买入门槛),故本期不改算法,仅在此如实标注;若日后要让趋势判据也锚纯 FY,须把对应量单独喂 `allYears`。
+- **`workingYears(input)` 单一真相源**(epvFloor.ts 导出):`computeValuationFloor` 与 `runValuation` 的 `deriveOeDcf` 调用都经它取工作序列,避免两处手写 `input.ttm ? [ttm.year, ...years.slice(1)] : years`;修掉了 oeDcf 增长窗此前用纯 `floorInput.years` 与 `workYears` 标签集取交集、丢 FY0 又不含 TTM 的 seam 不一致(终审 Important #2)。
 
 ## 6. as-of 两道闸重新锚定(ingest + 个股页同改)
 
@@ -83,6 +85,7 @@ buildTtmYear(input: {
 
 - 预期副作用(正收益):SPGI/BKNG 类"拆股晚于年报"抑制票,新 10-Q 覆盖拆股后股数即自动复活——验收时显式核对方向,**但拆股期夹在"配对季度与新季度之间"时股数口径依旧错配,须确认 isSplitCoverageStale 语义在 TTM as-of 下仍保守**(拆股日 > TTM 期末仍抑制;拆股日 ≤ TTM 期末即视为已覆盖,依据是存量/股数取自最新 10-Q)。
 - 注意:流量增量法用的是"新减旧"差额,不含每股口径,拆股不污染流量项。
+- **shares_from_fy 保守化(终审 Important #1)**:`buildTtm` 的存量层在最新 10-Q 缺 `shares_diluted` 时回退 FY0 原值(拆股前口径)。此时若拆股恰落在 `(FY0期末, TTM期末]`,把拆股闸 as-of 前滚到 TTM 期末会**漏抑制**假"便宜"信号(每股口径仍是拆股前股数 × 拆股后价)。故 `TtmSynthesis`/`floorInput.ttm` 增 `shares_from_fy: boolean`,ingest 与个股页喂 `isSplitCoverageStale` 的 as-of 改为 `floorInput.ttm && !floorInput.ttm.shares_from_fy ? floorInput.ttm.period_end : (sec.annual[0].period_end ?? null)`——**每股口径真取自最新 10-Q 才前滚,否则退回 FY 期末**。`isFundamentalsStale`(不涉每股口径)维持 TTM 期末。
 
 ## 7. 快照与 UI
 
@@ -196,3 +199,13 @@ ttm命中=62  fy回退=17  错误/跳过=1
 ### 结论
 
 三条硬断言(§9.1 GOOGL、§9.2 HRB 独立对账、§9.3 ADR 零漂移)+ 抽样断言(§9.5)全过,`probe-ttm-basis.ts` exit 0。§9.2 原 15% 季节性偏差门槛已废弃并改为逐字段独立对账(见上),真实 22.1% 偏差保留为观测记录,已确认是 HRB 报税季主力季度真实同比增长(非增量法/配对缺陷)。
+
+### 终审 3 处 Important 修复(2026-07-24,分支 plan/valuation-ttm-basis)
+
+全分支 opus 终审提出 3 处 Important + 附带 Minor,一轮修复合并:
+
+1. **#1 拆股闸 as-of 前滚 × shares 回退 FY 组合洞(必修)**:`buildTtm` 最新 10-Q 缺 `shares_diluted` 时每股口径回退 FY0(拆股前),但拆股闸 as-of 仍前滚到 TTM 期末 → 拆股落 `(FY0期末, TTM期末]` 时漏抑制假"便宜"。修法:`TtmSynthesis`/`floorInput.ttm` 增 `shares_from_fy`,ingest + 个股页两处把 split 闸 as-of 改为「每股真取自 10-Q 才前滚,否则退 FY 期末」;staleness 闸维持 TTM 期末。`ttmBasis.check.ts` 加负例(lastQ shares=null → shares_from_fy===true 且 shares 回退 FY 值)。
+2. **#2 oeDcf 增长窗丢 FY0/TTM**:`runValuation` 此前传纯 `floorInput.years` 给 `deriveOeDcf`,与 lamp `years_used`(workYears 标签)取交集丢 FY0 又不含 TTM。修法:epvFloor 导出 `workingYears(input)` 单一真相源,`computeValuationFloor` 与 `runValuation` 调用点同用;增长窗回到与 oe0 同批年份。
+3. **#3 UI years_used 假 FY 标签**:TTM 命中票估值卡渲染 "FY 2026"(未申报/跳空)。`EarningsPowerFloorCard` 加 `ttmPeriodEnd?` prop(page 传 `floorInput.ttm?.period_end`),两处渲染点(LampMethod 年份行 + provenance 窗口行)把头部元素替换为 `TTM {期末}`,其余年份维持现状;不传 prop 零变化。
+
+验证:`npx tsc --noEmit` 干净;`src/lib/valuation/*.check.ts` 全绿(含新负例);`probe-ttm-basis.ts` exit 0(三条硬断言不变)。

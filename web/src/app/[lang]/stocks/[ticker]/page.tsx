@@ -383,9 +383,15 @@ export default async function StockTickerPage({
   const valuationPrice = priceStale ? null : fetchedPrice;
 
   // 拆股口径护栏:基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配,整条抑制估值判定。
+  // as-of 仅在 TTM 每股股数真取自最新10-Q(非回退 FY0)时才前滚到 TTM 期末;否则退回 FY 期末,
+  // 否则拆股落在 (FY0期末, TTM期末] 且最新10-Q缺股数时会漏抑制假"便宜"信号(spec §6)。
   const latestSplitDate = await getLatestSplit(ticker);
+  const splitAsOf =
+    floorInput.ttm && !floorInput.ttm.shares_from_fy
+      ? floorInput.ttm.period_end
+      : sec.annual?.[0]?.period_end ?? null;
   const splitCoverageStale = isSplitCoverageStale({
-    fundamentalsAsOf,
+    fundamentalsAsOf: splitAsOf,
     latestSplitDate,
   });
 
@@ -635,6 +641,7 @@ export default async function StockTickerPage({
                       lang={lang}
                       showStatus={false}
                       verdict={run.verdict}
+                      ttmPeriodEnd={floorInput.ttm?.period_end}
                     />
                   </div>
                   {floorInput.ttm && (

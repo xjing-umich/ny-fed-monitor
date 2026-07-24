@@ -58,7 +58,12 @@ export function fundamentalsToFloorInput(
   // TTM 基点(spec §4-5):合成失败 → 不填 ttm,引擎走纯 FY 现状(零漂移)。
   const ttmSyn = quarterRows?.length ? buildTtm(rows ?? [], quarterRows) : null;
   const ttm = ttmSyn
-    ? { year: toFloorYear(ttmSyn.row, adsRatio), period_end: ttmSyn.period_end, quarters_used: ttmSyn.quarters_used }
+    ? {
+        year: toFloorYear(ttmSyn.row, adsRatio),
+        period_end: ttmSyn.period_end,
+        quarters_used: ttmSyn.quarters_used,
+        shares_from_fy: ttmSyn.shares_from_fy,
+      }
     : undefined;
   return { ticker, company_name: companyName ?? undefined, years, sic: sic ?? undefined, ...(ttm ? { ttm } : {}) };
 }

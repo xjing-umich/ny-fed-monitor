@@ -41,8 +41,18 @@ const q1o = q("2025-03-31", { revenue: 90, net_income: 20, operating_income: 22,
   assert(r!.row.net_income === 90, `TTM NI 90,得 ${r!.row.net_income}`);
   assert(r!.row.shareholders_equity === 210, "存量取最新10-Q");
   assert(r!.row.shares_diluted === 9.8, "shares 取最新10-Q");
+  assert(r!.shares_from_fy === false, "最新10-Q有股数 → shares_from_fy=false");
   assert(r!.period_end === "2026-03-31" && r!.row.fiscal_year === 2026, "期末/标签");
   assert(r!.degraded_fields.length === 0, "无 degraded");
+}
+// 负例(拆股闸组合洞):最新10-Q shares=null → 每股股数回退 FY0 值,shares_from_fy=true
+// (调用方据此不把拆股闸 as-of 前滚到 TTM 期末,防拆股落在 (FY0期末, TTM期末] 时漏抑制)。
+{
+  const q1nNoShares = { ...q1n, shares_diluted: null } as FundamentalPeriod;
+  const r = buildTtm([base], [q1nNoShares, q1o]);
+  assert(r != null, "最新10-Q缺股数仍可合成");
+  assert(r!.shares_from_fy === true, "最新10-Q缺股数 → shares_from_fy=true");
+  assert(r!.row.shares_diluted === base.shares_diluted, `shares 回退 FY 值 ${base.shares_diluted},得 ${r!.row.shares_diluted}`);
 }
 // 闸1:无新季度
 assert(buildTtm([base], [q1o]) === null, "闸1 无新季度→null");
