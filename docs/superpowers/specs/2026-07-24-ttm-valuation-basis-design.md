@@ -113,3 +113,65 @@ buildTtmYear(input: {
 - **10-Q 未审计/可能重述**:增量法把未审计暴露面限制在 ≤3 个季度的差额,地基仍是 10-K;UI 明示披露。
 - **季度 XBRL tag 覆盖差**:单字段 degraded 回退 FY 值,核心字段(revenue/NI)degraded 则整体回退——绝不混搭出"半 TTM"。
 - **多年平均含 TTM 头**(权重 ≤1/5):这是主流 TTM screener 语义,且 declined 检查/均值口径自洽;审计纯度由 allYears 层保住。
+
+## 验收记录(2026-07-24)
+
+探针:`web/scripts/probe-ttm-basis.ts`(只读,不写表)。
+运行:`cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/probe-ttm-basis.ts` / `--sample 80`。
+
+### §9.1 GOOGL 对账 —— PASS
+
+独立 REST 直拉 `company_fundamentals_periods`(不复用引擎路径)复算:
+
+```
+FY(2025-12-31)=402,836,000,000 + Σ新季度[2026-03-31=109,896,000,000]
+  − Σ去年同期[2025-03-31=90,234,000,000] = 422,498,000,000
+引擎 TTM: as_of=2026-03-31  revenue=422,498,000,000
+相对误差 = 0.0000% (<0.1% 达标)
+as_of === "2026-03-31" ✅(Q2'26 尚未入库,断言按原定等值形式通过)
+```
+
+### §9.3 FY-only ADR 零漂移(ASML/SAP/NVO)—— PASS
+
+三票 A(FY)/B(TTM)两路 `floorInput.years` JSON 全等、`verdict` JSON 全等(均为 `null`,SAP/NVO 为 `ads_suppressed`,ASML 为 `thin_or_unvaluable_floor`,与 TTM 改动无关的既有抑制原因),且 `floorInput.ttm === undefined`。三票季度数据源本就是 20-F/6-K 而非 10-Q,`buildTtm` 天然拿不到 quarterRows,零漂移由结构保证。
+
+### §9.2 HRB 季节性 —— 断言未通过(真实发现,非探针 bug)
+
+```
+HRB: TTM_NI=739,355,000  FY_NI(FY2024,period_end 2025-06-30)=605,773,000
+|偏差| = 22.1%(断言门槛 <15%,未过)
+quarters_used = ["2025-09-30","2025-12-31","2026-03-31"]
+```
+
+逐行手工复核(独立于探针脚本,直查 `company_fundamentals_periods`)确认增量法计算本身正确:
+`739,355,000 = 605,773,000 + (−165,819,000 −242,166,000 +847,901,000) − (−172,576,000 −243,420,000 +722,330,000)`,与 `buildTtm` 输出逐分逐厘吻合,非公式或代码缺陷。
+
+根因:HRB 报税季主力季度(Q3 FY,自然年 1-3 月)真实同比大涨 —— Q3 FY2026(2026-03-31)净利 $847.9M vs Q3 FY2025(2025-03-31)净利 $722.3M,同比 **+17.4%**(历史正常年度 FY 同比增速仅 ~1-2%,如 FY2023→FY2024 仅 +1.75%)。该季度贡献了 HRB 全年绝大部分利润,单季 17.4% 的真实增长被增量法如实滚入 TTM,推高 TTM_NI 相对陈旧 FY(基点滞后 ~9 个月)达 22.1%——**这是 TTM 设计意图本身的体现(捕捉比年报更新的真实盈利),不是季节性配对出错**。spec 原假设"增量法抵消季节性→偏差应为小个位数%"对本票不成立,15% 门槛是设计期的经验猜测,未被本次真实数据验证支持,记录为遗留发现而非回退代码的理由。
+
+HRB `verdict` 仍如预期被 `capital_structure_distorted` 死角闸抑制(A/B 两路皆 `null`),与本 spec 无关,系独立已立案问题。
+
+### §9.5 全 universe 三分账抽样(N=80,按 holder_count 降序,确定性)—— PASS
+
+```
+ttm命中=62  fy回退=17  错误/跳过=1
+引擎抑制: A(FY)=22  B(TTM)=21
+断言: 抑制数不得高于现状 → B(21) ≤ A(22) ✅(TTM 未新增抑制,反而解除 1 例)
+```
+
+### §9.4 对照集方向性(MSFT/NFLX/AMZN/EMN)—— 记录,未设硬断言
+
+| ticker | basis | as_of | bucket(B/TTM) | 备注 |
+|---|---|---|---|---|
+| MSFT | ttm | 2026-03-31 | within | TTM 营收/净利均前滚上行,方向合理 |
+| NFLX | ttm | 2026-06-30 | within | — |
+| AMZN | ttm | 2026-03-31 | above | — |
+| EMN | ttm | 2026-03-31 | above | 周期股,TTM 利润低于 FY(下滑期前滚),方向合理 |
+
+### SPGI / BKNG split_coverage_stale 方向(spec §6 副作用,非硬断言)
+
+- **SPGI**:A(FY)与 B(TTM)均为 `split_coverage_stale` 抑制 —— 拆股覆盖抑制未因 TTM as-of 前滚而解除(现有 10-Q 尚未覆盖拆股后股数)。
+- **BKNG**:A/B 均非 split_coverage_stale 抑制(该票本身未触发此闸);实际抑制原因是 `capital_structure_distorted`,与拆股无关。
+
+### 结论
+
+三条硬断言中两条(§9.1 GOOGL、§9.3 ADR 零漂移)+ 抽样断言(§9.5)全过;§9.2 HRB 断言因真实业务增长(非代码缺陷,已手工独立复核)未达预设 15% 门槛,记录为遗留发现,不影响 Task 1-4 代码正确性结论。
