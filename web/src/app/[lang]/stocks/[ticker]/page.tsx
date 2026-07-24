@@ -366,10 +366,12 @@ export default async function StockTickerPage({
   const sicRaw = sec.company?.sic;
   const sicNum = sicRaw == null ? undefined : Number(sicRaw);
   const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic);
+  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly);
+  // as-of 重锚(spec §6):TTM 生效 → 新鲜度/拆股闸都按 TTM 期末判。
+  const fundamentalsAsOf = floorInput.ttm?.period_end ?? sec.annual?.[0]?.period_end ?? null;
   // 基本面过期闸:与 ingest 同语义 — 最新 FY 期末超阈值 → 抑制估值(不造陈旧幻觉)。
   const fundamentalsStale = isFundamentalsStale(
-    sec.annual?.[0]?.period_end ?? null,
+    fundamentalsAsOf,
     new Date().toISOString(),
   );
 
@@ -383,7 +385,7 @@ export default async function StockTickerPage({
   // 拆股口径护栏:基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配,整条抑制估值判定。
   const latestSplitDate = await getLatestSplit(ticker);
   const splitCoverageStale = isSplitCoverageStale({
-    fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
+    fundamentalsAsOf,
     latestSplitDate,
   });
 

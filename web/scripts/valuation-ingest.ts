@@ -103,6 +103,7 @@ async function main() {
   const computedAt = new Date().toISOString();
 
   let valued = 0, skipped = 0, excludedNonOperating = 0, adrSuppressed = 0, staleFundamentals = 0;
+  let ttmBasis = 0;
   let exceptionSkipped = 0;
   // 数据缺口导致算不出 verdict(缺价/陈旧价/陈旧基本面):与瞬时故障同类,保留历史行。
   let suppressedByDataGap = 0;
@@ -138,10 +139,12 @@ async function main() {
       const sicRaw = (sec.company as { sic?: unknown } | null)?.sic;
       const sicNum = sicRaw == null ? undefined : Number(sicRaw);
       const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic);
+      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly);
+      // as-of 重锚(spec §6):TTM 生效 → 新鲜度/拆股闸都按 TTM 期末判。
+      const fundamentalsAsOf = floorInput.ttm?.period_end ?? sec.annual?.[0]?.period_end ?? null;
       // 基本面过期闸:最新 FY 年报距今超阈值(停报/退市/外股 ADR 覆盖不了)→ 抑制,
       // 不拿今天的价配多年前基本面造"陈旧幻觉"verdict。与 price.stale 同类护栏。
-      const fundamentalsStale = isFundamentalsStale(sec.annual?.[0]?.period_end ?? null, computedAt);
+      const fundamentalsStale = isFundamentalsStale(fundamentalsAsOf, computedAt);
       if (fundamentalsStale) {
         staleFundamentals++;
       }
@@ -149,7 +152,7 @@ async function main() {
       const priceStale = fetchedPrice?.stale === true;
       const valuationPrice = priceStale ? null : fetchedPrice;
       const splitCoverageStale = isSplitCoverageStale({
-        fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
+        fundamentalsAsOf,
         latestSplitDate: await getLatestSplit(ticker),
       });
       const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
@@ -194,11 +197,15 @@ async function main() {
           ...v,
           expectations: run.expectations,
           methods: run.methods,
+          fundamental_basis: floorInput.ttm
+            ? { kind: "ttm", as_of: floorInput.ttm.period_end, quarters_used: floorInput.ttm.quarters_used }
+            : { kind: "fy", as_of: sec.annual?.[0]?.period_end ?? null },
           ...(run.oeDcf?.assessable && run.oeDcf.moatCap ? { moatCap: run.oeDcf.moatCap } : {}),
         },
         updated_at: computedAt,
       });
       valued++;
+      if (floorInput.ttm) ttmBasis++;
     } catch (err) {
       // 瞬时故障(Supabase/SEC 抖动):保留历史行,不进 intentionallyUnvaluable。
       exceptionSkipped++;
@@ -251,6 +258,7 @@ async function main() {
       deleted += count ?? 0;
     }
   }
+  console.log(`TTM基点: ${ttmBasis}/${valued}`);
   console.log(
     `估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据/陈旧价), ` +
       `异常跳过 ${exceptionSkipped}, 数据缺口抑制 ${suppressedByDataGap}(缺价/陈旧价/陈旧基本面,保留历史行), ` +

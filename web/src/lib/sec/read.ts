@@ -59,7 +59,8 @@ export async function getSecCompanyData(ticker: string) {
     company,
     filings: filings ?? [],
     annual: rows.filter((row: any) => row.fiscal_period === "FY"),
-    quarterly: rows.filter((row: any) => row.fiscal_period !== "FY").slice(0, 8),
+    // TTM 增量法最坏 3 新 + 3 配对 + 跨年缓冲(spec §4.2)。
+    quarterly: rows.filter((row: any) => row.fiscal_period !== "FY").slice(0, 12),
     latest,
   };
 }
