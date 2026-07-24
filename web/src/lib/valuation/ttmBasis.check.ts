@@ -65,5 +65,19 @@ assert(buildTtm(
   const r = buildTtm([base], [{ ...q1n, rd_expense: null } as FundamentalPeriod, q1o]);
   assert(r != null && r.row.rd_expense === base.rd_expense && r.degraded_fields.includes("rd_expense"), "单项degraded回退FY并记录");
 }
+// 去重取 filing_date 最新一条(非入参顺序最后者):同一 period_end 两条重报,
+// filing_date 更新、revenue 不同的正确候选排在数组前面,filing_date 更旧的错误候选故意排在后面。
+{
+  const dupCorrect = { ...q1n, filing_date: "2026-05-15", revenue: 111 } as FundamentalPeriod; // filing 更新→应选中
+  const dupStale = { ...q1n, filing_date: "2026-04-01", revenue: 999 } as FundamentalPeriod;   // filing 更旧、但排在数组后面
+  const r = buildTtm([base], [dupCorrect, dupStale, q1o]);
+  assert(r != null && r.row.revenue === 421, `重报去重取 filing_date 最新一条,TTM revenue 421,得 ${r?.row.revenue}`);
+}
+// 闸1':新季度 >3 个 = 年报缺报,整体放弃(即便每个都有合法配对)
+{
+  const news = ["2026-01-31", "2026-02-28", "2026-03-31", "2026-04-30"].map((end) => q(end, {}));
+  const matches = ["2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30"].map((end) => q(end, {}));
+  assert(buildTtm([base], [...news, ...matches]) === null, "闸1' 新季度>3→null");
+}
 console.log(failed ? `\n${failed} failure(s)` : "\nttmBasis.check ALL GREEN");
 if (failed) process.exit(1);

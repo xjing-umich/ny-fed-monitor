@@ -66,8 +66,13 @@ export function buildTtm(
     .sort((a, b) => a.period_end.localeCompare(b.period_end));
   if (newQs.length === 0) return null;                      // 闸1:没有比年报新的 10-Q
   if (newQs.length > TTM_MAX_NEW_QUARTERS) return null;     // 闸1':年报缺报
-  // 同一新季度期末重复行(修订重报)取 filing_date 最新的一条
-  const dedupNew = [...new Map(newQs.map((q) => [q.period_end, q])).values()];
+  // 同一新季度期末重复行(修订重报)取 filing_date 最新的一条:显式按 filing_date 升序排序
+  // 后再塞入 Map(后写入者覆盖同 key 先写入者),而非依赖入参顺序。filing_date=null 视为最旧。
+  const byFilingAsc = [...newQs].sort(
+    (a, b) => Date.parse(a.filing_date ?? "1900-01-01") - Date.parse(b.filing_date ?? "1900-01-01"),
+  );
+  const dedupNew = [...new Map(byFilingAsc.map((q) => [q.period_end, q])).values()]
+    .sort((a, b) => a.period_end.localeCompare(b.period_end));
 
   const matches: FundamentalPeriod[] = [];
   for (const q of dedupNew) {
@@ -126,6 +131,9 @@ export function buildTtm(
     // 溯源字段是 FY 行的原始快照,对 TTM 拼接行不成立,清空防误用
     missing_fields: {},
     raw_facts: {},
+    // TTM 行是本函数算术拼接的产物,不是任一 SEC 申报的直接摘录;is_derived=true 如实标注
+    // (`...fy0` 会带入 FY 的 is_derived=false,语义错误,须显式覆盖)。
+    is_derived: true,
   };
   return { row, period_end: lastQ.period_end, quarters_used: dedupNew.map((q) => q.period_end), degraded_fields: degraded };
 }
