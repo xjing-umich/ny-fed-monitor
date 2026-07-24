@@ -124,8 +124,14 @@ async function evaluate(
   const fetchedPrice = await getLatestPrice(ticker);
   const priceStale = fetchedPrice?.stale === true;
   const valuationPrice = priceStale ? null : fetchedPrice;
+  // 拆股闸 as-of 镜像生产 splitAsOf 逻辑(spec §6):每股口径真取自最新 10-Q 才前滚到 TTM 期末,
+  // 否则退回 FY 期末,使探针真实覆盖 shares_from_fy 路径。
+  const splitAsOf =
+    floorInput.ttm && !floorInput.ttm.shares_from_fy
+      ? floorInput.ttm.period_end
+      : sec.annual?.[0]?.period_end ?? null;
   const splitCoverageStale = isSplitCoverageStale({
-    fundamentalsAsOf,
+    fundamentalsAsOf: splitAsOf,
     latestSplitDate: await getLatestSplit(ticker),
   });
   const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);

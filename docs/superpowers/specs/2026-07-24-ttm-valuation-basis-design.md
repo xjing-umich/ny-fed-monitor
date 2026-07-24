@@ -78,6 +78,7 @@ buildTtmYear(input: {
 - 下游(EPV 最新营收×正常化利润率、净债/权益/超额现金、重置价值、net-net 流动资产、structuralConfidence 的 `years[0].net_income` target、oeDcf、maintenanceCapex、moatCap declined)**零代码改动**,经 `years[0]` 自动吃到 TTM。
 - **如实记载(终审 Minor,方向保守可 ship)**:`structuralConfidence` 的入参 `years` 是 `workYears` 派生的 `marginYears`,故其内部"趋势"部分(revenueDrivenRatio / 峰值跳升检测等吃 `years` 头者)实际吃到 **TTM 头**,而非上文 §5「保持纯 FY」所暗示的 allYears——只有显式吃 `allYears` 的 `roicLongTermStrong` 才是纯 FY。TTM 头前滚只会把结构性置信分推向"更成立",对"优质股永远太贵"是保守方向(不会凭空放水买入门槛),故本期不改算法,仅在此如实标注;若日后要让趋势判据也锚纯 FY,须把对应量单独喂 `allYears`。
 - **`workingYears(input)` 单一真相源**(epvFloor.ts 导出):`computeValuationFloor` 与 `runValuation` 的 `deriveOeDcf` 调用都经它取工作序列,避免两处手写 `input.ttm ? [ttm.year, ...years.slice(1)] : years`;修掉了 oeDcf 增长窗此前用纯 `floorInput.years` 与 `workYears` 标签集取交集、丢 FY0 又不含 TTM 的 seam 不一致(终审 Important #2)。
+- **oeDcf 两条"历史增长率"口径分开(终审收尾,锁定 decision #2)**:`deriveOeDcf(floor, years, dgs10, price, fyYears?)` —— `years`=workingYears(TTM 头),供 `windowYears`/cagr/`declined`(与 oe0 同批);`fyYears`=纯 FY 审计序列(runValuation 传 `floorInput.years`),供 `gRaw = historicalGrowthBaseRate(fyYears)`。**gRaw 增长回归恒吃纯 FY(decision #2「增长回归全部吃纯 FY 审计序列」),不吃 TTM 头**,亦合 growthBaseRate.ts 契约;`fyYears` 缺省 = `years`(无 TTM 的调用方 years 本就是纯 FY,零变化)。修完后 oeDcf 的 gRaw 与 runValuation 的 expectations 层历史增长率口径重新一致(都纯 FY)。
 
 ## 6. as-of 两道闸重新锚定(ingest + 个股页同改)
 

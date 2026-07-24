@@ -713,7 +713,7 @@ function MethodDetails({
         {oeDcf?.assessable ? (
           <p>
             {zh ? "所有者盈利 DCF：增长 g₁ " : "Owner-earnings DCF: growth g₁ "}{pct(oeDcf.growth_g1)}
-            {oeDcf.declined ? (zh ? "（历史下滑 → 封顶为 0）" : " (history declining → capped at 0)") : ""}{zh ? " · OE FY " : " · OE FY "}{oeDcf.oe_fiscal_years?.join(", ")} ·{" "}
+            {oeDcf.declined ? (zh ? "（历史下滑 → 封顶为 0）" : " (history declining → capped at 0)") : ""}{zh ? " · OE FY " : " · OE FY "}{yearsUsedText(oeDcf.oe_fiscal_years ?? [], ttmPeriodEnd)} ·{" "}
             {oeDcf.discount?.note} {oeDcf.no_bridge_note}
             {reconciliation?.comparable && reconciliation.divergence_pct != null
               ? (zh ? ` 两法中值差 ${pct(reconciliation.divergence_pct)}。` : ` Two-method midpoint gap ${pct(reconciliation.divergence_pct)}.`)

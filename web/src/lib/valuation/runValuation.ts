@@ -138,9 +138,10 @@ export function runValuation(input: RunValuationInput): ValuationRun {
   }
 
   const strikeZone = deriveStrikeZone(floor, price);
-  // 增长窗须与 oe0 吃同一批年份(spec §5):TTM 生效时序列头是 TTM(标签 FY0+1),用纯
-  // floorInput.years 与 workYears 标签集取交集会丢 FY0 又不含 TTM。经 workingYears 镜像 seam。
-  const oeDcf = deriveOeDcf(floor, workingYears(floorInput), dgs10, price);
+  // 增长窗(oe0 窗口/cagr/declined)须与 oe0 吃同一批年份(spec §5):TTM 生效时序列头是 TTM
+  // (标签 FY0+1),用纯 floorInput.years 与 workYears 标签集取交集会丢 FY0 又不含 TTM。
+  // gRaw 增长回归则恒吃纯 floorInput.years(锁定 decision #2)—— 两口径分别传入。
+  const oeDcf = deriveOeDcf(floor, workingYears(floorInput), dgs10, price, floorInput.years);
   const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
   const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
   const fundamentalsCorrupt = guards.fundamentalsCorrupt ?? fundamentalsIntegrityViolated(floorInput.years);
