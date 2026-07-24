@@ -562,6 +562,11 @@ export default async function StockTickerPage({
                   ) : undefined
                 }
               />
+              {floorInput.ttm && (
+                <p className="mt-2 text-xs text-[var(--tt-muted)]">
+                  {page.valuation.ttmBasis(floorInput.ttm.period_end)}
+                </p>
+              )}
               <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
                   { k: page.bq.revenueGrowth, v: bq.revenueYoy, sign: true },
@@ -632,6 +637,11 @@ export default async function StockTickerPage({
                       verdict={run.verdict}
                     />
                   </div>
+                  {floorInput.ttm && (
+                    <p className="mt-2 text-xs text-[var(--tt-muted)]">
+                      {page.valuation.ttmBasis(floorInput.ttm.period_end)}
+                    </p>
+                  )}
                   {expectations?.assessable && (
                     <PriceBetBlock
                       expectations={expectations}
