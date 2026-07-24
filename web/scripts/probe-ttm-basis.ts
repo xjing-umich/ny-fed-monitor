@@ -216,29 +216,8 @@ async function main() {
     );
   }
 
-  console.log("\n--- 断言 3: HRB 季节性(spec §9.2,增量法抵消季节性)---");
-  const hrb = results.get("HRB");
-  if (!hrb) {
-    assert(false, "HRB: 未取到结果(抓取失败)");
-  } else {
-    const ttmYear = hrb.B.floorInput.ttm?.year;
-    const fyYear = hrb.A.floorInput.years[0];
-    if (!ttmYear || !fyYear || fyYear.net_income == null || !Number.isFinite(fyYear.net_income) || fyYear.net_income === 0) {
-      assert(false, `HRB: TTM 未合成或 FY net_income 不可用,无法算偏差(ttm=${JSON.stringify(ttmYear)}, fy.NI=${fyYear?.net_income})`);
-    } else {
-      const dev = Math.abs((ttmYear.net_income as number) - fyYear.net_income) / Math.abs(fyYear.net_income);
-      console.log(
-        `  HRB: TTM_NI=${n(ttmYear.net_income, 0)}  FY_NI=${n(fyYear.net_income, 0)}  |偏差|=${pct(dev)}%` +
-          `  quarters_used=${JSON.stringify(hrb.B.floorInput.ttm?.quarters_used)}`,
-      );
-      assert(dev < 0.15, `HRB: |TTM_NI-FY_NI|/FY_NI < 15% (实际 ${pct(dev)}%)`);
-      console.log(
-        `  [注] HRB verdict 仍被 capital_structure_distorted 死角闸抑制(独立已立案问题,与本 spec 无关)` +
-          `——本断言只看 floor 层数字,不断言 verdict。A verdict=${hrb.A.run.verdict ? hrb.A.run.verdict.bucket : `null(${hrb.A.run.suppressedReason})`}` +
-          `  B verdict=${hrb.B.run.verdict ? hrb.B.run.verdict.bucket : `null(${hrb.B.run.suppressedReason})`}`,
-      );
-    }
-  }
+  console.log("\n--- 断言 3: HRB 增量法独立对账(spec §9.2,GOOGL 同款独立复算,不设季节性偏差门槛)---");
+  await assertHrbReconciliation(db, results.get("HRB"));
 
   console.log(`\n${ASSERT_FAILURES === 0 ? "全部断言通过" : `${ASSERT_FAILURES} 条断言失败`}`);
   if (ASSERT_FAILURES > 0) process.exit(1);
@@ -323,6 +302,97 @@ async function assertGoogleReconciliation(
     );
     console.log(`  [注] Q2'26(或更新)已入库,as_of 已按增量法前滚至 ${engineTtm.period_end}`);
   }
+}
+
+/**
+ * 独立 REST 直拉 company_fundamentals_periods,不复用引擎路径,单独复算 HRB TTM net_income
+ * (GOOGL 同款独立对账思路,换 revenue→net_income)。裁定(2026-07-24 协调方):15% 季节性偏差门槛
+ * 是设计期启发式,已被真数据证伪(报税季主力季度真实同比 +17.4%);改为逐字段独立对账断言,
+ * 只观测偏差不设门槛。
+ */
+async function assertHrbReconciliation(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  db: any,
+  hrbResult: { A: Evaluated; B: Evaluated } | undefined,
+) {
+  if (!hrbResult) {
+    assert(false, "HRB: 未取到引擎结果(抓取失败)");
+    return;
+  }
+  const { data: periods, error } = await db
+    .from("company_fundamentals_periods")
+    .select("period_end,fiscal_period,form,is_derived,net_income")
+    .eq("ticker", "HRB")
+    .order("period_end", { ascending: false })
+    .limit(32);
+  if (error || !periods) {
+    assert(false, `HRB: REST 直拉 company_fundamentals_periods 失败(${error?.message})`);
+    return;
+  }
+  type Row = { period_end: string; fiscal_period: string | null; form: string; is_derived: boolean; net_income: number | null };
+  const rows = periods as unknown as Row[];
+  const fy0 = rows
+    .filter((r) => r.fiscal_period === "FY")
+    .sort((a, b) => b.period_end.localeCompare(a.period_end))[0];
+  if (!fy0 || fy0.net_income == null) {
+    assert(false, `HRB: 拉不到最新 FY 行(fy0=${JSON.stringify(fy0)})`);
+    return;
+  }
+  const realQs = rows.filter((r) => r.form === "10-Q" && r.is_derived !== true);
+  const newQs = realQs
+    .filter((q) => q.period_end > fy0.period_end)
+    .sort((a, b) => a.period_end.localeCompare(b.period_end));
+  if (newQs.length === 0) {
+    assert(false, `HRB: 无比 FY(${fy0.period_end}) 更新的真实 10-Q 行,TTM 应无法合成`);
+    return;
+  }
+  const matches: Row[] = [];
+  for (const q of newQs) {
+    const target = Date.parse(q.period_end) - 365 * 86_400_000;
+    let best: Row | null = null;
+    let bestDist = Infinity;
+    for (const c of realQs) {
+      if (c.period_end > fy0.period_end) continue;
+      const dist = Math.abs(Date.parse(c.period_end) - target) / 86_400_000;
+      if (dist <= 45 && dist < bestDist) { best = c; bestDist = dist; }
+    }
+    if (!best || best.net_income == null) {
+      assert(false, `HRB: 新季度 ${q.period_end} 找不到去年同期配对`);
+      return;
+    }
+    matches.push(best);
+  }
+  const expectedNi =
+    fy0.net_income + newQs.reduce((s, q) => s + (q.net_income ?? 0), 0) - matches.reduce((s, m) => s + (m.net_income ?? 0), 0);
+
+  const engineTtm = hrbResult.B.floorInput.ttm;
+  console.log(
+    `  独立复算: FY(${fy0.period_end})=${n(fy0.net_income, 0)} + Σ新季度[${newQs.map((q) => `${q.period_end}=${n(q.net_income, 0)}`).join(", ")}]` +
+      ` − Σ去年同期[${matches.map((m) => `${m.period_end}=${n(m.net_income, 0)}`).join(", ")}] = ${n(expectedNi, 0)}`,
+  );
+  console.log(`  引擎 TTM: as_of=${engineTtm?.period_end ?? "—"}  net_income=${n(engineTtm?.year.net_income, 0)}`);
+
+  if (!engineTtm) {
+    assert(false, "HRB: 引擎未合成 ttm(floorInput.ttm undefined),预期应可合成");
+    return;
+  }
+  const relErr = Math.abs((engineTtm.year.net_income as number) - expectedNi) / Math.abs(expectedNi);
+  assert(relErr < 0.001, `HRB: 引擎 TTM net_income 与独立复算相对误差 < 0.1% (实际 ${(relErr * 100).toFixed(4)}%)`);
+
+  // 观测值:季节性偏差,不设门槛(15% 启发式已被真数据证伪,见 spec §9.2 验收记录)。
+  const fyNi = hrbResult.A.floorInput.years[0]?.net_income;
+  if (fyNi != null && Number.isFinite(fyNi) && fyNi !== 0) {
+    const dev = Math.abs((engineTtm.year.net_income as number) - fyNi) / Math.abs(fyNi);
+    console.log(
+      `  [观测,不设门槛] |TTM_NI-FY_NI|/FY_NI = ${pct(dev)}% —— 偏差由报税季主力季度真实同比增长解释` +
+        `(Q3 FY2026 净利 vs 去年同期 Q3 FY2025 真实同比大涨,非增量法/配对失真;详见 spec §9.2 验收记录)。`,
+    );
+  }
+  console.log(
+    `  [注] HRB verdict 仍被 capital_structure_distorted 死角闸抑制(独立已立案问题,与本 spec 无关)` +
+      `——本断言只验 floor 层增量法算术,不断言 verdict。A verdict=${hrbResult.A.run.verdict ? hrbResult.A.run.verdict.bucket : `null(${hrbResult.A.run.suppressedReason})`}` +
+      `  B verdict=${hrbResult.B.run.verdict ? hrbResult.B.run.verdict.bucket : `null(${hrbResult.B.run.suppressedReason})`}`,
+  );
 }
 
 /** spec §9.5 本地版:从 consensus_holdings 按 holder_count 降序取前 N,跑 A/B 两路统计三分账。 */
