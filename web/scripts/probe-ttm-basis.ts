@@ -3,9 +3,12 @@
  *
  * 对每只 ticker 跑两遍真引擎:A=现状(不传 quarterRows,恒 FY 基点)/B=TTM(传 sec.quarterly)。
  * 打印 basis/as_of/TTM+FY 的 rev+NI/IV(neutral)/bucket/band/marginPct,并内置三条硬断言:
- *   1. GOOGL 对账(独立 REST 直拉 company_fundamentals_periods 复算,不复用引擎路径)
+ *   1. GOOGL 对账(独立 REST 直拉 company_fundamentals_periods 复算,不复用引擎路径;
+ *      配对季度由人工按财历钉死为常量表,不复刻 ttmBasis.ts 的 findYearAgoMatch 选取算法——
+ *      详见 assertPinnedReconciliation 注释)
  *   2. FY-only 票(ADR 20-F)零漂移(floorInput.years / verdict JSON 全等,ttm undefined)
- *   3. HRB 季节性(增量法抵消季节性:|TTM_NI-FY_NI|/FY_NI < 15%,verdict 跳过——死角闸抑制)
+ *   3. HRB 独立对账(同 1,人工钉死配对复算 net_income;季节性偏差只打印观测值不设门槛——
+ *      15% 门槛已被真数据证伪,见 spec §9.2 验收记录)
  *
  * `--sample N`:从 consensus_holdings 按 holder_count 降序取前 N(确定性),跑 A/B 两路统计
  * ttm命中/fy回退/抑制数三分账,断言 B 路抑制数 ≤ A 路(TTM 不得新增抑制)。
@@ -48,6 +51,32 @@ function loadEnv(): Record<string, string> {
 
 const MAIN_TICKERS = ["GOOGL", "MSFT", "AMZN", "NFLX", "EMN", "HRB", "ASML", "SAP", "NVO", "SPGI", "BKNG"];
 const ADR_ZERO_DRIFT = new Set(["ASML", "SAP", "NVO"]);
+
+/**
+ * 预期配对由人工按财历钉死,独立于引擎配对算法(ttmBasis.ts findYearAgoMatch)——
+ * 复审意见:对账函数原先文本复刻 findYearAgoMatch 的"target−365天/±45窗/取最近"选取逻辑,
+ * 是同一算法自证,不构成独立验证。改法:显式写死候选 (新季度, 去年同期) 日期对,REST 按
+ * period_end 精确 eq 取行;只有当某候选新季度确实已入库(真实 10-Q)才纳入求和,按候选表
+ * 顺序线性截断(不做"最近邻"推导)。这样断言同时覆盖:①算术正确 ②引擎选取的配对季度
+ * 与人工按财历认定的正确季度一致。
+ */
+type PinnedPair = { newQ: string; matchQ: string };
+
+// GOOGL 日历年结账(FY=12/31)。当前已知 2026-03-31 入库;候选表按季度顺延,
+// Q2'26/Q3'26 入库后自动纳入(仍是精确 eq 存在性判定,非距离推导)。
+const GOOGL_CANDIDATE_PAIRS: PinnedPair[] = [
+  { newQ: "2026-03-31", matchQ: "2025-03-31" },
+  { newQ: "2026-06-30", matchQ: "2025-06-30" },
+  { newQ: "2026-09-30", matchQ: "2025-09-30" },
+];
+
+// HRB FY=4/30 结账。当前库内已知的 3 个新季度(2025-09-30/2025-12-31/2026-03-31),
+// 人工按财历钉死其去年同期配对。
+const HRB_CANDIDATE_PAIRS: PinnedPair[] = [
+  { newQ: "2025-09-30", matchQ: "2024-09-30" },
+  { newQ: "2025-12-31", matchQ: "2024-12-31" },
+  { newQ: "2026-03-31", matchQ: "2025-03-31" },
+];
 
 function n(x: number | null | undefined, d = 2): string {
   return x == null || !Number.isFinite(x) ? "—" : x.toFixed(d);
@@ -194,8 +223,8 @@ async function main() {
     }
   }
 
-  console.log("\n--- 断言 1: GOOGL 对账(spec §9.1,独立 REST 直拉复算)---");
-  await assertGoogleReconciliation(db, results.get("GOOGL"));
+  console.log("\n--- 断言 1: GOOGL 对账(spec §9.1,独立 REST 直拉复算,人工钉死配对)---");
+  await assertPinnedReconciliation(db, "GOOGL", "revenue", GOOGL_CANDIDATE_PAIRS, results.get("GOOGL"));
 
   console.log("\n--- 断言 2: FY-only ADR 零漂移(spec §9.3)---");
   for (const ticker of ADR_ZERO_DRIFT) {
@@ -216,173 +245,21 @@ async function main() {
     );
   }
 
-  console.log("\n--- 断言 3: HRB 增量法独立对账(spec §9.2,GOOGL 同款独立复算,不设季节性偏差门槛)---");
-  await assertHrbReconciliation(db, results.get("HRB"));
+  console.log("\n--- 断言 3: HRB 增量法独立对账(spec §9.2,人工钉死配对,不设季节性偏差门槛)---");
+  await assertPinnedReconciliation(db, "HRB", "net_income", HRB_CANDIDATE_PAIRS, results.get("HRB"));
+  printHrbSeasonalityObservation(results.get("HRB"));
 
   console.log(`\n${ASSERT_FAILURES === 0 ? "全部断言通过" : `${ASSERT_FAILURES} 条断言失败`}`);
   if (ASSERT_FAILURES > 0) process.exit(1);
 }
 
-/** 独立 REST 直拉 company_fundamentals_periods,不复用引擎路径,单独复算 GOOGL TTM revenue。 */
-async function assertGoogleReconciliation(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any,
-  googleResult: { A: Evaluated; B: Evaluated } | undefined,
-) {
-  if (!googleResult) {
-    assert(false, "GOOGL: 未取到引擎结果(抓取失败)");
-    return;
-  }
-  const { data: periods, error } = await db
-    .from("company_fundamentals_periods")
-    .select("period_end,fiscal_period,form,is_derived,revenue")
-    .eq("ticker", "GOOGL")
-    .order("period_end", { ascending: false })
-    .limit(32);
-  if (error || !periods) {
-    assert(false, `GOOGL: REST 直拉 company_fundamentals_periods 失败(${error?.message})`);
-    return;
-  }
-  type Row = { period_end: string; fiscal_period: string | null; form: string; is_derived: boolean; revenue: number | null };
-  const rows = periods as unknown as Row[];
-  const fy0 = rows
-    .filter((r) => r.fiscal_period === "FY")
-    .sort((a, b) => b.period_end.localeCompare(a.period_end))[0];
-  if (!fy0 || fy0.revenue == null) {
-    assert(false, `GOOGL: 拉不到最新 FY 行(fy0=${JSON.stringify(fy0)})`);
-    return;
-  }
-  const realQs = rows.filter((r) => r.form === "10-Q" && r.is_derived !== true);
-  const newQs = realQs
-    .filter((q) => q.period_end > fy0.period_end)
-    .sort((a, b) => a.period_end.localeCompare(b.period_end));
-  if (newQs.length === 0) {
-    assert(false, `GOOGL: 无比 FY(${fy0.period_end}) 更新的真实 10-Q 行,TTM 应无法合成`);
-    return;
-  }
-  const matches: Row[] = [];
-  for (const q of newQs) {
-    const target = Date.parse(q.period_end) - 365 * 86_400_000;
-    let best: Row | null = null;
-    let bestDist = Infinity;
-    for (const c of realQs) {
-      if (c.period_end > fy0.period_end) continue;
-      const dist = Math.abs(Date.parse(c.period_end) - target) / 86_400_000;
-      if (dist <= 45 && dist < bestDist) { best = c; bestDist = dist; }
-    }
-    if (!best || best.revenue == null) {
-      assert(false, `GOOGL: 新季度 ${q.period_end} 找不到去年同期配对`);
-      return;
-    }
-    matches.push(best);
-  }
-  const expectedRevenue =
-    fy0.revenue + newQs.reduce((s, q) => s + (q.revenue ?? 0), 0) - matches.reduce((s, m) => s + (m.revenue ?? 0), 0);
-
-  const engineTtm = googleResult.B.floorInput.ttm;
-  console.log(
-    `  独立复算: FY(${fy0.period_end})=${n(fy0.revenue, 0)} + Σ新季度[${newQs.map((q) => `${q.period_end}=${n(q.revenue, 0)}`).join(", ")}]` +
-      ` − Σ去年同期[${matches.map((m) => `${m.period_end}=${n(m.revenue, 0)}`).join(", ")}] = ${n(expectedRevenue, 0)}`,
-  );
-  console.log(`  引擎 TTM: as_of=${engineTtm?.period_end ?? "—"}  revenue=${n(engineTtm?.year.revenue, 0)}`);
-
-  if (!engineTtm) {
-    assert(false, "GOOGL: 引擎未合成 ttm(floorInput.ttm undefined),预期应可合成");
-    return;
-  }
-  const relErr = Math.abs((engineTtm.year.revenue as number) - expectedRevenue) / Math.abs(expectedRevenue);
-  assert(relErr < 0.001, `GOOGL: 引擎 TTM revenue 与独立复算相对误差 < 0.1% (实际 ${(relErr * 100).toFixed(4)}%)`);
-
-  if (newQs.length === 1 && newQs[0].period_end === "2026-03-31") {
-    assert(engineTtm.period_end === "2026-03-31", `GOOGL: as_of === "2026-03-31" (实际 ${engineTtm.period_end})`);
-  } else {
-    assert(
-      engineTtm.period_end >= "2026-03-31",
-      `GOOGL: as_of >= "2026-03-31"(Q2'26 已入库,实际 as_of=${engineTtm.period_end}, 新季度=${JSON.stringify(newQs.map((q) => q.period_end))})`,
-    );
-    console.log(`  [注] Q2'26(或更新)已入库,as_of 已按增量法前滚至 ${engineTtm.period_end}`);
-  }
-}
-
-/**
- * 独立 REST 直拉 company_fundamentals_periods,不复用引擎路径,单独复算 HRB TTM net_income
- * (GOOGL 同款独立对账思路,换 revenue→net_income)。裁定(2026-07-24 协调方):15% 季节性偏差门槛
- * 是设计期启发式,已被真数据证伪(报税季主力季度真实同比 +17.4%);改为逐字段独立对账断言,
- * 只观测偏差不设门槛。
- */
-async function assertHrbReconciliation(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any,
-  hrbResult: { A: Evaluated; B: Evaluated } | undefined,
-) {
-  if (!hrbResult) {
-    assert(false, "HRB: 未取到引擎结果(抓取失败)");
-    return;
-  }
-  const { data: periods, error } = await db
-    .from("company_fundamentals_periods")
-    .select("period_end,fiscal_period,form,is_derived,net_income")
-    .eq("ticker", "HRB")
-    .order("period_end", { ascending: false })
-    .limit(32);
-  if (error || !periods) {
-    assert(false, `HRB: REST 直拉 company_fundamentals_periods 失败(${error?.message})`);
-    return;
-  }
-  type Row = { period_end: string; fiscal_period: string | null; form: string; is_derived: boolean; net_income: number | null };
-  const rows = periods as unknown as Row[];
-  const fy0 = rows
-    .filter((r) => r.fiscal_period === "FY")
-    .sort((a, b) => b.period_end.localeCompare(a.period_end))[0];
-  if (!fy0 || fy0.net_income == null) {
-    assert(false, `HRB: 拉不到最新 FY 行(fy0=${JSON.stringify(fy0)})`);
-    return;
-  }
-  const realQs = rows.filter((r) => r.form === "10-Q" && r.is_derived !== true);
-  const newQs = realQs
-    .filter((q) => q.period_end > fy0.period_end)
-    .sort((a, b) => a.period_end.localeCompare(b.period_end));
-  if (newQs.length === 0) {
-    assert(false, `HRB: 无比 FY(${fy0.period_end}) 更新的真实 10-Q 行,TTM 应无法合成`);
-    return;
-  }
-  const matches: Row[] = [];
-  for (const q of newQs) {
-    const target = Date.parse(q.period_end) - 365 * 86_400_000;
-    let best: Row | null = null;
-    let bestDist = Infinity;
-    for (const c of realQs) {
-      if (c.period_end > fy0.period_end) continue;
-      const dist = Math.abs(Date.parse(c.period_end) - target) / 86_400_000;
-      if (dist <= 45 && dist < bestDist) { best = c; bestDist = dist; }
-    }
-    if (!best || best.net_income == null) {
-      assert(false, `HRB: 新季度 ${q.period_end} 找不到去年同期配对`);
-      return;
-    }
-    matches.push(best);
-  }
-  const expectedNi =
-    fy0.net_income + newQs.reduce((s, q) => s + (q.net_income ?? 0), 0) - matches.reduce((s, m) => s + (m.net_income ?? 0), 0);
-
-  const engineTtm = hrbResult.B.floorInput.ttm;
-  console.log(
-    `  独立复算: FY(${fy0.period_end})=${n(fy0.net_income, 0)} + Σ新季度[${newQs.map((q) => `${q.period_end}=${n(q.net_income, 0)}`).join(", ")}]` +
-      ` − Σ去年同期[${matches.map((m) => `${m.period_end}=${n(m.net_income, 0)}`).join(", ")}] = ${n(expectedNi, 0)}`,
-  );
-  console.log(`  引擎 TTM: as_of=${engineTtm?.period_end ?? "—"}  net_income=${n(engineTtm?.year.net_income, 0)}`);
-
-  if (!engineTtm) {
-    assert(false, "HRB: 引擎未合成 ttm(floorInput.ttm undefined),预期应可合成");
-    return;
-  }
-  const relErr = Math.abs((engineTtm.year.net_income as number) - expectedNi) / Math.abs(expectedNi);
-  assert(relErr < 0.001, `HRB: 引擎 TTM net_income 与独立复算相对误差 < 0.1% (实际 ${(relErr * 100).toFixed(4)}%)`);
-
-  // 观测值:季节性偏差,不设门槛(15% 启发式已被真数据证伪,见 spec §9.2 验收记录)。
+/** 观测值打印:季节性偏差,不设门槛(15% 启发式已被真数据证伪,见 spec §9.2 验收记录)。 */
+function printHrbSeasonalityObservation(hrbResult: { A: Evaluated; B: Evaluated } | undefined) {
+  if (!hrbResult) return;
+  const ttmYear = hrbResult.B.floorInput.ttm?.year;
   const fyNi = hrbResult.A.floorInput.years[0]?.net_income;
-  if (fyNi != null && Number.isFinite(fyNi) && fyNi !== 0) {
-    const dev = Math.abs((engineTtm.year.net_income as number) - fyNi) / Math.abs(fyNi);
+  if (ttmYear?.net_income != null && fyNi != null && Number.isFinite(fyNi) && fyNi !== 0) {
+    const dev = Math.abs((ttmYear.net_income as number) - fyNi) / Math.abs(fyNi);
     console.log(
       `  [观测,不设门槛] |TTM_NI-FY_NI|/FY_NI = ${pct(dev)}% —— 偏差由报税季主力季度真实同比增长解释` +
         `(Q3 FY2026 净利 vs 去年同期 Q3 FY2025 真实同比大涨,非增量法/配对失真;详见 spec §9.2 验收记录)。`,
@@ -393,6 +270,107 @@ async function assertHrbReconciliation(
       `——本断言只验 floor 层增量法算术,不断言 verdict。A verdict=${hrbResult.A.run.verdict ? hrbResult.A.run.verdict.bucket : `null(${hrbResult.A.run.suppressedReason})`}` +
       `  B verdict=${hrbResult.B.run.verdict ? hrbResult.B.run.verdict.bucket : `null(${hrbResult.B.run.suppressedReason})`}`,
   );
+}
+
+type FlowField = "revenue" | "net_income";
+
+/** 精确 eq 取一行真实 10-Q(不做任何"最近邻/距离"推导——存在性判定,非算法选取)。 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchPinnedQuarter(db: any, ticker: string, periodEnd: string, field: FlowField): Promise<number | null> {
+  const { data, error } = await db
+    .from("company_fundamentals_periods")
+    .select(`${field}`)
+    .eq("ticker", ticker)
+    .eq("period_end", periodEnd)
+    .eq("form", "10-Q")
+    .eq("is_derived", false)
+    .maybeSingle();
+  if (error || !data) return null;
+  const v = (data as Record<string, unknown>)[field];
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+/** 最新 FY 锚行(非争议逻辑——单纯取 period_end 最大的 FY 行,不涉及配对选取)。 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchLatestFy(db: any, ticker: string, field: FlowField): Promise<{ period_end: string; value: number } | null> {
+  const { data, error } = await db
+    .from("company_fundamentals_periods")
+    .select(`period_end,${field}`)
+    .eq("ticker", ticker)
+    .eq("fiscal_period", "FY")
+    .order("period_end", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  const row = data as Record<string, unknown>;
+  const v = row[field];
+  return typeof v === "number" && Number.isFinite(v) ? { period_end: row.period_end as string, value: v } : null;
+}
+
+/**
+ * 独立 REST 对账(GOOGL/HRB 共用):不复用引擎路径,也不复刻 ttmBasis.ts 的配对算法——
+ * 配对表由人工按财历钉死(见 GOOGL_CANDIDATE_PAIRS / HRB_CANDIDATE_PAIRS 常量注释),
+ * 只按候选表顺序对每个候选新季度做存在性 eq 查询,命中则纳入求和,遇到未入库的候选即停止
+ * (financial calendar 天然连续,不会出现"跳过一个再命中下一个"的情况)。
+ */
+async function assertPinnedReconciliation(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  db: any,
+  ticker: string,
+  field: FlowField,
+  candidatePairs: PinnedPair[],
+  result: { A: Evaluated; B: Evaluated } | undefined,
+) {
+  if (!result) {
+    assert(false, `${ticker}: 未取到引擎结果(抓取失败)`);
+    return;
+  }
+  const fy0 = await fetchLatestFy(db, ticker, field);
+  if (!fy0) {
+    assert(false, `${ticker}: 拉不到最新 FY 行(${field})`);
+    return;
+  }
+  const used: { newQ: string; newVal: number; matchQ: string; matchVal: number }[] = [];
+  for (const pair of candidatePairs) {
+    const newVal = await fetchPinnedQuarter(db, ticker, pair.newQ, field);
+    if (newVal == null) break; // 该钉死候选尚未入库(或非真实10-Q/字段为空)→ 按顺序停止,后续候选亦不纳入
+    const matchVal = await fetchPinnedQuarter(db, ticker, pair.matchQ, field);
+    if (matchVal == null) {
+      assert(false, `${ticker}: 钉死配对 ${pair.matchQ}(对应新季度 ${pair.newQ})拉不到真实 10-Q 或 ${field} 为空`);
+      return;
+    }
+    used.push({ newQ: pair.newQ, newVal, matchQ: pair.matchQ, matchVal });
+  }
+  if (used.length === 0) {
+    assert(false, `${ticker}: 钉死候选新季度均未入库(候选表=${JSON.stringify(candidatePairs)})`);
+    return;
+  }
+  const expected = fy0.value + used.reduce((s, u) => s + u.newVal, 0) - used.reduce((s, u) => s + u.matchVal, 0);
+
+  const engineTtm = result.B.floorInput.ttm;
+  const engineVal = engineTtm ? (engineTtm.year[field] as number | undefined) : undefined;
+  console.log(
+    `  独立复算(人工钉死配对): FY(${fy0.period_end})=${n(fy0.value, 0)}` +
+      ` + Σ新季度[${used.map((u) => `${u.newQ}=${n(u.newVal, 0)}`).join(", ")}]` +
+      ` − Σ钉死去年同期[${used.map((u) => `${u.matchQ}=${n(u.matchVal, 0)}`).join(", ")}] = ${n(expected, 0)}`,
+  );
+  console.log(`  引擎 TTM: as_of=${engineTtm?.period_end ?? "—"}  ${field}=${n(engineVal, 0)}`);
+
+  if (!engineTtm) {
+    assert(false, `${ticker}: 引擎未合成 ttm(floorInput.ttm undefined),预期应可合成`);
+    return;
+  }
+  const expectedAsOf = used[used.length - 1].newQ;
+  assert(
+    engineTtm.period_end === expectedAsOf,
+    `${ticker}: 引擎 as_of === 人工钉死候选表末项 "${expectedAsOf}"(实际 ${engineTtm.period_end})——即引擎选取的配对季度与人工按财历认定的一致`,
+  );
+  const relErr = engineVal == null ? Infinity : Math.abs(engineVal - expected) / Math.abs(expected);
+  assert(
+    relErr < 0.001,
+    `${ticker}: 引擎 TTM ${field} 与独立复算相对误差 < 0.1% (实际 ${Number.isFinite(relErr) ? (relErr * 100).toFixed(4) : "—"}%)`,
+  );
+  console.log(`  钉死候选表命中 ${used.length}/${candidatePairs.length} 项(按财历顺序线性截断)。`);
 }
 
 /** spec §9.5 本地版:从 consensus_holdings 按 holder_count 降序取前 N,跑 A/B 两路统计三分账。 */
