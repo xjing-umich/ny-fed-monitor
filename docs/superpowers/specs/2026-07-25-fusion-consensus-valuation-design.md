@@ -65,7 +65,9 @@
 
 ## 五、前端 UX / 视觉设计（贯穿，非事后补）
 
-绑死既有设计语言（[[frontend-design-language]]）：仅 `--tt-*` token、机构级编辑质感、**克制的绿**、`PageHeader`/`DataStrip`/`AggregateRankingList` 既有基元、**禁 shadcn Card**、真数据当主角、去 AI 感（[[anti-ai-product-sense]]）。
+绑死既有设计语言（[[frontend-design-language]]）：仅 `--tt-*` token（语义层，映射 `--ink-1/2/3`，均已抬到 WCAG AA）、机构级编辑质感、**克制的绿**、`PageHeader`/`DataStrip`/`AggregateRankingList` 既有基元、**禁 shadcn Card**、真数据当主角、去 AI 感（[[anti-ai-product-sense]]）。
+
+> **对齐当前排版（2026-07 收敛后）**：显示字体现为 **Saira**（`--font-display`，`[lang]/layout.tsx`），区块/卡标题仍走正文族——执行期以当前代码为准，勿用记忆里旧的 Fraunces/Zilla 口径。**① screener conviction tab 的排序 UI 直接复用最近合入的 table 移动端排序基元**（`feat(table): mobile sort UI, sr-only sort labels`，45908cf），别另造一套排序交互。
 
 - **融合行的视觉层级**：一行三段信息（谁在买 · 估值位置 · 隐含预期）须有**明确主次**，不是三个同权 chip 平铺。持有家数用 Mono 数字眉标（数据优先）；估值位置用既有 `ValuationBadge` 语汇（击球区绿/其余中性）；隐含预期为**弱化副标**（`--tt-faint`/`--tt-muted`），从属不抢戏。
 - **顶层高亮（便宜 ∩ 高共识）**：用**克制**手段区分——细左边框重音 / 轻微底色 / 眉标，**不用**大色块、不用装饰图标、不用 emoji。高亮是"这几只值得先看"的安静信号，非营销横幅。
