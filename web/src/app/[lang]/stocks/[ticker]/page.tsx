@@ -176,7 +176,7 @@ function HoldersTable({
 
   return (
     <section>
-      {/* 支柱②标题:绿眉标 → Fraunces 标题(语义 h2, 文档大纲/SEO) */}
+      {/* 支柱②标题:绿眉标 → display 标题(语义 h2, 文档大纲/SEO) */}
       <SectionHeading
         eyebrow={page.holders.eyebrow}
         title={t.title}
@@ -366,10 +366,12 @@ export default async function StockTickerPage({
   const sicRaw = sec.company?.sic;
   const sicNum = sicRaw == null ? undefined : Number(sicRaw);
   const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic);
+  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly);
+  // as-of 重锚(spec §6):TTM 生效 → 新鲜度/拆股闸都按 TTM 期末判。
+  const fundamentalsAsOf = floorInput.ttm?.period_end ?? sec.annual?.[0]?.period_end ?? null;
   // 基本面过期闸:与 ingest 同语义 — 最新 FY 期末超阈值 → 抑制估值(不造陈旧幻觉)。
   const fundamentalsStale = isFundamentalsStale(
-    sec.annual?.[0]?.period_end ?? null,
+    fundamentalsAsOf,
     new Date().toISOString(),
   );
 
@@ -381,9 +383,15 @@ export default async function StockTickerPage({
   const valuationPrice = priceStale ? null : fetchedPrice;
 
   // 拆股口径护栏:基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配,整条抑制估值判定。
+  // as-of 仅在 TTM 每股股数真取自最新10-Q(非回退 FY0)时才前滚到 TTM 期末;否则退回 FY 期末,
+  // 否则拆股落在 (FY0期末, TTM期末] 且最新10-Q缺股数时会漏抑制假"便宜"信号(spec §6)。
   const latestSplitDate = await getLatestSplit(ticker);
+  const splitAsOf =
+    floorInput.ttm && !floorInput.ttm.shares_from_fy
+      ? floorInput.ttm.period_end
+      : sec.annual?.[0]?.period_end ?? null;
   const splitCoverageStale = isSplitCoverageStale({
-    fundamentalsAsOf: sec.annual?.[0]?.period_end ?? null,
+    fundamentalsAsOf: splitAsOf,
     latestSplitDate,
   });
 
@@ -427,7 +435,7 @@ export default async function StockTickerPage({
     handoffVerdict.marginPct != null
   );
 
-  // 估值区块 Fraunces 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
+  // 估值区块 display 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
   // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
   const page = stockPageCopy(lang);
   const g = stockGlossary(lang);
@@ -560,6 +568,11 @@ export default async function StockTickerPage({
                   ) : undefined
                 }
               />
+              {floorInput.ttm && (
+                <p className="mt-2 text-xs text-[var(--tt-muted)]">
+                  {page.valuation.ttmBasis(floorInput.ttm.period_end)}
+                </p>
+              )}
               <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
                   { k: page.bq.revenueGrowth, v: bq.revenueYoy, sign: true },
@@ -602,7 +615,7 @@ export default async function StockTickerPage({
             </section>
           )}
 
-          {/* 支柱① 估值结论(头条) — Fraunces 标题直接是结论, 位置带/句子/方法在卡内 */}
+          {/* 支柱① 估值结论(头条) — display 标题直接是结论, 位置带/句子/方法在卡内 */}
           {valuationFloor && (
             <section>
               <SectionHeading
@@ -628,8 +641,14 @@ export default async function StockTickerPage({
                       lang={lang}
                       showStatus={false}
                       verdict={run.verdict}
+                      ttmPeriodEnd={floorInput.ttm?.period_end}
                     />
                   </div>
+                  {floorInput.ttm && (
+                    <p className="mt-2 text-xs text-[var(--tt-muted)]">
+                      {page.valuation.ttmBasis(floorInput.ttm.period_end)}
+                    </p>
+                  )}
                   {expectations?.assessable && (
                     <PriceBetBlock
                       expectations={expectations}

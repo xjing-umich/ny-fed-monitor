@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata, Viewport } from "next";
-import { Fraunces } from "next/font/google";
+import { Saira } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "../globals.css";
@@ -15,10 +15,13 @@ import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
 
-// Characterful display serif for the wordmark and editorial headlines.
-const fraunces = Fraunces({
+// Engineered industrial sans for the wordmark and headlines: straight-sided
+// "spec-sheet nameplate" geometry that pairs cleanly with PingFang/system CJK
+// (a serif slab clashed with it). Latin subset only — zh headlines fall through
+// the system CJK stack. 600 trimmed: every font-display consumer uses font-medium.
+const saira = Saira({
   subsets: ["latin"],
-  axes: ["opsz"],
+  weight: ["400", "500", "700"],
   display: "swap",
   variable: "--font-display",
 });
@@ -149,7 +152,7 @@ export default async function LangLayout({
     <html
       lang={htmlLang}
       suppressHydrationWarning
-      className={`${fraunces.variable} ${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
+      className={`${saira.variable} ${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
         <ThemeProvider

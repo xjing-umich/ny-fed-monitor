@@ -52,6 +52,10 @@ const COPY = {
     prev: "上一页",
     next: "下一页",
     pageOf: (p: number, n: number) => `第 ${p} / ${n} 页`,
+    clear: "清空搜索",
+    sortGroup: "排序",
+    sortAsc: "已按升序排列",
+    sortDesc: "已按降序排列",
   },
   en: {
     eyebrow: "SEC 13F · quarterly filings",
@@ -78,6 +82,10 @@ const COPY = {
     prev: "Prev",
     next: "Next",
     pageOf: (p: number, n: number) => `Page ${p} of ${n}`,
+    clear: "Clear search",
+    sortGroup: "Sort",
+    sortAsc: "sorted ascending",
+    sortDesc: "sorted descending",
   },
 } as const;
 
@@ -236,6 +244,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
         ]}
         activeChip={params.vf}
         onChip={(k) => params.setVf(k as VerdictFilter)}
+        clearLabel={t.clear}
       />
 
       <div className="hidden md:block">
@@ -251,6 +260,9 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
           sortDir={params.dir}
           onSort={params.setSortKey}
           emptyText={t.noResults}
+          sortAscLabel={t.sortAsc}
+          sortDescLabel={t.sortDesc}
+          sortGroupLabel={t.sortGroup}
         />
       </div>
 
@@ -267,6 +279,9 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
           sortDir={params.dir}
           onSort={params.setSortKey}
           emptyText={t.noResults}
+          sortAscLabel={t.sortAsc}
+          sortDescLabel={t.sortDesc}
+          sortGroupLabel={t.sortGroup}
         />
       </div>
 

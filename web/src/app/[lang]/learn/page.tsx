@@ -68,7 +68,7 @@ export default async function LearnIndexPage({
         <p className="text-sm leading-relaxed text-[var(--tt-muted)]">{brand.body}</p>
         <Link
           href={localePath(lang, "/about")}
-          className="mt-2 inline-block font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
+          className="mt-2 inline-block font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center"
         >
           {brand.aboutLabel} →
         </Link>
@@ -80,10 +80,10 @@ export default async function LearnIndexPage({
           href={localePath(lang, `/learn/${featured.slug}`)}
           className="group mt-8 block border-t border-[var(--tt-border)] pt-6 no-underline"
         >
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <span className="tt-eyebrow">
             {c.startHere}
           </span>
-          <h2 className="mt-2 text-2xl font-medium leading-tight text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
+          <h2 className="mt-2 text-balance text-2xl font-medium leading-tight text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
             {featured.title}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
@@ -98,10 +98,10 @@ export default async function LearnIndexPage({
           href={localePath(lang, `/learn/${latest.slug}`)}
           className="group mt-6 block border-t border-[var(--tt-border)] pt-5 no-underline"
         >
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <span className="tt-eyebrow">
             {c.latest}
           </span>
-          <h2 className="mt-2 text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
+          <h2 className="mt-2 text-balance text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
             {latest.title}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
@@ -121,7 +121,7 @@ export default async function LearnIndexPage({
           {rest.map((a) => (
             <li key={a.slug} className="border-t border-[var(--tt-border)] py-5">
               <Link href={localePath(lang, `/learn/${a.slug}`)} className="group no-underline">
-                <h2 className="text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
+                <h2 className="text-balance text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
                   {a.title}
                 </h2>
                 <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">

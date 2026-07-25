@@ -28,8 +28,8 @@ export default function FoundationsGrid({ lang }: { lang: Lang }): React.ReactEl
   const c = COPY[lang];
   return (
     <section className="border-t border-[var(--tt-border)] pt-8">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
-      <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-[var(--tt-muted)]">{c.statement}</p>
+      <p className="tt-eyebrow">{c.eyebrow}</p>
+      <h2 className="mt-4 max-w-[62ch] text-balance text-xl font-semibold leading-snug tracking-tight text-[var(--tt-text)]">{c.statement}</h2>
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {c.lockups.map((item) => (
           <TrustLockup key={item.label} label={item.label} value={item.value} />

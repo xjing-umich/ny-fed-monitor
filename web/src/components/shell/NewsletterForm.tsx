@@ -82,7 +82,7 @@ export default function NewsletterForm({ lang, source = "footer" }: { lang: Lang
           type="submit"
           disabled={status === "sending"}
           aria-label={c.subscribe}
-          className="shrink-0 inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium bg-[var(--tt-accent)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity disabled:opacity-60"
+          className="shrink-0 inline-flex min-h-[44px] items-center justify-center rounded-md px-3 py-2 text-sm font-medium bg-[var(--tt-accent)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity disabled:opacity-60"
         >
           {status === "sending" ? (
             c.subscribing

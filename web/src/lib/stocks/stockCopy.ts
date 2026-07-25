@@ -94,6 +94,7 @@ export const STOCK_PAGE_COPY = {
       moatDistorted: "多年回购已把股东权益压成负数，重置价值和护城河没法从资产端算，这里不给出估值判定。",
       fundamentalsSuspect: "这家公司的财报数据存在口径问题（如营业利润高于营收），数值不可靠，暂不给出估值判定，待数据修正后恢复。",
       learn: "内在价值怎么读",
+      ttmBasis: (d: string) => `估值口径：截至 ${d} 的滚动十二个月（最新 10-K 叠加未审计 10-Q）。`,
     },
     holders: {
       eyebrow: "SEC 13F · 持有人",
@@ -141,6 +142,7 @@ export const STOCK_PAGE_COPY = {
       moatDistorted: "Years of buybacks have pushed shareholders' equity negative, so reproduction value and the moat can't be assessed from the asset side. No valuation verdict is shown here.",
       fundamentalsSuspect: "This company's reported figures contain an impossible value (e.g., operating income above revenue), so the data can't be trusted and no valuation verdict is shown until it's corrected.",
       learn: "How to read intrinsic value",
+      ttmBasis: (d: string) => `Valuation basis: trailing twelve months to ${d} — latest 10-K plus unaudited 10-Q filings.`,
     },
     holders: {
       eyebrow: "SEC 13F · holders",

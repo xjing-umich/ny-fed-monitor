@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -10,6 +10,12 @@ import type { Lang } from "@/lib/nav";
 import SearchBox from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
 import { localePath } from "@/lib/urls";
+
+/** true on the client after hydration, false during SSR — no effect/setState needed. */
+const subscribe = () => () => {};
+function useMounted() {
+  return useSyncExternalStore(subscribe, () => true, () => false);
+}
 
 interface TopNavProps {
   lang: Lang;
@@ -21,8 +27,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
   const { resolvedTheme, setTheme } = useTheme();
   // next-themes can't know the theme during SSR; gate theme-dependent UI on mount
   // so the server and first client render agree (prevents hydration mismatch).
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   const otherLang: Lang = lang === "zh" ? "en" : "zh";
   // 当前 pathname 去掉语言前缀(裸 en 无前缀; /zh 有前缀),再按目标语言重新加。
@@ -66,10 +71,11 @@ export default function TopNav({ lang, items }: TopNavProps) {
               key={entry.key}
               href={href}
               className={[
-                "relative text-[12px] uppercase tracking-[0.1em] transition-colors no-underline pb-0.5 border-b",
+                "relative inline-flex items-center min-h-[36px] text-[13px] uppercase tracking-[0.1em] transition-colors no-underline",
+                "after:absolute after:bottom-1 after:left-0 after:right-0 after:h-px after:transition-colors",
                 active
-                  ? "text-[var(--tt-text)] border-[var(--tt-accent)]"
-                  : "text-[var(--tt-muted)] border-transparent hover:text-[var(--tt-text)]",
+                  ? "text-[var(--tt-text)] after:bg-[var(--tt-accent)]"
+                  : "text-[var(--tt-muted)] after:bg-transparent hover:text-[var(--tt-text)] hover:after:bg-[var(--tt-border)]",
               ].join(" ")}
             >
               {lang === "zh" ? entry.zh : entry.en}
@@ -95,7 +101,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
               <span
                 key={l}
                 aria-current="true"
-                className="px-2 py-1 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
+                className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
               >
                 {l}
               </span>
@@ -105,7 +111,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
             <Link
               key={l}
               href={otherLangPath}
-              className="px-2 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
+              className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
             >
               {l}
             </Link>
@@ -117,7 +123,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
       <button
         onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         aria-label={lang === "zh" ? "切换主题" : "Toggle theme"}
-        className="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
+        className="flex items-center justify-center w-8 h-8 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
       >
         {mounted && resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
       </button>

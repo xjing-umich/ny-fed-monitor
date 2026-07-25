@@ -806,4 +806,36 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   const r = buildMoatReading(epvLamp, repro, 1000, false, gfFail);
   assert(r.signal === "franchise" && r.moat_via_growth !== true, "真 franchise 走 dual,不打 via_growth"); }
 
+// ── TTM seam(spec 2026-07-24-ttm-valuation-basis §5)──────────────────────────
+// 零漂移:不带 ttm 字段跑 compounder,结果与本文件顶部既有断言完全一致(上面全部既有
+// 断言全绿本身就是零漂移证明——computeValuationFloor 无 ttm 分支保持原样)。
+{ const noTtm = floorOf(computeValuationFloor(compounder));
+  assert.deepStrictEqual(noTtm, floor, "不带 ttm 字段 → 与既有 compounder floor 逐位相等(零漂移)"); }
+
+// TTM 生效:6 年 FY(revenue 100…150 递增),最新年 2026 附 ttm 顶替(revenue 999,
+// fiscal_year 最新+1=2027)。工作序列 = [ttm.year(2027), FY2025…FY2022],断言
+// as_of_fiscal_year/years_used[0] 吃到顶替年而非原 FY2026。
+{ const ttmYears: ValuationFloorYear[] = [
+    year(2026, { revenue: 150, operating_margin: 0.3, net_income: 45, effective_tax_rate: 0.21, shareholders_equity: 500, cash: 200, total_debt: 100, net_debt: -100, shares_diluted: 100 }),
+    year(2025, { revenue: 140, operating_margin: 0.3, net_income: 42, effective_tax_rate: 0.21, shareholders_equity: 460, cash: 190, total_debt: 100, net_debt: -90, shares_diluted: 100 }),
+    year(2024, { revenue: 130, operating_margin: 0.3, net_income: 39, effective_tax_rate: 0.21, shareholders_equity: 420, cash: 180, total_debt: 100, net_debt: -80, shares_diluted: 100 }),
+    year(2023, { revenue: 120, operating_margin: 0.3, net_income: 36, effective_tax_rate: 0.21, shareholders_equity: 380, cash: 170, total_debt: 100, net_debt: -70, shares_diluted: 100 }),
+    year(2022, { revenue: 110, operating_margin: 0.3, net_income: 33, effective_tax_rate: 0.21, shareholders_equity: 340, cash: 160, total_debt: 100, net_debt: -60, shares_diluted: 100 }),
+    year(2021, { revenue: 100, operating_margin: 0.3, net_income: 30, effective_tax_rate: 0.21, shareholders_equity: 300, cash: 150, total_debt: 100, net_debt: -50, shares_diluted: 100 }),
+  ];
+  const ttmInput: ValuationFloorInput = {
+    ticker: "TTM-TEST",
+    years: ttmYears,
+    ttm: {
+      year: year(2027, { revenue: 999, operating_margin: 0.3, net_income: 300, effective_tax_rate: 0.21, shareholders_equity: 500, cash: 200, total_debt: 100, net_debt: -100, shares_diluted: 100 }),
+      period_end: "2099-01-01",
+      quarters_used: [],
+      shares_from_fy: false,
+    },
+  };
+  const ttmFloor = floorOf(computeValuationFloor(ttmInput));
+  assert.strictEqual(ttmFloor.provenance.as_of_fiscal_year, 2027, `ttm 顶替生效 → as_of_fiscal_year=2027 got ${ttmFloor.provenance.as_of_fiscal_year}`);
+  assert.strictEqual(ttmFloor.provenance.years_used[0], 2027, `ttm 顶替生效 → years_used[0]=2027 got ${ttmFloor.provenance.years_used[0]}`);
+  assert.strictEqual(ttmYears[0].fiscal_year, 2026, "原 FY years 数组本身未被 seam 篡改(allYears 仍纯 FY)"); }
+
 console.log("epvFloor.check.ts: all assertions passed.");

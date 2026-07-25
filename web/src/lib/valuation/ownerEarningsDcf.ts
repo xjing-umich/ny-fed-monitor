@@ -260,9 +260,12 @@ export function reconcileMethods(
 
 export function deriveOeDcf(
   floor: ValuationFloor,
-  years: ValuationFloorYear[],
+  years: ValuationFloorYear[],       // 工作序列(TTM 生效时头是 TTM):oe0 窗口/cagr/declined 用,与 oe0 同批
   dgs10: { value: number; date: string } | null,
   price: LatestPrice | null,
+  // 纯 FY 审计序列(锁定 decision #2):gRaw 增长回归恒吃纯 FY,不吃 TTM 头。缺省 → years
+  // (无 TTM 的调用方 years 本就是纯 FY,零变化);生产 runValuation 显式传 floorInput.years。
+  fyYears: ValuationFloorYear[] = years,
 ): OeDcfAssessment {
   const lamp = floor.buffett_epv;
   if (
@@ -293,7 +296,7 @@ export function deriveOeDcf(
   const declined = cagr != null && cagr < 0;
 
   // 证据驱动增长:历史营收 log 回归(抗端点)与基本面上限(ROIC×再投资)取小,再受 franchise 分档量级封顶。
-  const gRaw = historicalGrowthBaseRate(years);                 // 全历史 FY 营收 log 回归
+  const gRaw = historicalGrowthBaseRate(fyYears);               // 全历史纯 FY 营收 log 回归(decision #2,不吃 TTM 头)
   const gFund = floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
   // cap 四分档(Task 4,收紧假增长):strong franchise 20% > 金融股(银行/保险)SGR 封顶 > moderate 7% > 非金融无护城河 5%。
   // 金融股走 SGR(ROE×留存率)而非扁平 7% —— 原扁平 cap 把无护城河的区域银行/保险统一抬高含增长估值。

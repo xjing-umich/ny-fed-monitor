@@ -25,7 +25,7 @@ function Tile({
     <>
       <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-faint)]">{label}</span>
       <span
-        className="font-mono text-2xl font-medium tabular-nums leading-none text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]"
+        className="font-mono text-2xl font-medium tabular-nums leading-none text-[var(--tt-text)] [transition:color_var(--tt-dur-fast)_var(--tt-ease)] group-hover:text-[var(--tt-accent)]"
         style={{ textShadow: "var(--glow-primary)" }}
       >
         {value}

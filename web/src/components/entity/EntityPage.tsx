@@ -65,7 +65,7 @@ export function EntityPage({
       {/* ① Masthead — eyebrow, serif headline, verdict, standfirst, hairline rule */}
       <header className="space-y-3 pb-1">
         {eyebrow && (
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
+          <p className="tt-eyebrow">{eyebrow}</p>
         )}
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
           <h1 className="text-balance font-display text-3xl sm:text-4xl font-medium leading-[1.1] tracking-tight text-[var(--tt-text)]">

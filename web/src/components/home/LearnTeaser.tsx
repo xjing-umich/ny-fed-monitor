@@ -13,7 +13,7 @@ export default function LearnTeaser({ lang }: { lang: Lang }): React.ReactElemen
   const articles = listArticles(lang).slice(0, 3);
   return (
     <section className="border-t border-[var(--tt-border)] pt-8">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
+      <p className="tt-eyebrow">{c.eyebrow}</p>
       <h2 className="mt-3 text-balance text-2xl font-medium tracking-tight text-[var(--tt-text)] sm:text-3xl">{c.title}</h2>
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
         {articles.map((a) => (

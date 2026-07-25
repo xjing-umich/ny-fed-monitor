@@ -266,8 +266,15 @@ function valuationCautions(
   return cautions;
 }
 
+// years_used 的头部元素是 TTM 年(FY0+1);TTM 生效时该年既未申报 FY 又跳空,渲染成 "TTM {期末}"
+// 而非假 FY 标签。其余年份维持裸数字。ttmPeriodEnd 缺省 → 全部裸数字,零变化。
+function yearsUsedText(years: number[], ttmPeriodEnd: string | undefined): string {
+  if (!ttmPeriodEnd || years.length === 0) return years.join(", ");
+  return [`TTM ${ttmPeriodEnd}`, ...years.slice(1)].join(", ");
+}
+
 // Full method note for one lamp — rendered only inside the collapsible details.
-function LampMethod({ lamp, lang }: { lamp: EpvLamp; lang: Lang }) {
+function LampMethod({ lamp, lang, ttmPeriodEnd }: { lamp: EpvLamp; lang: Lang; ttmPeriodEnd?: string }) {
   const t = COPY[lang];
   return (
     <div>
@@ -279,7 +286,7 @@ function LampMethod({ lamp, lang }: { lamp: EpvLamp; lang: Lang }) {
       <p>
         {lamp.method.earnings_basis} {lamp.method.leverage_treatment} {lamp.method.denominator} {lamp.method.bridge}
       </p>
-      <p>{lang === "zh" ? "年份：" : "Years: "}{lamp.method.years_used.join(", ")}</p>
+      <p>{lang === "zh" ? "年份：" : "Years: "}{yearsUsedText(lamp.method.years_used, ttmPeriodEnd)}</p>
       {lamp.method.simplifications.length > 0 ? <p>{lang === "zh" ? "v1 简化：" : "v1 simplifications: "}{lamp.method.simplifications.join(" ")}</p> : null}
     </div>
   );
@@ -357,7 +364,7 @@ function ValueSpine({
   issuer?: string;
   ticker?: string;
   lang: Lang;
-  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 Fraunces
+  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 display
    *  标题时传 false, 避免与标题重复 —— 位置带与句子仍留在卡内。 */
   showStatus?: boolean;
   /** undefined 保留遗留自算；null 或对象使用编排层的权威结论。 */
@@ -612,12 +619,14 @@ function MethodDetails({
   oeDcf,
   reconciliation,
   lang,
+  ttmPeriodEnd,
 }: {
   floor: ValuationFloor;
   sz?: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
   lang: Lang;
+  ttmPeriodEnd?: string;
 }) {
   const t = COPY[lang];
   const zh = lang === "zh";
@@ -676,8 +685,8 @@ function MethodDetails({
           {oeDcf?.assessable && oeDcf.terminal_share_pct != null ? ` · ${zh ? "终值占现值" : "terminal value"} ${pct(oeDcf.terminal_share_pct)}${zh ? "" : " of present value"}${oeDcf.terminal_dependency_flag ? (zh ? "（>70% — 依赖遥远未来）" : " (>70% — leans on the distant future)") : ""}` : ""}
           {oeDcf?.diagnostics?.oe_yield != null ? ` · ${zh ? "所有者盈利收益率" : "owner-earnings yield"} ${pct(oeDcf.diagnostics.oe_yield)}${oeDcf.discount?.dgs10_value != null ? ` ${zh ? "对 10Y" : "vs 10Y"} ${pct1(oeDcf.discount.dgs10_value)}` : ""}` : ""}.
         </p>
-        <LampMethod lamp={graham_epv} lang={lang} />
-        <LampMethod lamp={buffett_epv} lang={lang} />
+        <LampMethod lamp={graham_epv} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
+        <LampMethod lamp={buffett_epv} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
         {asset_floor.assessable && (finitePositive(asset_floor.tangible_net_assets) || finitePositive(asset_floor.capitalized_rd)) ? (
           <p>
             {zh ? "重置价值 = 有形净资产 " : "Reproduction value = tangible net assets "}{usd(asset_floor.tangible_net_assets)}
@@ -693,7 +702,10 @@ function MethodDetails({
         {capNote ? <p>{capNote}</p> : null}
         <p>{growthSummary(floor, lang)}</p>
         <p>
-          {zh ? "窗口 FY " : "Window FY "}{provenance.years_used.join(", ")}{zh ? " · 贴现带 " : " · discount band "}{pct(provenance.discount_rate_band[0])}–
+          {ttmPeriodEnd
+            ? <>{zh ? "窗口 TTM " : "Window TTM "}{ttmPeriodEnd}{provenance.years_used.length > 1 ? `, FY ${provenance.years_used.slice(1).join(", ")}` : ""}</>
+            : <>{zh ? "窗口 FY " : "Window FY "}{provenance.years_used.join(", ")}</>}
+          {zh ? " · 贴现带 " : " · discount band "}{pct(provenance.discount_rate_band[0])}–
           {pct(provenance.discount_rate_band[1])}{zh ? " · 正常化税率 " : " · normalized tax "}{pct(provenance.normalized_tax_rate)} (
           {provenance.normalized_tax_rate_basis}){zh ? " · 股数 " : " · "}{provenance.share_count_basis}{zh ? "" : " shares"}.
         </p>
@@ -701,7 +713,7 @@ function MethodDetails({
         {oeDcf?.assessable ? (
           <p>
             {zh ? "所有者盈利 DCF：增长 g₁ " : "Owner-earnings DCF: growth g₁ "}{pct(oeDcf.growth_g1)}
-            {oeDcf.declined ? (zh ? "（历史下滑 → 封顶为 0）" : " (history declining → capped at 0)") : ""}{zh ? " · OE FY " : " · OE FY "}{oeDcf.oe_fiscal_years?.join(", ")} ·{" "}
+            {oeDcf.declined ? (zh ? "（历史下滑 → 封顶为 0）" : " (history declining → capped at 0)") : ""}{zh ? " · OE FY " : " · OE FY "}{yearsUsedText(oeDcf.oe_fiscal_years ?? [], ttmPeriodEnd)} ·{" "}
             {oeDcf.discount?.note} {oeDcf.no_bridge_note}
             {reconciliation?.comparable && reconciliation.divergence_pct != null
               ? (zh ? ` 两法中值差 ${pct(reconciliation.divergence_pct)}。` : ` Two-method midpoint gap ${pct(reconciliation.divergence_pct)}.`)
@@ -724,8 +736,10 @@ export const EarningsPowerFloorCard: FC<{
   issuer?: string;
   ticker?: string;
   lang: Lang;
-  /** false → 卡内不渲染结论状态行(个股页把结论上提到区块 Fraunces 标题)。 */
+  /** false → 卡内不渲染结论状态行(个股页把结论上提到区块 display 标题)。 */
   showStatus?: boolean;
+  /** TTM 基点生效时的 TTM 期末(ISO date);传入则 years_used 头部显示 "TTM {期末}" 而非假 FY 标签。 */
+  ttmPeriodEnd?: string;
 }> = ({
   floor,
   strikeZone,
@@ -736,6 +750,7 @@ export const EarningsPowerFloorCard: FC<{
   ticker,
   lang,
   showStatus = true,
+  ttmPeriodEnd,
 }) => {
   if (!floor) return null;
   const t = COPY[lang];
@@ -770,7 +785,7 @@ export const EarningsPowerFloorCard: FC<{
         />
       ) : null}
 
-      <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} />
+      <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
     </div>
   );
 };

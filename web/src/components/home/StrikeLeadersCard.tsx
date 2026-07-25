@@ -31,7 +31,7 @@ export default function StrikeLeadersCard({
 }): React.ReactElement {
   const c = COPY[lang];
   return (
-    <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+    <div className="ticks rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
       <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
         <span className="text-sm font-medium text-[var(--tt-text)]">{c.title(total)}</span>
         <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.margin}</span>
@@ -51,7 +51,10 @@ export default function StrikeLeadersCard({
               <td className="py-2 pr-3 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                 {fmtValueBand(row.rangeLo, row.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}
               </td>
-              <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-accent)] whitespace-nowrap">
+              <td
+                className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-accent)] whitespace-nowrap"
+                style={{ textShadow: "var(--glow-primary)" }}
+              >
                 {row.marginPct != null && row.marginPct > 0 ? `−${Math.round(row.marginPct * 100)}%` : "—"}
               </td>
             </tr>

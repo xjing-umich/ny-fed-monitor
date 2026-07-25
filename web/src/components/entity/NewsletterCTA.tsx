@@ -8,8 +8,8 @@ import NewsletterForm from "@/components/shell/NewsletterForm";
 export function NewsletterCTA({ lang, source = "footer" }: { lang: Lang; source?: string }) {
   const c = footerCopy(lang);
   return (
-    <section className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] px-5 py-6 sm:px-7 sm:py-7">
-      <h2 className="text-xl font-medium leading-tight tracking-tight text-[var(--tt-text)]">
+    <section className="ticks rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] px-5 py-6 sm:px-7 sm:py-7">
+      <h2 className="text-xl font-semibold leading-tight tracking-tight text-[var(--tt-text)]">
         {c.newsletter}
       </h2>
       <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-[var(--tt-muted)]">

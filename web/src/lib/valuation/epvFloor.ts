@@ -100,8 +100,21 @@ export function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; 
   return { rate: clamped, basis: `Average effective tax rate over ${rates.length} year(s), capped at the statutory 21%.` };
 }
 
+/**
+ * 工作序列(spec §5):TTM 生效时 = [TTM, FY-1…](TTM 顶替 FY0,窗口与 FY-1 不重叠),
+ * 否则纯 FY。**单一真相源** —— computeValuationFloor 与 deriveOeDcf 的增长窗都经此取序列,
+ * 保证 oe0 与增长窗吃同一批年份(否则 oeDcf 用纯 FY 与 workYears 标签集取交集会丢 FY0 又不含 TTM)。
+ */
+export function workingYears(input: ValuationFloorInput): ValuationFloorYear[] {
+  return input.ttm ? [input.ttm.year, ...input.years.slice(1)] : input.years;
+}
+
 export function computeValuationFloor(input: ValuationFloorInput): ValuationFloor | PerShareUnavailable | undefined {
-  const earningsYears = selectEarningsYears(input.years);
+  // TTM 基点(spec §5):工作序列 = [TTM, FY-1…](TTM 顶替 FY0,窗口与 FY-1 不重叠);
+  // allYears 保持纯 FY —— 回归型判据(roicLongTermStrong/growthFranchise/结构性趋势)审计地基不动。
+  const fyYears = input.years;
+  const workYears = workingYears(input);
+  const earningsYears = selectEarningsYears(workYears);
   if (earningsYears.length < MIN_YEARS) return undefined;
 
   // Prefer the diluted count from a real earnings year (so a latest stub/transition
@@ -109,17 +122,17 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   // divisor for window-averaged earnings); fall back to any year with a usable count.
   const shares =
     earningsYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
-    input.years.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
+    workYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
   if (shares == null) return { kind: "per_share_unavailable", reason: MULTI_CLASS_REASON };
 
   // Full path uses the margin-qualified year subset for BOTH lamps so years_used is consistent.
-  const marginYears = selectYears(input.years);
+  const marginYears = selectYears(workYears);
   const isFinancial = isFinancialSic(input.sic);
   // pathB(roicLongTermStrong)判据须吃"完整可得历史"而非 EPV 的 5 年正常化窗口(TARGET_YEARS)——
   // 否则 ROIC_MOAT_MIN_YEARS=6 在 marginYears/earningsYears(均 slice 到 5)下永远拿不到 6 年输入,
   // pathB 变成死代码。input.years 是 fundamentalsToFloorInput 已按 fiscal_period=FY 过滤、未截断
   // 的全量年份,只喂给 roicLongTermStrong;EPV 各 lamp 仍用 marginYears/earningsYears(不动)。
-  const allYears = input.years;
+  const allYears = fyYears;
   if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears);
   return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears);
 }

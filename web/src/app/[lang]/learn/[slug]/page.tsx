@@ -126,7 +126,7 @@ export default async function ArticlePage({
       <div className="max-w-[720px] mx-auto">
         <Link
           href={localePath(lang, "/learn")}
-          className="text-xs text-[var(--tt-faint)] hover:text-[var(--tt-text)] transition-colors no-underline"
+          className="inline-block text-xs text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors no-underline max-sm:flex max-sm:min-h-[44px] max-sm:items-center"
         >
           {backLabel}
         </Link>
@@ -136,7 +136,7 @@ export default async function ArticlePage({
       {/* 文中点名实体的内链(SEO 内链: 把文章权重传给对应实体页) */}
       {article.related && article.related.length > 0 && (
         <nav className="mx-auto mt-8 max-w-[720px] border-t border-[var(--tt-border)] pt-5">
-          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <span className="tt-eyebrow">
             {lang === "zh" ? "相关" : "Related"}
           </span>
           <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
@@ -144,7 +144,7 @@ export default async function ArticlePage({
               <li key={`${r.kind}:${r.id}`}>
                 <Link
                   href={r.kind === "investor" ? investorPath(lang, r.id) : stockPath(lang, r.id)}
-                  className="text-sm text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                  className="text-sm text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                 >
                   {r.label}
                 </Link>

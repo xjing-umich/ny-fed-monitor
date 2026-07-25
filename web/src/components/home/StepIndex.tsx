@@ -74,7 +74,7 @@ function StepRow({
     <div className="grid grid-cols-1 gap-6 border-t border-[var(--tt-border)] pt-10 first:border-0 first:pt-0 md:grid-cols-[0.38fr_0.62fr] md:gap-10">
       <div>
         <Display as="span" size="xl" className="block font-mono text-[var(--ink-3)]">{serial}</Display>
-        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
+        <p className="mt-4 tt-eyebrow">{eyebrow}</p>
         <h2 className="mt-3 text-balance text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {title}
         </h2>

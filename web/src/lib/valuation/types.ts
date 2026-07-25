@@ -259,6 +259,15 @@ export type ValuationFloorInput = {
   years: ValuationFloorYear[]; // most-recent-first
   /** SEC sic code (Task 4: is_financial = sic∈[6020,6099]∪[6300,6399]，银行+保险). */
   sic?: number;
+  /** TTM 合成基点(spec 2026-07-24-ttm-valuation-basis):最新基点用滚动十二个月行顶替最新 FY;
+   *  years 本身保持纯 FY(增长回归/盈利闸/roicLongTermStrong 的审计地基不动)。缺省 = 纯 FY 现状。 */
+  ttm?: {
+    year: ValuationFloorYear;
+    period_end: string;
+    quarters_used: string[];
+    /** true = 每股股数回退 FY0(最新10-Q缺股数);拆股闸 as-of 不可前滚到 TTM 期末(spec §6)。 */
+    shares_from_fy: boolean;
+  };
 };
 
 // ── Maintenance capex (spec §1.1) ────────────────────────────────────────────

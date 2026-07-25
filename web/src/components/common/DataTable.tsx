@@ -48,6 +48,11 @@ export type DataTableProps<T> = {
   /** Rank display offset (filtered global index). Default 0 → ranks start at 1. */
   rankStart?: number;
   emptyText?: string;
+  /** sr-only labels for the active sort state (screen readers can't hear arrows). */
+  sortAscLabel?: string;
+  sortDescLabel?: string;
+  /** aria-label for the mobile sort chip group. */
+  sortGroupLabel?: string;
 };
 
 // 静态类对(Tailwind JIT 需字面量,不能拼接)。
@@ -73,6 +78,9 @@ export function DataTable<T>({
   onSort,
   rankStart,
   emptyText,
+  sortAscLabel = "sorted ascending",
+  sortDescLabel = "sorted descending",
+  sortGroupLabel = "Sort",
 }: DataTableProps<T>) {
   const bp = BP[breakpoint];
   if (rows.length === 0) {
@@ -86,6 +94,7 @@ export function DataTable<T>({
   const leadCols = columns.filter((c) => c.role === "lead");
   const primaryCol = columns.find((c) => c.role === "primary") ?? columns[0];
   const trailCols = columns.filter((c) => c.role === "trail");
+  const sortableCols = onSort ? columns.filter((c) => c.sortKey) : [];
   const metricCols = columns.filter(
     (c) =>
       !c.hideOnMobile &&
@@ -144,7 +153,12 @@ export function DataTable<T>({
                       >
                         {c.header}
                         {isActive ? (
-                          sortDir === "asc" ? " ↑" : " ↓"
+                          <>
+                            <span aria-hidden>{sortDir === "asc" ? " ↑" : " ↓"}</span>
+                            <span className="sr-only">
+                              {sortDir === "asc" ? sortAscLabel : sortDescLabel}
+                            </span>
+                          </>
                         ) : (
                           <span
                             aria-hidden
@@ -211,7 +225,36 @@ export function DataTable<T>({
         </table>
       </div>
 
-      {/* Mobile/tablet: stacked cards */}
+      {/* Mobile/tablet: stacked cards (+ compact sort chips — the table headers
+          with sort buttons are hidden in card mode, so cards need their own) */}
+      {sortableCols.length > 0 && (
+        <div
+          role="group"
+          aria-label={sortGroupLabel}
+          className={cn("flex flex-wrap items-center gap-1 pb-2", bp.card)}
+        >
+          {sortableCols.map((c) => {
+            const isActive = sortKey === c.sortKey;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => onSort!(c.sortKey!)}
+                className={cn(
+                  "inline-flex min-h-[44px] items-center border px-2.5 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+                  isActive
+                    ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
+                    : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)]"
+                )}
+              >
+                {c.header}
+                {isActive && <span aria-hidden>{sortDir === "asc" ? " ↑" : " ↓"}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <ul className={cn("m-0 list-none divide-y divide-[var(--tt-border)] p-0", bp.card)}>
         {rows.map((row, i) => {
           const href = rowHref?.(row);

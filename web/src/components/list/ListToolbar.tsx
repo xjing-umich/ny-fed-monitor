@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { X } from "lucide-react";
 
 type Chip = { key: string; label: string };
 
@@ -14,6 +15,8 @@ type Props = {
   chips?: Chip[];
   activeChip?: string;
   onChip?: (key: string) => void;
+  /** aria-label for the clear-search button (shown when q is non-empty). */
+  clearLabel?: string;
 };
 
 const chipClass = (active: boolean) =>
@@ -35,6 +38,7 @@ export const ListToolbar: React.FC<Props> = ({
   chips,
   activeChip,
   onChip,
+  clearLabel = "Clear search",
 }) => {
   const hasChips = chips != null && chips.length > 0;
 
@@ -42,7 +46,7 @@ export const ListToolbar: React.FC<Props> = ({
     <div className="space-y-2 md:space-y-0">
       <div className="md:flex md:flex-row md:items-center md:gap-4">
         <form
-          className="w-full md:flex-1 md:min-w-0"
+          className="relative w-full md:flex-1 md:min-w-0"
           onSubmit={(e) => {
             e.preventDefault();
             onQSubmit();
@@ -54,8 +58,18 @@ export const ListToolbar: React.FC<Props> = ({
             onChange={(e) => onQChange(e.target.value)}
             placeholder={searchPlaceholder}
             aria-label={searchLabel}
-            className="w-full min-w-[200px] border-0 border-b border-[var(--tt-border)] bg-transparent px-0 py-1.5 text-sm text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] focus:outline-none focus:border-[var(--tt-accent)]"
+            className="w-full min-w-[200px] border-0 border-b border-[var(--tt-border)] bg-transparent px-0 py-1.5 pr-7 text-sm text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] focus:outline-none focus:border-[var(--tt-accent)] [&::-webkit-search-cancel-button]:hidden"
           />
+          {q.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onQChange("")}
+              aria-label={clearLabel}
+              className="absolute right-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--tt-faint)] transition-colors hover:text-[var(--tt-text)]"
+            >
+              <X size={13} />
+            </button>
+          )}
         </form>
 
         <div className="flex flex-wrap items-center justify-between gap-2 md:contents">

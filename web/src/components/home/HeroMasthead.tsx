@@ -100,7 +100,7 @@ export default function HeroMasthead({
   return (
     <section className="grid grid-cols-1 gap-10 md:grid-cols-[1.05fr_0.95fr] md:items-start">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+        <p className="tt-eyebrow">
           {c.brand}
         </p>
         <p className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-accent)]">
@@ -112,10 +112,10 @@ export default function HeroMasthead({
             {investorCount}
           </Display>
         )}
-        <h1 className="mt-4 max-w-[18ch] text-balance font-display text-2xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-3xl">
+        <h1 className="mt-4 max-w-[18ch] text-balance font-display text-3xl font-medium leading-[1.06] tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {headline}
         </h1>
-        <p className="mt-5 max-w-[30ch] text-xl leading-snug text-[var(--ink-2)] sm:text-2xl">
+        <p className="mt-5 max-w-[30ch] text-lg leading-snug text-[var(--ink-2)] sm:text-xl">
           {c.headlineMuted}
         </p>
         <p className="mt-4 max-w-[42ch] text-sm leading-relaxed text-[var(--tt-muted)]">
@@ -125,12 +125,12 @@ export default function HeroMasthead({
         </p>
         <Link
           href={localePath(lang, "/stocks/screener")}
-          className="group mt-7 inline-flex min-h-11 items-center gap-1.5 text-[15px] text-[var(--tt-text)] no-underline [transition:color_var(--tt-dur)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
+          className="group mt-7 inline-flex min-h-11 items-center gap-1.5 text-[15px] text-[var(--tt-text)] no-underline [transition:color_var(--tt-dur-fast)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
         >
           <span className="[border-bottom:1px_solid_var(--tt-accent)] pb-0.5">{c.cta}</span>
           <span
             aria-hidden
-            className="inline-block [transition:transform_var(--tt-dur)_var(--tt-ease)] group-hover:translate-x-1"
+            className="inline-block [transition:transform_var(--tt-dur-fast)_var(--tt-ease)] group-hover:translate-x-1"
           >
             →
           </span>

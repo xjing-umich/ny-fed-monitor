@@ -37,7 +37,7 @@ export default function PhilosophyQuote({
   const c = COPY[lang];
   return (
     <section className="border-t border-[var(--tt-border)] pt-12">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{c.eyebrow}</p>
+      <p className="tt-eyebrow">{c.eyebrow}</p>
 
       {/* Hero quote — left rule only; no oversized decorative glyph (collides with the rule). */}
       <figure className="mt-8">

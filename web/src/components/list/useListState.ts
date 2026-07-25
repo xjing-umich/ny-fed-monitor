@@ -17,33 +17,44 @@ export function useListState(opts: ParseOpts) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { defaultSort, hasVf } = opts;
+  // 用字符串 dep 稳定 allowedSorts 数组 identity(调用方每次渲染都新建数组)。
+  const allowedKey = opts.allowedSorts.join("|");
 
   const parsed = useMemo(
-    () => parseListParams(new URLSearchParams(searchParams.toString()), opts),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- opts identity is stable per page
-    [searchParams, opts.defaultSort, opts.hasVf, opts.allowedSorts.join("|")]
+    () =>
+      parseListParams(new URLSearchParams(searchParams.toString()), {
+        defaultSort,
+        hasVf,
+        allowedSorts: allowedKey.split("|"),
+      }),
+    [searchParams, defaultSort, hasVf, allowedKey]
   );
 
+  // URL 里的 q 变化(后退/前进、外链带参)时同步进输入框 ——
+  // React 认可的「渲染期间派生 state」写法,替代 effect setState。
   const [qInput, setQInput] = useState(parsed.q);
-  useEffect(() => {
+  const [prevParsedQ, setPrevParsedQ] = useState(parsed.q);
+  if (parsed.q !== prevParsedQ) {
+    setPrevParsedQ(parsed.q);
     setQInput(parsed.q);
-  }, [parsed.q]);
+  }
 
   const replace = useCallback(
     (next: ListParams) => {
-      const qs = serializeListParams(next, {
-        defaultSort: opts.defaultSort,
-        hasVf: opts.hasVf,
-      });
+      const qs = serializeListParams(next, { defaultSort, hasVf });
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
-    [router, pathname, opts.defaultSort, opts.hasVf]
+    [router, pathname, defaultSort, hasVf]
   );
 
+  // 最新 parsed/replace 给防抖 effect 用 —— ref 只在 effect 里写(渲染期不写)。
   const parsedRef = useRef(parsed);
-  parsedRef.current = parsed;
   const replaceRef = useRef(replace);
-  replaceRef.current = replace;
+  useEffect(() => {
+    parsedRef.current = parsed;
+    replaceRef.current = replace;
+  });
 
   // Debounced q → URL; resets page. Refs avoid stale parsed/replace in narrow-deps effect.
   useEffect(() => {

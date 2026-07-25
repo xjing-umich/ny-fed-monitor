@@ -4,8 +4,9 @@ import { ImageResponse } from "next/og";
 // routes. Dark, on-brand (warm near-black ground, lifted compounding green, paper
 // text) with a consistent layout: eyebrow → headline → subtitle → footer. The
 // dark ground matches the site's signature look and stands out in light social
-// feeds. next/og runs Satori with no embedded font here, so it falls back to its
-// default face — consistent across cards.
+// feeds. next/og runs Satori with no embedded font here, so all text uses its
+// bundled default sans — consistent across cards and aligned with the site's
+// Saira/Geist sans identity (no serif stack to fall back onto).
 
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 export const OG_CONTENT_TYPE = "image/png";
@@ -37,7 +38,6 @@ export function ogCard({
           background: BG,
           color: FG,
           padding: "72px 80px",
-          fontFamily: "Georgia, 'Times New Roman', serif",
         }}
       >
         {/* Mark + wordmark */}
