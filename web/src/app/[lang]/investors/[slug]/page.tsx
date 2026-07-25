@@ -551,6 +551,19 @@ export default async function InvestorSlugPage({
                   ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于保守价值带${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
                   : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below a conservative value band${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
               </p>
+              {(() => {
+                const held = holdingTickers.map((tk) => verdicts.get(tk.toUpperCase())).filter(Boolean) as SnapshotVerdict[];
+                const demanding = held.filter((x) => x.expectations?.assessable && x.expectations.tier === "demanding").length;
+                const modest = held.filter((x) => x.expectations?.assessable && x.expectations.tier === "modest").length;
+                if (demanding === 0 && modest === 0) return null;
+                return (
+                  <p className="mb-3 text-[13px] text-[var(--tt-faint)]">
+                    {lang === "zh"
+                      ? `按现价隐含预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
+                      : `By what price implies: ${demanding} demand a demanding growth rate, ${modest} modest.`}
+                  </p>
+                );
+              })()}
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
                   <li key={h.ticker} className="flex items-baseline gap-2 text-sm">
