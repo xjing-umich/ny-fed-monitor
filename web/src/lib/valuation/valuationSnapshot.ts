@@ -397,7 +397,8 @@ export const readConvictionScreen = cache(
       );
       if (sErr) {
         if (!isMissingTable(sErr)) console.error(`readConvictionScreen snapshot 失败: ${(sErr as Error).message}`);
-        return { ...empty, heldTotal };
+        // 快照查询报错 → 无行可显,heldTotal 也归 0(与空表一致,不让顶部句报"N 只"却空表)
+        return empty;
       }
       const snapOf = new Map<string, Row>();
       for (const r of (sData ?? []) as Row[]) snapOf.set(r.ticker.toUpperCase(), r);
