@@ -176,7 +176,7 @@ function HoldersTable({
 
   return (
     <section>
-      {/* 支柱②标题:绿眉标 → Fraunces 标题(语义 h2, 文档大纲/SEO) */}
+      {/* 支柱②标题:绿眉标 → display 标题(语义 h2, 文档大纲/SEO) */}
       <SectionHeading
         eyebrow={page.holders.eyebrow}
         title={t.title}
@@ -435,7 +435,7 @@ export default async function StockTickerPage({
     handoffVerdict.marginPct != null
   );
 
-  // 估值区块 Fraunces 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
+  // 估值区块 display 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
   // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
   const page = stockPageCopy(lang);
   const g = stockGlossary(lang);
@@ -615,7 +615,7 @@ export default async function StockTickerPage({
             </section>
           )}
 
-          {/* 支柱① 估值结论(头条) — Fraunces 标题直接是结论, 位置带/句子/方法在卡内 */}
+          {/* 支柱① 估值结论(头条) — display 标题直接是结论, 位置带/句子/方法在卡内 */}
           {valuationFloor && (
             <section>
               <SectionHeading

@@ -364,7 +364,7 @@ function ValueSpine({
   issuer?: string;
   ticker?: string;
   lang: Lang;
-  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 Fraunces
+  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 display
    *  标题时传 false, 避免与标题重复 —— 位置带与句子仍留在卡内。 */
   showStatus?: boolean;
   /** undefined 保留遗留自算；null 或对象使用编排层的权威结论。 */
@@ -736,7 +736,7 @@ export const EarningsPowerFloorCard: FC<{
   issuer?: string;
   ticker?: string;
   lang: Lang;
-  /** false → 卡内不渲染结论状态行(个股页把结论上提到区块 Fraunces 标题)。 */
+  /** false → 卡内不渲染结论状态行(个股页把结论上提到区块 display 标题)。 */
   showStatus?: boolean;
   /** TTM 基点生效时的 TTM 期末(ISO date);传入则 years_used 头部显示 "TTM {期末}" 而非假 FY 标签。 */
   ttmPeriodEnd?: string;

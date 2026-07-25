@@ -23,12 +23,12 @@ export function FoldedSection({
     <details open={defaultOpen} className="group mt-6">
       <summary className="cursor-pointer list-none pb-3 [&::-webkit-details-marker]:hidden max-sm:min-h-[44px]">
         {eyebrow ? (
-          <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <p className="mb-1.5 tt-eyebrow">
             {eyebrow}
           </p>
         ) : null}
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h2 className="text-lg font-medium leading-tight tracking-tight text-[var(--tt-text)]">
+          <h2 className="text-lg font-semibold leading-tight tracking-tight text-[var(--tt-text)]">
             {title}
           </h2>
           <span

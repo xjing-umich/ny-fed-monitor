@@ -80,7 +80,7 @@ export default async function LearnIndexPage({
           href={localePath(lang, `/learn/${featured.slug}`)}
           className="group mt-8 block border-t border-[var(--tt-border)] pt-6 no-underline"
         >
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <span className="tt-eyebrow">
             {c.startHere}
           </span>
           <h2 className="mt-2 text-balance text-2xl font-medium leading-tight text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
@@ -98,7 +98,7 @@ export default async function LearnIndexPage({
           href={localePath(lang, `/learn/${latest.slug}`)}
           className="group mt-6 block border-t border-[var(--tt-border)] pt-5 no-underline"
         >
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <span className="tt-eyebrow">
             {c.latest}
           </span>
           <h2 className="mt-2 text-balance text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">

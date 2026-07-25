@@ -25,7 +25,7 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderPa
     <article className="max-w-[720px] mx-auto py-8 sm:py-10">
       <header className="border-b border-[var(--tt-border)] pb-6">
         {eyebrow ? (
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <p className="tt-eyebrow">
             {eyebrow}
           </p>
         ) : null}
@@ -45,7 +45,7 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderPa
 
       {doc.sections.map((section, i) => (
         <section key={i} className="mt-7">
-          <h2 className="text-base font-medium text-[var(--tt-text)]">
+          <h2 className="text-lg font-semibold text-[var(--tt-text)]">
             {section.heading}
           </h2>
           {section.paragraphs.map((p, j) => (

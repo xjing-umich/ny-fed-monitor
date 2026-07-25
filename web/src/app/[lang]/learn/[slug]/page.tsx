@@ -136,7 +136,7 @@ export default async function ArticlePage({
       {/* 文中点名实体的内链(SEO 内链: 把文章权重传给对应实体页) */}
       {article.related && article.related.length > 0 && (
         <nav className="mx-auto mt-8 max-w-[720px] border-t border-[var(--tt-border)] pt-5">
-          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+          <span className="tt-eyebrow">
             {lang === "zh" ? "相关" : "Related"}
           </span>
           <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">

@@ -125,7 +125,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
           >
             <div className="flex items-start justify-between px-5 pt-5 pb-3 border-b border-[var(--tt-border)]">
               <div>
-                <h2 className="text-lg font-medium text-[var(--tt-text)]">
+                <h2 className="text-lg font-semibold text-[var(--tt-text)]">
                   {c.title}
                 </h2>
                 <p className="mt-1 text-xs text-[var(--tt-muted)] leading-relaxed">

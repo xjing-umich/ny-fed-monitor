@@ -163,7 +163,7 @@
   --color-foreground:    var(--foreground);
   --font-sans:           var(--font-geist-sans);
   --font-mono:           var(--font-geist-mono);
-  --font-display:        var(--font-display), Georgia, "Times New Roman", serif;
+  --font-display:        var(--font-display), "Helvetica Neue", Arial, sans-serif;
   --font-heading:        var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring:              var(--sidebar-ring);
   --color-sidebar-border:            var(--sidebar-border);
@@ -226,6 +226,15 @@
     @apply bg-background text-foreground;
     font-size: 13px;
     line-height: 1.5;
+    /* 深底浅字补偿:极轻微加宽字距,提升 13px 正文的辨读(浅色主题不需要) */
+    letter-spacing: 0.01em;
+  }
+  .light body {
+    letter-spacing: normal;
+  }
+  /* 汉字在 13px/1.5 下偏密:zh 正文行高放宽到 1.65(html lang 已按 locale 设置) */
+  :lang(zh) body {
+    line-height: 1.65;
   }
   html {
     @apply font-sans;
@@ -243,9 +252,22 @@
     font-family: var(--font-geist-mono), ui-monospace, monospace;
   }
   .font-display {
-    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
     font-optical-sizing: auto;
-    letter-spacing: -0.005em;
+  }
+  /* 负字距只对 latin 生效:zh 标题落到系统 CJK 后 tracking-tight 会显得局促,
+     统一在 :lang(zh) 下复位(html lang 由 [lang]/layout 按 locale 写入)。 */
+  :lang(zh) .tracking-tight {
+    letter-spacing: 0;
+  }
+  /* 绿色眉标 — 区块/页眉的"仪器条"标识(SectionHeading/PageHeader/EntityPage 共用)。 */
+  .tt-eyebrow {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--tt-accent);
   }
   .tt-label {
     font-size: 11px;

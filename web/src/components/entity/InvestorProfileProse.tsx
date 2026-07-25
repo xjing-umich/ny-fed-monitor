@@ -23,7 +23,7 @@ export function InvestorProfileProse({
   return (
     <section>
       <div className="pb-3">
-        <h2 className="text-lg font-medium tracking-tight text-[var(--tt-text)]">
+        <h2 className="text-lg font-semibold tracking-tight text-[var(--tt-text)]">
           {heading}
         </h2>
       </div>

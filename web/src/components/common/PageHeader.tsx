@@ -24,7 +24,7 @@ export default function PageHeader({
       <div className="flex items-start justify-between gap-4">
         <div>
           {eyebrow ? (
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
+            <p className="tt-eyebrow">{eyebrow}</p>
           ) : null}
           <h1 className="mt-2 text-balance font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {title}

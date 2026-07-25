@@ -30,7 +30,7 @@ export default function SubNav({ lang, section, active }: SubNavProps) {
               className="relative flex items-center gap-1.5 max-sm:min-h-[44px] px-4 py-2.5 text-[11px] uppercase tracking-[0.1em] text-[var(--tt-faint)] cursor-not-allowed select-none shrink-0"
             >
               {label}
-              <span className="text-[9px] uppercase tracking-[0.08em] text-[var(--tt-faint)] border border-[var(--tt-border)] rounded px-1 py-0.5 leading-none">
+              <span className="text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)] border border-[var(--tt-border)] rounded px-1 py-0.5 leading-none">
                 {lang === "zh" ? "即将上线" : "soon"}
               </span>
             </span>

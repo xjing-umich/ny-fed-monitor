@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata, Viewport } from "next";
-import { Zilla_Slab } from "next/font/google";
+import { Saira } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "../globals.css";
@@ -15,12 +15,13 @@ import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
 
-// Engineered slab serif for the wordmark and headlines: machined, instrument-dial
-// character that keeps the editorial serif role while pushing the data-instrument
-// register. Latin subset only — zh headlines fall through the system CJK stack.
-const zillaSlab = Zilla_Slab({
+// Engineered industrial sans for the wordmark and headlines: straight-sided
+// "spec-sheet nameplate" geometry that pairs cleanly with PingFang/system CJK
+// (a serif slab clashed with it). Latin subset only — zh headlines fall through
+// the system CJK stack. 600 trimmed: every font-display consumer uses font-medium.
+const saira = Saira({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "700"],
   display: "swap",
   variable: "--font-display",
 });
@@ -151,7 +152,7 @@ export default async function LangLayout({
     <html
       lang={htmlLang}
       suppressHydrationWarning
-      className={`${zillaSlab.variable} ${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
+      className={`${saira.variable} ${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
         <ThemeProvider

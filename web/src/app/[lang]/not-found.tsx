@@ -34,7 +34,7 @@ export default function LocaleNotFound() {
 
   return (
     <div className="mx-auto flex max-w-xl flex-col items-start gap-5 py-20 sm:py-28">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{t.eyebrow}</p>
+      <p className="tt-eyebrow">{t.eyebrow}</p>
       <h1 className="font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
         {t.title}
       </h1>
