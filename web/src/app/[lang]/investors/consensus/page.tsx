@@ -15,6 +15,7 @@ import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
 import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
 import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
+import { readValuationVerdicts } from "@/lib/valuation/valuationSnapshot";
 
 export const revalidate = 86400; // 季度级数据, 每日 ISR 足够
 
@@ -39,6 +40,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   const isZh = lang === "zh";
 
   const [rows, deltas, idx] = await Promise.all([mostHeld(50), holderDeltas(), getManagerIndex()]);
+  const verdicts = await readValuationVerdicts(rows.map((r) => r.cusip));
   const managerCount = idx.managers.length;
   const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
   const staleManagers = idx.managers.filter((m) => freshness13F(m.period, globalLatest) === "stale");
@@ -49,6 +51,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
     delta: deltas.get(r.cusip) ?? null,
     pctOfAggregate: r.totalValue / totalSum,
     href: stockPath(lang, r.cusip),
+    valuation: verdicts.get(r.cusip.toUpperCase()),
   }));
   const blurbRows: BlurbRow[] = rankRows.map((r) => ({ ticker: r.ticker, issuer: r.issuer, primary: r.primary, delta: r.delta }));
   const top = rankRows[0];

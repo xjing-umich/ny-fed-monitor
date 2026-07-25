@@ -4,6 +4,8 @@ import type { Lang } from "@/lib/nav";
 import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
 import { Badge } from "@/components/common/Badge";
+import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
+import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 
 export type RankRow = {
   ticker: string;
@@ -15,6 +17,7 @@ export type RankRow = {
   value?: number;             // 买卖页: 涉及金额
   kindLabel?: string;         // 买卖页: 动作标签
   kindTone?: "positive" | "warn" | "neutral";
+  valuation?: SnapshotVerdict;   // 共识页:该票当前估值位置(可缺 → 不渲染)
 };
 
 export function AggregateRankingList({
@@ -45,6 +48,7 @@ export function AggregateRankingList({
               )}
               {r.kindLabel && <Badge tone={r.kindTone ?? "neutral"}>{r.kindLabel}</Badge>}
               {r.value != null && <span className="font-mono tabular-nums">{formatUSD(r.value)}</span>}
+              {r.valuation && <ValuationBadge verdict={r.valuation} lang={lang} />}
             </div>
           </div>
           <div className="shrink-0 text-right">
