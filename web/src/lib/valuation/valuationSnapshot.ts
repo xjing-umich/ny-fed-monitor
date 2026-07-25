@@ -403,25 +403,29 @@ export const readConvictionScreen = cache(
       for (const r of (sData ?? []) as Row[]) snapOf.set(r.ticker.toUpperCase(), r);
 
       const rows: ScreenerRow[] = tickers
-        .map((tk): ScreenerRow => {
+        // 无快照匹配的高共识票绝不伪造估值——直接丢弃,而非拿 above/$0/none 兜底
+        .flatMap((tk): ScreenerRow[] => {
           const r = snapOf.get(tk);
+          if (!r) return [];
           const hc = holderOf.get(tk) ?? 0;
-          return {
-            ticker: tk,
-            issuer: issuerOf.get(tk) || tk,
-            bucket: (r?.verdict_bucket as VerdictBucket) ?? "above",
-            inStrikeZone: r?.in_strike_zone ?? false,
-            rangeLo: r ? Number(r.range_lo) : 0,
-            rangeHi: r ? Number(r.range_hi) : 0,
-            price: r ? Number(r.price) : 0,
-            priceDate: r?.price_date ?? "",
-            marginPct: r?.margin_pct == null ? null : Number(r.margin_pct),
-            coverage: (r?.coverage as VerdictCoverage) ?? "none",
-            reliable: r?.reliable ?? true,
-            computedAt: r?.computed_at ?? "",
-            holderCount: hc,
-            expectations: r?.payload?.expectations,
-          };
+          return [
+            {
+              ticker: tk,
+              issuer: issuerOf.get(tk) || tk,
+              bucket: r.verdict_bucket as VerdictBucket,
+              inStrikeZone: r.in_strike_zone,
+              rangeLo: Number(r.range_lo),
+              rangeHi: Number(r.range_hi),
+              price: Number(r.price),
+              priceDate: r.price_date ?? "",
+              marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
+              coverage: r.coverage as VerdictCoverage,
+              reliable: r.reliable ?? true,
+              computedAt: r.computed_at,
+              holderCount: hc,
+              expectations: r.payload?.expectations,
+            },
+          ];
         })
         // 坏数据行(价值带与现价严重脱节)不进面
         .filter((r) => !(r.price > 0 && isImplausibleBand(r)))
@@ -432,7 +436,8 @@ export const readConvictionScreen = cache(
             deriveFusionSignal({ holderCount: b.holderCount, verdict: b }).attractivenessRank,
         );
       const computedAt = rows.reduce<string | null>((mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx), null);
-      return { rows, heldTotal, computedAt };
+      // heldTotal 改口径为「实际展示行数」(有真快照的高共识票),别再报原始高共识票数——避免"N stocks held"文案对不上表格实际行数
+      return { rows, heldTotal: rows.length, computedAt };
     } catch (err) {
       console.error(`readConvictionScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
       return empty;
