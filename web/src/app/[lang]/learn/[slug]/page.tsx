@@ -126,7 +126,7 @@ export default async function ArticlePage({
       <div className="max-w-[720px] mx-auto">
         <Link
           href={localePath(lang, "/learn")}
-          className="text-xs text-[var(--tt-faint)] hover:text-[var(--tt-text)] transition-colors no-underline"
+          className="inline-block text-xs text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors no-underline max-sm:flex max-sm:min-h-[44px] max-sm:items-center"
         >
           {backLabel}
         </Link>
@@ -144,7 +144,7 @@ export default async function ArticlePage({
               <li key={`${r.kind}:${r.id}`}>
                 <Link
                   href={r.kind === "investor" ? investorPath(lang, r.id) : stockPath(lang, r.id)}
-                  className="text-sm text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                  className="text-sm text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                 >
                   {r.label}
                 </Link>
