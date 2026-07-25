@@ -18,7 +18,7 @@ interface ProseDocProps {
 
 // Shared prose layout for the legal pages and the About page. Pure presentation —
 // content (title / intro / sections) is supplied by the caller, so the pages stay
-// one-liners. Masthead mirrors PageHeader: green-mono eyebrow → Fraunces title →
+// one-liners. Masthead mirrors PageHeader: green-mono eyebrow → display-slab title →
 // mono dateline → hairline rule.
 export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderParagraph }: ProseDocProps) {
   return (
@@ -29,7 +29,7 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderPa
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="mt-2 font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
+        <h1 className="mt-2 text-balance font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
           {doc.title}
         </h1>
         {updated && (

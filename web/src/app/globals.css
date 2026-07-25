@@ -47,6 +47,10 @@
   /* Motion */
   --tt-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
   --tt-dur: 0.5s;
+  --tt-dur-fast: 0.15s; /* hover/focus 微状态 */
+
+  /* Instrument ticks — 面板四角的机械刻度角标 */
+  --tick-color: var(--border-strong);
 
   /* Sidebar */
   --sidebar:             #151B17;
@@ -119,6 +123,9 @@
   /* Motion */
   --tt-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
   --tt-dur: 0.5s;
+  --tt-dur-fast: 0.15s;
+
+  --tick-color: var(--border-strong);
 
   --sidebar:             #FCFBF7;
   --sidebar-foreground:  #1C1917;
@@ -253,5 +260,26 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--tt-faint);
+  }
+  /* HUD 角标 — 给镶边面板四角加 8px 机械刻度。只给带 border 的面板用，
+     与发丝线同色(--tick-color)，不发光、不喧宾夺主。 */
+  .ticks {
+    --_c: var(--tick-color);
+    background-image:
+      linear-gradient(var(--_c), var(--_c)), linear-gradient(var(--_c), var(--_c)),
+      linear-gradient(var(--_c), var(--_c)), linear-gradient(var(--_c), var(--_c)),
+      linear-gradient(var(--_c), var(--_c)), linear-gradient(var(--_c), var(--_c)),
+      linear-gradient(var(--_c), var(--_c)), linear-gradient(var(--_c), var(--_c));
+    background-repeat: no-repeat;
+    background-size:
+      8px 1px, 1px 8px,
+      8px 1px, 1px 8px,
+      8px 1px, 1px 8px,
+      8px 1px, 1px 8px;
+    background-position:
+      6px 6px, 6px 6px,
+      calc(100% - 6px) 6px, calc(100% - 6px) 6px,
+      6px calc(100% - 6px), 6px calc(100% - 6px),
+      calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) calc(100% - 6px);
   }
 }

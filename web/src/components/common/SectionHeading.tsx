@@ -21,12 +21,16 @@ export function SectionHeading({
   return (
     <div>
       {eyebrow && (
-        <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
-          {eyebrow}
-        </p>
+        <div className="mb-1.5 flex items-center gap-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">
+            {eyebrow}
+          </p>
+          {/* 仪表刻线 — 眉标之后的发丝延伸线,给区块定"仪器条"基调 */}
+          <span aria-hidden className="h-px flex-1 bg-[var(--tt-border)]" />
+        </div>
       )}
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <Tag className="text-xl font-medium leading-tight tracking-tight text-[var(--tt-text)]">
+        <Tag className="text-balance text-xl font-medium leading-tight tracking-tight text-[var(--tt-text)]">
           {title}
         </Tag>
         {trailing}

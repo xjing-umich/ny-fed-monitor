@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /** Canonical interior-page header — codifies the home design rhythm:
- *  green mono eyebrow → Fraunces title → optional dateline → optional intro.
+ *  green mono eyebrow → display-slab title → optional dateline → optional intro.
  *  No bottom rule: SubNav / space-y separate the header from body (avoids
  *  stacking with search underlines and the next section). */
 export default function PageHeader({
@@ -26,7 +26,7 @@ export default function PageHeader({
           {eyebrow ? (
             <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-accent)]">{eyebrow}</p>
           ) : null}
-          <h1 className="mt-2 font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
+          <h1 className="mt-2 text-balance font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {title}
           </h1>
         </div>
