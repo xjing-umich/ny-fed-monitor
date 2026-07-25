@@ -12,7 +12,7 @@ import { localePath } from "@/lib/urls";
 const colHeading =
   "font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-faint)]";
 const colLink =
-  "text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors no-underline";
+  "max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors no-underline";
 
 export default function Footer({ lang }: { lang: Lang }) {
   const c = footerCopy(lang);

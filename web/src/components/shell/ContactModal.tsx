@@ -102,7 +102,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 self-start text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors"
+        className="inline-flex items-center gap-1.5 self-start max-sm:min-h-[44px] text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors"
       >
         <Mail size={13} />
         {c.link}
@@ -148,7 +148,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
                 <button
                   type="button"
                   onClick={close}
-                  className="mt-5 inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-[var(--tt-accent)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity"
+                  className="mt-5 inline-flex min-h-[44px] items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-[var(--tt-accent)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity"
                 >
                   {c.close}
                 </button>
@@ -204,7 +204,7 @@ export default function ContactModal({ lang }: ContactModalProps) {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="mt-1 inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-[var(--tt-accent)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity disabled:opacity-60"
+                  className="mt-1 inline-flex min-h-[44px] items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-[var(--tt-accent)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity disabled:opacity-60"
                 >
                   {status === "sending" ? c.sending : c.send}
                 </button>

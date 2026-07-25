@@ -7,14 +7,19 @@ const MAP: Record<MoveKind, { label: string; solid: boolean; tone: "buy" | "sell
   decreased: { label: "TRIM", solid: false, tone: "sell" },
 };
 
-/** Compact buy/sell change-type chip. Green = buy, red = sell; solid = strong (NEW/EXIT). */
+/** Compact buy/sell change-type chip. Green = buy, red = sell; solid = strong (NEW/EXIT).
+ *  全用语义 token(positive/negative),深浅主题自动正确,不硬编码色板。 */
 export default function MoveTag({ kind }: { kind: MoveKind }) {
   const cfg = MAP[kind];
-  const cls = cfg.tone === "buy"
-    ? (cfg.solid ? "bg-emerald-600 text-white" : "border border-emerald-600/60 text-emerald-700 dark:text-emerald-400")
-    : (cfg.solid ? "bg-rose-600 text-white" : "border border-rose-600/60 text-rose-700 dark:text-rose-400");
+  const color = cfg.tone === "buy" ? "var(--tt-positive)" : "var(--tt-negative)";
+  const cls = cfg.solid
+    ? "text-[var(--primary-foreground)]"
+    : "border border-current/50";
   return (
-    <span className={`inline-block rounded-sm px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] leading-none ${cls}`}>
+    <span
+      className={`inline-block rounded-sm px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] leading-none ${cls}`}
+      style={cfg.solid ? { background: color } : { color }}
+    >
       {cfg.label}
     </span>
   );

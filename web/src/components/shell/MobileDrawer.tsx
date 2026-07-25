@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -10,28 +10,31 @@ import type { Lang } from "@/lib/nav";
 import { LogoMark } from "@/components/brand/Logo";
 import { localePath } from "@/lib/urls";
 
+/** true on the client after hydration, false during SSR — no effect/setState needed. */
+const subscribe = () => () => {};
+function useMounted() {
+  return useSyncExternalStore(subscribe, () => true, () => false);
+}
+
 interface MobileDrawerProps {
   lang: Lang;
 }
 
 export default function MobileDrawer({ lang }: MobileDrawerProps) {
-  const [open, setOpen] = useState(false);
+  // openFor 记录打开时的 pathname;路由变化后自动视为已关闭 —— 无需 effect setState。
+  const [openFor, setOpenFor] = useState<string | null>(null);
   const pathname = usePathname();
+  const open = openFor !== null && openFor === pathname;
+  const setOpen = (v: boolean) => setOpenFor(v ? pathname : null);
   const { resolvedTheme, setTheme } = useTheme();
   // next-themes can't know the theme during SSR; gate theme-dependent UI on mount
   // so the server and first client render agree (prevents hydration mismatch).
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   const otherLang: Lang = lang === "zh" ? "en" : "zh";
   // 当前 pathname 去掉语言前缀(裸 en 无前缀; /zh 有前缀),再按目标语言重新加。
   const barePath = pathname ? pathname.replace(/^\/(zh|en)(?=\/|$)/, "") : "";
   const otherLangPath = localePath(otherLang, barePath);
-
-  // Close drawer on route change
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   // Trap scroll when open
   useEffect(() => {
@@ -81,6 +84,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
         role="dialog"
         aria-modal="true"
         aria-label={lang === "zh" ? "导航菜单" : "Navigation menu"}
+        inert={!open}
         className={[
           "md:hidden fixed top-0 left-0 h-full w-72 z-50 flex flex-col",
           "bg-[var(--tt-panel)] border-r border-[var(--tt-border)] shadow-lg",
@@ -120,7 +124,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={[
-                  "border-l-2 px-3 py-2 text-sm font-medium transition-colors no-underline",
+                  "flex items-center border-l-2 px-3 min-h-[44px] text-sm font-medium transition-colors no-underline",
                   active
                     ? "border-[var(--tt-accent)] text-[var(--tt-text)]"
                     : "border-transparent text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:border-[var(--tt-border)]",

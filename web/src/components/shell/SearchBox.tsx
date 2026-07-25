@@ -30,7 +30,14 @@ export default function SearchBox({
   const [open, setOpen] = useState(false);
   // Active descendant for keyboard navigation; -1 = nothing highlighted (Enter
   // then falls back to the first match / ticker guess, preserving prior behavior).
-  const [active, setActive] = useState(-1);
+  // 高亮索引与其所属 query 一起存:输入变化时自动失效(派生 -1),无需 effect 重置。
+  const [activeState, setActiveState] = useState<{ q: string; i: number }>({ q: "", i: -1 });
+  const active = activeState.q === query ? activeState.i : -1;
+  const setActive = (next: number | ((prev: number) => number)) =>
+    setActiveState((s) => {
+      const prev = s.q === query ? s.i : -1;
+      return { q: query, i: typeof next === "function" ? next(prev) : next };
+    });
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,10 +87,7 @@ export default function SearchBox({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 输入变化时重置高亮,避免索引指向已不存在的项。
-  useEffect(() => {
-    setActive(-1);
-  }, [query]);
+  // (高亮重置已由派生 state 处理 — 输入变化时 active 自动回到 -1。)
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") {
