@@ -4,6 +4,7 @@ import { COMPANY_UNIVERSE, KNOWN_FOREIGN_ISSUERS, normalizeTicker } from "./comp
 import { fetchCompanyFacts } from "./company-facts";
 import { fetchCompanySubmissions, normalizeRecentFilings } from "./company-submissions";
 import { FundamentalPeriod, normalizeCompanyFacts } from "./normalize-facts";
+import { needsClassSharesFallback, applyClassSharesFallback } from "./class-shares-fallback";
 import { resolveTickerCik } from "./ticker-cik";
 import { sleep } from "./sec-client";
 import { isLikelyTicker } from "../externalLinks";
@@ -186,6 +187,12 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     if (filingsError) throw filingsError;
 
     const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
+    // 分股类申报公司(V/BRK 等)在 companyfacts 拿不到无维度股数 → 从 10-K instance 的
+    // ClassOfStockAxis 维度事实回退推导经济股数(spec 2026-07-26)。窄闸:全年份缺股数才触发。
+    if (needsClassSharesFallback(normalized.annual)) {
+      const patched = await applyClassSharesFallback(normalized.annual, filings);
+      if (patched > 0) console.log(`  ${ticker}: class-dimension share fallback patched ${patched} FY rows`);
+    }
     // Replace (not merge) this company's periods: the normalizer is fully
     // re-derived each run, so any period the new logic no longer produces must
     // not linger as an orphan row (matches the 13F holdings delete+insert).

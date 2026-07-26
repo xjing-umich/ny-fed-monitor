@@ -25,6 +25,21 @@ export async function secFetchJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export async function secFetchText(url: string): Promise<string> {
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": getSecUserAgent(),
+      "Accept-Encoding": "gzip, deflate"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`SEC request failed ${response.status}: ${url}`);
+  }
+
+  return response.text();
+}
+
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

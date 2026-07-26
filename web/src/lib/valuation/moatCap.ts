@@ -309,14 +309,22 @@ export function sustainableGrowth(input: {
 
 /** 银行(National/State Commercial Banks 等)SIC 区间。 */
 export const SIC_BANK_RANGE: [number, number] = [6020, 6099];
+/** 非存款类信贷机构(Nondepository Credit Institutions:AXP 6199/COF·SYF 6141 等)SIC 区间。 */
+export const SIC_CREDIT_RANGE: [number, number] = [6100, 6199];
 /** 保险(Fire/Marine/Casualty、Life 等)SIC 区间。 */
 export const SIC_INSURANCE_RANGE: [number, number] = [6300, 6399];
 
-/** is_financial = sic∈[6020,6099]∪[6300,6399](银行+保险，Task 1 真数据校准，无歧义)。 */
+/**
+ * is_financial = sic∈[6020,6099]∪[6100,6199]∪[6300,6399](银行+信贷机构+保险)。
+ * 61xx 于 2026-07-26 纳入:AXP(6199)/COF/SYF(6141) 与银行同为受监管的融资性资产负债表,
+ * 此前漏判为非金融、被课杠杆溢价/AI-capex 工业透镜,与 D7 金融豁免意图不符。
+ * 62xx 券商(GS/MS/SCHW 6211)不在此列:现行判定可用,扩围需独立校准,不搭车。
+ */
 export function isFinancialSic(sic: number | null | undefined): boolean {
   if (sic == null || !Number.isFinite(sic)) return false;
   return (
     (sic >= SIC_BANK_RANGE[0] && sic <= SIC_BANK_RANGE[1]) ||
+    (sic >= SIC_CREDIT_RANGE[0] && sic <= SIC_CREDIT_RANGE[1]) ||
     (sic >= SIC_INSURANCE_RANGE[0] && sic <= SIC_INSURANCE_RANGE[1])
   );
 }

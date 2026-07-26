@@ -1,4 +1,4 @@
-import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_INSURANCE_RANGE, sustainedProfitStreak, STRONG_MIN_PROFIT_STREAK, growthFranchise, operatingIncomeLogGrowth, GROWTH_FRANCHISE_MIN_YEARS } from "./moatCap";
+import { deriveMoatCap, CAP_STRONG, CAP_MODERATE, roicStability, ROIC_MIN_YEARS, durabilityDeclined, ROIC_SANITY, roicTrend, ROIC_TREND_MIN_YEARS, sustainableGrowth, SUSTAINABLE_MIN_YEARS, roicLongTermStrong, ROIC_MOAT_MIN_YEARS, isFinancialSic, sustainableGrowthRateFinancial, SIC_BANK_RANGE, SIC_CREDIT_RANGE, SIC_INSURANCE_RANGE, sustainedProfitStreak, STRONG_MIN_PROFIT_STREAK, growthFranchise, operatingIncomeLogGrowth, GROWTH_FRANCHISE_MIN_YEARS } from "./moatCap";
 import type { ValuationFloorYear } from "./types";
 function assert(c: boolean, m: string){ if(!c){console.error("FAIL:",m);process.exitCode=1;} else console.log("ok:",m); }
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -256,16 +256,19 @@ const ic100 = () => 100;
     declined:true, suppressedFlags:false, roicStable:true, roicLongTermStrong:true });
   assert(r.grade==="moderate", "roicLongTermStrong=true 但 declined(franchiseCore假)→ 仍 moderate,不误放行"); }
 
-// ── isFinancialSic(Task 4:金融股识别,sic∈[6020,6099]∪[6300,6399]) ─────────────
+// ── isFinancialSic(Task 3:金融股识别,sic∈[6020,6099]∪[6100,6199]∪[6300,6399]:银行+信贷机构+保险) ─────────────
 { assert(isFinancialSic(6021)===true, "isFinancialSic: JPM SIC 6021(National Commercial Banks) → true"); }
 { assert(isFinancialSic(6022)===true, "isFinancialSic: 6022(State Commercial Banks) → true"); }
+{ assert(isFinancialSic(6141)===true, "isFinancialSic: COF/SYF SIC 6141(Personal Credit Institutions) → true"); }
+{ assert(isFinancialSic(6199)===true, "isFinancialSic: AXP SIC 6199(Nondepository Credit Institutions) → true"); }
 { assert(isFinancialSic(6331)===true, "isFinancialSic: 6331(Fire/Marine/Casualty Insurance) → true"); }
 { assert(isFinancialSic(SIC_BANK_RANGE[0])===true && isFinancialSic(SIC_BANK_RANGE[1])===true, "isFinancialSic: 银行区间端点 → true"); }
+{ assert(isFinancialSic(SIC_CREDIT_RANGE[0])===true && isFinancialSic(SIC_CREDIT_RANGE[1])===true, "isFinancialSic: 信贷机构区间端点 → true"); }
 { assert(isFinancialSic(SIC_INSURANCE_RANGE[0])===true && isFinancialSic(SIC_INSURANCE_RANGE[1])===true, "isFinancialSic: 保险区间端点 → true"); }
 { assert(isFinancialSic(3571)===false, "isFinancialSic: AAPL SIC 3571(Electronic Computers) → false"); }
 { assert(isFinancialSic(7370)===false, "isFinancialSic: GOOGL SIC 7370(services) → false"); }
 { assert(isFinancialSic(2911)===false, "isFinancialSic: CVX SIC 2911(石油) → false"); }
-{ assert(isFinancialSic(6100)===false, "isFinancialSic: 6100(区间外,银行区间上界之外) → false"); }
+{ assert(isFinancialSic(6000)===false, "isFinancialSic: 6000(区间外,银行区间下界之外) → false"); }
 { assert(isFinancialSic(null)===false && isFinancialSic(undefined)===false, "isFinancialSic: sic 缺失 → false(不走 5% 兜底,即 non-financial)"); }
 
 // ── sustainableGrowthRateFinancial(Task 4:SGR = ROE × 留存率) ────────────────
