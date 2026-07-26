@@ -5,7 +5,8 @@ import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client"
 
 /** 分股类维度事实(localName 化):tag 如 EarningsPerShareDiluted,member 如 CommonClassAMember。 */
 export type ClassShareFact = { tag: string; member: string; start: string; end: string; value: number };
-export type DerivedShares = { period_end: string; shares: number; eps: number; cross_check_pct: number; member: string };
+/** basis:哪一套配对(摊薄/基本)贡献了这一年的经济股数,供 provenance 溯源用。 */
+export type DerivedShares = { period_end: string; shares: number; eps: number; cross_check_pct: number; member: string; basis: "diluted" | "basic" };
 
 /** 双路互证容差:|股数tag − 净利÷EPS|/后者 超过即拒绝(V 的 basic-A 1714M 这类非经济总量来源在此被天然挡下,约 12.8%)。 */
 export const CROSS_CHECK_TOLERANCE = 0.1;
@@ -157,17 +158,17 @@ export function deriveEconomicShares(
       (f) => f.end === p.period_end && durationDays(f) >= FY_DAYS_MIN && durationDays(f) <= FY_DAYS_MAX && memberMatchesToken(f.member, token),
     );
     const pick = (tag: string) => inWindow.find((f) => f.tag === tag);
-    const pairs: [ClassShareFact | undefined, ClassShareFact | undefined][] = [
-      [pick("EarningsPerShareDiluted"), pick("WeightedAverageNumberOfDilutedSharesOutstanding")],
-      [pick("EarningsPerShareBasic"), pick("WeightedAverageNumberOfSharesOutstandingBasic")],
+    const pairs: { basis: "diluted" | "basic"; eps: ClassShareFact | undefined; sh: ClassShareFact | undefined }[] = [
+      { basis: "diluted", eps: pick("EarningsPerShareDiluted"), sh: pick("WeightedAverageNumberOfDilutedSharesOutstanding") },
+      { basis: "basic", eps: pick("EarningsPerShareBasic"), sh: pick("WeightedAverageNumberOfSharesOutstandingBasic") },
     ];
-    const pair = pairs.find(([eps, sh]) => eps != null && sh != null && eps.value > 0 && sh.value > 0 && eps.member === sh.member);
+    const pair = pairs.find((cand) => cand.eps != null && cand.sh != null && cand.eps.value > 0 && cand.sh.value > 0 && cand.eps.member === cand.sh.member);
     if (!pair) continue;
-    const [eps, sharesTag] = pair as [ClassShareFact, ClassShareFact];
+    const { eps, sh: sharesTag, basis } = pair as { basis: "diluted" | "basic"; eps: ClassShareFact; sh: ClassShareFact };
     const routeB = p.net_income / eps.value;
     const dev = Math.abs(sharesTag.value - routeB) / routeB;
     if (dev > CROSS_CHECK_TOLERANCE) continue;
-    out.push({ period_end: p.period_end, shares: routeB, eps: eps.value, cross_check_pct: dev, member: eps.member });
+    out.push({ period_end: p.period_end, shares: routeB, eps: eps.value, cross_check_pct: dev, member: eps.member, basis });
   }
   return out;
 }
@@ -216,6 +217,9 @@ export async function applyClassSharesFallback(annual: FundamentalPeriod[], fili
   try {
     const ticker = annual[0]?.ticker;
     if (!ticker) return 0;
+    // `filings` 依赖调用方用 normalizeRecentFilings 的默认 limit=24 取得(≈4 份/年 × 6 年);
+    // 覆盖到最近 3 份 10-K 靠这个默认值兜底。调低 limit 会静默削薄覆盖(10-K 可能被挤出窗口
+    // 而不报错),改动前先确认调用方没有传更小的 limit。
     const tenKs = filings
       .filter((f) => f.form === "10-K" && f.primary_document)
       .sort((a, b) => (b.filing_date ?? "").localeCompare(a.filing_date ?? ""))
@@ -242,7 +246,6 @@ export async function applyClassSharesFallback(annual: FundamentalPeriod[], fili
       const d = byEnd.get(row.period_end);
       if (!d) continue;
       row.shares_diluted = Math.round(d.shares);
-      if (row.eps_diluted == null) row.eps_diluted = d.eps; // 挂牌类申报 EPS,非合成值
       row.raw_facts = {
         ...row.raw_facts,
         shares_diluted: {
@@ -253,8 +256,23 @@ export async function applyClassSharesFallback(annual: FundamentalPeriod[], fili
           derived: true,
           member: d.member,
           cross_check_pct: d.cross_check_pct,
+          basis: d.basis,
         },
       };
+      if (row.eps_diluted == null) {
+        row.eps_diluted = d.eps; // 挂牌类申报 EPS,非合成值
+        row.raw_facts = {
+          ...row.raw_facts,
+          eps_diluted: {
+            tag: "class-dimension:" + d.basis,
+            val: String(d.eps),
+            filed: row.filing_date ?? "",
+            days: null,
+            derived: true,
+            member: d.member,
+          },
+        };
+      }
       patched++;
     }
     return patched;

@@ -10,7 +10,12 @@
  * ai_flag_raw 直接调 maintenanceCapex(floorInput 的 workingYears)取原始 flag(floor 对金融股已不发布)。
  *
  * 简化:引擎组装照抄 valuation-ingest.ts:130-180,但 ads 归一化直接传 resolveAds(undefined, null)
- * ——本 sweep 的金融票(银行/信贷机构/保险)均为本土非 ADR 名字,故省去 securities 表批量查询。
+ * ——即跳过 securities 表批量查询,ADR 归一化被简化省略。这个简化不是"本 sweep 的金融票都是
+ * 本土非 ADR 名字"(universe 实际包含 BBVA/HSBC/ITUB/TD/UBS 等外国 ADR/外国私人发行人,此前
+ * 这句注释的说法不准确)。之所以无害:本轮实测中受影响的外国名字全部因 fundamentals_stale
+ * 等与 ADR 归一化无关的独立原因拿不到有效 verdict(run.verdict===null),ads 简化根本没机会
+ * 参与判定。若复用本脚本组装法去跑一个 ADR 归一化会实际生效的 universe,须先补上 securities
+ * 表查询,不能援引本次"无害"的结论。
  *
  * 运行: cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/probe-financial-reliability-sweep.ts
  */
@@ -283,6 +288,12 @@ async function main() {
       // 双方都无有效 verdict(生产也无该票行)→ 抑制状态一致,不是本次改动引入的翻转
       // (与非对照组票同规则:run.verdict===null 且生产无行时不判失败)。若生产曾有行而现在
       // 被抑制,则是疑似回归,仍须失败。
+      // 安全论证是 SIC 结构性的,非本分支独有:CONTROL_TICKERS(MSFT/GOOGL/NVDA/HRB/KLAC/COST)
+      // 都不落在金融 sic 区间([6020,6099]∪[6100,6199]∪[6300,6399])内,is_financial 恒为
+      // false,本次 ai_capex 金融豁免改动(is_financial && capexImmaterial)对它们物理不可达,
+      // 双 null 只可能来自与本次改动无关的原因(如 fundamentals_stale)。"双 null 即 PASS"这个
+      // 宽松模式不得照搬到可能被本次改动波及的票(is_financial 可能为 true 的名字)上 ——
+      // 那些票的双 null 需要先确认成因(cause)才能算安全。
       if (!r.prod) {
         console.log(
           `  [PASS] ${t}: 双方均无有效 verdict(生产无行,现被抑制 suppressedReason=${r.suppressedReason})—— 与本次 sic/ai_capex 改动无关,视为零翻转`,

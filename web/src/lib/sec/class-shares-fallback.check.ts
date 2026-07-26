@@ -34,6 +34,7 @@ const vDerived = deriveEconomicShares(vFacts, listedClassToken("V"), [{ period_e
 assert(vDerived.length === 1, "V FY2025 推导出 1 行");
 assert(Math.abs(vDerived[0].shares - 20_058_000_000 / 10.2) < 1, "经济股数=净利÷EPS_A(路线B定值)");
 assert(vDerived[0].cross_check_pct < 0.01, "双路互证偏差 <1%");
+assert(vDerived[0].basis === "diluted", "V 走摊薄配对 → basis=diluted");
 
 // ── fixture 2:BRK 形态(xbrli: 前缀;仅 basic;EquivalentClassBMember) ──
 const BRK_XML = `<?xml version="1.0" encoding="utf-8"?>
@@ -50,6 +51,7 @@ const brkFacts = extractClassShareFacts(BRK_XML);
 assert(brkFacts.length === 2, "xbrli: 前缀命名空间可解析");
 const brkDerived = deriveEconomicShares(brkFacts, listedClassToken("BRK.B"), [{ period_end: "2025-12-31", net_income: 66_968_000_000 }]);
 assert(brkDerived.length === 1 && Math.abs(brkDerived[0].shares - 66_968_000_000 / 31.04) < 1, "BRK.B basic/basic 配对推导成功(1500 换算内生)");
+assert(brkDerived[0].basis === "basic", "BRK 只有 basic 配对 → basis=basic");
 
 // ── fixture 3:超差拒绝(股数 tag 与净利÷EPS 偏差 >10% → 不补) ──
 console.log("fixture 3: 超差拒绝");

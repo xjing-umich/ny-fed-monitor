@@ -52,7 +52,7 @@
 
 ### 2.5 防坏数据（继承 + 新增）
 
-继承：引擎侧 `normalizeDilutedShares` 量纲交叉校验、`isImplausibleBand`（margin>80% 拦截）、拆股口径闸不变。新增：上述 10% 双路互证。任何一环不过 → 该票维持 `per_share_unavailable` 现状，宁缺毋假。
+继承：`isImplausibleBand`（margin>80% 拦截）、拆股口径闸不变。（不是"继承 `normalizeDilutedShares` 量纲交叉校验"——回退在 `finalizeRow` **之后** patch `shares_diluted`，不会重新过一遍那个函数；但路线 B 把股数定义为 `net_income ÷ eps`，这正是 `normalizeDilutedShares` 用来验证量纲的同一个 `implied = NI/EPS` 比值，按定义直接等价，不需要也不会再跑一遍该校验。）新增：上述 10% 双路互证。任何一环不过 → 该票维持 `per_share_unavailable` 现状，宁缺毋假。
 
 ## 3. 件② 设计：金融股口径收敛（解 AXP）
 
@@ -65,6 +65,8 @@
 `epvFloor.ts` `assembleFloor`：`aiCapexDistortion = mc.ai_capex_distortion_warning && !isFinancial`。
 
 **口径论证（非放水）**：AI-hog 规则（capex 两年 ≥2×）是"维护性 capex 被增长性 capex 污染"的工业企业透镜；金融企业的资产负债表扩张由存款/应收/监管资本驱动，PP&E capex 是经营成本级小项，该透镜对其无判别力（AXP 即误伤实例）。金融股风险的既定通道是 D7 的可信度闸（`high_leverage_warning && is_financial`）与 SGR 封顶，不叠这盏错灯。`maintenanceCapex()` 内部的 OE 数值修正保持不变（其上限已被 D&A 封死，量级无害），只掐 flag 的发布与传播（同一变量顺带流入 `suppressedFlags` 与 `growthValue`，行为一致化）。
+
+**final-review 补丁（2026-07-26）**：上面的 `!isFinancial` 是纯 SIC 一刀切，有漏洞——`SIC_CREDIT_RANGE [6100,6199]` 同时收纳比特币矿企（SEC 常把 MSTR/RIOT/CLSK/CORZ/IREN/WULF/HUT/COIN 等归类到 6199），对它们 PP&E capex 就是生意本身，被金融豁免会拆掉唯一判对的信号。修正为 `aiCapexDistortion = mc.ai_capex_distortion_warning && !(isFinancial && capexImmaterial)`，其中 `capexImmaterial = mean(|capex|)/mean(revenue)`（over `assembleFloor` 的 `years` 窗口，缺两项之一的年份跳过；一年都算不出 → 保守按不豁免处理）低于校准阈值 `AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE = 0.20`。阈值来自真数据校准（`company_fundamentals_periods` FY 行）：银行/保险/发卡行（AXP/HBAN/KNSL/GL）实测 1.2%–14.7%；比特币矿企（CLSK/RIOT/CORZ/IREN/WULF）实测 28.8%+；两组间 ~14pp 净间隔，20% 取中，两侧各留 ~5pp 余量。豁免机制因此从"属于金融 SIC"改为"capex 相对这门受监管融资类生意的资产负债表规模确实不重要"，SIC 只是前置必要条件，不再是充分条件。
 
 ### 3.3 预期行为变化与回归护栏
 
