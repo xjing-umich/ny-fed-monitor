@@ -21,12 +21,14 @@ const COPY = {
     unconfirmed: "未确认",
     lamp: "单法口径（无所有者盈利 DCF）",
     flag: "估值带红旗（盈利下滑/高杠杆/模型不稳/每股口径疑错），边际不可信，未计入便宜信号。",
+    expect: { modest: "隐含温和", fair: "隐含公允", demanding: "隐含苛刻" } as Record<"modest" | "fair" | "demanding", string>,
   },
   en: {
     strike: "Strike zone", below: "Below value", within: "Within band", above: "Above value", none: "—",
     unconfirmed: "unconf.",
     lamp: "Single-method basis (no owner-earnings DCF)",
     flag: "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal.",
+    expect: { modest: "implies modest", fair: "implies fair", demanding: "implies demanding" } as Record<"modest" | "fair" | "demanding", string>,
   },
 } as const;
 
@@ -85,7 +87,7 @@ export function ValuationBadge({
     title = t.lamp;
   }
 
-  return (
+  const badge = (
     <span
       title={title}
       className={`inline-flex items-center whitespace-nowrap rounded-sm border px-1.5 py-0.5 font-mono text-[11px] ${cls}`}
@@ -94,4 +96,14 @@ export function ValuationBadge({
       {marker}
     </span>
   );
+  const exTier = verdict.expectations?.assessable ? verdict.expectations.tier : undefined;
+  if (density === "full" && exTier) {
+    return (
+      <span className="inline-flex flex-col gap-0.5">
+        {badge}
+        <span className="font-mono text-[10px] text-[var(--tt-faint)]">{t.expect[exTier]}</span>
+      </span>
+    );
+  }
+  return badge;
 }

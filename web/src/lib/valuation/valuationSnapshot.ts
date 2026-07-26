@@ -5,6 +5,7 @@ import type { VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
 import { isImplausibleBand } from "./deriveValuationVerdict";
 import type { ValuationMethods } from "./deriveValuationMethods";
 import type { ExpectationsAssessment, MoatCapAssessment } from "./types";
+import { deriveFusionSignal, CONSENSUS_MIN } from "@/lib/managers/fusionSignal";
 
 export type SnapshotVerdict = {
   ticker: string;
@@ -233,7 +234,7 @@ export const readStrikeZoneLeaders = cache(
   },
 );
 
-export type ScreenView = "strike_zone" | "below" | "all";
+export type ScreenView = "strike_zone" | "below" | "all" | "conviction";
 
 export type ScreenerRow = {
   ticker: string;
@@ -249,6 +250,7 @@ export type ScreenerRow = {
   reliable: boolean;
   computedAt: string;
   holderCount: number;
+  expectations?: ExpectationsAssessment;
 };
 
 /**
@@ -347,6 +349,98 @@ export const readValuationScreen = cache(
       return { rows, strikeTotal, computedAt };
     } catch (err) {
       console.error(`readValuationScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
+      return empty;
+    }
+  },
+);
+
+/**
+ * conviction 视图:机构重仓宇宙(holder_count≥CONSENSUS_MIN)按估值吸引力排序(便宜置顶)。
+ * 与 readValuationScreen 相反:先 consensus_holdings 筛高共识,再 join valuation_snapshot。
+ * 便宜∩高共识票靠 deriveFusionSignal 自然浮顶(标注全集+排序,永不空页)。降级:表缺/无 env → 空,绝不抛。
+ */
+export const readConvictionScreen = cache(
+  async (limit: number): Promise<{ rows: ScreenerRow[]; heldTotal: number; computedAt: string | null }> => {
+    const empty = { rows: [] as ScreenerRow[], heldTotal: 0, computedAt: null as string | null };
+    if (!hasSupabaseEnv()) return empty;
+    const isMissingTable = (e: unknown) => {
+      const code = (e as { code?: string }).code;
+      return code === "42P01" || code === "PGRST205";
+    };
+    try {
+      // ① 高共识票(holder_count≥门槛),按持有人数降序取前 limit
+      const { data: hData, error: hErr } = await withRetry(() =>
+        getDb()
+          .from("consensus_holdings")
+          .select("ticker,issuer,holder_count")
+          .gte("holder_count", CONSENSUS_MIN)
+          .order("holder_count", { ascending: false })
+          .limit(limit),
+      );
+      if (hErr) {
+        if (!isMissingTable(hErr)) console.error(`readConvictionScreen holders 失败: ${(hErr as Error).message}`);
+        return empty;
+      }
+      const held = (hData ?? []) as { ticker: string; issuer: string | null; holder_count: number | null }[];
+      if (held.length === 0) return empty;
+      const heldTotal = held.length;
+      const tickers = held.map((h) => h.ticker.toUpperCase());
+      const holderOf = new Map(tickers.map((tk, i) => [tk, held[i].holder_count ?? 0] as const));
+      const issuerOf = new Map(tickers.map((tk, i) => [tk, held[i].issuer ?? ""] as const));
+
+      // ② join valuation_snapshot
+      const { data: sData, error: sErr } = await withRetry(() =>
+        getDb()
+          .from("valuation_snapshot")
+          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at,payload")
+          .in("ticker", tickers),
+      );
+      if (sErr) {
+        if (!isMissingTable(sErr)) console.error(`readConvictionScreen snapshot 失败: ${(sErr as Error).message}`);
+        // 快照查询报错 → 无行可显,heldTotal 也归 0(与空表一致,不让顶部句报"N 只"却空表)
+        return empty;
+      }
+      const snapOf = new Map<string, Row>();
+      for (const r of (sData ?? []) as Row[]) snapOf.set(r.ticker.toUpperCase(), r);
+
+      const rows: ScreenerRow[] = tickers
+        // 无快照匹配的高共识票绝不伪造估值——直接丢弃,而非拿 above/$0/none 兜底
+        .flatMap((tk): ScreenerRow[] => {
+          const r = snapOf.get(tk);
+          if (!r) return [];
+          const hc = holderOf.get(tk) ?? 0;
+          return [
+            {
+              ticker: tk,
+              issuer: issuerOf.get(tk) || tk,
+              bucket: r.verdict_bucket as VerdictBucket,
+              inStrikeZone: r.in_strike_zone,
+              rangeLo: Number(r.range_lo),
+              rangeHi: Number(r.range_hi),
+              price: Number(r.price),
+              priceDate: r.price_date ?? "",
+              marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
+              coverage: r.coverage as VerdictCoverage,
+              reliable: r.reliable ?? true,
+              computedAt: r.computed_at,
+              holderCount: hc,
+              expectations: r.payload?.expectations,
+            },
+          ];
+        })
+        // 坏数据行(价值带与现价严重脱节)不进面
+        .filter((r) => !(r.price > 0 && isImplausibleBand(r)))
+        // 按估值吸引力排序:便宜∩高共识置顶
+        .sort(
+          (a, b) =>
+            deriveFusionSignal({ holderCount: a.holderCount, verdict: a }).attractivenessRank -
+            deriveFusionSignal({ holderCount: b.holderCount, verdict: b }).attractivenessRank,
+        );
+      const computedAt = rows.reduce<string | null>((mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx), null);
+      // heldTotal 改口径为「实际展示行数」(有真快照的高共识票),别再报原始高共识票数——避免"N stocks held"文案对不上表格实际行数
+      return { rows, heldTotal: rows.length, computedAt };
+    } catch (err) {
+      console.error(`readConvictionScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
       return empty;
     }
   },

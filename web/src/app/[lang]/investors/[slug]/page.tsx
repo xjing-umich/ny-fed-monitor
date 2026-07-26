@@ -540,6 +540,19 @@ export default async function InvestorSlugPage({
               ))}
             </div>
           )}
+          {(() => {
+            const held = holdingTickers.map((tk) => verdicts.get(tk.toUpperCase())).filter(Boolean) as SnapshotVerdict[];
+            const demanding = held.filter((x) => x.expectations?.assessable && x.expectations.tier === "demanding").length;
+            const modest = held.filter((x) => x.expectations?.assessable && x.expectations.tier === "modest").length;
+            if (demanding === 0 && modest === 0) return null;
+            return (
+              <p className="mb-3 text-[13px] text-[var(--tt-faint)]">
+                {lang === "zh"
+                  ? `按现价隐含预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
+                  : `By what price implies: ${demanding} demand a demanding growth rate, ${modest} modest.`}
+              </p>
+            );
+          })()}
           {posture.cheap.length > 0 && (
             <section aria-label={lang === "zh" ? "估值姿态" : "Valuation posture"}>
               <SectionHeading

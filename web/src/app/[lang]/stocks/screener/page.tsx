@@ -6,17 +6,18 @@ import { altFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
-import { readValuationScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
+import { readValuationScreen, readConvictionScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
 import { ScreenerTable } from "./ScreenerTable";
 import { parseSort, sortScreenerRows, type ScreenSort } from "@/lib/valuation/screenerSort";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
+import { CONSENSUS_MIN } from "@/lib/managers/fusionSignal";
 
 export const revalidate = 86400;
 
 const SCREEN_LIMIT = 200;
 
 function parseView(v: string | undefined): ScreenView {
-  return v === "strike_zone" || v === "below" ? v : "all";
+  return v === "strike_zone" || v === "below" || v === "conviction" ? v : "all";
 }
 
 export async function generateMetadata({
@@ -41,6 +42,7 @@ export async function generateMetadata({
 }
 
 const VIEWS: { key: ScreenView; zh: string; en: string }[] = [
+  { key: "conviction", zh: "机构重仓 · 按估值", en: "Most-held · by value" },
   { key: "strike_zone", zh: "击球区", en: "Strike zone" },
   { key: "below", zh: "有安全边际", en: "Below value" },
   { key: "all", zh: "全部可估值", en: "All valued" },
@@ -63,8 +65,15 @@ export default async function ScreenerPage({
   const view = parseView(rawView);
   const sort = parseSort(rawSort);
 
-  const { rows, strikeTotal, computedAt } = await readValuationScreen(view, SCREEN_LIMIT);
-  const sortedRows = sortScreenerRows(rows, sort);
+  const isConviction = view === "conviction";
+  const screen = isConviction
+    ? await readConvictionScreen(SCREEN_LIMIT)
+    : await readValuationScreen(view, SCREEN_LIMIT);
+  const rows = screen.rows;
+  const computedAt = screen.computedAt;
+  const strikeTotal = isConviction ? 0 : (screen as { strikeTotal: number }).strikeTotal;
+  const heldTotal = isConviction ? (screen as { heldTotal: number }).heldTotal : 0;
+  const sortedRows = isConviction ? rows : sortScreenerRows(rows, sort);
   const asOf = computedAt ? computedAt.slice(0, 10) : "";
 
   const geo =
@@ -76,6 +85,10 @@ export default async function ScreenerPage({
         ? "当前没有可估值股票落在击球区（现价低于保守价值带，保守引擎常态）。"
         : "No valued stocks are in the strike zone (price below the conservative value band) right now.";
 
+  const convictionIntro = isZh
+    ? `${heldTotal} 只被 ${CONSENSUS_MIN}+ 位机构共同持有的股票，按现价相对保守价值带的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
+    : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers, ordered by where price sits against a conservative value band — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
+
   const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
 
   return (
@@ -84,7 +97,15 @@ export default async function ScreenerPage({
 
       <div className="mb-4">
         <PageHeader
-          eyebrow={isZh ? "估值 · 按价值带" : "Valuation · by value band"}
+          eyebrow={
+            isConviction
+              ? isZh
+                ? "13F × 估值 · 机构重仓"
+                : "13F × valuation · most held"
+              : isZh
+                ? "估值 · 按价值带"
+                : "Valuation · by value band"
+          }
           title={ui.stocksTitle}
           dateline={
             asOf ? (
@@ -94,9 +115,11 @@ export default async function ScreenerPage({
             ) : undefined
           }
           intro={
-            isZh
-              ? `按现价相对保守价值带的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。${geo}`
-              : `Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices. ${geo}`
+            isConviction
+              ? convictionIntro
+              : isZh
+                ? `按现价相对保守价值带的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。${geo}`
+                : `Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices. ${geo}`
           }
         />
       </div>
@@ -122,6 +145,7 @@ export default async function ScreenerPage({
           );
         })}
         </div>
+        {!isConviction && (
         <div className="flex flex-wrap gap-2 sm:border-l sm:border-[var(--tt-border)] sm:pl-3">
         {([
           { key: "margin" as ScreenSort, label: isZh ? "按安全边际" : "By margin" },
@@ -148,9 +172,10 @@ export default async function ScreenerPage({
           );
         })}
         </div>
+        )}
       </nav>
 
-      <ScreenerTable lang={lang} rows={sortedRows} />
+      <ScreenerTable lang={lang} rows={sortedRows} highlight={isConviction} />
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh

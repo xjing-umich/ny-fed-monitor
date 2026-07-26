@@ -8,10 +8,11 @@ import { EntityName } from "@/components/common/EntityName";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
+import { deriveFusionSignal } from "@/lib/managers/fusionSignal";
 
 const TOP_N = 60;
 
-export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] }) {
+export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; rows: ScreenerRow[]; highlight?: boolean }) {
   const isZh = lang === "zh";
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
@@ -23,7 +24,14 @@ export function ScreenerTable({ lang, rows }: { lang: Lang; rows: ScreenerRow[] 
       key: "security",
       header: g.security,
       role: "primary",
-      cell: (r) => <EntityName issuer={r.issuer} ticker={r.ticker} />,
+      cell: (r) => {
+        const top = highlight && deriveFusionSignal({ holderCount: r.holderCount, verdict: r }).isCheapConsensus;
+        return (
+          <span className={top ? "block border-l-2 border-[var(--tt-positive)] pl-2 -ml-2" : undefined}>
+            <EntityName issuer={r.issuer} ticker={r.ticker} />
+          </span>
+        );
+      },
     },
     {
       key: "position",
