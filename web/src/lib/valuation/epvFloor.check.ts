@@ -10,7 +10,7 @@
  */
 import assert from "node:assert";
 import type { ValuationFloor, ValuationFloorInput, ValuationFloorYear, EpvLamp, ReproductionValue } from "./types";
-import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW, conservativeNormalizedForTest, buildMoatReading } from "./epvFloor";
+import { computeValuationFloor, DISCOUNT_RATE_HIGH, DISCOUNT_RATE_LOW, conservativeNormalizedForTest, buildMoatReading, AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE } from "./epvFloor";
 import { maintenanceCapex } from "./maintenanceCapex";
 import { deriveOeDcf } from "./ownerEarningsDcf";
 import { CAP_STRONG, CAP_MODERATE } from "./moatCap";
@@ -487,6 +487,52 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
       `${lamp.label}: AI-hog note reflects D&A-cap / growth-spike treatment`,
     );
   }
+}
+
+// ── final-review fix: ai_capex 金融豁免须加 capex-重要性条件(非仅 SIC)───────────────
+// 背景:SIC 6100-6199(SIC_CREDIT_RANGE)同时收纳"真金融"(发卡行/消金)与比特币矿企
+// (SEC 常把矿企归 6199)。对矿企,PP&E capex 就是生意本身,不能被 SIC 一刀切豁免掉
+// AI-hog 信号。豁免须同时满足 is_financial && capex/revenue 均值 < 阈值(校准见
+// epvFloor.ts 的 AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE 注释:银行/保险实测
+// 1.2–14.7%,矿企实测 28.8%+,阈值取 20%)。
+{
+  // Same shape as the AI-hog fixture above (capex doubling 8000/3500 ≥ 2, so the raw
+  // capex-only trigger fires regardless of financial/revenue scaling); duplicated here
+  // (rather than reused across the block boundary) so this block is self-contained.
+  const aiYears: ValuationFloorYear[] = [
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 2_000, capex: 8_000, ppe_net: 18_000, working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 1_900, capex: 5_000, ppe_net: 12_000, working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 1_800, capex: 3_500, ppe_net: 8_000, working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 1_650, capex: 3_200, ppe_net: 6_500, working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 1_500, capex: 3_000, ppe_net: 5_500, working_capital: 1_000 },
+  ];
+  // Variant A — financial SIC + capex 相对营收不重要(revenue ×3,capex/D&A/PP&E 不变):
+  // mean(capex)=4540,mean(revenue)=45000 → ratio≈10.1%,低于 20% 阈值,留有余量。
+  const finYears: ValuationFloorYear[] = aiYears.map((y) => ({
+    ...y,
+    revenue: y.revenue! * 3,
+    operating_income: y.operating_income! != null ? y.operating_income! * 3 : undefined,
+  }));
+  const finRatio =
+    finYears.reduce((s, y) => s + Math.abs(y.capex!), 0) / finYears.length /
+    (finYears.reduce((s, y) => s + y.revenue!, 0) / finYears.length);
+  assert.ok(finRatio < AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE, `fixture must measure below the calibrated threshold (got ${(finRatio * 100).toFixed(1)}%)`);
+  assert.strictEqual(maintenanceCapex(finYears).ai_capex_distortion_warning, true, "financial-exempt fixture still trips the raw AI-hog capex-doubling detector (revenue scaling doesn't touch the capex-only trigger)");
+  const finFloor = floorOf(computeValuationFloor({ ticker: "FINEXEMPT", years: finYears, sic: 6022 }));
+  assert.strictEqual(finFloor.is_financial, true, "sic 6022 (national commercial bank) → is_financial");
+  assert.notStrictEqual(finFloor.ai_capex_distortion_warning, true, "financial + capex-immaterial (~10% < 20%) → exemption applies, flag not raised on the floor");
+
+  // Variant B — financial SIC (crypto-miner-shaped: SEC often files miners under 6199) but
+  // capex IS the business: reuse the un-scaled aiYears fixture directly (mean(capex)=4540,
+  // mean(revenue)=15000 → ratio≈30.3%, well above the 20% threshold with margin) — this is
+  // the exact scenario the fix targets: SIC alone must NOT be enough to exempt it.
+  const heavyRatio =
+    aiYears.reduce((s, y) => s + Math.abs(y.capex!), 0) / aiYears.length /
+    (aiYears.reduce((s, y) => s + y.revenue!, 0) / aiYears.length);
+  assert.ok(heavyRatio > AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE, `capex-heavy fixture must measure above the calibrated threshold (got ${(heavyRatio * 100).toFixed(1)}%)`);
+  const finHeavyFloor = floorOf(computeValuationFloor({ ticker: "FINHEAVY", years: aiYears, sic: 6199 }));
+  assert.strictEqual(finHeavyFloor.is_financial, true, "sic 6199 (credit range, where SEC often files bitcoin miners) → is_financial");
+  assert.strictEqual(finHeavyFloor.ai_capex_distortion_warning, true, "financial SIC but capex-heavy (~30% > 20%) → exemption denied, flag still raised (this is the bug the fix closes)");
 }
 
 // ── BUG1: negative-equity invested capital doesn't blow up ROIC into a false "stable" read ────

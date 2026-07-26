@@ -17,6 +17,18 @@ export const TARGET_YEARS = 5;
 export const LEVERAGE_WARN_RATIO = 1.0;
 export const MOAT_FRANCHISE_MULTIPLE = 1.25;
 export const MOAT_COMMODITY_FLOOR = 0.75;
+// ai_capex 金融豁免的 capex-重要性阈值(mean(|capex|)/mean(revenue) over the floor's years)。
+// 校准(2026-07-26,真数据,company_fundamentals_periods,FY 行,SUPABASE 生产库):
+//   银行/保险/发卡行(必须豁免) — AXP 5.19% / HBAN 14.74% / KNSL 1.58% / GL 1.20%
+//     (ESQ/HOMB/PDLB 无 FY capex 行,无法测量)。上沿 ≈15%。
+//   比特币矿企(必须不豁免,SIC 6199 与上组同区间) — CLSK 28.82% / RIOT 52.38% /
+//     CORZ 48.64% / IREN 108.86% / WULF 372.84%(HUT 无数据)。下沿 ≈29%。
+//   （MSTR 0.79%/COIN 0.05% 也在矿企名单但实测极低 ——
+//     二者真实资本支出是"买比特币"这项投资活动，不落在 SEC capex/PP&E 科目里，
+//     该量纲天然测不出它们的资本密集度；这不影响判据本身,因为对它们 ai_capex_distortion_warning
+//     多半也不会触发,豁免与否无实际分歧。）
+// 两组间有 ~14pp 的干净间隔(15%–29%),取整数 20% 居中,两侧各留 ~5pp 余量。
+export const AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE = 0.20;
 
 const MAINT_CAPEX_RULE =
   "Maintenance capex estimated by the four-method median (D&A proxy / Greenwald sales method / PP&E useful life), with the AI-hog 50%-of-capex floor; degrades to D&A when inputs are missing.";
@@ -62,6 +74,18 @@ export function conservativeNormalizedForTest(
   lift?: { s: number; target: number | undefined },
 ) {
   return conservativeNormalized(series, latest, lift);
+}
+
+/**
+ * mean(|capex|)/mean(revenue) over years carrying both fields (spec: capex-重要性判据)。
+ * 缺失年份跳过；没有任何可算年份 → undefined（调用方按"非豁免"保守处理，即 flag 保留)。
+ */
+function capexToRevenueRatio(years: ValuationFloorYear[]): number | undefined {
+  const usable = years.filter((y) => y.capex != null && y.revenue != null && y.revenue !== 0);
+  if (usable.length === 0) return undefined;
+  const meanCapex = avg(usable.map((y) => Math.abs(y.capex!)));
+  const meanRevenue = avg(usable.map((y) => y.revenue!));
+  return meanRevenue !== 0 ? meanCapex / meanRevenue : undefined;
 }
 
 function marginOf(y: ValuationFloorYear): number | undefined {
@@ -192,11 +216,19 @@ function assembleFloor(
   // Shared maint read for floor-level AI-hog flag + GV gate (lamps still compute their own for OE arithmetic).
   const mc = maintenanceCapex(years);
   // AI-hog 闸(capex 两年≥2×)是"维护性 capex 被增长性 capex 污染"的工业企业透镜;金融企业的
-  // 资产负债表扩张由存款/应收/监管资本驱动,PP&E capex 是经营成本级小项,该透镜无判别力
-  // (AXP 误伤实例:2026-07 探针)。金融股风险的既定通道是可信度闸(high_leverage && is_financial)
-  // 与 SGR 封顶(spec D7),此 flag 对金融股不发布 —— 同一变量顺带流入 suppressedFlags 与
-  // growthValue,三处行为一致化;maintenanceCapex 内部对 OE 的 D&A 封顶数值修正保留(量级无害)。
-  const aiCapexDistortion = mc.ai_capex_distortion_warning === true && !isFinancial;
+  // 资产负债表扩张通常由存款/应收/监管资本驱动,PP&E capex 是经营成本级小项,该透镜无判别力
+  // (AXP 误伤实例:2026-07 探针)。但 SIC 金融区间(尤其 6100–6199)同时收纳了比特币矿企
+  // (MSTR/RIOT/CLSK/CORZ/IREN/WULF/HUT/COIN 等) —— 对它们 PP&E capex 就是生意本身,若单凭
+  // SIC 一刀切豁免,恰好拆掉对它们唯一判对的信号。真正的豁免机制不是"属于金融 SIC",而是
+  // "capex 相对于这门受监管融资类生意的资产负债表规模确实不重要"：仅当 is_financial 且
+  // capex/revenue 均值低于 AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE(校准见上,银行/保险/
+  // 发卡行实测 1.2–14.7%，矿企实测 28.8%+，阈值取 20%)才豁免；缺数据保守按不豁免处理。
+  // 金融股风险的既定通道仍是可信度闸(high_leverage && is_financial)与 SGR 封顶(spec D7)。
+  // flag 与 GV/CAP 三处收口(suppressedFlags/growthValue 同吃这一个变量)；maintenanceCapex 的
+  // 数值修正(D&A 封顶)与其披露文案(buildBuffettLamp simplifications)不受此闸影响,原样保留。
+  const capexToRevenue = capexToRevenueRatio(years);
+  const capexImmaterial = capexToRevenue != null && capexToRevenue < AI_CAPEX_FINANCIAL_EXEMPT_MAX_CAPEX_TO_REVENUE;
+  const aiCapexDistortion = mc.ai_capex_distortion_warning === true && !(isFinancial && capexImmaterial);
   const epvMid = moatRefLamp.assessable && moatRefLamp.per_share_low != null && moatRefLamp.per_share_high != null
     ? (moatRefLamp.per_share_low + moatRefLamp.per_share_high) / 2
     : undefined;
