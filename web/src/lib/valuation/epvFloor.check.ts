@@ -533,6 +533,21 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   const finHeavyFloor = floorOf(computeValuationFloor({ ticker: "FINHEAVY", years: aiYears, sic: 6199 }));
   assert.strictEqual(finHeavyFloor.is_financial, true, "sic 6199 (credit range, where SEC often files bitcoin miners) → is_financial");
   assert.strictEqual(finHeavyFloor.ai_capex_distortion_warning, true, "financial SIC but capex-heavy (~30% > 20%) → exemption denied, flag still raised (this is the bug the fix closes)");
+
+  // Variant C — financial SIC + capex 在但 revenue 全缺(银行常不 tag Revenues,ESQ/HOMB/PDLB
+  // 实测形态):capexToRevenueRatio → undefined → capexImmaterial=false → 不豁免(fail-closed)。
+  // 这是豁免默认方向的开关,锁死"测不出重要性就保守保留 flag"。revenue 缺失 → margin 年不足 →
+  // 走 single-lamp 路径,AI-hog 触发器只看 capex(不碰 revenue),仍然点火。
+  const noRevYears: ValuationFloorYear[] = aiYears.map((y) => ({
+    ...y,
+    revenue: undefined,
+    operating_margin: undefined,
+    operating_income: undefined,
+  }));
+  assert.strictEqual(maintenanceCapex(noRevYears).ai_capex_distortion_warning, true, "revenue-less fixture still trips the raw capex-doubling detector");
+  const finNoRevFloor = floorOf(computeValuationFloor({ ticker: "FINNOREV", years: noRevYears, sic: 6022 }));
+  assert.strictEqual(finNoRevFloor.is_financial, true, "sic 6022 → is_financial (revenue-less bank)");
+  assert.strictEqual(finNoRevFloor.ai_capex_distortion_warning, true, "financial but capex/revenue unmeasurable (revenue untagged) → exemption denied by fail-closed default, flag still raised");
 }
 
 // ── BUG1: negative-equity invested capital doesn't blow up ROIC into a false "stable" read ────
