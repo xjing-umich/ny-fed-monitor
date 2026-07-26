@@ -191,7 +191,12 @@ function assembleFloor(
   const moatReading = buildMoatReading(moatRefLamp, assetFloor, shares, roicLongStrongMoat, growthFr);
   // Shared maint read for floor-level AI-hog flag + GV gate (lamps still compute their own for OE arithmetic).
   const mc = maintenanceCapex(years);
-  const aiCapexDistortion = mc.ai_capex_distortion_warning;
+  // AI-hog 闸(capex 两年≥2×)是"维护性 capex 被增长性 capex 污染"的工业企业透镜;金融企业的
+  // 资产负债表扩张由存款/应收/监管资本驱动,PP&E capex 是经营成本级小项,该透镜无判别力
+  // (AXP 误伤实例:2026-07 探针)。金融股风险的既定通道是可信度闸(high_leverage && is_financial)
+  // 与 SGR 封顶(spec D7),此 flag 对金融股不发布 —— 同一变量顺带流入 suppressedFlags 与
+  // growthValue,三处行为一致化;maintenanceCapex 内部对 OE 的 D&A 封顶数值修正保留(量级无害)。
+  const aiCapexDistortion = mc.ai_capex_distortion_warning === true && !isFinancial;
   const epvMid = moatRefLamp.assessable && moatRefLamp.per_share_low != null && moatRefLamp.per_share_high != null
     ? (moatRefLamp.per_share_low + moatRefLamp.per_share_high) / 2
     : undefined;
