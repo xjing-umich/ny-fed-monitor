@@ -132,7 +132,7 @@ export type ValuationFloor = {
    */
   sustainable_growth?: number;
   /**
-   * true when the issuer is a bank, credit institution, or insurer by SIC (Task 3: sic∈[6020,6099]∪[6100,6199]∪[6300,6399]).
+   * true when the issuer is a bank, credit institution, or insurer by SIC (spec 2026-07-26: sic∈[6020,6099]∪[6100,6199]∪[6300,6399]).
    * Drives the g_used cap onto sustainable-growth-rate (SGR) instead of the flat franchise/
    * moderate/none tiers — the flat 7% cap otherwise systematically overstates no-moat
    * regional banks/insurers into the "cheap" bucket.
@@ -257,7 +257,7 @@ export type ValuationFloorInput = {
   ticker: string;
   company_name?: string;
   years: ValuationFloorYear[]; // most-recent-first
-  /** SEC sic code (Task 3: is_financial = sic∈[6020,6099]∪[6100,6199]∪[6300,6399]，银行+信贷机构+保险). */
+  /** SEC sic code (spec 2026-07-26: is_financial = sic∈[6020,6099]∪[6100,6199]∪[6300,6399]，银行+信贷机构+保险). */
   sic?: number;
   /** TTM 合成基点(spec 2026-07-24-ttm-valuation-basis):最新基点用滚动十二个月行顶替最新 FY;
    *  years 本身保持纯 FY(增长回归/盈利闸/roicLongTermStrong 的审计地基不动)。缺省 = 纯 FY 现状。 */
