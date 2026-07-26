@@ -57,7 +57,7 @@ const badFacts: typeof vFacts = [
   { tag: "EarningsPerShareDiluted", member: "CommonClassAMember", start: "2024-10-01", end: "2025-09-30", value: 10.2 },
   { tag: "WeightedAverageNumberOfDilutedSharesOutstanding", member: "CommonClassAMember", start: "2024-10-01", end: "2025-09-30", value: 1_714_000_000 },
 ];
-assert(deriveEconomicShares(badFacts, "ClassA", [{ period_end: "2025-09-30", net_income: 20_058_000_000 }]).length === 0, "偏差 14.7% 被 10% 闸拒绝(宁缺毋假)");
+assert(deriveEconomicShares(badFacts, "ClassA", [{ period_end: "2025-09-30", net_income: 20_058_000_000 }]).length === 0, "偏差约 12.8% 被 10% 闸拒绝(宁缺毋假)");
 
 // ── fixture 4:token 匹配纪律 ──
 console.log("fixture 4: token 匹配");
@@ -71,6 +71,22 @@ assert(deriveEconomicShares(b2Facts, "ClassB", [{ period_end: "2025-12-31", net_
 // ── fixture 5:负净利年跳过 ──
 console.log("fixture 5: 负净利跳过");
 assert(deriveEconomicShares(vFacts, "ClassA", [{ period_end: "2025-09-30", net_income: -1_000_000 }]).length === 0, "净利≤0 → 路线B无定义 → 该年不补");
+
+// ── fixture 6:scenario 维度(context 直接子节点,非 entity 内) ──
+const SCENARIO_XML = `<?xml version="1.0" encoding="utf-8"?>
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:us-gaap="http://fasb.org/us-gaap/2025" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xmlns:t="http://test/20251231">
+  <context id="cScenario"><entity><identifier scheme="s">0001234567</identifier></entity><scenario>
+    <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">us-gaap:CommonClassAMember</xbrldi:explicitMember>
+  </scenario><period><startDate>2025-01-01</startDate><endDate>2025-12-31</endDate></period></context>
+  <us-gaap:EarningsPerShareDiluted contextRef="cScenario" unitRef="u" decimals="2">8.50</us-gaap:EarningsPerShareDiluted>
+  <us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="cScenario" unitRef="sh" decimals="-6">500000000</us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding>
+</xbrl>`;
+
+console.log("fixture 6: scenario 维度");
+const scenarioFacts = extractClassShareFacts(SCENARIO_XML);
+assert(scenarioFacts.length === 2, "从 scenario(context 直接子节点)提取 ClassOfStock 维度事实");
+const scenarioDerived = deriveEconomicShares(scenarioFacts, listedClassToken("T"), [{ period_end: "2025-12-31", net_income: 4_250_000_000 }]);
+assert(scenarioDerived.length === 1 && Math.abs(scenarioDerived[0].shares - 4_250_000_000 / 8.5) < 1, "scenario 源事实推导成功");
 
 if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
 console.log("\n全部通过");

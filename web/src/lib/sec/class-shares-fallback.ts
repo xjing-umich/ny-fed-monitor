@@ -4,7 +4,7 @@ import { XMLParser } from "fast-xml-parser";
 export type ClassShareFact = { tag: string; member: string; start: string; end: string; value: number };
 export type DerivedShares = { period_end: string; shares: number; eps: number; cross_check_pct: number; member: string };
 
-/** 双路互证容差:|股数tag − 净利÷EPS|/后者 超过即拒绝(V 的 basic-A 1714M 这类非经济总量来源在此被天然挡下,实测偏差 14.7%)。 */
+/** 双路互证容差:|股数tag − 净利÷EPS|/后者 超过即拒绝(V 的 basic-A 1714M 这类非经济总量来源在此被天然挡下,约 12.8%)。 */
 export const CROSS_CHECK_TOLERANCE = 0.1;
 /** FY duration 窗口,对齐 normalize-facts flowBucket 的 350–380 天口径。 */
 const FY_DAYS_MIN = 350;
@@ -46,6 +46,7 @@ function findByLocalName(obj: AnyObj, name: string): unknown {
  * 这里读的是 filing 的提取版 XBRL instance(*_htm.xml),维度仍在 context 里。
  * 命名空间兼容:V 用默认命名空间(元素无前缀),其他 filer 可能带 xbrli: 前缀 → 一律按 localName 匹配。
  * parseTagValue:false 是硬纪律(CUSIP 科学计数法事故),数值一律显式 Number()。
+ * 维度位置:segment 在 entity 内; scenario 是 context 的直接子节点(XBRL 2.1 spec)。
  */
 export function extractClassShareFacts(xml: string): ClassShareFact[] {
   const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", parseTagValue: false });
@@ -66,20 +67,41 @@ export function extractClassShareFacts(xml: string): ClassShareFact[] {
       if (typeof start !== "string" || typeof end !== "string") continue; // instant/无 duration → 不是本回退关心的流量事实
       const entity = findByLocalName(ctx as AnyObj, "entity") as AnyObj | undefined;
       let member: string | undefined;
-      for (const holder of ["segment", "scenario"]) {
-        const seg = entity ? (findByLocalName(entity, holder) as AnyObj | undefined) : undefined;
-        if (!seg) continue;
-        for (const [mk, mv] of Object.entries(seg)) {
-          if (localName(mk) !== "explicitMember") continue;
-          for (const em of asArray(mv as AnyObj | AnyObj[])) {
-            const dim = (em as AnyObj)["@_dimension"];
-            const text = (em as AnyObj)["#text"];
-            if (typeof dim === "string" && dim.includes("ClassOfStock") && typeof text === "string") {
-              member = localName(text);
+
+      // segment 从 entity 内取
+      if (entity) {
+        const seg = findByLocalName(entity, "segment") as AnyObj | undefined;
+        if (seg) {
+          for (const [mk, mv] of Object.entries(seg)) {
+            if (localName(mk) !== "explicitMember") continue;
+            for (const em of asArray(mv as AnyObj | AnyObj[])) {
+              const dim = (em as AnyObj)["@_dimension"];
+              const text = (em as AnyObj)["#text"];
+              if (typeof dim === "string" && dim.includes("ClassOfStock") && typeof text === "string") {
+                member = localName(text);
+              }
             }
           }
         }
       }
+
+      // scenario 从 context 直接子节点取(XBRL 2.1: segment in entity, scenario is sibling of entity)
+      if (!member) {
+        const scenario = findByLocalName(ctx as AnyObj, "scenario") as AnyObj | undefined;
+        if (scenario) {
+          for (const [mk, mv] of Object.entries(scenario)) {
+            if (localName(mk) !== "explicitMember") continue;
+            for (const em of asArray(mv as AnyObj | AnyObj[])) {
+              const dim = (em as AnyObj)["@_dimension"];
+              const text = (em as AnyObj)["#text"];
+              if (typeof dim === "string" && dim.includes("ClassOfStock") && typeof text === "string") {
+                member = localName(text);
+              }
+            }
+          }
+        }
+      }
+
       if (member) contexts.set(id, { start, end, member });
     }
   }
@@ -136,7 +158,7 @@ export function deriveEconomicShares(
       [pick("EarningsPerShareDiluted"), pick("WeightedAverageNumberOfDilutedSharesOutstanding")],
       [pick("EarningsPerShareBasic"), pick("WeightedAverageNumberOfSharesOutstandingBasic")],
     ];
-    const pair = pairs.find(([eps, sh]) => eps != null && sh != null && eps.value > 0 && sh.value > 0);
+    const pair = pairs.find(([eps, sh]) => eps != null && sh != null && eps.value > 0 && sh.value > 0 && eps.member === sh.member);
     if (!pair) continue;
     const [eps, sharesTag] = pair as [ClassShareFact, ClassShareFact];
     const routeB = p.net_income / eps.value;
