@@ -1,4 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
+import type { FundamentalPeriod } from "./normalize-facts";
+import type { NormalizedFiling } from "./company-submissions";
+import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
 
 /** 分股类维度事实(localName 化):tag 如 EarningsPerShareDiluted,member 如 CommonClassAMember。 */
 export type ClassShareFact = { tag: string; member: string; start: string; end: string; value: number };
@@ -167,4 +170,96 @@ export function deriveEconomicShares(
     out.push({ period_end: p.period_end, shares: routeB, eps: eps.value, cross_check_pct: dev, member: eps.member });
   }
   return out;
+}
+
+/** 触发窄闸(spec §2.1):annual 全部年份缺 shares_diluted 且至少一年有净利。字段已有值的票零影响。 */
+export function needsClassSharesFallback(annual: FundamentalPeriod[]): boolean {
+  return (
+    annual.length > 0 &&
+    annual.every((p) => p.shares_diluted == null) &&
+    annual.some((p) => p.net_income != null)
+  );
+}
+
+/** 每票最多解析的 10-K 份数:每份 instance 带 3 个 FY 的利润表事实(BRK 实测),3 份覆盖 6-FY 窗口有余。 */
+const MAX_10K_INSTANCES = 3;
+
+type EdgarIndex = { directory?: { item?: { name?: string }[] } };
+
+/** 提取版 instance 文件名 = primaryDocument 去 .htm 加 _htm.xml;404 时回退读目录 index.json 找 *_htm.xml。 */
+async function fetchInstanceXml(filing: NormalizedFiling): Promise<string | null> {
+  const dir = filingIndexUrl(filing.cik, filing.accession_number);
+  const guess = filing.primary_document?.replace(/\.htm$/i, "_htm.xml");
+  if (guess) {
+    try {
+      return await secFetchText(`${dir}${guess}`);
+    } catch {
+      // fall through to index.json
+    }
+  }
+  try {
+    const index = await secFetchJson<EdgarIndex>(`${dir}index.json`);
+    const name = index.directory?.item?.map((i) => i.name).find((n) => n?.endsWith("_htm.xml"));
+    if (!name) return null;
+    return await secFetchText(`${dir}${name}`);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 分股类经济股数回退(spec §2):从最近 3 份 10-K 的提取版 XBRL instance 抽分股类事实,
+ * 双路互证推导经济股数,就地 patch annual 行(shares_diluted / 空缺的 eps_diluted / raw_facts 溯源)。
+ * 任何异常吞掉打日志 —— 回退绝不打断主 ingest。返回补上的年数。
+ */
+export async function applyClassSharesFallback(annual: FundamentalPeriod[], filings: NormalizedFiling[]): Promise<number> {
+  try {
+    const ticker = annual[0]?.ticker;
+    if (!ticker) return 0;
+    const tenKs = filings
+      .filter((f) => f.form === "10-K" && f.primary_document)
+      .sort((a, b) => (b.filing_date ?? "").localeCompare(a.filing_date ?? ""))
+      .slice(0, MAX_10K_INSTANCES);
+    if (!tenKs.length) return 0;
+
+    const facts: ClassShareFact[] = [];
+    for (const filing of tenKs) {
+      const xml = await fetchInstanceXml(filing);
+      if (xml) facts.push(...extractClassShareFacts(xml));
+      await sleep(300);
+    }
+    if (!facts.length) return 0; // MLP/单类缺数等:instance 里没有分股类事实 → 诚实空缺
+
+    const token = listedClassToken(ticker);
+    const derived = deriveEconomicShares(
+      facts,
+      token,
+      annual.map((p) => ({ period_end: p.period_end, net_income: p.net_income })),
+    );
+    const byEnd = new Map(derived.map((d) => [d.period_end, d]));
+    let patched = 0;
+    for (const row of annual) {
+      const d = byEnd.get(row.period_end);
+      if (!d) continue;
+      row.shares_diluted = Math.round(d.shares);
+      if (row.eps_diluted == null) row.eps_diluted = d.eps; // 挂牌类申报 EPS,非合成值
+      row.raw_facts = {
+        ...row.raw_facts,
+        shares_diluted: {
+          tag: "class-dimension:eps-implied",
+          val: String(Math.round(d.shares)),
+          filed: row.filing_date ?? "",
+          days: null,
+          derived: true,
+          member: d.member,
+          cross_check_pct: d.cross_check_pct,
+        },
+      };
+      patched++;
+    }
+    return patched;
+  } catch (err) {
+    console.error(`class-shares fallback failed (non-fatal): ${err instanceof Error ? err.message : String(err)}`);
+    return 0;
+  }
 }
