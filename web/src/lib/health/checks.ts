@@ -4,7 +4,7 @@
 import { mostRecentDueQuarter, parseUTC } from "../freshness/derive";
 
 export type HealthProblem = {
-  pipeline: "13f" | "prices";
+  pipeline: "13f" | "prices" | "cost";
   source: string;
   message: string;
   asOf: string | null;
@@ -42,4 +42,35 @@ export function evaluate13F(
     };
   }
   return { problems: [], info };
+}
+
+/**
+ * Supabase DB 体积早警(纯判定)。usedBytes=null → 降级 info(取数不可用,不告警)。
+ * 达到/超过 limitMb×warnFraction → cost problem;否则 info 报当前占用。
+ * 平台原生告警只在超额粗报,此处提供 80% 早警窗口。
+ */
+export function evaluateDbSize(
+  usedBytes: number | null,
+  limitMb: number,
+  warnFraction: number,
+): { problems: HealthProblem[]; info: string[] } {
+  if (usedBytes == null) {
+    return { problems: [], info: ["DB 体积: 取数不可用，跳过"] };
+  }
+  const usedMb = usedBytes / 1_048_576;
+  const pct = usedMb / limitMb;
+  const pctStr = `${Math.round(pct * 100)}%`;
+  if (pct >= warnFraction) {
+    return {
+      problems: [{
+        pipeline: "cost",
+        source: "Supabase DB 体积",
+        message: `已用 ${Math.round(usedMb)} MB / ${limitMb} MB (${pctStr})`,
+        asOf: null,
+        expected: `应 < ${Math.round(warnFraction * 100)}%`,
+      }],
+      info: [],
+    };
+  }
+  return { problems: [], info: [`DB 体积 ${Math.round(usedMb)} MB / ${limitMb} MB (${pctStr})`] };
 }
