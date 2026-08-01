@@ -13,6 +13,8 @@
  *   3. BRK.B (b) 路 verdict 非 null;
  *   4. 零漂移组五票 (a)(b) 两路 verdict JSON 逐字段全等;
  *   5. FAF 的 materiality < 0.25(阈值下最近邻,确认闸位)。
+ * 注:本探针调用引擎时 suppressExpectations: true,与生产 valuation-ingest 的 false 不一致
+ *   (不影响本探针验收的 verdict 字段;预期层在 marks 调整后的基数下尚未观测,属遗留观察项)。
  * 价格/DGS10 从 DB 只读;SEC 请求经 sec-client(带 UA),每票间 sleep(300)。
  * ads:探针票池均为普通挂牌股(非 ADR)→ resolveAds(undefined, null) 简化
  * (镜像 valuation-ingest.ts:130-180 的 ads 分支,本探针不涉及 ADR 归一化)。
