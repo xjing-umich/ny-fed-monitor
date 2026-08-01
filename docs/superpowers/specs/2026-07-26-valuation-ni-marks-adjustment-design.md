@@ -48,9 +48,10 @@ ASU 2016-01 后，持有权益证券的公司 GAAP 净利含**未实现投资损
 3. 零漂移断言：FAF（阈值下最近邻）/PGR/V/AXP/MSFT 引擎输出与现状逐字段一致。
 4. 全部既有 `*.check.ts` + `npx tsc --noEmit` 绿。
 
-## 4. 上线运维（合并后，须授权；与件①②欠的四步合并执行）
+## 4. 上线运维（须授权；与件①②欠的四步合并执行）
 
-1. **先 apply migration**（Supabase）；
+0. **【终审 Critical·顺序硬约束】apply migration 必须早于合并/部署**：周六 GH Actions 全量 fundamentals（~1.6k 票）与周日 Vercel cron 跑合并后代码，若列不存在，`ingest.ts` 的 upsert 会对每票 throw、整条数据线断更。列可空，提前 apply 对旧代码零影响。
+1. apply migration（Supabase，先于合并）→ 合并 PR；
 2. `npm run sec:ingest -- V / BRK.B / BRK.A / MKL / RLI / WTM / RGA`（新列回填 + 件①股数回退落库）；
 3. `npm run valuation:ingest`；
 4. 看页：/stocks/BRK.B（调整后带 + 披露句）、/stocks/MKL、/stocks/V、/stocks/AXP；
