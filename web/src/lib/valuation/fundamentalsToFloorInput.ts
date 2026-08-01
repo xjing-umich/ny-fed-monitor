@@ -92,9 +92,12 @@ export function fundamentalsToFloorInput(
     .filter((r) => r.fiscal_period === "FY" && r.fiscal_year != null)
     .sort((a, b) => (b.period_end ?? "").localeCompare(a.period_end ?? ""));
   const marks = deriveMarksAdjustment(fyRows);
-  const adjNiByFy = new Map((marks?.per_year ?? []).map((p) => [p.fiscal_year, p.net_income_adjusted]));
+  // 逐行用自身字段计算,不经 fiscal_year 做 Map 键——两条 FY 行共享同一 fiscal_year 标签时
+  // (period_end 才是真主键,财年标签 off-by-one 真实存在),按标签查表会把较旧行的调整值错套到两行上。
   const applyMarks = (r: FundamentalPeriod): FundamentalPeriod =>
-    adjNiByFy.has(r.fiscal_year as number) ? { ...r, net_income: adjNiByFy.get(r.fiscal_year as number)! } : r;
+    r.net_income != null && r.investment_fv_gain_loss != null
+      ? { ...r, net_income: r.net_income - r.investment_fv_gain_loss * (1 - MARKS_TAX_RATE) }
+      : r;
   const years: ValuationFloorYear[] = fyRows.map((r) => toFloorYear(marks ? applyMarks(r) : r, adsRatio));
   const ttmSyn = quarterRows?.length ? buildTtm(rows ?? [], quarterRows) : null;
   // 件③口径一致性:调整启用而 TTM 的 gains 不可得 → 丢 TTM(回退纯 FY),防止 GAAP-TTM 顶替经营口径 FY0。

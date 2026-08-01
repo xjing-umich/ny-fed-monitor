@@ -647,7 +647,7 @@ function MethodDetails({
         {floor.high_leverage_warning && floor.is_financial ? (
           <p className="text-[var(--tt-warn)]">{t.highLeverageWarning}</p>
         ) : null}
-        {!(graham_epv.assessable && buffett_epv.assessable) && provenance.earnings_basis_note ? (
+        {provenance.earnings_basis_note ? (
           <p>{provenance.earnings_basis_note}</p>
         ) : null}
         {sz?.assetFloor?.priceBelow ? <p>{t.assetBelow(usd0(sz.assetFloor.perShare))}</p> : null}

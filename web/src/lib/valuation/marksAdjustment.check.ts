@@ -95,5 +95,28 @@ assert(
   "degraded_fields 不含该字段且行值非 null → 不丢 TTM",
 );
 
+console.log("场景 8: fiscal_year 标签碰撞(两行同 fiscal_year 不同 period_end)不串值");
+const collideRows = [
+  mkRow({ fiscal_year: 2023, period_end: "2023-06-30", net_income: 10 * B, investment_fv_gain_loss: 5 * B }),
+  mkRow({ fiscal_year: 2023, period_end: "2023-12-31", net_income: 20 * B, investment_fv_gain_loss: 8 * B }),
+  mkRow({ fiscal_year: 2024, period_end: "2024-12-31", net_income: 15 * B, investment_fv_gain_loss: 6 * B }),
+  mkRow({ fiscal_year: 2025, period_end: "2025-12-31", net_income: 12 * B, investment_fv_gain_loss: 5 * B }),
+];
+const collideInput = fundamentalsToFloorInput("COLLIDE", "COLLIDE", collideRows, 1, 6331);
+assert(collideInput.marks_adjustment != null, "碰撞场景材料性达标 → 调整启用");
+// years 按 period_end 降序:2025-12-31 / 2024-12-31 / 2023-12-31 / 2023-06-30
+const yOld = collideInput.years.find((y) => y.fiscal_year === 2023 && Math.abs((y.net_income ?? 0) - (10 * B - 5 * B * (1 - MARKS_TAX_RATE))) < 1);
+const yNew = collideInput.years[2]; // period_end 2023-12-31
+const yOldest = collideInput.years[3]; // period_end 2023-06-30
+assert(
+  Math.abs((yNew.net_income ?? 0) - (20 * B - 8 * B * (1 - MARKS_TAX_RATE))) < 1,
+  `2023-12-31 行用自身字段调整(实际 ${((yNew.net_income ?? 0) / B).toFixed(3)}B,期望 ${((20 * B - 8 * B * (1 - MARKS_TAX_RATE)) / B).toFixed(3)}B)`,
+);
+assert(
+  Math.abs((yOldest.net_income ?? 0) - (10 * B - 5 * B * (1 - MARKS_TAX_RATE))) < 1,
+  `2023-06-30 行用自身字段调整,不被 2023-12-31 行覆盖(实际 ${((yOldest.net_income ?? 0) / B).toFixed(3)}B)`,
+);
+assert(yOld != null, "sanity: 至少一行 fiscal_year=2023 且值匹配自身口径");
+
 if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
 console.log("\n全部通过");
