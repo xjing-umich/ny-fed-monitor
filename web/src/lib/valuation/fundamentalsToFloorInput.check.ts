@@ -14,7 +14,7 @@ function fy(year: number, periodEnd: string, fiscalPeriod: string, o: Partial<Fu
     net_income: null, eps_diluted: null, shares_diluted: null, operating_cash_flow: null, capex: null,
     free_cash_flow: null, d_and_a: null, stock_based_comp: null, rd_expense: null, sga_expense: null,
     interest_expense: null, pretax_income: null, income_tax_expense: null, dividends_paid: null,
-    share_repurchases: null, cash_and_equivalents: null, short_term_investments: null, current_assets: null,
+    share_repurchases: null, investment_fv_gain_loss: null, cash_and_equivalents: null, short_term_investments: null, current_assets: null,
     current_liabilities: null, total_assets: null, total_liabilities: null, total_debt: null, ppe_net: null,
     goodwill: null, intangibles: null, shareholders_equity: null, minority_interest: null, preferred_equity: null,
     shares_outstanding: null, ebitda: null, working_capital: null, effective_tax_rate: null, revenue_yoy: null,

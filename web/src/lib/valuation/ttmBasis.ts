@@ -9,6 +9,7 @@ const FLOW_FIELDS = [
   "revenue", "gross_profit", "operating_income", "net_income", "pretax_income",
   "income_tax_expense", "d_and_a", "capex", "rd_expense", "sga_expense",
   "stock_based_comp", "operating_cash_flow", "share_repurchases", "dividends_paid",
+  "investment_fv_gain_loss",
 ] as const;
 type FlowField = (typeof FLOW_FIELDS)[number];
 
