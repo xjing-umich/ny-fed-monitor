@@ -21,7 +21,7 @@ const base: FundamentalPeriod = {
   effective_tax_rate: 0.2, revenue_yoy: null, net_income_yoy: null, fcf_yoy: null,
   gross_margin: null, operating_margin: 0.25, net_margin: null, fcf_margin: null, roe: null,
   debt_to_equity: null, net_debt: 50, is_derived: false, data_quality: "high",
-  missing_fields: {}, raw_facts: {},
+  missing_fields: {}, raw_facts: {}, investment_fv_gain_loss: 6,
 } as unknown as FundamentalPeriod;
 const q = (end: string, over: Partial<FundamentalPeriod>): FundamentalPeriod =>
   ({ ...base, form: "10-Q", fiscal_period: "Q?", period_end: end, ...over }) as FundamentalPeriod;
@@ -30,10 +30,11 @@ const q = (end: string, over: Partial<FundamentalPeriod>): FundamentalPeriod =>
 const q1n = q("2026-03-31", { revenue: 110, net_income: 30, operating_income: 28, gross_profit: 55,
   pretax_income: 30, income_tax_expense: 6, d_and_a: 4, capex: -6, rd_expense: 8, sga_expense: 12,
   stock_based_comp: 2, operating_cash_flow: 35, share_repurchases: 3, dividends_paid: 2,
-  shareholders_equity: 210, shares_diluted: 9.8 });
+  shareholders_equity: 210, shares_diluted: 9.8, investment_fv_gain_loss: 2 });
 const q1o = q("2025-03-31", { revenue: 90, net_income: 20, operating_income: 22, gross_profit: 45,
   pretax_income: 25, income_tax_expense: 5, d_and_a: 3, capex: -4, rd_expense: 7, sga_expense: 11,
-  stock_based_comp: 1, operating_cash_flow: 28, share_repurchases: 2, dividends_paid: 2 });
+  stock_based_comp: 1, operating_cash_flow: 28, share_repurchases: 2, dividends_paid: 2,
+  investment_fv_gain_loss: 1 });
 {
   const r = buildTtm([base], [q1n, q1o]);
   assert(r != null, "正例可合成");

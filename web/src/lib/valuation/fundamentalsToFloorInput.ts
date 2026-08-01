@@ -1,6 +1,43 @@
 import type { FundamentalPeriod } from "@/lib/sec/normalize-facts";
-import type { ValuationFloorInput, ValuationFloorYear } from "./types";
+import type { MarksAdjustment, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { buildTtm } from "./ttmBasis";
+
+export const MARKS_TAX_RATE = 0.21;
+export const MARKS_MATERIALITY_MIN = 0.25;
+export const MARKS_MIN_ALIGNED_YEARS = 3;
+
+/**
+ * 件③三闸(spec §2.2,fail-closed):①整窗覆盖(每个有净利的 FY 都有 gains,防序列内口径混杂)
+ * ②对齐年数≥3 ③材料性 |mean(gains)|/mean(|NI|) ≥ 0.25(校准:BRK 53%/MKL 53%/RLI 37%/WTM 34%/
+ * RGA 33% vs FAF 20.6%,~8pp 实测间隔)。税率用法定 21% 常量——分年 effective rate 被 marks 本身
+ * 污染;21% 有 BRK 股东信 operating earnings 逐年对账背书(FY2022 −22.8→+30.8B)。调整对称:
+ * gains 均值为负(RGA)同式抬升,口径一致性优先。
+ */
+export function deriveMarksAdjustment(fyRows: FundamentalPeriod[]): MarksAdjustment | undefined {
+  const niYears = fyRows.filter((r) => r.net_income != null);
+  if (niYears.length < MARKS_MIN_ALIGNED_YEARS) return undefined;
+  if (!niYears.every((r) => r.investment_fv_gain_loss != null)) return undefined;
+  const meanGain = niYears.reduce((s, r) => s + (r.investment_fv_gain_loss as number), 0) / niYears.length;
+  const meanAbsNi = niYears.reduce((s, r) => s + Math.abs(r.net_income as number), 0) / niYears.length;
+  if (!(meanAbsNi > 0)) return undefined;
+  const materiality = Math.abs(meanGain) / meanAbsNi;
+  if (materiality < MARKS_MATERIALITY_MIN) return undefined;
+  return {
+    tax_rate: MARKS_TAX_RATE,
+    materiality,
+    per_year: niYears.map((r) => ({
+      fiscal_year: r.fiscal_year as number,
+      pretax: r.investment_fv_gain_loss as number,
+      net_income_reported: r.net_income as number,
+      net_income_adjusted: (r.net_income as number) - (r.investment_fv_gain_loss as number) * (1 - MARKS_TAX_RATE),
+    })),
+  };
+}
+
+/** TTM 与调整后 FY 序列口径不一致(gains 降级回退/缺失)→ 丢 TTM 整体回退纯 FY。 */
+export function shouldDropTtmForMarks(ttmSyn: { degraded_fields: string[]; row: FundamentalPeriod }): boolean {
+  return ttmSyn.degraded_fields.includes("investment_fv_gain_loss") || ttmSyn.row.investment_fv_gain_loss == null;
+}
 
 const u = (v: number | null | undefined): number | undefined => (v == null ? undefined : v);
 
@@ -51,19 +88,32 @@ export function fundamentalsToFloorInput(
   sic?: number | null,
   quarterRows?: FundamentalPeriod[],
 ): ValuationFloorInput {
-  const years: ValuationFloorYear[] = (rows ?? [])
+  const fyRows = (rows ?? [])
     .filter((r) => r.fiscal_period === "FY" && r.fiscal_year != null)
-    .sort((a, b) => (b.period_end ?? "").localeCompare(a.period_end ?? ""))
-    .map((r) => toFloorYear(r, adsRatio));
-  // TTM 基点(spec §4-5):合成失败 → 不填 ttm,引擎走纯 FY 现状(零漂移)。
+    .sort((a, b) => (b.period_end ?? "").localeCompare(a.period_end ?? ""));
+  const marks = deriveMarksAdjustment(fyRows);
+  // 逐行用自身字段计算,不经 fiscal_year 做 Map 键——两条 FY 行共享同一 fiscal_year 标签时
+  // (period_end 才是真主键,财年标签 off-by-one 真实存在),按标签查表会把较旧行的调整值错套到两行上。
+  const applyMarks = (r: FundamentalPeriod): FundamentalPeriod =>
+    r.net_income != null && r.investment_fv_gain_loss != null
+      ? { ...r, net_income: r.net_income - r.investment_fv_gain_loss * (1 - MARKS_TAX_RATE) }
+      : r;
+  const years: ValuationFloorYear[] = fyRows.map((r) => toFloorYear(marks ? applyMarks(r) : r, adsRatio));
   const ttmSyn = quarterRows?.length ? buildTtm(rows ?? [], quarterRows) : null;
-  const ttm = ttmSyn
+  // 件③口径一致性:调整启用而 TTM 的 gains 不可得 → 丢 TTM(回退纯 FY),防止 GAAP-TTM 顶替经营口径 FY0。
+  const ttmUsable = ttmSyn && !(marks && shouldDropTtmForMarks(ttmSyn));
+  const ttm = ttmUsable
     ? {
-        year: toFloorYear(ttmSyn.row, adsRatio),
+        year: toFloorYear(
+          marks
+            ? { ...ttmSyn.row, net_income: (ttmSyn.row.net_income as number) - (ttmSyn.row.investment_fv_gain_loss as number) * (1 - MARKS_TAX_RATE) }
+            : ttmSyn.row,
+          adsRatio,
+        ),
         period_end: ttmSyn.period_end,
         quarters_used: ttmSyn.quarters_used,
         shares_from_fy: ttmSyn.shares_from_fy,
       }
     : undefined;
-  return { ticker, company_name: companyName ?? undefined, years, sic: sic ?? undefined, ...(ttm ? { ttm } : {}) };
+  return { ticker, company_name: companyName ?? undefined, years, sic: sic ?? undefined, ...(ttm ? { ttm } : {}), ...(marks ? { marks_adjustment: marks } : {}) };
 }

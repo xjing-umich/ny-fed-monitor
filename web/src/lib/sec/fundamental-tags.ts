@@ -17,6 +17,7 @@ export type FundamentalField =
   | "income_tax_expense"
   | "dividends_paid"
   | "share_repurchases"
+  | "investment_fv_gain_loss"
   // instant (balance sheet — a point-in-time value, no duration)
   | "cash_and_equivalents"
   | "short_term_investments"
@@ -77,6 +78,9 @@ export const FUNDAMENTAL_TAGS: Record<FundamentalField, string[]> = {
   income_tax_expense: ["IncomeTaxExpenseBenefit"],
   dividends_paid: ["PaymentsOfDividendsCommonStock", "PaymentsOfDividends"],
   share_repurchases: ["PaymentsForRepurchaseOfCommonStock"],
+  // 投资性重估损益(税前):GainLossOnInvestments 含衍生品口径更完整(BRK 实测两 tag 几乎同值,
+  // FY2023 74.9B vs 71.8B),优先;EquitySecuritiesFvNiGainLoss(ASU 2016-01 权益证券 FV-NI)兜底。
+  investment_fv_gain_loss: ["GainLossOnInvestments", "EquitySecuritiesFvNiGainLoss"],
   // --- instant ---
   cash_and_equivalents: [
     "CashAndCashEquivalentsAtCarryingValue",

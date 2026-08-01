@@ -31,6 +31,7 @@ export type FundamentalPeriod = {
   income_tax_expense: number | null;
   dividends_paid: number | null;
   share_repurchases: number | null;
+  investment_fv_gain_loss: number | null;
   // instant
   cash_and_equivalents: number | null;
   short_term_investments: number | null;
@@ -456,6 +457,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
     income_tax_expense: v.income_tax_expense,
     dividends_paid: v.dividends_paid,
     share_repurchases: v.share_repurchases,
+    investment_fv_gain_loss: v.investment_fv_gain_loss,
     cash_and_equivalents: v.cash_and_equivalents,
     short_term_investments: v.short_term_investments,
     current_assets: v.current_assets,
