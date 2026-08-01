@@ -39,7 +39,7 @@ ASU 2016-01 后，持有权益证券的公司 GAAP 净利含**未实现投资损
 
 ### 2.3 明确不做（v1）
 
-- crypto tag（理由见 §0）；全员无阈值调整（方案 A，回归面不可控）；equity 分母同步调整——**方向不对称**：gains 为正（多数票）时 SGR 的 ROE 分母仍含投资组合 → SGR 偏低，保守方向，接受；gains 均值为负（RGA，见 §0 对称调整）时方向相反——NI 被上抬而 equity 分母不动 → ROE/SGR 偏高、moat cap 上抬，**非保守**。此为用户已拍板的对称调整代价（口径一致性优先于单向保守），非遗漏；阈值下票（FAF 20.6% 及以下）零改动；RGA 上线后随观察项列入合并后运维验收（见 progress.md RGA 证据小节）。
+- crypto tag（理由见 §0）；全员无阈值调整（方案 A，回归面不可控）；equity 分母同步调整——**方向不对称**：gains 为正（多数票）时 SGR 的 ROE 分母仍含投资组合 → SGR 偏低，保守方向，接受；gains 均值为负（RGA，见 §0 对称调整）时方向相反——NI 被上抬而 equity 分母不动 → ROE/SGR 偏高、moat cap 上抬，**非保守**。此为用户已拍板的对称调整代价（口径一致性优先于单向保守），非遗漏；阈值下票（FAF 20.6% 及以下）零改动；RGA 上线后随观察项列入合并后运维验收（证据见附录 A）。
 
 ## 3. 验收标准
 
@@ -56,3 +56,18 @@ ASU 2016-01 后，持有权益证券的公司 GAAP 净利含**未实现投资损
 3. `npm run valuation:ingest`；
 4. 看页：/stocks/BRK.B（调整后带 + 披露句）、/stocks/MKL、/stocks/V、/stocks/AXP；
 5. 抽查五票 snapshot 行与阈值下票零漂移。
+
+## 附录 A：RGA 证据（终审复核补录，源自真数据探针）
+
+RGA（Reinsurance Group of America，SIC 6311）是调整组五票中唯一 gains 均值为负的票，对应 §2.3 不对称论断的负向分支。per_year 明细（pretax gains / NI_reported / NI_adjusted，单位 B，税率 21%）：
+
+| FY | pretax_gain | NI_reported | NI_adjusted |
+|---|---|---|---|
+| 2025 | −0.24 | 1.18 | 1.38 |
+| 2024 | −0.74 | 0.72 | 1.31 |
+| 2023 | −0.48 | 0.90 | 1.28 |
+| 2022 | −0.51 | 0.62 | 1.02 |
+| 2021 | +0.56 | 0.62 | 0.17 |
+| 2020 | −0.03 | 0.41 | 0.44 |
+
+materiality = 32.5%。六年五负（再保 funds-withheld/嵌入衍生品 marks 的典型特征）→ 剔除≈持续加回。(a)→(b)：bucket within→**below**（抬升方向，用户已拍板的对称调整代价），reliable/declined 不变，带上沿 277.94→336.59。**遗留**：RGA 自披露 non-GAAP（adjusted operating income）序列的外部对账未做（BRK.B 已用股东信逐年核对），列入合并后运维验收项。
