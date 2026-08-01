@@ -1,4 +1,4 @@
-import type { EpvLamp, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
+import type { EpvLamp, MarksAdjustment, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
 import { computeGrowthValue } from "./growthValue";
@@ -38,6 +38,9 @@ const MULTI_CLASS_REASON =
 
 const SINGLE_LAMP_BASIS_NOTE =
   "Operating income is not reported separately (e.g. banks, insurers, and some diversified issuers), so earnings power is shown via the owner-earnings lens only; the unlevered NOPAT lens does not apply.";
+
+const MARKS_BASIS_NOTE =
+  "Earnings basis: reported net income minus investment and derivative fair-value gains/losses, net of tax at the statutory 21% — portfolio marks flow through GAAP net income (ASU 2016-01) but are not operating earnings power.";
 
 function avg(values: number[]): number {
   return values.reduce((s, v) => s + v, 0) / values.length;
@@ -157,11 +160,12 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   // pathB 变成死代码。input.years 是 fundamentalsToFloorInput 已按 fiscal_period=FY 过滤、未截断
   // 的全量年份,只喂给 roicLongTermStrong;EPV 各 lamp 仍用 marginYears/earningsYears(不动)。
   const allYears = fyYears;
-  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears);
-  return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears);
+  const marks = input.marks_adjustment;
+  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears, marks);
+  return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears, marks);
 }
 
-function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[]): ValuationFloor {
+function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
@@ -172,10 +176,10 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, undefined, isFinancial, allYears, sc.s);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, marks ? MARKS_BASIS_NOTE : undefined, isFinancial, allYears, sc.s, marks);
 }
 
-function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[]): ValuationFloor {
+function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment): ValuationFloor {
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
   const { nopatOf, investedCapitalOf } = roicHelpers(tax.rate);
@@ -183,7 +187,8 @@ function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFin
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, SINGLE_LAMP_BASIS_NOTE, isFinancial, allYears, sc.s);
+  const earningsBasisNote = marks ? `${SINGLE_LAMP_BASIS_NOTE} ${MARKS_BASIS_NOTE}` : SINGLE_LAMP_BASIS_NOTE;
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, earningsBasisNote, isFinancial, allYears, sc.s, marks);
 }
 
 // Shared scaffold: asset floor, moat (off the supplied reference lamp), leverage
@@ -199,6 +204,7 @@ function assembleFloor(
   isFinancial: boolean,
   allYears: ValuationFloorYear[],
   structuralConfidenceScore?: number,
+  marks?: MarksAdjustment,
 ): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
@@ -330,6 +336,7 @@ function assembleFloor(
     is_financial: isFinancial,
     financial_sgr: financialSgr,
     structural_confidence: structuralConfidenceScore,
+    marks_adjustment: marks,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

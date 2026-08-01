@@ -86,6 +86,13 @@ export type MoatReading = {
   capital_structure_distorted?: boolean;
 };
 
+/** 件③(spec 2026-07-26):投资性重估损益税后剔除的盈利基数调整披露。 */
+export type MarksAdjustment = {
+  tax_rate: number;
+  materiality: number;
+  per_year: { fiscal_year: number; pretax: number; net_income_reported: number; net_income_adjusted: number }[];
+};
+
 export type ValuationFloorProvenance = {
   years_used: number[];
   as_of_fiscal_year?: number;
@@ -145,6 +152,8 @@ export type ValuationFloor = {
   financial_sgr?: number;
   /** Phase 3.7 结构性置信分 s∈[0,1];驱动净利基数连续加权 + assessReliability 的 ai_capex 解耦。 */
   structural_confidence?: number;
+  /** 件③(spec 2026-07-26):启用时的盈利基数调整披露(投资性重估损益税后剔除)。未启用 = undefined。 */
+  marks_adjustment?: MarksAdjustment;
   provenance: ValuationFloorProvenance;
 };
 
@@ -268,6 +277,8 @@ export type ValuationFloorInput = {
     /** true = 每股股数回退 FY0(最新10-Q缺股数);拆股闸 as-of 不可前滚到 TTM 期末(spec §6)。 */
     shares_from_fy: boolean;
   };
+  /** 件③(spec 2026-07-26):三闸通过时的盈利基数调整推导结果;未启用 = undefined(零行为变化)。 */
+  marks_adjustment?: MarksAdjustment;
 };
 
 // ── Maintenance capex (spec §1.1) ────────────────────────────────────────────
