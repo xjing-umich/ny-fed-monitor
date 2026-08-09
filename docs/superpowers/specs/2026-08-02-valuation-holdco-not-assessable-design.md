@@ -56,7 +56,8 @@ assetOperating   = asset_per_share_compared − excludedPerShare
 
 - **BRK.B / BRK.A**：value_destruction 消失，verdict 抑制，页面只剩资产底 + 说明。
 - **MKL / RLI**：件④-1 使其分母变小、比值上升，franchise 维持或增强 → **不触发抑制**（闸 2 不满足）。
-- **RGA / WTM**：无 `EquitySecuritiesFvNi`（组合是 AFS 债券，利息收入仍在盈利里）→ 件④-1 对其零影响；是否触发抑制取决于闸 2/3 实测，**验收时逐票裁决**。
+- **RGA**：无 `EquitySecuritiesFvNi`（组合是 AFS 债券，利息收入仍在盈利里）→ 件④-1 对其零影响；打印实测供参考，不判失败。
+- **WTM（White Mountains）**：实测结论，非「待裁决」——marks 生效（materiality 34.2%）、无 `operating_income`、修正后 EPV/AV ≈1.19（< 1.25 franchise 门槛）→ 三闸全中，**触发抑制**（与 BRK 同族）。控制方裁定：WTM 确为投资主导型控股集团，抑制在经济上成立；这是一次**产品面变更**——WTM 原为 below+reliable，合并后将从聚合面（screener/榜单）消失，只剩说明句 + 资产底。
 - **marks 未生效的全部票（含 PGR/CB/TRV/AFL/JPM/MSFT/V/AXP）**：两闸均不满足 → **逐字段零漂移**（硬断言）。
 - Loews（value_destruction 0.66）marks 未生效 → 本件不覆盖，留作件⑤观察项。
 

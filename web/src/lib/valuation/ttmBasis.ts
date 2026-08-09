@@ -19,6 +19,10 @@ const STOCK_FIELDS = [
   "short_term_investments", "total_debt", "net_debt", "working_capital", "ppe_net",
   "current_assets", "current_liabilities", "total_assets", "total_liabilities",
   "minority_interest", "preferred_equity",
+  // 件④:权益证券公允价值是资产负债表存量项(非流量),须与其它存量项同规则取最新 10-Q,
+  // 否则 TTM 生效时靠 ...fy0 继承 FY0 值 → 口径混搭(超额现金取最新 10-Q、组合市值却锁在
+  // 上个财年末),污染 epvFloor.ts 里 marks 生效票的资产分母同源修正(件④三闸判定)。
+  "equity_securities_fv",
 ] as const;
 
 export type TtmSynthesis = {
