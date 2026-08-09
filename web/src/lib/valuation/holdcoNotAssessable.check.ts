@@ -2,7 +2,8 @@
  * holdcoNotAssessable.check.ts — 件④ 断言(纯 fixture,无网络)。
  * 覆盖:①marks 未生效时权益证券不剔除(零漂移) ②marks 生效时剔除生效、比值上升
  *      ③三闸全中 → moat=not_assessable + holdco_not_assessable + verdict 抑制
- *      ④缺闸③(有 operating_income) → 不抑制 ⑤修正后进 franchise → 不抑制
+ *      ④缺闸③(有 operating_income) → 不抑制 ⑤未修正与修正后比值皆进 franchise(同源)→ 不抑制
+ *      ⑥assetOperating≤0(ratio undefined)→ 仍被抑制,不被闸②收紧后的反向误伤面漏放
  * 运行: cd web && npx tsx --tsconfig scripts/tsconfig.json src/lib/valuation/holdcoNotAssessable.check.ts
  */
 import { computeValuationFloor, MOAT_FRANCHISE_MULTIPLE } from "./epvFloor";
@@ -16,13 +17,13 @@ function assert(cond: boolean, msg: string) {
 }
 
 const B = 1e9;
-/** BRK 形态:巨额权益证券 + 无营业利润(保险)+ 盈利相对有形净资产偏低。 */
-function holdcoYears(over?: Partial<ValuationFloorYear>): ValuationFloorYear[] {
+/** BRK 形态:巨额权益证券 + 无营业利润(保险)+ 盈利相对有形净资产偏低。niMult 缩放盈利基数(场景 5 用)。 */
+function holdcoYears(over?: Partial<ValuationFloorYear>, niMult = 1): ValuationFloorYear[] {
   return [2025, 2024, 2023, 2022, 2021].map((fy, i) => ({
     fiscal_year: fy,
     revenue: 240 * B,
     operating_income: undefined,      // 保险:不单独报营业利润
-    net_income: (36 - i) * B,
+    net_income: (36 - i) * B * niMult,
     effective_tax_rate: 0.21,
     shareholders_equity: 700 * B,
     goodwill: 83 * B,
@@ -81,15 +82,30 @@ const withOpInc = floorOf({ ticker: "OPINC", sic: 6331, marks_adjustment: marks,
 assert(withOpInc.holdco_not_assessable !== true, "有独立经营透镜(operating_income)→ 不抑制");
 
 console.log("场景 5: 修正后进 franchise → 闸②不满足,不抑制");
-// 权益证券逼近(但不超过)有形净资产 → 剔除后经营资产极小但仍为正 → 比值远超 1.25。
-// 注:600B(brief 原始值)会把 assetOperating 推为负(实测 -14.0,基础重置值 286.05/股 −
-// 现金 21.88 − 权益证券 278.16 < 0),导致 epvAvRatioOperating=undefined,三闸②反而判定
-// "仍进不了 franchise"(未清 undefined != 达标 的语义),与本场景"修正后应进 franchise"的
-// 描述意图相悖 —— 已用 550B 把 assetOperating 校正为小额正数(实测 9.18,ratio 实测 14.79),
-// 真实命中"极小正分母 → 高比值"的场景。见 task-2-report.md 附「fixture 校准」。
+// 终审修法(件④最终审):闸②须与实际发布的 moatReadingFinal.signal 同源 —— 既要求"未修正"
+// 比值本就判 franchise(moatReading.signal==="franchise"),也要求"剔 marks 后"的经营比值仍
+// ≥1.25(franchiseAfterFix)。原方案只放大 equity_securities_fv(单独调分母)无法同时满足两条:
+// 未修正 av(=reproduction.per_share)不随 equity_securities_fv 变化(它由 shareholders_equity
+// 等固定项算出,恒 ≈286.05/股),分子分母比值锁死在 0.475,永远到不了 franchise。
+// 改为放大盈利基数(niMult=3×net_income)把 EPV 拉到 ≈454.24/股:未修正 epv/av=1.588≥1.25 →
+// signal 本就是 franchise;剔除权益证券(298B/股≈138.16)与超额现金(21.88/股)后经营资产
+// ≈126.01/股,修正后比值 ≈3.605,同样 ≥1.25 —— 两条件同时满足,真实命中"两路皆同意 franchise"
+// 的场景,而不是只让修正后单路达标(那正是闸②收紧前的漏洞)。
 const franchiseAfter = floorOf({ ticker: "FRAN", sic: 6331, marks_adjustment: marks,
-  years: holdcoYears({ equity_securities_fv: 550 * B }) });
-assert(franchiseAfter.holdco_not_assessable !== true, `修正后进 franchise(≥${MOAT_FRANCHISE_MULTIPLE})→ 不抑制`);
+  years: holdcoYears(undefined, 3) });
+assert(franchiseAfter.holdco_not_assessable !== true, `未修正与修正后比值均 ≥${MOAT_FRANCHISE_MULTIPLE} → 不抑制`);
+assert(franchiseAfter.moat_reading.signal === "franchise", "两路皆同意 franchise → 发布 signal 也是 franchise(同源)");
+
+console.log("场景 6: assetOperating ≤ 0(权益证券吃穿整个重置基数)→ ratio 为 undefined → 仍被抑制");
+// 闸②收紧后堵住的反向误伤面:权益证券远超未修正的重置基数(av≈286.05/股),剔除后
+// assetOperating < 0 → epvAvRatioOperating 为 undefined。franchiseAfterFix 的
+// `epvAvRatioOperating != null && epvAvRatioOperating >= MOAT_FRANCHISE_MULTIPLE` 对 undefined
+// 直接判 false(不会被误当成"测不出所以不算 franchise 之外的情况"而漏抑制)——票仍被三闸①③
+// 命中,继续 holdco_not_assessable=true。
+const assetOperatingNegative = floorOf({ ticker: "NEGOP", sic: 6331, marks_adjustment: marks,
+  years: holdcoYears({ equity_securities_fv: 600 * B }) });
+assert(assetOperatingNegative.holdco_not_assessable === true, "assetOperating≤0(ratio undefined) → 仍被抑制(未被反向误伤)");
+assert(assetOperatingNegative.moat_reading.signal === "not_assessable", "assetOperating≤0 → moat 仍判 not_assessable");
 
 if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
 console.log("\n全部通过");

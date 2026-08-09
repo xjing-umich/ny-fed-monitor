@@ -32,8 +32,8 @@
  * 不改变任何数值路径(years[].net_income 已经在 fundamentalsToFloorInput 里按件③提前烤入调整值,与
  * marks_adjustment 元数据是否挂载无关),所以影子跑能拿到未被 not_assessable 覆盖的原始 moat_reading,
  * 从中读出精确的 epv_per_share_compared / asset_per_share_compared,再用导出的 workingYears/TARGET_YEARS/
- * MIN_YEARS/OPERATING_CASH_PCT 逐字镜像 epvFloor.ts:150-153(shares 选取)与 epvFloor.ts:272-289
- * (excessCashPerShare/markedSecuritiesPerShare/assetOperating)重算,不是近似估计。
+ * MIN_YEARS/OPERATING_CASH_PCT 逐字镜像 epvFloor.ts:150-153(shares 选取)与 epvFloor.ts:277-289
+ * (excessCashPerShare/markedSecuritiesPerShare/assetOperating,含 marks!=null 闸)重算,不是近似估计。
  *
  * 运行: cd web && npx tsx --tsconfig scripts/tsconfig.json scripts/probe-holdco-not-assessable.ts
  */
@@ -226,6 +226,7 @@ function selectYears(years: ValuationFloorYear[]): ValuationFloorYear[] {
  * 覆盖的原始 moat_reading(epv_per_share_compared/asset_per_share_compared),数值路径与真跑完全同源。
  */
 function computeEpvAvRatioOperating(floorInput: ValuationFloorInput): number | undefined {
+  const marksEffective = floorInput.marks_adjustment != null; // epvFloor.ts:280 闸①镜像,须在剥离前记录
   const { marks_adjustment: _drop, ...shadowInput } = floorInput;
   void _drop;
   const shadow = computeValuationFloor(shadowInput);
@@ -250,7 +251,8 @@ function computeEpvAvRatioOperating(floorInput: ValuationFloorInput): number | u
     latest.cash != null && latest.revenue != null
       ? Math.max(0, latest.cash - OPERATING_CASH_PCT * latest.revenue) / shares
       : 0;
-  const markedSecuritiesPerShare = latest.equity_securities_fv != null ? latest.equity_securities_fv / shares : 0;
+  const markedSecuritiesPerShare =
+    marksEffective && latest.equity_securities_fv != null ? latest.equity_securities_fv / shares : 0;
   const assetOperating = avCons - excessCashPerShare - markedSecuritiesPerShare;
   return assetOperating > 0 ? epvMid / assetOperating : undefined;
 }

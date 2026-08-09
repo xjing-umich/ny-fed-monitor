@@ -291,11 +291,19 @@ function assembleFloor(
   // 件④ 三闸:① marks 生效 ② 修正后仍进不了 franchise ③ 无营业利润(无独立经营透镜)。
   // 全中 → 合并层面的 EPV/AV 测试对这类主体没有经济含义(组合的重置成本就是其市价,
   // 持有它不构成竞争壁垒),判 not_assessable 并整条抑制,而不是给一个"价值毁灭"的假结论。
+  //
+  // 闸②必须与下面实际发布出去的 moatReadingFinal.signal 同源判定,不能用未修正的
+  // moatReading.signal(它由剔 marks 前的比值判定)。否则会出现"用修正后数字解锁抑制、
+  // 但发布给下游(CAP/GV/聚合面)的仍是未修正 signal"的自相矛盾 —— 抑制条件与发布结论脱节,
+  // 组合小幅波动就可能让修正后比值越过 franchise 门槛(解除抑制)而未修正 signal 仍是
+  // value_destruction(CAP=none/GV=0),价值带塌回资产底单点,原样复现"贵 124%"的 bug。
+  // franchiseAfterFix 用 `>=` 而非 `moatReading.signal === "franchise"`,同时堵住
+  // assetOperating ≤ 0(ratio 为 undefined)被反向误判"测不出 franchise"从而漏抑制的洞。
   const noOperatingIncome = years.every((y) => y.operating_income == null);
-  const holdcoNotAssessable =
-    marks != null &&
-    !(epvAvRatioOperating != null && epvAvRatioOperating >= MOAT_FRANCHISE_MULTIPLE) &&
-    noOperatingIncome;
+  const franchiseAfterFix =
+    moatReading.signal === "franchise" &&
+    epvAvRatioOperating != null && epvAvRatioOperating >= MOAT_FRANCHISE_MULTIPLE;
+  const holdcoNotAssessable = marks != null && !franchiseAfterFix && noOperatingIncome;
   const moatReadingFinal: MoatReading = holdcoNotAssessable
     ? {
         signal: "not_assessable",
