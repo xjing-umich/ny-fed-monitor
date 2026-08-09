@@ -416,6 +416,8 @@ export default async function StockTickerPage({
   });
   const { floor: valuationFloor, strikeZone, oeDcf, reconciliation } = run;
   const handoffVerdict = run.verdict;
+  const holdcoNotAssessable =
+    valuationFloor?.kind === "floor" && valuationFloor.holdco_not_assessable === true;
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
 
@@ -624,6 +626,8 @@ export default async function StockTickerPage({
               />
               {splitCoverageStale ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
+              ) : holdcoNotAssessable ? (
+                <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.holdcoNotAssessable}</p>
               ) : capitalStructureDistorted ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.moatDistorted}</p>
               ) : fundamentalsCorrupt ? (
