@@ -366,11 +366,14 @@ async function main() {
     });
   }
 
-  console.log("\n--- 对比表 ---");
+  // Minor D(复审):equity_sec 列取自 annual 里最近一条 FY 有值行(见上方 eqFy/latestFyB),
+  // 不是引擎实际消费的 TTM 行——件④-5 已把 equity_securities_fv 收进 ttmBasis.ts 的存量项
+  // 清单(取最新 10-Q),TTM 生效时该列与引擎口径可能不再相等,仅供人工核对量级,不是精确对照。
+  console.log("\n--- 对比表(equity_sec = FY 行取值,非引擎实际消费的 TTM 行) ---");
   console.log(
     "ticker".padEnd(8) +
       "marks".padEnd(9) +
-      "equity_sec".padEnd(12) +
+      "equity_sec(FY)".padEnd(16) +
       "EPV/AV(oper) a→b".padEnd(22) +
       "moat a→b".padEnd(34) +
       "holdco a→b".padEnd(14) +
@@ -380,7 +383,7 @@ async function main() {
     console.log(
       r.ticker.padEnd(8) +
         (r.marksMaterialityB != null ? (r.marksMaterialityB * 100).toFixed(1) + "%" : "—").padEnd(9) +
-        money(r.equitySecFvB).padEnd(12) +
+        money(r.equitySecFvB).padEnd(16) +
         `${n(r.epvAvOperA)}→${n(r.epvAvOperB)}`.padEnd(22) +
         `${r.moatA ?? "—"}→${r.moatB ?? "—"}`.padEnd(34) +
         `${String(r.holdcoNotAssessableA === true)}→${String(r.holdcoNotAssessableB === true)}`.padEnd(14) +

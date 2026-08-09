@@ -54,17 +54,31 @@ assetOperating   = asset_per_share_compared − excludedPerShare
 
 ## 2. 预期影响与回归护栏
 
-- **BRK.B / BRK.A**：value_destruction 消失，verdict 抑制，页面只剩资产底 + 说明。
-- **MKL / RLI**：件④-1 使其分母变小、比值上升，franchise 维持或增强 → **不触发抑制**（闸 2 不满足）。
-- **RGA**：无 `EquitySecuritiesFvNi`（组合是 AFS 债券，利息收入仍在盈利里）→ 件④-1 对其零影响；打印实测供参考，不判失败。
-- **WTM（White Mountains）**：实测结论，非「待裁决」——marks 生效（materiality 34.2%）、无 `operating_income`、修正后 EPV/AV ≈1.19（< 1.25 franchise 门槛）→ 三闸全中，**触发抑制**（与 BRK 同族）。控制方裁定：WTM 确为投资主导型控股集团，抑制在经济上成立；这是一次**产品面变更**——WTM 原为 below+reliable，合并后将从聚合面（screener/榜单）消失，只剩说明句 + 资产底。
+- **BRK.B / BRK.A**：value_destruction 消失，verdict 抑制，页面只剩资产底 + 说明。闸②改为 `investmentLed`
+  （组合占未修正重置基数比例 portfolioShare ≥25%，或 assetOperating≤0）直接测「组合是否吃掉了重置
+  基数」，不再借道 `moatReading.signal` 这一间接代理——BRK 实测 portfolioShare ≈48%，悬崖依旧封死：
+  即使日后修正后比值越过 1.25，仍会因 investmentLed=true 继续抑制。
+- **MKL / RLI**：件④-1 使其分母变小、比值上升，franchise 维持或增强，且有独立 `operating_income`（闸③不满足）→
+  **不触发抑制**。
+- **RGA**：`EquitySecuritiesFvNi` 存在但很小（0.31B），marks 生效（materiality 32.5%）、无 `operating_income`、
+  修正后 EPV/AV ≈1.43（≥1.25 达标），但未修正 signal 为 commodity（非 franchise）。**实测结论**：portfolioShare
+  ≈0.2%，远低于 0.25 阈值 → investmentLed=false，且修正后比值达标 → **不触发抑制**，verdict 恢复
+  below+reliable。（闸②早期仅借道 `moatReading.signal===franchise` 时曾把 RGA 误判为抑制——组合根本不是
+  它的重置基数主体，件④的论证对它不成立；已用 investmentLed 直接测口径修正，见本文件件④终审 Fix。）
+- **WTM（White Mountains）**：实测结论——marks 生效（materiality 34.2%）、无 `operating_income`、修正后
+  EPV/AV ≈1.19（< 1.25 franchise 门槛，investmentLed 亦真）→ 三闸全中，**触发抑制**（与 BRK 同族）。控制方
+  裁定：WTM 确为投资主导型控股集团，抑制在经济上成立；这是一次**产品面变更**——WTM 原为 below+reliable，
+  合并后将从聚合面（screener/榜单）消失，只剩说明句 + 资产底。
 - **marks 未生效的全部票（含 PGR/CB/TRV/AFL/JPM/MSFT/V/AXP）**：两闸均不满足 → **逐字段零漂移**（硬断言）。
 - Loews（value_destruction 0.66）marks 未生效 → 本件不覆盖，留作件⑤观察项。
 
 ## 3. 验收标准
 
-1. fixture check：件④-1 的剔除只在 marks 生效时发生；三闸缺一不触发抑制；抑制时 verdict 为 null 且 reason 正确。
-2. 真数据探针（只读）：BRK.B 修正后比值落在 [0.9, 1.2] 且触发抑制；MKL/RLI 维持 franchise 且不被抑制；RGA/WTM 打印实测供裁决；零漂移组（PGR/CB/AFL/MSFT/V/AXP）verdict JSON 逐字段全等。
+1. fixture check：件④-1 的剔除只在 marks 生效时发生；三闸缺一不触发抑制；抑制时 verdict 为 null 且 reason 正确；
+   `investmentLed` 与修正后比值单独/组合命中均有覆盖（含 RGA 形态：组合占比近零 + 比值达标 → 不抑制）。
+2. 真数据探针（只读）：BRK.B 修正后比值 `< MOAT_FRANCHISE_MULTIPLE`（语义式，不写死区间）且触发抑制；MKL/RLI
+   维持 franchise 且不被抑制；RGA 组合占比近零 + 比值达标 → 不被抑制（verdict 恢复 below+reliable）；WTM 三闸
+   全中 → 触发抑制；零漂移组（PGR/CB/AFL/MSFT/V/AXP）verdict JSON 逐字段全等。
 3. 全部既有 `*.check.ts` + `npx tsc --noEmit` 绿。
 4. 个股页 en/zh 说明文案符合 `docs/copy-voice.md`（禁 AI 腔）。
 

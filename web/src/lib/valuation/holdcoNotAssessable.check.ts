@@ -4,6 +4,8 @@
  *      ③三闸全中 → moat=not_assessable + holdco_not_assessable + verdict 抑制
  *      ④缺闸③(有 operating_income) → 不抑制 ⑤未修正与修正后比值皆进 franchise(同源)→ 不抑制
  *      ⑥assetOperating≤0(ratio undefined)→ 仍被抑制,不被闸②收紧后的反向误伤面漏放
+ *      ⑦RGA 形态(组合占比近零 + 修正后比值达标,未修正 signal 非 franchise)→ 不抑制,
+ *         钉住 investmentLed 外溢修复的回归护栏
  * 运行: cd web && npx tsx --tsconfig scripts/tsconfig.json src/lib/valuation/holdcoNotAssessable.check.ts
  */
 import { computeValuationFloor, MOAT_FRANCHISE_MULTIPLE } from "./epvFloor";
@@ -106,6 +108,22 @@ const assetOperatingNegative = floorOf({ ticker: "NEGOP", sic: 6331, marks_adjus
   years: holdcoYears({ equity_securities_fv: 600 * B }) });
 assert(assetOperatingNegative.holdco_not_assessable === true, "assetOperating≤0(ratio undefined) → 仍被抑制(未被反向误伤)");
 assert(assetOperatingNegative.moat_reading.signal === "not_assessable", "assetOperating≤0 → moat 仍判 not_assessable");
+
+console.log("场景 7: RGA 形态(组合占比近零 + 修正后比值达标,未修正 signal 非 franchise)→ 不抑制");
+// 复审外溢修复:闸②收紧后(要求未修正 signal 也是 franchise)把 RGA 从「有判定」误翻成
+// 「被抑制」——RGA 的 EquitySecuritiesFvNi 只有 0.31B,组合根本不是它的重置基数主体,件④
+// 的整条论证(组合的重置成本就是市价、持有它不构成壁垒)对它不成立,不该被连带抑制。
+// 改用 investmentLed(portfolioShare = 组合/未修正重置基数 ≥25%,或 assetOperating≤0)直接
+// 测「组合是否吃掉了重置基数」,不再借道 moatReading.signal 这个间接代理。本场景:放大盈利
+// 基数(niMult=2.3×)使未修正比值落在 commodity 区(1.198,不到 1.25 的 franchise 门槛,
+// 双测 av_conservative/av_reproduction 皆不过),但权益证券仅 2B(≈0.9/股,portfolioShare≈0.3%,
+// 远低于 0.25 阈值)——剔除后修正比值 1.302 仍 ≥1.25。investmentLed=false 且修正后比值达标
+// → 括号内为 false → holdco_not_assessable=false,不抑制,verdict 正常产出(对照 RGA 应恢复
+// below+reliable)。
+const rgaShape = floorOf({ ticker: "RGASHAPE", sic: 6311, marks_adjustment: marks,
+  years: holdcoYears({ equity_securities_fv: 2 * B }, 2.3) });
+assert(rgaShape.moat_reading.signal !== "franchise", "RGA 形态:未修正 signal 不是 franchise(commodity)");
+assert(rgaShape.holdco_not_assessable !== true, "RGA 形态:组合占比近零 + 修正后比值达标 → 不抑制");
 
 if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
 console.log("\n全部通过");
