@@ -274,14 +274,39 @@ function assembleFloor(
     latest.cash != null && latestRevenue != null && shares > 0
       ? Math.max(0, latest.cash - OPERATING_CASH_PCT * latestRevenue) / shares
       : 0;
+  // 件④:marks 生效 = 我们已把这些证券的重估收益从盈利里剔除,则它们也必须从资产分母里剔除,
+  // 否则分子(剔了组合回报的盈利)与分母(含组合市值的资产)不同源 —— BRK 被判 value_destruction
+  // 的根因。marks 未生效的票(组合回报仍在盈利里)剔除量为 0,逐字段零漂移。
+  const markedSecuritiesPerShare =
+    marks != null && latest.equity_securities_fv != null && shares > 0
+      ? latest.equity_securities_fv / shares
+      : 0;
   const assetOperating =
     moatReading.asset_per_share_compared != null
-      ? moatReading.asset_per_share_compared - excessCashPerShare
+      ? moatReading.asset_per_share_compared - excessCashPerShare - markedSecuritiesPerShare
       : undefined;
   const epvAvRatioOperating =
     epvMid != null && assetOperating != null && assetOperating > 0 ? epvMid / assetOperating : undefined;
+
+  // 件④ 三闸:① marks 生效 ② 修正后仍进不了 franchise ③ 无营业利润(无独立经营透镜)。
+  // 全中 → 合并层面的 EPV/AV 测试对这类主体没有经济含义(组合的重置成本就是其市价,
+  // 持有它不构成竞争壁垒),判 not_assessable 并整条抑制,而不是给一个"价值毁灭"的假结论。
+  const noOperatingIncome = years.every((y) => y.operating_income == null);
+  const holdcoNotAssessable =
+    marks != null &&
+    !(epvAvRatioOperating != null && epvAvRatioOperating >= MOAT_FRANCHISE_MULTIPLE) &&
+    noOperatingIncome;
+  const moatReadingFinal: MoatReading = holdcoNotAssessable
+    ? {
+        signal: "not_assessable",
+        label: "Moat not assessed: at the consolidated level this is an investment-led holding company.",
+        basis_note:
+          "Earnings power versus reproduction value does not describe this issuer: a marketable-securities portfolio reproduces at its own market price, so holding it cannot be a competitive barrier. The asset floor below is still shown as a floor.",
+      }
+    : moatReading;
+
   const moatCap = deriveMoatCap({
-    moat: moatReading,
+    moat: moatReadingFinal,
     epvAvRatio,
     epvAvRatioOperating,
     declined: durabilityDeclined(years),
@@ -295,11 +320,11 @@ function assembleFloor(
   });
 
   const growthValue = computeGrowthValue({
-    moatViaGrowth: moatReading.moat_via_growth === true,
+    moatViaGrowth: moatReadingFinal.moat_via_growth === true,
     years,
     shares,
     taxRate: tax.rate,
-    moatSignal: moatReading.signal,
+    moatSignal: moatReadingFinal.signal,
     epvPerShare: epvMid,
     avPerShare: assetFloor.per_share,
     aiCapexDistortion,
@@ -316,7 +341,7 @@ function assembleFloor(
       sharesDiluted: shares,
       preferredStock: latest.preferred_equity,
     }),
-    moat_reading: moatReading,
+    moat_reading: moatReadingFinal,
     growth_value: growthValue,
     high_leverage_warning: highLeverage,
     // Fix 2(Task 8 whole-branch review):非金融股的高杠杆现已由 leverage_premium 定价进 9–11% 带
@@ -337,6 +362,7 @@ function assembleFloor(
     financial_sgr: financialSgr,
     structural_confidence: structuralConfidenceScore,
     marks_adjustment: marks,
+    holdco_not_assessable: holdcoNotAssessable || undefined,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

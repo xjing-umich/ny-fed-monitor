@@ -154,6 +154,12 @@ export type ValuationFloor = {
   structural_confidence?: number;
   /** 件③(spec 2026-07-26):启用时的盈利基数调整披露(投资性重估损益税后剔除)。未启用 = undefined。 */
   marks_adjustment?: MarksAdjustment;
+  /**
+   * 件④(spec 2026-08-02):投资主导型控股集团 —— 合并报表层面的盈利力/重置成本测试不适用。
+   * 三闸全中(marks 生效 / 剔除被 marks 剔了收益的资产后仍进不了 franchise / 无营业利润)。
+   * 消费者:deriveValuationVerdict 整条抑制、runValuation 的 suppressedReason、个股页说明文案。
+   */
+  holdco_not_assessable?: boolean;
   provenance: ValuationFloorProvenance;
 };
 
