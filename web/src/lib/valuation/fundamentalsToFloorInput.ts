@@ -55,6 +55,7 @@ function toFloorYear(r: FundamentalPeriod, adsRatio: number): ValuationFloorYear
     shareholders_equity: u(r.shareholders_equity),
     goodwill: u(r.goodwill),
     intangibles: u(r.intangibles),
+    equity_securities_fv: u(r.equity_securities_fv),
     cash: u(r.cash_and_equivalents),
     total_debt: u(r.total_debt),
     net_debt: u(r.net_debt),

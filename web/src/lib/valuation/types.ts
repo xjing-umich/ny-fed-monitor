@@ -241,6 +241,8 @@ export type ValuationFloorYear = {
   shareholders_equity?: number;
   goodwill?: number;
   intangibles?: number;
+  /** 权益证券公允价值(件④):marks 生效时从 EPV/AV 资产分母剔除,保持分子分母同源。 */
+  equity_securities_fv?: number;
   cash?: number;
   total_debt?: number;
   net_debt?: number;
