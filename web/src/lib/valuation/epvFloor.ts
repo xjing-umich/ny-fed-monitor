@@ -311,10 +311,13 @@ function assembleFloor(
   //   - assetOperating == null(av 本身不可评估)或 ≤0(组合吃穿整个重置基数)→ 视为极端
   //     投资主导,与 ratio undefined 同源,一并归入 investmentLed=true。
   //   - portfolioShare ≥ 25%:真数据校准值(见 epvFloor.check/probe),BRK ≈48%、
-  //     WTM 组合本身即主体、RGA ≈0.2%——两组间近两个数量级间隔,0.25 取中留足余量。
+  //     RGA ≈0.2%——两组间近两个数量级间隔,0.25 取中留足余量。
   // 最终闸②= investmentLed(组合确是主体) OR 修正后比值仍不达标——RGA 因 investmentLed=false
-  // 且修正后比值 1.43≥1.25 → 不抑制,恢复 below+reliable;BRK/WTM 因 investmentLed=true
-  // 继续抑制,悬崖依旧封死(即使日后修正后比值越过 1.25 也不会解锁)。
+  // 且修正后比值 1.43≥1.25 → 不抑制,恢复 below+reliable;BRK 因 investmentLed≈48%=true 继续
+  // 抑制,悬崖封死(即使日后修正后比值越过 1.25 也不会解锁)。
+  // ⚠ WTM 不同于 BRK:它无 EquitySecuritiesFvNi(share=0、assetOperating>0)→ investmentLed=false,
+  // 其抑制**仅**由修正后比值 1.19<1.25 支撑,余量约 5%,比值越过门槛即自动解除(退回件④之前的状态,
+  // 不产生新的假结论)。件⑤两栏法须以此为前提,不要误以为 WTM 有 investmentLed 兜底。
   const portfolioShare =
     moatReading.asset_per_share_compared != null && moatReading.asset_per_share_compared > 0
       ? markedSecuritiesPerShare / moatReading.asset_per_share_compared
