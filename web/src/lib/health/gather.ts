@@ -2,9 +2,13 @@ import "server-only";
 import { getDb } from "@/lib/managers/db";
 import {
   evaluate13F,
+  evaluateDbSize,
   type HealthProblem,
   type HealthReport,
 } from "./checks";
+
+const DB_LIMIT_MB = Number(process.env.SUPABASE_DB_LIMIT_MB ?? 500);
+const DB_WARN_FRACTION = Number(process.env.DB_WARN_FRACTION ?? 0.8);
 
 // 读 filings,算库内最新季度 + 每户最新季度。
 async function gather13F(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
@@ -53,9 +57,22 @@ async function gatherPrices(today: Date): Promise<{ problems: HealthProblem[]; i
   }
 }
 
+// 成本护栏:DB 体积早警。降级口径与数据健康检查故意不同——取数失败/RPC 未部署 → info(非 problem),
+// 能力缺失不该误报警、不该把 report.ok 拉成 false。
+async function gatherCost(_today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
+  try {
+    const { data, error } = await getDb().rpc("db_size_bytes");
+    if (error) throw error;
+    const usedBytes = data == null ? null : Number(data);
+    return evaluateDbSize(Number.isFinite(usedBytes) ? usedBytes : null, DB_LIMIT_MB, DB_WARN_FRACTION);
+  } catch (e) {
+    return { problems: [], info: [`DB 体积: 取数不可用，跳过 (${e instanceof Error ? e.message : String(e)})`] };
+  }
+}
+
 export async function gatherHealth(today: Date): Promise<HealthReport> {
-  const [r13, rPrices] = await Promise.all([gather13F(today), gatherPrices(today)]);
-  const problems = [...r13.problems, ...rPrices.problems];
-  const info = [...r13.info, ...rPrices.info];
+  const [r13, rPrices, rCost] = await Promise.all([gather13F(today), gatherPrices(today), gatherCost(today)]);
+  const problems = [...r13.problems, ...rPrices.problems, ...rCost.problems];
+  const info = [...r13.info, ...rPrices.info, ...rCost.info];
   return { ok: problems.length === 0, checkedAt: today.toISOString(), problems, info };
 }
