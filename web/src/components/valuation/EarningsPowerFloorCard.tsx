@@ -10,7 +10,7 @@ import { Display } from "@/components/common/Display";
 // USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
 // and "en-US" (not undefined) keeps server/client output deterministic (zh-CN groups
 // identically, so no visible difference). Locale only swaps the surrounding prose.
-function perShare(value: number | undefined): string {
+export function perShare(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }

@@ -274,14 +274,69 @@ function assembleFloor(
     latest.cash != null && latestRevenue != null && shares > 0
       ? Math.max(0, latest.cash - OPERATING_CASH_PCT * latestRevenue) / shares
       : 0;
+  // 件④:marks 生效 = 我们已把这些证券的重估收益从盈利里剔除,则它们也必须从资产分母里剔除,
+  // 否则分子(剔了组合回报的盈利)与分母(含组合市值的资产)不同源 —— BRK 被判 value_destruction
+  // 的根因。marks 未生效的票(组合回报仍在盈利里)剔除量为 0,逐字段零漂移。
+  const markedSecuritiesPerShare =
+    marks != null && latest.equity_securities_fv != null && shares > 0
+      ? latest.equity_securities_fv / shares
+      : 0;
   const assetOperating =
     moatReading.asset_per_share_compared != null
-      ? moatReading.asset_per_share_compared - excessCashPerShare
+      ? moatReading.asset_per_share_compared - excessCashPerShare - markedSecuritiesPerShare
       : undefined;
   const epvAvRatioOperating =
     epvMid != null && assetOperating != null && assetOperating > 0 ? epvMid / assetOperating : undefined;
+
+  // 件④ 三闸:① marks 生效 ② 修正后仍进不了 franchise ③ 无营业利润(无独立经营透镜)。
+  // 全中 → 合并层面的 EPV/AV 测试对这类主体没有经济含义(组合的重置成本就是其市价,
+  // 持有它不构成竞争壁垒),判 not_assessable 并整条抑制,而不是给一个"价值毁灭"的假结论。
+  //
+  // 闸②必须与下面实际发布出去的 moatReadingFinal.signal 同源判定:两者同时要求
+  // (moatReading.signal === "franchise" 且修正后比值 ≥1.25),ratio == null 一律判 false
+  // (不解锁抑制)。不能只用未修正的 moatReading.signal,也不能只用修正后比值单路——否则
+  // 会出现"用修正后数字解锁抑制、但发布给下游(CAP/GV/聚合面)的仍是未修正 signal"的自相
+  // 矛盾:组合小幅波动就可能让修正后比值越过 franchise 门槛(解除抑制)而未修正 signal 仍是
+  // value_destruction(CAP=none/GV=0),价值带塌回资产底单点,原样复现"贵 124%"的 bug。
+  const noOperatingIncome = years.every((y) => y.operating_income == null);
+  const franchiseAfterFix =
+    moatReading.signal === "franchise" &&
+    epvAvRatioOperating != null && epvAvRatioOperating >= MOAT_FRANCHISE_MULTIPLE;
+  // 复审外溢修复:上面的闸②只堵住了"BRK 型"(比值本就低、组合是主体)的悬崖,却误伤了
+  // "RGA 型"(比值达标≥1.25,但未修正 signal 恰好落在 commodity 而非 franchise,组合占比
+  // 又近乎零——EquitySecuritiesFvNi 仅 0.31B,不是它的主体)。件④的整条论证(组合重置成本
+  // 就是市价、持有它不构成壁垒)只对"组合吃掉了重置基数"的主体成立,不能因为未修正比值
+  // 恰巧不到 franchise 就连带抑制。改用 portfolioShare(组合占重置基数比例)直接测"是否
+  // 投资主导",而非借道 moatReading.signal 这个间接代理:
+  //   - assetOperating == null(av 本身不可评估)或 ≤0(组合吃穿整个重置基数)→ 视为极端
+  //     投资主导,与 ratio undefined 同源,一并归入 investmentLed=true。
+  //   - portfolioShare ≥ 25%:真数据校准值(见 epvFloor.check/probe),BRK ≈48%、
+  //     RGA ≈0.2%——两组间近两个数量级间隔,0.25 取中留足余量。
+  // 最终闸②= investmentLed(组合确是主体) OR 修正后比值仍不达标——RGA 因 investmentLed=false
+  // 且修正后比值 1.43≥1.25 → 不抑制,恢复 below+reliable;BRK 因 investmentLed≈48%=true 继续
+  // 抑制,悬崖封死(即使日后修正后比值越过 1.25 也不会解锁)。
+  // ⚠ WTM 不同于 BRK:它无 EquitySecuritiesFvNi(share=0、assetOperating>0)→ investmentLed=false,
+  // 其抑制**仅**由修正后比值 1.19<1.25 支撑,余量约 5%,比值越过门槛即自动解除(退回件④之前的状态,
+  // 不产生新的假结论)。件⑤两栏法须以此为前提,不要误以为 WTM 有 investmentLed 兜底。
+  const portfolioShare =
+    moatReading.asset_per_share_compared != null && moatReading.asset_per_share_compared > 0
+      ? markedSecuritiesPerShare / moatReading.asset_per_share_compared
+      : undefined;
+  const investmentLed = assetOperating == null || assetOperating <= 0 || (portfolioShare ?? 0) >= 0.25;
+  const holdcoNotAssessable =
+    marks != null && !franchiseAfterFix && noOperatingIncome &&
+    (investmentLed || (epvAvRatioOperating != null && epvAvRatioOperating < MOAT_FRANCHISE_MULTIPLE));
+  const moatReadingFinal: MoatReading = holdcoNotAssessable
+    ? {
+        signal: "not_assessable",
+        label: "Moat not assessed: at the consolidated level this is an investment-led holding company.",
+        basis_note:
+          "Earnings power versus reproduction value does not describe this issuer: a marketable-securities portfolio reproduces at its own market price, so holding it cannot be a competitive barrier. The asset floor below is still shown as a floor.",
+      }
+    : moatReading;
+
   const moatCap = deriveMoatCap({
-    moat: moatReading,
+    moat: moatReadingFinal,
     epvAvRatio,
     epvAvRatioOperating,
     declined: durabilityDeclined(years),
@@ -295,11 +350,11 @@ function assembleFloor(
   });
 
   const growthValue = computeGrowthValue({
-    moatViaGrowth: moatReading.moat_via_growth === true,
+    moatViaGrowth: moatReadingFinal.moat_via_growth === true,
     years,
     shares,
     taxRate: tax.rate,
-    moatSignal: moatReading.signal,
+    moatSignal: moatReadingFinal.signal,
     epvPerShare: epvMid,
     avPerShare: assetFloor.per_share,
     aiCapexDistortion,
@@ -316,7 +371,7 @@ function assembleFloor(
       sharesDiluted: shares,
       preferredStock: latest.preferred_equity,
     }),
-    moat_reading: moatReading,
+    moat_reading: moatReadingFinal,
     growth_value: growthValue,
     high_leverage_warning: highLeverage,
     // Fix 2(Task 8 whole-branch review):非金融股的高杠杆现已由 leverage_premium 定价进 9–11% 带
@@ -337,6 +392,7 @@ function assembleFloor(
     financial_sgr: financialSgr,
     structural_confidence: structuralConfidenceScore,
     marks_adjustment: marks,
+    holdco_not_assessable: holdcoNotAssessable || undefined,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

@@ -29,6 +29,7 @@ export type FundamentalField =
   | "ppe_net"
   | "goodwill"
   | "intangibles"
+  | "equity_securities_fv"
   | "shareholders_equity"
   | "minority_interest"
   | "preferred_equity"
@@ -110,6 +111,9 @@ export const FUNDAMENTAL_TAGS: Record<FundamentalField, string[]> = {
   ppe_net: ["PropertyPlantAndEquipmentNet"],
   goodwill: ["Goodwill"],
   intangibles: ["IntangibleAssetsNetExcludingGoodwill", "FiniteLivedIntangibleAssetsNet"],
+  // 权益证券公允价值(BRK FY2025 实测 $297.8B,标准无维度 tag)。件④:marks 生效时同步从
+  // EPV/AV 资产分母剔除 —— 组合的重置成本就是它的市价,持有它不构成竞争壁垒。
+  equity_securities_fv: ["EquitySecuritiesFvNi"],
   shareholders_equity: [
     "StockholdersEquity",
     "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
@@ -134,6 +138,7 @@ export const INSTANT_FIELDS = new Set<FundamentalField>([
   "ppe_net",
   "goodwill",
   "intangibles",
+  "equity_securities_fv",
   "shareholders_equity",
   "minority_interest",
   "preferred_equity",

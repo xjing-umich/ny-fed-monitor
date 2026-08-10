@@ -27,7 +27,8 @@ export type SuppressedReason =
   | "currency_mismatch"
   | "split_coverage_stale"
   | "capital_structure_distorted"
-  | "fundamentals_corrupt";
+  | "fundamentals_corrupt"
+  | "holdco_not_assessable";
 
 export type RunValuationInput = {
   floorInput: ValuationFloorInput;
@@ -73,6 +74,7 @@ function suppressedReason(input: {
 }): SuppressedReason | undefined {
   if (input.verdict) return undefined;
   if (input.guards.fundamentalsCorrupt) return "fundamentals_corrupt";
+  if (input.floor.holdco_not_assessable) return "holdco_not_assessable";
   if (input.floor.moat_reading.capital_structure_distorted) return "capital_structure_distorted";
   if (input.guards.splitCoverageStale) return "split_coverage_stale";
   if (input.strikeZone?.currencyMismatch) return "currency_mismatch";

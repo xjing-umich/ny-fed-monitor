@@ -43,6 +43,7 @@ export type FundamentalPeriod = {
   ppe_net: number | null;
   goodwill: number | null;
   intangibles: number | null;
+  equity_securities_fv: number | null;
   shareholders_equity: number | null;
   minority_interest: number | null;
   preferred_equity: number | null;
@@ -468,6 +469,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
     ppe_net: v.ppe_net,
     goodwill: v.goodwill,
     intangibles: v.intangibles,
+    equity_securities_fv: v.equity_securities_fv,
     shareholders_equity: v.shareholders_equity,
     minority_interest: v.minority_interest,
     preferred_equity: v.preferred_equity,

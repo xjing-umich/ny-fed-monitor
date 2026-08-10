@@ -33,7 +33,7 @@ import {
   runValuation,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { EarningsPowerFloorCard } from "@/components/valuation/EarningsPowerFloorCard";
+import { EarningsPowerFloorCard, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
@@ -416,6 +416,8 @@ export default async function StockTickerPage({
   });
   const { floor: valuationFloor, strikeZone, oeDcf, reconciliation } = run;
   const handoffVerdict = run.verdict;
+  const holdcoNotAssessable =
+    valuationFloor?.kind === "floor" && valuationFloor.holdco_not_assessable === true;
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
 
@@ -624,6 +626,16 @@ export default async function StockTickerPage({
               />
               {splitCoverageStale ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
+              ) : holdcoNotAssessable ? (
+                <>
+                  <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.holdcoNotAssessable}</p>
+                  {valuationFloor.asset_floor.assessable && valuationFloor.asset_floor.per_share != null &&
+                  Number.isFinite(valuationFloor.asset_floor.per_share) && valuationFloor.asset_floor.per_share > 0 ? (
+                    <p className="mt-2 text-sm text-[var(--tt-muted)]">
+                      {page.valuation.assetFloorLabel}: {fmtPerShare(valuationFloor.asset_floor.per_share)}
+                    </p>
+                  ) : null}
+                </>
               ) : capitalStructureDistorted ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.moatDistorted}</p>
               ) : fundamentalsCorrupt ? (
