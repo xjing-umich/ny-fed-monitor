@@ -70,10 +70,12 @@ assert(computeHoldcoSotp({ ...BRK, years: BRK.years.slice(0, 2) }).assessable ==
   "只有 2 年 → 不可评估");
 assert((computeHoldcoSotp({ ...BRK, years: BRK.years.slice(0, 2) }) as { reason: string }).reason === "insufficient_years",
   "原因为 insufficient_years");
-assert(computeHoldcoSotp({ ...BRK, investments: null }).assessable === false,
-  "第一栏不可得 → 不可评估");
-assert(computeHoldcoSotp({ ...BRK, shares: 0 }).assessable === false,
-  "股数不可得 → 不可评估");
+const noShares = computeHoldcoSotp({ ...BRK, shares: 0 });
+assert(noShares.assessable === false, "股数不可得 → 不可评估");
+assert((noShares as { reason: string }).reason === "shares_unavailable", "原因为 shares_unavailable");
+const noInvestments = computeHoldcoSotp({ ...BRK, investments: null });
+assert(noInvestments.assessable === false, "第一栏不可得 → 不可评估");
+assert((noInvestments as { reason: string }).reason === "investments_unavailable", "原因为 investments_unavailable");
 
 console.log("⑦ 对账闸");
 const badReconcile = computeHoldcoSotp({
@@ -81,6 +83,7 @@ const badReconcile = computeHoldcoSotp({
   consolidatedPretaxByYear: { "2025-12-31": 20 * B, "2024-12-31": 53.94 * B, "2023-12-31": 43.64 * B },
 });
 assert(badReconcile.assessable === false, "分部合计与合并口径偏差 >10% → 不可评估");
+assert((badReconcile as { reason: string }).reason === "reconciliation_failed", "原因为 reconciliation_failed");
 const goodReconcile = computeHoldcoSotp({
   ...BRK,
   // 合并税前 92.05B 含投资重估损益,与分部合计 51.71B 不可比 → 调用方应传经营口径;
@@ -92,6 +95,32 @@ assert(goodReconcile.assessable === true, "偏差在 10% 内 → 放行");
 console.log("⑧ 递延税缺失时不静默按 0");
 const noGain = computeHoldcoSotp({ ...BRK, investments: { total: 704.73 * B, unrealized_gain: null } });
 assert(noGain.assessable === false, "递延税基数不可得 → fail-closed(不得少扣一项抬高估值)");
+assert((noGain as { reason: string }).reason === "investments_unavailable", "原因为 investments_unavailable");
+
+console.log("⑨ 非保险经营三年税后均值 ≤0 → no_operating_earnings");
+// 让 total_pretax/total_tax 与保险集团口径相等 → 补集(非保险经营)恒为 0,均值不 >0。
+const noOperating = computeHoldcoSotp({
+  ...BRK,
+  years: BRK.years.map((y) => ({ ...y, total_pretax: y.insurance_pretax, total_tax: y.insurance_tax })),
+});
+assert(noOperating.assessable === false, "非保险经营税后三年均 ≤0 → 不可评估");
+assert((noOperating as { reason: string }).reason === "no_operating_earnings", "原因为 no_operating_earnings");
+
+console.log("⑩ 承保三年为负时,三档排序仍需生效(brief 专门写的反序修正)");
+// 只翻转承保为负,经营分部(第二栏)不受影响,保持整体可评估。
+const negUnderwriting = computeHoldcoSotp({
+  ...BRK,
+  years: BRK.years.map((y) => ({ ...y, underwriting_pretax: -Math.abs(y.underwriting_pretax as number) })),
+});
+assert(negUnderwriting.assessable, "承保连年亏损,经营分部仍盈利 → 仍可评估");
+if (negUnderwriting.assessable) {
+  const uw = negUnderwriting.columns.underwriting;
+  assert(uw.pessimistic < uw.base && uw.base < uw.optimistic,
+    `承保三档排序生效(扣得最狠的是悲观档): pessimistic(${uw.pessimistic.toFixed(1)}) < base(${uw.base.toFixed(1)}) < optimistic(${uw.optimistic.toFixed(1)})`);
+  const ps = negUnderwriting.per_share;
+  assert(ps.pessimistic < ps.base && ps.base < ps.optimistic,
+    "承保为负时,整体 per_share 三档仍单调递增");
+}
 
 console.log(failed === 0 ? "\n全部通过" : `\n${failed} 条失败`);
 process.exit(failed === 0 ? 0 : 1);
