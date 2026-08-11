@@ -18,7 +18,12 @@ const near = (a: number, b: number, tol = 0.005) => Math.abs(a - b) / Math.abs(b
 const INS = `dimension="us-gaap:ProductOrServiceAxis">us-gaap:InsuranceAndOtherMember`;
 const RRUE = `dimension="us-gaap:ProductOrServiceAxis">us-gaap:RailroadUtilitiesAndEnergyMember`;
 
-function build(opts: { treasuries?: boolean; closure?: boolean; attribution?: boolean } = {}) {
+function build(opts: {
+  treasuries?: boolean; closure?: boolean; attribution?: boolean;
+  /** 权益证券取成「含经营业务资产的无维度合并数」:第一栏虚高但现金与 Assets 合计都没动 ——
+   *  归属闸、闭合闸各自照常通过,专测上界闸。 */
+  equitySecurities?: number;
+} = {}) {
   const withTreasuries = opts.treasuries !== false;
   // closure=false 时把铁路能源 Assets 抹掉 → 各列之和 ≠ 合并数
   const rrueAssets = opts.closure === false ? 0 : 246180000000;
@@ -38,7 +43,7 @@ function build(opts: { treasuries?: boolean; closure?: boolean; attribution?: bo
   <us-gaap:CashAndCashEquivalentsAtCarryingValue contextRef="C_RRUE" unitRef="U">${rrueCash}</us-gaap:CashAndCashEquivalentsAtCarryingValue>
   <us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents contextRef="C_PLAIN" unitRef="U">52570000000</us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents>
   ${withTreasuries ? `<us-gaap:USTreasuryBills contextRef="C_INS" unitRef="U">321430000000</us-gaap:USTreasuryBills>` : ""}
-  <us-gaap:EquitySecuritiesFvNi contextRef="C_PLAIN" unitRef="U">297780000000</us-gaap:EquitySecuritiesFvNi>
+  <us-gaap:EquitySecuritiesFvNi contextRef="C_PLAIN" unitRef="U">${opts.equitySecurities ?? 297780000000}</us-gaap:EquitySecuritiesFvNi>
   <us-gaap:EquityMethodInvestments contextRef="C_PLAIN" unitRef="U">19980000000</us-gaap:EquityMethodInvestments>
   <us-gaap:AvailableForSaleSecuritiesDebtSecurities contextRef="C_PLAIN" unitRef="U">17820000000</us-gaap:AvailableForSaleSecuritiesDebtSecurities>
   <us-gaap:EquitySecuritiesAccumulatedUnrealizedGainLoss contextRef="C_PLAIN" unitRef="U">212390000000</us-gaap:EquitySecuritiesAccumulatedUnrealizedGainLoss>
@@ -60,6 +65,7 @@ assert(near(ok!.total, 704730000000), "第一栏合计 704.73B");
 assert(ok!.unrealized_gain === 212390000000, "未实现增值 212.39B(递延税基数)");
 assert(ok!.gate_attribution_ok, "归属闸通过(47.72+4.16 ≈ 52.57,差 0.69 受限现金在 2% 容差内)");
 assert(ok!.gate_closure_ok, "闭合闸通过(976.00+246.18 = 1222.18)");
+assert(ok!.gate_upper_bound_ok, "上界闸通过(第一栏 704.73B ≤ 投资列 Assets 976.00B)");
 
 console.log("② ★ 漏项回归:去掉 USTreasuryBills");
 // 这就是本件第一版的真实事故形态:五项里少一项,若静默按 0 处理,第一栏会算成 383.3B,
@@ -77,7 +83,20 @@ console.log("④ ★ 归属闸失败路径:五项齐备但列现金之和远超�
 const badAttribution = extractHoldcoInvestments(extractInstanceFacts(build({ attribution: false })), "2025-12-31");
 assert(badAttribution === null, "列现金之和(47.72+300)远超合并现金 52.57B → 归属闸拦下,fail-closed 返回 null");
 
-console.log("⑤ 容差常量");
+console.log("⑤ ★ 上界闸:重复计入(取到含经营业务资产的合并数)");
+// 与②③④都不同:五项齐备、现金归属对、Assets 也闭合 —— 只有第一栏合计本身超过了投资列
+// 自身的 Assets。这是「回退到无维度值」对别的 filer 的必然失真形态,前两条闸一条都拦不住。
+// 权益证券 297.78 → 697.78B(多出的 400B 是经营业务资产),第一栏 1,104.73B > 976.00B×1.02。
+const doubleCounted = extractHoldcoInvestments(
+  extractInstanceFacts(build({ equitySecurities: 697780000000 })), "2025-12-31");
+assert(doubleCounted === null, "第一栏合计超过投资列自身 Assets → 上界闸拦下,fail-closed 返回 null");
+// 边界另一侧:略低于上界仍放行(不是把闸调成恒假)。
+const nearBound = extractHoldcoInvestments(
+  extractInstanceFacts(build({ equitySecurities: 560000000000 })), "2025-12-31");
+assert(nearBound != null && nearBound.gate_upper_bound_ok,
+  "第一栏 966.97B ≤ 投资列 Assets 976.00B → 上界闸放行(闸非恒假)");
+
+console.log("⑥ 容差常量");
 assert(HOLDCO_GATE_TOLERANCE === 0.02, "闸容差 2%");
 
 console.log(failed === 0 ? "\n全部通过" : `\n${failed} 条失败`);

@@ -9,8 +9,9 @@ import { InstanceFact, pickFact } from "./instance-facts";
  *   tag 清单(ShortTermInvestments/AvailableForSaleSecuritiesCurrent/MarketableSecuritiesCurrent)
  *   不含它 → 字段为 NULL,"字段齐备"检查照样通过。
  *
- *   教训:光靠「字段非空」判齐备不够,必须用**会计恒等式**把漏项逼出来。故本模块的两道闸
- *   (归属闸 + 闭合闸)是主角,不是附属校验。
+ *   教训:光靠「字段非空」判齐备不够,必须用**会计恒等式**把漏项逼出来。故本模块的三道闸
+ *   (归属闸 + 闭合闸 + 上界闸)是主角,不是附属校验。前两条防漏项,上界闸防**重复计入**
+ *   (取数在列内取不到时会回退无维度值,对别的 filer 那可能是含经营业务资产的合并数)。
  */
 export type HoldcoInvestments = {
   period_end: string;
@@ -23,6 +24,8 @@ export type HoldcoInvestments = {
   unrealized_gain: number | null;
   gate_attribution_ok: boolean;
   gate_closure_ok: boolean;
+  /** 上界闸:第一栏合计 ≤ 投资列自身的 Assets。见 checkUpperBound 的注释。 */
+  gate_upper_bound_ok: boolean;
 };
 
 /** 两道会计恒等式闸的容差。2% 足以吸收受限现金这类小额未分列项,又拦得住 46% 量级的漏项。 */
@@ -74,19 +77,28 @@ function firstOf(facts: InstanceFact[], tags: string[], periodEnd: string,
 }
 
 /** 按 ProductOrService 列汇总某 tag 在指定期末的取值(同列重复申报取最大绝对值那条)。
- *  两道闸都要「各列之和」,抽出来避免逐字重复。 */
+ *  三道闸都要「各列之和」或「某一列」,抽出来避免逐字重复。
+ *  轴名按 includes 匹配、重复申报按**最大绝对值**去重 —— 与 pickFact/dimIs 同口径。
+ *  (此前用精确键 `ProductOrServiceAxis` 且 Math.max(…, 0):前者与本文件其余处不一致,
+ *  后者会把全负值的列静默压成 0。) */
+function columnMemberOf(f: InstanceFact): string | null {
+  for (const [axis, member] of Object.entries(f.dims)) if (axis.includes(PRODUCT_AXIS)) return member;
+  return null;
+}
+
 function sumByColumn(
   facts: InstanceFact[],
   tag: string,
   periodEnd: string,
 ): { perColumn: Record<string, number>; summed: number } {
-  const perColumn = facts
-    .filter((f) => f.tag === tag && f.instant === periodEnd && f.dims[`${PRODUCT_AXIS}Axis`] != null)
-    .reduce<Record<string, number>>((acc, f) => {
-      const m = f.dims[`${PRODUCT_AXIS}Axis`];
-      acc[m] = Math.max(acc[m] ?? 0, f.value); // 同列重复申报取一次
-      return acc;
-    }, {});
+  const perColumn: Record<string, number> = {};
+  for (const f of facts) {
+    if (f.tag !== tag || f.instant !== periodEnd) continue;
+    const m = columnMemberOf(f);
+    if (m == null) continue;
+    const prev = perColumn[m];
+    if (prev == null || Math.abs(f.value) > Math.abs(prev)) perColumn[m] = f.value;
+  }
   const summed = Object.values(perColumn).reduce((a, b) => a + b, 0);
   return { perColumn, summed };
 }
@@ -112,16 +124,36 @@ function checkAttribution(facts: InstanceFact[], periodEnd: string, columnCash: 
  * 闸②闭合:各 ProductOrService 列的 Assets 之和 ≈ 合并 Assets。
  * 拦「存在第三个未被发现的资产池」——若真有一整块资产没被任何列覆盖,第一栏就可能又漏一次。
  */
-function checkClosure(facts: InstanceFact[], periodEnd: string): boolean {
+function checkClosure(
+  facts: InstanceFact[],
+  periodEnd: string,
+): { ok: boolean; columnAssets: number | null } {
   const consolidated = pickFact(facts, { tag: "Assets", instant: periodEnd, dimensionless: true });
-  if (consolidated == null || consolidated <= 0) return false;
-  const { summed } = sumByColumn(facts, "Assets", periodEnd);
-  if (!(summed > 0)) return false;
-  return Math.abs(summed - consolidated) / consolidated <= HOLDCO_GATE_TOLERANCE;
+  const { summed, perColumn } = sumByColumn(facts, "Assets", periodEnd);
+  const columnAssets = perColumn[INVESTMENT_COLUMN_MEMBER] ?? null;
+  if (consolidated == null || consolidated <= 0) return { ok: false, columnAssets };
+  if (!(summed > 0)) return { ok: false, columnAssets };
+  return {
+    ok: Math.abs(summed - consolidated) / consolidated <= HOLDCO_GATE_TOLERANCE,
+    columnAssets,
+  };
 }
 
 /**
- * 提取第一栏。任一组成缺失或任一闸不过 → 返回 null(fail-closed),由调用方退回件④的抑制。
+ * 闸③上界:第一栏合计 ≤ 投资列自身的 Assets(容差内)。
+ *
+ * 归属闸只验现金、闭合闸只验 Assets 合计,两条都只防「漏项」,防不住**重复计入**:
+ * plainOrColumn/firstOf 在列内取不到时会回退到无维度值,而对另一个 filer,无维度值是**合并数**,
+ * 可能含已经算进第二栏那些经营业务里的资产 → 第一栏系统性偏高,两条既有闸一条都拦不住。
+ * 这条上界把「第一栏是投资列的一个子集」这个语义写成恒等式:超出即说明取到了列外的东西。
+ */
+function checkUpperBound(total: number, columnAssets: number | null): boolean {
+  if (columnAssets == null || !(columnAssets > 0)) return false; // fail-closed:测不了就不放行
+  return total <= columnAssets * (1 + HOLDCO_GATE_TOLERANCE);
+}
+
+/**
+ * 提取第一栏。任一组成缺失或三闸任一不过 → 返回 null(fail-closed),由调用方退回件④的抑制。
  * 递延税基数 unrealized_gain 允许缺失(调用方另有 FvNi − FvNiCost 的第二来源)。
  */
 export function extractHoldcoInvestments(facts: InstanceFact[], periodEnd: string): HoldcoInvestments | null {
@@ -137,9 +169,12 @@ export function extractHoldcoInvestments(facts: InstanceFact[], periodEnd: strin
   if (cash == null || treasuries == null || equity_securities == null
       || equity_method == null || afs_debt == null) return null;
 
+  const total = cash + treasuries + equity_securities + equity_method + afs_debt;
   const gate_attribution_ok = checkAttribution(facts, periodEnd, cash);
-  const gate_closure_ok = checkClosure(facts, periodEnd);
-  if (!gate_attribution_ok || !gate_closure_ok) return null;
+  const closure = checkClosure(facts, periodEnd);
+  const gate_closure_ok = closure.ok;
+  const gate_upper_bound_ok = checkUpperBound(total, closure.columnAssets);
+  if (!gate_attribution_ok || !gate_closure_ok || !gate_upper_bound_ok) return null;
 
   // 递延税基数:优先直取(无维度),否则由 FvNi − FvNiCost 反算(两者在 BRK 上分毫不差)。
   const direct = pickFact(facts, { tag: "EquitySecuritiesAccumulatedUnrealizedGainLoss", instant: periodEnd, dimensionless: true });
@@ -153,9 +188,10 @@ export function extractHoldcoInvestments(facts: InstanceFact[], periodEnd: strin
     equity_securities,
     equity_method,
     afs_debt,
-    total: cash + treasuries + equity_securities + equity_method + afs_debt,
+    total,
     unrealized_gain,
     gate_attribution_ok,
     gate_closure_ok,
+    gate_upper_bound_ok,
   };
 }
