@@ -810,6 +810,7 @@ const INSGRP = "StatementBusinessSegmentsAxis|brka:BerkshireHathawayInsuranceGro
 const UW = "ProductOrServiceAxis|brka:UnderwritingMember";
 const INV = "ProductOrServiceAxis|brka:InvestmentsSegmentMember";
 const MFG = "StatementBusinessSegmentsAxis|brka:ManufacturingBusinessesMember";
+const GEICO = "SubsegmentsAxis|brka:GeicoMember";
 
 const XML = `<?xml version="1.0"?>
 <xbrl xmlns:us-gaap="http://fasb.org/us-gaap/2025">
@@ -822,11 +823,14 @@ const XML = `<?xml version="1.0"?>
   ${seg("C_TOT24", [OPSEG], "2024-01-01", "2024-12-31")}
   ${seg("C_INS24", [OPSEG, INSGRP], "2024-01-01", "2024-12-31")}
   ${seg("C_Q4", [OPSEG], "2025-10-01", "2025-12-31")}
+  ${seg("C_GEICO", [OPSEG, UW, INSGRP, GEICO], "2025-01-01", "2025-12-31")}
   <us-gaap:${PRETAX} contextRef="C_TOT" unitRef="U">51710000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_INS" unitRef="U">24720000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_UW" unitRef="U">9460000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_INV" unitRef="U">15260000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_MFG" unitRef="U">12570000000</us-gaap:${PRETAX}>
+  <!-- 子分部,值刻意设得比承保合计大:不排除 Subsegments 轴的实现会在这里取错 -->
+  <us-gaap:${PRETAX} contextRef="C_GEICO" unitRef="U">99000000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_Q4" unitRef="U">9000000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_TOT24" unitRef="U">53940000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_INS24" unitRef="U">28150000000</us-gaap:${PRETAX}>
@@ -857,6 +861,12 @@ assert(near(fy25.underwriting_pretax! + fy25.investments_pretax!, fy25.insurance
 
 console.log("④ 季度不得混入");
 assert(!years.some((y) => y.total_pretax === 9000000000), "Q4 duration 未被当成 FY");
+
+console.log("④b ★ 子分部不得顶替合计");
+// GEICO 子分部与承保合计共用 ProductOrService=Underwriting 维度。fixture 里 GEICO 值刻意
+// 设为 99B(> 承保合计 9.46B),不排除 Subsegments 轴的实现会在这里取到 99B。
+assert(near(fy25.underwriting_pretax, 9460000000),
+  "承保取合计 9.46B,不被子分部 99B 顶替(Subsegments 轴已排除)");
 
 console.log("⑤ kind 分类");
 assert(classifySegment({ ProductOrServiceAxis: "UnderwritingMember",
@@ -991,8 +1001,13 @@ export function extractSegmentYears(facts: InstanceFact[]): SegmentYear[] {
   ).sort((a, b) => b.localeCompare(a));
 
   return ends.map((end) => {
+    // ★ 必须排除子分部(Subsegments 轴)。承保分部下面还挂着 GEICO / 再保险集团 / 主要集团
+    // 三个子分部,它们与承保合计共用 ProductOrService=Underwriting 维度;不排除的话
+    // pickFact 的「取最大绝对值」只是碰巧选中合计,某年子分部超过合计就会静默取错。
+    const noSubsegment = (f: InstanceFact) =>
+      !Object.keys(f.dims).some((a) => a.includes("Subsegments"));
     const pick = (tag: string, opts: { axisContains?: string; member?: string } = {}) =>
-      pickFact(opSegFacts, { tag, end, fyOnly: true, ...opts });
+      pickFact(opSegFacts.filter(noSubsegment), { tag, end, fyOnly: true, ...opts });
 
     // 合计行 = 只带 ConsolidationItems 一个维度的那条。
     const totalOnly = opSegFacts.filter(
@@ -1988,7 +2003,7 @@ function assert(cond: boolean, msg: string) {
   if (cond) console.log(`  ✓ ${msg}`);
   else { console.error(`  ✗ ${msg}`); failed++; }
 }
-const near = (a: number, b: number, tol) => Math.abs(a - b) / Math.abs(b) <= tol;
+const near = (a: number, b: number, tol: number) => Math.abs(a - b) / Math.abs(b) <= tol;
 
 async function get(url: string) {
   const r = await fetch(url, { headers: { "User-Agent": UA!, Accept: "*/*" } });
