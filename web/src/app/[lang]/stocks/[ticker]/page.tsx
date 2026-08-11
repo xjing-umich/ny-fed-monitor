@@ -418,6 +418,8 @@ export default async function StockTickerPage({
   const handoffVerdict = run.verdict;
   const holdcoNotAssessable =
     valuationFloor?.kind === "floor" && valuationFloor.holdco_not_assessable === true;
+  const holdcoSotp =
+    valuationFloor?.kind === "floor" ? valuationFloor.holdco_sotp : undefined;
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
 
@@ -626,6 +628,55 @@ export default async function StockTickerPage({
               />
               {splitCoverageStale ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
+              ) : holdcoNotAssessable && holdcoSotp ? (
+                <div className="mt-3">
+                  <p className="text-sm text-[var(--tt-muted)]">{page.valuation.holdcoSotpIntro}</p>
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[420px] text-sm tabular-nums">
+                      <thead>
+                        <tr className="text-[var(--tt-muted)]">
+                          <th className="py-1 text-left font-normal"> </th>
+                          <th className="py-1 text-right font-normal">{page.valuation.tierPessimistic}</th>
+                          <th className="py-1 text-right font-normal">{page.valuation.tierBase}</th>
+                          <th className="py-1 text-right font-normal">{page.valuation.tierOptimistic}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpInvestments}</td>
+                          <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
+                            {fmtPerShare(holdcoSotp.columns.investments)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpOperating}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.pessimistic)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.base)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.optimistic)}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpUnderwriting}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.pessimistic)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.base)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.optimistic)}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpDeferredTax}</td>
+                          <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
+                            −{fmtPerShare(holdcoSotp.columns.deferred_tax)}
+                          </td>
+                        </tr>
+                        <tr className="border-t border-[var(--tt-border)] font-medium">
+                          <td className="py-2">{page.valuation.holdcoSotpTotal}</td>
+                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.pessimistic)}</td>
+                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.base)}</td>
+                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.optimistic)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="mt-3 text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpNote}</p>
+                </div>
               ) : holdcoNotAssessable ? (
                 <>
                   <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.holdcoNotAssessable}</p>
