@@ -78,19 +78,31 @@ primary key (ticker, period_end, fiscal_period, segment_member)
 
 取数走 `ingestCompany` 的窄闸：仅当该票**满足件④的 `holdco_not_assessable` 触发条件**（marks 生效 + 无 operating_income）时才拉 instance 解析分部——作用域被件④的触发集天然框住，其余票零新增取数。
 
-### 2.1b 数据层：第一栏缺失字段
+### 2.1b 数据层：第一栏走独立表，不加列到 `company_fundamentals_periods`
 
-第一栏五项里，库内现有 `cash_and_equivalents`、`equity_securities_fv`（件④建的）；**缺三项**，须在同一次 migration 里补：
+**companyfacts 可得性实测**（BRK CIK 0001067983，FY2025）：
 
-| 新列 | tag | 备注 |
+| tag | companyfacts | 结论 |
 |---|---|---|
-| `short_term_treasuries` | `USTreasuryBills`（+ `ShortTermInvestments` 等同族兜底） | **本件的核心漏项**，BRK 321.43B |
-| `equity_method_investments` | `EquityMethodInvestments` | |
-| `afs_debt_securities` | `AvailableForSaleSecuritiesDebtSecurities` | |
+| `USTreasuryBills` 321.43B | ❌ 完全不存在 | **必须走 instance** |
+| `EquitySecuritiesAccumulatedUnrealizedGainLoss` 212.39B | ❌ 完全不存在 | **必须走 instance** |
+| 保险与其他现金 47.72B | tag 在，但 FY2025 无「无维度」时点值 | **必须走 instance** |
+| `EquityMethodInvestments` 19.98B | ✅ | 可 companyfacts，仍统一走 instance 保持同源 |
+| `AvailableForSaleSecuritiesDebtSecurities` 17.82B | ✅ | 同上 |
+| `EquitySecuritiesFvNi` 297.78B / `EquitySecuritiesFvNiCost` 85.39B | ✅ | 件④已有；两者相减 = 212.39B，与上面那个 instance tag **分毫不差** → 递延税基数有两条独立来源可互证 |
 
-三列均为**带维度事实**（至少在 BRK 上），走 instance 解析而非 companyfacts。`equity_securities_unrealized_gain`（`EquitySecuritiesAccumulatedUnrealizedGainLoss`）亦一并落库，供递延税项使用。
+> 库内 `cash_and_equivalents` 对 BRK 取到的是第二顺位 `CashCashEquivalentsRestrictedCash...` = **52.57B**（含铁路能源 4.16 + 受限 0.69），**不能**直接用作第一栏——这是第二个口径陷阱。
 
-⚠️ **运维顺序硬约束（件③④已吃过两次教训）**：migration 必须**早于合并部署** apply，否则周六 GH Actions 全量 fundamentals upsert 遇未知列会整批 throw、断更。
+**因此第一栏落 `company_holdco_investments` 新表，而不是给 `company_fundamentals_periods` 加列**：
+
+```
+ticker, period_end, fiscal_period,
+cash, treasuries, equity_securities, equity_method, afs_debt, total,
+unrealized_gain, gate_attribution_ok, gate_closure_ok, raw_facts
+primary key (ticker, period_end, fiscal_period)
+```
+
+理由：件③④两次都被「加列 → 周六 GH Actions 全量 fundamentals upsert 遇未知列整批 throw 断更」这个运维顺序问题咬过。独立表只由 §2.1 那道窄闸写入，**通用 ingest 路径完全不碰**，该风险在结构上消失，不必再依赖「migration 必须早于合并」这条人工纪律。
 
 ### 2.2 引擎层：`holdcoSotp.ts`（新模块，单一职责）
 
