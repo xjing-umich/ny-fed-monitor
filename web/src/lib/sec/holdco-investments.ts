@@ -73,6 +73,24 @@ function firstOf(facts: InstanceFact[], tags: string[], periodEnd: string,
   return null;
 }
 
+/** 按 ProductOrService 列汇总某 tag 在指定期末的取值(同列重复申报取最大绝对值那条)。
+ *  两道闸都要「各列之和」,抽出来避免逐字重复。 */
+function sumByColumn(
+  facts: InstanceFact[],
+  tag: string,
+  periodEnd: string,
+): { perColumn: Record<string, number>; summed: number } {
+  const perColumn = facts
+    .filter((f) => f.tag === tag && f.instant === periodEnd && f.dims[`${PRODUCT_AXIS}Axis`] != null)
+    .reduce<Record<string, number>>((acc, f) => {
+      const m = f.dims[`${PRODUCT_AXIS}Axis`];
+      acc[m] = Math.max(acc[m] ?? 0, f.value); // 同列重复申报取一次
+      return acc;
+    }, {});
+  const summed = Object.values(perColumn).reduce((a, b) => a + b, 0);
+  return { perColumn, summed };
+}
+
 /**
  * 闸①归属:投资列现金 + 其余各列现金 ≈ 合并现金总额。
  * 拦「漏取了某一列」与「错把合并数当成某一列」。
@@ -81,14 +99,10 @@ function checkAttribution(facts: InstanceFact[], periodEnd: string, columnCash: 
   const consolidated = firstOf(facts, CONSOLIDATED_CASH_TAGS, periodEnd,
     (f, t, p) => pickFact(f, { tag: t, instant: p, dimensionless: true }));
   if (consolidated == null || consolidated <= 0) return false; // fail-closed:测不了就不放行
-  const perColumn = facts
-    .filter((f) => f.tag === CASH_TAG && f.instant === periodEnd && f.dims[`${PRODUCT_AXIS}Axis`] != null)
-    .reduce<Record<string, number>>((acc, f) => {
-      const m = f.dims[`${PRODUCT_AXIS}Axis`];
-      acc[m] = Math.max(acc[m] ?? 0, f.value); // 同列重复申报取一次
-      return acc;
-    }, {});
-  const summed = Object.values(perColumn).reduce((a, b) => a + b, 0);
+  const { perColumn, summed } = sumByColumn(facts, CASH_TAG, periodEnd);
+  // 一致性自检:perColumn[投资列] 与调用方传入的 columnCash 都来自「按维度取值」这条路径,
+  // 但取数逻辑不同(前者是本闸自己按 dims 汇总,后者是 inColumn() 走 pickFact)——
+  // 两者不等说明两条路径对不上,数据本身有问题,不该放行。
   if (!(summed > 0) || perColumn[INVESTMENT_COLUMN_MEMBER] !== columnCash) return false;
   // 合并数常含受限现金等未分列项 → 只要求各列之和不超过合并数,且缺口在容差内。
   return summed <= consolidated && (consolidated - summed) / consolidated <= HOLDCO_GATE_TOLERANCE;
@@ -101,14 +115,7 @@ function checkAttribution(facts: InstanceFact[], periodEnd: string, columnCash: 
 function checkClosure(facts: InstanceFact[], periodEnd: string): boolean {
   const consolidated = pickFact(facts, { tag: "Assets", instant: periodEnd, dimensionless: true });
   if (consolidated == null || consolidated <= 0) return false;
-  const perColumn = facts
-    .filter((f) => f.tag === "Assets" && f.instant === periodEnd && f.dims[`${PRODUCT_AXIS}Axis`] != null)
-    .reduce<Record<string, number>>((acc, f) => {
-      const m = f.dims[`${PRODUCT_AXIS}Axis`];
-      acc[m] = Math.max(acc[m] ?? 0, f.value);
-      return acc;
-    }, {});
-  const summed = Object.values(perColumn).reduce((a, b) => a + b, 0);
+  const { summed } = sumByColumn(facts, "Assets", periodEnd);
   if (!(summed > 0)) return false;
   return Math.abs(summed - consolidated) / consolidated <= HOLDCO_GATE_TOLERANCE;
 }

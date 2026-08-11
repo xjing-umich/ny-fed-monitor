@@ -18,10 +18,13 @@ const near = (a: number, b: number, tol = 0.005) => Math.abs(a - b) / Math.abs(b
 const INS = `dimension="us-gaap:ProductOrServiceAxis">us-gaap:InsuranceAndOtherMember`;
 const RRUE = `dimension="us-gaap:ProductOrServiceAxis">us-gaap:RailroadUtilitiesAndEnergyMember`;
 
-function build(opts: { treasuries?: boolean; closure?: boolean } = {}) {
+function build(opts: { treasuries?: boolean; closure?: boolean; attribution?: boolean } = {}) {
   const withTreasuries = opts.treasuries !== false;
   // closure=false 时把铁路能源 Assets 抹掉 → 各列之和 ≠ 合并数
   const rrueAssets = opts.closure === false ? 0 : 246180000000;
+  // attribution=false 时把铁路能源列现金抬到荒谬量级 → 各列现金之和远超合并现金总额,
+  // 触发归属闸的 summed <= consolidated 失败(五项本身仍齐备,闭合闸仍通过 —— 单独隔离归属闸)。
+  const rrueCash = opts.attribution === false ? 300000000000 : 4160000000;
   const ctx = (id: string, dim: string | null) => `
   <context id="${id}">
     <entity><identifier>x</identifier>${dim ? `<segment><explicitMember xmlns:xbrldi="http://xbrl.org/2006/xbrldi" ${dim}</explicitMember></segment>` : ""}</entity>
@@ -32,7 +35,7 @@ function build(opts: { treasuries?: boolean; closure?: boolean } = {}) {
   <unit id="U"><measure>iso4217:USD</measure></unit>
   ${ctx("C_PLAIN", null)}${ctx("C_INS", INS)}${ctx("C_RRUE", RRUE)}
   <us-gaap:CashAndCashEquivalentsAtCarryingValue contextRef="C_INS" unitRef="U">47720000000</us-gaap:CashAndCashEquivalentsAtCarryingValue>
-  <us-gaap:CashAndCashEquivalentsAtCarryingValue contextRef="C_RRUE" unitRef="U">4160000000</us-gaap:CashAndCashEquivalentsAtCarryingValue>
+  <us-gaap:CashAndCashEquivalentsAtCarryingValue contextRef="C_RRUE" unitRef="U">${rrueCash}</us-gaap:CashAndCashEquivalentsAtCarryingValue>
   <us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents contextRef="C_PLAIN" unitRef="U">52570000000</us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents>
   ${withTreasuries ? `<us-gaap:USTreasuryBills contextRef="C_INS" unitRef="U">321430000000</us-gaap:USTreasuryBills>` : ""}
   <us-gaap:EquitySecuritiesFvNi contextRef="C_PLAIN" unitRef="U">297780000000</us-gaap:EquitySecuritiesFvNi>
@@ -68,7 +71,13 @@ console.log("③ 闭合闸:存在未被发现的资产池");
 const broken = extractHoldcoInvestments(extractInstanceFacts(build({ closure: false })), "2025-12-31");
 assert(broken === null, "各列 Assets 之和 ≠ 合并 Assets → fail-closed 返回 null");
 
-console.log("④ 容差常量");
+console.log("④ ★ 归属闸失败路径:五项齐备但列现金之和远超合并数");
+// 与②③不同:这里五项全部非空、closure 也不动,专门只让归属恒等式本身失真 ——
+// 如果 checkAttribution 被重构成恒真,这条必须变红。
+const badAttribution = extractHoldcoInvestments(extractInstanceFacts(build({ attribution: false })), "2025-12-31");
+assert(badAttribution === null, "列现金之和(47.72+300)远超合并现金 52.57B → 归属闸拦下,fail-closed 返回 null");
+
+console.log("⑤ 容差常量");
 assert(HOLDCO_GATE_TOLERANCE === 0.02, "闸容差 2%");
 
 console.log(failed === 0 ? "\n全部通过" : `\n${failed} 条失败`);
