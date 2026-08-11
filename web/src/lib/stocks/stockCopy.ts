@@ -102,7 +102,7 @@ export const STOCK_PAGE_COPY = {
       holdcoSotpDeferredTax: "减：递延所得税",
       holdcoSotpTotal: "每股合计",
       holdcoSotpNote:
-        "经营业务与承保取最近三个财年的均值；倍数分别为 12/15/18 倍与 8/10/12 倍，承保因结果波动更大而给更低倍数。投资组合由浮存金支撑的部分不另行扣减——浮存金成本为负，扣它会与承保利润重复惩罚。经营业务的实际税率低于法定税率，主要来自能源业务的可再生能源税收抵免。",
+        "经营业务与承保取最近三个财年的均值；倍数分别为 12/15/18 倍与 8/10/12 倍，承保因结果波动更大而给更低倍数。投资组合由浮存金支撑的部分不另行扣减，浮存金成本为负，扣它会与承保利润重复惩罚。经营业务的实际税率低于法定税率，主要来自能源业务的可再生能源税收抵免。投资与递延税是时点数，这两行在三档下取值相同。",
       tierPessimistic: "悲观",
       tierBase: "基础",
       tierOptimistic: "乐观",
@@ -158,14 +158,14 @@ export const STOCK_PAGE_COPY = {
       holdcoNotAssessable: "This is a holding company whose balance sheet is led by an investment portfolio. Comparing consolidated earnings power against reproduction value says nothing here — a marketable portfolio reproduces at its own market price, so owning it is not a competitive barrier. No value range or moat verdict is shown; the asset floor below is a floor only.",
       holdcoSotpTitle: "Sum of the parts",
       holdcoSotpIntro:
-        "This is a holding company led by an investment portfolio, so a single consolidated lens says little about it. Below it is broken out the way Buffett himself presented it: investments at market, operating businesses on a multiple of earnings, added together, less the deferred tax on unrealised securities gains.",
+        "This is a holding company led by an investment portfolio, so a single consolidated lens says little about it. Below it is broken out the way Buffett himself presented it: investments at market, operating businesses on a multiple of earnings, added together, less the deferred tax on unrealized securities gains.",
       holdcoSotpInvestments: "Investments at market",
       holdcoSotpOperating: "Non-insurance operating businesses",
       holdcoSotpUnderwriting: "Insurance underwriting",
       holdcoSotpDeferredTax: "Less: deferred tax",
       holdcoSotpTotal: "Per share",
       holdcoSotpNote:
-        "Operating earnings and underwriting are three-year averages, capitalised at 12/15/18× and 8/10/12× respectively — underwriting gets the lower range because its results swing far harder. Float is not deducted from the portfolio: its cost is negative, and deducting it would penalise the same economics twice alongside underwriting profit. The operating businesses' effective tax rate runs below statutory, largely on renewable-energy credits in the energy segment.",
+        "Operating earnings and underwriting are three-year averages, capitalized at 12/15/18× and 8/10/12×. Underwriting gets the lower range because its results swing far harder. Float is not deducted from the portfolio: its cost is negative, and deducting it would penalize the same economics twice alongside underwriting profit. The operating businesses' effective tax rate runs below statutory, largely on renewable-energy credits in the energy segment. Investments and deferred tax are balance-sheet figures, so those two rows read the same across all three columns.",
       tierPessimistic: "Low",
       tierBase: "Base",
       tierOptimistic: "High",
