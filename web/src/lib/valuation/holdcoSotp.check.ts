@@ -148,6 +148,79 @@ console.log("⑪ 接线:verdict 用 SOTP 带判定");
     }) === null,
     "无 SOTP → 仍退回件④的整条抑制(fail-closed)",
   );
+
+  // 复审 Minor:锁住短路条件本身 —— 未被抑制(holdco_not_assessable=false)但 holdco_sotp 恰好
+  // 挂着,必须走原有路径而非误用 SOTP 带。验收标准:把 :164 的短路条件改成
+  // `if (floor.holdco_sotp)` 时,这条断言必须变红(见下方专门验证记录于 report)。
+  assert(
+    deriveValuationVerdict({
+      floor: { kind: "floor", holdco_not_assessable: false, holdco_sotp: sotp, net_net: { assessable: false } } as never,
+      strikeZone: zone(511.54),
+      methods: {} as never,
+    }) === null,
+    "holdco_not_assessable=false(未被抑制)但 holdco_sotp 存在 → 短路条件只认 holdco_not_assessable,不误用 SOTP 带",
+  );
+
+  // per_share 退化:三档乱序(pessimistic > optimistic)→ fail-closed。
+  assert(
+    deriveValuationVerdict({
+      floor: {
+        kind: "floor", holdco_not_assessable: true,
+        holdco_sotp: { ...sotp, per_share: { pessimistic: 600, base: 496, optimistic: 400 } },
+      } as never,
+      strikeZone: zone(511.54),
+      methods: {} as never,
+    }) === null,
+    "per_share 三档乱序(pessimistic>optimistic)→ fail-closed",
+  );
+
+  // per_share 退化:base<=0 → fail-closed。
+  assert(
+    deriveValuationVerdict({
+      floor: {
+        kind: "floor", holdco_not_assessable: true,
+        holdco_sotp: { ...sotp, per_share: { pessimistic: 458, base: 0, optimistic: 534 } },
+      } as never,
+      strikeZone: zone(511.54),
+      methods: {} as never,
+    }) === null,
+    "per_share.base<=0 → fail-closed",
+  );
+
+  // 价格 ≤0 → fail-closed。
+  assert(mk(0) === null, "价格 ≤0 → fail-closed");
+  assert(mk(-1) === null, "价格为负 → fail-closed");
+
+  // Important #1 覆盖:货币不匹配 → 整条抑制,不得拿外币原值去比美元价值带。
+  assert(
+    deriveValuationVerdict({
+      floor: { kind: "floor", holdco_not_assessable: true, holdco_sotp: sotp } as never,
+      strikeZone: { price: { close: 511.54, date: "2026-08-10" }, currencyMismatch: true } as never,
+      methods: {} as never,
+    }) === null,
+    "货币不匹配(currencyMismatch=true)→ fail-closed,不得用外币价格比美元 SOTP 带",
+  );
+
+  // Important #2 覆盖:80% 边际闸。把三档整体放大 10 倍(模拟股数错一个数量级),真实价格
+  // 相对放大后的基础档产生 >80% 的假深度低估 → isImplausibleBand 必须拦下。
+  const inflated = {
+    ...sotp,
+    per_share: {
+      pessimistic: sotp.per_share.pessimistic * 10,
+      base: sotp.per_share.base * 10,
+      optimistic: sotp.per_share.optimistic * 10,
+    },
+  };
+  const inflatedMargin = (inflated.per_share.base - 511.54) / inflated.per_share.base;
+  assert(inflatedMargin > 0.8, `fixture 前提:放大后 marginPct(${inflatedMargin.toFixed(2)}) 确实 >0.8`);
+  assert(
+    deriveValuationVerdict({
+      floor: { kind: "floor", holdco_not_assessable: true, holdco_sotp: inflated } as never,
+      strikeZone: zone(511.54),
+      methods: {} as never,
+    }) === null,
+    "股数错一个数量级导致假深度低估(marginPct>0.8)→ isImplausibleBand 拦下,fail-closed",
+  );
 }
 
 console.log(failed === 0 ? "\n全部通过" : `\n${failed} 条失败`);

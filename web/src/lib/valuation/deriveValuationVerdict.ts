@@ -165,9 +165,17 @@ export function deriveValuationVerdict(input: {
     // 件⑤:有 SOTP 就用它的价值带判定,没有才退回件④的整条抑制。
     const sotp = floor.holdco_sotp;
     const sotpPrice = strikeZone?.price.close;
-    if (!sotp || sotpPrice == null || !(sotpPrice > 0)) return null;
+    // 复审 Important #1:货币不匹配闸。原路径靠 epv undefined 兜住(strikeZone.ts 非 USD 提前 return
+    // 时 price.close 仍带外币原值),SOTP 分支直接取 price.close 不会自动继承这层保护,须显式复刻。
+    if (!sotp || strikeZone?.currencyMismatch || sotpPrice == null || !(sotpPrice > 0)) return null;
     const { pessimistic, base, optimistic } = sotp.per_share;
     if (!(pessimistic > 0) || !(optimistic >= pessimistic) || !(base > 0)) return null;
+    const sotpMarginPct = (base - sotpPrice) / base;
+    // 复审 Important #2:80% 边际闸(isImplausibleBand)。SOTP 四闸只覆盖年数/对账/归属/闭合,
+    // 不覆盖股数与价格口径是否一致 —— 股数错一个数量级会让三档整体放大,产出假深度低估。
+    // 复用与主路径同一个闸,而非只手工复刻退化带检查,这样下面硬编的 reliable:true 才站得住:
+    // 诚实性由这条闸 + 整条抑制承担,不是靠一个绕过所有护栏的 true。
+    if (isImplausibleBand({ rangeLo: pessimistic, rangeHi: optimistic, price: sotpPrice, marginPct: sotpMarginPct })) return null;
     return {
       bucket: sotpPrice < pessimistic ? "below" : sotpPrice <= optimistic ? "within" : "above",
       // 击球区沿用全站口径:相对中枢(基础档)留出 MOS_BASE=1/3 的安全边际。
@@ -176,13 +184,13 @@ export function deriveValuationVerdict(input: {
       rangeHi: optimistic,
       price: sotpPrice,
       priceDate: strikeZone!.price.date,
-      marginPct: (base - sotpPrice) / base,
+      marginPct: sotpMarginPct,
       // SOTP 是分部拆解的单一路径,不存在两法夹逼 → single_lamp。
       coverage: "single_lamp",
       methods,
-      // 可靠性由件⑤自己的四闸承担(≥3 年 / 对账 ≤10% / 归属 / 闭合),不走 assessReliability
-      // —— 后者的输入(OE-DCF 稳定性、周期峰值等)对这条分部路径没有意义,套用它只会引入
-      //    与本判定无关的否决。四闸不过时上面已经 return null,能走到这里就是可信的。
+      // 可靠性由件⑤自己的四闸 + 上面的货币闸/80%边际闸承担,不走 assessReliability —— 后者的输入
+      // (OE-DCF 稳定性、周期峰值等)对这条分部路径没有意义,套用它只会引入与本判定无关的否决。
+      // 任一闸不过时上面已经 return null,能走到这里就是可信的。
       reliable: true,
       // net-net 是清算口径的独立信号,对投资主导型控股集团没有解释力,不发布。
       netNet: undefined,
