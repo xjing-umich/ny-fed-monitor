@@ -196,7 +196,11 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     }
     // 件⑤:投资主导型控股集团才拉 instance 解析分部与第一栏(窄闸,其余票零新增取数)。
     if (needsHoldcoSotp(normalized.annual)) {
-      await ingestHoldcoSotp(supabase, ticker, normalized.annual, filings);
+      const holdco = await ingestHoldcoSotp(supabase, ticker, filings);
+      console.log(
+        `  ${ticker}: holdco SOTP ingest → investments=${holdco.investments}, ` +
+          `segment_years=${holdco.segment_years}, segment_rows=${holdco.segment_rows}`,
+      );
     }
     // Replace (not merge) this company's periods: the normalizer is fully
     // re-derived each run, so any period the new logic no longer produces must

@@ -1,24 +1,12 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import type { FundamentalPeriod } from "./normalize-facts";
 import type { NormalizedFiling } from "./company-submissions";
 import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
 import { extractInstanceFacts } from "./instance-facts";
 import { extractHoldcoInvestments } from "./holdco-investments";
 import { extractSegmentYears } from "./segment-facts";
 
-/**
- * 件⑤ 窄闸:只有件④会判为 holdco_not_assessable 的那类主体才拉 instance 解析。
- *
- * 这里用**取数侧可得的代理条件**复刻件④的触发形状(引擎侧的 holdco_not_assessable 依赖估值
- * 中间量,ingest 时算不出来):有投资性重估损益(marks 的原料)+ 全窗口无营业利润。作用域被
- * 天然框住,其余票零新增取数。宁可窄:漏触发只是没有 SOTP(退回件④抑制),误触发才是浪费。
- */
-export function needsHoldcoSotp(annual: FundamentalPeriod[]): boolean {
-  if (annual.length < 3) return false;
-  const hasMarks = annual.filter((p) => p.investment_fv_gain_loss != null).length >= 3;
-  const noOperatingIncome = annual.every((p) => p.operating_income == null);
-  return hasMarks && noOperatingIncome;
-}
+// 窄闸谓词与读取侧共用一份(见 holdco-gate.ts);此处再导出,调用方沿用原 import 路径。
+export { needsHoldcoSotp } from "./holdco-gate";
 
 /** 每票最多解析的 10-K 份数。每份带 3 个 FY,2 份足够覆盖 3 年窗口并留冗余。 */
 const MAX_10K_INSTANCES = 2;
@@ -48,17 +36,20 @@ async function fetchInstanceXml(filing: NormalizedFiling): Promise<string | null
 }
 
 /**
- * 拉最近 MAX_10K_INSTANCES 份 10-K 的 instance,写 company_holdco_investments 与
- * company_segment_periods。任何一步失败都**只记零、不 throw** —— 件⑤是增量能力,不得
- * 让它把既有 fundamentals ingest 带崩。
+ * 拉最近 MAX_10K_INSTANCES 份 10-K 的 instance,写 company_holdco_investments、
+ * company_segment_years 与 company_segment_periods。任何一步失败都**只记零、不 throw** ——
+ * 件⑤是增量能力,不得让它把既有 fundamentals ingest 带崩。
+ *
+ * 但「不 throw」不等于「不出声」:三次 upsert 的 error 一律 console.warn 打出来。此前失败分支
+ * 什么都不做,于是「migration 没 apply」「表名/列名写错」「key 权限不足」这三种最可能的上线
+ * 故障,全都表现为跑完毫无输出、表里零行 —— 与「这票本来就不触发窄闸」完全无法区分。
  */
 export async function ingestHoldcoSotp(
   supabase: SupabaseClient,
   ticker: string,
-  annual: FundamentalPeriod[],
   filings: NormalizedFiling[],
-): Promise<{ investments: number; segment_rows: number }> {
-  const out = { investments: 0, segment_rows: 0 };
+): Promise<{ investments: number; segment_years: number; segment_rows: number }> {
+  const out = { investments: 0, segment_years: 0, segment_rows: 0 };
   try {
     const tenKs = filings
       .filter((f) => f.form === "10-K" && f.primary_document)
@@ -67,6 +58,7 @@ export async function ingestHoldcoSotp(
     if (!tenKs.length) return out;
 
     const investmentRows: Record<string, unknown>[] = [];
+    const yearRows: Record<string, unknown>[] = [];
     const segmentRows: Record<string, unknown>[] = [];
 
     for (const filing of tenKs) {
@@ -95,6 +87,7 @@ export async function ingestHoldcoSotp(
             unrealized_gain: inv.unrealized_gain,
             gate_attribution_ok: inv.gate_attribution_ok,
             gate_closure_ok: inv.gate_closure_ok,
+            gate_upper_bound_ok: inv.gate_upper_bound_ok,
             raw_facts: { source: filing.filing_url },
             updated_at: new Date().toISOString(),
           });
@@ -102,7 +95,24 @@ export async function ingestHoldcoSotp(
       }
 
       // 第二、三栏:一份 10-K 带 3 个 FY,全收。
+      // 年度级聚合量(引擎唯一吃的那批)进 company_segment_years,一年一行、有真列;逐分部
+      // 明细进 company_segment_periods,供页面展示与人工审计。此前把年度量塞进**每条**分部行的
+      // raw_facts,既让读取侧被迫从 jsonb 反解析,又没有任何约束保证同年各行一致。
       for (const year of extractSegmentYears(facts)) {
+        yearRows.push({
+          ticker,
+          period_end: year.period_end,
+          fiscal_period: "FY",
+          total_pretax: year.total_pretax,
+          total_tax: year.total_tax,
+          insurance_pretax: year.insurance_pretax,
+          insurance_tax: year.insurance_tax,
+          underwriting_pretax: year.underwriting_pretax,
+          investments_pretax: year.investments_pretax,
+          segments_pretax_sum: year.segments_pretax_sum,
+          source_url: filing.filing_url,
+          updated_at: new Date().toISOString(),
+        });
         for (const seg of year.segments) {
           segmentRows.push({
             ticker,
@@ -113,43 +123,46 @@ export async function ingestHoldcoSotp(
             kind: seg.kind,
             pretax_income: seg.pretax_income,
             income_tax: seg.income_tax,
-            raw_facts: {
-              total_pretax: year.total_pretax,
-              total_tax: year.total_tax,
-              insurance_pretax: year.insurance_pretax,
-              insurance_tax: year.insurance_tax,
-              underwriting_pretax: year.underwriting_pretax,
-              investments_pretax: year.investments_pretax,
-              source: filing.filing_url,
-            },
+            raw_facts: { source: filing.filing_url },
             updated_at: new Date().toISOString(),
           });
         }
       }
     }
 
-    if (investmentRows.length) {
-      const unique = Array.from(
-        new Map(investmentRows.map((r) => [`${r.ticker}|${r.period_end}|${r.fiscal_period}`, r])).values(),
-      );
-      const { error } = await supabase
-        .from("company_holdco_investments")
-        .upsert(unique, { onConflict: "ticker,period_end,fiscal_period" });
-      if (!error) out.investments = unique.length;
-    }
-    if (segmentRows.length) {
-      const unique = Array.from(
-        new Map(
-          segmentRows.map((r) => [`${r.ticker}|${r.period_end}|${r.fiscal_period}|${r.segment_member}`, r]),
-        ).values(),
-      );
-      const { error } = await supabase
-        .from("company_segment_periods")
-        .upsert(unique, { onConflict: "ticker,period_end,fiscal_period,segment_member" });
-      if (!error) out.segment_rows = unique.length;
-    }
-  } catch {
-    // 静默降级:件⑤不可得 → 该票退回件④的抑制状态,不影响其余 ingest。
+    /** 去重后 upsert;失败必出声(静默失败 = 上线故障与「本就不触发」无法区分)。 */
+    const flush = async (
+      table: string,
+      rows: Record<string, unknown>[],
+      keyOf: (r: Record<string, unknown>) => string,
+      onConflict: string,
+    ): Promise<number> => {
+      if (!rows.length) return 0;
+      const unique = Array.from(new Map(rows.map((r) => [keyOf(r), r])).values());
+      const { error } = await supabase.from(table).upsert(unique, { onConflict });
+      if (error) {
+        console.warn(`  ${ticker}: ${table} upsert 失败(件⑤ 该票退回件④抑制): ${error.message}`);
+        return 0;
+      }
+      return unique.length;
+    };
+
+    out.investments = await flush(
+      "company_holdco_investments", investmentRows,
+      (r) => `${r.ticker}|${r.period_end}|${r.fiscal_period}`, "ticker,period_end,fiscal_period",
+    );
+    out.segment_years = await flush(
+      "company_segment_years", yearRows,
+      (r) => `${r.ticker}|${r.period_end}|${r.fiscal_period}`, "ticker,period_end,fiscal_period",
+    );
+    out.segment_rows = await flush(
+      "company_segment_periods", segmentRows,
+      (r) => `${r.ticker}|${r.period_end}|${r.fiscal_period}|${r.segment_member}`,
+      "ticker,period_end,fiscal_period,segment_member",
+    );
+  } catch (err) {
+    // 降级但不静默:件⑤不可得 → 该票退回件④的抑制状态,不影响其余 ingest。
+    console.warn(`  ${ticker}: 件⑤ 取数失败(退回件④抑制): ${err instanceof Error ? err.message : String(err)}`);
   }
   return out;
 }
