@@ -5,6 +5,7 @@
  */
 import {
   computeHoldcoSotp, OPERATING_MULTIPLES, UNDERWRITING_MULTIPLES, SOTP_MIN_YEARS,
+  SOTP_RECONCILE_TOLERANCE, SOTP_SEGMENT_IDENTITY_TOLERANCE,
 } from "./holdcoSotp";
 import { deriveValuationVerdict } from "./deriveValuationVerdict";
 
@@ -18,18 +19,30 @@ const near = (a: number, b: number, tol = 0.01) => Math.abs(a - b) / Math.abs(b)
 const B = 1e9;
 const SHARES = 2_157_335_139; // A 511,820×1500 + B 1,389,605,139
 
-// BRK 真实数字(spec §1.2/§1.3)
+// BRK 真实数字(spec §1.2/§1.3)。
+// segments_pretax_sum 用真实的顶层分部逐项之和(FY2025:保险 24.72 + BNSF 7.17 + BHE 2.34 +
+// 制造 12.57 + 服务零售 4.04 + McLane 0.68 + Pilot 0.19 = 51.71),与合计行分毫不差。
+// consolidatedPretaxByYear 用**库里的真值**:合并税前 − 投资重估(82.459−39.078 / 110.376−52.799 /
+// 120.166−74.855),偏差实测 +19.2% / −6.3% / −3.7%。
 const BRK = {
   shares: SHARES,
   investments: { total: 704.73 * B, unrealized_gain: 212.39 * B },
   years: [
     { period_end: "2025-12-31", total_pretax: 51.71 * B, total_tax: 8.57 * B,
-      insurance_pretax: 24.72 * B, insurance_tax: 4.95 * B, underwriting_pretax: 9.46 * B },
+      insurance_pretax: 24.72 * B, insurance_tax: 4.95 * B, underwriting_pretax: 9.46 * B,
+      segments_pretax_sum: (24.72 + 7.17 + 2.34 + 12.57 + 4.04 + 0.68 + 0.19) * B },
     { period_end: "2024-12-31", total_pretax: 53.94 * B, total_tax: 8.87 * B,
-      insurance_pretax: 28.15 * B, insurance_tax: 5.46 * B, underwriting_pretax: 11.40 * B },
+      insurance_pretax: 28.15 * B, insurance_tax: 5.46 * B, underwriting_pretax: 11.40 * B,
+      segments_pretax_sum: 53.94 * B },
     { period_end: "2023-12-31", total_pretax: 43.64 * B, total_tax: 6.91 * B,
-      insurance_pretax: 18.49 * B, insurance_tax: 3.50 * B, underwriting_pretax: 6.91 * B },
+      insurance_pretax: 18.49 * B, insurance_tax: 3.50 * B, underwriting_pretax: 6.91 * B,
+      segments_pretax_sum: 43.64 * B },
   ],
+  consolidatedPretaxByYear: {
+    "2025-12-31": (82.459 - 39.078) * B,
+    "2024-12-31": (110.376 - 52.799) * B,
+    "2023-12-31": (120.166 - 74.855) * B,
+  },
 };
 
 console.log("① 常量");
@@ -78,20 +91,58 @@ const noInvestments = computeHoldcoSotp({ ...BRK, investments: null });
 assert(noInvestments.assessable === false, "第一栏不可得 → 不可评估");
 assert((noInvestments as { reason: string }).reason === "investments_unavailable", "原因为 investments_unavailable");
 
-console.log("⑦ 对账闸");
+console.log("⑦ 对账闸(两条,都必须真的会触发)");
+assert(SOTP_SEGMENT_IDENTITY_TOLERANCE === 0.01, "段内恒等式容差 1%");
+assert(SOTP_RECONCILE_TOLERANCE === 0.35, "跨管线量级对账容差 35%(实测 BRK 最坏 +19.2%)");
+
+// ⑦-1 段内恒等式:漏掉一个分部(Σ 少了 BNSF 的 7.17B)→ 与合计行对不上 → fail-closed。
+const missingSegment = computeHoldcoSotp({
+  ...BRK,
+  years: BRK.years.map((y, i) =>
+    i === 0 ? { ...y, segments_pretax_sum: (y.segments_pretax_sum as number) - 7.17 * B } : y,
+  ),
+});
+assert(missingSegment.assessable === false, "Σ 顶层分部漏一个 → 不可评估");
+assert((missingSegment as { reason: string }).reason === "segment_identity_failed", "原因为 segment_identity_failed");
+
+// Σ 取不到(申报结构不同的 filer)→ 同样 fail-closed,不得当「不查」放行。
+const noSum = computeHoldcoSotp({
+  ...BRK,
+  years: BRK.years.map((y) => ({ ...y, segments_pretax_sum: null })),
+});
+assert(noSum.assessable === false, "Σ 顶层分部不可得 → fail-closed");
+assert((noSum as { reason: string }).reason === "segment_identity_failed", "原因为 segment_identity_failed");
+
+// ⑦-2 跨管线量级对账:把某年的合并口径打到 20B(分部 51.71B,偏差 159%)→ 拦下。
 const badReconcile = computeHoldcoSotp({
   ...BRK,
-  consolidatedPretaxByYear: { "2025-12-31": 20 * B, "2024-12-31": 53.94 * B, "2023-12-31": 43.64 * B },
+  consolidatedPretaxByYear: { ...BRK.consolidatedPretaxByYear, "2025-12-31": 20 * B },
 });
-assert(badReconcile.assessable === false, "分部合计与合并口径偏差 >10% → 不可评估");
+assert(badReconcile.assessable === false, "分部合计与合并口径偏差超容差 → 不可评估");
 assert((badReconcile as { reason: string }).reason === "reconciliation_failed", "原因为 reconciliation_failed");
-const goodReconcile = computeHoldcoSotp({
+
+// 真正的事故形态:误把**合并税前**当成分部合计(BRK FY2025 是 +90%)→ 必须被拦下。
+const wrongTotal = computeHoldcoSotp({
   ...BRK,
-  // 合并税前 92.05B 含投资重估损益,与分部合计 51.71B 不可比 → 调用方应传经营口径;
-  // 这里给一个在容差内的值验证放行。
-  consolidatedPretaxByYear: { "2025-12-31": 52.0 * B, "2024-12-31": 54.0 * B, "2023-12-31": 44.0 * B },
+  years: BRK.years.map((y, i) =>
+    i === 0 ? { ...y, total_pretax: 82.459 * B, segments_pretax_sum: 82.459 * B } : y,
+  ),
 });
-assert(goodReconcile.assessable === true, "偏差在 10% 内 → 放行");
+assert(wrongTotal.assessable === false, "错把合并税前当分部合计(+90%)→ 不可评估");
+
+// ★ 缺值不得当「不查」:这条闸此前包在 `if (consolidatedPretaxByYear)` 里,而唯一的调用方
+//   不传它 —— 于是它在生产上从未触发过一次。现在缺一年就 fail-closed。
+const missingOneYear = computeHoldcoSotp({
+  ...BRK,
+  consolidatedPretaxByYear: { "2024-12-31": 57.577 * B, "2023-12-31": 45.311 * B },
+});
+assert(missingOneYear.assessable === false, "入算年份里有一年拿不到合并口径 → fail-closed");
+assert((missingOneYear as { reason: string }).reason === "reconciliation_unavailable",
+  "原因为 reconciliation_unavailable");
+const emptyMap = computeHoldcoSotp({ ...BRK, consolidatedPretaxByYear: {} });
+assert(emptyMap.assessable === false, "整张合并口径表为空 → fail-closed(不是「不查」)");
+// 真数据本身必须过闸 —— 否则伯克希尔会被自己的对账闸误抑制(件④的老结论回来)。
+assert(computeHoldcoSotp(BRK).assessable === true, "★ BRK 真实的合并口径偏差(+19.2/−6.3/−3.7%)在容差内 → 放行");
 
 console.log("⑧ 递延税缺失时不静默按 0");
 const noGain = computeHoldcoSotp({ ...BRK, investments: { total: 704.73 * B, unrealized_gain: null } });
@@ -100,9 +151,19 @@ assert((noGain as { reason: string }).reason === "investments_unavailable", "原
 
 console.log("⑨ 非保险经营三年税后均值 ≤0 → no_operating_earnings");
 // 让 total_pretax/total_tax 与保险集团口径相等 → 补集(非保险经营)恒为 0,均值不 >0。
+// 段内恒等式与对账闸在此之前,故 fixture 要保持自洽(Σ 分部 = 合计,合并口径同量级),
+// 否则测不到 no_operating_earnings 而是先被前面的闸拦下。
 const noOperating = computeHoldcoSotp({
   ...BRK,
-  years: BRK.years.map((y) => ({ ...y, total_pretax: y.insurance_pretax, total_tax: y.insurance_tax })),
+  years: BRK.years.map((y) => ({
+    ...y,
+    total_pretax: y.insurance_pretax,
+    total_tax: y.insurance_tax,
+    segments_pretax_sum: y.insurance_pretax,
+  })),
+  consolidatedPretaxByYear: Object.fromEntries(
+    BRK.years.map((y) => [y.period_end, y.insurance_pretax]),
+  ),
 });
 assert(noOperating.assessable === false, "非保险经营税后三年均 ≤0 → 不可评估");
 assert((noOperating as { reason: string }).reason === "no_operating_earnings", "原因为 no_operating_earnings");

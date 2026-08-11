@@ -28,13 +28,33 @@ export const UNDERWRITING_TAX_RATE = 0.21;
 export const DEFERRED_TAX_RATE = 0.21;
 
 export const SOTP_MIN_YEARS = 3;
-export const SOTP_RECONCILE_TOLERANCE = 0.1;
+
+/**
+ * 对账闸的两条容差。
+ *
+ * ① 段内恒等式(决定性那条):Σ 顶层分部税前 == 合计行税前。这是真恒等式,只允许 1% 的申报
+ *    舍入。漏一个分部、把分部内细分当成顶层分部、把合计行错当分部,都在这里被逼出来。
+ *
+ * ② 与合并口径的量级对账(跨管线那条):分部合计 vs 合并税前 − 投资重估损益。两侧来自**不同
+ *    管线**(分部走 filing instance、合并走 companyfacts 入库的 pretax_income),故它能抓到
+ *    instance 整体解析出错(量级/主体错位)这类 ① 抓不到的事故。
+ *
+ *    容差为什么不是 spec §2.2 写的 10%:BRK FY2023–25 实测偏差为 −3.7% / −6.3% / **+19.2%**。
+ *    FY2025 那 19.2% 不是数据错误 —— 分部口径按定义不含公司层减项(权益法减值、公司层利息、
+ *    购买法摊销),FY2025 恰好有一笔大额权益法减值。按 10% 卡会把伯克希尔本身误抑制,正是本
+ *    设计要消灭的那种假结论。校准到 0.35:实测最坏 19.2% 有近一倍余量,而真正的事故形态仍被
+ *    拦下 —— 错把合并税前当分部合计是 +90%,错把单一分部当合计是 −86%。
+ */
+export const SOTP_SEGMENT_IDENTITY_TOLERANCE = 0.01;
+export const SOTP_RECONCILE_TOLERANCE = 0.35;
 
 export type SotpTier = { pessimistic: number; base: number; optimistic: number };
 
 export type SotpBlockReason =
   | "insufficient_years"
+  | "segment_identity_failed"
   | "reconciliation_failed"
+  | "reconciliation_unavailable"
   | "investments_unavailable"
   | "shares_unavailable"
   | "no_operating_earnings";
@@ -68,13 +88,18 @@ export type HoldcoSotpYear = {
   insurance_pretax: number | null;
   insurance_tax: number | null;
   underwriting_pretax: number | null;
+  /** Σ 顶层分部税前。对账闸①的左边;缺失 → fail-closed。 */
+  segments_pretax_sum: number | null;
 };
 
 export type HoldcoSotpInput = {
   shares: number;
   investments: { total: number; unrealized_gain: number | null } | null;
   years: HoldcoSotpYear[];
-  consolidatedPretaxByYear?: Record<string, number | null>;
+  /** 合并**经营**口径税前(= 合并税前 − 投资重估损益),按 period_end 索引。对账闸②的右边。
+   *  必传 —— 缺失或某年取不到值一律 fail-closed(缺值当「不查」等于把闸关掉,那正是这条闸
+   *  此前在生产上从未触发的原因)。 */
+  consolidatedPretaxByYear: Record<string, number | null>;
 };
 
 const finite = (n: number | null | undefined): n is number => typeof n === "number" && Number.isFinite(n);
@@ -110,20 +135,29 @@ export function computeHoldcoSotp(input: HoldcoSotpInput): HoldcoSotp | HoldcoSo
   );
   if (usable.length < SOTP_MIN_YEARS) return { assessable: false, reason: "insufficient_years" };
 
-  // 闸②:分部税前合计与合并口径对账。传了才查(fail-open 会让闸形同虚设,故缺值视为不查而非放行——
-  // 调用方若拿不到合并口径就不传,由上游的其他闸兜底)。
-  if (consolidatedPretaxByYear) {
-    for (const y of usable) {
-      const consolidated = consolidatedPretaxByYear[y.period_end];
-      if (!finite(consolidated) || consolidated === 0) continue;
-      const dev = Math.abs((y.total_pretax as number) - consolidated) / Math.abs(consolidated);
-      if (dev > SOTP_RECONCILE_TOLERANCE) return { assessable: false, reason: "reconciliation_failed" };
-    }
-  }
-
   const recent = [...usable]
     .sort((a, b) => b.period_end.localeCompare(a.period_end))
     .slice(0, SOTP_MIN_YEARS);
+
+  // 闸②对账,两条都对**实际入算的那三年**逐年查,任一年不过即整条 fail-closed。
+  for (const y of recent) {
+    const total = y.total_pretax as number;
+    // ②-1 段内恒等式:Σ 顶层分部 == 合计行。
+    if (!finite(y.segments_pretax_sum) || !(Math.abs(total) > 0)) {
+      return { assessable: false, reason: "segment_identity_failed" };
+    }
+    if (Math.abs(y.segments_pretax_sum - total) / Math.abs(total) > SOTP_SEGMENT_IDENTITY_TOLERANCE) {
+      return { assessable: false, reason: "segment_identity_failed" };
+    }
+    // ②-2 与合并经营口径的量级对账。缺值 = 查不了 = 不放行(不是「不查」)。
+    const consolidated = consolidatedPretaxByYear?.[y.period_end];
+    if (!finite(consolidated) || consolidated === 0) {
+      return { assessable: false, reason: "reconciliation_unavailable" };
+    }
+    if (Math.abs(total - consolidated) / Math.abs(consolidated) > SOTP_RECONCILE_TOLERANCE) {
+      return { assessable: false, reason: "reconciliation_failed" };
+    }
+  }
 
   // 第二栏:非保险经营 = 经营分部合计 − 保险集团合计,用**实际分部税**。
   // BHE 的可再生能源抵免让有效税率落在 13% 上下,真实且重复发生(须在页面披露)。

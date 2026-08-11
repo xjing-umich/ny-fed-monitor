@@ -26,6 +26,10 @@ export type SegmentYear = {
   insurance_tax: number | null;
   underwriting_pretax: number | null;
   investments_pretax: number | null;
+  /** Σ 顶层分部税前(不含承保/投资这类分部内细分)。与 total_pretax 构成会计恒等式,
+   *  是引擎对账闸里唯一「决定性」的那条:漏一个分部、把某条细分行当成顶层分部、
+   *  或把合计行错当分部,都会让这个和对不上合计。取不到时为 null → 引擎 fail-closed。 */
+  segments_pretax_sum: number | null;
   segments: SegmentPeriod[];
 };
 
@@ -134,6 +138,23 @@ export function extractSegmentYears(facts: InstanceFact[]): SegmentYear[] {
       return hits.length ? hits.reduce((a, b) => (Math.abs(b.value) > Math.abs(a.value) ? b : a)).value : null;
     };
 
+    // 顶层分部 = 挂业务分部轴、且不带 ProductOrService 轴的那些(BRK:保险集团/BNSF/BHE/制造/
+    // 服务零售/McLane/Pilot 共 7 条,承保与投资是保险集团**内部**细分,带 ProductOrService 轴,
+    // 计入即把保险集团数重复算一遍)。同一 member 重复申报取最大绝对值,与 pickFact 同口径。
+    const topLevel = new Map<string, number>();
+    for (const f of opSegFacts) {
+      if (f.tag !== SEGMENT_PRETAX_TAG || f.end !== end || !isFyDuration(f)) continue;
+      const entries = Object.entries(f.dims);
+      if (entries.some(([a]) => a.includes(PRODUCT_AXIS))) continue;
+      const member = entries.find(([a]) => a.includes(BUSINESS_SEGMENTS_AXIS))?.[1];
+      if (!member) continue;
+      const prev = topLevel.get(member);
+      if (prev == null || Math.abs(f.value) > Math.abs(prev)) topLevel.set(member, f.value);
+    }
+    const segmentsPretaxSum = topLevel.size
+      ? Array.from(topLevel.values()).reduce((a, b) => a + b, 0)
+      : null;
+
     // 逐分部明细。opSegFacts 已排除子分部,故这里不会再被 GEICO 一类子分部顶替。
     const bySegment = new Map<string, SegmentPeriod>();
     for (const f of opSegFacts) {
@@ -172,6 +193,7 @@ export function extractSegmentYears(facts: InstanceFact[]): SegmentYear[] {
       insurance_tax: insuranceOf(SEGMENT_TAX_TAG),
       underwriting_pretax: pick(SEGMENT_PRETAX_TAG, { axisContains: PRODUCT_AXIS, member: "UnderwritingMember" }),
       investments_pretax: pick(SEGMENT_PRETAX_TAG, { axisContains: PRODUCT_AXIS, member: "InvestmentsSegmentMember" }),
+      segments_pretax_sum: segmentsPretaxSum,
       segments: Array.from(bySegment.values()),
     };
   });

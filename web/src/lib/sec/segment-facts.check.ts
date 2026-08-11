@@ -31,6 +31,11 @@ const INSGRP = "StatementBusinessSegmentsAxis|brka:BerkshireHathawayInsuranceGro
 const UW = "ProductOrServiceAxis|brka:UnderwritingMember";
 const INV = "ProductOrServiceAxis|brka:InvestmentsSegmentMember";
 const MFG = "StatementBusinessSegmentsAxis|brka:ManufacturingBusinessesMember";
+const BNSF = "StatementBusinessSegmentsAxis|brka:BurlingtonNorthernSantaFeCorporationMember";
+const BHE = "StatementBusinessSegmentsAxis|brka:BerkshireHathawayEnergyCompanyMember";
+const SR = "StatementBusinessSegmentsAxis|brka:ServiceAndRetailingBusinessesMember";
+const MCLANE = "StatementBusinessSegmentsAxis|brka:McLaneCompanyMember";
+const PILOT = "StatementBusinessSegmentsAxis|brka:PilotTravelCentersLLCMember";
 const GEICO = "SubsegmentsAxis|brka:GeicoMember";
 
 const XML = `<?xml version="1.0"?>
@@ -41,6 +46,11 @@ const XML = `<?xml version="1.0"?>
   ${seg("C_UW", [OPSEG, UW, INSGRP], "2025-01-01", "2025-12-31")}
   ${seg("C_INV", [OPSEG, INV, INSGRP], "2025-01-01", "2025-12-31")}
   ${seg("C_MFG", [OPSEG, MFG], "2025-01-01", "2025-12-31")}
+  ${seg("C_BNSF", [OPSEG, BNSF], "2025-01-01", "2025-12-31")}
+  ${seg("C_BHE", [OPSEG, BHE], "2025-01-01", "2025-12-31")}
+  ${seg("C_SR", [OPSEG, SR], "2025-01-01", "2025-12-31")}
+  ${seg("C_MCLANE", [OPSEG, MCLANE], "2025-01-01", "2025-12-31")}
+  ${seg("C_PILOT", [OPSEG, PILOT], "2025-01-01", "2025-12-31")}
   ${seg("C_TOT24", [OPSEG], "2024-01-01", "2024-12-31")}
   ${seg("C_INS24", [OPSEG, INSGRP], "2024-01-01", "2024-12-31")}
   ${seg("C_Q4", [OPSEG], "2025-10-01", "2025-12-31")}
@@ -50,6 +60,11 @@ const XML = `<?xml version="1.0"?>
   <us-gaap:${PRETAX} contextRef="C_UW" unitRef="U">9460000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_INV" unitRef="U">15260000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_MFG" unitRef="U">12570000000</us-gaap:${PRETAX}>
+  <us-gaap:${PRETAX} contextRef="C_BNSF" unitRef="U">7170000000</us-gaap:${PRETAX}>
+  <us-gaap:${PRETAX} contextRef="C_BHE" unitRef="U">2340000000</us-gaap:${PRETAX}>
+  <us-gaap:${PRETAX} contextRef="C_SR" unitRef="U">4040000000</us-gaap:${PRETAX}>
+  <us-gaap:${PRETAX} contextRef="C_MCLANE" unitRef="U">680000000</us-gaap:${PRETAX}>
+  <us-gaap:${PRETAX} contextRef="C_PILOT" unitRef="U">190000000</us-gaap:${PRETAX}>
   <!-- 子分部,值刻意设得比承保合计大:不排除 Subsegments 轴的实现会在这里取错 -->
   <us-gaap:${PRETAX} contextRef="C_GEICO" unitRef="U">99000000000</us-gaap:${PRETAX}>
   <us-gaap:${PRETAX} contextRef="C_Q4" unitRef="U">9000000000</us-gaap:${PRETAX}>
@@ -79,6 +94,20 @@ assert(near(fy25.insurance_tax, 4950000000), "保险集团税 4.95B");
 console.log("③ 内部自洽");
 assert(near(fy25.underwriting_pretax! + fy25.investments_pretax!, fy25.insurance_pretax!),
   "承保 + 投资 = 保险集团合计(9.46+15.26=24.72)");
+
+console.log("③b ★ Σ 顶层分部 = 合计行(引擎对账闸①的原料)");
+// 24.72(保险集团)+12.57+7.17+2.34+4.04+0.68+0.19 = 51.71,与合计行分毫不差。
+// 退化验证:若 segments_pretax_sum 漏了「排除 ProductOrService 轴」这条,承保 9.46 与投资
+// 15.26 会被当成顶层分部再加一遍(Σ→76.43);若漏了排除子分部,还要再加 GEICO 的 99B。
+assert(near(fy25.segments_pretax_sum, 51710000000),
+  `Σ 顶层分部 = 51.71B(实得 ${((fy25.segments_pretax_sum ?? 0) / 1e9).toFixed(2)}B)`);
+assert(Math.abs(fy25.segments_pretax_sum! - fy25.total_pretax!) < 1,
+  "Σ 顶层分部与合计行相等(恒等式成立)");
+// FY2024 fixture 只申报了保险集团一条顶层分部(28.15B),合计却是 53.94B —— 这正是「漏分部」
+// 的形态,Σ 与合计对不上,引擎会对这一年 fail-closed。
+const fy24 = years.find((y) => y.period_end === "2024-12-31")!;
+assert(near(fy24.segments_pretax_sum, 28150000000),
+  "FY2024(只申报了一条顶层分部)Σ = 28.15B ≠ 合计 53.94B → 引擎侧会被恒等式闸拦下");
 
 console.log("④ 季度不得混入");
 assert(!years.some((y) => y.total_pretax === 9000000000), "Q4 duration 未被当成 FY");
