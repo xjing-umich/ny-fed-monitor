@@ -105,5 +105,16 @@ console.log("⑥ 分部明细");
 const mfg = fy25.segments.find((s) => s.segment_member === "ManufacturingBusinessesMember");
 assert(mfg?.kind === "operating" && near(mfg.pretax_income, 12570000000), "制造分部明细正确");
 
+console.log("⑥b ★ 分部明细里承保/投资行不被子分部顶替(回归 Important #1)");
+// bySegment 循环若漏了 noSubsegment 过滤,GEICO(99B)与承保合计共用同一个 segmentKeyOf()
+// 结果("UnderwritingMember"),Map 合并会取绝对值更大者,segments[] 里的 Underwriting 行
+// 就会被 99B 顶替 —— 这条路径与 pick() 路径是两回事,漏一处防线就漏一处假数据。
+const uwRow = fy25.segments.find((s) => s.segment_member === "UnderwritingMember");
+const invRow = fy25.segments.find((s) => s.segment_member === "InvestmentsSegmentMember");
+assert(uwRow?.kind === "insurance_underwriting" && near(uwRow.pretax_income, 9460000000),
+  "segments[] 里 Underwriting 行税前 9.46B,不被子分部 99B 顶替");
+assert(invRow?.kind === "insurance_investments" && near(invRow.pretax_income, 15260000000),
+  "segments[] 里 Investments 行税前 15.26B,kind=insurance_investments(可单独排除)");
+
 console.log(failed === 0 ? "\n全部通过" : `\n${failed} 条失败`);
 process.exit(failed === 0 ? 0 : 1);

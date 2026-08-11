@@ -1,4 +1,4 @@
-import { InstanceFact, pickFact } from "./instance-facts";
+import { FY_DAYS_MAX, FY_DAYS_MIN, InstanceFact, pickFact } from "./instance-facts";
 
 /**
  * 分部利润取数。
@@ -77,48 +77,49 @@ function segmentKeyOf(f: InstanceFact): string | null {
   return product ?? business;
 }
 
+/** duration 是否落在 FY 窗口(350–380 天),复用 instance-facts.ts 已导出的常量,与
+ *  normalize-facts flowBucket 的口径对齐,避免三处各自硬编码同一段魔法数字。 */
+function isFyDuration(f: InstanceFact): boolean {
+  if (!f.start || !f.end) return false;
+  const days = (new Date(f.end).getTime() - new Date(f.start).getTime()) / 86400000;
+  return days >= FY_DAYS_MIN && days <= FY_DAYS_MAX;
+}
+
+/** ★ 排除子分部(Subsegments 轴)。承保分部下面还挂着 GEICO / 再保险集团 / 主要集团三个
+ *  子分部,它们与承保合计共用 ProductOrService=Underwriting 维度;不排除的话
+ *  pickFact/reduce 的「取最大绝对值」只是碰巧选中合计,某年子分部超过合计就会静默取错。
+ *  提到顶层复用,因为这条防线必须覆盖**每一条**消费 opSegFacts 的路径(pick 明细取数、
+ *  保险集团合计、逐分部明细),漏一处就会漏一处假数据——之前的教训就是明细数组漏了这条。 */
+const noSubsegment = (f: InstanceFact) => !Object.keys(f.dims).some((a) => a.includes("Subsegments"));
+
 /**
  * 从 instance 提取全部 FY 的分部数据。单份 10-K 带 3 个 FY,多份合并由调用方去重。
  * 只认 ConsolidationItems=OperatingSegments 上下文,只认 350–380 天的 duration。
  */
 export function extractSegmentYears(facts: InstanceFact[]): SegmentYear[] {
-  const opSegFacts = facts.filter(isOperatingSegmentsContext);
+  const opSegFacts = facts.filter(isOperatingSegmentsContext).filter(noSubsegment);
   const ends = Array.from(
-    new Set(
-      opSegFacts
-        .filter((f) => f.start && f.end)
-        .filter((f) => {
-          const days = (new Date(f.end!).getTime() - new Date(f.start!).getTime()) / 86400000;
-          return days >= 350 && days <= 380;
-        })
-        .map((f) => f.end!),
-    ),
+    new Set(opSegFacts.filter(isFyDuration).map((f) => f.end!)),
   ).sort((a, b) => b.localeCompare(a));
 
   return ends.map((end) => {
-    // ★ 必须排除子分部(Subsegments 轴)。承保分部下面还挂着 GEICO / 再保险集团 / 主要集团
-    // 三个子分部,它们与承保合计共用 ProductOrService=Underwriting 维度;不排除的话
-    // pickFact 的「取最大绝对值」只是碰巧选中合计,某年子分部超过合计就会静默取错。
-    const noSubsegment = (f: InstanceFact) =>
-      !Object.keys(f.dims).some((a) => a.includes("Subsegments"));
     const pick = (tag: string, opts: { axisContains?: string; member?: string } = {}) =>
-      pickFact(opSegFacts.filter(noSubsegment), { tag, end, fyOnly: true, ...opts });
+      pickFact(opSegFacts, { tag, end, fyOnly: true, ...opts });
 
     // 合计行 = 只带 ConsolidationItems 一个维度的那条。
     const totalOnly = opSegFacts.filter(
       (f) => f.end === end && f.start && Object.keys(f.dims).every((a) => a.includes(CONSOLIDATION_AXIS)),
     );
     const totalOf = (tag: string) => {
-      const hits = totalOnly.filter((f) => f.tag === tag);
+      const hits = totalOnly.filter((f) => f.tag === tag && isFyDuration(f));
       if (!hits.length) return null;
-      const days = (f: InstanceFact) =>
-        (new Date(f.end!).getTime() - new Date(f.start!).getTime()) / 86400000;
-      const fy = hits.filter((f) => days(f) >= 350 && days(f) <= 380);
-      if (!fy.length) return null;
-      return fy.reduce((a, b) => (Math.abs(b.value) > Math.abs(a.value) ? b : a)).value;
+      return hits.reduce((a, b) => (Math.abs(b.value) > Math.abs(a.value) ? b : a)).value;
     };
 
     // 保险集团合计 = 只带业务分部轴(保险集团)+ConsolidationItems 的那条,不含承保/投资细分。
+    // 子分部已经在 opSegFacts 阶段被 noSubsegment 统一排除(见该函数注释)——不再仅靠
+    // 「排除 ProductOrService 轴」这一隐含假设去防子分部,那个假设只对当前申报结构成立
+    // (子分部恒与 ProductOrService=Underwriting 同现),换一年申报结构可能不成立。
     const insuranceOnly = opSegFacts.filter(
       (f) =>
         f.end === end &&
@@ -133,13 +134,12 @@ export function extractSegmentYears(facts: InstanceFact[]): SegmentYear[] {
       return hits.length ? hits.reduce((a, b) => (Math.abs(b.value) > Math.abs(a.value) ? b : a)).value : null;
     };
 
-    // 逐分部明细
+    // 逐分部明细。opSegFacts 已排除子分部,故这里不会再被 GEICO 一类子分部顶替。
     const bySegment = new Map<string, SegmentPeriod>();
     for (const f of opSegFacts) {
       if (f.end !== end || !f.start) continue;
       if (f.tag !== SEGMENT_PRETAX_TAG && f.tag !== SEGMENT_TAX_TAG) continue;
-      const days = (new Date(f.end).getTime() - new Date(f.start).getTime()) / 86400000;
-      if (days < 350 || days > 380) continue;
+      if (!isFyDuration(f)) continue;
       const key = segmentKeyOf(f);
       if (!key) continue;
       const existing = bySegment.get(key) ?? {
