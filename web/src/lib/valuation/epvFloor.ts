@@ -161,11 +161,14 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   // 的全量年份,只喂给 roicLongTermStrong;EPV 各 lamp 仍用 marginYears/earningsYears(不动)。
   const allYears = fyYears;
   const marks = input.marks_adjustment;
-  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears, marks);
-  return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears, marks);
+  // 件⑤:引擎不自己读库,SOTP 由调用方组装后随 input 透传;只在下面 assembleFloor 里、
+  // holdcoNotAssessable 判定之后才会真正挂上(见该函数内注释),这里只是原样带过去。
+  const holdcoSotp = input.holdcoSotp;
+  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears, marks, holdcoSotp);
+  return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears, marks, holdcoSotp);
 }
 
-function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment): ValuationFloor {
+function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment, holdcoSotp?: ValuationFloorInput["holdcoSotp"]): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
@@ -176,10 +179,10 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, marks ? MARKS_BASIS_NOTE : undefined, isFinancial, allYears, sc.s, marks);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, marks ? MARKS_BASIS_NOTE : undefined, isFinancial, allYears, sc.s, marks, holdcoSotp);
 }
 
-function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment): ValuationFloor {
+function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment, holdcoSotp?: ValuationFloorInput["holdcoSotp"]): ValuationFloor {
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
   const { nopatOf, investedCapitalOf } = roicHelpers(tax.rate);
@@ -188,7 +191,7 @@ function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFin
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
   const earningsBasisNote = marks ? `${SINGLE_LAMP_BASIS_NOTE} ${MARKS_BASIS_NOTE}` : SINGLE_LAMP_BASIS_NOTE;
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, earningsBasisNote, isFinancial, allYears, sc.s, marks);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, earningsBasisNote, isFinancial, allYears, sc.s, marks, holdcoSotp);
 }
 
 // Shared scaffold: asset floor, moat (off the supplied reference lamp), leverage
@@ -205,6 +208,7 @@ function assembleFloor(
   allYears: ValuationFloorYear[],
   structuralConfidenceScore?: number,
   marks?: MarksAdjustment,
+  holdcoSotp?: ValuationFloorInput["holdcoSotp"],
 ): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
@@ -393,6 +397,11 @@ function assembleFloor(
     structural_confidence: structuralConfidenceScore,
     marks_adjustment: marks,
     holdco_not_assessable: holdcoNotAssessable || undefined,
+    // 件⑤:被判为投资主导型控股集团时,若 SOTP 四闸全过就把它挂上 —— 下游 deriveValuationVerdict
+    // 会改用 SOTP 价值带判定,把件④那句"不给判定"换成可拆开看的三段式数字。
+    // 未被抑制的票一律不挂(holdcoNotAssessable 为假时短路),保证零漂移。
+    holdco_sotp:
+      holdcoNotAssessable && holdcoSotp?.assessable === true ? holdcoSotp : undefined,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

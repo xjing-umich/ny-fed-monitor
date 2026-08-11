@@ -160,6 +160,9 @@ export type ValuationFloor = {
    * 消费者:deriveValuationVerdict 整条抑制、runValuation 的 suppressedReason、个股页说明文案。
    */
   holdco_not_assessable?: boolean;
+  /** 件⑤:控股集团分部 SOTP。仅在 holdco_not_assessable 为真且四闸全过时存在;
+   *  它在时 verdict 改用 SOTP 价值带判定,不再整条抑制。 */
+  holdco_sotp?: import("./holdcoSotp").HoldcoSotp;
   provenance: ValuationFloorProvenance;
 };
 
@@ -287,6 +290,9 @@ export type ValuationFloorInput = {
   };
   /** 件③(spec 2026-07-26):三闸通过时的盈利基数调整推导结果;未启用 = undefined(零行为变化)。 */
   marks_adjustment?: MarksAdjustment;
+  /** 件⑤:由调用方从 company_holdco_investments + company_segment_periods 组装后传入。
+   *  引擎不自己读库,保持纯函数可测。 */
+  holdcoSotp?: import("./holdcoSotp").HoldcoSotp | { assessable: false };
 };
 
 // ── Maintenance capex (spec §1.1) ────────────────────────────────────────────

@@ -74,7 +74,10 @@ function suppressedReason(input: {
 }): SuppressedReason | undefined {
   if (input.verdict) return undefined;
   if (input.guards.fundamentalsCorrupt) return "fundamentals_corrupt";
-  if (input.floor.holdco_not_assessable) return "holdco_not_assessable";
+  // 件⑤:SOTP 可得时 verdict 非空,上面 `if (input.verdict) return undefined;` 已短路到此不会执行;
+  // 这里只在 SOTP 不可得(仍整条抑制、verdict 为 null)时保留原因标签,加 `&& !holdco_sotp` 让
+  // "为什么是这个原因"的注释与件⑤新增的字段显式对齐,不改变既有行为。
+  if (input.floor.holdco_not_assessable && !input.floor.holdco_sotp) return "holdco_not_assessable";
   if (input.floor.moat_reading.capital_structure_distorted) return "capital_structure_distorted";
   if (input.guards.splitCoverageStale) return "split_coverage_stale";
   if (input.strikeZone?.currencyMismatch) return "currency_mismatch";

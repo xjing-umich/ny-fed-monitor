@@ -6,6 +6,7 @@
 import {
   computeHoldcoSotp, OPERATING_MULTIPLES, UNDERWRITING_MULTIPLES, SOTP_MIN_YEARS,
 } from "./holdcoSotp";
+import { deriveValuationVerdict } from "./deriveValuationVerdict";
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -120,6 +121,33 @@ if (negUnderwriting.assessable) {
   const ps = negUnderwriting.per_share;
   assert(ps.pessimistic < ps.base && ps.base < ps.optimistic,
     "承保为负时,整体 per_share 三档仍单调递增");
+}
+
+console.log("⑪ 接线:verdict 用 SOTP 带判定");
+{
+  const sotp = computeHoldcoSotp(BRK);
+  if (!sotp.assessable) throw new Error("fixture 应可评估");
+  const zone = (close: number) => ({ price: { close, date: "2026-08-10" } }) as never;
+  const mk = (price: number) =>
+    deriveValuationVerdict({
+      floor: { kind: "floor", holdco_not_assessable: true, holdco_sotp: sotp } as never,
+      strikeZone: zone(price),
+      methods: {} as never,
+    });
+  assert(mk(511.54)?.bucket === "within", "现价 $511.54 → within");
+  assert(mk(400)?.bucket === "below", "$400(低于悲观档)→ below");
+  assert(mk(600)?.bucket === "above", "$600(高于乐观档)→ above");
+  assert(mk(511.54)?.reliable === true, "四闸已过 → reliable");
+  assert(mk(300)?.inStrikeZone === true, "$300 ≤ 基础档 × 2/3 → 进击球区");
+  assert(mk(511.54)?.inStrikeZone === false, "现价未到基础档的 2/3 → 不进击球区");
+  assert(
+    deriveValuationVerdict({
+      floor: { kind: "floor", holdco_not_assessable: true } as never,
+      strikeZone: zone(511.54),
+      methods: {} as never,
+    }) === null,
+    "无 SOTP → 仍退回件④的整条抑制(fail-closed)",
+  );
 }
 
 console.log(failed === 0 ? "\n全部通过" : `\n${failed} 条失败`);

@@ -161,7 +161,34 @@ export function deriveValuationVerdict(input: {
   if (capitalStructureDistorted) return null; // 资本结构扭曲 → 无可信判定(护城河/成长价值不可评估,零增长底会假判太贵)
   if (fundamentalsCorrupt) return null; // 口径损坏(opInc/gross>revenue)→ 无可信判定
   if (!floor || floor.kind !== "floor") return null; // thin data / per_share_unavailable
-  if (floor.holdco_not_assessable) return null; // 件④:投资主导型控股集团,合并层面测试不适用 → 无可信判定
+  if (floor.holdco_not_assessable) {
+    // 件⑤:有 SOTP 就用它的价值带判定,没有才退回件④的整条抑制。
+    const sotp = floor.holdco_sotp;
+    const sotpPrice = strikeZone?.price.close;
+    if (!sotp || sotpPrice == null || !(sotpPrice > 0)) return null;
+    const { pessimistic, base, optimistic } = sotp.per_share;
+    if (!(pessimistic > 0) || !(optimistic >= pessimistic) || !(base > 0)) return null;
+    return {
+      bucket: sotpPrice < pessimistic ? "below" : sotpPrice <= optimistic ? "within" : "above",
+      // 击球区沿用全站口径:相对中枢(基础档)留出 MOS_BASE=1/3 的安全边际。
+      inStrikeZone: sotpPrice <= base * (1 - MOS_BASE),
+      rangeLo: pessimistic,
+      rangeHi: optimistic,
+      price: sotpPrice,
+      priceDate: strikeZone!.price.date,
+      marginPct: (base - sotpPrice) / base,
+      // SOTP 是分部拆解的单一路径,不存在两法夹逼 → single_lamp。
+      coverage: "single_lamp",
+      methods,
+      // 可靠性由件⑤自己的四闸承担(≥3 年 / 对账 ≤10% / 归属 / 闭合),不走 assessReliability
+      // —— 后者的输入(OE-DCF 稳定性、周期峰值等)对这条分部路径没有意义,套用它只会引入
+      //    与本判定无关的否决。四闸不过时上面已经 return null,能走到这里就是可信的。
+      reliable: true,
+      // net-net 是清算口径的独立信号,对投资主导型控股集团没有解释力,不发布。
+      netNet: undefined,
+    };
+  }
+  // 件④:投资主导型控股集团,合并层面测试不适用 → 上面 SOTP 不可得时已 return null(fail-closed 兜底)
   const epv = strikeZone?.epv;
   if (!epv) return null; // 无价格 / 货币不匹配 / 无可比地板 → 无判定
   const price = strikeZone!.price.close;
