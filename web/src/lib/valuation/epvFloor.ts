@@ -136,6 +136,22 @@ export function workingYears(input: ValuationFloorInput): ValuationFloorYear[] {
   return input.ttm ? [input.ttm.year, ...input.years.slice(1)] : input.years;
 }
 
+/**
+ * 每股口径的**唯一**股数来源:优先取有真实盈利那年的稀释股数(免得只带股数、不带盈利的过渡期
+ * 行去当窗口均值的分母),取不到再退回工作序列里任何可用的一年。
+ *
+ * ★ 抽出来单独导出是为了件⑤:SOTP 的每股口径必须与本引擎同源 —— 件①的分股类回退让 BRK.A 与
+ *   BRK.B 各有各的股数,reader 若自己另算一套,spec §4「BRK.A = BRK.B × 1500 自洽」立刻失守。
+ */
+export function resolveFloorShares(input: ValuationFloorInput): number | null {
+  const workYears = workingYears(input);
+  return (
+    selectEarningsYears(workYears).map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
+    workYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
+    null
+  );
+}
+
 export function computeValuationFloor(input: ValuationFloorInput): ValuationFloor | PerShareUnavailable | undefined {
   // TTM 基点(spec §5):工作序列 = [TTM, FY-1…](TTM 顶替 FY0,窗口与 FY-1 不重叠);
   // allYears 保持纯 FY —— 回归型判据(roicLongTermStrong/growthFranchise/结构性趋势)审计地基不动。
@@ -144,12 +160,8 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   const earningsYears = selectEarningsYears(workYears);
   if (earningsYears.length < MIN_YEARS) return undefined;
 
-  // Prefer the diluted count from a real earnings year (so a latest stub/transition
-  // period that carries a share count but no earnings can't supply the per-share
-  // divisor for window-averaged earnings); fall back to any year with a usable count.
-  const shares =
-    earningsYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
-    workYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
+  // 股数取自 resolveFloorShares(单一真相源,件⑤ reader 与此同源)。
+  const shares = resolveFloorShares(input);
   if (shares == null) return { kind: "per_share_unavailable", reason: MULTI_CLASS_REASON };
 
   // Full path uses the margin-qualified year subset for BOTH lamps so years_used is consistent.

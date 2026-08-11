@@ -30,6 +30,7 @@ import {
   isFundamentalsStale,
   isSplitCoverageStale,
   fundamentalsIntegrityViolated,
+  readHoldcoSotp,
   runValuation,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
@@ -367,6 +368,11 @@ export default async function StockTickerPage({
   const sicNum = sicRaw == null ? undefined : Number(sicRaw);
   const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
   const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly);
+  // 件⑤:投资主导型控股集团的分部 SOTP。reader 自带件④触发集的窄闸 —— 其余票直接返回
+  // undefined,floorInput 一个字段都不动(零漂移);读库失败同样返回 undefined,退回件④抑制。
+  // 与 scripts/valuation-ingest.ts 走同一个入口,页面与 screener/首页榜口径不分裂。
+  const holdcoSotp0 = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });
+  if (holdcoSotp0) floorInput.holdcoSotp = holdcoSotp0;
   // as-of 重锚(spec §6):TTM 生效 → 新鲜度/拆股闸都按 TTM 期末判。
   const fundamentalsAsOf = floorInput.ttm?.period_end ?? sec.annual?.[0]?.period_end ?? null;
   // 基本面过期闸:与 ingest 同语义 — 最新 FY 期末超阈值 → 抑制估值(不造陈旧幻觉)。

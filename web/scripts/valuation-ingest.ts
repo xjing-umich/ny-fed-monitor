@@ -29,6 +29,7 @@ import {
   isSplitCoverageStale,
   fundamentalsIntegrityViolated,
   FUNDAMENTALS_MAX_AGE_MONTHS,
+  readHoldcoSotp,
   runValuation,
 } from "@/lib/valuation";
 import { getLatestPrice, getLatestSplit } from "@/lib/managers/priceRead";
@@ -104,6 +105,9 @@ async function main() {
 
   let valued = 0, skipped = 0, excludedNonOperating = 0, adrSuppressed = 0, staleFundamentals = 0;
   let ttmBasis = 0;
+  // 件⑤:拿到 SOTP 的票数。上线后这个数应该 >0(BRK.A/BRK.B…);恒为 0 就是整条线没接通,
+  // 该数值存在的意义就是让那种情况在日志里一眼看见,而不是表现为"页面照旧抑制"。
+  let holdcoSotpValued = 0;
   let exceptionSkipped = 0;
   // 数据缺口导致算不出 verdict(缺价/陈旧价/陈旧基本面):与瞬时故障同类,保留历史行。
   let suppressedByDataGap = 0;
@@ -140,6 +144,13 @@ async function main() {
       const sicNum = sicRaw == null ? undefined : Number(sicRaw);
       const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
       const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly);
+      // 件⑤:控股集团分部 SOTP。与个股页同一入口(口径不得分裂);reader 自带件④触发集窄闸,
+      // 其余票直接返回 undefined、floorInput 一个字段都不动,故对全 universe 零漂移、零额外查询。
+      const holdcoSotp = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });
+      if (holdcoSotp) {
+        floorInput.holdcoSotp = holdcoSotp;
+        holdcoSotpValued++;
+      }
       // as-of 重锚(spec §6):TTM 生效 → 新鲜度/拆股闸都按 TTM 期末判。
       const fundamentalsAsOf = floorInput.ttm?.period_end ?? sec.annual?.[0]?.period_end ?? null;
       // 基本面过期闸:最新 FY 年报距今超阈值(停报/退市/外股 ADR 覆盖不了)→ 抑制,
@@ -265,6 +276,7 @@ async function main() {
     }
   }
   console.log(`TTM基点: ${ttmBasis}/${valued}`);
+  console.log(`件⑤ 控股集团 SOTP: ${holdcoSotpValued} 票取到分部估值`);
   console.log(
     `估值快照完成: 入表 ${valued}, 跳过 ${skipped}(无估值/多股权/薄数据/陈旧价), ` +
       `异常跳过 ${exceptionSkipped}, 数据缺口抑制 ${suppressedByDataGap}(缺价/陈旧价/陈旧基本面,保留历史行), ` +
