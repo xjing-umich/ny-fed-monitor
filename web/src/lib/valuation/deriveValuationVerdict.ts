@@ -161,7 +161,42 @@ export function deriveValuationVerdict(input: {
   if (capitalStructureDistorted) return null; // 资本结构扭曲 → 无可信判定(护城河/成长价值不可评估,零增长底会假判太贵)
   if (fundamentalsCorrupt) return null; // 口径损坏(opInc/gross>revenue)→ 无可信判定
   if (!floor || floor.kind !== "floor") return null; // thin data / per_share_unavailable
-  if (floor.holdco_not_assessable) return null; // 件④:投资主导型控股集团,合并层面测试不适用 → 无可信判定
+  if (floor.holdco_not_assessable) {
+    // 件⑤:有 SOTP 就用它的价值带判定,没有才退回件④的整条抑制。
+    const sotp = floor.holdco_sotp;
+    const sotpPrice = strikeZone?.price.close;
+    // 复审 Important #1:货币不匹配闸。原路径靠 epv undefined 兜住(strikeZone.ts 非 USD 提前 return
+    // 时 price.close 仍带外币原值),SOTP 分支直接取 price.close 不会自动继承这层保护,须显式复刻。
+    if (!sotp || strikeZone?.currencyMismatch || sotpPrice == null || !(sotpPrice > 0)) return null;
+    const { pessimistic, base, optimistic } = sotp.per_share;
+    if (!(pessimistic > 0) || !(optimistic >= pessimistic) || !(base > 0)) return null;
+    const sotpMarginPct = (base - sotpPrice) / base;
+    // 复审 Important #2:80% 边际闸(isImplausibleBand)。SOTP 四闸只覆盖年数/对账/归属/闭合,
+    // 不覆盖股数与价格口径是否一致 —— 股数错一个数量级会让三档整体放大,产出假深度低估。
+    // 复用与主路径同一个闸,而非只手工复刻退化带检查,这样下面硬编的 reliable:true 才站得住:
+    // 诚实性由这条闸 + 整条抑制承担,不是靠一个绕过所有护栏的 true。
+    if (isImplausibleBand({ rangeLo: pessimistic, rangeHi: optimistic, price: sotpPrice, marginPct: sotpMarginPct })) return null;
+    return {
+      bucket: sotpPrice < pessimistic ? "below" : sotpPrice <= optimistic ? "within" : "above",
+      // 击球区沿用全站口径:相对中枢(基础档)留出 MOS_BASE=1/3 的安全边际。
+      inStrikeZone: sotpPrice <= base * (1 - MOS_BASE),
+      rangeLo: pessimistic,
+      rangeHi: optimistic,
+      price: sotpPrice,
+      priceDate: strikeZone!.price.date,
+      marginPct: sotpMarginPct,
+      // SOTP 是分部拆解的单一路径,不存在两法夹逼 → single_lamp。
+      coverage: "single_lamp",
+      methods,
+      // 可靠性由件⑤自己的四闸 + 上面的货币闸/80%边际闸承担,不走 assessReliability —— 后者的输入
+      // (OE-DCF 稳定性、周期峰值等)对这条分部路径没有意义,套用它只会引入与本判定无关的否决。
+      // 任一闸不过时上面已经 return null,能走到这里就是可信的。
+      reliable: true,
+      // net-net 是清算口径的独立信号,对投资主导型控股集团没有解释力,不发布。
+      netNet: undefined,
+    };
+  }
+  // 件④:投资主导型控股集团,合并层面测试不适用 → 上面 SOTP 不可得时已 return null(fail-closed 兜底)
   const epv = strikeZone?.epv;
   if (!epv) return null; // 无价格 / 货币不匹配 / 无可比地板 → 无判定
   const price = strikeZone!.price.close;

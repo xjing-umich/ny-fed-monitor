@@ -17,3 +17,5 @@ export { resolveAds } from "./adsNormalization";
 export { isFundamentalsStale, FUNDAMENTALS_MAX_AGE_MONTHS } from "./fundamentalsStale";
 export { isSplitCoverageStale } from "./splitCoverage";
 export { fundamentalsIntegrityViolated } from "./fundamentalsIntegrity";
+// 件⑤:控股集团 SOTP 读取侧(个股页与 valuation-ingest 共用同一入口,口径不得分裂)。
+export { readHoldcoSotp } from "./holdcoSotpFromDb";

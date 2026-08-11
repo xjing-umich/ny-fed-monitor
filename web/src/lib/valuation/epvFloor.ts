@@ -136,6 +136,22 @@ export function workingYears(input: ValuationFloorInput): ValuationFloorYear[] {
   return input.ttm ? [input.ttm.year, ...input.years.slice(1)] : input.years;
 }
 
+/**
+ * 每股口径的**唯一**股数来源:优先取有真实盈利那年的稀释股数(免得只带股数、不带盈利的过渡期
+ * 行去当窗口均值的分母),取不到再退回工作序列里任何可用的一年。
+ *
+ * ★ 抽出来单独导出是为了件⑤:SOTP 的每股口径必须与本引擎同源 —— 件①的分股类回退让 BRK.A 与
+ *   BRK.B 各有各的股数,reader 若自己另算一套,spec §4「BRK.A = BRK.B × 1500 自洽」立刻失守。
+ */
+export function resolveFloorShares(input: ValuationFloorInput): number | null {
+  const workYears = workingYears(input);
+  return (
+    selectEarningsYears(workYears).map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
+    workYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
+    null
+  );
+}
+
 export function computeValuationFloor(input: ValuationFloorInput): ValuationFloor | PerShareUnavailable | undefined {
   // TTM 基点(spec §5):工作序列 = [TTM, FY-1…](TTM 顶替 FY0,窗口与 FY-1 不重叠);
   // allYears 保持纯 FY —— 回归型判据(roicLongTermStrong/growthFranchise/结构性趋势)审计地基不动。
@@ -144,12 +160,8 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   const earningsYears = selectEarningsYears(workYears);
   if (earningsYears.length < MIN_YEARS) return undefined;
 
-  // Prefer the diluted count from a real earnings year (so a latest stub/transition
-  // period that carries a share count but no earnings can't supply the per-share
-  // divisor for window-averaged earnings); fall back to any year with a usable count.
-  const shares =
-    earningsYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0) ??
-    workYears.map((y) => y.shares_diluted).find((s) => s != null && s > 0);
+  // 股数取自 resolveFloorShares(单一真相源,件⑤ reader 与此同源)。
+  const shares = resolveFloorShares(input);
   if (shares == null) return { kind: "per_share_unavailable", reason: MULTI_CLASS_REASON };
 
   // Full path uses the margin-qualified year subset for BOTH lamps so years_used is consistent.
@@ -161,11 +173,14 @@ export function computeValuationFloor(input: ValuationFloorInput): ValuationFloo
   // 的全量年份,只喂给 roicLongTermStrong;EPV 各 lamp 仍用 marginYears/earningsYears(不动)。
   const allYears = fyYears;
   const marks = input.marks_adjustment;
-  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears, marks);
-  return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears, marks);
+  // 件⑤:引擎不自己读库,SOTP 由调用方组装后随 input 透传;只在下面 assembleFloor 里、
+  // holdcoNotAssessable 判定之后才会真正挂上(见该函数内注释),这里只是原样带过去。
+  const holdcoSotp = input.holdcoSotp;
+  if (marginYears.length >= MIN_YEARS) return buildFullFloor(marginYears, shares, isFinancial, allYears, marks, holdcoSotp);
+  return buildSingleLampFloor(earningsYears, shares, isFinancial, allYears, marks, holdcoSotp);
 }
 
-function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment): ValuationFloor {
+function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment, holdcoSotp?: ValuationFloorInput["holdcoSotp"]): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
   const totalDebt = latest.total_debt ?? 0;
@@ -176,10 +191,10 @@ function buildFullFloor(years: ValuationFloorYear[], shares: number, isFinancial
   const sc = structuralConfidence({ years, allYears, roicLongTermStrong: roicLongStrong });
   const grahamEpv = buildGrahamLamp(years, cash, totalDebt, shares, yearsUsed, tax.rate);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, marks ? MARKS_BASIS_NOTE : undefined, isFinancial, allYears, sc.s, marks);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, grahamEpv, marks ? MARKS_BASIS_NOTE : undefined, isFinancial, allYears, sc.s, marks, holdcoSotp);
 }
 
-function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment): ValuationFloor {
+function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFinancial: boolean, allYears: ValuationFloorYear[], marks?: MarksAdjustment, holdcoSotp?: ValuationFloorInput["holdcoSotp"]): ValuationFloor {
   const yearsUsed = years.map((y) => y.fiscal_year);
   const tax = normalizedTaxRate(years);
   const { nopatOf, investedCapitalOf } = roicHelpers(tax.rate);
@@ -188,7 +203,7 @@ function buildSingleLampFloor(years: ValuationFloorYear[], shares: number, isFin
   const grahamEpv = grahamNotApplicableLamp(yearsUsed);
   const buffettEpv = buildBuffettLamp(years, shares, yearsUsed, isFinancial, { s: sc.s, target: sc.target });
   const earningsBasisNote = marks ? `${SINGLE_LAMP_BASIS_NOTE} ${MARKS_BASIS_NOTE}` : SINGLE_LAMP_BASIS_NOTE;
-  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, earningsBasisNote, isFinancial, allYears, sc.s, marks);
+  return assembleFloor(years, shares, grahamEpv, buffettEpv, buffettEpv, earningsBasisNote, isFinancial, allYears, sc.s, marks, holdcoSotp);
 }
 
 // Shared scaffold: asset floor, moat (off the supplied reference lamp), leverage
@@ -205,6 +220,7 @@ function assembleFloor(
   allYears: ValuationFloorYear[],
   structuralConfidenceScore?: number,
   marks?: MarksAdjustment,
+  holdcoSotp?: ValuationFloorInput["holdcoSotp"],
 ): ValuationFloor {
   const latest = years[0];
   const cash = latest.cash ?? 0;
@@ -393,6 +409,11 @@ function assembleFloor(
     structural_confidence: structuralConfidenceScore,
     marks_adjustment: marks,
     holdco_not_assessable: holdcoNotAssessable || undefined,
+    // 件⑤:被判为投资主导型控股集团时,若 SOTP 四闸全过就把它挂上 —— 下游 deriveValuationVerdict
+    // 会改用 SOTP 价值带判定,把件④那句"不给判定"换成可拆开看的三段式数字。
+    // 未被抑制的票一律不挂(holdcoNotAssessable 为假时短路),保证零漂移。
+    holdco_sotp:
+      holdcoNotAssessable && holdcoSotp?.assessable === true ? holdcoSotp : undefined,
     provenance: {
       years_used: yearsUsed,
       as_of_fiscal_year: latest.fiscal_year,

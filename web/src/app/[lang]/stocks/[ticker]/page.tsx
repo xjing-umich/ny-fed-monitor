@@ -30,6 +30,7 @@ import {
   isFundamentalsStale,
   isSplitCoverageStale,
   fundamentalsIntegrityViolated,
+  readHoldcoSotp,
   runValuation,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
@@ -367,6 +368,11 @@ export default async function StockTickerPage({
   const sicNum = sicRaw == null ? undefined : Number(sicRaw);
   const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
   const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly);
+  // 件⑤:投资主导型控股集团的分部 SOTP。reader 自带件④触发集的窄闸 —— 其余票直接返回
+  // undefined,floorInput 一个字段都不动(零漂移);读库失败同样返回 undefined,退回件④抑制。
+  // 与 scripts/valuation-ingest.ts 走同一个入口,页面与 screener/首页榜口径不分裂。
+  const holdcoSotp0 = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });
+  if (holdcoSotp0) floorInput.holdcoSotp = holdcoSotp0;
   // as-of 重锚(spec §6):TTM 生效 → 新鲜度/拆股闸都按 TTM 期末判。
   const fundamentalsAsOf = floorInput.ttm?.period_end ?? sec.annual?.[0]?.period_end ?? null;
   // 基本面过期闸:与 ingest 同语义 — 最新 FY 期末超阈值 → 抑制估值(不造陈旧幻觉)。
@@ -418,6 +424,8 @@ export default async function StockTickerPage({
   const handoffVerdict = run.verdict;
   const holdcoNotAssessable =
     valuationFloor?.kind === "floor" && valuationFloor.holdco_not_assessable === true;
+  const holdcoSotp =
+    valuationFloor?.kind === "floor" ? valuationFloor.holdco_sotp : undefined;
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
 
@@ -626,6 +634,55 @@ export default async function StockTickerPage({
               />
               {splitCoverageStale ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
+              ) : holdcoNotAssessable && holdcoSotp ? (
+                <div className="mt-3">
+                  <p className="text-sm text-[var(--tt-muted)]">{page.valuation.holdcoSotpIntro}</p>
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[420px] text-sm tabular-nums">
+                      <thead>
+                        <tr className="text-[var(--tt-muted)]">
+                          <th className="py-1 text-left font-normal"> </th>
+                          <th className="py-1 text-right font-normal">{page.valuation.tierPessimistic}</th>
+                          <th className="py-1 text-right font-normal">{page.valuation.tierBase}</th>
+                          <th className="py-1 text-right font-normal">{page.valuation.tierOptimistic}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpInvestments}</td>
+                          <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
+                            {fmtPerShare(holdcoSotp.columns.investments)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpOperating}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.pessimistic)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.base)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.optimistic)}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpUnderwriting}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.pessimistic)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.base)}</td>
+                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.optimistic)}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-1">{page.valuation.holdcoSotpDeferredTax}</td>
+                          <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
+                            −{fmtPerShare(holdcoSotp.columns.deferred_tax)}
+                          </td>
+                        </tr>
+                        <tr className="border-t border-[var(--tt-border)] font-medium">
+                          <td className="py-2">{page.valuation.holdcoSotpTotal}</td>
+                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.pessimistic)}</td>
+                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.base)}</td>
+                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.optimistic)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="mt-3 text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpNote}</p>
+                </div>
               ) : holdcoNotAssessable ? (
                 <>
                   <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.holdcoNotAssessable}</p>

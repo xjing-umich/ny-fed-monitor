@@ -5,6 +5,7 @@ import { fetchCompanyFacts } from "./company-facts";
 import { fetchCompanySubmissions, normalizeRecentFilings } from "./company-submissions";
 import { FundamentalPeriod, normalizeCompanyFacts } from "./normalize-facts";
 import { needsClassSharesFallback, applyClassSharesFallback } from "./class-shares-fallback";
+import { needsHoldcoSotp, ingestHoldcoSotp } from "./holdco-ingest";
 import { resolveTickerCik } from "./ticker-cik";
 import { sleep } from "./sec-client";
 import { isLikelyTicker } from "../externalLinks";
@@ -192,6 +193,14 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     if (needsClassSharesFallback(normalized.annual)) {
       const patched = await applyClassSharesFallback(normalized.annual, filings);
       if (patched > 0) console.log(`  ${ticker}: class-dimension share fallback patched ${patched} FY rows`);
+    }
+    // 件⑤:投资主导型控股集团才拉 instance 解析分部与第一栏(窄闸,其余票零新增取数)。
+    if (needsHoldcoSotp(normalized.annual)) {
+      const holdco = await ingestHoldcoSotp(supabase, ticker, filings);
+      console.log(
+        `  ${ticker}: holdco SOTP ingest → investments=${holdco.investments}, ` +
+          `segment_years=${holdco.segment_years}, segment_rows=${holdco.segment_rows}`,
+      );
     }
     // Replace (not merge) this company's periods: the normalizer is fully
     // re-derived each run, so any period the new logic no longer produces must
