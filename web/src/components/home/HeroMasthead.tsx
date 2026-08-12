@@ -5,7 +5,7 @@ import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
 import MoveTag from "@/components/shell/MoveTag";
 import { FreshnessDot } from "@/components/entity/FreshnessDot";
-import { filingFreshness, quarterLabel } from "@/lib/freshness/derive";
+import { filingFreshness, quarterLabel, filingDeadline, type EffectiveMovesPeriod } from "@/lib/freshness/derive";
 import { stockPath, localePath } from "@/lib/urls";
 import RevealStagger from "@/components/home/RevealStagger";
 import { Display } from "@/components/common/Display";
@@ -25,6 +25,8 @@ const COPY = {
     bought: "最多人增持",
     sold: "最多人减持",
     asOf: (p: string) => `截至 ${p} · 来源 SEC 13F · 上报延迟 45 天`,
+    filingProgress: (q: string, filed: number, total: number, deadline: string) =>
+      `${q} 申报进行中 · ${filed}/${total} 已交 · ${deadline}截止后切换`,
   },
   en: {
     brand: "Compounder",
@@ -39,8 +41,20 @@ const COPY = {
     bought: "Most bought",
     sold: "Most sold",
     asOf: (p: string) => `As of ${p} · Source SEC 13F · 45-day reporting lag`,
+    filingProgress: (q: string, filed: number, total: number, deadline: string) =>
+      `${q} filings arriving · ${filed} of ${total} in · switches after ${deadline}`,
   },
 };
+
+const EN_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** 申报截止日 Date → 本地化短日期。zh「8 月 14 日」/ en「Aug 14」。null → ""。 */
+function fmtDeadline(d: Date | null, lang: Lang): string {
+  if (!d) return "";
+  const mo = d.getUTCMonth();
+  const day = d.getUTCDate();
+  return lang === "zh" ? `${mo + 1} 月 ${day} 日` : `${EN_MONTHS[mo]} ${day}`;
+}
 
 function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
   return (
@@ -80,17 +94,32 @@ export default function HeroMasthead({
   lang,
   period,
   movesPeriod,
+  filing,
   moves,
   investorCount,
 }: {
   lang: Lang;
   period: string;
   movesPeriod: string;
+  filing?: EffectiveMovesPeriod;
   moves: NotableMoves;
   investorCount?: number;
 }): React.ReactElement {
   const c = COPY[lang];
   const q = quarterLabel(movesPeriod) || movesPeriod;
+  // 申报季进度:仅当新季已开始收表但尚未过披露门槛(未过截止日 或 覆盖不足)时显示。
+  // due_and_covered / empty(非申报季窗口)一个字都不渲染。
+  const showFilingProgress =
+    !!filing && (filing.reason === "before_deadline" || filing.reason === "low_coverage");
+  const filingProgressText =
+    showFilingProgress && filing
+      ? c.filingProgress(
+          quarterLabel(filing.maxPeriod),
+          filing.coverage.filed,
+          filing.coverage.total,
+          fmtDeadline(filingDeadline(filing.maxPeriod), lang),
+        )
+      : null;
   const panelTitle = lang === "zh" ? `${q} 显著动向` : `Notable moves · ${q}`;
   const headline =
     typeof investorCount === "number" && investorCount > 0
@@ -107,6 +136,11 @@ export default function HeroMasthead({
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
           {c.asOf(quarterLabel(period) || period)}
         </p>
+        {filingProgressText && (
+          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-muted)]">
+            {filingProgressText}
+          </p>
+        )}
         {typeof investorCount === "number" && investorCount > 0 && (
           <Display size="3xl" glow className="mt-6 font-display">
             {investorCount}

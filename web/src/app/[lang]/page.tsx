@@ -117,6 +117,7 @@ export default async function HomePage({
         lang={lang}
         period={period}
         movesPeriod={movesEffective.period ?? ""}
+        filing={movesEffective}
         moves={moves}
         investorCount={topManagers.length}
       />
