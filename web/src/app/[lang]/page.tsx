@@ -69,11 +69,14 @@ export default async function HomePage({
   ]);
 
   const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
-  const period = topManagers[0]?.period ?? "";
   const movesEffective = effectiveMovesPeriod(
     topManagers.map((m) => m.period),
     new Date(),
   );
+  // Masthead "as of" 用与下方 moves 面板同一口径(effectiveMovesPeriod),而非单只最大 AUM
+  // 基金的最新期。否则 13F 申报季内,头部基金已交新季但整体未过披露门槛时,masthead 会显示
+  // "as of Q2" 而 moves 面板显示 "Q1",同屏自相矛盾且夸大覆盖。无数据时回退到头部基金期。
+  const period = movesEffective.period ?? topManagers[0]?.period ?? "";
 
   // Link the philosophy band's featured quote to Buffett's page if we track him.
   const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
