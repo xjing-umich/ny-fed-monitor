@@ -343,6 +343,132 @@ function capDisclosure(moatCap: MoatCapAssessment | undefined, lang: Lang): stri
 // (bucket derivation lives in the shared deriveValuationVerdict pure fn — single source of truth.)
 type Bucket = "below" | "within" | "above";
 
+/** 价值带刻度盘 —— 全站估值区块的视觉签名:三段 cheaper·fair·pricier 刻度 + 发光价格游标 +
+ *  Display 大号读数。从 ValueSpine 抽出,供普通估值卡与控股集团 SOTP 区块共用同一个渲染,
+ *  保证两处永不漂移。iv=含增长中枢(有则画 below/within 边界虚线 + 三锚点图例);无则退回
+ *  零增长底 rangeLo(单灯/SOTP 路径),底部改出价值带区间字幕。 */
+export function ValueBandGauge({
+  bucket,
+  rangeLo,
+  rangeHi,
+  price,
+  iv,
+  lang,
+}: {
+  bucket: Bucket;
+  rangeLo: number;
+  rangeHi: number;
+  price: number;
+  iv?: number;
+  lang: Lang;
+}) {
+  const t = COPY[lang];
+  const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+  const hasIv = iv != null && Number.isFinite(iv) && iv > 0;
+  const IV = hasIv ? (iv as number) : undefined;
+  const belowBoundary = hasIv ? IV! : rangeLo;
+  const spanWithin = rangeHi - belowBoundary || 1;
+  const marker =
+    bucket === "below"
+      ? 33 * clamp(price / (belowBoundary || 1), 0, 1)
+      : bucket === "within"
+        ? 33 + 33 * clamp((price - belowBoundary) / spanWithin, 0, 1)
+        : 66 + 33 * clamp((price - rangeHi) / (rangeHi || 1), 0, 1);
+  const markerPct = clamp(marker, 2, 98);
+  const zones: { key: Bucket; label: string }[] = [
+    { key: "below", label: t.zoneBelow },
+    { key: "within", label: t.zoneWithin },
+    { key: "above", label: t.zoneAbove },
+  ];
+  return (
+    <div>
+      <div className="relative pt-12 sm:pt-14">
+        <div className="flex h-8 overflow-hidden rounded-md sm:h-7">
+          {zones.map((z) => {
+            const active = z.key === bucket;
+            // 击球区段(below=安全边际,与 deriveValuationVerdict.inStrikeZone 同侧):
+            // var(--tt-positive) 15% 底 + 1px 边缘 50%,刻度盘上的"可行动区"。
+            const strike = z.key === "below";
+            return (
+              <div
+                key={z.key}
+                className="flex flex-1 items-center justify-center px-0.5 text-[10px] leading-tight sm:text-[11px]"
+                style={{
+                  backgroundColor: strike
+                    ? "color-mix(in srgb, var(--tt-positive) 15%, transparent)"
+                    : `color-mix(in srgb, var(--tt-faint) ${active ? 16 : 7}%, transparent)`,
+                  color: active ? "var(--tt-text)" : "var(--tt-faint)",
+                  ...(strike
+                    ? {
+                        borderLeft:
+                          "1px solid color-mix(in srgb, var(--tt-positive) 50%, transparent)",
+                        borderRight:
+                          "1px solid color-mix(in srgb, var(--tt-positive) 50%, transparent)",
+                      }
+                    : null),
+                }}
+              >
+                {z.label}
+              </div>
+            );
+          })}
+        </div>
+        {/* IV marker — the below/within boundary; only drawn when a growth-anchored IV exists. */}
+        {hasIv ? (
+          <div
+            className="absolute bottom-0 top-10 w-px border-l border-dashed border-[var(--tt-faint)] sm:top-12"
+            style={{ left: "33%" }}
+            title={`IV ${perShare(IV)}`}
+          />
+        ) : null}
+        {/* price cursor — 全站唯一 glow(box-shadow: var(--glow-primary))落点;
+            动效白名单:仅 left 过渡(var(--tt-dur) var(--tt-ease)),无循环/关键帧。 */}
+        <div
+          className="absolute bottom-0 top-10 w-0.5 bg-[var(--tt-accent)] sm:top-12"
+          style={{
+            left: `${markerPct}%`,
+            boxShadow: "var(--glow-primary)",
+            transition: "left var(--tt-dur) var(--tt-ease)",
+          }}
+          title={`${t.priceAsOf} ${perShare(price)}`}
+        />
+        {/* 价格读数:Display xl 刻度盘读数窗,跟随游标;max/min 钳制防贴边溢出。 */}
+        <span
+          className="absolute top-0 -translate-x-1/2"
+          style={{ left: `max(4.5rem, min(calc(100% - 4.5rem), ${markerPct}%))` }}
+        >
+          <Display as="span" size="xl">{usd0(price)}</Display>
+        </span>
+      </div>
+      <div className="mt-1.5 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
+        <span>{t.cheaper}</span>
+        <span>{t.pricier}</span>
+      </div>
+      {/* 三锚点图例：H5 三列等宽，避免一条长破折号在窄屏挤成一团。 */}
+      {hasIv ? (
+        <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendFloor}</p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeLo)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendIv}</p>
+            <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums text-[var(--tt-text)] sm:text-sm">{usd0(IV)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendHi}</p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeHi)}</p>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-2 text-center font-mono text-[11px] text-[var(--tt-faint)]">
+          {t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // The readable read: a plain status (margin of safety / fair value / above fair value),
 // a neutral cheaper→pricier gauge with the price marker, one sentence. Every precise
 // number lives in the folded method section. Renders only with a price-aware assessment.
@@ -402,7 +528,6 @@ function ValueSpine({
   const rangeLo = verdict.rangeLo;
   const rangeHi = verdict.rangeHi;
   const bothMethods = verdict.methods.oeDcf && verdict.methods.greenwaldGrowthCeilings;
-  const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
   // Growth-anchored intrinsic value (headline number) — mirrors deriveValuationVerdict's own
   // hasIv/IV derivation so the headline can never disagree with the bucket it's inside of.
@@ -443,26 +568,6 @@ function ValueSpine({
 
   const callouts = !verdict.reliable ? confidenceCallouts(floor, oeDcf, lang) : [];
 
-  // gauge: three categorical zones (cheaper · fair · pricier); marker placed within the
-  // active zone by how far the price runs through the value range. The below/within split
-  // is the IV boundary when a growth-anchored IV exists (matches the verdict's own bucket
-  // logic) — falls back to the zero-growth floor F when there's no IV (single-lamp path,
-  // identical to today's placement).
-  const belowBoundary = hasIv ? IV! : rangeLo;
-  const spanWithin = rangeHi - belowBoundary || 1;
-  const marker =
-    bucket === "below"
-      ? 33 * clamp(price / (belowBoundary || 1), 0, 1)
-      : bucket === "within"
-        ? 33 + 33 * clamp((price - belowBoundary) / spanWithin, 0, 1)
-        : 66 + 33 * clamp((price - rangeHi) / (rangeHi || 1), 0, 1);
-  const markerPct = clamp(marker, 2, 98);
-  const zones: { key: Bucket; label: string }[] = [
-    { key: "below", label: t.zoneBelow },
-    { key: "within", label: t.zoneWithin },
-    { key: "above", label: t.zoneAbove },
-  ];
-
   return (
     <div className="space-y-3">
       {/* headline — single anchor number for this card. Growth-anchored IV when assessable,
@@ -482,93 +587,15 @@ function ValueSpine({
         </div>
       )}
 
-      {/* neutral cheaper → pricier gauge — instrument-dial signature render:
-          击球区段绿底描边 + 发光价格游标 + Display 大号读数。 */}
-      <div>
-        <div className="relative pt-12 sm:pt-14">
-          <div className="flex h-8 overflow-hidden rounded-md sm:h-7">
-            {zones.map((z) => {
-              const active = z.key === bucket;
-              // 击球区段(below=安全边际,与 deriveValuationVerdict.inStrikeZone 同侧):
-              // var(--tt-positive) 15% 底 + 1px 边缘 50%,刻度盘上的"可行动区"。
-              const strike = z.key === "below";
-              return (
-                <div
-                  key={z.key}
-                  className="flex flex-1 items-center justify-center px-0.5 text-[10px] leading-tight sm:text-[11px]"
-                  style={{
-                    backgroundColor: strike
-                      ? "color-mix(in srgb, var(--tt-positive) 15%, transparent)"
-                      : `color-mix(in srgb, var(--tt-faint) ${active ? 16 : 7}%, transparent)`,
-                    color: active ? "var(--tt-text)" : "var(--tt-faint)",
-                    ...(strike
-                      ? {
-                          borderLeft:
-                            "1px solid color-mix(in srgb, var(--tt-positive) 50%, transparent)",
-                          borderRight:
-                            "1px solid color-mix(in srgb, var(--tt-positive) 50%, transparent)",
-                        }
-                      : null),
-                  }}
-                >
-                  {z.label}
-                </div>
-              );
-            })}
-          </div>
-          {/* IV marker — the below/within boundary; only drawn when a growth-anchored IV exists. */}
-          {hasIv ? (
-            <div
-              className="absolute bottom-0 top-10 w-px border-l border-dashed border-[var(--tt-faint)] sm:top-12"
-              style={{ left: "33%" }}
-              title={`IV ${perShare(IV)}`}
-            />
-          ) : null}
-          {/* price cursor — 全站唯一 glow(box-shadow: var(--glow-primary))落点;
-              动效白名单:仅 left 过渡(var(--tt-dur) var(--tt-ease)),无循环/关键帧。 */}
-          <div
-            className="absolute bottom-0 top-10 w-0.5 bg-[var(--tt-accent)] sm:top-12"
-            style={{
-              left: `${markerPct}%`,
-              boxShadow: "var(--glow-primary)",
-              transition: "left var(--tt-dur) var(--tt-ease)",
-            }}
-            title={`${t.priceAsOf} ${perShare(price)}`}
-          />
-          {/* 价格读数:Display xl 刻度盘读数窗,跟随游标;max/min 钳制防贴边溢出。 */}
-          <span
-            className="absolute top-0 -translate-x-1/2"
-            style={{ left: `max(4.5rem, min(calc(100% - 4.5rem), ${markerPct}%))` }}
-          >
-            <Display as="span" size="xl">{usd0(price)}</Display>
-          </span>
-        </div>
-        <div className="mt-1.5 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
-          <span>{t.cheaper}</span>
-          <span>{t.pricier}</span>
-        </div>
-        {/* 三锚点图例：H5 三列等宽，避免一条长破折号在窄屏挤成一团。 */}
-        {hasIv ? (
-          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-            <div>
-              <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendFloor}</p>
-              <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeLo)}</p>
-            </div>
-            <div>
-              <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendIv}</p>
-              <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums text-[var(--tt-text)] sm:text-sm">{usd0(IV)}</p>
-            </div>
-            <div>
-              <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendHi}</p>
-              <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeHi)}</p>
-            </div>
-          </div>
-        ) : (
-          <p className="mt-2 text-center font-mono text-[11px] text-[var(--tt-faint)]">
-            {t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}
-          </p>
-        )}
-      </div>
+      {/* neutral cheaper → pricier gauge — 抽成 ValueBandGauge,与控股集团 SOTP 区块共用。 */}
+      <ValueBandGauge
+        bucket={bucket}
+        rangeLo={rangeLo}
+        rangeHi={rangeHi}
+        price={price}
+        iv={IV}
+        lang={lang}
+      />
 
       <p className="text-sm leading-relaxed text-[var(--tt-text)]">{sentence}</p>
 

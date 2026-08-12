@@ -94,6 +94,7 @@ export const STOCK_PAGE_COPY = {
       moatDistorted: "多年回购已把股东权益压成负数，重置价值和护城河没法从资产端算，这里不给出估值判定。",
       holdcoNotAssessable: "这是一家以投资组合为主体的控股集团。把整体盈利力和资产重置价值放在一起比，对它没有经济含义——一个可交易的证券组合，重置成本就是它当时的市价，持有它本身不构成竞争壁垒。这里不给出价值带和护城河判定，下面的资产底只作参考下限。",
       holdcoSotpTitle: "分部估值",
+      holdcoSotpCentral: "每股中枢 · 基础档",
       holdcoSotpIntro:
         "这是一家以投资组合为主体的控股集团，合并层面的单一口径对它没有经济含义。下面按巴菲特本人的分栏法拆开算：投资按市值计，经营业务按盈利给倍数，两者相加再扣掉证券未实现增值对应的递延税。",
       holdcoSotpInvestments: "投资按市值",
@@ -157,6 +158,7 @@ export const STOCK_PAGE_COPY = {
       moatDistorted: "Years of buybacks have pushed shareholders' equity negative, so reproduction value and the moat can't be assessed from the asset side. No valuation verdict is shown here.",
       holdcoNotAssessable: "This is a holding company whose balance sheet is led by an investment portfolio. Comparing consolidated earnings power against reproduction value says nothing here — a marketable portfolio reproduces at its own market price, so owning it is not a competitive barrier. No value range or moat verdict is shown; the asset floor below is a floor only.",
       holdcoSotpTitle: "Sum of the parts",
+      holdcoSotpCentral: "central estimate · per share",
       holdcoSotpIntro:
         "This is a holding company led by an investment portfolio, so a single consolidated lens says little about it. Below it is broken out the way Buffett himself presented it: investments at market, operating businesses on a multiple of earnings, added together, less the deferred tax on unrealized securities gains.",
       holdcoSotpInvestments: "Investments at market",
