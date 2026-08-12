@@ -11,7 +11,7 @@ import {
   getTickerExchangeMap,
   getSecurityMeta,
 } from "@/lib/managers/securities";
-import { filingFreshness } from "@/lib/freshness/derive";
+import { filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -108,6 +108,8 @@ type HolderRow = {
   priorWeight: number | undefined;
   /** 本季对本票的动作口径（持股变动）；持平/无 prior → undefined。 */
   kind: HoldingChange["kind"] | undefined;
+  /** 该行来源 filing 的报告期（季末 YYYY-MM-DD）。申报过渡期各户可能来自不同季。 */
+  period: string | undefined;
 };
 
 type ExitedHolder = { person: string; slug: string };
@@ -167,9 +169,24 @@ function HoldersTable({
   const sorted = [...holders].sort((a, b) => b.value - a.value);
   const head = sorted.slice(0, HOLDERS_VISIBLE);
   const tail = sorted.slice(HOLDERS_VISIBLE);
+  // 混合期标注:各行来自不同季时,落后于表内最新期的行在人名后加淡色季度小标。全表同期 → 无标。
+  const maxPeriod = globalLatestPeriod(holders.map((h) => h.period ?? null));
 
   const columns: Column<HolderRow>[] = [
-    { key: "investor", header: t.cols.investor, role: "primary", cell: (r) => r.person },
+    {
+      key: "investor",
+      header: t.cols.investor,
+      role: "primary",
+      cell: (r) =>
+        r.period && maxPeriod && r.period < maxPeriod ? (
+          <span className="inline-flex items-baseline gap-1.5">
+            {r.person}
+            <span className="font-mono text-[11px] text-[var(--tt-faint)]">{quarterLabel(r.period)}</span>
+          </span>
+        ) : (
+          r.person
+        ),
+    },
     { key: "value", header: t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value) },
     { key: "shares", header: t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => r.shares.toLocaleString() },
     { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={r.kind} lang={lang} /> },
@@ -294,7 +311,7 @@ export default async function StockTickerPage({
       if (r.kind === "new") moves.opened++;
       else if (r.kind === "increased") moves.added++;
       else if (r.kind === "decreased") moves.trimmed++;
-      holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined });
+      holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined, period: r.period ?? undefined });
     }
     trendSeries = (await readStockTrend(ticker)) ?? [];
   } else {
@@ -315,7 +332,7 @@ export default async function StockTickerPage({
       // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
       const priorWeight = d.prior?.holdings.find((p) => !p.putCall && targetCusips.has(p.cusip))?.weight;
       const kind = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip))?.kind;
-      holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind });
+      holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind, period: d.latest.period });
     }
     // 本季动作 + 清仓 chip(按持有人计, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
     for (const { summary, detail: d } of details) {
