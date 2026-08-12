@@ -34,7 +34,7 @@ import {
   runValuation,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { EarningsPowerFloorCard, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
+import { EarningsPowerFloorCard, ValueBandGauge, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
@@ -636,6 +636,28 @@ export default async function StockTickerPage({
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
               ) : holdcoNotAssessable && holdcoSotp ? (
                 <div className="mt-3">
+                  {/* 与其他股票同款的价值带刻度盘 —— 现价游标 + within/below/above 三段;
+                      下方三栏 SOTP 表作为推导明细,比普通股票多一层"拆开给你看"。 */}
+                  {handoffVerdict &&
+                    Number.isFinite(handoffVerdict.rangeLo) &&
+                    Number.isFinite(handoffVerdict.rangeHi) &&
+                    Number.isFinite(handoffVerdict.price) && (
+                      <div className="mb-6">
+                        <div className="mb-3 flex items-baseline gap-2">
+                          <span className="font-mono text-2xl font-semibold tracking-tight text-[var(--tt-text)]">
+                            {fmtPerShare(holdcoSotp.per_share.base)}
+                          </span>
+                          <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
+                        </div>
+                        <ValueBandGauge
+                          bucket={handoffVerdict.bucket}
+                          rangeLo={handoffVerdict.rangeLo}
+                          rangeHi={handoffVerdict.rangeHi}
+                          price={handoffVerdict.price}
+                          lang={lang}
+                        />
+                      </div>
+                    )}
                   <p className="text-sm text-[var(--tt-muted)]">{page.valuation.holdcoSotpIntro}</p>
                   <div className="mt-4 overflow-x-auto">
                     <table className="w-full min-w-[420px] text-sm tabular-nums">
