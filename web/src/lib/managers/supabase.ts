@@ -5,14 +5,14 @@ import type {
 import { assembleManagerDetail } from "@/lib/managers/assemble";
 import { getDb, withRetry } from "@/lib/managers/db";
 
-type IndexRow = ManagerSummary & { top_holding: string; total_value: number; holding_count: number };
+type IndexRow = ManagerSummary & { top_holding: string; total_value: number; holding_count: number; filed_at: string | null };
 
 // --- pure mappers (unit-tested) ---
 export function mapIndexRows(rows: IndexRow[], generatedAt: string): ManagerIndex {
   const managers: ManagerSummary[] = rows
     .map((r) => ({
       cik: r.cik, slug: r.slug, name: r.name, person: r.person,
-      period: r.period, totalValue: Number(r.total_value),
+      period: r.period, filedAt: r.filed_at ?? null, totalValue: Number(r.total_value),
       holdingCount: Number(r.holding_count), topHolding: r.top_holding ?? "",
     }))
     .sort((a, b) => b.totalValue - a.totalValue);
@@ -58,7 +58,7 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
         const longHoldings = (h ?? []).filter((row: any) => !row.put_call);
         if (longHoldings.length === 0) continue;
         const totalValue = longHoldings.reduce((s: number, row: any) => s + Number(row.value ?? 0), 0);
-        return { ...m, period: latest.period, total_value: totalValue, holding_count: longHoldings.length, top_holding: longHoldings[0]?.issuer ?? "", totalValue, holdingCount: longHoldings.length, topHolding: longHoldings[0]?.issuer ?? "" } as IndexRow;
+        return { ...m, period: latest.period, filed_at: latest.filed_at ?? null, filedAt: latest.filed_at ?? null, total_value: totalValue, holding_count: longHoldings.length, top_holding: longHoldings[0]?.issuer ?? "", totalValue, holdingCount: longHoldings.length, topHolding: longHoldings[0]?.issuer ?? "" } as IndexRow;
       }
       return null;
     })

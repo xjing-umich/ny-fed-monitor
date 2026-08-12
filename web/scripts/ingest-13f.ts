@@ -365,6 +365,7 @@ async function main() {
         name: detail.manager.name,
         person: detail.manager.person,
         period: top.period,
+        filedAt: top.filedAt ?? null,
         totalValue: top.totalValue,
         holdingCount: longHoldings.length,
         topHolding,

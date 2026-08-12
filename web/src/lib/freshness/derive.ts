@@ -172,6 +172,21 @@ export function freshness13F(period: string | null, globalLatest: string | null)
   return "current";
 }
 
+/** dateStr(YYYY-MM-DD)距 today 的日历天数(非负;未来日期 → 0)。非法/空 → null。 */
+export function daysAgo(dateStr: string | null, today: Date): number | null {
+  const d = parseUTC(dateStr);
+  if (!d) return null;
+  const diff = Math.floor((utcDay(today).getTime() - utcDay(d).getTime()) / 86400000);
+  return Math.max(0, diff);
+}
+
+/** 某季末 period 的 SEC 申报截止日(period + 45 天)。非法/空 → null。 */
+export function filingDeadline(period: string | null): Date | null {
+  const p = parseUTC(period);
+  if (!p) return null;
+  return addDays(p, FILING_DEADLINE_DAYS);
+}
+
 /**
  * 报告期(季末 YYYY-MM-DD) → 季度标签("2026-03-31" → "Q1 2026")。
  * 用于把裸日期换成"季度"语感,避免被误读成"某天的过期数据"。非法格式原样返回。

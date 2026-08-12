@@ -36,6 +36,8 @@ export type Manager = {
 
 export type ManagerSummary = Manager & {
   period: string;
+  /** 最新 filing 的 SEC 提交日(YYYY-MM-DD)。manager_index RPC 未更新时容错为 null。 */
+  filedAt: string | null;
   totalValue: number;
   holdingCount: number;
   topHolding: string;

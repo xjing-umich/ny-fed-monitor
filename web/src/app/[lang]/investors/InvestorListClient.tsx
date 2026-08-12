@@ -8,6 +8,7 @@ import { formatUSD, cleanIssuer } from "@/lib/format";
 import { displayFundName } from "@/lib/managers/profileProse";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge, type BadgeTone } from "@/components/common/Badge";
+import { quarterLabel, freshness13F, daysAgo, globalLatestPeriod, parseUTC } from "@/lib/freshness/derive";
 import PageHeader from "@/components/common/PageHeader";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
@@ -44,6 +45,7 @@ const COPY = {
     topPrefix: "最大：",
     noResults: "没有匹配的投资者，换个关键词或清空筛选试试。",
     count: (m: number, n: number) => (m === n ? `共 ${n} 位` : `匹配 ${m} / 共 ${n} 位`),
+    filedAgo: (d: number) => (d === 0 ? "今天提交" : `${d} 天前提交`),
     filterAll: "全部动向",
     filterBuying: "加仓",
     filterSelling: "减仓",
@@ -74,6 +76,7 @@ const COPY = {
     topPrefix: "Top: ",
     noResults: "No investors match — try a different spelling or clear the filter.",
     count: (m: number, n: number) => (m === n ? `${n} investors` : `${m} of ${n}`),
+    filedAgo: (d: number) => (d === 0 ? "filed today" : `filed ${d}d ago`),
     filterAll: "Any move",
     filterBuying: "Buying",
     filterSelling: "Selling",
@@ -119,13 +122,20 @@ const KIND_CLASS: Record<NonNullable<ManagerQoQ["topMoveKind"]>, string> = {
 type Props = {
   lang: Lang;
   managers: Row[];
+  /** 服务端渲染时刻(ms)。用于"x 天前提交"的日历天数,避免客户端时钟差异。 */
+  nowMs: number;
 };
 
-export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
+export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) => {
   const t = COPY[lang];
+  const now = useMemo(() => new Date(nowMs), [nowMs]);
+  const globalLatest = useMemo(
+    () => globalLatestPeriod(managers.map((m) => m.period)),
+    [managers],
+  );
   const params = useListState({
     defaultSort: "value",
-    allowedSorts: ["value", "count"],
+    allowedSorts: ["value", "count", "filed"],
     hasVf: true,
   });
 
@@ -135,6 +145,11 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
     return sortByKey(rows, params.sort, params.dir, {
       value: (m) => m.totalValue,
       count: (m) => m.holdingCount,
+      // 申报新近度:优先按 SEC 提交日(filedAt),缺失(RPC 未更新)回退按报告期。
+      filed: (m) => {
+        const d = parseUTC(m.filedAt ?? m.period);
+        return d ? d.getTime() : 0;
+      },
     });
   }, [managers, params.q, params.sort, params.dir, params.vf]);
 
@@ -196,7 +211,29 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers }) => {
       align: "right",
       width: "w-28",
       hideOnMobile: true,
-      cell: (m) => m.period,
+      sortKey: "filed",
+      cell: (m) => {
+        const stale = freshness13F(m.period, globalLatest) !== "current";
+        const days = daysAgo(m.filedAt, now);
+        const justFiled = days != null && days <= 14;
+        return (
+          <span className="inline-flex flex-col items-end gap-0.5">
+            <span
+              className={`inline-flex items-center gap-1.5 ${
+                stale ? "text-[var(--tt-faint)]" : "text-[var(--tt-text)]"
+              }`}
+            >
+              {justFiled && (
+                <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--tt-accent)]" />
+              )}
+              {quarterLabel(m.period)}
+            </span>
+            {justFiled && (
+              <span className="font-mono text-[11px] text-[var(--tt-muted)]">{t.filedAgo(days)}</span>
+            )}
+          </span>
+        );
+      },
     },
     {
       key: "move",
