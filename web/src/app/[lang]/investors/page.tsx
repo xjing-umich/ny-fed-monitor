@@ -63,7 +63,7 @@ export default async function InvestorsPage({
           </p>
         }
       >
-        <InvestorListClient lang={lang} managers={managers} />
+        <InvestorListClient lang={lang} managers={managers} nowMs={Date.now()} />
       </Suspense>
     </>
   );

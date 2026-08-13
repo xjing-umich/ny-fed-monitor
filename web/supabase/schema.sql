@@ -358,6 +358,7 @@ returns table (
   name text,
   person text,
   period date,
+  filed_at date,
   total_value bigint,
   holding_count int,
   top_holding text
@@ -367,7 +368,7 @@ stable
 as $$
   select
     m.cik, m.slug, m.name, m.person,
-    f.period, f.total_value, f.holding_count,
+    f.period, f.filed_at, f.total_value, f.holding_count,
     (
       select h.issuer
       from holdings h
@@ -381,12 +382,13 @@ as $$
     select
       f.id,
       f.period,
+      f.filed_at,
       sum(h.value)::bigint as total_value,
       count(*)::int as holding_count
     from filings f
     join holdings h on h.filing_id = f.id and h.put_call is null
     where f.cik = m.cik
-    group by f.id, f.period
+    group by f.id, f.period, f.filed_at
     order by f.period desc
     limit 1
   ) f on true;
