@@ -18,3 +18,10 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENFIGI_API_KEY: ${{ secrets.OPENFIGI_API_KEY }}
+      # 数据入库 ≠ 页面生效。不刷缓存的话页面只能等各自的日级 ISR 到期,申报季会长时间
+      # 半新半旧。失败即红灯(不 continue-on-error):站点继续发旧数据是真故障,不该静默。
+      - name: Revalidate site cache
+        run: |
+          curl -fsS -X POST "https://thecompounder.fyi/api/revalidate?source=13f" \
+            -H "Authorization: Bearer ${{ secrets.INGEST_SECRET }}"
+          echo

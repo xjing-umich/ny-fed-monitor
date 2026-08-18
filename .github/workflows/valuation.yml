@@ -19,3 +19,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      # 同 ingest.yml:快照重算完必须刷缓存,否则个股页/screener 继续发旧估值。
+      - name: Revalidate site cache
+        run: |
+          curl -fsS -X POST "https://thecompounder.fyi/api/revalidate?source=valuation" \
+            -H "Authorization: Bearer ${{ secrets.INGEST_SECRET }}"
+          echo
