@@ -18,6 +18,7 @@
     "prices:backfill": "tsx scripts/prices-backfill.ts",
     "prices:prune": "tsx scripts/prices-prune.ts",
     "ai-check": "tsx scripts/ai-tells.ts",
+    "check:revalidate-paths": "tsx scripts/revalidate-paths.check.ts",
     "sec:ingest": "tsx scripts/sec-ingest-company.ts",
     "sec:ingest:all": "tsx scripts/sec-ingest-all.ts",
     "sec:ingest:holdings": "tsx scripts/sec-ingest-holdings.ts",

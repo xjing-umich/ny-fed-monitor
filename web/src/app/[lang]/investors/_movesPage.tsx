@@ -27,8 +27,10 @@ function movesFootnote(
   effective: ReturnType<typeof effectiveMovesPeriod>,
   lagged: { person: string; period: string }[],
 ): string {
-  const baseline = effective.period ?? "—";
-  const max = effective.maxPeriod;
+  // 季度标签统一走 quarterLabel:同页正文与标题已是「Q2 2026」,此处若留裸 ISO
+  // (「2026-06-30」)会让同一个季度在一屏里出现两种写法,还容易被读成「某天的过期数据」。
+  const baseline = quarterLabel(effective.period) || "—";
+  const max = quarterLabel(effective.maxPeriod);
   const { filed, total } = effective.coverage;
   if (lang === "zh") {
     let s = `统计基准季：${baseline}。`;
@@ -41,7 +43,7 @@ function movesFootnote(
       }
     }
     if (lagged.length > 0) {
-      s += `未计入（最新申报更早）：${lagged.map((m) => `${m.person}（${m.period}）`).join("、")}。`;
+      s += `未计入（最新申报更早）：${lagged.map((m) => `${m.person}（${quarterLabel(m.period)}）`).join("、")}。`;
     }
     return s;
   }
@@ -57,7 +59,7 @@ function movesFootnote(
     }
   }
   if (lagged.length > 0) {
-    s += ` Not counted (older latest filing): ${lagged.map((m) => `${m.person} (${m.period})`).join(", ")}.`;
+    s += ` Not counted (older latest filing): ${lagged.map((m) => `${m.person} (${quarterLabel(m.period)})`).join(", ")}.`;
   }
   return s;
 }

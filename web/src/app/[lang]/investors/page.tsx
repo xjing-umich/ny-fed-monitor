@@ -8,6 +8,13 @@ import { localePath } from "@/lib/urls";
 import { InvestorListClient } from "./InvestorListClient";
 import SubNav from "@/components/shell/SubNav";
 
+// 缺此导出 = 本页在构建期静态生成后**永不重新验证**,只有重新部署才更新数据。
+// 2026-08 申报季实测:该页冻结在 5 天前的部署快照(81 家 Q1 + 13 家 Q2),而
+// 同期 /investors/[slug] 因有 revalidate 已陆续翻到 Q2 —— 列表与详情自相矛盾。
+// 与其它数据驱动页(首页/个股/共识/buys/sells)统一为日级 ISR;申报季的即时刷新
+// 由 ingest 完成后调 /api/revalidate 承担,不靠缩短这个周期。
+export const revalidate = 86400;
+
 export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
 }
