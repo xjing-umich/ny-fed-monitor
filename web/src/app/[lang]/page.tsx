@@ -62,9 +62,9 @@ export default async function HomePage({
   const [idx, moves, heldTop, heldCount, strike, dgs10] = await Promise.all([
     getManagerIndex(),
     notableMoves(6),
-    consensusHeldTop(6),
+    consensusHeldTop(8),
     consensusCount(),
-    readStrikeZoneLeaders(3),
+    readStrikeZoneLeaders(6),
     getLatestDgs10(),
   ]);
 
@@ -127,7 +127,7 @@ export default async function HomePage({
 
       {/* Near-full-width to break the max-w-5xl rhythm. */}
       <Section rhythm="xl" className="mx-auto max-w-6xl">
-        <StepIndex lang={lang} investors={topManagers.slice(0, 12)} held={heldTop} strike={strike} />
+        <StepIndex lang={lang} investors={topManagers.slice(0, 16)} held={heldTop} strike={strike} />
       </Section>
 
       <Section rhythm="lg">
