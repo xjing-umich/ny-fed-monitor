@@ -1,6 +1,8 @@
-name: Weekly Prices Cleanup
+name: Weekly DB Cleanup
 on:
-  # 滚动删除 prices 中早于近 24 个月的旧行, 控制 Supabase DB Size。
+  # 滚动删除超出保留窗口的旧行, 控制 Supabase DB Size:
+  #   - prices: 保留近 24 个月(页面只读最新一行, 窗口已远超所需)
+  #   - sec_ingest_runs: 保留近 30 天(纯日志, 全仓零读取点, 只增不删曾积到 29k 行/10MB)
   # 周日跑: 价格写入是 Mon-Fri 22:00(Daily Prices), 周日无写入 → 物理错峰, 零重叠。
   # 纯 REST DELETE(行级锁, 不阻塞写入); 不做 VACUUM(稳态靠 autovacuum 复用空间)。
   # 也可在 Actions 页手动 Run workflow 触发。
@@ -17,6 +19,11 @@ jobs:
       - run: npm ci
         working-directory: web
       - run: npm run prices:prune
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      - run: npm run sec:runs:prune
         working-directory: web
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

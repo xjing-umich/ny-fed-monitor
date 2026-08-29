@@ -21,18 +21,6 @@ export type SecLatestSummary = {
   quality_status: string | null;
 };
 
-export async function getSecLatestMap(): Promise<Map<string, SecLatestSummary>> {
-  try {
-    const { data, error } = await getDb()
-      .from("company_fundamentals_latest")
-      .select("*");
-    if (error || !data) return new Map();
-    return new Map((data as SecLatestSummary[]).map((row) => [row.ticker, row]));
-  } catch {
-    return new Map();
-  }
-}
-
 export async function getSecCompanyData(ticker: string) {
   let db;
   try {
