@@ -1,6 +1,10 @@
 import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
+import { processCached } from "@/lib/managers/processCache";
+
+/** 全表 Map 的进程级缓存时长。取值理由见 processCache.ts。 */
+const FULL_TABLE_TTL_MS = 10 * 60 * 1000;
 
 export type CusipMapRow = { cusip: string; ticker: string | null; issuer: string | null };
 export type CusipInfo = { ticker: string | null; name: string | null };
@@ -12,8 +16,11 @@ export function rowsToCusipMap(rows: CusipMapRow[]): Map<string, CusipInfo> {
   return m;
 }
 
-/** 全量 cusip→info Map。无 Supabase env(本地 JSON 开发) → 空 Map(优雅降级)。每次渲染缓存一次。 */
-export const getCusipMap = cache(async (): Promise<Map<string, CusipInfo>> => {
+/**
+ * 全量 cusip→info Map。无 Supabase env(本地 JSON 开发) → 空 Map(优雅降级)。
+ * 两层缓存:processCached 跨请求(同一函数实例内 TTL 复用),cache() 再在单次渲染内去重。
+ */
+const loadCusipMap = processCached("cusipMap", FULL_TABLE_TTL_MS, async (): Promise<Map<string, CusipInfo>> => {
   if (!hasSupabaseEnv()) return new Map();
   const db = getDb();
   const rows: CusipMapRow[] = [];
@@ -31,11 +38,13 @@ export const getCusipMap = cache(async (): Promise<Map<string, CusipInfo>> => {
   return rowsToCusipMap(rows);
 });
 
+export const getCusipMap = cache(loadCusipMap);
+
 /**
  * ticker → 交易所代码(Google Finance 用, 如 NASDAQ/NYSE)。无 env → 空 Map。
- * 来源 securities.exchange(经 SEC 回填)。每次渲染缓存一次。
+ * 来源 securities.exchange(经 SEC 回填)。同 getCusipMap 两层缓存。
  */
-export const getTickerExchangeMap = cache(async (): Promise<Map<string, string>> => {
+const loadTickerExchangeMap = processCached("tickerExchangeMap", FULL_TABLE_TTL_MS, async (): Promise<Map<string, string>> => {
   if (!hasSupabaseEnv()) return new Map();
   const db = getDb();
   const out = new Map<string, string>();
@@ -53,6 +62,8 @@ export const getTickerExchangeMap = cache(async (): Promise<Map<string, string>>
   }
   return out;
 });
+
+export const getTickerExchangeMap = cache(loadTickerExchangeMap);
 
 /**
  * ticker → 该 ticker 下的全部 cusip(用于按 ticker 聚合持有人)。无 env → []。

@@ -5,6 +5,15 @@ import type {
 import { assembleManagerDetail } from "@/lib/managers/assemble";
 import { getDb, withRetry } from "@/lib/managers/db";
 
+/**
+ * holdings 的显式读取列 —— egress 护栏。表共 9 列，`id` 在读取侧无用
+ * (rowToHolding 只取 7 个字段，byFiling 用 filing_id 分组)。
+ * 单行省约 7%；真正的量在调用频次上(valuation:ingest 的 collectUniverse、
+ * aggregations 的 scanAllManagers 都会把整张 52k 行表拉一遍)。
+ * 必须是字符串字面量：拼接/join 得到 string 会让 supabase-js 行类型推导退化。
+ */
+const HOLDINGS_SELECT = "filing_id,cusip,issuer,title_of_class,value,shares,put_call,weight";
+
 type IndexRow = ManagerSummary & { top_holding: string; total_value: number; holding_count: number; filed_at: string | null };
 
 // --- pure mappers (unit-tested) ---
@@ -111,7 +120,7 @@ export async function getManagerDetail(cikOrSlug: string): Promise<ManagerDetail
   const { data: filings, error: fErr } = await withRetry(() => db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(8));
   if (fErr) throw new Error(`getManagerDetail filings query failed (${m.cik}): ${fErr.message}`);
   const ids = (filings ?? []).map((f: any) => f.id);
-  const { data: holdings, error: hErr } = await withRetry(() => db.from("holdings").select("*").in("filing_id", ids));
+  const { data: holdings, error: hErr } = await withRetry(() => db.from("holdings").select(HOLDINGS_SELECT).in("filing_id", ids));
   if (hErr) throw new Error(`getManagerDetail holdings query failed (${m.cik}): ${hErr.message}`);
   if (!filings?.length) return null;
   return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? []);
