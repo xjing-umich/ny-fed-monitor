@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/managers/db";
+import { CFP_SELECT } from "./columns";
 
 export type SecLatestSummary = {
   ticker: string;
@@ -50,7 +51,7 @@ export async function getSecCompanyData(ticker: string) {
     await Promise.all([
       db.from("sec_companies").select("*").eq("ticker", upper).maybeSingle(),
       db.from("sec_filings").select("*").eq("ticker", upper).order("filing_date", { ascending: false }).limit(24),
-      db.from("company_fundamentals_periods").select("*").eq("ticker", upper).order("period_end", { ascending: false }).limit(32),
+      db.from("company_fundamentals_periods").select(CFP_SELECT).eq("ticker", upper).order("period_end", { ascending: false }).limit(32),
       db.from("company_fundamentals_latest").select("*").eq("ticker", upper).maybeSingle(),
     ]);
 

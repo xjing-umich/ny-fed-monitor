@@ -66,7 +66,13 @@ export type FundamentalPeriod = {
   is_derived: boolean;
   data_quality: string;
   missing_fields: Record<string, boolean>;
-  raw_facts: Record<string, unknown>;
+  /**
+   * XBRL 原始事实溯源。ingest 侧(normalizeFacts / applyClassSharesFallback)总会填它，
+   * 但**读取侧刻意不 select 它**(见 sec/columns.ts:CFP_OMITTED_COLUMNS —— 它独占单行约
+   * 61% 字节且无读取侧消费者)，所以从 DB 读回的行上它是 undefined。标成可选是如实描述，
+   * 不是放松约束：任何要读它的代码必须自己处理缺失，或改用带该列的专门查询。
+   */
+  raw_facts?: Record<string, unknown>;
 };
 
 // Flow facts report over a duration: a single quarter (~90d), a half-year YTD
