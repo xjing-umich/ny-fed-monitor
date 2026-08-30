@@ -2,6 +2,10 @@ import { cache } from "react";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange } from "@/lib/managers/types";
 import { effectiveMovesPeriod, freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
+import { processCached } from "@/lib/managers/processCache";
+
+/** scanAllManagers 的进程级缓存时长。取值理由见 processCache.ts。 */
+const SCAN_TTL_MS = 10 * 60 * 1000;
 
 export type ScanRow = {
   slug: string;
@@ -16,8 +20,19 @@ export type MoveKind = "new" | "increased" | "exited" | "decreased";
 export type MoveRow = { cusip: string; issuer: string; count: number; value: number; dominantKind: MoveKind };
 export type NotableMoves = { mostBought: MoveRow[]; mostSold: MoveRow[] };
 
-/** Scan every manager's latest holdings + changes. Cached per render to avoid re-reads. */
-export const scanAllManagers = cache(async (): Promise<ScanRow[]> => {
+/**
+ * 扫全部 manager 的最新持仓 + 变动。
+ *
+ * 这是全站最贵的一次读:每户一次 getManagerDetail(8 季全部持仓),合起来约等于把
+ * 整张 52k 行 holdings 表拉一遍(实测约 9.5 MB)。holderDeltas 没有 DB 快路径
+ * (consensus_moves 按 ticker+direction 聚合,拆不出 new/exited),所以 /investors/consensus
+ * 每次重生成都必然走这里,zh/en 各一次 —— 这是 egress 的一个固定大项。
+ *
+ * 两层缓存:processCached 跨请求(同一函数实例内 TTL 复用,让相近时间的多次 ISR 重建
+ * 共用一次扫描),cache() 再在单次渲染内去重。TTL 取值理由见 processCache.ts;
+ * 13F 数据一周只在周一/周四 ingest 后变,十分钟窗口远短于此。
+ */
+const loadScanAllManagers = processCached("scanAllManagers", SCAN_TTL_MS, async (): Promise<ScanRow[]> => {
   const idx = await getManagerIndex();
   const rows = await Promise.all(
     (idx.managers ?? []).map(async (m) => {
@@ -28,6 +43,8 @@ export const scanAllManagers = cache(async (): Promise<ScanRow[]> => {
   );
   return rows.filter((r): r is ScanRow => r !== null);
 });
+
+export const scanAllManagers = cache(loadScanAllManagers);
 
 /** 剔除 inactive(≥4季停报 tripwire)；stale 保留。consensus 持仓口径(spec freshness-guard §C2)。 */
 export function excludeInactive(scan: ScanRow[]): ScanRow[] {
