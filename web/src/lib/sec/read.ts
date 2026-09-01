@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/managers/db";
+import { CFP_SELECT } from "./columns";
 
 export type SecLatestSummary = {
   ticker: string;
@@ -20,18 +21,6 @@ export type SecLatestSummary = {
   quality_status: string | null;
 };
 
-export async function getSecLatestMap(): Promise<Map<string, SecLatestSummary>> {
-  try {
-    const { data, error } = await getDb()
-      .from("company_fundamentals_latest")
-      .select("*");
-    if (error || !data) return new Map();
-    return new Map((data as SecLatestSummary[]).map((row) => [row.ticker, row]));
-  } catch {
-    return new Map();
-  }
-}
-
 export async function getSecCompanyData(ticker: string) {
   let db;
   try {
@@ -50,7 +39,7 @@ export async function getSecCompanyData(ticker: string) {
     await Promise.all([
       db.from("sec_companies").select("*").eq("ticker", upper).maybeSingle(),
       db.from("sec_filings").select("*").eq("ticker", upper).order("filing_date", { ascending: false }).limit(24),
-      db.from("company_fundamentals_periods").select("*").eq("ticker", upper).order("period_end", { ascending: false }).limit(32),
+      db.from("company_fundamentals_periods").select(CFP_SELECT).eq("ticker", upper).order("period_end", { ascending: false }).limit(32),
       db.from("company_fundamentals_latest").select("*").eq("ticker", upper).maybeSingle(),
     ]);
 

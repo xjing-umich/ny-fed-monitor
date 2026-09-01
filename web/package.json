@@ -23,7 +23,8 @@
     "sec:ingest:all": "tsx scripts/sec-ingest-all.ts",
     "sec:ingest:holdings": "tsx scripts/sec-ingest-holdings.ts",
     "valuation:ingest": "tsx --tsconfig scripts/tsconfig.json scripts/valuation-ingest.ts",
-    "expansion:accept": "tsx scripts/expansion-acceptance.ts"
+    "expansion:accept": "tsx scripts/expansion-acceptance.ts",
+    "sec:runs:prune": "tsx scripts/sec-runs-prune.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
