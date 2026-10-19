@@ -22,6 +22,11 @@ export interface Article {
   sections: LegalSection[];
   /** 可选:文中点名的投资人/个股, 渲染为文末"相关"内链。id = manager slug / ticker。 */
   related?: ArticleEntityRef[];
+  /**
+   * 可选:季度快照文章的 13F 报告期(季末日 YYYY-MM-DD)。设了它,文章页顶部显示"这是某季快照"
+   * 并链到实时榜单;也不再参与 Learn 首页"最新"位的竞争(过季的复盘不该顶在最新位)。
+   */
+  snapshotPeriod?: string;
 }
 
 const ARTICLES: Record<string, Record<Lang, Article>> = {
@@ -286,6 +291,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       description:
         "A read of the Q1 2026 13F filings: the most widely held stocks, the quarter's biggest buys and sells, and why overlap still isn't a signal.",
       updated: "2026-06-11",
+      snapshotPeriod: "2026-03-31",
       intro:
         "Big institutional investors disclose their U.S. stock positions every quarter, and the Q1 2026 filings are in. They cover the quarter that ended March 31 and were filed through mid-May. Below is what the investors we track were holding, what most of them were buying, and what they were selling. It is one quarter's data, and the last section gets into why the overlap you're about to see proves less than it looks.",
       sections: [
@@ -349,6 +355,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       description:
         "一份对 2026 Q1 13F 申报的解读：被最多机构持有的股票、本季最大的买入与卖出，以及为什么「重合」依然不是信号。",
       updated: "2026-06-11",
+      snapshotPeriod: "2026-03-31",
       intro:
         "每个季度,大型机构投资者都必须披露他们持有的美股仓位,2026 年 Q1 的申报如今已经出全。这一季截至 3 月 31 日,各家在 5 月中前报齐。下面是我们追踪的这些投资者当时持有什么、其中最多人在买什么、又在卖什么。这只是一个季度的数据;最后一节会讲清楚,你接下来看到的这些重合,为什么远没有它看上去那么有分量。",
       sections: [
@@ -428,7 +435,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "Profit margins: the first look at pricing power",
           paragraphs: [
             "Net margin is the share of each dollar of revenue that survives all the way down to profit. It is the quickest read on pricing power. A business that can charge well above what it costs to serve a customer, and keep doing it, posts a high and steady margin. One fighting on price cannot.",
-            "The businesses superinvestors cluster in tend to sit at the high end. On their most recent filings shown here, Alphabet runs around a 57% net margin, Visa about 54%, Meta near 48%, Mastercard 46%, and Moody's 32%. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. Apple, around 27%, and Amazon, near 17%, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
+            "The businesses superinvestors cluster in tend to sit at the high end. On their filings for the quarter ended March 2026, Alphabet ran around a 57% net margin, Visa about 54%, Meta near 48%, Mastercard 46%, and Moody's 32%. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. Apple, around 27%, and Amazon, near 17%, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
             "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read the trend rather than one quarter. A margin that has slid for several years usually means something the latest figure hides.",
           ],
         },
@@ -436,7 +443,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "Free cash flow: does the profit turn into cash?",
           paragraphs: [
             "Accounting profit and cash are not the same thing, and the gap between them tells you a lot about a business. Free cash flow is the cash left after a company pays to run its operations and reinvest in them. FCF margin is that cash as a share of revenue. Buffett's 'owner earnings' is the same instinct: what the owner could actually take out at the end of the year.",
-            "Put net margin and FCF margin side by side and the businesses separate. Visa turns revenue into free cash at about 80%, higher than its net margin, because it barely spends on physical assets. Apple is similar, near 70%. These are capital-light machines. Alphabet is a different case: a 57% net margin but an FCF margin around 9% on its latest filing, because it is pouring money into data centers and chips. Amazon's FCF margin was negative on the same basis, near minus 10%, as it reinvests faster than the cash comes in.",
+            "Put net margin and FCF margin side by side and the businesses separate. Visa turns revenue into free cash at about 80%, higher than its net margin, because it barely spends on physical assets. Apple is similar, near 70%. These are capital-light machines. Alphabet is a different case: a 57% net margin but an FCF margin around 9% in that same quarter, because it is pouring money into data centers and chips. Amazon's FCF margin was negative on the same basis, near minus 10%, as it reinvests faster than the cash comes in.",
             "A low or negative FCF margin is not automatically a red flag. It can mean a weak business, or a strong one spending hard on its future. Telling those apart is the actual work, and it is why one number is never enough.",
           ],
         },
@@ -484,7 +491,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "利润率:对定价权的第一眼",
           paragraphs: [
             "净利率,是每一块钱营收里最终活到利润那一步的比例。它是对定价权最快的一眼。一门生意若能收得远高于服务一个客户的成本,还能一直收下去,就会有又高又稳的利润率;靠打价格战的,做不到。",
-            "超级投资者扎堆的生意,往往落在高端。按站上各家最近一期申报:Alphabet 净利率约 57%,Visa 约 54%,Meta 近 48%,Mastercard 46%,Moody's 32%。这些是惊人的数字,也并非偶然:一家支付网络或评级特许经营,只是从一笔它不必出资的庞大流水里抽一小道。Apple 约 27%、Amazon 近 17%,要低一些,这是卖实物、跑仓库而非守收费站的本性。",
+            "超级投资者扎堆的生意,往往落在高端。按各家截至 2026 年 3 月那一季的申报:Alphabet 净利率约 57%,Visa 约 54%,Meta 近 48%,Mastercard 46%,Moody's 32%。这些是惊人的数字,也并非偶然:一家支付网络或评级特许经营,只是从一笔它不必出资的庞大流水里抽一小道。Apple 约 27%、Amazon 近 17%,要低一些,这是卖实物、跑仓库而非守收费站的本性。",
             "两点提醒。利润率要在同行业内比,别跨行业比,因为超市和软件公司活在两个世界。还要读趋势,而不是某一个季度:一个连跌几年的利润率,通常藏着最新数字看不出的东西。",
           ],
         },
@@ -492,7 +499,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "自由现金流:利润变成现金了吗?",
           paragraphs: [
             "账面利润和现金不是一回事,而两者之间的缺口,能告诉你关于一门生意的很多事。自由现金流,是公司付完维持运营、再投资运营的钱之后剩下的现金。FCF 利润率,就是这笔现金占营收的比例。巴菲特的'股东盈余'(owner earnings)是同一个直觉:到年底,所有者真正能拿走多少。",
-            "把净利率和 FCF 利润率并排放,生意就分出来了。Visa 把营收转成自由现金的比例约 80%,高过它的净利率,因为它几乎不用花钱买实物资产。Apple 类似,近 70%,都是轻资本的机器。Alphabet 是另一种情形:净利率 57%,但最近一期 FCF 利润率只有约 9%,因为它正把钱砸进数据中心和芯片。Amazon 同口径下 FCF 利润率为负,约 -10%,因为它再投资的速度快过现金进账。",
+            "把净利率和 FCF 利润率并排放,生意就分出来了。Visa 把营收转成自由现金的比例约 80%,高过它的净利率,因为它几乎不用花钱买实物资产。Apple 类似,近 70%,都是轻资本的机器。Alphabet 是另一种情形:净利率 57%,但同一季 FCF 利润率只有约 9%,因为它正把钱砸进数据中心和芯片。Amazon 同口径下 FCF 利润率为负,约 -10%,因为它再投资的速度快过现金进账。",
             "FCF 利润率低、甚至为负,不一定是坏信号。它可能意味着一门弱生意,也可能是一门强生意在为未来重金投入。把这两者分辨开,才是真正的功夫,也正是为什么一个数字永远不够。",
           ],
         },
@@ -708,12 +715,12 @@ export function getFeatured(lang: Lang): Article | null {
 }
 
 /**
- * 最新更新的文章 —— 在「非门面」文章里按 updated 取最新一篇。
+ * 最新更新的文章 —— 在「非门面」、非季度快照文章里按 updated 取最新一篇。
  * updated 是 "YYYY-MM-DD",可直接字符串降序比较;缺 updated 的排最后(不参与竞争)。
  * 取不到返回 null。
  */
 export function getLatest(lang: Lang): Article | null {
-  const pool = listArticles(lang).filter((a) => a.slug !== FEATURED_SLUG && a.updated);
+  const pool = listArticles(lang).filter((a) => a.slug !== FEATURED_SLUG && a.updated && !a.snapshotPeriod);
   if (pool.length === 0) return null;
   return pool.reduce((newest, a) => (a.updated > newest.updated ? a : newest));
 }

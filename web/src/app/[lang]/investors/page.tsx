@@ -4,9 +4,31 @@ import type { Metadata } from "next";
 import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
 import { altFor, ogFor } from "@/lib/seo";
-import { localePath } from "@/lib/urls";
+import { investorPath, localePath } from "@/lib/urls";
+import { displayFundName } from "@/lib/managers/profileProse";
 import { InvestorListClient } from "./InvestorListClient";
 import SubNav from "@/components/shell/SubNav";
+import PageHeader from "@/components/common/PageHeader";
+import { LinkDirectory } from "@/components/list/LinkDirectory";
+
+// 页头在服务端渲染(而非放进客户端列表组件):列表组件读 useSearchParams,预渲染时整块
+// 落到 Suspense fallback,页头放在里面 → 服务端 HTML 没有 H1。
+const HEAD = {
+  zh: {
+    eyebrow: "SEC 13F · 季度披露",
+    heading: "超级投资者",
+    subtitle: "按组合市值排列 · 最新 13F 季",
+    dirEyebrow: "目录",
+    dirTitle: (n: number) => `全部 ${n} 位投资人，按姓名排序`,
+  },
+  en: {
+    eyebrow: "SEC 13F · quarterly filings",
+    heading: "Superinvestors",
+    subtitle: "Ranked by portfolio value · latest 13F quarter",
+    dirEyebrow: "Directory",
+    dirTitle: (n: number) => `All ${n} investors, A–Z`,
+  },
+} as const;
 
 // 缺此导出 = 本页在构建期静态生成后**永不重新验证**,只有重新部署才更新数据。
 // 2026-08 申报季实测:该页冻结在 5 天前的部署快照(81 家 Q1 + 13 家 Q2),而
@@ -60,9 +82,14 @@ export default async function InvestorsPage({
     .sort((a, b) => b.totalValue - a.totalValue)
     .map((m) => ({ ...m, qoq: qoq.get(m.cik) }));
 
+  const head = HEAD[lang];
+
   return (
     <>
       <SubNav lang={lang} section="investors" active="all" />
+      <div className="mb-4">
+        <PageHeader eyebrow={head.eyebrow} title={head.heading} intro={head.subtitle} />
+      </div>
       <Suspense
         fallback={
           <p className="font-data text-xs text-[var(--tt-faint)]">
@@ -72,6 +99,15 @@ export default async function InvestorsPage({
       >
         <InvestorListClient lang={lang} managers={managers} nowMs={Date.now()} />
       </Suspense>
+      <LinkDirectory
+        eyebrow={head.dirEyebrow}
+        title={head.dirTitle(managers.length)}
+        items={managers.map((m) => ({
+          href: investorPath(lang, m.slug),
+          label: m.person,
+          note: displayFundName(m.name),
+        }))}
+      />
     </>
   );
 }
