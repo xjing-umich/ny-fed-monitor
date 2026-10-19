@@ -16,7 +16,7 @@ import ReportArticle from "@/components/reports/ReportArticle";
 export const revalidate = 604800;
 
 export async function generateStaticParams() {
-  const reports = (await listReportPeriods()).map((r) => reportSlug(r.period));
+  const reports = (await listReportPeriods()).map((r) => reportSlug(r.period)).filter((s) => !ARTICLE_SLUGS.includes(s));
   return [...ARTICLE_SLUGS, ...reports].flatMap((slug) => [
     { lang: "en", slug },
     { lang: "zh", slug },

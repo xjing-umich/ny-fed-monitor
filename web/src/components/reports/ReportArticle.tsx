@@ -117,6 +117,9 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
             row.status === "final" ? "This report is frozen once final; later or amended filings do not change it. See the live consensus page for the current picture." : "Once the filing season closes and coverage is high enough, this report will be finalized and frozen.",
           ]).map((s) => <p key={s.slice(0, 24)}>{s}</p>)}
           <p>
+            <Link href={localePath(lang, "/learn/what-is-intrinsic-value")} className="text-[var(--tt-accent)]">{zh ? "什么是内在价值 →" : "What is intrinsic value →"}</Link>
+          </p>
+          <p>
             <Link href={localePath(lang, "/investors/consensus")} className="text-[var(--tt-accent)]">{zh ? "实时共识页 →" : "Live consensus page →"}</Link>
           </p>
         </div>

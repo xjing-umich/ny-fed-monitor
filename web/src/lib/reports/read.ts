@@ -12,7 +12,16 @@ function mapRow(r: Record<string, any>): ReportRow {
   };
 }
 
-/** 读一份报告。页面只需要公开字段:不取 preview_* 与 sends(既省 egress,也不把未定稿预览暴露到页面)。 */
+const isMissingTable = (error: unknown): boolean => {
+  const code = (error as { code?: string }).code;
+  return code === "42P01" || code === "PGRST205";
+};
+
+/**
+ * 读一份报告。页面只需要公开字段:不取 preview_* 与 sends(既省 egress,也不把未定稿预览暴露到页面)。
+ * 返回 null 仅限:无 Supabase env、表不存在、查询成功但无此行。
+ * 其它错误一律 throw(→ 500/构建失败),绝不转成 null → notFound() 缓存 7 天假 404(见 managers/db.ts withRetry 契约)。
+ */
 export const readReportRow = cache(async (period: string): Promise<ReportRow | null> => {
   if (!hasSupabaseEnv()) return null;
   try {
@@ -22,26 +31,30 @@ export const readReportRow = cache(async (period: string): Promise<ReportRow | n
         .eq("period", period).maybeSingle(),
     );
     if (error) {
-      const code = (error as { code?: string }).code;
-      if (code !== "42P01" && code !== "PGRST205") console.error(`readReportRow 失败: ${(error as Error).message}`);
-      return null;
+      if (isMissingTable(error)) return null;
+      throw new Error(`readReportRow 失败: ${(error as Error).message}`);
     }
     return data ? mapRow(data) : null;
   } catch (e) {
     console.error(`readReportRow 异常: ${e instanceof Error ? e.message : String(e)}`);
-    return null;
+    throw e;
   }
 });
 
+/** 无 env / 表不存在 → [];其它错误 throw(generateStaticParams 在真实故障时让构建大声失败)。 */
 export const listReportPeriods = cache(async (): Promise<Array<{ period: string; generatedAt: string; status: ReportStatus }>> => {
   if (!hasSupabaseEnv()) return [];
   try {
     const { data, error } = await withRetry(() =>
       getDb().from("quarterly_reports").select("period,generated_at,status").order("period", { ascending: false }),
     );
-    if (error) return [];
+    if (error) {
+      if (isMissingTable(error)) return [];
+      throw new Error(`listReportPeriods 失败: ${(error as Error).message}`);
+    }
     return (data ?? []).map((r: any) => ({ period: r.period, generatedAt: r.generated_at, status: r.status }));
-  } catch {
-    return [];
+  } catch (e) {
+    console.error(`listReportPeriods 异常: ${e instanceof Error ? e.message : String(e)}`);
+    throw e;
   }
 });
