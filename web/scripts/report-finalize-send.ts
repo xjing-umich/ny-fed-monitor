@@ -14,27 +14,59 @@ import { loadReportInput } from "./lib/loadReportInput";
 import { readReport } from "./lib/reportDb";
 import { env, makeDb, sendPreview } from "./report";
 
-const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
+const args = process.argv.slice(2);
+const arg = (k: string) => args.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 
-/** 刷新失败不应挡住群发:此时报告已冻结,页面缓存最迟随 ISR 过期自行更新。 */
-async function revalidateReport() {
-  if (!env.INGEST_SECRET) { console.warn("缺 INGEST_SECRET,跳过刷新缓存"); return; }
+/** 只接受 --period=YYYY-MM-DD、--action=preview|finalize、--dry-run;其它一律拒绝(避免 --dryrun 之类拼写错误变成真发送)。 */
+function parseArgs(): { period: string; action: "preview" | "finalize"; dryRun: boolean } {
+  let period: string | undefined;
+  let action: string | undefined;
+  let dryRun = false;
+  for (const a of args) {
+    if (a === "--dry-run") dryRun = true;
+    else if (a.startsWith("--period=")) period = a.slice("--period=".length);
+    else if (a.startsWith("--action=")) action = a.slice("--action=".length);
+    else throw new Error(`不认识的参数: ${a}(只接受 --period=YYYY-MM-DD、--action=preview|finalize、--dry-run)`);
+  }
+  if (!period || !/^\d{4}-\d{2}-\d{2}$/.test(period)) throw new Error("需要 --period=YYYY-MM-DD");
+  if (action !== "preview" && action !== "finalize") throw new Error("需要 --action=preview 或 --action=finalize");
+  if (action === "preview" && dryRun) throw new Error("--dry-run 只用于 --action=finalize(preview 本身会记录待定稿版本)");
+  return { period, action, dryRun };
+}
+
+/** 返回是否刷新成功。失败不挡群发,但最终会让进程以非零退出,提示重跑(重跑跳过已发语言、重试刷新)。 */
+async function revalidateReport(): Promise<boolean> {
+  if (!env.INGEST_SECRET) { console.error("缺 INGEST_SECRET,无法刷新报告页缓存"); return false; }
   try {
     const res = await fetch("https://thecompounder.fyi/api/revalidate?source=report", { method: "POST", headers: { Authorization: `Bearer ${env.INGEST_SECRET}` } });
-    if (!res.ok) console.warn(`revalidate 失败: ${res.status}(报告已冻结,继续)`);
+    if (!res.ok) { console.error(`revalidate 失败: ${res.status}`); return false; }
+    return true;
   } catch (e) {
-    console.warn(`revalidate 失败: ${(e as Error).message}(报告已冻结,继续)`);
+    console.error(`revalidate 失败: ${(e as Error).message}`);
+    return false;
   }
 }
 
+/** 记录 sends:重试 3 次(0 / 500ms / 1500ms 间隔),只写 sends 列(final 行的触发器拒绝其它改动)。 */
+async function recordSend(db: any, period: string, lang: ReportLang, broadcastId: string): Promise<string | null> {
+  const delays = [0, 500, 1500];
+  let lastErr = "";
+  for (const d of delays) {
+    if (d) await new Promise((r) => setTimeout(r, d));
+    try {
+      const sends = { ...(await readReport(db, period))!.sends, [lang]: { broadcastId, sentAt: new Date().toISOString() } };
+      const { error } = await db.from("quarterly_reports").update({ sends }).eq("period", period);
+      if (!error) return null;
+      lastErr = error.message;
+    } catch (e) {
+      lastErr = (e as Error).message;
+    }
+  }
+  return lastErr;
+}
+
 async function main() {
-  const period = arg("period");
-  const actionArg = arg("action");
-  const dryRun = process.argv.includes("--dry-run");
-  if (!period || !/^\d{4}-\d{2}-\d{2}$/.test(period)) throw new Error("需要 --period=YYYY-MM-DD");
-  if (actionArg !== "preview" && actionArg !== "finalize") throw new Error("需要 --action=preview 或 --action=finalize");
-  const action: "preview" | "finalize" = actionArg;
-  if (action === "preview" && dryRun) throw new Error("--dry-run 只用于 --action=finalize(preview 本身会记录待定稿版本)");
+  const { period, action, dryRun } = parseArgs();
 
   const db = makeDb();
   const row = await readReport(db, period);
@@ -62,10 +94,25 @@ async function main() {
     const { data: ok, error } = await db.rpc("finalize_report", { p_period: period });
     if (error) throw new Error(`finalize_report 失败: ${error.message}`);
     if (!ok) throw new Error("定稿未生效(状态已变化?)— 重新读取后再试");
-    await revalidateReport();
-    console.log("[finalize] 已冻结并刷新报告页");
+    console.log("[finalize] 已冻结");
   }
-  if (plan.sendLangs.length === 0) { console.log("[finalize] 无需发送"); return; }
+  // 非 dry-run 的 finalize 此时行必为 final:冻结后立刻刷新一次;发送结束后再刷新一次,让重跑能修复一次瞬时失败。
+  const shouldRevalidate = !dryRun;
+  let revalidateFailed = false;
+  if (shouldRevalidate && plan.freeze) {
+    if (await revalidateReport()) console.log("[finalize] 已刷新报告页");
+    else revalidateFailed = true;
+  }
+  const finishRevalidate = async () => {
+    if (!shouldRevalidate) return;
+    if (await revalidateReport()) { revalidateFailed = false; console.log("[finalize] 已刷新报告页"); }
+    else revalidateFailed = true;
+    if (revalidateFailed) {
+      console.error("[finalize] 报告页缓存刷新失败:群发已完成/无需发送,但公开页可能仍是旧版本。请重跑同一命令(已发语言会跳过,仅重试刷新)。");
+      process.exit(1);
+    }
+  };
+  if (plan.sendLangs.length === 0) { console.log("[finalize] 无需发送"); await finishRevalidate(); return; }
 
   const fresh = (await readReport(db, period))!;
   const payload = dryRun ? fresh.previewPayload : fresh.payload;
@@ -100,12 +147,11 @@ async function main() {
     if (created.error || !created.data) throw new Error(`broadcast 创建失败(${lang}): ${created.error?.message}`);
     const sent = await resend.broadcasts.send(created.data.id);
     if (sent.error) throw new Error(`broadcast 发送失败(${lang}): ${sent.error.message}`);
-    // 只更新 sends 列(final 行的触发器拒绝其它任何改动)。
-    const sends = { ...(await readReport(db, period))!.sends, [lang]: { broadcastId: created.data.id, sentAt: new Date().toISOString() } };
-    const { error } = await db.from("quarterly_reports").update({ sends }).eq("period", period);
-    if (error) throw new Error(`记录发送失败(${lang}),broadcast ${created.data.id} 已发出 — 手动补记,勿重跑该语言: ${error.message}`);
+    const recErr = await recordSend(db, period, lang, created.data.id);
+    if (recErr) throw new Error(`记录发送失败(${lang}),broadcast ${created.data.id} 已发出 — 手动补记,勿重跑该语言: ${recErr}`);
     console.log(`[finalize] ${lang} 已群发 broadcast ${created.data.id}`);
   }
+  await finishRevalidate();
 }
 
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
