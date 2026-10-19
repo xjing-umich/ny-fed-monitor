@@ -1,7 +1,7 @@
 import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, diffHoldings, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
 import { effectiveMovesPeriod, freshness13F, globalLatestPeriod } from "../../src/lib/freshness/derive";
 
-async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
+export async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
   // PostgREST OFFSET 分页要求排序以唯一列结尾,否则页边界并列行会整行跳过。
   // 调用方须在 filter 里带 .order(...唯一键);本函数先 filter 再 range。
   const out: any[] = [];
