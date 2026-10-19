@@ -4,6 +4,10 @@ on:
     - cron: "0 9 * * 1,4"    # 每周一/周四 09:00 UTC; 幂等(无新 filing 不写)。13F 为命脉,filing 季加密捕捉
     - cron: "0 9 10-20 2,5,8,11 *"  # 申报季(2/5/8/11 月 10–20 日)每天一次,接住截止日前后的大户申报
   workflow_dispatch: {}
+# 申报季的周一/周四两条 cron 会在同一分钟触发:两次 ingest 并发会交错 delete/insert holdings,
+# 污染共识表与报告 payload、重复发预览。排队执行,不取消正在跑的。
+concurrency: { group: ingest-13f, cancel-in-progress: false }
+permissions: { contents: read }
 jobs:
   ingest:
     runs-on: ubuntu-latest
