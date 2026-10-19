@@ -1,8 +1,9 @@
 /**
  * filing-backfill 行为校验。跑法: npx tsx src/lib/sec/filing-backfill.check.ts
- * 无 IO:内嵌一份迷你 instance + 假 companyfacts,覆盖单位/维度/scale 与「只补新一期、不改历史」。
+ * 无 IO:内嵌一份迷你 instance + 假 companyfacts,覆盖单位/维度/scale、新一期与历史空洞的挑选,
+ * 以及「比较期数不注入、同期取最早申报」两条不改历史的规则。
  */
-import { extractGaapFacts, findMissingFilings, injectFilingFacts } from "./filing-backfill";
+import { extractGaapFacts, findMissingFilings, injectFilingFacts, isOwnPeriod } from "./filing-backfill";
 import type { CompanyFacts } from "./company-facts";
 import type { NormalizedFiling } from "./company-submissions";
 import { normalizeCompanyFacts } from "./normalize-facts";
@@ -76,7 +77,9 @@ check("不漏收时为空", findMissingFilings(mkFacts(), filings.filter((f) => 
 
 const facts = mkFacts();
 const n = injectFilingFacts(facts, missing[0], g);
-check("注入条数 = 抽取条数", n === g.length, `${n} vs ${g.length}`);
+const own = g.filter((f) => (f.end ?? f.instant) === "2026-06-30").length;
+check("只注入本期事实(去年同期比较数跳过)", n === own && own === g.length - 1, `${n} vs ${own}/${g.length}`);
+check("isOwnPeriod 容差 ±7 天(52/53 周制)", isOwnPeriod("2026-06-28", "2026-06-30") && !isOwnPeriod("2025-06-30", "2026-06-30"));
 const rev = facts.facts["us-gaap"].RevenueFromContractWithCustomerExcludingAssessedTax.units.USD;
 check("注入条目带 accn/form/filed", rev.some((u) => u.accn === "Q2-26" && u.form === "10-Q" && u.filed === "2026-07-28" && u.end === "2026-06-30"));
 
@@ -85,6 +88,69 @@ const norm = normalizeCompanyFacts("ABT", "0000001800", facts, filings, "1231");
 const q = (end: string) => norm.quarterly.find((r) => r.period_end === end);
 check("归一后出现 2026-06-30 新一期", q("2026-06-30")?.revenue === 12_593_000_000, String(q("2026-06-30")?.revenue));
 check("去年同期保持最早申报值(不改历史)", q("2025-06-30")?.revenue === 11_000_000_000, String(q("2025-06-30")?.revenue));
+
+console.log("历史空洞(最新一期之前)");
+// companyfacts 已到 2026-06-30,但 2025-09-30 的 10-Q 与 2025-12-31 的 10-K 都没收(XOM / CAH / TAP 型)。
+const mkHoleFacts = (): CompanyFacts => ({
+  cik: 1800, entityName: "ABT",
+  facts: { "us-gaap": {
+    Revenues: { units: { USD: [
+      { start: "2025-04-01", end: "2025-06-30", val: 10_900_000_000, accn: "Q2-25", form: "10-Q", filed: "2025-07-30" },
+      { start: "2026-04-01", end: "2026-06-30", val: 12_000_000_000, accn: "Q2-26", form: "10-Q", filed: "2026-07-28" },
+    ] } },
+    // 2026 Q1 10-Q 带的上年末资产负债表比较数:时点事实,不能让 10-K 2025-12-31 被当成「已覆盖」
+    Assets: { units: { USD: [
+      { end: "2025-12-31", val: 100_000_000_000, accn: "Q1-26", form: "10-Q", filed: "2026-04-29" },
+    ] } },
+  } },
+});
+const holeFilings = [
+  filing("OLD", "10-Q", "2019-06-30", "2019-07-30"),        // 超出回看窗口
+  filing("Q2-25", "10-Q", "2025-06-30", "2025-07-30"),
+  filing("Q3-25", "10-Q", "2025-09-30", "2025-10-29"),      // companyfacts 漏收:空洞
+  filing("FY-25", "10-K", "2025-12-31", "2026-02-18"),      // companyfacts 漏收:空洞(只有时点比较数)
+  filing("Q1-26", "10-Q", "2026-03-31", "2026-04-29"),      // accession 在 companyfacts 里(Assets 那条)→ 已收
+  filing("Q2-26", "10-Q", "2026-06-30", "2026-07-28"),
+];
+const holes = findMissingFilings(mkHoleFacts(), holeFilings, 10).map((f) => f.accession_number);
+check("挑出最新一期之前的空洞(10-Q 与 10-K)", holes.includes("Q3-25") && holes.includes("FY-25"), holes.join(","));
+check("超出 3 年回看窗口的远古申报不挑", !holes.includes("OLD"));
+check("在 companyfacts 里的申报不挑", !holes.includes("Q2-25") && !holes.includes("Q1-26") && !holes.includes("Q2-26"));
+const coveredFacts = mkHoleFacts();
+coveredFacts.facts["us-gaap"].Revenues.units.USD.push(
+  // 后来申报里的去年同期比较数已覆盖 2025-09-30 → 不算空洞,不去拉
+  { start: "2025-07-01", end: "2025-09-30", val: 11_200_000_000, accn: "Q3-26x", form: "10-Q", filed: "2026-10-28" },
+);
+check("比较数已覆盖的期不算空洞", !findMissingFilings(coveredFacts, holeFilings, 10).some((f) => f.accession_number === "Q3-25"));
+const proxyFacts = mkHoleFacts();
+proxyFacts.facts["us-gaap"].NetIncomeLoss = { units: { USD: [
+  // DEF 14A 薪酬与业绩表的全年净利:撑不起一行基本面,不能让 10-K 空洞被当成已覆盖(AMRC / EIKN / MWH 型)
+  { start: "2025-01-01", end: "2025-12-31", val: 900_000_000, accn: "PROXY", form: "DEF 14A", filed: "2026-04-10" },
+] } };
+check("DEF 14A 的全年数不算覆盖 10-K 空洞", findMissingFilings(proxyFacts, holeFilings, 10).some((f) => f.accession_number === "FY-25"));
+const footnoteFacts = mkHoleFacts();
+footnoteFacts.facts["us-gaap"].FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisLiabilitySettlements = { units: { USD: [
+  // 10-Q 附注里的全年公允价值调节数:非核心概念,同样不算覆盖
+  { start: "2025-01-01", end: "2025-12-31", val: 1_685_000, accn: "Q1-26", form: "10-Q", filed: "2026-04-29" },
+] } };
+check("10-Q 附注里的非核心全年数不算覆盖", findMissingFilings(footnoteFacts, holeFilings, 10).some((f) => f.accession_number === "FY-25"));
+check("超过上限时保留最新的", findMissingFilings(mkHoleFacts(), holeFilings, 1).map((f) => f.accession_number).join() === "FY-25");
+
+// 端到端:补 Q3-25 空洞;它的去年同期比较数用的是优先级更高的概念,也不能顶掉历史上用 Revenues 报的原值。
+const Q3_XML = XML.replaceAll("2026-04-01", "2025-07-01").replaceAll("2026-06-30", "2025-09-30")
+  .replaceAll("2025-04-01", "2024-07-01").replaceAll("2025-06-30", "2024-09-30");
+const holeFacts = mkHoleFacts();
+holeFacts.facts["us-gaap"].Revenues.units.USD.push(
+  { start: "2024-07-01", end: "2024-09-30", val: 10_100_000_000, accn: "Q3-24", form: "10-Q", filed: "2024-10-30" },
+);
+const q3 = holeFilings.find((f) => f.accession_number === "Q3-25")!;
+injectFilingFacts(holeFacts, q3, extractGaapFacts(Q3_XML));
+const holeNorm = normalizeCompanyFacts("ABT", "0000001800", holeFacts, holeFilings, "1231");
+const hq = (end: string) => holeNorm.quarterly.find((r) => r.period_end === end);
+check("空洞期 2025-09-30 被补出", hq("2025-09-30")?.revenue === 12_593_000_000, String(hq("2025-09-30")?.revenue));
+check("空洞期 accession 指向原始申报", hq("2025-09-30")?.accession_number === "Q3-25", String(hq("2025-09-30")?.accession_number));
+check("跨概念比较数不覆盖历史(2024-09-30 仍为 10.1B)", hq("2024-09-30")?.revenue === 10_100_000_000, String(hq("2024-09-30")?.revenue));
+check("既有期不受影响(2026-06-30 仍为 12.0B)", hq("2026-06-30")?.revenue === 12_000_000_000, String(hq("2026-06-30")?.revenue));
 
 if (failed) {
   console.error(`\nfiling-backfill.check: ${failed} 项失败`);

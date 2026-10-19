@@ -5,9 +5,10 @@ import { fetchCompanyFacts } from "./company-facts";
 import { fetchCompanySubmissions, normalizeRecentFilings } from "./company-submissions";
 import { FundamentalPeriod, normalizeCompanyFacts } from "./normalize-facts";
 import { backfillMissingFilings } from "./filing-backfill";
+import { attachPredecessorHistory } from "./predecessor";
 import { needsClassSharesFallback, applyClassSharesFallback } from "./class-shares-fallback";
 import { needsHoldcoSotp, ingestHoldcoSotp } from "./holdco-ingest";
-import { resolveTickerCik } from "./ticker-cik";
+import { resolveTickerCik, type TickerCikMatch } from "./ticker-cik";
 import { sleep } from "./sec-client";
 import { isLikelyTicker } from "../externalLinks";
 
@@ -141,6 +142,38 @@ async function upsertLatest(
   return true;
 }
 
+/**
+ * 纯 SEC 侧:取 submissions + companyfacts → 前身拼接 → 漏收回填 → 归一 → 分股类股数回退。
+ * 不碰数据库,ingestCompany 与本地 dry-run(scripts/sec-ingest-company.ts --dry-run)共用。
+ */
+export async function prepareCompanyFundamentals(ticker: string, match: TickerCikMatch) {
+  const [submission, facts] = await Promise.all([fetchCompanySubmissions(match.cik), fetchCompanyFacts(match.cik)]);
+  const ownFilings = normalizeRecentFilings(ticker, submission);
+  // 控股重组 / 再注册:新 CIK 的 companyfacts 只有重组后的申报,历史在前身 CIK 下(2026-10:XOM)。
+  const predecessor = await attachPredecessorHistory(ticker, match.cik, facts, ownFilings);
+  if (predecessor) {
+    console.log(`  ${ticker}: 继任注册人,已拼接前身 CIK ${predecessor.cik} 的历史(一致事实 ${predecessor.overlap} 条)`);
+  }
+  const filings = Array.from(
+    new Map([...(predecessor?.filings ?? []), ...ownFilings].map((filing) => [filing.accession_number, filing])).values()
+  ).sort((a, b) => (b.filing_date ?? "").localeCompare(a.filing_date ?? ""));
+  const forms = new Set(filings.map((filing) => filing.form));
+  const isForeignIssuer = KNOWN_FOREIGN_ISSUERS.has(ticker) || (!forms.has("10-K") && forms.has("20-F"));
+
+  // companyfacts 会漏收部分 10-Q/10-K(2026-10:~200 家缺 Q2,另有最新一期之前的空洞)→ 从原始申报的 XBRL instance 回填后再归一。
+  const backfill = await backfillMissingFilings(facts, filings);
+  if (backfill.filled.length) console.log(`  ${ticker}: companyfacts 漏收,已从原始申报回填 ${backfill.filled.join("; ")}`);
+  if (backfill.failed.length) console.warn(`  ${ticker}: 漏收申报回填失败 ${backfill.failed.join("; ")}`);
+  const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
+  // 分股类申报公司(V/BRK 等)在 companyfacts 拿不到无维度股数 → 从 10-K instance 的
+  // ClassOfStockAxis 维度事实回退推导经济股数(spec 2026-07-26)。窄闸:全年份缺股数才触发。
+  if (needsClassSharesFallback(normalized.annual)) {
+    const patched = await applyClassSharesFallback(normalized.annual, filings);
+    if (patched > 0) console.log(`  ${ticker}: class-dimension share fallback patched ${patched} FY rows`);
+  }
+  return { submission, filings, isForeignIssuer, normalized, backfill, predecessor };
+}
+
 export async function ingestCompany(tickerInput: string, supabase = createServiceSupabaseClient()): Promise<IngestCompanyResult> {
   const ticker = tickerInput.trim().toUpperCase();
   const runId = await startRun(supabase, "company", ticker);
@@ -161,12 +194,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       return result;
     }
 
-    const [submission, facts] = await Promise.all([fetchCompanySubmissions(match.cik), fetchCompanyFacts(match.cik)]);
-    const filings = Array.from(
-      new Map(normalizeRecentFilings(ticker, submission).map((filing) => [filing.accession_number, filing])).values()
-    );
-    const forms = new Set(filings.map((filing) => filing.form));
-    const isForeignIssuer = KNOWN_FOREIGN_ISSUERS.has(ticker) || (!forms.has("10-K") && forms.has("20-F"));
+    const { submission, filings, isForeignIssuer, normalized } = await prepareCompanyFundamentals(ticker, match);
 
     const { error: companyError } = await supabase.from("sec_companies").upsert(
       {
@@ -188,17 +216,6 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     const { error: filingsError } = await supabase.from("sec_filings").upsert(filings, { onConflict: "accession_number" });
     if (filingsError) throw filingsError;
 
-    // companyfacts 会漏收部分 10-Q/10-K(2026-10:~200 家缺 Q2)→ 从原始申报的 XBRL instance 回填后再归一。
-    const backfill = await backfillMissingFilings(facts, filings);
-    if (backfill.filled.length) console.log(`  ${ticker}: companyfacts 漏收,已从原始申报回填 ${backfill.filled.join("; ")}`);
-    if (backfill.failed.length) console.warn(`  ${ticker}: 漏收申报回填失败 ${backfill.failed.join("; ")}`);
-    const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
-    // 分股类申报公司(V/BRK 等)在 companyfacts 拿不到无维度股数 → 从 10-K instance 的
-    // ClassOfStockAxis 维度事实回退推导经济股数(spec 2026-07-26)。窄闸:全年份缺股数才触发。
-    if (needsClassSharesFallback(normalized.annual)) {
-      const patched = await applyClassSharesFallback(normalized.annual, filings);
-      if (patched > 0) console.log(`  ${ticker}: class-dimension share fallback patched ${patched} FY rows`);
-    }
     // 件⑤:投资主导型控股集团才拉 instance 解析分部与第一栏(窄闸,其余票零新增取数)。
     if (needsHoldcoSotp(normalized.annual)) {
       const holdco = await ingestHoldcoSotp(supabase, ticker, filings);

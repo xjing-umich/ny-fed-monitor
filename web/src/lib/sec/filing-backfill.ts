@@ -1,6 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
 import type { CompanyFacts, SecFactUnit } from "./company-facts";
 import type { NormalizedFiling } from "./company-submissions";
+import { FUNDAMENTAL_TAGS } from "./fundamental-tags";
 import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
 
 /**
@@ -11,8 +12,16 @@ import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client"
  * "success",估值一直用旧一季的基本面。
  *
  * 做法:把 instance 里的无维度 us-gaap 事实转成 companyfacts 同形的条目,注入 facts 后再交给
- * 现有 normalizer。normalizer 对同一期按「最早申报」取值,所以新申报里的去年同期比较数不会
- * 覆盖历史,只有真正的新一期被补进来;TTM / 完整性闸 / 估值全部沿用,零分叉。
+ * 现有 normalizer;TTM / 完整性闸 / 估值全部沿用,零分叉。
+ *
+ * 两条规则保证「不改历史」:
+ *  - 只注入申报**自身报告期**的事实(end ≈ reportDate)。比较期数一律不注入 —— normalizer 按
+ *    「同概念最早申报」取值,但不同概念之间是「优先级靠前的概念先到先得」,若注入的比较数用了
+ *    更靠前的概念,就会顶掉历史上用次级概念报的原值。只注入本期,这条缝就不存在。
+ *  - 同期仍按最早申报取值(normalizer 既有规则):补进来的原始申报比后来申报里的比较数更早。
+ *
+ * 范围(2026-10 扩展):除「晚于 companyfacts 最新一期」的新一期外,也补最新一期之前 3 年内的
+ * 历史空洞 —— 那一期在 companyfacts 里连同口径的营收/净利都没有(比较数也没有)。
  */
 
 export type UnitKind = "USD" | "shares" | "USD/shares";
@@ -23,6 +32,19 @@ export type GaapFact = { tag: string; unit: UnitKind; value: number; start?: str
 const FORMS = new Set(["10-Q", "10-K"]);
 /** 每家最多回填的申报份数:正常只差 1 份,多于 3 份说明另有问题,不靠这里补。 */
 export const MAX_BACKFILL_FILINGS = 3;
+/** 历史空洞只回看 companyfacts 最新一期前 3 年(≈ normalizer 保留的 12 季),不去翻没有 XBRL 的远古申报。 */
+export const HOLE_LOOKBACK_DAYS = 3 * 365;
+/** 「自身报告期」容差:52/53 周制的事实 end 与 reportDate 可能差几天。 */
+const OWN_PERIOD_TOLERANCE_DAYS = 7;
+
+/** 判断某期在 companyfacts 里「已有数据」只看撑起一行基本面的核心概念(营收 / 净利)。 */
+const CORE_TAGS = new Set([...FUNDAMENTAL_TAGS.revenue, ...FUNDAMENTAL_TAGS.net_income]);
+
+const dayNum = (d: string) => Date.parse(d) / 86_400_000;
+/** 事实的 end 是否落在申报自身报告期上(而不是去年同期 / 上年末等比较期)。 */
+export function isOwnPeriod(end: string, reportDate: string): boolean {
+  return Math.abs(dayNum(end) - dayNum(reportDate)) <= OWN_PERIOD_TOLERANCE_DAYS;
+}
 
 const localName = (k: string) => k.split(":").pop() ?? k;
 const prefixOf = (k: string) => (k.includes(":") ? k.split(":")[0] : "");
@@ -112,41 +134,62 @@ export function extractGaapFacts(xml: string): GaapFact[] {
   return out;
 }
 
-function factsAccessions(facts: CompanyFacts): { accns: Set<string>; latestEnd: string | null } {
+function factsAccessions(facts: CompanyFacts): { accns: Set<string>; latestEnd: string | null; durationEnds: Map<string, number[]> } {
   const accns = new Set<string>();
   let latestEnd: string | null = null;
-  for (const concept of Object.values(facts.facts?.["us-gaap"] ?? {})) {
+  // end → 10-Q/10-K 在该 end 上报过的营收/净利期间事实天数(判断某期在 companyfacts 里是否已有同口径数据)。
+  // 不算:DEF 14A 薪酬与业绩表的全年净利、10-Q 附注里的公允价值调节表等 —— 都撑不起一行基本面。
+  const durationEnds = new Map<string, number[]>();
+  for (const [tag, concept] of Object.entries(facts.facts?.["us-gaap"] ?? {})) {
     for (const list of Object.values(concept.units ?? {})) {
       for (const u of list) {
         if (u.accn) accns.add(u.accn);
         if (u.end && u.form && FORMS.has(u.form) && (!latestEnd || u.end > latestEnd)) latestEnd = u.end;
+        if (u.start && u.end && u.form && FORMS.has(u.form) && CORE_TAGS.has(tag)) {
+          const days = Math.round(dayNum(u.end) - dayNum(u.start));
+          const list = durationEnds.get(u.end);
+          if (list) list.push(days);
+          else durationEnds.set(u.end, [days]);
+        }
       }
     }
   }
-  return { accns, latestEnd };
+  return { accns, latestEnd, durationEnds };
+}
+
+/** companyfacts 里是否已有这份申报口径的营收/净利期间事实(10-K:全年;10-Q:单季或 YTD),来自任一 10-Q/10-K(含比较数)。 */
+function periodCovered(durationEnds: Map<string, number[]>, filing: NormalizedFiling): boolean {
+  const report = filing.report_date!;
+  const fits = filing.form === "10-K" ? (d: number) => d >= 350 && d <= 380 : (d: number) => d >= 80 && d <= 285;
+  for (const [end, days] of durationEnds) if (isOwnPeriod(end, report) && days.some(fits)) return true;
+  return false;
 }
 
 /**
- * companyfacts 漏收的申报:10-Q/10-K,accession 不在 companyfacts 里,且报告期晚于 companyfacts
- * 已有的最新一期(只补「新的一期」,不去翻没有 XBRL 的远古申报)。按报告期升序,最多 max 份。
+ * companyfacts 漏收的申报:10-Q/10-K,accession 不在 companyfacts 里,且属于以下之一:
+ *  - 新一期:报告期晚于 companyfacts 已有的最新一期;
+ *  - 历史空洞:报告期在最新一期前 HOLE_LOOKBACK_DAYS 内,且 companyfacts 里这一期连同口径的
+ *    营收/净利都没有(后来申报的比较数已覆盖的期,不算空洞,不去拉)。
+ * 按报告期升序,最多 max 份(超出时保留最新的)。
  */
 export function findMissingFilings(facts: CompanyFacts, filings: NormalizedFiling[], max = MAX_BACKFILL_FILINGS): NormalizedFiling[] {
-  const { accns, latestEnd } = factsAccessions(facts);
+  const { accns, latestEnd, durationEnds } = factsAccessions(facts);
+  const holeFloor = latestEnd == null ? null : new Date((dayNum(latestEnd) - HOLE_LOOKBACK_DAYS) * 86_400_000).toISOString().slice(0, 10);
   return filings
     .filter((f) => FORMS.has(f.form) && f.report_date && f.primary_document && !accns.has(f.accession_number))
-    .filter((f) => latestEnd == null || f.report_date! > latestEnd)
+    .filter((f) => latestEnd == null || f.report_date! > latestEnd || (f.report_date! >= holeFloor! && !periodCovered(durationEnds, f)))
     .sort((a, b) => (a.report_date! < b.report_date! ? -1 : 1))
     .slice(-max);
 }
 
-/** 把一份申报的事实以 companyfacts 同形注入(就地修改 facts)。返回注入条数。 */
+/** 把一份申报**自身报告期**的事实以 companyfacts 同形注入(就地修改 facts;比较期事实跳过)。返回注入条数。 */
 export function injectFilingFacts(facts: CompanyFacts, filing: NormalizedFiling, gaap: GaapFact[]): number {
   facts.facts = facts.facts ?? {};
   const ns = (facts.facts["us-gaap"] = facts.facts["us-gaap"] ?? {});
   let n = 0;
   for (const g of gaap) {
     const end = g.end ?? g.instant;
-    if (!end) continue;
+    if (!end || (filing.report_date && !isOwnPeriod(end, filing.report_date))) continue;
     const concept = (ns[g.tag] = ns[g.tag] ?? { units: {} });
     const list = (concept.units[g.unit] = concept.units[g.unit] ?? []);
     const unit: SecFactUnit = {

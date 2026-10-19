@@ -15,11 +15,28 @@ function loadEnvLocal() {
 
 async function main() {
   loadEnvLocal();
-  const ticker = process.argv[2];
+  const args = process.argv.slice(2);
+  const dryRun = args.includes("--dry-run");
+  const ticker = args.find((a) => !a.startsWith("--"));
 
   if (!ticker) {
-    console.error("Usage: npm run sec:ingest -- AAPL");
+    console.error("Usage: npm run sec:ingest -- AAPL [--dry-run]");
     process.exit(1);
+  }
+
+  // --dry-run:只走 SEC 取数 + 归一,打印将写入的期数,不碰数据库。
+  if (dryRun) {
+    const { prepareCompanyFundamentals } = await import("../src/lib/sec/ingest");
+    const { resolveTickerCik } = await import("../src/lib/sec/ticker-cik");
+    const symbol = ticker.trim().toUpperCase();
+    const match = await resolveTickerCik(symbol);
+    if (!match) throw new Error(`${symbol}: ticker 无法解析到 SEC CIK`);
+    const { normalized, backfill, predecessor } = await prepareCompanyFundamentals(symbol, match);
+    console.log(`${symbol} cik=${match.cik} 前身=${predecessor?.cik ?? "无"} 回填=${backfill.filled.length} 失败=${backfill.failed.length}`);
+    for (const r of [...normalized.annual, ...normalized.quarterly]) {
+      console.log(`  ${r.fiscal_period?.padEnd(2)} ${r.period_end} ${r.form} ${r.accession_number} filed=${r.filing_date} revenue=${r.revenue} net_income=${r.net_income} ${r.data_quality}`);
+    }
+    return;
   }
 
   const { ingestCompany } = await import("../src/lib/sec/ingest");
