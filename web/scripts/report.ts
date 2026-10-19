@@ -2,7 +2,7 @@
  * 季度报告 live 刷新 + 可定稿时发预览。用法: npm run report [-- --period=2026-06-30]
  * ingest 之后运行。payload 不变则什么都不写(不刷缓存、不改 generated_at)。
  */
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import * as fs from "fs";
 import * as path from "path";
@@ -14,7 +14,7 @@ import { renderReportEmail } from "../src/lib/reports/email";
 import { reportPeriodFor, reportSlug } from "../src/lib/reports/period";
 import type { ReportPayload, ReportRow } from "../src/lib/reports/types";
 import { loadReportInput } from "./lib/loadReportInput";
-import { readReport } from "./lib/reportDb";
+import { countPriorIssues, readReport } from "./lib/reportDb";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 function loadEnv(): Record<string, string> {
@@ -33,7 +33,7 @@ function setActionOutput(key: string, value: string) {
   if (out) fs.appendFileSync(out, `${key}=${value}\n`);
 }
 
-export function makeDb() {
+export function makeDb(): SupabaseClient {
   const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
   const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
@@ -41,13 +41,15 @@ export function makeDb() {
 }
 
 /** 把中英两版真实渲染的邮件发给站长,并记录这份 payload 作为待定稿版本。 */
-export async function sendPreview(db: any, row: ReportRow, payload: ReportPayload, valuationAsOf: string | null): Promise<void> {
+export async function sendPreview(db: SupabaseClient, row: ReportRow, payload: ReportPayload, valuationAsOf: string | null): Promise<void> {
   const key = env.RESEND_API_KEY;
   const to = env.RESEND_ALERTS_TO;
   if (!key || !to) throw new Error("缺少 RESEND_API_KEY / RESEND_ALERTS_TO,无法发预览");
   const resend = new Resend(key);
   const from = env.RESEND_ALERTS_FROM || "Compounder Ops <ops@send.thecompounder.fyi>";
-  const meta = { status: "final" as const, coverageFiled: payload.coverage.filed, coverageTotal: payload.coverage.total, finalizedAt: new Date().toISOString(), valuationAsOf, isFirstIssue: true, postalAddress: env.NEWSLETTER_POSTAL_ADDRESS || undefined };
+  // 首期句与真实群发同一口径(countPriorIssues),预览里看到的就是订阅者会看到的。
+  const isFirstIssue = (await countPriorIssues(db, row.period)) === 0;
+  const meta = { status: "final" as const, coverageFiled: payload.coverage.filed, coverageTotal: payload.coverage.total, finalizedAt: new Date().toISOString(), valuationAsOf, isFirstIssue, postalAddress: env.NEWSLETTER_POSTAL_ADDRESS || undefined };
   const how = `\n\n[预览] ${reportSlug(row.period)} · 覆盖 ${payload.coverage.filed}/${payload.coverage.total}\n确认无误后:GitHub → Actions → Report finalize & send → Run workflow(period=${row.period}, action=finalize)。\n想用更新的数据先跑 action=preview。`;
   for (const lang of ["en", "zh"] as const) {
     const e = renderReportEmail(payload, meta, lang);

@@ -42,7 +42,9 @@ export type ReportPayload = {
 };
 
 export type ReportStatus = "live" | "final";
-export type ReportSends = Partial<Record<ReportLang, { broadcastId: string; sentAt: string }>>;
+/** 先记 broadcastId(sentAt=null)再发送;发送成功后补 sentAt。sentAt 非空才算该语言已完成。 */
+export type ReportSendEntry = { broadcastId: string; sentAt: string | null };
+export type ReportSends = Partial<Record<ReportLang, ReportSendEntry>>;
 
 /** quarterly_reports 一行(读层映射后的 camelCase)。 */
 export type ReportRow = {
