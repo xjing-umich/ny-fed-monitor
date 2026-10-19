@@ -61,7 +61,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
       {/* Hairline separator */}
       <span className="w-px h-5 bg-[var(--tt-border)] shrink-0" />
 
-      {/* Nav links — understated uppercase-tracked text links */}
+      {/* Nav links — 克制的文字链接,激活项下划线 */}
       <nav className="flex items-center gap-6">
         {TOP_NAV.map((entry) => {
           const active = isActive(entry);
@@ -100,6 +100,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
             return (
               <span
                 key={l}
+                lang={l}
                 aria-current="true"
                 className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-xs font-data text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
               >
@@ -111,6 +112,8 @@ export default function TopNav({ lang, items }: TopNavProps) {
             <Link
               key={l}
               href={otherLangPath}
+              lang={l}
+              hrefLang={l}
               className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-xs font-data transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
             >
               {l === "zh" ? "中文" : "EN"}

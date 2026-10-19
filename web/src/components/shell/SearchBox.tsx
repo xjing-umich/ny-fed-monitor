@@ -18,6 +18,8 @@ interface SearchBoxProps {
   items: SearchItem[];
   variant?: "default" | "hero";
   placeholder?: string;
+  /** 撑满父容器宽度(抽屉内使用);默认 false,桌面导航保持固定 w-56。 */
+  fill?: boolean;
 }
 
 export default function SearchBox({
@@ -25,6 +27,7 @@ export default function SearchBox({
   items,
   variant = "default",
   placeholder: placeholderProp,
+  fill = false,
 }: SearchBoxProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -146,7 +149,7 @@ export default function SearchBox({
   return (
     <div
       ref={containerRef}
-      className={isHero ? "relative w-full max-w-xl" : "relative"}
+      className={isHero ? "relative w-full max-w-xl" : fill ? "relative w-full" : "relative"}
     >
       <div
         className={[
@@ -174,7 +177,7 @@ export default function SearchBox({
           aria-label={placeholder}
           className={[
             "bg-transparent text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] outline-none",
-            isHero ? "w-full flex-1 text-base" : "w-56 text-xs",
+            isHero ? "w-full flex-1 text-base" : fill ? "w-full min-w-0 flex-1 text-sm" : "w-56 text-xs",
           ].join(" ")}
         />
       </div>
@@ -186,7 +189,7 @@ export default function SearchBox({
           aria-label={placeholder}
           className={[
             "absolute top-full mt-1 left-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] shadow-md z-50 overflow-hidden",
-            isHero ? "w-full" : "w-72",
+            isHero || fill ? "w-full" : "w-72",
           ].join(" ")}
         >
           {filtered.map((item, i) => (

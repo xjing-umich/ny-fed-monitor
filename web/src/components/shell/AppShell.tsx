@@ -27,7 +27,7 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
 
       {/* Mobile header strip with hamburger */}
       <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
-        <MobileDrawer lang={lang} />
+        <MobileDrawer lang={lang} items={items} />
         <span className="flex items-center gap-2 flex-1 truncate">
           <LogoMark className="h-[20px] w-[20px] text-[var(--tt-accent)] shrink-0" />
           <span className="font-display text-lg font-medium tracking-tight text-[var(--tt-text)]">
