@@ -1,5 +1,5 @@
 import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
-import { effectiveMovesPeriod, freshness13F, globalLatestPeriod } from "../../src/lib/freshness/derive";
+import { countsAsCurrentHolder, effectiveMovesPeriod } from "../../src/lib/freshness/derive";
 
 async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
   // PostgREST OFFSET 分页要求排序以唯一列结尾,否则页边界并列行会整行跳过。
@@ -86,11 +86,12 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     raws.push({ cik: m.cik, slug: m.slug, person: m.person, period: filings[0].period, filedAt: filings[0].filed_at ?? null, latestH, priorH });
   }
 
-  // 新鲜度口径(与 src/lib/aggregations.ts 一致): inactive 全剔除; 非有效变动季者 holdings 计入但 changes 清空。
+  // 新鲜度口径(与 src/lib/aggregations.ts 一致): 最近到期季的截止日过后仍没交的 manager 不计入
+  // 当前持有人(countsAsCurrentHolder);非有效变动季者 holdings 计入但 changes 清空。
   const periods = raws.map((r) => r.period);
-  const gl = globalLatestPeriod(periods);
-  const effective = effectiveMovesPeriod(periods, new Date());
-  const active = raws.filter((r) => freshness13F(r.period, gl) !== "inactive");
+  const now = new Date();
+  const effective = effectiveMovesPeriod(periods, now);
+  const active = raws.filter((r) => countsAsCurrentHolder(r.period, now));
   const changesOf = (r: Raw) =>
     (effective.period && r.period === effective.period ? diff(r.latestH, r.priorH) : []);
 

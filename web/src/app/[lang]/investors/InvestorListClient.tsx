@@ -8,7 +8,7 @@ import { formatUSD, cleanIssuer } from "@/lib/format";
 import { displayFundName } from "@/lib/managers/profileProse";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge, type BadgeTone } from "@/components/common/Badge";
-import { quarterLabel, freshness13F, daysAgo, globalLatestPeriod, parseUTC } from "@/lib/freshness/derive";
+import { quarterLabel, freshness13F, daysAgo, globalLatestPeriod, isScopeChange, parseUTC } from "@/lib/freshness/derive";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
 import { useListState } from "@/components/list/useListState";
@@ -42,6 +42,7 @@ const COPY = {
     noResults: "没有匹配的投资者，换个关键词或清空筛选试试。",
     count: (m: number, n: number) => (m === n ? `共 ${n} 位` : `匹配 ${m} / 共 ${n} 位`),
     filedAgo: (d: number) => (d === 0 ? "今天提交" : `${d} 天前提交`),
+    scopeNote: "13F 申报原文数字。股价一季变不了这么多，多为资金赎回、清盘或申报范围变化，不等于主动卖出/买入。",
     filterAll: "全部动向",
     filterBuying: "加仓",
     filterSelling: "减仓",
@@ -70,6 +71,7 @@ const COPY = {
     noResults: "No investors match — try a different spelling or clear the filter.",
     count: (m: number, n: number) => (m === n ? `${n} investors` : `${m} of ${n}`),
     filedAgo: (d: number) => (d === 0 ? "filed today" : `filed ${d}d ago`),
+    scopeNote: "As reported in the 13F. Prices don't move this much in a quarter: usually redemptions, a wind-down, or a change in reporting scope — not necessarily active selling or buying.",
     filterAll: "Any move",
     filterBuying: "Buying",
     filterSelling: "Selling",
@@ -174,10 +176,17 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
       sortKey: "value",
       cell: (m) => {
         const pd = fmtPctDelta(m.qoq?.valueDeltaPct);
+        // 量级异常(≤−50% / ≥+100%)标 * 并附说明:多为赎回/清盘/申报范围变化,不是价格或主动调仓。
+        const scope = isScopeChange(m.qoq?.valueDeltaPct);
         return (
           <span className="font-medium text-[var(--tt-text)]">
             {formatUSD(m.totalValue)}
-            {pd && <span className={`ml-1.5 text-xs ${pd.cls}`}>{pd.text}</span>}
+            {pd && (
+              <span className={`ml-1.5 text-xs ${pd.cls}`} title={scope ? t.scopeNote : undefined}>
+                {pd.text}
+                {scope && "*"}
+              </span>
+            )}
           </span>
         );
       },

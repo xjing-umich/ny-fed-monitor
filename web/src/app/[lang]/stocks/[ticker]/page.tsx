@@ -11,7 +11,7 @@ import {
   getTickerExchangeMap,
   getSecurityMeta,
 } from "@/lib/managers/securities";
-import { effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
+import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -39,6 +39,7 @@ import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/pri
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
+import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
@@ -85,12 +86,13 @@ export async function generateMetadata({
   for (const c of cusips) { const info = cusipMap.get(c); if (info?.name) { issuer = cleanIssuer(info.name); break; } }
 
   // 数据驱动 description:持有人数/合计市值/截至季度/最大持有人,与页面持有人表同源同口径
-  // (快照非清仓行;"截至"走 effectiveMovesPeriod)。readStockHolders/getManagerIndex 有 cache(),
+  // (快照非清仓行、按 countsAsCurrentHolder 排除逾期未申报者;"截至"走 effectiveMovesPeriod)。readStockHolders/getManagerIndex 有 cache(),
   // 与页面渲染共享一次查询。快照不可用(本地无库)→ 回退通用描述。
   const [snap, idx] = await Promise.all([readStockHolders(ticker), getManagerIndex()]);
-  const held = (snap ?? []).filter((r) => r.kind !== "exited");
+  const metaNow = new Date();
+  const held = (snap ?? []).filter((r) => r.kind !== "exited" && countsAsCurrentHolder(r.period, metaNow));
   const displayPeriod =
-    effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period ??
+    effectiveMovesPeriod(idx.managers.map((m) => m.period), metaNow).period ??
     globalLatestPeriod(held.map((r) => r.period ?? null));
   let description: { zh: string; en: string } | null = null;
   if (held.length > 0 && displayPeriod) {
@@ -322,7 +324,7 @@ export default async function StockTickerPage({
   const issuerFreq: Record<string, number> = {};
   const moves = { opened: 0, added: 0, trimmed: 0, exited: 0 };
   const exitedHolders: ExitedHolder[] = [];
-  let trendSeries: number[] = [];
+  let trendPoints: HolderTrendPoint[] = [];
   // 每行(含清仓行)的 period/filedAt,算完再定"截至"与提交日。
   const filings: { slug: string; period: string; filedAt: string }[] = [];
 
@@ -335,9 +337,14 @@ export default async function StockTickerPage({
   // (与 currentQuarterOnly 一致)。早申报者的持仓仍在表里,行内标出其季度。无数据 → 不过滤。
   const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period ?? "";
   const inDisplayQuarter = (p: string | null | undefined) => !displayPeriod || p === displayPeriod;
+  // 当前持有人口径(与 consensus 快照同一判定):最近到期季截止日过后仍没交的 manager 不计入。
+  // 快照在 ingest 时已按此过滤;读时再判一次,截止日在两次 ingest 之间跨过时也立即生效。
+  const now = new Date();
+  const isCurrent = (p: string | null | undefined) => countsAsCurrentHolder(p ?? null, now);
 
   if (snap && snap.length > 0) {
     for (const r of snap) {
+      if (!isCurrent(r.period)) continue;
       if (r.period) filings.push({ slug: r.slug, period: r.period, filedAt: r.filedAt ?? "" });
       const countMove = inDisplayQuarter(r.period);
       // 清仓行: 仅计数 + 收进表底 chip 列表, 不进持有人表。
@@ -353,7 +360,7 @@ export default async function StockTickerPage({
       }
       holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined, period: r.period ?? undefined });
     }
-    trendSeries = (await readStockTrend(ticker)) ?? [];
+    trendPoints = (await readStockTrend(ticker)) ?? [];
   } else {
     // 回退: 逐户扫描(快照不可用时, 行为与 PR#72 逐户版完全一致)。
     // targetCusips: 该 ticker 下全部 cusip(含历史); 库为空/未解析则把入参当单个 cusip。
@@ -362,7 +369,7 @@ export default async function StockTickerPage({
       idx.managers.map(async (summary) => ({ summary, detail: await getManagerDetail(summary.slug) }))
     );
     for (const { summary, detail: d } of details) {
-      if (!d) continue;
+      if (!d || !isCurrent(d.latest.period)) continue;
       const h = d.latest.holdings.find((holding) => !holding.putCall && targetCusips.has(holding.cusip));
       if (!h) continue;
       issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
@@ -374,7 +381,7 @@ export default async function StockTickerPage({
     }
     // 本季动作 + 清仓 chip(按持有人计, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
     for (const { summary, detail: d } of details) {
-      if (!d) continue;
+      if (!d || !isCurrent(d.latest.period)) continue;
       const ch = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip));
       if (!ch) continue;
       // 清仓者不在持有人循环里,补记其申报期,让早申报的清仓也计入 ahead。
@@ -385,7 +392,7 @@ export default async function StockTickerPage({
       else if (ch.kind === "decreased") moves.trimmed++;
       else if (ch.kind === "exited") { moves.exited++; exitedHolders.push({ person: summary.person, slug: summary.slug }); }
     }
-    // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数; 升序取最近 8 季。
+    // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数。
     const periodCounts = new Map<string, number>();
     for (const { detail: d } of details) {
       if (!d) continue;
@@ -395,10 +402,14 @@ export default async function StockTickerPage({
         }
       }
     }
-    trendSeries = [...periodCounts.keys()].sort().slice(-8).map((p) => periodCounts.get(p)!);
+    trendPoints = [...periodCounts].map(([period, count]) => ({ period, count }));
   }
 
   if (holders.length === 0) notFound();
+
+  // 趋势截到展示季度(早申报者的新季只有寥寥几份,不能当终点,否则 "47 → 1");终点用共识口径的
+  // 当前持有人数(= 本页持有人数 / 共识榜):落后者按最后一次披露计入,与页面 "N 位持有" 一致。
+  const trendSeries = holderTrendSeries(trendPoints, displayPeriod, holders.length);
 
   const coOwned = await readCoOwnership(ticker);
 

@@ -12,7 +12,7 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
-import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
+import { filingFreshness, freshness13F, isScopeChange, quarterLag, globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
@@ -396,6 +396,16 @@ export default async function InvestorSlugPage({
       )}
     </span>
   );
+  // 环比量级异常(≤−50% / ≥+100%)的说明:股价一季动不到这个量级,读者容易当成数据错误或"大举清仓"。
+  // 数字照申报原文展示,旁边讲清楚它通常意味着什么(例: Cantillon Q2 2026 $150 亿 → $6.7 亿,−96%)。
+  const scopeNote =
+    prior && isScopeChange(valDeltaPct) ? (
+      <p className="mt-2 text-xs text-[var(--tt-muted)]">
+        {lang === "zh"
+          ? `组合市值环比 ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}%（${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}，持仓 ${priorLong!.length} → ${longHoldings.length} 只），数字取自 13F 申报原文。股价一个季度变不了这么多，常见原因是资金赎回、清盘，或部分账户不再计入 13F 申报范围；不等于基金经理主动卖出了这么多。`
+          : `Portfolio value ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}% QoQ (${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}, ${priorLong!.length} → ${longHoldings.length} positions), as reported in the 13F. Prices don't move this much in a quarter: the usual causes are client redemptions, a wind-down, or accounts dropping out of the 13F's reporting scope — not necessarily the manager selling on purpose.`}
+      </p>
+    ) : null;
   const countNode = (
     <span className="tnum font-data text-xl font-medium leading-none text-[var(--tt-text)]">
       {longHoldings.length}
@@ -508,7 +518,12 @@ export default async function InvestorSlugPage({
             meta={{ entity: slug, entityType: "investor", lang }}
           />
         }
-        notice={freshnessNotice}
+        notice={
+          <>
+            {freshnessNotice}
+            {scopeNote}
+          </>
+        }
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
         footerCta={<NewsletterCTA lang={lang} source="investor" />}

@@ -88,7 +88,7 @@ function header(ctx: Ctx, title: string): string[] {
 const DATA_SCOPE = [
   `Holdings come from each manager's latest Form 13F-HR on SEC EDGAR. Investor and stock pages count long equity positions; put and call options are left out of position counts and values.`,
   `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days) has passed and at least half of tracked managers have filed for it.`,
-  "Managers whose latest filing is two or more quarters behind are flagged on the consensus page and left out of its quarter-over-quarter changes.",
+  "A manager who has not filed for the most recent quarter past its deadline is not counted as a current holder on consensus and stock pages; the consensus page lists them by name with the quarter their last 13F covers. Before the deadline, the prior quarter's filing still counts.",
   "Valuation bands are conservative ranges built from reported fundamentals. They show where a price sits against that range; they are not price targets or buy/sell calls.",
 ];
 

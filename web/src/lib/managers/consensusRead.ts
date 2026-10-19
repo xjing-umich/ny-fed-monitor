@@ -4,6 +4,7 @@ import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
 import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
 import { CONSENSUS_MIN_HOLDERS } from "@/lib/aggregations";
 import { mapHolderCountRows, type HolderCountDbRow } from "@/lib/managers/holderCounts";
+import type { HolderTrendPoint } from "@/lib/stocks/holderTrend";
 
 type HeldDbRow = { ticker: string; issuer: string; holder_count: number; total_value: number };
 type MoveDbRow = { ticker: string; direction: string; issuer: string; manager_count: number; net_value: number; dominant_kind?: string | null };
@@ -110,10 +111,11 @@ export const readStockHolders = cache(async (ticker: string): Promise<StockHolde
 });
 
 /**
- * 读某 ticker 的持有人数趋势(consensus_stock_trend),按 period 升序、取最近 8 季的人数数组。
+ * 读某 ticker 的持有人数趋势(consensus_stock_trend)全部 (period, 人数) 点,按 period 升序。
+ * 截断到展示季度、取最近 N 季由调用方用 holderTrendSeries 完成(早申报者的新季不能当终点)。
  * 无 env / 出错 / 表未迁移(42P01)→ null;调用方回退到逐户扫描历史。
  */
-export const readStockTrend = cache(async (ticker: string): Promise<number[] | null> => {
+export const readStockTrend = cache(async (ticker: string): Promise<HolderTrendPoint[] | null> => {
   if (!hasSupabaseEnv()) return null;
   const { data, error } = await getDb()
     .from("consensus_stock_trend")
@@ -124,7 +126,7 @@ export const readStockTrend = cache(async (ticker: string): Promise<number[] | n
     if (error.code !== "42P01") console.error(`readStockTrend 失败: ${error.message}`);
     return null;
   }
-  return ((data ?? []) as { period: string; holder_count: number }[]).slice(-8).map((r) => Number(r.holder_count));
+  return ((data ?? []) as { period: string; holder_count: number }[]).map((r) => ({ period: r.period, count: Number(r.holder_count) }));
 });
 
 /** 读 notable-moves 快照。无 env → null。 */
