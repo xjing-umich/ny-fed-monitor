@@ -115,7 +115,7 @@ export function DataTable<T>({
           <thead className={cn(hideHeader && "sr-only")}>
             <tr className="border-b border-[var(--tt-border)]">
               {showRank && (
-                <th className="w-8 pb-2 text-left font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]">
+                <th className="w-8 pb-2 text-left font-data text-xs font-medium text-[var(--tt-muted)]">
                   #
                 </th>
               )}
@@ -135,7 +135,7 @@ export function DataTable<T>({
                     key={c.key}
                     aria-sort={ariaSort}
                     className={cn(
-                      "pb-2 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-muted)]",
+                      "pb-2 font-data text-xs font-medium text-[var(--tt-muted)]",
                       alignClass(c.align),
                       c.width
                     )}
@@ -145,7 +145,7 @@ export function DataTable<T>({
                         type="button"
                         onClick={() => onSort!(c.sortKey!)}
                         className={cn(
-                          "group/sort font-mono text-[10px] font-medium uppercase tracking-[0.1em] transition-colors",
+                          "group/sort font-data text-xs font-medium transition-colors",
                           isActive
                             ? "text-[var(--tt-accent)]"
                             : "text-[var(--tt-muted)] hover:text-[var(--tt-text)]"
@@ -185,7 +185,7 @@ export function DataTable<T>({
                   className="group transition-colors hover:bg-[var(--tt-surface)]"
                 >
                   {showRank && (
-                    <td className="py-2.5 pr-3 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
+                    <td className="py-2.5 pr-3 font-data text-xs tabular-nums text-[var(--tt-faint)]">
                       {(rankStart ?? 0) + i + 1}
                     </td>
                   )}
@@ -210,7 +210,7 @@ export function DataTable<T>({
                           alignClass(c.align),
                           c === primaryCol && "min-w-0 max-w-[14rem] sm:max-w-[18rem]",
                           c.align === "right" &&
-                            "font-mono tabular-nums text-[var(--tt-muted)]",
+                            "font-data tabular-nums text-[var(--tt-muted)]",
                           c.cellClassName
                         )}
                       >
@@ -242,7 +242,7 @@ export function DataTable<T>({
                 aria-pressed={isActive}
                 onClick={() => onSort!(c.sortKey!)}
                 className={cn(
-                  "inline-flex min-h-[44px] items-center border px-2.5 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+                  "inline-flex min-h-[44px] items-center border px-2.5 font-data text-xs transition-colors",
                   isActive
                     ? "border-[var(--tt-accent)] bg-[var(--tt-accent)]/10 text-[var(--tt-accent)]"
                     : "border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)]"
@@ -261,7 +261,7 @@ export function DataTable<T>({
           const title = (
             <span className="flex min-w-0 flex-1 items-center gap-2">
               {showRank && (
-                <span className="shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">
+                <span className="shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)]">
                   {(rankStart ?? 0) + i + 1}
                 </span>
               )}
@@ -300,10 +300,10 @@ export function DataTable<T>({
                       key={c.key}
                       className="flex items-baseline gap-1.5 text-xs"
                     >
-                      <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                      <span className="font-data text-xs text-[var(--tt-faint)]">
                         {c.mobileLabel ?? c.header}
                       </span>
-                      <span className="font-mono tabular-nums text-[var(--tt-muted)]">
+                      <span className="font-data tabular-nums text-[var(--tt-muted)]">
                         {c.cell(row, i)}
                       </span>
                     </span>

@@ -34,7 +34,7 @@ export function WeightQoQ({
   // 新建: prior 不存在该持仓
   if (prior == null) {
     return (
-      <span className="font-mono tabular-nums text-[var(--tt-positive)]">
+      <span className="font-data tabular-nums text-[var(--tt-positive)]">
         {NEW_LABEL[lang]} · {fmtPct1(cur)}
       </span>
     );
@@ -48,7 +48,7 @@ export function WeightQoQ({
     ? "text-[var(--tt-warn)]"
     : "text-[var(--tt-faint)]";
   return (
-    <span className="font-mono tabular-nums text-[var(--tt-muted)]">
+    <span className="font-data tabular-nums text-[var(--tt-muted)]">
       {fmtPct1(prior)} <span className={colorClass}>→ {fmtPct1(cur)} {arrow}</span>
     </span>
   );

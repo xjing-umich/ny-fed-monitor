@@ -21,7 +21,7 @@ type Props = {
 
 const chipClass = (active: boolean) =>
   [
-    "max-sm:min-h-[44px] px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
+    "max-sm:min-h-[44px] px-2.5 py-1.5 font-data text-xs transition-colors",
     "max-sm:border sm:border-0 sm:border-b",
     active
       ? "text-[var(--tt-accent)] max-sm:border-[var(--tt-accent)] max-sm:bg-[var(--tt-accent)]/10 sm:border-[var(--tt-accent)]"
@@ -89,7 +89,7 @@ export const ListToolbar: React.FC<Props> = ({
             </div>
           )}
 
-          <span className="shrink-0 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+          <span className="shrink-0 font-data text-xs text-[var(--tt-faint)]">
             {countText}
           </span>
         </div>

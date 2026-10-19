@@ -41,7 +41,7 @@ export function FreshnessBadge({
   const t = COPY[lang];
   return (
     <div className="space-y-2">
-      <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+      <p className="font-data text-xs text-[var(--tt-faint)]">
         {t.provenance(period, filedAt)}
       </p>
       {status === "stale" && (

@@ -29,7 +29,7 @@ const COPY = {
   },
 } as const;
 
-const CHIP = "inline-flex items-center font-mono text-[11px] tabular-nums";
+const CHIP = "inline-flex items-center font-mono text-xs tabular-nums";
 
 export function QuarterMovesPill({
   moves,
@@ -50,7 +50,7 @@ export function QuarterMovesPill({
 
   return (
     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-      <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+      <span className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
         {t.eyebrow}
       </span>
       {segs.map((s, i) => (

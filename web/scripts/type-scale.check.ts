@@ -1,6 +1,6 @@
 /**
  * 守字阶 v2:globals.css 无 <12px 字号、字阶覆盖齐全、font-data/font-code 已定义。
- * Task 6 会在本文件追加对 src 的扫描。
+ * 并扫描 src:禁任意值字号 / font-mono / 非暂缓文件的 uppercase。
  * spec: docs/superpowers/specs/2026-10-19-design-tokens-type-v2-design.md §2.4
  * 跑法:cd web && npx tsx scripts/type-scale.check.ts
  */
@@ -35,6 +35,36 @@ for (const cls of ["tt-eyebrow", "tt-label", "tt-faint-label"]) {
   const body = CSS.match(new RegExp(`\\.${cls}\\s*\\{([^}]*)\\}`))?.[1];
   if (!body) failures.push(`缺少 .${cls}`);
   else if (/text-transform:\s*uppercase/.test(body)) failures.push(`.${cls} 仍是 uppercase`);
+}
+
+// 5. src 扫描:禁止任意值字号与 font-mono;uppercase 只许出现在暂缓文件
+const SRC = path.join(__dirname, "../src");
+const DEFERRED = new Set([
+  "components/common/Badge.tsx",
+  "components/shell/MoveTag.tsx",
+  "components/entity/VerdictChip.tsx",
+  "components/valuation/ValuationBadge.tsx",
+  "components/entity/QuarterMovesPill.tsx",
+]);
+function walk(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = path.join(dir, e.name);
+    return e.isDirectory() ? walk(full) : /\.(ts|tsx)$/.test(e.name) ? [full] : [];
+  });
+}
+function stripComments(s: string): string {
+  return s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+}
+for (const abs of walk(SRC)) {
+  const rel = path.relative(SRC, abs).split(path.sep).join("/");
+  if (rel.startsWith("components/ui/") || rel.endsWith("opengraph-image.tsx") || rel === "lib/ogCard.tsx" || rel.endsWith(".check.ts")) continue;
+  const lines = stripComments(fs.readFileSync(abs, "utf8")).split("\n");
+  lines.forEach((ln, i) => {
+    const at = `${rel}:${i + 1}`;
+    if (/text-\[\d+(?:\.\d+)?px\]/.test(ln)) failures.push(`${at} 任意值字号: ${ln.trim()}`);
+    if (!DEFERRED.has(rel) && /(?<![\w-])font-mono(?![\w-])/.test(ln)) failures.push(`${at} font-mono(用 font-data / font-code): ${ln.trim()}`);
+    if (!DEFERRED.has(rel) && /(?:["'`\s:])uppercase(?=["'`\s])/.test(ln)) failures.push(`${at} uppercase: ${ln.trim()}`);
+  });
 }
 
 if (failures.length) { failures.forEach((f) => console.error("FAIL:", f)); process.exit(1); }

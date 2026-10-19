@@ -75,7 +75,7 @@ function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
             </Link>
           </span>
           <span
-            className="shrink-0 font-mono text-xs tabular-nums whitespace-nowrap"
+            className="shrink-0 font-data text-xs tabular-nums whitespace-nowrap"
             style={{
               color:
                 row.dominantKind === "exited" || row.dominantKind === "decreased"
@@ -132,12 +132,12 @@ export default function HeroMasthead({
       {/* 身份栏 — 紧凑仪器头:品牌 → 新鲜度/报告期 → 主张 → 双 CTA。无巨型数字(去杂志封面感)。 */}
       <div className="flex flex-col">
         <p className="tt-eyebrow">{c.brand}</p>
-        <p className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-accent)]">
+        <p className="mt-2 flex items-center gap-2 font-data text-xs text-[var(--tt-accent)]">
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
           {c.asOf(quarterLabel(period) || period)}
         </p>
         {filingProgressText && (
-          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-muted)]">
+          <p className="mt-1.5 font-data text-xs text-[var(--tt-muted)]">
             {filingProgressText}
           </p>
         )}
@@ -155,7 +155,7 @@ export default function HeroMasthead({
         <div className="mt-auto flex flex-wrap items-center gap-x-6 gap-y-3 pt-7">
           <Link
             href={localePath(lang, "/stocks/screener")}
-            className="group inline-flex min-h-11 items-center gap-1.5 text-[15px] font-medium text-[var(--tt-text)] no-underline [transition:color_var(--tt-dur-fast)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
+            className="group inline-flex min-h-11 items-center gap-1.5 text-base font-medium text-[var(--tt-text)] no-underline [transition:color_var(--tt-dur-fast)_var(--tt-ease)] hover:text-[var(--tt-accent)]"
           >
             <span className="[border-bottom:1px_solid_var(--tt-accent)] pb-0.5">{c.ctaValuation}</span>
             <span
@@ -167,7 +167,7 @@ export default function HeroMasthead({
           </Link>
           <Link
             href={localePath(lang, "/investors")}
-            className="group inline-flex min-h-11 items-center gap-1.5 text-[15px] text-[var(--tt-muted)] no-underline [transition:color_var(--tt-dur-fast)_var(--tt-ease)] hover:text-[var(--tt-text)]"
+            className="group inline-flex min-h-11 items-center gap-1.5 text-base text-[var(--tt-muted)] no-underline [transition:color_var(--tt-dur-fast)_var(--tt-ease)] hover:text-[var(--tt-text)]"
           >
             <span>{c.ctaInvestors}</span>
             <span
@@ -185,13 +185,13 @@ export default function HeroMasthead({
         <aside className="ticks rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
           <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
             <span className="text-sm font-medium text-[var(--tt-text)]">{panelTitle}</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">
+            <span className="font-data text-xs text-[var(--tt-faint)]">
               {q}
             </span>
           </div>
           {moves.mostBought.length > 0 && (
             <div>
-              <p className="pt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+              <p className="pt-3 font-data text-xs text-[var(--tt-faint)]">
                 {c.bought}
               </p>
               <PanelRows lang={lang} rows={moves.mostBought.slice(0, 4)} />
@@ -199,7 +199,7 @@ export default function HeroMasthead({
           )}
           {moves.mostSold.length > 0 && (
             <div>
-              <p className="pt-4 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+              <p className="pt-4 font-data text-xs text-[var(--tt-faint)]">
                 {c.sold}
               </p>
               <PanelRows lang={lang} rows={moves.mostSold.slice(0, 3)} />

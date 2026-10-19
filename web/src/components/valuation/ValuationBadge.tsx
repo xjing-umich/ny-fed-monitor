@@ -64,7 +64,7 @@ export function ValuationBadge({
     label = verdict.inStrikeZone ? t.strike : t.below;
     cls = "border-[var(--tt-border)] text-[var(--tt-muted)]";
     marker = (
-      <span className="ml-1 text-[10px] uppercase tracking-wide text-[var(--tt-faint)]">· {t.unconfirmed}</span>
+      <span className="ml-1 text-xs uppercase tracking-wide text-[var(--tt-faint)]">· {t.unconfirmed}</span>
     );
     title = t.flag;
   } else if (verdict.inStrikeZone) {
@@ -90,7 +90,7 @@ export function ValuationBadge({
   const badge = (
     <span
       title={title}
-      className={`inline-flex items-center whitespace-nowrap rounded-sm border px-1.5 py-0.5 font-mono text-[11px] ${cls}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-sm border px-1.5 py-0.5 font-mono text-xs ${cls}`}
     >
       {label}
       {marker}
@@ -101,7 +101,7 @@ export function ValuationBadge({
     return (
       <span className="inline-flex flex-col gap-0.5">
         {badge}
-        <span className="font-mono text-[10px] text-[var(--tt-faint)]">{t.expect[exTier]}</span>
+        <span className="font-mono text-xs text-[var(--tt-faint)]">{t.expect[exTier]}</span>
       </span>
     );
   }

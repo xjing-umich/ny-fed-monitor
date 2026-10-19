@@ -15,10 +15,10 @@ const CONV_LABEL: Record<Lang, Record<ConvictionSignal, (q: number, s: number) =
     never_trimmed: (q) => `从不减仓·${q}季`,
   },
   en: {
-    accumulating: (_q, s) => `Adding ${s}q`,
-    fresh_conviction: () => "Big new",
-    long_core: (q) => `Core ${q}q`,
-    never_trimmed: (q) => `No trim ${q}q`,
+    accumulating: (_q, s) => `Adding · ${s} quarters`,
+    fresh_conviction: () => "Big new position",
+    long_core: (q) => `Core · ${q} quarters`,
+    never_trimmed: (q) => `No trims · ${q} quarters`,
   },
 };
 

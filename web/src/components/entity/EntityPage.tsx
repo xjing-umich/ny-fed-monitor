@@ -72,7 +72,7 @@ export function EntityPage({
             {title}
           </h1>
           {titleMeta && (
-            <span className="font-mono text-lg uppercase tracking-[0.06em] text-[var(--tt-muted)] sm:text-xl">
+            <span className="font-code text-lg text-[var(--tt-muted)] sm:text-xl">
               {titleMeta}
             </span>
           )}
@@ -80,7 +80,7 @@ export function EntityPage({
           {verdictExtra && <VerdictChip label={verdictExtra.label} tone={verdictExtra.tone} />}
           {headerAction && <div className="ml-auto self-center">{headerAction}</div>}
         </div>
-        <p className="max-w-3xl text-[15px] leading-relaxed text-[var(--tt-muted)]">
+        <p className="max-w-3xl text-base leading-relaxed text-[var(--tt-muted)]">
           {subtitle}
         </p>
       </header>

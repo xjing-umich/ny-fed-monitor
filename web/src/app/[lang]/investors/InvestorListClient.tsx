@@ -167,7 +167,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
       cell: (m, i) => (
         <>
           <span className={i < 10 ? "font-semibold" : ""}>{m.person}</span>
-          <span className="mt-0.5 block text-[11px] font-normal text-[var(--tt-faint)]">
+          <span className="mt-0.5 block text-xs font-normal text-[var(--tt-faint)]">
             {displayFundName(m.name)}
           </span>
         </>
@@ -184,7 +184,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
         return (
           <span className="font-medium text-[var(--tt-text)]">
             {formatUSD(m.totalValue)}
-            {pd && <span className={`ml-1.5 text-[11px] ${pd.cls}`}>{pd.text}</span>}
+            {pd && <span className={`ml-1.5 text-xs ${pd.cls}`}>{pd.text}</span>}
           </span>
         );
       },
@@ -200,7 +200,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
         return (
           <span className="text-[var(--tt-text)]">
             {m.holdingCount}
-            {cd && <span className={`ml-1.5 text-[11px] ${cd.cls}`}>{cd.text}</span>}
+            {cd && <span className={`ml-1.5 text-xs ${cd.cls}`}>{cd.text}</span>}
           </span>
         );
       },
@@ -229,7 +229,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
               {quarterLabel(m.period)}
             </span>
             {justFiled && (
-              <span className="font-mono text-[11px] text-[var(--tt-muted)]">{t.filedAgo(days)}</span>
+              <span className="font-data text-xs text-[var(--tt-muted)]">{t.filedAgo(days)}</span>
             )}
           </span>
         );
@@ -250,7 +250,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
           <>
             <Badge tone={VERDICT_TONE[v]}>{t.verdict[v]}</Badge>
             {issuer && kind && (
-              <span className="mt-1 hidden text-[11px] text-[var(--tt-muted)] lg:block">
+              <span className="mt-1 hidden text-xs text-[var(--tt-muted)] lg:block">
                 {t.topPrefix}
                 <span className="text-[var(--tt-text)]">{cleanIssuer(issuer)}</span>{" "}
                 <span className={KIND_CLASS[kind]}>{t.kind[kind]}</span>

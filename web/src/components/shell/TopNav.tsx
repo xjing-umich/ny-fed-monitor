@@ -71,7 +71,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
               key={entry.key}
               href={href}
               className={[
-                "relative inline-flex items-center min-h-[36px] text-[13px] uppercase tracking-[0.1em] transition-colors no-underline",
+                "relative inline-flex items-center min-h-[36px] text-sm transition-colors no-underline",
                 "after:absolute after:bottom-1 after:left-0 after:right-0 after:h-px after:transition-colors",
                 active
                   ? "text-[var(--tt-text)] after:bg-[var(--tt-accent)]"
@@ -101,9 +101,9 @@ export default function TopNav({ lang, items }: TopNavProps) {
               <span
                 key={l}
                 aria-current="true"
-                className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
+                className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-xs font-data text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
               >
-                {l}
+                {l === "zh" ? "中文" : "EN"}
               </span>
             );
           }
@@ -111,9 +111,9 @@ export default function TopNav({ lang, items }: TopNavProps) {
             <Link
               key={l}
               href={otherLangPath}
-              className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
+              className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-xs font-data transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
             >
-              {l}
+              {l === "zh" ? "中文" : "EN"}
             </Link>
           );
         })}

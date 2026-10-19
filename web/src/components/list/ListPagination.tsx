@@ -15,7 +15,7 @@ type Props = {
 
 const navBtnClass = (disabled: boolean) =>
   [
-    "border-0 border-b bg-transparent px-0 py-1 font-mono text-[11px] uppercase tracking-[0.08em] transition-colors",
+    "border-0 border-b bg-transparent px-0 py-1 font-data text-xs transition-colors",
     disabled
       ? "cursor-not-allowed border-transparent text-[var(--tt-faint)]"
       : "border-[var(--tt-border)] text-[var(--tt-accent)] hover:border-[var(--tt-accent)]",
@@ -51,7 +51,7 @@ export const ListPagination: React.FC<Props> = ({
           {prevLabel}
         </button>
 
-        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)]">
+        <span className="font-data text-xs text-[var(--tt-muted)]">
           {pageLabel(page, pageCount)}
         </span>
 
@@ -71,7 +71,7 @@ export const ListPagination: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => onPage(page + 1)}
-            className="inline-flex min-h-[44px] items-center border-0 border-b border-[var(--tt-border)] bg-transparent px-0 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] transition-colors hover:border-[var(--tt-accent)] active:scale-[0.98]"
+            className="inline-flex min-h-[44px] items-center border-0 border-b border-[var(--tt-border)] bg-transparent px-0 font-data text-xs text-[var(--tt-accent)] transition-colors hover:border-[var(--tt-accent)] active:scale-[0.98]"
           >
             {moreLabel}
             <span className="ml-1.5 text-[var(--tt-faint)]">+{remaining}</span>

@@ -151,9 +151,9 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                   <span
                     key={l}
                     aria-current="true"
-                    className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
+                    className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-xs font-data text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
                   >
-                    {l}
+                    {l === "zh" ? "中文" : "EN"}
                   </span>
                 );
               }
@@ -162,9 +162,9 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                   key={l}
                   href={otherLangPath}
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-[var(--tt-border)]"
+                  className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-xs font-data transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-[var(--tt-border)]"
                 >
-                  {l}
+                  {l === "zh" ? "中文" : "EN"}
                 </Link>
               );
             })}

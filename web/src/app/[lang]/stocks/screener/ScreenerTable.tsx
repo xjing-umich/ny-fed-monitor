@@ -52,10 +52,10 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       cell: (r) =>
         r.marginPct != null && r.marginPct > 0 ? (
           r.reliable ? (
-            <span className="font-mono tabular-nums text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
+            <span className="font-data tabular-nums text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
           ) : (
             <span
-              className="font-mono tabular-nums text-[var(--tt-faint)]"
+              className="font-data tabular-nums text-[var(--tt-faint)]"
               title={isZh ? "估值带红旗（盈利下滑/高杠杆/模型不稳/每股口径疑错），边际不可信，未计入便宜信号。" : "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal."}
             >
               {fmtMarginPct(r.marginPct)}<span aria-hidden className="ml-0.5 text-[var(--tt-warn)]">⚠</span>
@@ -71,7 +71,7 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       align: "right",
       width: "w-32",
       hideOnMobile: true,
-      cell: (r) => <span className="font-mono tabular-nums text-[var(--tt-muted)]">{fmtValueBand(r.rangeLo, r.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}</span>,
+      cell: (r) => <span className="font-data tabular-nums text-[var(--tt-muted)]">{fmtValueBand(r.rangeLo, r.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}</span>,
     },
     {
       key: "price",
@@ -80,9 +80,9 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       width: "w-28",
       mobileLabel: isZh ? "现价" : "Price",
       cell: (r) => (
-        <span className="font-mono tabular-nums text-[var(--tt-text)]">
+        <span className="font-data tabular-nums text-[var(--tt-text)]">
           ${Math.round(r.price).toLocaleString()}
-          {r.priceDate ? <span className="ml-1 text-[10px] text-[var(--tt-faint)]">{r.priceDate}</span> : null}
+          {r.priceDate ? <span className="ml-1 text-xs text-[var(--tt-faint)]">{r.priceDate}</span> : null}
         </span>
       ),
     },
@@ -92,7 +92,7 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       align: "right",
       width: "w-20",
       hideOnMobile: true,
-      cell: (r) => <span className="font-mono tabular-nums text-[var(--tt-muted)]">{r.holderCount || "—"}</span>,
+      cell: (r) => <span className="font-data tabular-nums text-[var(--tt-muted)]">{r.holderCount || "—"}</span>,
     },
   ];
 
@@ -109,24 +109,24 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
 
       {tail.length > 0 && (
         <details className="group mt-4">
-          <summary className="cursor-pointer list-none max-sm:flex max-sm:items-center max-sm:min-h-[44px] py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
+          <summary className="cursor-pointer list-none max-sm:flex max-sm:items-center max-sm:min-h-[44px] py-2 font-data text-xs text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
             <span className="group-open:hidden">{ui.showMore(tail.length)} ▸</span>
             <span className="hidden group-open:inline">{ui.collapse} ▾</span>
           </summary>
           <ul className="mt-3 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {tail.map((r, i) => (
               <li key={r.ticker} className="flex items-baseline gap-2 text-sm">
-                <span className="w-8 shrink-0 text-right font-mono text-[11px] tabular-nums text-[var(--tt-faint)]">{TOP_N + i + 1}</span>
+                <span className="w-8 shrink-0 text-right font-data text-xs tabular-nums text-[var(--tt-faint)]">{TOP_N + i + 1}</span>
                 <Link href={stockPath(lang, r.ticker)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                   {cleanIssuer(r.issuer)}
-                  <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{r.ticker}</span>
+                  <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{r.ticker}</span>
                   {r.marginPct != null && r.marginPct > 0 ? (
                     r.reliable ? (
-                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
+                      <span className="ml-1.5 font-data text-xs text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
                     ) : (
                       // 与表头列同一诚实口径:红旗票的安全边际弱化 + ⚠,不冒充分确认便宜。
                       <span
-                        className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]"
+                        className="ml-1.5 font-data text-xs text-[var(--tt-faint)]"
                         title={isZh ? "估值带红旗（盈利下滑/高杠杆/模型不稳/每股口径疑错），边际不可信，未计入便宜信号。" : "Valuation flagged (declining earnings / high leverage / model instability / per-share doubt); margin not trustworthy, excluded from the cheap signal."}
                       >
                         {fmtMarginPct(r.marginPct)}<span aria-hidden className="ml-0.5 text-[var(--tt-warn)]">⚠</span>

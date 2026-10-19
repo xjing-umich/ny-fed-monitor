@@ -33,13 +33,13 @@ export function FoldedSection({
           </h2>
           <span
             aria-hidden
-            className="font-mono text-[11px] text-[var(--tt-muted)] group-open:hidden"
+            className="font-data text-xs text-[var(--tt-muted)] group-open:hidden"
           >
             ▸
           </span>
           <span
             aria-hidden
-            className="hidden font-mono text-[11px] text-[var(--tt-muted)] group-open:inline"
+            className="hidden font-data text-xs text-[var(--tt-muted)] group-open:inline"
           >
             ▾
           </span>

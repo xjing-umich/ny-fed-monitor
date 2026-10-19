@@ -181,7 +181,7 @@ function HoldersTable({
         r.period && maxPeriod && r.period < maxPeriod ? (
           <span className="inline-flex items-baseline gap-1.5">
             {r.person}
-            <span className="font-mono text-[11px] text-[var(--tt-faint)]">{quarterLabel(r.period)}</span>
+            <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period)}</span>
           </span>
         ) : (
           r.person
@@ -200,7 +200,7 @@ function HoldersTable({
         title={t.title}
       />
       <div className="mb-3 mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)]">
+        <p className="font-data text-xs text-[var(--tt-muted)]">
           {t.meta(sorted.length, formatUSD(totalValue), moves.opened, moves.exited)}
         </p>
         <QuarterMovesPill moves={moves} lang={lang} />
@@ -221,7 +221,7 @@ function HoldersTable({
       {/* 溢出行:全部留 DOM,默认折叠(原生 <details>,零 JS) */}
       {tail.length > 0 && (
         <details className="group mt-2">
-          <summary className="cursor-pointer list-none max-sm:flex max-sm:items-center max-sm:min-h-[44px] py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
+          <summary className="cursor-pointer list-none max-sm:flex max-sm:items-center max-sm:min-h-[44px] py-2 font-data text-xs text-[var(--tt-muted)] hover:text-[var(--tt-accent)] [&::-webkit-details-marker]:hidden">
             <span className="group-open:hidden">{t.showAll(sorted.length)} ▸</span>
             <span className="hidden group-open:inline">{ui.collapse} ▾</span>
           </summary>
@@ -238,7 +238,7 @@ function HoldersTable({
       {/* 本季清仓:表底 chip 列表;空 → 不渲染 */}
       {exited.length > 0 && (
         <div className="mt-5 pt-1">
-          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-negative)]">
+          <span className="font-data text-xs text-[var(--tt-negative)]">
             {t.exitedTitle(exited.length)}
           </span>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -246,7 +246,7 @@ function HoldersTable({
               <Link
                 key={e.slug}
                 href={investorPath(lang, e.slug)}
-                className="inline-flex items-center rounded-md border border-[var(--tt-border)] px-2 py-0.5 max-sm:min-h-[44px] font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
+                className="inline-flex items-center rounded-md border border-[var(--tt-border)] px-2 py-0.5 max-sm:min-h-[44px] font-data text-xs text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
               >
                 {e.person}
               </Link>
@@ -589,7 +589,7 @@ export default async function StockTickerPage({
                 title={page.bq.title}
                 trailing={
                   bq.asOf ? (
-                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                    <span className="font-data text-xs text-[var(--tt-faint)]">
                       {page.bq.asOf(bq.asOf)}
                     </span>
                   ) : undefined
@@ -608,8 +608,8 @@ export default async function StockTickerPage({
                   { k: page.bq.fcfMargin, v: bq.fcfMargin, sign: false },
                 ].map((m) => (
                   <div key={m.k}>
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">{m.k}</dt>
-                    <dd className="tnum mt-1 font-mono text-lg text-[var(--tt-text)]">
+                    <dt className="font-data text-xs text-[var(--tt-faint)]">{m.k}</dt>
+                    <dd className="tnum mt-1 font-data text-lg text-[var(--tt-text)]">
                       {m.v == null ? "—" : `${m.sign && m.v > 0 ? "+" : ""}${(m.v * 100).toFixed(1)}%`}
                     </dd>
                   </div>
@@ -619,7 +619,7 @@ export default async function StockTickerPage({
                   疑似配期异常, 见数据任务)矛盾, 不上自相矛盾的两个数。 */}
               {bq.revenueSeries.length >= 2 && (
                 <div className="mt-5 flex items-center gap-3">
-                  <span className="font-mono text-[11px] text-[var(--tt-muted)]">
+                  <span className="font-data text-xs text-[var(--tt-muted)]">
                     {page.bq.revenueTrail(
                       formatUSD(bq.revenueSeries[0]),
                       formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1]),
@@ -661,7 +661,7 @@ export default async function StockTickerPage({
                     Number.isFinite(handoffVerdict.price) && (
                       <div className="mb-6">
                         <div className="mb-3 flex items-baseline gap-2">
-                          <span className="font-mono text-2xl font-semibold tracking-tight text-[var(--tt-text)]">
+                          <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">
                             {fmtPerShare(holdcoSotp.per_share.base)}
                           </span>
                           <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
@@ -811,9 +811,9 @@ export default async function StockTickerPage({
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
                     >
                       {cleanIssuer(c.coIssuer)}
-                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{c.coTicker}</span>
+                      <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{c.coTicker}</span>
                     </Link>
-                    <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
+                    <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
                       {page.coOwned.shared(c.sharedHolders)}
                     </span>
                   </li>
@@ -830,7 +830,7 @@ export default async function StockTickerPage({
               aria-label={page.externalAria}
               className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-2"
             >
-              <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+              <span className="font-data text-xs text-[var(--tt-faint)]">
                 {ui.alsoOn}
               </span>
               <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="detail" lang={lang} />

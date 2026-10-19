@@ -200,7 +200,7 @@ export default function SearchBox({
               className={[
                 "w-full text-left text-[var(--tt-text)] transition-colors truncate",
                 active === i ? "bg-[var(--tt-surface)] text-[var(--tt-accent)]" : "hover:bg-[var(--tt-surface)] hover:text-[var(--tt-accent)]",
-                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-[13px]",
+                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-sm",
               ].join(" ")}
             >
               {item.label}
@@ -222,7 +222,7 @@ export default function SearchBox({
               <span className="truncate">
                 {lang === "zh" ? `查看个股 ${tickerGuess}` : `Go to ${tickerGuess}`}
               </span>
-              <span className="shrink-0 font-mono text-[var(--tt-accent)]">→</span>
+              <span className="shrink-0 font-data text-[var(--tt-accent)]">→</span>
             </button>
           )}
         </div>

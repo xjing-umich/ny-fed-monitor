@@ -29,7 +29,7 @@ export function InvestorProfileProse({
       </div>
       <div className="max-w-3xl space-y-3">
         {paragraphs.map((p, i) => (
-          <p key={i} className="text-[15px] leading-relaxed text-[var(--tt-muted)]">
+          <p key={i} className="text-base leading-relaxed text-[var(--tt-muted)]">
             {p.map((seg, j) =>
               typeof seg === "string" ? (
                 <React.Fragment key={j}>{seg}</React.Fragment>

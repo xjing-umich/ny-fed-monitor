@@ -21,7 +21,7 @@ export function StockProse({
   const body = (
     <div className="max-w-3xl space-y-3">
       {paragraphs.map((p, i) => (
-        <p key={i} className="text-[15px] leading-relaxed text-[var(--tt-muted)]">
+        <p key={i} className="text-base leading-relaxed text-[var(--tt-muted)]">
           {p.map((seg, j) =>
             typeof seg === "string" ? (
               <React.Fragment key={j}>{seg}</React.Fragment>
@@ -44,7 +44,7 @@ export function StockProse({
   return (
     <section>
       <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        <span className="font-data text-xs font-medium text-[var(--tt-faint)]">
           {heading}
         </span>
       </div>

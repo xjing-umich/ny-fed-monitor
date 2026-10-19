@@ -65,7 +65,7 @@ export default async function InvestorsPage({
       <SubNav lang={lang} section="investors" active="all" />
       <Suspense
         fallback={
-          <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+          <p className="font-data text-xs text-[var(--tt-faint)]">
             …
           </p>
         }

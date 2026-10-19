@@ -22,7 +22,7 @@ const COPY = {
       `Superinvestors holding this security over the last ${n} quarters: ${first} → ${last}.`,
     backfill: "Early quarters may understate holder counts due to data backfill — read the slope with care.",
     inline: (n: number, first: number, last: number) =>
-      `Holders ${first} → ${last} · last ${n}q`,
+      `Holders ${first} → ${last} · last ${n} quarters`,
   },
 } as const;
 
@@ -45,7 +45,7 @@ export function HolderTrend({
   if (variant === "inline") {
     return (
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1" title={t.backfill}>
-        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)]">
+        <span className="font-data text-xs text-[var(--tt-muted)]">
           {t.inline(series.length, first, last)}
         </span>
         <Sparkline series={series} color="var(--tt-muted)" />
@@ -67,7 +67,7 @@ export function HolderTrend({
   return (
     <section>
       <div className="border-t border-[var(--tt-border)] pt-4 pb-3">
-        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-faint)]">
+        <span className="font-data text-xs font-medium text-[var(--tt-faint)]">
           {t.eyebrow}
         </span>
       </div>

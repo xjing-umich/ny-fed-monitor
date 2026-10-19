@@ -23,14 +23,14 @@ function Tile({
 }) {
   const inner = (
     <>
-      <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--tt-faint)]">{label}</span>
+      <span className="text-xs font-medium text-[var(--tt-faint)]">{label}</span>
       <span
-        className="font-mono text-2xl font-medium tabular-nums leading-none text-[var(--tt-text)] [transition:color_var(--tt-dur-fast)_var(--tt-ease)] group-hover:text-[var(--tt-accent)]"
+        className="font-data text-2xl font-medium tabular-nums leading-none text-[var(--tt-text)] [transition:color_var(--tt-dur-fast)_var(--tt-ease)] group-hover:text-[var(--tt-accent)]"
         style={{ textShadow: "var(--glow-primary)" }}
       >
         {value}
       </span>
-      {sub ? <span className="font-mono text-[10px] text-[var(--tt-faint)]">{sub}</span> : null}
+      {sub ? <span className="font-data text-xs text-[var(--tt-faint)]">{sub}</span> : null}
     </>
   );
   const className = "group flex flex-col gap-1 px-4 py-3 first:pl-0 no-underline";

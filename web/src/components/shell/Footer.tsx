@@ -10,7 +10,7 @@ import ScrollToTop from "./ScrollToTop";
 import { localePath } from "@/lib/urls";
 
 const colHeading =
-  "font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--tt-faint)]";
+  "font-data text-xs text-[var(--tt-faint)]";
 const colLink =
   "max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors no-underline";
 
@@ -76,7 +76,7 @@ export default function Footer({ lang }: { lang: Lang }) {
               Compounder
             </span>
           </span>
-          <span className="flex-1 min-w-[200px] text-[11px] text-[var(--tt-muted)]">
+          <span className="flex-1 min-w-[200px] text-xs text-[var(--tt-muted)]">
             © {year} Compounder · {c.rights} {c.notAffiliated} {c.noAdvice}
           </span>
           <ScrollToTop label={c.backToTop} />

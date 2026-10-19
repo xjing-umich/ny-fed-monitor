@@ -35,30 +35,30 @@ export function AggregateRankingList({
     <ul className="m-0 list-none divide-y divide-[var(--tt-border)] p-0">
       {rows.map((r, i) => (
         <li key={r.ticker} className="flex items-center gap-3 py-3">
-          <span className="w-6 shrink-0 font-mono text-sm tabular-nums text-[var(--tt-faint)]">{i + 1}</span>
+          <span className="w-6 shrink-0 font-data text-sm tabular-nums text-[var(--tt-faint)]">{i + 1}</span>
           <div className="min-w-0 flex-1">
             <Link href={r.href} className="font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
               <EntityName issuer={r.issuer} ticker={r.ticker} />
             </Link>
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--tt-faint)]">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--tt-faint)]">
               {r.pctOfAggregate != null && (
-                <span className="font-mono tabular-nums">
+                <span className="font-data tabular-nums">
                   {isZh ? `占聚合 ${(r.pctOfAggregate * 100).toFixed(1)}%` : `${(r.pctOfAggregate * 100).toFixed(1)}% of aggregate`}
                 </span>
               )}
               {r.kindLabel && <Badge tone={r.kindTone ?? "neutral"}>{r.kindLabel}</Badge>}
-              {r.value != null && <span className="font-mono tabular-nums">{formatUSD(r.value)}</span>}
+              {r.value != null && <span className="font-data tabular-nums">{formatUSD(r.value)}</span>}
               {r.valuation && <ValuationBadge verdict={r.valuation} lang={lang} />}
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="font-mono text-2xl font-medium tabular-nums text-[var(--tt-text)]">{r.primary}</div>
+            <div className="font-data text-2xl font-medium tabular-nums text-[var(--tt-text)]">{r.primary}</div>
             {r.delta != null ? (
-              <div className={`font-mono text-[11px] tabular-nums ${r.delta > 0 ? "text-[var(--tt-accent)]" : r.delta < 0 ? "text-[var(--tt-negative)]" : "text-[var(--tt-faint)]"}`}>
+              <div className={`font-data text-xs tabular-nums ${r.delta > 0 ? "text-[var(--tt-accent)]" : r.delta < 0 ? "text-[var(--tt-negative)]" : "text-[var(--tt-faint)]"}`}>
                 {r.delta === 0 ? (isZh ? "持平" : "—") : `${r.delta > 0 ? "+" : "−"}${Math.abs(r.delta)} ${isZh ? "位" : ""}`}
               </div>
             ) : (
-              <div className="text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">{primaryLabel}</div>
+              <div className="text-xs text-[var(--tt-faint)]">{primaryLabel}</div>
             )}
           </div>
         </li>
