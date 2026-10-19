@@ -46,7 +46,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
   }
 
   return (
-    <header className="hidden md:flex h-15 min-h-[60px] sticky top-0 z-30 w-full items-center gap-6 px-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
+    <header className="hidden lg:flex h-15 min-h-[60px] sticky top-0 z-30 w-full items-center gap-6 px-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
       {/* Masthead wordmark — display serif */}
       <Link
         href={homeHref}

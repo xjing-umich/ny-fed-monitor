@@ -65,7 +65,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
       <button
         onClick={() => setOpen(true)}
         aria-label={lang === "zh" ? "打开菜单" : "Open menu"}
-        className="md:hidden flex items-center justify-center w-11 h-11 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
+        className="lg:hidden flex items-center justify-center w-11 h-11 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
       >
         <Menu size={16} />
       </button>
@@ -73,7 +73,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
       {/* Overlay */}
       {open && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
           aria-hidden="true"
         />
@@ -86,7 +86,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
         aria-label={lang === "zh" ? "导航菜单" : "Navigation menu"}
         inert={!open}
         className={[
-          "md:hidden fixed top-0 left-0 h-full w-72 z-50 flex flex-col",
+          "lg:hidden fixed top-0 left-0 h-full w-72 z-50 flex flex-col",
           "bg-[var(--tt-panel)] border-r border-[var(--tt-border)] shadow-lg",
           "transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
