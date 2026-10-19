@@ -1,7 +1,8 @@
-name: 13F Ingest (Mon & Thu)
+name: 13F Ingest (Mon & Thu, daily in filing season)
 on:
   schedule:
     - cron: "0 9 * * 1,4"    # 每周一/周四 09:00 UTC; 幂等(无新 filing 不写)。13F 为命脉,filing 季加密捕捉
+    - cron: "0 9 10-20 2,5,8,11 *"  # 申报季(2/5/8/11 月 10–20 日)每天一次,接住截止日前后的大户申报
   workflow_dispatch: {}
 jobs:
   ingest:
@@ -27,5 +28,26 @@ jobs:
         if: steps.ingest.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           curl -fsS -X POST "https://thecompounder.fyi/api/revalidate?source=13f" \
+            -H "Authorization: Bearer ${{ secrets.INGEST_SECRET }}"
+          echo
+      # 季度报告:payload 不变则不写不刷;变化时只刷 learn(source=report),不触发整站重建。
+      # 失败即红灯(continue-on-error 保持默认 false)。
+      - id: report
+        run: npm run report
+        working-directory: web
+        continue-on-error: false
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_ALERTS_TO: ${{ secrets.RESEND_ALERTS_TO }}
+          RESEND_ALERTS_FROM: ${{ secrets.RESEND_ALERTS_FROM }}
+          NEWSLETTER_POSTAL_ADDRESS: ${{ secrets.NEWSLETTER_POSTAL_ADDRESS }}
+      # always(): report.ts 在可能抛错的预览发送前就已写入 report_changed=true;
+      # 预览失败也必须刷新报告页,否则页面会陈旧。
+      - name: Revalidate report pages
+        if: always() && steps.report.outputs.report_changed == 'true'
+        run: |
+          curl -fsS -X POST "https://thecompounder.fyi/api/revalidate?source=report" \
             -H "Authorization: Bearer ${{ secrets.INGEST_SECRET }}"
           echo

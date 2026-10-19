@@ -1,7 +1,7 @@
 // 纯判定自检——node:assert,零新依赖。运行: npx tsx src/lib/health/checks.check.ts
 // 项目无常驻测试套件(solo dev),此为 ad-hoc 自检,不接 CI。
 import assert from "node:assert/strict";
-import { evaluate13F, evaluateDbSize } from "./checks";
+import { evaluate13F, evaluateDbSize, evaluateReport } from "./checks";
 
 const today = new Date("2026-06-08T12:00:00Z"); // mostRecentDueQuarter → 2026-03-31
 
@@ -51,6 +51,18 @@ const today = new Date("2026-06-08T12:00:00Z"); // mostRecentDueQuarter → 2026
   const r = evaluateDbSize(450 * 1_048_576, 500, 0.8);
   assert.equal(r.problems.length, 1, "90% 应 1 问题");
   assert.match(r.problems[0].message, /90%/);
+}
+
+// --- evaluateReport ---
+// period 2026-09-30 → 截止 2026-11-14 → 宽限到 2026-11-24
+{
+  const live = { period: "2026-09-30", status: "live" as const };
+  assert.equal(evaluateReport(live, new Date("2026-11-20T00:00:00Z")).problems.length, 0, "截止后 4 天未定稿:不告警");
+  const late = evaluateReport(live, new Date("2026-11-25T12:00:00Z"));
+  assert.equal(late.problems.length, 1, "截止 + 10 天仍未定稿:告警");
+  assert.equal(late.problems[0].pipeline, "report");
+  assert.equal(evaluateReport({ ...live, status: "final" }, new Date("2026-12-30T00:00:00Z")).problems.length, 0, "已定稿不告警");
+  assert.equal(evaluateReport(null, new Date("2026-11-25T00:00:00Z")).problems.length, 0, "无行不告警(只 info)");
 }
 
 console.log("checks.check.ts: all assertions passed ✓");

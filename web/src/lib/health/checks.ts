@@ -1,10 +1,10 @@
 // 数据健康看门狗——纯判定逻辑。无 DB、无 server-only → 可独立 tsx 自检。
 // 取数装配在 gather.ts，本文件只接收已取好的数据做判断。
 // 用相对路径(而非 @/ 别名)导入,确保 npx tsx 自检时路径解析万无一失。
-import { mostRecentDueQuarter, parseUTC } from "../freshness/derive";
+import { filingDeadline, mostRecentDueQuarter, parseUTC } from "../freshness/derive";
 
 export type HealthProblem = {
-  pipeline: "13f" | "prices" | "cost";
+  pipeline: "13f" | "prices" | "cost" | "report";
   source: string;
   message: string;
   asOf: string | null;
@@ -73,4 +73,23 @@ export function evaluateDbSize(
     };
   }
   return { problems: [], info: [`DB 体积 ${Math.round(usedMb)} MB / ${limitMb} MB (${pctStr})`] };
+}
+
+export const REPORT_FINALIZE_GRACE_DAYS = 10;
+
+/** 季度报告:截止日 + 10 天仍未定稿 → 提醒站长去审预览并发出。 */
+export function evaluateReport(
+  row: { period: string; status: "live" | "final" } | null,
+  today: Date,
+): { problems: HealthProblem[]; info: string[] } {
+  if (!row) return { problems: [], info: ["季度报告: 当前季度尚无报告行"] };
+  if (row.status === "final") return { problems: [], info: [`季度报告: ${row.period} 已定稿`] };
+  const deadline = filingDeadline(row.period);
+  if (!deadline) return { problems: [], info: [] };
+  const due = new Date(deadline.getTime() + REPORT_FINALIZE_GRACE_DAYS * 86_400_000);
+  if (today <= due) return { problems: [], info: [`季度报告: ${row.period} 申报中`] };
+  return {
+    problems: [{ pipeline: "report", source: "季度报告", message: "截止日已过 10 天,报告仍未定稿", asOf: row.period, expected: "审预览后运行 Report finalize & send" }],
+    info: [],
+  };
 }
