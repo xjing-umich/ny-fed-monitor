@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
-import SearchBox from "./SearchBox";
+import SearchBox, { type SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
 import { localePath } from "@/lib/urls";
 
@@ -19,7 +19,7 @@ function useMounted() {
 
 interface TopNavProps {
   lang: Lang;
-  items: { label: string; href: string }[];
+  items: SearchItem[];
 }
 
 export default function TopNav({ lang, items }: TopNavProps) {
@@ -46,7 +46,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
   }
 
   return (
-    <header className="hidden md:flex h-15 min-h-[60px] sticky top-0 z-30 w-full items-center gap-6 px-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
+    <header className="hidden lg:flex h-15 min-h-[60px] sticky top-0 z-30 w-full items-center gap-6 px-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
       {/* Masthead wordmark — display serif */}
       <Link
         href={homeHref}
@@ -61,7 +61,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
       {/* Hairline separator */}
       <span className="w-px h-5 bg-[var(--tt-border)] shrink-0" />
 
-      {/* Nav links — understated uppercase-tracked text links */}
+      {/* Nav links — 克制的文字链接,激活项下划线 */}
       <nav className="flex items-center gap-6">
         {TOP_NAV.map((entry) => {
           const active = isActive(entry);
@@ -71,7 +71,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
               key={entry.key}
               href={href}
               className={[
-                "relative inline-flex items-center min-h-[36px] text-[13px] uppercase tracking-[0.1em] transition-colors no-underline",
+                "relative inline-flex items-center min-h-[36px] text-sm transition-colors no-underline",
                 "after:absolute after:bottom-1 after:left-0 after:right-0 after:h-px after:transition-colors",
                 active
                   ? "text-[var(--tt-text)] after:bg-[var(--tt-accent)]"
@@ -100,10 +100,11 @@ export default function TopNav({ lang, items }: TopNavProps) {
             return (
               <span
                 key={l}
+                lang={l}
                 aria-current="true"
-                className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
+                className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-xs font-data text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
               >
-                {l}
+                {l === "zh" ? "中文" : "EN"}
               </span>
             );
           }
@@ -111,9 +112,11 @@ export default function TopNav({ lang, items }: TopNavProps) {
             <Link
               key={l}
               href={otherLangPath}
-              className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
+              lang={l}
+              hrefLang={l}
+              className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-xs font-data transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
             >
-              {l}
+              {l === "zh" ? "中文" : "EN"}
             </Link>
           );
         })}

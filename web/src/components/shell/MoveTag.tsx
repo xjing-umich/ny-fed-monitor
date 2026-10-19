@@ -17,7 +17,7 @@ export default function MoveTag({ kind }: { kind: MoveKind }) {
     : "border border-current/50";
   return (
     <span
-      className={`inline-block rounded-sm px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] leading-none ${cls}`}
+      className={`inline-block rounded-sm px-1.5 py-0.5 font-mono text-xs font-semibold uppercase tracking-[0.08em] leading-none ${cls}`}
       style={cfg.solid ? { background: color } : { color }}
     >
       {cfg.label}

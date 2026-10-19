@@ -106,7 +106,7 @@ export default async function StocksIndexPage({
 
       <Suspense
         fallback={
-          <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+          <p className="font-data text-xs text-[var(--tt-faint)]">
             …
           </p>
         }

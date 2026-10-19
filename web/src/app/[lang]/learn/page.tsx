@@ -68,7 +68,7 @@ export default async function LearnIndexPage({
         <p className="text-sm leading-relaxed text-[var(--tt-muted)]">{brand.body}</p>
         <Link
           href={localePath(lang, "/about")}
-          className="mt-2 inline-block font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center"
+          className="mt-2 inline-block font-data text-xs text-[var(--tt-accent)] no-underline hover:underline max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center"
         >
           {brand.aboutLabel} →
         </Link>
@@ -108,7 +108,7 @@ export default async function LearnIndexPage({
             {latest.description}
           </p>
           {latest.updated ? (
-            <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+            <p className="mt-2 font-data text-xs text-[var(--tt-faint)]">
               {c.updated} {latest.updated}
             </p>
           ) : null}
@@ -128,7 +128,7 @@ export default async function LearnIndexPage({
                   {a.description}
                 </p>
                 {a.updated ? (
-                  <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                  <p className="mt-2 font-data text-xs text-[var(--tt-faint)]">
                     {c.updated} {a.updated}
                   </p>
                 ) : null}

@@ -280,7 +280,7 @@ function LampMethod({ lamp, lang, ttmPeriodEnd }: { lamp: EpvLamp; lang: Lang; t
     <div>
       <p className="font-medium text-[var(--tt-faint)]">
         {lamp.label}
-        {lamp.assessable ? <span className="ml-1 font-mono text-[var(--tt-muted)]">{range(lamp.per_share_low, lamp.per_share_high)} {t.perSh}</span> : null}
+        {lamp.assessable ? <span className="ml-1 font-data text-[var(--tt-muted)]">{range(lamp.per_share_low, lamp.per_share_high)} {t.perSh}</span> : null}
       </p>
       {!lamp.assessable && lamp.not_assessable_reason ? <p>{lamp.not_assessable_reason}</p> : null}
       <p>
@@ -392,12 +392,12 @@ export function ValueBandGauge({
             return (
               <div
                 key={z.key}
-                className="flex flex-1 items-center justify-center px-0.5 text-[10px] leading-tight sm:text-[11px]"
+                className="flex flex-1 items-center justify-center px-0.5 text-xs leading-tight sm:text-xs"
                 style={{
                   backgroundColor: strike
                     ? "color-mix(in srgb, var(--tt-positive) 15%, transparent)"
                     : `color-mix(in srgb, var(--tt-faint) ${active ? 16 : 7}%, transparent)`,
-                  color: active ? "var(--tt-text)" : "var(--tt-faint)",
+                  color: active ? "var(--tt-text)" : "var(--tt-muted)",
                   ...(strike
                     ? {
                         borderLeft:
@@ -440,7 +440,7 @@ export function ValueBandGauge({
           <Display as="span" size="xl">{usd0(price)}</Display>
         </span>
       </div>
-      <div className="mt-1.5 flex justify-between font-mono text-[10px] text-[var(--tt-faint)]">
+      <div className="mt-1.5 flex justify-between font-data text-xs text-[var(--tt-faint)]">
         <span>{t.cheaper}</span>
         <span>{t.pricier}</span>
       </div>
@@ -448,20 +448,20 @@ export function ValueBandGauge({
       {hasIv ? (
         <div className="mt-2 grid grid-cols-3 gap-2 text-center">
           <div>
-            <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendFloor}</p>
-            <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeLo)}</p>
+            <p className="text-xs leading-tight text-[var(--tt-faint)]">{t.legendFloor}</p>
+            <p className="mt-0.5 font-data text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeLo)}</p>
           </div>
           <div>
-            <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendIv}</p>
-            <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums text-[var(--tt-text)] sm:text-sm">{usd0(IV)}</p>
+            <p className="text-xs leading-tight text-[var(--tt-faint)]">{t.legendIv}</p>
+            <p className="mt-0.5 font-data text-xs font-semibold tabular-nums text-[var(--tt-text)] sm:text-sm">{usd0(IV)}</p>
           </div>
           <div>
-            <p className="text-[10px] leading-tight text-[var(--tt-faint)]">{t.legendHi}</p>
-            <p className="mt-0.5 font-mono text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeHi)}</p>
+            <p className="text-xs leading-tight text-[var(--tt-faint)]">{t.legendHi}</p>
+            <p className="mt-0.5 font-data text-xs tabular-nums text-[var(--tt-muted)] sm:text-sm">{usd0(rangeHi)}</p>
           </div>
         </div>
       ) : (
-        <p className="mt-2 text-center font-mono text-[11px] text-[var(--tt-faint)]">
+        <p className="mt-2 text-center font-data text-xs text-[var(--tt-faint)]">
           {t.valueEstimate(fmtValueBand(rangeLo, rangeHi, usd0))}
         </p>
       )}
@@ -573,7 +573,7 @@ function ValueSpine({
       {/* headline — single anchor number for this card. Growth-anchored IV when assessable,
           otherwise the zero-growth floor F (single-lamp fallback, today's number). */}
       <div className="flex items-baseline gap-2">
-        <span className="font-mono text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{usd0(headline)}</span>
+        <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{usd0(headline)}</span>
         <span className="text-xs text-[var(--tt-muted)]">{t.perSh} · {hasIv ? t.ivHeadline : t.zeroGrowthHeadline}</span>
       </div>
 
@@ -615,7 +615,7 @@ function ValueSpine({
           the zero-growth downside if growth doesn't show up. */}
       <p className="text-xs leading-relaxed text-[var(--tt-muted)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>
 
-      <p className="text-[11px] leading-relaxed text-[var(--tt-faint)]">
+      <p className="text-xs leading-relaxed text-[var(--tt-faint)]">
         {t.priceAsOf} {sz.price.date}
         {sz.price.source ? ` · ${sz.price.source}` : ""}
         {sz.stale ? ` · ${t.mayBeStale}` : ""}
@@ -686,7 +686,7 @@ function MethodDetails({
         {buffett_epv.buyback_offsets_sbc ? <p>{t.buybackOffsetsSbc}</p> : null}
         {cautions.length > 0 ? (
           <div className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-warn)_6%,transparent)] px-3 py-2">
-            <p className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--tt-warn)]">
+            <p className="font-data text-xs font-medium text-[var(--tt-warn)]">
               {t.modelCautions}
             </p>
             <ul className="mt-1.5 space-y-1">
@@ -701,7 +701,7 @@ function MethodDetails({
         ) : null}
         <p>{t.methodDisclaimer}</p>
         {/* precise numbers summary */}
-        <p className="font-mono text-[var(--tt-text)]">
+        <p className="font-data text-[var(--tt-text)]">
           {oeDcf?.assessable && oeDcf.per_share_low != null ? `${zh ? "所有者盈利 DCF" : "Owner-earnings DCF"} ${range(oeDcf.per_share_low, oeDcf.per_share_high)}` : null}
           {epv?.ceilings ? ` · Greenwald ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)} (${zh ? "中性" : "neutral"} ${perShare(epv.ceilings.neutral)})` : epv ? ` · Greenwald ${zh ? "零增长" : "zero-growth"} ${perShare(epv.base)}` : null}
           {epv ? ` · ${zh ? "零增长基准" : "zero-growth base"} ${perShare(epv.base)}` : null}

@@ -11,7 +11,7 @@ export function LearnLink({ lang, slug, label }: { lang: Lang; slug: string; lab
   return (
     <Link
       href={localePath(lang, `/learn/${slug}`)}
-      className="group mt-3 inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+      className="group mt-3 inline-flex items-center gap-1 font-data text-xs text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
     >
       {label}
       <span aria-hidden className="transition-colors group-hover:text-[var(--tt-accent)]">→</span>

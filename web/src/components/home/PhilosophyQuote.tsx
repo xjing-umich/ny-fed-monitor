@@ -45,7 +45,7 @@ export default function PhilosophyQuote({
           <p className="text-balance text-3xl font-medium leading-[1.16] tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {c.hero}
           </p>
-          <figcaption className="mt-5 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+          <figcaption className="mt-5 flex items-center gap-3 font-data text-xs text-[var(--tt-faint)]">
             <span className="inline-block h-px w-6 bg-[var(--tt-accent)]" />
             <span>
               {featuredHref ? (
@@ -69,7 +69,7 @@ export default function PhilosophyQuote({
             <blockquote className="text-base leading-relaxed text-[var(--tt-muted)] sm:text-lg">
               &ldquo;{s.q}&rdquo;
             </blockquote>
-            <figcaption className="mt-3 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+            <figcaption className="mt-3 font-data text-xs text-[var(--tt-faint)]">
               {s.who}
             </figcaption>
           </figure>

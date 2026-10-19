@@ -21,7 +21,7 @@ export function WeightBar({
       >
         <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct}%`, background: color }} />
       </span>
-      <span className="font-mono text-xs tabular-nums text-[var(--tt-muted)]">
+      <span className="font-data text-xs tabular-nums text-[var(--tt-muted)]">
         {has ? `${pct.toFixed(1)}%` : "—"}
       </span>
     </span>

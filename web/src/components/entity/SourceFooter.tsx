@@ -21,7 +21,7 @@ export function SourceFooter({ lang, sources }: SourceFooterProps) {
   return (
     <div className="border-t border-[var(--tt-border)] pt-3">
       <p className="text-xs italic text-[var(--tt-muted)]">
-        <span className="not-italic font-medium uppercase tracking-[0.08em] text-[11px] text-[var(--tt-faint)]">
+        <span className="not-italic font-medium text-xs text-[var(--tt-faint)]">
           {heading}
         </span>
         <span className="mx-1.5 text-[var(--tt-faint)]">·</span>

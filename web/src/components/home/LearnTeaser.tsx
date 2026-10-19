@@ -23,7 +23,7 @@ export default function LearnTeaser({ lang }: { lang: Lang }): React.ReactElemen
           </Link>
         ))}
       </div>
-      <Link href={localePath(lang, "/learn")} className="mt-6 inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline">{c.cta}</Link>
+      <Link href={localePath(lang, "/learn")} className="mt-6 inline-flex min-h-11 items-center font-data text-xs text-[var(--tt-accent)] no-underline hover:underline">{c.cta}</Link>
     </section>
   );
 }

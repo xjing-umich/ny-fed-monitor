@@ -42,7 +42,7 @@ export function KeyFacts({ facts }: { facts: KeyFact[] }) {
           ) : (
             <span
               className={cn(
-                "tnum font-mono text-lg font-medium leading-tight break-words sm:text-xl sm:leading-none",
+                "tnum font-data text-lg font-medium leading-tight break-words sm:text-xl sm:leading-none",
                 fact.tone ? VALUE_TONE_CLASS[fact.tone] : "text-[var(--tt-text)]"
               )}
             >

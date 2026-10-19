@@ -71,7 +71,7 @@ export default function LocaleError({
         </Link>
       </div>
       {error.digest ? (
-        <p className="mt-2 font-mono text-[10px] text-[var(--tt-faint)]">
+        <p className="mt-2 font-code text-xs text-[var(--tt-faint)]">
           {t.ref}: {error.digest}
         </p>
       ) : null}

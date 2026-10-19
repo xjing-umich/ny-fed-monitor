@@ -91,20 +91,20 @@ export const PriceBetBlock: FC<{
 
   return (
     <div className="mt-4 border-t border-[var(--tt-border)] pt-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--tt-faint)]">{t.label}</p>
+      <p className="font-data text-xs text-[var(--tt-faint)]">{t.label}</p>
       <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-text)]">
         {t.sentencePrefix}
-        <span className="font-semibold font-mono">{impliedLabel}</span>
+        <span className="font-semibold font-data">{impliedLabel}</span>
         {bounded ? t.outOfRange : ""}
         {t.sentenceMid}
-        <span className="font-semibold font-mono">{historicalLabel}</span>
+        <span className="font-semibold font-data">{historicalLabel}</span>
         {t.sentenceSuffix}
       </p>
       <p className="mt-1 text-sm text-[var(--tt-muted)]">{t.tierNote[expectations.tier]}</p>
       {expectations.impliedCapYears != null ? (
         <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
           {t.capPrefix}
-          <span className="font-semibold font-mono text-[var(--tt-muted)]">{expectations.impliedCapYears}</span>
+          <span className="font-semibold font-data text-[var(--tt-muted)]">{expectations.impliedCapYears}</span>
           {t.capSuffix}
         </p>
       ) : null}

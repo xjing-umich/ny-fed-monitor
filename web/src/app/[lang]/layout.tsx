@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "../globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { THEME_COLOR } from "@/lib/themeColor";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getManagerIndex } from "@/lib/managers/source";
@@ -98,10 +99,11 @@ export async function generateMetadata({
   };
 }
 
+// 首屏按系统配色;用户站内切换后由 ThemeColorSync(theme-provider)改写。
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0E1411" },
-    { media: "(prefers-color-scheme: light)", color: "#0E1411" },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
+    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
   ],
 };
 
@@ -157,7 +159,7 @@ export default async function LangLayout({
       <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >

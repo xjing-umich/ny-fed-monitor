@@ -27,7 +27,7 @@ export function VerdictChip({ label, tone }: VerdictChipProps) {
       <span className={cn("size-1.5 rounded-full", DOT_CLASS[tone])} aria-hidden />
       <span
         className={cn(
-          "text-[10px] font-medium uppercase tracking-[0.12em]",
+          "text-xs font-medium uppercase tracking-[0.12em]",
           TEXT_CLASS[tone]
         )}
       >

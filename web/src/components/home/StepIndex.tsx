@@ -84,7 +84,7 @@ function Row({
         {body ? <p className="mt-4 max-w-[44ch] text-sm leading-relaxed text-[var(--tt-muted)]">{body}</p> : null}
         <Link
           href={href}
-          className="mt-5 inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--tt-accent)] no-underline hover:underline"
+          className="mt-5 inline-flex min-h-11 items-center font-data text-xs text-[var(--tt-accent)] no-underline hover:underline"
         >
           {ctaLabel}
         </Link>
@@ -139,7 +139,7 @@ export default function StepIndex({
             <span className="text-sm font-medium text-[var(--tt-text)]">{c.consensus.holders}</span>
             <Link
               href={consensusHref}
-              className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--tt-faint)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+              className="font-data text-xs text-[var(--tt-faint)] no-underline transition-colors hover:text-[var(--tt-accent)]"
             >
               {c.consensus.seeAll} →
             </Link>
@@ -156,7 +156,7 @@ export default function StepIndex({
                       <EntityName issuer={row.issuer} ticker={row.cusip} />
                     </Link>
                   </td>
-                  <td className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
+                  <td className="py-2 text-right font-data text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                     {row.holderCount}
                   </td>
                 </tr>
@@ -187,7 +187,7 @@ export default function StepIndex({
                   {m.person}
                 </span>
               </span>
-              <span className="shrink-0 font-mono text-xs tabular-nums text-[var(--tt-faint)] whitespace-nowrap">
+              <span className="shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)] whitespace-nowrap">
                 {formatUSD(m.totalValue)}
               </span>
             </Link>

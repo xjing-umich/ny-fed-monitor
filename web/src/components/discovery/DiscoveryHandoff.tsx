@@ -8,7 +8,7 @@ export function DiscoveryHandoff({ line, href, ctaLabel }: DiscoveryCta) {
       {line}{" "}
       <Link
         href={href}
-        className="group inline-flex items-center gap-1 font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+        className="group inline-flex items-center gap-1 font-data text-xs text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
       >
         {ctaLabel}
         <span aria-hidden className="transition-colors group-hover:text-[var(--tt-accent)]">→</span>

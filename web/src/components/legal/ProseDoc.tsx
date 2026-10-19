@@ -33,7 +33,7 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderPa
           {doc.title}
         </h1>
         {updated && (
-          <p className="mt-2.5 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+          <p className="mt-2.5 font-data text-xs text-[var(--tt-faint)]">
             {updatedLabel} · {updated}
           </p>
         )}

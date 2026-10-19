@@ -146,7 +146,7 @@ function HoldingsTable({
           <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />
           {h.putCall && (
             <span
-              className={`rounded-sm px-1 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] border border-current/40 ${h.putCall === "Put" ? "text-[var(--tt-warn)]" : "text-[var(--tt-muted)]"}`}
+              className={`rounded-sm px-1 py-0.5 font-data text-xs border border-current/40 ${h.putCall === "Put" ? "text-[var(--tt-warn)]" : "text-[var(--tt-muted)]"}`}
               title={lang === "zh" ? "期权:市值为标的名义价值,非权利金" : "Option: value is notional, not premium"}
             >
               {h.putCall === "Put" ? "PUT" : "CALL"}
@@ -181,7 +181,7 @@ function HoldingsTable({
         const tk = cusipToTicker.get(h.cusip);
         const c = tk ? holderCounts.get(tk.toUpperCase()) : undefined;
         return c != null
-          ? <span className="font-mono tabular-nums text-[var(--tt-muted)]">{c}</span>
+          ? <span className="font-data tabular-nums text-[var(--tt-muted)]">{c}</span>
           : <span className="text-[var(--tt-faint)]">—</span>;
       },
     },
@@ -210,9 +210,9 @@ function HoldingsTable({
       cell: (h) => {
         const s = rowSignals.get(h.cusip);
         if (!s?.conviction) return <span className="text-[var(--tt-faint)]">—</span>;
-        // 无框 mono 文案：避免 SIGNAL 列 pill 长短不一形成锯齿右缘
+        // 无框 font-data 文案：避免 SIGNAL 列 pill 长短不一形成锯齿右缘
         return (
-          <span className="inline-block max-w-[9rem] truncate font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-muted)]" title={s.conviction.label}>
+          <span className="inline-block max-w-[9rem] truncate font-data text-xs text-[var(--tt-muted)]" title={s.conviction.label}>
             {s.conviction.label}
           </span>
         );
@@ -245,7 +245,7 @@ function HoldingsTable({
 
       {exits.length > 0 && (
         <div className="mt-5 pt-1">
-          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--tt-negative)]">
+          <span className="font-data text-xs text-[var(--tt-negative)]">
             {t.exitedTitle(exits.length)}
           </span>
           <span className="ml-2 text-sm text-[var(--tt-muted)]">
@@ -383,7 +383,7 @@ export default async function InvestorSlugPage({
     n > 0 ? "text-[var(--tt-positive)]" : n < 0 ? "text-[var(--tt-warn)]" : "text-[var(--tt-faint)]";
 
   const valueNode = (
-    <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
+    <span className="tnum font-data text-xl font-medium leading-none text-[var(--tt-text)]">
       {formatUSD(longTotalValue)}
       {valDeltaPct != null && valDeltaPct !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
@@ -395,7 +395,7 @@ export default async function InvestorSlugPage({
     </span>
   );
   const countNode = (
-    <span className="tnum font-mono text-xl font-medium leading-none text-[var(--tt-text)]">
+    <span className="tnum font-data text-xl font-medium leading-none text-[var(--tt-text)]">
       {longHoldings.length}
       {cntDelta !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(cntDelta)}`}>
@@ -546,7 +546,7 @@ export default async function InvestorSlugPage({
             const modest = held.filter((x) => x.expectations?.assessable && x.expectations.tier === "modest").length;
             if (demanding === 0 && modest === 0) return null;
             return (
-              <p className="mb-3 text-[13px] text-[var(--tt-faint)]">
+              <p className="mb-3 text-sm text-[var(--tt-faint)]">
                 {lang === "zh"
                   ? `按现价隐含预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
                   : `By what price implies: ${demanding} demand a demanding growth rate, ${modest} modest.`}
@@ -572,9 +572,9 @@ export default async function InvestorSlugPage({
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
                       {cleanIssuer(h.issuer)}
-                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{h.ticker}</span>
+                      <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </Link>
-                    <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
+                    <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
                       {h.marginPct != null ? `${Math.round(h.marginPct * 100)}%` : ""}
                       {h.marginPct != null ? " · " : ""}
                       {h.inStrikeZone
@@ -592,7 +592,7 @@ export default async function InvestorSlugPage({
                 eyebrow={lang === "zh" ? "13F · 集中信号" : "13F · concentration"}
                 title={lang === "zh" ? "独门重仓" : "Lonely conviction"}
                 trailing={
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--tt-faint)]">
+                  <span className="font-data text-xs text-[var(--tt-faint)]">
                     {lang === "zh" ? `${lonely.length} 只` : `${lonely.length}`}
                   </span>
                 }
@@ -610,9 +610,9 @@ export default async function InvestorSlugPage({
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
                       {cleanIssuer(h.issuer)}
-                      <span className="ml-1.5 font-mono text-[11px] text-[var(--tt-faint)]">{h.ticker}</span>
+                      <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </Link>
-                    <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[var(--tt-muted)]">
+                    <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
                       {Math.round(h.weight * 100)}% · {lang === "zh" ? `${h.holderCount} 家` : `${h.holderCount}`}
                     </span>
                   </li>

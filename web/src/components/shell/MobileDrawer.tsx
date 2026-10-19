@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
+import SearchBox, { type SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
 import { localePath } from "@/lib/urls";
 
@@ -18,9 +19,10 @@ function useMounted() {
 
 interface MobileDrawerProps {
   lang: Lang;
+  items: SearchItem[];
 }
 
-export default function MobileDrawer({ lang }: MobileDrawerProps) {
+export default function MobileDrawer({ lang, items }: MobileDrawerProps) {
   // openFor 记录打开时的 pathname;路由变化后自动视为已关闭 —— 无需 effect setState。
   const [openFor, setOpenFor] = useState<string | null>(null);
   const pathname = usePathname();
@@ -65,7 +67,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
       <button
         onClick={() => setOpen(true)}
         aria-label={lang === "zh" ? "打开菜单" : "Open menu"}
-        className="md:hidden flex items-center justify-center w-11 h-11 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
+        className="lg:hidden flex items-center justify-center w-11 h-11 rounded-md border border-[var(--tt-border)] text-[var(--tt-muted)] hover:text-[var(--tt-text)] hover:bg-[var(--tt-surface)] transition-colors"
       >
         <Menu size={16} />
       </button>
@@ -73,7 +75,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
       {/* Overlay */}
       {open && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
           aria-hidden="true"
         />
@@ -86,7 +88,7 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
         aria-label={lang === "zh" ? "导航菜单" : "Navigation menu"}
         inert={!open}
         className={[
-          "md:hidden fixed top-0 left-0 h-full w-72 z-50 flex flex-col",
+          "lg:hidden fixed top-0 left-0 h-full w-72 z-50 flex flex-col",
           "bg-[var(--tt-panel)] border-r border-[var(--tt-border)] shadow-lg",
           "transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
@@ -110,6 +112,12 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
           >
             <X size={16} />
           </button>
+        </div>
+
+        {/* Search — 平板(<lg)没有桌面导航栏,站内搜索放在抽屉顶部;
+            选中结果后路由变化,抽屉随 pathname 自动关闭。 */}
+        <div className="px-3 pt-3">
+          <SearchBox lang={lang} items={items} fill />
         </div>
 
         {/* Nav links */}
@@ -150,10 +158,11 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                 return (
                   <span
                     key={l}
+                    lang={l}
                     aria-current="true"
-                    className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-[11px] font-mono uppercase tracking-wider text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
+                    className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-xs font-data text-[var(--tt-accent)] bg-[color-mix(in_srgb,var(--tt-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--tt-accent)_30%,transparent)]"
                   >
-                    {l}
+                    {l === "zh" ? "中文" : "EN"}
                   </span>
                 );
               }
@@ -161,10 +170,12 @@ export default function MobileDrawer({ lang }: MobileDrawerProps) {
                 <Link
                   key={l}
                   href={otherLangPath}
+                  lang={l}
+                  hrefLang={l}
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-[11px] font-mono uppercase tracking-wider transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-[var(--tt-border)]"
+                  className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-xs font-data transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-[var(--tt-border)]"
                 >
-                  {l}
+                  {l === "zh" ? "中文" : "EN"}
                 </Link>
               );
             })}

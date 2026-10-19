@@ -5,7 +5,7 @@ import type { Lang } from "@/lib/nav";
 // QoQ 方向原语 —— 从投资人页 WeightQoQ 1:1 抽出，供投资人页 / 个股页共用。
 // 颜色语义诚实、非指示性：▲绿/▼琥珀 描述「机构这季做了什么动作」，不是买卖建议。
 // 减持用 --tt-warn(琥珀) 而非 --tt-negative(红)——红会读成「卖出/坏」，违反品牌无判决。
-// 数字一律 font-mono tabular-nums（列对齐）。
+// 数字一律 font-data tabular-nums（列对齐）。
 
 const NEW_LABEL: Record<Lang, string> = { zh: "新建", en: "New" };
 
@@ -34,7 +34,7 @@ export function WeightQoQ({
   // 新建: prior 不存在该持仓
   if (prior == null) {
     return (
-      <span className="font-mono tabular-nums text-[var(--tt-positive)]">
+      <span className="font-data tabular-nums text-[var(--tt-positive)]">
         {NEW_LABEL[lang]} · {fmtPct1(cur)}
       </span>
     );
@@ -48,7 +48,7 @@ export function WeightQoQ({
     ? "text-[var(--tt-warn)]"
     : "text-[var(--tt-faint)]";
   return (
-    <span className="font-mono tabular-nums text-[var(--tt-muted)]">
+    <span className="font-data tabular-nums text-[var(--tt-muted)]">
       {fmtPct1(prior)} <span className={colorClass}>→ {fmtPct1(cur)} {arrow}</span>
     </span>
   );

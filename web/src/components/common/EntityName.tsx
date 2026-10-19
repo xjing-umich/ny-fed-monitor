@@ -17,7 +17,7 @@ export function EntityName({
     <span className="inline-flex min-w-0 max-w-full items-baseline gap-1.5">
       <span className="min-w-0 truncate">{cleanIssuer(issuer)}</span>
       {ticker && isLikelyTicker(ticker) && (
-        <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--tt-faint)]">
+        <span className="shrink-0 font-code text-xs text-[var(--tt-faint)]">
           {ticker}
         </span>
       )}

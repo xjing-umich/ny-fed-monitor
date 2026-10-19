@@ -139,7 +139,7 @@ export const STOCK_PAGE_COPY = {
       aria: "Business quality",
       eyebrow: "SEC 10-K · fundamentals",
       title: "Business quality",
-      asOf: (d: string) => `as of ${d}`,
+      asOf: (d: string) => `As of ${d}`,
       revenueGrowth: "Revenue growth",
       netMargin: "Net margin",
       fcfMargin: "FCF margin",

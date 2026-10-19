@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
 
-interface SearchItem {
+export interface SearchItem {
   label: string;
   href: string;
   /** 额外搜索关键词(中文别名、ticker 等),空格分隔;参与匹配但不展示。 */
@@ -18,6 +18,8 @@ interface SearchBoxProps {
   items: SearchItem[];
   variant?: "default" | "hero";
   placeholder?: string;
+  /** 撑满父容器宽度(抽屉内使用);默认 false,桌面导航保持固定 w-56。 */
+  fill?: boolean;
 }
 
 export default function SearchBox({
@@ -25,6 +27,7 @@ export default function SearchBox({
   items,
   variant = "default",
   placeholder: placeholderProp,
+  fill = false,
 }: SearchBoxProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -146,12 +149,12 @@ export default function SearchBox({
   return (
     <div
       ref={containerRef}
-      className={isHero ? "relative w-full max-w-xl" : "relative"}
+      className={isHero ? "relative w-full max-w-xl" : fill ? "relative w-full" : "relative"}
     >
       <div
         className={[
           "flex items-center rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] text-[var(--tt-muted)] focus-within:border-[var(--tt-accent)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--tt-accent)_25%,transparent)] transition-colors",
-          isHero ? "gap-2.5 h-12 px-4" : "gap-1.5 h-8 px-2.5",
+          isHero ? "gap-2.5 h-12 px-4" : fill ? "gap-2 h-11 px-3" : "gap-1.5 h-8 px-2.5",
         ].join(" ")}
       >
         <Search size={isHero ? 18 : 13} className="shrink-0" />
@@ -174,7 +177,7 @@ export default function SearchBox({
           aria-label={placeholder}
           className={[
             "bg-transparent text-[var(--tt-text)] placeholder:text-[var(--tt-faint)] outline-none",
-            isHero ? "w-full flex-1 text-base" : "w-56 text-xs",
+            isHero ? "w-full flex-1 text-base" : fill ? "w-full min-w-0 flex-1 text-sm" : "w-56 text-xs",
           ].join(" ")}
         />
       </div>
@@ -186,7 +189,7 @@ export default function SearchBox({
           aria-label={placeholder}
           className={[
             "absolute top-full mt-1 left-0 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] shadow-md z-50 overflow-hidden",
-            isHero ? "w-full" : "w-72",
+            isHero || fill ? "w-full" : "w-72",
           ].join(" ")}
         >
           {filtered.map((item, i) => (
@@ -200,7 +203,7 @@ export default function SearchBox({
               className={[
                 "w-full text-left text-[var(--tt-text)] transition-colors truncate",
                 active === i ? "bg-[var(--tt-surface)] text-[var(--tt-accent)]" : "hover:bg-[var(--tt-surface)] hover:text-[var(--tt-accent)]",
-                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-[13px]",
+                isHero ? "px-4 py-2.5 text-sm" : "px-3 py-2 text-sm",
               ].join(" ")}
             >
               {item.label}
@@ -222,7 +225,7 @@ export default function SearchBox({
               <span className="truncate">
                 {lang === "zh" ? `查看个股 ${tickerGuess}` : `Go to ${tickerGuess}`}
               </span>
-              <span className="shrink-0 font-mono text-[var(--tt-accent)]">→</span>
+              <span className="shrink-0 font-data text-[var(--tt-accent)]">→</span>
             </button>
           )}
         </div>

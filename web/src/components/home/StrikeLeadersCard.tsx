@@ -34,7 +34,7 @@ export default function StrikeLeadersCard({
     <div className="ticks rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
       <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
         <span className="text-sm font-medium text-[var(--tt-text)]">{c.title(total)}</span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--tt-faint)]">{c.margin}</span>
+        <span className="font-data text-xs text-[var(--tt-faint)]">{c.margin}</span>
       </div>
       <table className="mt-2 w-full border-collapse text-sm">
         <tbody>
@@ -48,11 +48,11 @@ export default function StrikeLeadersCard({
                   {row.ticker}
                 </Link>
               </td>
-              <td className="py-2 pr-3 text-right font-mono text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
+              <td className="py-2 pr-3 text-right font-data text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                 {fmtValueBand(row.rangeLo, row.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}
               </td>
               <td
-                className="py-2 text-right font-mono text-xs tabular-nums text-[var(--tt-accent)] whitespace-nowrap"
+                className="py-2 text-right font-data text-xs tabular-nums text-[var(--tt-accent)] whitespace-nowrap"
                 style={{ textShadow: "var(--glow-primary)" }}
               >
                 {row.marginPct != null && row.marginPct > 0 ? `−${Math.round(row.marginPct * 100)}%` : "—"}
@@ -61,7 +61,7 @@ export default function StrikeLeadersCard({
           ))}
         </tbody>
       </table>
-      <p className="mt-3 text-[11px] leading-relaxed text-[var(--tt-muted)]">{c.note}</p>
+      <p className="mt-3 text-xs leading-relaxed text-[var(--tt-muted)]">{c.note}</p>
     </div>
   );
 }
