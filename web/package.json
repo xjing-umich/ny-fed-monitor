@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run -s check:tokens && npm run -s check:type",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
