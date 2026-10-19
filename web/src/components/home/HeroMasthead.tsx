@@ -8,6 +8,7 @@ import { FreshnessDot } from "@/components/entity/FreshnessDot";
 import { filingFreshness, quarterLabel, filingDeadline, type EffectiveMovesPeriod } from "@/lib/freshness/derive";
 import { stockPath, localePath } from "@/lib/urls";
 import RevealStagger from "@/components/home/RevealStagger";
+import { reportSlug } from "@/lib/reports/period";
 
 const COPY = {
   zh: {
@@ -136,9 +137,22 @@ export default function HeroMasthead({
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
           {c.asOf(quarterLabel(period) || period)}
         </p>
-        {filingProgressText && (
+        {filingProgressText && filing && (
           <p className="mt-1.5 font-data text-xs text-[var(--tt-muted)]">
             {filingProgressText}
+            {filing.maxPeriod && (
+              <>
+                {" "}
+                <Link
+                  href={localePath(lang, `/learn/${reportSlug(filing.maxPeriod)}`)}
+                  className="text-[var(--tt-accent)] no-underline hover:underline"
+                >
+                  {lang === "zh"
+                    ? `${quarterLabel(filing.maxPeriod)} 报告 →`
+                    : `${quarterLabel(filing.maxPeriod)} report →`}
+                </Link>
+              </>
+            )}
           </p>
         )}
         <h1 className="mt-6 max-w-[20ch] text-balance font-display text-[2rem] font-medium leading-[1.08] tracking-tight text-[var(--tt-text)] sm:text-[2.6rem]">
