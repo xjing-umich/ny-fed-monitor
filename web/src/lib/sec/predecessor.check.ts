@@ -2,7 +2,7 @@
  * predecessor 行为校验。跑法: npx tsx src/lib/sec/predecessor.check.ts
  * 无 IO:假 companyfacts 复刻 XOM 2026-07 控股重组(新 CIK 只有一份由前身代交的 10-Q)。
  */
-import { mergePredecessorFacts, overlapCount, predecessorCandidates, MIN_OVERLAP } from "./predecessor";
+import { isPredecessorMatch, mergePredecessorFacts, predecessorCandidates, predecessorMatch, MIN_OVERLAP } from "./predecessor";
 import type { CompanyFacts, SecFactUnit } from "./company-facts";
 import type { NormalizedFiling } from "./company-submissions";
 import { normalizeCompanyFacts } from "./normalize-facts";
@@ -68,11 +68,11 @@ const successor: CompanyFacts = {
     NetIncomeLoss: { units: { USD: [u("2025-01-01", "2025-12-31", 28_844, "0001193125-26-000001", "DEF 14A", "2026-09-01")] } },
   } },
 };
-// 让重叠数达到闸值:多复制几条一致的比较数(真实 XOM 为 138 条)
-for (let i = 0; i < MIN_OVERLAP; i++) {
+// 让一致条数达到闸值:多复制几条一致的非零美元比较数(真实 XOM 为 111/111 条)
+for (let i = 1; i <= MIN_OVERLAP; i++) {
   const tag = `Filler${i}`;
-  predecessor.facts["us-gaap"][tag] = { units: { USD: [u("2025-04-01", "2025-06-30", i, `${OLD_CIK}-25-000042`, "10-Q", "2025-08-04")] } };
-  successor.facts["us-gaap"][tag] = { units: { USD: [u("2025-04-01", "2025-06-30", i, Q2_26, "10-Q", "2026-08-03")] } };
+  predecessor.facts["us-gaap"][tag] = { units: { USD: [u("2025-04-01", "2025-06-30", i * 1_000, `${OLD_CIK}-25-000042`, "10-Q", "2025-08-04")] } };
+  successor.facts["us-gaap"][tag] = { units: { USD: [u("2025-04-01", "2025-06-30", i * 1_000, Q2_26, "10-Q", "2026-08-03")] } };
 }
 
 const successorFilings = [
@@ -92,11 +92,28 @@ check(
   predecessorCandidates(NEW_CIK, successor, [filing(NEW_CIK, "0002115436-26-000020", "10-Q", "2026-09-30", "2026-11-03")], TODAY).length === 0,
 );
 
-console.log("overlapCount");
-const overlap = overlapCount(successor, predecessor);
-check(`同一家公司的比较数原样一致(≥ ${MIN_OVERLAP})`, overlap >= MIN_OVERLAP, String(overlap));
+console.log("predecessorMatch");
+const match = predecessorMatch(successor, predecessor, successorFilings);
+check(`同一家公司:前身时期比较数几乎全一致(≥ ${MIN_OVERLAP} 条且 ≥ 80%)`, isPredecessorMatch(match), JSON.stringify(match));
+check("继任者本期事实不进分母", match.total === 14, JSON.stringify(match));
 const stranger: CompanyFacts = { cik: 1, entityName: "OTHER", facts: { "us-gaap": { Revenues: { units: { USD: [u("2025-04-01", "2025-06-30", 5, "x", "10-Q", "2025-08-01")] } } } } };
-check("无关公司 / 申报代理对不上", overlapCount(successor, stranger) < MIN_OVERLAP);
+check("无关公司 / 申报代理对不上", !isPredecessorMatch(predecessorMatch(successor, stranger, successorFilings)));
+
+// 分拆公司 vs 母公司(GEV/GE 型):同期末日的 0 值、每股数大量相同,另有十来笔交易额相同,但分拆公司自己的
+// 历史(carve-out)绝大部分与母公司不同 —— 实测一致率 < 1%,必须拒绝。
+const spinoff: CompanyFacts = { cik: 2, entityName: "SPINCO", facts: { "us-gaap": {} } };
+const parent: CompanyFacts = { cik: 3, entityName: "PARENT", facts: { "us-gaap": {} } };
+for (let i = 1; i <= 200; i++) {
+  const zero = u("2025-01-01", "2025-12-31", 0, "p", "10-K", "2026-02-01");
+  const eps = { ...u("2025-01-01", "2025-12-31", 1.5, "p", "10-K", "2026-02-01") };
+  spinoff.facts["us-gaap"][`Zero${i}`] = { units: { USD: [zero], "USD/shares": [eps] } };
+  parent.facts["us-gaap"][`Zero${i}`] = { units: { USD: [zero], "USD/shares": [eps] } };
+  spinoff.facts["us-gaap"][`Own${i}`] = { units: { USD: [u("2025-01-01", "2025-12-31", 1_000_000 + i, "s", "10-Q", "2026-05-01")] } };
+  parent.facts["us-gaap"][`Own${i}`] = { units: { USD: [u("2025-01-01", "2025-12-31", i <= 12 ? 1_000_000 + i : 9_000_000 + i, "p", "10-K", "2026-02-01")] } };
+}
+const spinFilings = [filing("0000000002", "0000000003-26-000001", "10-Q", "2026-03-31", "2026-05-01")];
+const spinMatch = predecessorMatch(spinoff, parent, spinFilings);
+check("分拆公司对母公司:0 值与每股数不计,12/200 笔交易额一致仍拒绝", !isPredecessorMatch(spinMatch) && spinMatch.matched === 12 && spinMatch.total === 200, JSON.stringify(spinMatch));
 
 console.log("mergePredecessorFacts");
 const merged = mergePredecessorFacts(successor, predecessor, successorFilings);

@@ -152,7 +152,7 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
   // 控股重组 / 再注册:新 CIK 的 companyfacts 只有重组后的申报,历史在前身 CIK 下(2026-10:XOM)。
   const predecessor = await attachPredecessorHistory(ticker, match.cik, facts, ownFilings);
   if (predecessor) {
-    console.log(`  ${ticker}: 继任注册人,已拼接前身 CIK ${predecessor.cik} 的历史(一致事实 ${predecessor.overlap} 条)`);
+    console.log(`  ${ticker}: 继任注册人,已拼接前身 CIK ${predecessor.cik} 的历史(前身时期事实一致 ${predecessor.match.matched}/${predecessor.match.total})`);
   }
   const filings = Array.from(
     new Map([...(predecessor?.filings ?? []), ...ownFilings].map((filing) => [filing.accession_number, filing])).values()

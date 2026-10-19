@@ -19,8 +19,10 @@ import { sleep } from "./sec-client";
  * 只在继任者「年轻」时尝试:companyfacts 里最早一份 10-Q/10-K 申报晚于今天 − 3 年(还攒不满
  * normalizer 的 12 季)。老公司零额外请求。
  *
- * 校验:候选 CIK 的 companyfacts 与继任者的比较期事实必须有 ≥ MIN_OVERLAP 条(概念、单位、起止、
- * 数值)完全一致 —— 同一家公司的去年同期数原样重报;无关公司或代理不可能对上。
+ * 校验:只看继任者里「前身时期」(早于继任者第一份自有 10-Q/10-K 报告期)的非零美元事实 —— 同一
+ * 家公司会把去年同期数原样重报,一致率接近 100%(XOM 111/112);分拆公司与母公司在同样的期末日
+ * 也会碰上不少 0 值、每股数和个别交易额(GEV/GE、SOLV/MMM、KVUE/JNJ、VLTO/DHR 按条数计 45–94 条),
+ * 但一致率很低。要求一致 ≥ MIN_OVERLAP 条且一致率 ≥ MIN_MATCH_RATIO。
  *
  * 拼接:以前身 companyfacts 为底,继任者只加入其 10-Q/10-K 自身报告期的事实(比较期数不加入,
  * 与 filing-backfill 同一规则:比较期数据不能覆盖历史;同期按最早申报取值由 normalizer 保证)。
@@ -29,8 +31,10 @@ import { sleep } from "./sec-client";
 const FORMS = new Set(["10-Q", "10-K"]);
 /** 继任者「年轻」的判定:最早一份 10-Q/10-K 申报距今不足 3 年。 */
 export const YOUNG_REGISTRANT_DAYS = 3 * 365;
-/** 判定为同一家公司所需的完全一致事实条数(XOM 实测 138/142)。 */
+/** 判定为同一家公司所需的完全一致事实条数(前身时期的非零美元事实)。 */
 export const MIN_OVERLAP = 10;
+/** 判定为同一家公司所需的一致率(前身时期的非零美元事实里,与候选完全一致的占比)。 */
+export const MIN_MATCH_RATIO = 0.8;
 
 const factKey = (tag: string, unit: string, u: SecFactUnit) => `${tag}|${unit}|${u.start ?? ""}|${u.end ?? ""}|${u.val}`;
 
@@ -57,16 +61,33 @@ export function predecessorCandidates(cik: string, facts: CompanyFacts, filings:
   return [...out];
 }
 
-/** 继任者与候选前身完全一致的事实条数(概念、单位、起止、数值)。 */
-export function overlapCount(successor: CompanyFacts, candidate: CompanyFacts): number {
+export type PredecessorMatch = { matched: number; total: number };
+
+/**
+ * 继任者 10-Q/10-K 里「前身时期」的非零美元事实中,与候选前身完全一致(概念、起止、数值)的条数与总数。
+ * 前身时期 = end 早于继任者最早一份 10-Q/10-K 的报告期(减容差)—— 这些只能是比较数,继任者以后
+ * 自己攒的历史不进分母,所以拼接不会随时间自动失效。
+ */
+export function predecessorMatch(successor: CompanyFacts, candidate: CompanyFacts, successorFilings: NormalizedFiling[]): PredecessorMatch {
+  const firstReport = successorFilings
+    .filter((f) => FORMS.has(f.form) && f.report_date)
+    .reduce<string | null>((m, f) => (m == null || f.report_date! < m ? f.report_date! : m), null);
+  if (!firstReport) return { matched: 0, total: 0 };
   const keys = new Set<string>();
   for (const [tag, concept] of Object.entries(candidate.facts?.["us-gaap"] ?? {}))
-    for (const [unit, list] of Object.entries(concept.units ?? {})) for (const u of list) keys.add(factKey(tag, unit, u));
-  let n = 0;
+    for (const u of concept.units?.USD ?? []) if (u.val) keys.add(factKey(tag, "USD", u));
+  let matched = 0;
+  let total = 0;
   for (const [tag, concept] of Object.entries(successor.facts?.["us-gaap"] ?? {}))
-    for (const [unit, list] of Object.entries(concept.units ?? {})) for (const u of list) if (keys.has(factKey(tag, unit, u))) n++;
-  return n;
+    for (const u of concept.units?.USD ?? []) {
+      if (!u.val || !u.end || !u.form || !FORMS.has(u.form) || u.end >= firstReport || isOwnPeriod(u.end, firstReport)) continue;
+      total++;
+      if (keys.has(factKey(tag, "USD", u))) matched++;
+    }
+  return { matched, total };
 }
+
+export const isPredecessorMatch = (m: PredecessorMatch) => m.matched >= MIN_OVERLAP && m.matched >= MIN_MATCH_RATIO * m.total;
 
 /**
  * 前身 companyfacts 为底 + 继任者 10-Q/10-K 自身报告期的事实。返回新对象,不改入参。
@@ -94,7 +115,7 @@ export function mergePredecessorFacts(successor: CompanyFacts, predecessor: Comp
   return { ...successor, facts: { ...successor.facts, "us-gaap": ns } };
 }
 
-export type PredecessorResult = { cik: string; overlap: number; filings: NormalizedFiling[] };
+export type PredecessorResult = { cik: string; match: PredecessorMatch; filings: NormalizedFiling[] };
 
 /**
  * 找到并校验前身后,就地把 facts 换成拼接结果,返回前身 CIK 与其申报(供 sec_filings / normalizer
@@ -110,12 +131,12 @@ export async function attachPredecessorHistory(
     try {
       const predFacts = await fetchCompanyFacts(candidate);
       await sleep(150);
-      const overlap = overlapCount(facts, predFacts);
-      if (overlap < MIN_OVERLAP) continue;
+      const match = predecessorMatch(facts, predFacts, filings);
+      if (!isPredecessorMatch(match)) continue;
       const predSubmission = await fetchCompanySubmissions(candidate);
       const merged = mergePredecessorFacts(facts, predFacts, filings);
       facts.facts = merged.facts;
-      return { cik: candidate, overlap, filings: normalizeRecentFilings(ticker, predSubmission) };
+      return { cik: candidate, match, filings: normalizeRecentFilings(ticker, predSubmission) };
     } catch {
       // 候选是申报代理(无 companyfacts)或 SEC 临时失败:跳过
     }
