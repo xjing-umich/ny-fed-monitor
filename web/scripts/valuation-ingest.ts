@@ -66,6 +66,42 @@ async function collectUniverse(): Promise<string[]> {
   return Array.from(tickers).sort();
 }
 
+/**
+ * 孤儿行:快照里有、但已不在 universe(没有任何被追踪投资人最新季持有)的票。
+ * 上面的陈旧清理只遍历 universe,这类票既不重算也删不掉,旧价/旧结论会无限期挂在聚合页上
+ * (2026-10 审计:69 行,其中 43 行 reliable,停在 8 月)。
+ * 只在熔断放行时调用;另设比例闸:孤儿超过现存行 MAX_ORPHAN_RATIO 视为 universe 异常(持仓读取
+ * 故障等),整批跳过,防止一次坏读把整张表删空。
+ */
+const MAX_ORPHAN_RATIO = 0.2;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function deleteOrphanSnapshots(db: any, universe: Set<string>): Promise<number> {
+  const existing: string[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db.from("valuation_snapshot").select("ticker").order("ticker").range(from, from + 999);
+    if (error) throw new Error(`valuation_snapshot 读取失败: ${error.message}`);
+    existing.push(...(data ?? []).map((r: { ticker: string }) => r.ticker));
+    if (!data || data.length < 1000) break;
+  }
+  const orphans = existing.filter((t) => !universe.has(t));
+  if (orphans.length === 0) return 0;
+  if (orphans.length > existing.length * MAX_ORPHAN_RATIO) {
+    console.warn(
+      `孤儿行清理已跳过:${orphans.length}/${existing.length} 行不在 universe ` +
+        `(> ${(MAX_ORPHAN_RATIO * 100).toFixed(0)}%),疑似 universe 读取异常。`
+    );
+    return 0;
+  }
+  let n = 0;
+  for (let i = 0; i < orphans.length; i += 500) {
+    const { error, count } = await db.from("valuation_snapshot").delete({ count: "exact" }).in("ticker", orphans.slice(i, i + 500));
+    if (error) throw new Error(`valuation_snapshot 孤儿行删除失败: ${error.message}`);
+    n += count ?? 0;
+  }
+  console.log(`清理孤儿 ${n} 行(已无人持有): ${orphans.slice(0, 20).join(", ")}${orphans.length > 20 ? " …" : ""}`);
+  return n;
+}
+
 async function main() {
   const env = loadEnv();
   for (const [k, v] of Object.entries(env)) if (process.env[k] === undefined) process.env[k] = v;
@@ -255,6 +291,7 @@ async function main() {
   const skipRatio = universe.length > 0 ? nonStructuralSkipped / universe.length : 0;
   const writtenRatio = universe.length > 0 ? written.size / universe.length : 0;
   let deleted = 0;
+  let orphansDeleted = 0;
   if (skipRatio > MAX_NON_STRUCTURAL_SKIP_RATIO || writtenRatio < MIN_WRITTEN_RATIO) {
     console.warn(
       `陈旧行清理已跳过:非结构性跳过率 ${(skipRatio * 100).toFixed(1)}% ` +
@@ -274,6 +311,7 @@ async function main() {
       if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
       deleted += count ?? 0;
     }
+    orphansDeleted = await deleteOrphanSnapshots(db, new Set(universe));
   }
   console.log(`TTM基点: ${ttmBasis}/${valued}`);
   console.log(`件⑤ 控股集团 SOTP: ${holdcoSotpValued} 票取到分部估值`);
@@ -282,7 +320,7 @@ async function main() {
       `异常跳过 ${exceptionSkipped}, 数据缺口抑制 ${suppressedByDataGap}(缺价/陈旧价/陈旧基本面,保留历史行), ` +
       `过期基本面抑制 ${staleFundamentals}(最新FY距今>${FUNDAMENTALS_MAX_AGE_MONTHS}月), ` +
       `排除非经营性 ${excludedNonOperating}(ETP/基金/权证), ADR未策展抑制 ${adrSuppressed}, ` +
-      `清理陈旧 ${deleted}, computed_at ${computedAt}\n` +
+      `清理陈旧 ${deleted}, 清理孤儿 ${orphansDeleted}(已无人持有), computed_at ${computedAt}\n` +
       // 常态也打印,让距离熔断/地板的余量平时可观测,而不是等它咬人才发现。
       `覆盖率: 写入 ${(writtenRatio * 100).toFixed(1)}% (${written.size}/${universe.length}, 地板 ${(MIN_WRITTEN_RATIO * 100).toFixed(0)}%), ` +
       `非结构性跳过 ${(skipRatio * 100).toFixed(1)}% (阈值 ${(MAX_NON_STRUCTURAL_SKIP_RATIO * 100).toFixed(0)}%)`

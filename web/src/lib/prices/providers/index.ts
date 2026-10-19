@@ -28,6 +28,24 @@ export async function resolveDaily(
   return best;
 }
 
+// 日更(整段):同 resolveDaily 的选源规则,但返回该源的近几日日线(升序),供整段 upsert 自愈。
+// 无 fetchRecent 的源退化为单根。
+export async function resolveRecent(
+  ticker: string,
+  providers: PriceProvider[],
+): Promise<DailyClose[]> {
+  let best: DailyClose[] = [];
+  for (const p of providers) {
+    const rows = p.fetchRecent
+      ? await p.fetchRecent(ticker).catch(() => [] as DailyClose[])
+      : await p.fetchDaily(ticker).then((d) => (d ? [d] : []), () => [] as DailyClose[]);
+    const latest = rows[rows.length - 1] ?? null;
+    if (latest && !isStale(latest)) return rows;
+    if (latest && !best.length) best = rows;
+  }
+  return best;
+}
+
 // 历史：按 providers 顺序，返回第一个非空。
 export async function resolveHistory(
   ticker: string,

@@ -13,6 +13,8 @@ export type DailyClose = {
 export interface PriceProvider {
   name: PriceSource;
   fetchDaily(ticker: string): Promise<DailyClose | null>;
+  /** 可选:近几个交易日(升序,末尾为最新)。实现了的源由日更任务整段写入,用于自愈漏掉的日子。 */
+  fetchRecent?(ticker: string): Promise<DailyClose[]>;
   fetchHistory(ticker: string, sinceYears: number): Promise<DailyClose[]>;
 }
 
