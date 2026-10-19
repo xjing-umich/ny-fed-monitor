@@ -98,10 +98,11 @@ export async function generateMetadata({
   };
 }
 
+// 与 globals.css v2 的 --canvas 一致(浅 oklch(0.985 0.004 165) / 深 oklch(0.175 0.010 165))
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0E1411" },
-    { media: "(prefers-color-scheme: light)", color: "#0E1411" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c120f" },
+    { media: "(prefers-color-scheme: light)", color: "#f8fbf9" },
   ],
 };
 
@@ -157,7 +158,7 @@ export default async function LangLayout({
       <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
