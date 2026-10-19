@@ -398,6 +398,10 @@ function deriveValuationVerdict(input: Omit<Parameters<typeof deriveValuationVer
   assert(isImplausibleBand({ rangeLo: 120, rangeHi: 100, price: 100, marginPct: 0.5 }) === true, "isImplausibleBand: rangeHi<rangeLo 退化带仍抑制");
   assert(isImplausibleBand({ rangeLo: 120, rangeHi: 320, price: 0, marginPct: 0.5 }) === true, "isImplausibleBand: price<=0 退化带仍抑制");
   assert(isImplausibleBand({ rangeLo: 120, rangeHi: 320, price: 100, marginPct: 0.85 }) === true, "isImplausibleBand: marginPct>0.8 仍抑制(健壮性闸未松)");
+  // 反方向下限:上沿 < 现价 2% → 抑制(WAT 0.07/437、TBLA 0/3.44、ETON 0.33/50.31 线上实例)
+  assert(isImplausibleBand({ rangeLo: 0.07, rangeHi: 0.07, price: 436.95, marginPct: -6241 }) === true, "isImplausibleBand: WAT 股数量级错 → 抑制");
+  assert(isImplausibleBand({ rangeLo: 0.33, rangeHi: 0.33, price: 50.31, marginPct: -151 }) === true, "isImplausibleBand: ETON 上沿 <2% 现价 → 抑制");
+  assert(isImplausibleBand({ rangeLo: 1.5, rangeHi: 2.5, price: 100, marginPct: -65 }) === false, "isImplausibleBand: 上沿 2.5% 现价(很贵但有读数)不抑制");
 
   // W2) coverage 只看 bothMethods(两法都可评估),与判定锚(IV vs valueFloor)无关 —— IV 路径下 conservative 缺失仍 single_lamp。
   const vFullWithIv = deriveValuationVerdict({

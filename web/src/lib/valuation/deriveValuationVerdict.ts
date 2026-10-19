@@ -102,6 +102,13 @@ export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcf
  */
 export const SANE_MARGIN_MAX = 0.8;
 
+/**
+ * 反方向的健壮性下限:价值带上沿不到现价 2%(现价 >50× 乐观值)不构成可信"高估"判定。
+ * 2026-10 线上:WAT(上沿 $0.07 / 现价 $437)、TBLA($0.00 / $3.44)是申报股数标大 1000×;
+ * ETON($0.33 / $50)是亏损史把保守盈利能力压到≈0。三者都不是"贵了 150 倍",是模型此处没有读数。
+ */
+export const SANE_BAND_HI_MIN_PRICE_RATIO = 0.02;
+
 /** Graham 经典折价(纯价值股，growthReliance≈0 时的安全边际)。 */
 export const MOS_BASE = 1 / 3;
 /** 重增长/长 CAP 依赖时折价上限(growthReliance→1 时的安全边际，Graham 随激进度浮动)。 */
@@ -124,6 +131,7 @@ export function isImplausibleBand(v: {
 }): boolean {
   if (!(v.price > 0) || !(v.rangeLo > 0) || !(v.rangeHi >= v.rangeLo)) return true; // 退化带
   if (v.marginPct != null && v.marginPct > SANE_MARGIN_MAX) return true; // 假深度低估
+  if (v.rangeHi < v.price * SANE_BAND_HI_MIN_PRICE_RATIO) return true; // 假极度高估(股数量级错/盈利能力≈0)
   return false;
 }
 // 逐字搬运自卡片：两法 consistency → bucket。

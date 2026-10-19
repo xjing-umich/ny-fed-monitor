@@ -105,6 +105,44 @@ export function normalizeDilutedShares(
   return shares * scale;
 }
 
+/**
+ * 反向量级错:申报把稀释股数标大了 10^k 倍(WAT 2026 Q1/Q2 标成 821 亿/982 亿股,真实约 8200 万/9800 万;
+ * TBLA 2026 Q2 标成 2914 亿)。单看 NI/EPS 不够:HAL/PCG/KRC 等是 NI 或 EPS 自身量级错、股数是对的,
+ * 只按 NI/EPS 缩会把正确股数改坏。所以要两个信号同时成立才缩:
+ *   1. NI/EPS 隐含股数 ≤ 申报值的 1/100(四舍五入到 10 的整数次幂 = 缩放倍数);
+ *   2. 缩放后落在同公司其它期(非派生、自身不可疑)股数中位数的 1/3–3 倍内,而原值 ≥30 倍。
+ * 拿不到参照(只有一期)→ 不动,交给估值侧的价值带合理性闸兜底。
+ */
+export const SHARES_DEFLATE_MIN_RATIO = 100;
+export const SHARES_DEFLATE_REF_MIN = 30;
+export function deflateOverScaledShares<T extends { shares_diluted: number | null; net_income: number | null; eps_diluted: number | null; is_derived?: boolean }>(rows: T[]): T[] {
+  const impliedRatio = (r: T): number | null => {
+    const s = r.shares_diluted, ni = r.net_income, e = r.eps_diluted;
+    if (s == null || !(s > 0) || ni == null || e == null || e === 0) return null;
+    const imp = Math.abs(ni / e);
+    return imp > 0 ? s / imp : null;
+  };
+  const suspect = (r: T) => (impliedRatio(r) ?? 0) >= SHARES_DEFLATE_MIN_RATIO;
+  const median = (xs: number[]) => {
+    const a = [...xs].sort((x, y) => x - y);
+    const m = Math.floor(a.length / 2);
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  };
+  return rows.map((r) => {
+    const ratio = impliedRatio(r);
+    if (ratio == null || ratio < SHARES_DEFLATE_MIN_RATIO) return r;
+    const refs = rows
+      .filter((o) => o !== r && !o.is_derived && !suspect(o) && o.shares_diluted != null && o.shares_diluted > 0)
+      .map((o) => o.shares_diluted as number);
+    if (!refs.length) return r;
+    const ref = median(refs);
+    const raw = r.shares_diluted as number;
+    const scaled = raw / Math.pow(10, Math.round(Math.log10(ratio)));
+    if (raw / ref < SHARES_DEFLATE_REF_MIN || scaled / ref < 1 / 3 || scaled / ref > 3) return r;
+    return { ...r, shares_diluted: scaled };
+  });
+}
+
 // Fields that, when absent, mark a period as not "high" quality. Enrichment
 // fields (d_and_a, sga, etc.) intentionally do NOT gate quality — a period is
 // still trustworthy without them; they just enable richer valuation.
@@ -615,7 +653,7 @@ export function normalizeCompanyFacts(
   // (如 LEGH 把 2024-Q1 标成 2033-03-31), 这种行会污染"最新期"物化(latest 按 period_end
   // 倒序选最新 → 2033>2026 被当最新, 盖住真最新季)。90 天容差留给正常的提前申报。
   const futureCutoff = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
-  const finalizedSane = finalized.filter((r) => {
+  const finalizedSane = deflateOverScaledShares(finalized).filter((r) => {
     if (r.period_end > futureCutoff) {
       console.warn(`[normalize-facts] 丢弃未来日期行 ${ticker} ${r.fiscal_period} FY${r.fiscal_year} period_end=${r.period_end}`);
       return false;
