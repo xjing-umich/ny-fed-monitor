@@ -1,11 +1,12 @@
-import { defaultProviders, resolveDaily, YahooChartProvider, type DailyClose, type SplitEvent } from "../../src/lib/prices/providers/index.js";
+import { defaultProviders, resolveRecent, YahooChartProvider, type DailyClose, type SplitEvent } from "../../src/lib/prices/providers/index.js";
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
 
 type PriceRow = { ticker: string; date: string; close: number; currency: string; source: string; as_of: string };
 
 /**
- * 读 securities 全部 ticker, 按 [Yahoo, Eastmoney] 顺序取最新 EOD, upsert prices。
+ * 读 securities 全部 ticker, 按 [Yahoo, Eastmoney] 顺序取近几日 EOD(含当日收盘), 整段 upsert prices。
+ * 整段而非只写最新一根:某天没取到/取晚了(如收盘后当日日线尚未落地),下一轮自动补齐。
  * 小间隔礼貌拉取。写 price_ingest_runs 记录(供 health-watchdog)。
  * 返回统计（fallback = 非主源 Yahoo 命中的票数）。
  */
@@ -36,11 +37,13 @@ export async function updatePrices(
     const yahoo = new YahooChartProvider();
     const splitRows: SplitEvent[] = [];
     for (const ticker of tickers) {
-      const d: DailyClose | null = await resolveDaily(ticker, providers);
+      const recent: DailyClose[] = await resolveRecent(ticker, providers);
+      const d = recent[recent.length - 1];
       if (!d) { skipped++; await sleep(throttle); continue; }
       if (d.source !== "yahoo") fallback++;
-      rows.push({ ticker, date: d.date, close: d.close, currency: d.currency, source: d.source, as_of: new Date().toISOString() });
-      written++;
+      const asOf = new Date().toISOString();
+      for (const r of recent) rows.push({ ticker, date: r.date, close: r.close, currency: r.currency, source: r.source, as_of: asOf });
+      written++; // 计票数(非行数),与 rows_written 历史口径一致
       const splits = await yahoo.fetchSplits(ticker).catch(() => [] as SplitEvent[]);
       if (splits.length) splitRows.push(...splits);
       if (rows.length >= 200) await flush(db, rows.splice(0));
