@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { notFound, redirect, permanentRedirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { HoldingChange } from "@/lib/managers/types";
@@ -13,13 +13,13 @@ import {
 } from "@/lib/managers/securities";
 import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { investorPath, stockPath, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
-import { altFor, ogFor, datasetLd } from "@/lib/seo";
+import { altFor, ogFor, datasetLd, breadcrumbLd } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -44,7 +44,7 @@ import { FoldedSection } from "@/components/entity/FoldedSection";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
-import { isLikelyTicker } from "@/lib/externalLinks";
+import { isLikelyTicker, knownExchange } from "@/lib/externalLinks";
 import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
@@ -85,17 +85,40 @@ export async function generateMetadata({
   let issuer = ticker;
   for (const c of cusips) { const info = cusipMap.get(c); if (info?.name) { issuer = cleanIssuer(info.name); break; } }
 
+  // 数据驱动 description:持有人数/合计市值/截至季度/最大持有人,与页面持有人表同源同口径
+  // (快照非清仓行、按 countsAsCurrentHolder 排除逾期未申报者;"截至"走 effectiveMovesPeriod)。readStockHolders/getManagerIndex 有 cache(),
+  // 与页面渲染共享一次查询。快照不可用(本地无库)→ 回退通用描述。
+  const [snap, idx] = await Promise.all([readStockHolders(ticker), getManagerIndex()]);
+  const metaNow = new Date();
+  const held = (snap ?? []).filter((r) => r.kind !== "exited" && countsAsCurrentHolder(r.period, metaNow));
+  const displayPeriod =
+    effectiveMovesPeriod(idx.managers.map((m) => m.period), metaNow).period ??
+    globalLatestPeriod(held.map((r) => r.period ?? null));
+  let description: { zh: string; en: string } | null = null;
+  if (held.length > 0 && displayPeriod) {
+    const n = held.length;
+    const total = formatUSD(held.reduce((s, r) => s + r.value, 0));
+    const top = [...held].sort((a, b) => b.value - a.value)[0].person;
+    const q = quarterLabel(displayPeriod);
+    const mixed = held.some((r) => r.period && r.period !== displayPeriod);
+    description = {
+      zh: `${n} 位超级投资者持有 ${issuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}），最大持有人 ${top}。各家仓位与季度增减，来自 SEC 13F 申报。`,
+      en: `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined as of ${q}${mixed ? " (most filings)" : ""}, led by ${top}. Position sizes and quarter-over-quarter moves from SEC 13F filings.`,
+    };
+  }
+
   const alternates = altFor(lang, `/stocks/${ticker}`);
   const meta =
     lang === "zh"
       ? { title: `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
-          description: `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
+          description: description?.zh ?? `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
       : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
-          description: `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
+          description: description?.en ?? `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
   return {
     ...meta,
     alternates,
-    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/stocks/${ticker}`) }),
+    // 本路由自带 opengraph-image(个股卡),不带品牌卡图以免盖掉它。
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/stocks/${ticker}`), brandImage: false }),
   };
 }
 
@@ -280,11 +303,11 @@ export default async function StockTickerPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  // 旧 CUSIP URL → 301 到 ticker(若该 cusip 已解析)
+  // 旧 CUSIP URL → 永久跳到 ticker(308,若该 cusip 已解析):CUSIP→ticker 映射稳定,让搜索引擎合并收录。
   const cusipMap = await getCusipMap();
   const asCusip = cusipMap.get(rawTicker);
   if (asCusip?.ticker && asCusip.ticker !== rawTicker && isLikelyTicker(asCusip.ticker)) {
-    redirect(stockPath(lang, asCusip.ticker));
+    permanentRedirect(stockPath(lang, asCusip.ticker));
   }
 
   // 别名解析:公司名等非票代别名(如 /stocks/apple)308 跳到 canonical ticker。
@@ -523,14 +546,10 @@ export default async function StockTickerPage({
 
   const exchange = (await getTickerExchangeMap()).get(ticker);
 
-  const breadcrumb = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: page.breadcrumbStocks, item: absoluteUrl(localePath(lang, `/stocks`)) },
-      { "@type": "ListItem", position: 2, name: issuer, item: absoluteUrl(localePath(lang, `/stocks/${ticker}`)) },
-    ],
-  };
+  const breadcrumb = breadcrumbLd(lang, [
+    { name: page.breadcrumbStocks, path: localePath(lang, "/stocks") },
+    { name: issuer, path: localePath(lang, `/stocks/${ticker}`) },
+  ]);
 
   // FAQ structured data — answers the canonical "who holds X?" query with the
   // actual holder list, the exact kind of factual Q&A AI engines cite.
@@ -560,12 +579,15 @@ export default async function StockTickerPage({
   const stockAliases = (await getEntityAliases("stock", ticker)).filter(
     (a) => a !== issuer && a !== ticker
   );
-  const organization = {
+  // 上市公司实体:Corporation + tickerSymbol(schema.org 约定 "交易所 代码",交易所未知时只给代码)。不设 url——
+  // 实体的 url 应是公司官网,本站页面只是关于它的页面,指回本站会让引擎把本站当成公司主页。
+  const listedOn = knownExchange(exchange);
+  const corporation = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "Corporation",
     name: issuer,
     alternateName: [ticker, ...stockAliases],
-    url: absoluteUrl(localePath(lang, `/stocks/${ticker}`)),
+    tickerSymbol: listedOn ? `${listedOn} ${ticker}` : ticker,
   };
 
   // Dataset structured data — the stock's 13F holders table as a factual,
@@ -581,13 +603,19 @@ export default async function StockTickerPage({
         ? `持有 ${issuer}（${ticker}）的超级投资者及其持股数量、市值与组合权重，来自 SEC 13F 季度申报。`
         : `Superinvestors holding ${issuer} (${ticker}) with share counts, market values, and portfolio weights, from quarterly SEC 13F filings.`,
     path: localePath(lang, `/stocks/${ticker}`),
+    period: asOfPeriod || null,
+    dateModified: asOfFiledAt || null,
+    variableMeasured:
+      lang === "zh"
+        ? ["持有人", "持仓市值（美元）", "持股数", "组合权重", "季度变动"]
+        : ["Holder", "Position value (USD)", "Shares held", "Portfolio weight", "Quarter-over-quarter change"],
   });
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(corporation) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }} />
       <EntityPage
         lang={lang}

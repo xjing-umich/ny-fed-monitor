@@ -50,6 +50,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  // /api 不进索引:robots.txt 只管抓取,已从外链发现的 URL 仍可能被收录,响应头上的 noindex 兜底。
+  async headers() {
+    return [{ source: "/api/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }];
+  },
   async redirects() {
     const investorAliasRedirects = Object.entries(INVESTOR_ALIASES).flatMap(([alias, slug]) => [
       {

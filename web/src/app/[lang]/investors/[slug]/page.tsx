@@ -16,7 +16,7 @@ import { filingFreshness, freshness13F, isScopeChange, quarterLag, globalLatestP
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
@@ -90,7 +90,7 @@ export async function generateMetadata({
   return {
     ...meta,
     alternates,
-    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/investors/${slug}`), type: "profile" }),
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/investors/${slug}`), type: "profile", brandImage: false }),
   };
 }
 
@@ -448,24 +448,10 @@ export default async function InvestorSlugPage({
     .slice(0, 6)
     .map((m) => ({ label: m.person, href: investorPath(lang, m.slug) }));
 
-  const breadcrumb = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: lang === "zh" ? "超级投资者" : "Superinvestors",
-        item: absoluteUrl(localePath(lang, `/investors`)),
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: manager.person,
-        item: absoluteUrl(localePath(lang, `/investors/${manager.slug}`)),
-      },
-    ],
-  };
+  const breadcrumb = breadcrumbLd(lang, [
+    { name: lang === "zh" ? "超级投资者" : "Superinvestors", path: localePath(lang, "/investors") },
+    { name: manager.person, path: localePath(lang, `/investors/${manager.slug}`) },
+  ]);
 
   // Person structured data — identifies the investor as an entity and links the
   // fund they run, so search/AI engines can attribute holdings to a real person.
@@ -477,6 +463,8 @@ export default async function InvestorSlugPage({
     name: manager.person,
     ...(aliasNames.length ? { alternateName: aliasNames } : {}),
     url: absoluteUrl(localePath(lang, `/investors/${manager.slug}`)),
+    // CIK 是该基金(13F 申报主体)在 SEC 的编号;投资人以其掌管的申报主体被识别。
+    identifier: { "@type": "PropertyValue", propertyID: "SEC CIK", value: manager.cik },
     jobTitle: lang === "zh" ? "投资人" : "Investor",
     worksFor: { "@type": "Organization", name: fund },
     subjectOf: {
@@ -493,7 +481,8 @@ export default async function InvestorSlugPage({
       ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
       creator: { "@type": "Organization", name: fund },
       sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
-      license: "https://creativecommons.org/publicdomain/mark/1.0/",
+      isBasedOn: edgarFilingsUrl(manager.cik),
+      license: SEC_DATA_LICENSE,
     },
   };
 
