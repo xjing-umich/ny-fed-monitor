@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getFeatured, getLatest, listRest, BRAND } from "@/lib/learn";
-import { altFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import PageHeader from "@/components/common/PageHeader";
 
@@ -39,10 +39,13 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const c = COPY[lang];
+  const title = `${c.title} — Compounder`;
   return {
-    title: `${c.title} — Compounder`,
+    title,
     description: c.intro,
     alternates: altFor(lang, "/learn"),
+    // 本路由自带 opengraph-image,不带品牌卡图以免盖掉它。
+    ...ogFor({ lang, title, description: c.intro, path: localePath(lang, "/learn"), brandImage: false }),
   };
 }
 

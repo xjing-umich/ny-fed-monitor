@@ -29,3 +29,6 @@ export const DATA_DRIVEN_PATHS = [
   "/[lang]/stocks/screener",
   "/[lang]/stocks/screener/[variant]",
 ] as const;
+
+/** 读同一批数据的路由处理器(非 page.tsx,不在上面的双向校验里)。字面路径,revalidatePath 不带 type。 */
+export const DATA_DRIVEN_ROUTE_HANDLERS = ["/llms.txt", "/llms-full.txt"] as const;

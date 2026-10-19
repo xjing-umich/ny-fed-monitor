@@ -16,13 +16,19 @@ export function isLikelyTicker(s: string): boolean {
 // Google Finance 能识别的交易所代码白名单(其余/未知 → 回退搜索)。
 const GF_EXCHANGES = new Set(["NASDAQ", "NYSE", "OTCMKTS", "NYSEAMERICAN", "NYSEARCA", "CBOE"]);
 
+/** securities.exchange 归一化:在白名单内 → 大写交易所代码;空/未知(如回填成国家码 "US")→ null。 */
+export function knownExchange(exchange?: string | null): string | null {
+  const ex = (exchange ?? "").trim().toUpperCase();
+  return GF_EXCHANGES.has(ex) ? ex : null;
+}
+
 /** ticker(+交易所) → Yahoo / Google Finance / SEC EDGAR 三个 URL。 */
 export function buildExternalFinanceLinks(ticker: string, exchange?: string | null): ExternalFinanceUrls {
   const t = ticker.trim().toUpperCase();
   const yahooSym = encodeURIComponent(t.replace(/\./g, "-")); // BRK.B → BRK-B
   const enc = encodeURIComponent(t); // encodeURIComponent 保留 "." 不变
-  const ex = (exchange ?? "").trim().toUpperCase();
-  const google = GF_EXCHANGES.has(ex)
+  const ex = knownExchange(exchange);
+  const google = ex
     ? `https://www.google.com/finance/quote/${enc}:${ex}` // 如 GOOG:NASDAQ
     : `https://www.google.com/search?q=${enc}+stock`; // 未知交易所 → 回退搜索
   return {

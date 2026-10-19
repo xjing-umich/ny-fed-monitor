@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { altFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
@@ -37,17 +37,21 @@ export function parseVariant(v: string): { view: ScreenView; sort: ScreenSort } 
 
 export function screenerMetadata(lang: Lang): Metadata {
   const alternates = altFor(lang, "/stocks/screener");
-  return lang === "zh"
-    ? {
-        title: "个股 · 按价值带 — Compounder · 复利",
-        description: "按现价相对保守价值带的位置筛选个股：哪些落在击球区、安全边际多少。位置观察，非买卖建议。",
-        alternates,
-      }
-    : {
-        title: "Stocks · By value — Compounder",
-        description: "Browse stocks by where price sits against a conservative value band — which are in the strike zone, and by margin of safety. Observational, not advice.",
-        alternates,
-      };
+  const meta =
+    lang === "zh"
+      ? {
+          title: "个股 · 按价值带 — Compounder · 复利",
+          description: "按现价相对保守价值带的位置筛选个股：哪些落在击球区、安全边际多少。位置观察，非买卖建议。",
+        }
+      : {
+          title: "Stocks · By value — Compounder",
+          description: "Browse stocks by where price sits against a conservative value band — which are in the strike zone, and by margin of safety. Observational, not advice.",
+        };
+  return {
+    ...meta,
+    alternates,
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, "/stocks/screener") }),
+  };
 }
 
 const VIEWS: { key: ScreenView; zh: string; en: string }[] = [

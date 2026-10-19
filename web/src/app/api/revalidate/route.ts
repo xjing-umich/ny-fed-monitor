@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
-import { DATA_DRIVEN_PATHS } from "@/lib/revalidate/paths";
+import { DATA_DRIVEN_PATHS, DATA_DRIVEN_ROUTE_HANDLERS } from "@/lib/revalidate/paths";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +21,14 @@ export async function POST(request: Request): Promise<Response> {
   for (const path of DATA_DRIVEN_PATHS) {
     revalidatePath(path, "page");
   }
+  for (const path of DATA_DRIVEN_ROUTE_HANDLERS) {
+    revalidatePath(path);
+  }
 
   return Response.json({
     ok: true,
     source,
-    revalidated: DATA_DRIVEN_PATHS,
+    revalidated: [...DATA_DRIVEN_PATHS, ...DATA_DRIVEN_ROUTE_HANDLERS],
     at: new Date().toISOString(),
   });
 }
