@@ -1,6 +1,7 @@
 // 季度报告邮件(纯函数)。与报告页同一份 payload、同一套文案;表格式简单 HTML,兼容主流邮件客户端。
 import {
-  emptyText, kindLabel, personName, pct, reportDescription, reportTitle, reportUrl, sectionTitles, stockHref, valuationNote,
+  disclaimerText, emptyText, kindLabel, noComparableMovesText, notFiledText, personName, pct, positionLabel,
+  reportDescription, reportTitle, reportUrl, sectionTitles, stockHref, valuationNote,
 } from "./copy";
 import { SITE_ORIGIN } from "../urls";
 import type { EmptyReason, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
@@ -24,7 +25,7 @@ const esc = (s: string) =>
 function stockCellHtml(s: ReportStock, lang: ReportLang): string {
   const href = stockHref(s, lang);
   const name = esc(s.ticker ?? s.issuer);
-  return href ? `<a href="${SITE_ORIGIN}${href}" style="color:#1a1a1a">${name}</a>` : name;
+  return href ? `<a href="${esc(`${SITE_ORIGIN}${href}`)}" style="color:#1a1a1a">${name}</a>` : name;
 }
 const stockText = (s: ReportStock) => s.ticker ?? s.issuer;
 
@@ -48,7 +49,7 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
   const zh = lang === "zh";
   const title = reportTitle(p.period, lang);
   const conclusion = reportDescription(p, meta.status, lang);
-  const people = zh ? "位" : "funds";
+  const people = zh ? "位" : "superinvestors";
 
   const moveRows = (items: typeof p.bought.items): Row[] =>
     items.slice(0, EMAIL_TOP).map((i) => ({
@@ -57,21 +58,21 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
     }));
   const heldRows: Row[] = p.mostHeld.items.slice(0, EMAIL_TOP).map((i) => {
     const d = i.holderDelta > 0 ? `+${i.holderDelta}` : `${i.holderDelta}`;
-    const c = zh ? `${i.holderCount} 位（较上季 ${d}）` : `${i.holderCount} holders (${d})`;
+    const c = zh ? `${i.holderCount} 位（较上季 ${d}）` : `${i.holderCount} holders (${d} vs. last quarter)`;
     return { cells: [stockCellHtml(i, lang), esc(c)], textCells: [stockText(i), c] };
   });
   const szRows: Row[] = p.strikeZone.items.slice(0, EMAIL_TOP).map((i) => {
-    const pos = i.position === "strike_zone" ? (zh ? "击球区" : "Strike zone") : (zh ? "价值带以下" : "Below value band");
+    const pos = positionLabel(i.position, lang);
     const c = zh ? `${i.holderCount} 位持有` : `${i.holderCount} holders`;
     return { cells: [stockCellHtml(i, lang), esc(c), esc(pos)], textCells: [stockText(i), c, pos] };
   });
   const featRows: Row[] = p.featured.map((f) => {
     const name = personName(f, lang);
     const what = !f.filed
-      ? (zh ? "未申报" : "Not filed yet")
+      ? notFiledText(lang)
       : f.moves.length
         ? f.moves.map((m) => `${kindLabel(m.kind, lang)} ${stockText(m)} ${pct(m.weightBefore)} → ${pct(m.weightAfter)}`).join(zh ? "；" : "; ")
-        : (zh ? "本季无可比动作" : "No comparable moves");
+        : noComparableMovesText(lang);
     return { cells: [esc(name), esc(what)], textCells: [name, what] };
   });
 
@@ -89,20 +90,20 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
     ? (zh ? "你之前在 thecompounder.fyi 订阅了季度更新，这是第一期。" : "You subscribed to quarterly updates on thecompounder.fyi. This is the first issue.")
     : "";
   const cta = zh ? "看完整报告" : "Read the full report";
-  const disclaimer = zh ? "仅供学习，不构成投资建议。" : "For education only. Not investment advice.";
+  const disclaimer = disclaimerText(lang);
   const unsub = zh ? "退订" : "Unsubscribe";
   const source = `${t.source} · ${valuationNote(meta.valuationAsOf, lang)}`;
   const addr = meta.postalAddress ? meta.postalAddress : "";
 
   const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#fff;color:#1a1a1a;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.5">
 <div style="max-width:600px;margin:0 auto">
-${zh ? "" : `<p style="font-size:13px;margin:0 0 12px"><a href="${zhLink}" style="color:#555">中文版 →</a></p>`}
+${zh ? "" : `<p style="font-size:13px;margin:0 0 12px"><a href="${esc(zhLink)}" style="color:#555">中文版 →</a></p>`}
 ${first ? `<p style="font-size:14px;color:#555">${esc(first)}</p>` : ""}
 <h1 style="font-size:20px;margin:0 0 8px">${esc(title)}</h1>
 <p style="font-size:15px">${esc(conclusion)}</p>
 ${blocks.map((b) => b.html).join("\n")}
-<p style="margin:28px 0"><a href="${url}" style="background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-size:14px">${esc(cta)}</a></p>
-<p style="font-size:12px;color:#666">${esc(source)}<br>${esc(disclaimer)}${addr ? `<br>${esc(addr)}` : ""}<br><a href="${UNSUBSCRIBE_TOKEN}" style="color:#666">${unsub}</a></p>
+<p style="margin:28px 0"><a href="${esc(url)}" style="background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-size:14px">${esc(cta)}</a></p>
+<p style="font-size:12px;color:#666">${esc(source)}<br>${esc(disclaimer)}${addr ? `<br>${esc(addr)}` : ""}<br><a href="${esc(UNSUBSCRIBE_TOKEN)}" style="color:#666">${unsub}</a></p>
 </div></body></html>`;
 
   const text = [

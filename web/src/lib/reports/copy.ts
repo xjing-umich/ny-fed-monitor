@@ -83,7 +83,25 @@ export function sectionTitles(lang: ReportLang) {
 }
 
 export function stockHref(s: ReportStock, lang: ReportLang): string | null {
-  return s.ticker ? stockPath(lang, s.ticker) : null;
+  return s.ticker ? stockPath(lang, encodeURIComponent(s.ticker)) : null;
+}
+
+export function positionLabel(pos: "strike_zone" | "below", lang: ReportLang): string {
+  return lang === "zh"
+    ? (pos === "strike_zone" ? "击球区" : "价值带以下")
+    : (pos === "strike_zone" ? "Strike zone" : "Below value band");
+}
+
+export function notFiledText(lang: ReportLang): string {
+  return lang === "zh" ? "未申报" : "Not filed yet";
+}
+
+export function noComparableMovesText(lang: ReportLang): string {
+  return lang === "zh" ? "本季无可比动作（缺上一季申报）" : "No comparable moves (no prior filing)";
+}
+
+export function disclaimerText(lang: ReportLang): string {
+  return lang === "zh" ? "仅供学习，不构成投资建议。" : "For education only. Not investment advice.";
 }
 
 export function reportUrl(period: string, lang: ReportLang): string {
