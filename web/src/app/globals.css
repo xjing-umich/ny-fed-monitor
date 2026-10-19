@@ -186,6 +186,19 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
+/* 字阶 v2 — 覆盖 Tailwind 默认字号,全站只此一套。12px 为下限,禁止 text-[NNpx]。 */
+@theme {
+  --text-xs: 0.75rem;     --text-xs--line-height: 1.45;   /* 12 标签 / 时间戳 / 来源 */
+  --text-sm: 0.875rem;    --text-sm--line-height: 1.5;    /* 14 表格 / 控件 */
+  --text-base: 0.9375rem; --text-base--line-height: 1.7;  /* 15 正文 */
+  --text-lg: 1.0625rem;   --text-lg--line-height: 1.5;    /* 17 引导段 */
+  --text-xl: 1.25rem;     --text-xl--line-height: 1.4;    /* 20 小标题 / 关键数字 */
+  --text-2xl: 1.375rem;   --text-2xl--line-height: 1.3;   /* 22 区块标题 */
+  --text-3xl: 1.75rem;    --text-3xl--line-height: 1.2;   /* 28 页面标题(移动) */
+  --text-4xl: 2.125rem;   --text-4xl--line-height: 1.15;  /* 34 页面标题(桌面) */
+  --text-5xl: 2.5rem;     --text-5xl--line-height: 1.1;   /* 40 首页主标题上限 */
+}
+
 /* ── Keyframes ──────────────────────────────────────────────────────────────── */
 @keyframes spin {
   from { transform: rotate(0deg); }
@@ -208,12 +221,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: var(--text-base);
+    line-height: 1.7;
   }
-  /* 汉字在 13px/1.5 下偏密:zh 正文行高放宽到 1.65(html lang 已按 locale 设置) */
+  /* 汉字在正文字号下偏密:zh 行高 1.8(html lang 已按 locale 设置) */
   :lang(zh) body {
-    line-height: 1.65;
+    line-height: 1.8;
   }
   html {
     @apply font-sans;
@@ -227,9 +240,6 @@
   .tnum {
     font-variant-numeric: tabular-nums;
   }
-  .font-mono {
-    font-family: var(--font-geist-mono), ui-monospace, monospace;
-  }
   .font-display {
     font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
     font-optical-sizing: auto;
@@ -239,28 +249,34 @@
   :lang(zh) .tracking-tight {
     letter-spacing: 0;
   }
-  /* 绿色眉标 — 区块/页眉的"仪器条"标识(SectionHeading/PageHeader/EntityPage 共用)。 */
-  .tt-eyebrow {
+  /* 数字、标签、表头:Sans + 等宽数字(替代旧的 font-mono 用法) */
+  .font-data {
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  /* 代码类内容专用:ticker、CUSIP */
+  .font-code {
     font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 10px;
+  }
+  /* 区块/页眉标识:句子式大小写,不再是绿色大写等宽。
+     (SectionHeading 改成“左标题右来源”结构在首期第三步。) */
+  .tt-eyebrow {
+    font-size: 12px;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--tt-accent);
+    letter-spacing: 0;
+    color: var(--ink-2);
   }
   .tt-label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--tt-muted);
+    letter-spacing: 0;
+    color: var(--ink-2);
   }
   .tt-faint-label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--tt-faint);
+    letter-spacing: 0;
+    color: var(--ink-3);
   }
   /* HUD 角标 — 给镶边面板四角加 8px 机械刻度。只给带 border 的面板用，
      与发丝线同色(--tick-color)，不发光、不喧宾夺主。 */
