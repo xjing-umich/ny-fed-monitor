@@ -78,7 +78,28 @@ export type FundamentalPeriod = {
 // Flow facts report over a duration: a single quarter (~90d), a half-year YTD
 // (~180d), a three-quarter YTD (~270d), or a full year (~365d).
 type FlowBucket = "Q" | "H1" | "TQ" | "FY";
-type PickedFact = { val: number; end: string; filed: string; accn: string | null; tag: string; days: number | null; derived?: boolean };
+type PickedFact = {
+  val: number;
+  start: string | null;
+  end: string;
+  filed: string;
+  accn: string | null;
+  tag: string;
+  days: number | null;
+  form?: string;
+  derived?: boolean;
+  /** 16 周 Q1 / 28 周 H1 这类超出标准时长的事实:只在起点对齐财年起点时才认(见 deriveFlowSeries)。 */
+  extended?: boolean;
+};
+
+const DAY_MS = 86_400_000;
+const toDay = (date: string) => Math.round(Date.parse(date) / DAY_MS);
+const utcYear = (day: number) => new Date(day * DAY_MS).getUTCFullYear();
+function addYears(day: number, years: number) {
+  const d = new Date(day * DAY_MS);
+  d.setUTCFullYear(d.getUTCFullYear() + years);
+  return Math.round(d.getTime() / DAY_MS);
+}
 
 const ALL_FIELDS = Object.keys(FUNDAMENTAL_TAGS) as FundamentalField[];
 const FLOW_FIELDS = ALL_FIELDS.filter((field) => !INSTANT_FIELDS.has(field));
@@ -134,13 +155,22 @@ function dayCount(start?: string, end?: string) {
 // quarter AND a ~180/270-day year-to-date figure for the same `end`; only the
 // duration distinguishes them. Capturing all four buckets lets us derive the
 // single quarters that 10-Qs only report cumulatively (e.g. cash-flow lines).
-function flowBucket(unit: SecFactUnit): FlowBucket | null {
+//
+// 52/53 周财历的非 13 周季:16-12-12-12 周(KR/ACI/AAP/FLO/CAVA)的 Q1 是 16 周(~112 天)、H1 是
+// 28 周(~196 天);12-12-12-16 周(PEP)的 H1 是 24 周(~168 天)、前三季 36 周(~252 天)。这些落在
+// 标准区间之外 → 标 extended,由 deriveFlowSeries 核对「起点 = 财年起点」且季序对得上才认,
+// 其它长度的残段(并购过渡期等)仍丢弃。
+function flowBucket(unit: SecFactUnit): { bucket: FlowBucket; extended: boolean } | null {
   const d = dayCount(unit.start, unit.end);
   if (d === null) return null;
-  if (d >= 80 && d <= 100) return "Q";
-  if (d >= 172 && d <= 190) return "H1";
-  if (d >= 260 && d <= 285) return "TQ";
-  if (d >= 350 && d <= 380) return "FY";
+  if (d >= 80 && d <= 100) return { bucket: "Q", extended: false };
+  if (d >= 101 && d <= 125) return { bucket: "Q", extended: true };
+  if (d >= 160 && d <= 171) return { bucket: "H1", extended: true };
+  if (d >= 172 && d <= 190) return { bucket: "H1", extended: false };
+  if (d >= 191 && d <= 200) return { bucket: "H1", extended: true };
+  if (d >= 248 && d <= 259) return { bucket: "TQ", extended: true };
+  if (d >= 260 && d <= 285) return { bucket: "TQ", extended: false };
+  if (d >= 350 && d <= 380) return { bucket: "FY", extended: false };
   return null;
 }
 
@@ -161,56 +191,128 @@ function earlier(a: PickedFact, b: PickedFact) {
 function toPicked(unit: SecFactUnit, tag: string): PickedFact {
   return {
     val: Number(unit.val),
+    start: unit.start ?? null,
     end: unit.end!,
     filed: unit.filed ?? "9999-99-99",
     accn: unit.accn ?? null,
     tag,
-    days: dayCount(unit.start, unit.end)
+    days: dayCount(unit.start, unit.end),
+    form: unit.form
   };
 }
 
-// Fiscal year named for the calendar year in which the fiscal year ENDS. A
-// period whose end month is past the FYE month rolls into next year's fiscal
-// year (e.g. Apple FYE=Sep: a Dec quarter belongs to the next FY).
-function fyOfEnd(end: string, fyeMonth: number) {
-  const [year, month] = end.split("-").map(Number);
-  return month > fyeMonth ? year + 1 : year;
+// ── 财年日历:从事实本身推财年起点,不信 submissions.fiscalYearEnd ──
+// 旧逻辑用 submissions 的单一 fiscalYearEnd 月份按日历月推每期属于哪个财年/第几季,三处会错:
+//   1. fiscalYearEnd 与历史财年不符 —— 改过财年(FERG 7→12 月、AMCR 6→12 月、SPHR、AIOT、GEF)
+//      或本身就标错(SUI "0513"、JHG "0630"、PBFS/RJET/AEHR "1231"):年报整段被 ±1 月闸丢掉。
+//   2. 年报按期中年命名、季度按期末年命名,1–6 月财年末的公司两套键错一年 → Q4 = 本财年 FY − 上一
+//      财年前三季(2026-10 生产库:MSFT FY26 Q4 营收 1266 亿、NVDA 1248 亿,都是跨年相减的假数)。
+//   3. 52/53 周年末漂进下个月头几天(KR 2025-02-01)→ 那期 Q4 被当成下一财年的 Q1。
+// 新做法:财年起点 = 10-K 年度事实的 start 与 end+1、10-Q 累计(YTD)事实的 start、10-KT 过渡期
+// 自身期末 +1。每期挂到「≤ 期末的最近起点」那个财年,季序 = 距起点的天数 / 91.3;累计链只在同一
+// 起点内相减。起点就是财年身份,不再有两套命名对不上的问题。
+
+// 只认 10-K 家族(含 10-K/A、10-KT):20-F/6-K 外国发行人(BABA 等)维持旧行为,不因新锚凭空多出年报行。
+const ANNUAL_FORM = /^10-K/;
+
+function fiscalYearStarts(facts: CompanyFacts, fyeMonth: number): number[] {
+  // 年报区间(10-K 家族里 350–380 天的事实)是硬锚;同一区间多次出现时按最晚申报排序。
+  const annuals = new Map<string, { start: number; end: number; filed: string }>();
+  const ytdStarts: number[] = [];
+  const transitionEnd = new Map<string, number>(); // 10-KT accn -> 自身期末(该申报里最晚的 end)
+  let minEnd = Infinity;
+  let maxEnd = -Infinity;
+  for (const field of FLOW_FIELDS) {
+    for (const tag of FUNDAMENTAL_TAGS[field]) {
+      for (const unit of getUnits(facts, tag)) {
+        if (!unit.start || !unit.end) continue;
+        const d = dayCount(unit.start, unit.end)!;
+        const start = toDay(unit.start);
+        const end = toDay(unit.end);
+        minEnd = Math.min(minEnd, end);
+        maxEnd = Math.max(maxEnd, end);
+        const form = unit.form ?? "";
+        if (d >= 350 && d <= 380 && ANNUAL_FORM.test(form)) {
+          const key = `${start}|${end}`;
+          const filed = unit.filed ?? "";
+          if (!annuals.has(key) || filed > annuals.get(key)!.filed) annuals.set(key, { start, end, filed });
+        } else if (((d >= 160 && d <= 200) || (d >= 248 && d <= 285)) && form.startsWith("10-")) {
+          ytdStarts.push(start); // YTD 从财年起点算(只认 10-Q/10-K,6-K 半年报同样维持旧行为)
+        }
+        if (form.startsWith("10-KT") && unit.accn) {
+          transitionEnd.set(unit.accn, Math.max(transitionEnd.get(unit.accn) ?? -Infinity, end));
+        }
+      }
+    }
+  }
+
+  // 两套互相重叠的年报区间 = 会计主体换了(RJET:Mesa 9 月财年 → 反向并购后按 Republic 12 月财年
+  // 重报)。以最近申报的那套为准,冲突点之前旧主体的财年一律不作锚,免得两家公司的年报混成一条序列。
+  const overlaps = (a: { start: number; end: number }, b: { start: number; end: number }) =>
+    Math.min(a.end, b.end) - Math.max(a.start, b.start) > 7;
+  const accepted: { start: number; end: number }[] = [];
+  let cutoff = -Infinity;
+  for (const iv of [...annuals.values()].sort((a, b) => b.filed.localeCompare(a.filed) || b.end - a.end)) {
+    if (iv.end < cutoff) continue;
+    // 同一财年在不同申报里起止差一两天(52/53 周口径)= 同一区间,不算冲突。
+    if (accepted.some((a) => Math.abs(a.start - iv.start) <= 7 && Math.abs(a.end - iv.end) <= 7)) continue;
+    if (accepted.some((a) => overlaps(a, iv))) {
+      cutoff = Math.max(cutoff, Math.min(...accepted.map((a) => a.start)));
+      continue;
+    }
+    accepted.push(iv);
+  }
+  const raw: number[] = accepted.flatMap((iv) => [iv.start, iv.end + 1]);
+  // YTD 起点只补年报还没覆盖到的财年(最新财年、无 10-K 的早年)。落在已知财年中间的 YTD 起点是改财年后
+  // 按新财历重述的比较期(FERG 2026 年 10-Q 里的「2025-01-01 起 6 个月」、GEF 的 10 月起算),不是财年起点。
+  const insideAnnual = (day: number) => accepted.some((a) => day - a.start > 7 && a.end + 1 - day > 7);
+  for (const day of ytdStarts) if (day >= cutoff - 7 && !insideAnnual(day)) raw.push(day);
+  for (const end of transitionEnd.values()) if (end >= cutoff) raw.push(end + 1); // 过渡期之后就是新财年
+  // 没有任何年报/YTD 事实可依(极少数只报单季的申报人)→ 退回 fiscalYearEnd 月份的名义起点。
+  if (!raw.length && Number.isFinite(minEnd)) {
+    for (let y = utcYear(minEnd) - 1; y <= utcYear(maxEnd); y += 1) raw.push(Math.round(Date.UTC(y, fyeMonth, 1) / DAY_MS));
+  }
+  // 同一财年起点的不同来源(end+1 与 YTD start)相差几天 → 7 天内归并为一个。
+  const starts: number[] = [];
+  for (const day of [...new Set(raw)].sort((a, b) => a - b)) {
+    if (!starts.length || day - starts[starts.length - 1] > 7) starts.push(day);
+  }
+  return starts;
 }
 
-// Quarter index (1..4) of a period-end relative to the fiscal-year-end month.
-function quarterOfEnd(end: string, fyeMonth: number) {
-  const month = Number(end.split("-")[1]);
-  const offset = (month - fyeMonth + 12) % 12; // months since fiscal-year start
-  return offset === 0 ? 4 : Math.min(4, Math.max(1, Math.round(offset / 3)));
+/**
+ * 期末所在财年的起点(天数)。超出已知起点的期间按整年外推(最新财年还没有 10-K / YTD 时)。
+ * 起点须早于期末 45 天以上:归并后的起点可能比真实起点早一两天(AEHR 某份 10-Q 把 YTD 起点标成
+ * 2024-05-31),不能让它把恰好在那天结束的上一财年年报吞掉。
+ */
+function fiscalStartOf(endDay: number, starts: number[]): number {
+  let s = starts[0];
+  for (const x of starts) {
+    if (x > endDay - 45) break;
+    s = x;
+  }
+  while (s > endDay - 45) s = addYears(s, -1);
+  while (endDay - s > 375) s = addYears(s, 1);
+  return s;
 }
 
-// Fiscal year for a full-year (FY-bucket) flow fact — the annual close. Keying
-// the annual on quarterOfEnd===4 breaks for 52/53-week filers whose year-end
-// DRIFTS across a calendar-month boundary (HD: 2024-01-28 → 2025-02-02, CBRL:
-// Jul→Aug, CIEN: Oct→Nov): the drifted end no longer maps to Q4, so the whole
-// 10-K's annual figures were silently dropped and valuation ran on 1-2yr-stale
-// fundamentals. Accept ends within ±1 calendar month of the FYE (cyclic) — a
-// genuine trailing-twelve-month fact ends mid-year (>1 month away) and stays
-// rejected.
-//
-// Fiscal-year KEY uses the midpoint year of the ~365-day period
-// (`UTC year of end − 182 days`), NOT the calendar year of `end`. Naming by
-// end-year collides for Dec FYE filers whose 53-week close drifts past New
-// Year (FY2023 end 2024-01-04 and FY2024 end 2024-12-28 both keyed `2024|4`,
-// Map overwrite drops a full 10-K). Midpoints of adjacent annuals are ~12
-// months apart, so keys never collide; Jan/Feb closes (HD end 2025-02-02)
-// also label as the prior fiscal year, matching SEC.
-function fyeBucketYear(end: string, fyeMonth: number): number | null {
-  const month = Number(end.split("-")[1]);
-  const dist = Math.min((month - fyeMonth + 12) % 12, (fyeMonth - month + 12) % 12);
-  if (dist > 1) return null;
-  return new Date(Date.parse(end) - 182 * 86_400_000).getUTCFullYear();
+/** 第 q 季期末距财年起点的天数区间(与累计事实的时长区间同口径,含 16-12-12-12 / 12-12-12-16 周财历)。 */
+const ELAPSED_DAYS: Record<number, [number, number]> = { 1: [80, 125], 2: [160, 200], 3: [248, 290], 4: [350, 380] };
+
+/** 距财年起点的季序:16 周 Q1(~112 天)仍是 1,28 周 H1 仍是 2。 */
+function quarterIndex(endDay: number, fyStart: number) {
+  return Math.min(4, Math.max(1, Math.round((endDay - fyStart + 1) / 91.31)));
 }
 
-/** Cyclic month distance from period-end to the filer's canonical FYE month. */
-function fyeMonthDist(end: string, fyeMonth: number): number {
-  const month = Number(end.split("-")[1]);
-  return Math.min((month - fyeMonth + 12) % 12, (fyeMonth - month + 12) % 12);
+/**
+ * 同一槽位(财年 × 季序)多条候选:最早申报的胜出 —— 后来申报里的重述比较期不能顶掉原始季报;
+ * 同一份申报里再取时长更接近标准的(平手取后到者,与旧版 Map 覆盖语义一致)。
+ */
+function closerTo(target: number, existing: PickedFact | undefined, candidate: PickedFact) {
+  if (!existing) return candidate;
+  if (existing.filed !== candidate.filed) return candidate.filed < existing.filed ? candidate : existing;
+  const dist = (p: PickedFact) => Math.abs((p.days ?? target) - target);
+  return dist(candidate) <= dist(existing) ? candidate : existing;
 }
 
 // Collect the as-reported value per (period_end, bucket) for one flow field.
@@ -220,84 +322,90 @@ function collectFlow(facts: CompanyFacts, field: FundamentalField) {
     for (const unit of getUnits(facts, tag)) {
       const bucket = flowBucket(unit);
       if (!bucket || !unit.end || unit.val === undefined || unit.val === null) continue;
-      const key = `${unit.end}|${bucket}`;
-      const picked = toPicked(unit, tag);
+      const key = `${unit.end}|${bucket.bucket}`;
+      const picked = { ...toPicked(unit, tag), extended: bucket.extended };
       const existing = byKey.get(key);
       // first concept in the fallback list wins per period; same concept ->
-      // earliest-filed (as-reported) wins.
+      // earliest-filed (as-reported) wins. 标准时长永远压过 extended(同期末只在没有标准事实时才用)。
       if (!existing) byKey.set(key, picked);
-      else if (existing.tag === picked.tag) byKey.set(key, earlier(existing, picked));
+      else if (existing.extended !== picked.extended) {
+        if (existing.extended) byKey.set(key, picked);
+      } else if (existing.tag === picked.tag) byKey.set(key, earlier(existing, picked));
     }
   }
   return byKey;
 }
 
 // Turn one field's bucketed facts into single-quarter values (Q1..Q4) and an
-// annual value per fiscal year. Single quarters are taken directly when the
-// filer reports a 90-day fact; otherwise derived from the YTD chain
-// (Qk = cumulative_k − cumulative_{k-1}). Q4 is always derived (never filed).
-function deriveFlowSeries(byKey: Map<string, PickedFact>, fyeMonth: number) {
-  const direct = new Map<string, PickedFact>(); // `${fy}|${q}` -> 90-day single
-  const cum = new Map<string, PickedFact>(); // `${fy}|${k}` -> cumulative-through-k
+// annual value per fiscal year, keyed by fiscal-year start (`${start}|${q}`).
+// Single quarters are taken directly when the filer reports a single-quarter
+// fact; otherwise derived from the YTD chain (Qk = cumulative_k − cumulative_{k-1}).
+// Q4 is always derived (never filed).
+function deriveFlowSeries(byKey: Map<string, PickedFact>, starts: number[]) {
+  const direct = new Map<string, PickedFact>(); // `${fyStart}|${q}` -> single quarter
+  const cum = new Map<string, PickedFact>(); // `${fyStart}|${k}` -> cumulative-through-k
   for (const [key, p] of byKey) {
-    const [end, bucket] = key.split("|") as [string, FlowBucket];
-    const fy = fyOfEnd(end, fyeMonth);
-    const q = quarterOfEnd(end, fyeMonth);
-    // A cumulative fact only counts if its end lands on the expected fiscal
-    // quarter; otherwise it's a rolling/trailing-twelve-month period (a 365-day
-    // fact ending mid-year is a TTM, NOT the fiscal year) and is ignored.
+    const bucket = key.split("|")[1] as FlowBucket;
+    const endDay = toDay(p.end);
+    const fyStart = fiscalStartOf(endDay, starts);
+    const q = quarterIndex(endDay, fyStart);
+    // 累计事实必须从本财年起点算起;中段起算的 365 天是 TTM,不是年报,丢弃。
+    const aligned = p.start !== null && Math.abs(toDay(p.start) - fyStart) <= 7;
+    if (p.extended && !(aligned && q === { Q: 1, H1: 2, TQ: 3, FY: 4 }[bucket])) continue;
+    const k = (n: number) => `${fyStart}|${n}`;
     if (bucket === "Q") {
-      direct.set(`${fy}|${q}`, p);
-      if (q === 1) cum.set(`${fy}|1`, p); // 3-month YTD == Q1
-    } else if (bucket === "H1" && q === 2) cum.set(`${fy}|2`, p);
-    else if (bucket === "TQ" && q === 3) cum.set(`${fy}|3`, p);
-    else if (bucket === "FY") {
-      // Drift-tolerant annual key (not quarterOfEnd===4) so 52/53-week filers'
-      // month-crossing year-ends still register; mid-year TTMs return null.
-      // Midpoint-year key avoids Dec-FYE New-Year collisions; on same key,
-      // keep the end closest to the canonical FYE month (defensive tiebreak).
-      const fyeYear = fyeBucketYear(end, fyeMonth);
-      if (fyeYear !== null) {
-        const k = `${fyeYear}|4`;
-        const existing = cum.get(k);
-        if (!existing || fyeMonthDist(p.end, fyeMonth) < fyeMonthDist(existing.end, fyeMonth)) {
-          cum.set(k, p);
-        }
-      }
-    }
+      // 单季的期末离财年起点应正好是 q 个季度(16 周 Q1 也在 Q1 区间内);差一个多月的是改财年后
+      // 按新财历重述的比较季(FERG 2025-04-01~06-30 落在旧财年第 11 个月),不占原财年的槽位。
+      const [lo, hi] = ELAPSED_DAYS[q];
+      if (endDay - fyStart < lo || endDay - fyStart > hi) continue;
+      direct.set(k(q), closerTo(91, direct.get(k(q)), p));
+      if (q === 1) cum.set(k(1), direct.get(k(1))!); // 3-month YTD == Q1
+    } else if (bucket === "H1" && q === 2 && aligned) cum.set(k(2), closerTo(182, cum.get(k(2)), p));
+    else if (bucket === "TQ" && q === 3 && aligned) cum.set(k(3), closerTo(273, cum.get(k(3)), p));
+    else if (bucket === "FY" && q === 4 && aligned) cum.set(k(4), closerTo(364, cum.get(k(4)), p));
   }
 
   const quarters = new Map<string, PickedFact>();
-  const annual = new Map<number, PickedFact>();
-  const fiscalYears = new Set<number>();
-  for (const k of [...direct.keys(), ...cum.keys()]) fiscalYears.add(Number(k.split("|")[0]));
+  const annual = new Map<string, PickedFact>(); // fyStart -> FY fact
+  const fiscalYears = new Set<string>();
+  for (const key of [...direct.keys(), ...cum.keys()]) fiscalYears.add(key.split("|")[0]);
 
   for (const fy of fiscalYears) {
     for (let q = 1; q <= 4; q += 1) {
       const directQ = direct.get(`${fy}|${q}`);
-      if (directQ) {
-        quarters.set(`${fy}|${q}`, directQ);
-        continue;
-      }
       const ck = cum.get(`${fy}|${q}`);
       const cprev = q === 1 ? null : cum.get(`${fy}|${q - 1}`);
-      if (ck && (q === 1 || cprev)) {
-        quarters.set(`${fy}|${q}`, {
-          val: ck.val - (cprev?.val ?? 0),
-          end: ck.end,
-          filed: ck.filed,
-          accn: null,
-          tag: `derived(cum${q}-cum${q - 1})`,
-          days: 90,
-          derived: true
-        });
-      }
+      const derived: PickedFact | null =
+        ck && (q === 1 || cprev)
+          ? {
+              val: ck.val - (cprev?.val ?? 0),
+              start: null,
+              end: ck.end,
+              // 派生值要等两段累计都披露后才成立 → 取两者较晚的申报日
+              filed: cprev && cprev.filed > ck.filed ? cprev.filed : ck.filed,
+              accn: null,
+              tag: `derived(cum${q}-cum${q - 1})`,
+              days: 90,
+              derived: true
+            }
+          : null;
+      // 直报单季优先(旧语义,不动既有历史值);例外:10-KT 过渡期报告按新财历/新口径重述的比较季
+      // (GEF 剥离业务后重述 2024-08~10 季营收 11.07 亿)不能顶掉原始申报累计数推出的值(14.17 亿)。
+      const recast = directQ?.form?.startsWith("10-KT") && derived !== null && derived.filed < directQ.filed;
+      const pick = directQ && !recast ? directQ : derived;
+      if (pick) quarters.set(`${fy}|${q}`, pick);
     }
     const c4 = cum.get(`${fy}|4`);
     if (c4) annual.set(fy, c4);
   }
   return { quarters, annual };
 }
+
+// 输出标签沿用旧口径(只换了内部财年身份,不改已有行的 fiscal_year):
+//   年报 / Q4 = 期中年(期末 − 182 天的年份,HD 2025-02-02 → FY2024);
+//   Q1–Q3 = 财年结束所在的日历年(NVDA 2025-10-26 那季 → FY2026)。
+const annualLabel = (end: string) => utcYear(toDay(end) - 182);
+const quarterLabel = (fyStart: number) => utcYear(fyStart + 350);
 
 // Collect the as-reported instant value per period_end for one field.
 function collectInstant(facts: CompanyFacts, field: FundamentalField) {
@@ -382,7 +490,7 @@ function collectTotalDebt(facts: CompanyFacts) {
       .map(([, p]) => p);
     const total = kept.reduce((sum, p) => sum + p.val, 0);
     const earliestFiled = kept.reduce((min, p) => (p.filed < min ? p.filed : min), "9999-99-99");
-    summed.set(end, { val: total, end, filed: earliestFiled, accn: null, tag: [...keep].join("+"), days: null });
+    summed.set(end, { val: total, start: null, end, filed: earliestFiled, accn: null, tag: [...keep].join("+"), days: null });
   }
   return summed;
 }
@@ -536,9 +644,11 @@ export function normalizeCompanyFacts(
   const ticker = tickerInput.toUpperCase();
   const fyeMonth = fiscalYearEnd && fiscalYearEnd.length >= 2 ? Number(fiscalYearEnd.slice(0, 2)) || 12 : 12;
 
-  // 1. Per flow field: bucket facts, then resolve single-quarter + annual series.
+  // 1. Per flow field: bucket facts, then resolve single-quarter + annual series
+  //    on one fiscal calendar shared by all fields (fiscal-year starts from the facts).
+  const starts = fiscalYearStarts(facts, fyeMonth);
   const flowSeries = new Map<FundamentalField, ReturnType<typeof deriveFlowSeries>>();
-  for (const field of FLOW_FIELDS) flowSeries.set(field, deriveFlowSeries(collectFlow(facts, field), fyeMonth));
+  for (const field of FLOW_FIELDS) flowSeries.set(field, deriveFlowSeries(collectFlow(facts, field), starts));
 
   // 2. Instant fields keyed by period_end.
   const instant = new Map<FundamentalField, Map<string, PickedFact>>();
@@ -547,8 +657,8 @@ export function normalizeCompanyFacts(
   }
 
   // 3. Calendar of real periods (union across fields), with their end dates.
-  const quarterEnd = new Map<string, string>(); // `${fy}|${q}` -> end
-  const annualEnd = new Map<number, string>(); // fy -> end
+  const quarterEnd = new Map<string, string>(); // `${fyStart}|${q}` -> end
+  const annualEnd = new Map<string, string>(); // fyStart -> end
   for (const { quarters, annual } of flowSeries.values()) {
     for (const [k, p] of quarters) if (!quarterEnd.has(k)) quarterEnd.set(k, p.end);
     for (const [fy, p] of annual) if (!annualEnd.has(fy)) annualEnd.set(fy, p.end);
@@ -567,11 +677,12 @@ export function normalizeCompanyFacts(
   };
 
   for (const [key, end] of quarterEnd) {
-    const [fy, q] = key.split("|").map(Number);
+    const [fyStart, q] = key.split("|").map(Number);
+    const annualOfYear = annualEnd.get(String(fyStart));
     const draft: RowDraft = {
       period_end: end,
       isAnnual: false,
-      fiscal_year: fy,
+      fiscal_year: q < 4 ? quarterLabel(fyStart) : annualOfYear ? annualLabel(annualOfYear) : utcYear(fyStart + 182),
       fiscal_period: `Q${q}`,
       is_derived: q === 4, // Q4 has no standalone filing; income-stmt Q2/Q3 are direct
       values: emptyValues(),
@@ -592,7 +703,7 @@ export function normalizeCompanyFacts(
     const draft: RowDraft = {
       period_end: end,
       isAnnual: true,
-      fiscal_year: fy,
+      fiscal_year: annualLabel(end),
       fiscal_period: "FY",
       is_derived: false,
       values: emptyValues(),
