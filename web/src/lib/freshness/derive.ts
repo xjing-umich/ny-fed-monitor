@@ -198,3 +198,27 @@ export function quarterLabel(period: string | null): string {
   const q = Math.floor((parseInt(m[2], 10) - 1) / 3) + 1;
   return `Q${q} ${m[1]}`;
 }
+
+/**
+ * 是否计入「当前持有人」(共识持仓 / 个股持有人 / 持有人数)。
+ *
+ * 只认交上了最近一个已到期季度(季末 + 45 天截止已过)的 manager:截止日一过还停在上一季的
+ * (Pershing/Olstein 2026-10 停在 Q1 2026),其仓位已是半年前的,不能再算"现在持有"。
+ * 申报季内(截止日前)还没交新季的照常按上一季计入 —— 那是正常节奏,不是落后。
+ * 早申报者(已交下一季)自然计入。period 缺失/非法 → 不计入。
+ */
+export function countsAsCurrentHolder(period: string | null, today: Date): boolean {
+  return filingFreshness(period, today) === "fresh";
+}
+
+/** 组合市值环比的「量级异常」门槛:单季 ≤ −50% 或 ≥ +100%,股价波动到不了这个量级。 */
+export const SCOPE_CHANGE_DROP = -0.5;
+export const SCOPE_CHANGE_RISE = 1;
+
+/**
+ * 组合市值环比是否大到「不是价格造成的」:多为赎回/清盘/部分账户移出申报范围,或新增大额委托。
+ * 页面据此在环比旁附说明,避免读者把 −96% 当成数据错误或当成"大举卖出"。null → false。
+ */
+export function isScopeChange(valueDeltaPct: number | null | undefined): boolean {
+  return valueDeltaPct != null && (valueDeltaPct <= SCOPE_CHANGE_DROP || valueDeltaPct >= SCOPE_CHANGE_RISE);
+}

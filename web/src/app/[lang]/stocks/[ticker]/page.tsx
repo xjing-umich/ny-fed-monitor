@@ -11,7 +11,7 @@ import {
   getTickerExchangeMap,
   getSecurityMeta,
 } from "@/lib/managers/securities";
-import { effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
+import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -314,9 +314,14 @@ export default async function StockTickerPage({
   // (与 currentQuarterOnly 一致)。早申报者的持仓仍在表里,行内标出其季度。无数据 → 不过滤。
   const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period ?? "";
   const inDisplayQuarter = (p: string | null | undefined) => !displayPeriod || p === displayPeriod;
+  // 当前持有人口径(与 consensus 快照同一判定):最近到期季截止日过后仍没交的 manager 不计入。
+  // 快照在 ingest 时已按此过滤;读时再判一次,截止日在两次 ingest 之间跨过时也立即生效。
+  const now = new Date();
+  const isCurrent = (p: string | null | undefined) => countsAsCurrentHolder(p ?? null, now);
 
   if (snap && snap.length > 0) {
     for (const r of snap) {
+      if (!isCurrent(r.period)) continue;
       if (r.period) filings.push({ slug: r.slug, period: r.period, filedAt: r.filedAt ?? "" });
       const countMove = inDisplayQuarter(r.period);
       // 清仓行: 仅计数 + 收进表底 chip 列表, 不进持有人表。
@@ -342,7 +347,7 @@ export default async function StockTickerPage({
       idx.managers.map(async (summary) => ({ summary, detail: await getManagerDetail(summary.slug) }))
     );
     for (const { summary, detail: d } of details) {
-      if (!d) continue;
+      if (!d || !isCurrent(d.latest.period)) continue;
       const h = d.latest.holdings.find((holding) => !holding.putCall && targetCusips.has(holding.cusip));
       if (!h) continue;
       issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
@@ -354,7 +359,7 @@ export default async function StockTickerPage({
     }
     // 本季动作 + 清仓 chip(按持有人计, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
     for (const { summary, detail: d } of details) {
-      if (!d) continue;
+      if (!d || !isCurrent(d.latest.period)) continue;
       const ch = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip));
       if (!ch) continue;
       // 清仓者不在持有人循环里,补记其申报期,让早申报的清仓也计入 ahead。

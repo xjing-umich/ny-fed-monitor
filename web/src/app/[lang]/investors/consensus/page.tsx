@@ -14,7 +14,7 @@ import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
 import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
-import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
+import { countsAsCurrentHolder, quarterLabel } from "@/lib/freshness/derive";
 import { readValuationVerdicts } from "@/lib/valuation/valuationSnapshot";
 
 export const revalidate = 259200; // 季度级数据;列表页 3 天,见 app/[lang]/page.tsx 注释
@@ -41,9 +41,10 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
 
   const [rows, deltas, idx] = await Promise.all([mostHeld(50), holderDeltas(), getManagerIndex()]);
   const verdicts = await readValuationVerdicts(rows.map((r) => r.cusip));
-  const managerCount = idx.managers.length;
-  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
-  const staleManagers = idx.managers.filter((m) => freshness13F(m.period, globalLatest) === "stale");
+  // 已过最近到期季截止日仍没交 13F 的 manager 不计入持有人(与 consensus 快照同一判定),分母同步扣除。
+  const now = new Date();
+  const overdueManagers = idx.managers.filter((m) => !countsAsCurrentHolder(m.period, now));
+  const managerCount = idx.managers.length - overdueManagers.length;
   const totalSum = rows.reduce((s, r) => s + r.totalValue, 0) || 1;
 
   const rankRows: RankRow[] = rows.map((r) => ({
@@ -91,11 +92,11 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
               />
             }
           />
-          {staleManagers.length > 0 && (
+          {overdueManagers.length > 0 && (
             <p className="mt-3 text-xs text-[var(--tt-muted)]">
               {isZh
-                ? `注：${staleManagers.map((m) => `${m.person}（数据截至 ${m.period}）`).join("、")} 的持仓按其最新申报计入，环比变动不计。`
-                : `Note: ${staleManagers.map((m) => `${m.person} (as of ${m.period})`).join(", ")} counted per their latest filing; excluded from QoQ deltas.`}
+                ? `未计入：${overdueManagers.map((m) => `${m.person}（最新 13F 停在 ${quarterLabel(m.period)}）`).join("、")}。申报截止日已过仍未交新一季，旧仓位不算当前持有。`
+                : `Not counted: ${overdueManagers.map((m) => `${m.person} (latest 13F: ${quarterLabel(m.period)})`).join(", ")}. They missed the latest filing deadline, so their old positions don't count as current holdings.`}
             </p>
           )}
         </div>
