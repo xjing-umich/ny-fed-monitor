@@ -1,8 +1,9 @@
 import "server-only";
-import { getDb } from "@/lib/managers/db";
+import { getDb, selectAllPages } from "@/lib/managers/db";
 import {
   evaluate13F,
   evaluateDbSize,
+  evaluateFundamentalsLag,
   type HealthProblem,
   type HealthReport,
 } from "./checks";
@@ -57,6 +58,39 @@ async function gatherPrices(today: Date): Promise<{ problems: HealthProblem[]; i
   }
 }
 
+// 申报后给每周 ingest 留的宽限(周六跑一次,最多 7 天才轮到)+ 1 天余量。
+const FUNDAMENTALS_GRACE_DAYS = 8;
+
+// 基本面滞后:已交 ≥ 宽限期的最新 10-Q/10-K(sec_filings)vs 库里最新一期(company_fundamentals_latest)。
+async function gatherFundamentals(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
+  try {
+    const day = (n: number) => new Date(today.getTime() - n * 86_400_000).toISOString().slice(0, 10);
+    const db = getDb();
+    // 只取近 200 天的 10-Q/10-K 两列(~4k 行),egress 可忽略。
+    const filed = await selectAllPages<{ ticker: string; report_date: string }>(() =>
+      db.from("sec_filings").select("ticker,report_date")
+        .in("form", ["10-Q", "10-K"]).gte("report_date", day(200)).lte("filing_date", day(FUNDAMENTALS_GRACE_DAYS))
+        .order("id", { ascending: true }));
+    if (filed.error) throw new Error(filed.error.message);
+    const latest = await selectAllPages<{ ticker: string; latest_10q_period_end: string | null; latest_10k_period_end: string | null }>(() =>
+      db.from("company_fundamentals_latest").select("ticker,latest_10q_period_end,latest_10k_period_end").order("ticker", { ascending: true }));
+    if (latest.error) throw new Error(latest.error.message);
+
+    const filedBy = new Map<string, string>();
+    for (const r of filed.data) if (r.report_date && (!filedBy.has(r.ticker) || r.report_date > filedBy.get(r.ticker)!)) filedBy.set(r.ticker, r.report_date);
+    const storedBy = new Map<string, string | null>();
+    for (const r of latest.data) {
+      const ends = [r.latest_10q_period_end, r.latest_10k_period_end].filter((x): x is string => Boolean(x));
+      storedBy.set(r.ticker, ends.length ? ends.reduce((a, b) => (a > b ? a : b)) : null);
+    }
+    // 只比对库里收录过的公司(未收录的票不归这条管线管)。
+    const companies = [...filedBy].filter(([t]) => storedBy.has(t)).map(([ticker, filedReport]) => ({ ticker, filedReport, stored: storedBy.get(ticker) ?? null }));
+    return evaluateFundamentalsLag(companies);
+  } catch (e) {
+    return { problems: [{ pipeline: "fundamentals", source: "基本面核查", message: `核查自身出错: ${e instanceof Error ? e.message : String(e)}`, asOf: null, expected: "核查应成功" }], info: [] };
+  }
+}
+
 // 成本护栏:DB 体积早警。降级口径与数据健康检查故意不同——取数失败/RPC 未部署 → info(非 problem),
 // 能力缺失不该误报警、不该把 report.ok 拉成 false。
 async function gatherCost(_today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
@@ -71,8 +105,8 @@ async function gatherCost(_today: Date): Promise<{ problems: HealthProblem[]; in
 }
 
 export async function gatherHealth(today: Date): Promise<HealthReport> {
-  const [r13, rPrices, rCost] = await Promise.all([gather13F(today), gatherPrices(today), gatherCost(today)]);
-  const problems = [...r13.problems, ...rPrices.problems, ...rCost.problems];
-  const info = [...r13.info, ...rPrices.info, ...rCost.info];
+  const [r13, rPrices, rFund, rCost] = await Promise.all([gather13F(today), gatherPrices(today), gatherFundamentals(today), gatherCost(today)]);
+  const problems = [...r13.problems, ...rPrices.problems, ...rFund.problems, ...rCost.problems];
+  const info = [...r13.info, ...rPrices.info, ...rFund.info, ...rCost.info];
   return { ok: problems.length === 0, checkedAt: today.toISOString(), problems, info };
 }
