@@ -17,6 +17,7 @@
     "consensus": "tsx scripts/consensus.ts",
     "report": "tsx scripts/report.ts",
     "report:finalize": "tsx scripts/report-finalize-send.ts",
+    "report:consistency": "tsx scripts/report-consistency.ts",
     "prices": "tsx scripts/prices.ts",
     "prices:backfill": "tsx scripts/prices-backfill.ts",
     "prices:prune": "tsx scripts/prices-prune.ts",
