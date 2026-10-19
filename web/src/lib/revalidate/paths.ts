@@ -24,8 +24,15 @@ export const DATA_DRIVEN_PATHS = [
   "/[lang]/investors/buys",
   "/[lang]/investors/consensus",
   "/[lang]/investors/sells",
+  "/[lang]/learn/[slug]",
   "/[lang]/stocks",
   "/[lang]/stocks/[ticker]",
   "/[lang]/stocks/screener",
   "/[lang]/stocks/screener/[variant]",
 ] as const;
+
+/**
+ * 报告刷新只碰 learn 下的页面(十几页),不触发整站 ~2200 页重新生成,
+ * 避免把 Vercel Hobby 的 ISR Writes 额度用穿。必须是 DATA_DRIVEN_PATHS 的子集。
+ */
+export const REPORT_PATHS = ["/[lang]/learn/[slug]"] as const satisfies readonly (typeof DATA_DRIVEN_PATHS)[number][];
