@@ -3,7 +3,7 @@ import type {
   ManagerIndex, ManagerSummary, ManagerDetail, Manager, FilingData, Holding, ManagerQoQ,
 } from "@/lib/managers/types";
 import { assembleManagerDetail } from "@/lib/managers/assemble";
-import { getDb, withRetry } from "@/lib/managers/db";
+import { getDb, withRetry, selectAllPages } from "@/lib/managers/db";
 
 /**
  * holdings 的显式读取列 —— egress 护栏。表共 9 列，`id` 在读取侧无用
@@ -62,7 +62,8 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
       const { data: f, error: fErr } = await withRetry(() => db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(8));
       if (fErr) throw new Error(`getManagerIndex filings query failed (${m.cik}): ${fErr.message}`);
       for (const latest of f ?? []) {
-        const { data: h, error: hErr } = await withRetry(() => db.from("holdings").select("issuer,value,put_call").eq("filing_id", latest.id).order("value", { ascending: false }));
+        // 分页:单季也可能逼近 1000 行上限(Bridgewater 2026-06-30 = 997 行)。id 作次序键保证分页不漏行。
+        const { data: h, error: hErr } = await selectAllPages(() => db.from("holdings").select("issuer,value,put_call").eq("filing_id", latest.id).order("value", { ascending: false }).order("id", { ascending: true }));
         if (hErr) throw new Error(`getManagerIndex holdings query failed (${m.cik}): ${hErr.message}`);
         const longHoldings = (h ?? []).filter((row: any) => !row.put_call);
         if (longHoldings.length === 0) continue;
@@ -120,7 +121,8 @@ export async function getManagerDetail(cikOrSlug: string): Promise<ManagerDetail
   const { data: filings, error: fErr } = await withRetry(() => db.from("filings").select("*").eq("cik", m.cik).order("period", { ascending: false }).limit(8));
   if (fErr) throw new Error(`getManagerDetail filings query failed (${m.cik}): ${fErr.message}`);
   const ids = (filings ?? []).map((f: any) => f.id);
-  const { data: holdings, error: hErr } = await withRetry(() => db.from("holdings").select(HOLDINGS_SELECT).in("filing_id", ids));
+  // 必须分页:大户 8 季持仓远超 1000 行上限,单次查询会被静默截断(见 selectAllPages)。
+  const { data: holdings, error: hErr } = await selectAllPages(() => db.from("holdings").select(HOLDINGS_SELECT).in("filing_id", ids).order("id", { ascending: true }));
   if (hErr) throw new Error(`getManagerDetail holdings query failed (${m.cik}): ${hErr.message}`);
   if (!filings?.length) return null;
   return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? []);
