@@ -2503,7 +2503,7 @@ main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
 
 1. 站长：在 Resend 后台建 `Compounder EN`、`Compounder ZH` 两个 Segment；把 ID 填进 Vercel 环境变量与 GitHub Secrets（`RESEND_SEGMENT_EN_ID`、`RESEND_SEGMENT_ZH_ID`），并确认 GitHub Secrets 已有 `RESEND_API_KEY`、`RESEND_AUDIENCE_API_KEY`、`RESEND_ALERTS_TO`。
 2. 执行：`cd web && npx tsx scripts/newsletter-backfill-segment.ts`（只打印），站长确认数量后加 `--apply`。
-3. 执行：`npm run report -- --period=2026-06-30`；`npm run report:consistency -- --period=2026-06-30`。Expected：买卖不一致 0 项；持有人数差异逐项能用“该户已申报 Q3”解释（对照 `filings` 表）。
+3. 执行：`npm run report -- --period=2026-06-30`；`npm run report:consistency -- --period=2026-06-30`。Expected：脚本先打印两边 cohort（报告已申报人数 vs 实时页按该季计算的活跃投资人数、实时页有效变动季）。cohort 不同或有效季不是该季（Q2 彩排时 Q3 早申报者已让实时页 cohort 变小，属此情况）→ 打印 `cohort differs: report N filers vs site M — diffs below are expected`，列出差异，退出 0；只有 cohort 相同时买卖不一致才非零退出（Expected 0 项）。持有人数差异逐项能用“该户已申报 Q3”解释（对照 `filings` 表）。
 4. 执行：`npm run report:finalize -- --period=2026-06-30 --action=preview`，再 `--action=finalize --dry-run`。站长在 Gmail 与 Apple Mail 检查四封邮件：中英结论句、表格、链接、中文版链接、首期句、免责、退订链接。
 5. 站长确认后，**Q2 正式定稿但不群发**：直接调 `select finalize_report('2026-06-30');`（只冻结，不经发送流程），然后 `curl -X POST .../api/revalidate?source=report`。Q2 页面状态变为定稿。
 6. 截图 `/learn/q2-2026-superinvestor-consensus` 与 `/zh/...` 在桌面与 375px 宽度下的效果，确认无横向溢出、正文 15px。
