@@ -1,7 +1,7 @@
 // 数据健康看门狗——纯判定逻辑。无 DB、无 server-only → 可独立 tsx 自检。
 // 取数装配在 gather.ts，本文件只接收已取好的数据做判断。
 // 用相对路径(而非 @/ 别名)导入,确保 npx tsx 自检时路径解析万无一失。
-import { filingDeadline, mostRecentDueQuarter, parseUTC } from "../freshness/derive";
+import { effectiveFilingDeadline, mostRecentDueQuarter, parseUTC } from "../freshness/derive";
 
 export type HealthProblem = {
   pipeline: "13f" | "prices" | "cost" | "report";
@@ -77,19 +77,26 @@ export function evaluateDbSize(
 
 export const REPORT_FINALIZE_GRACE_DAYS = 10;
 
-/** 季度报告:截止日 + 10 天仍未定稿 → 提醒站长去审预览并发出。 */
+/** 季度报告:实际截止日(周末顺延到周一)+ 10 天(含当天)过后仍未定稿 → 提醒站长。 */
 export function evaluateReport(
   row: { period: string; status: "live" | "final" } | null,
   today: Date,
 ): { problems: HealthProblem[]; info: string[] } {
   if (!row) return { problems: [], info: ["季度报告: 当前季度尚无报告行"] };
   if (row.status === "final") return { problems: [], info: [`季度报告: ${row.period} 已定稿`] };
-  const deadline = filingDeadline(row.period);
+  const deadline = effectiveFilingDeadline(row.period);
   if (!deadline) return { problems: [], info: [] };
-  const due = new Date(deadline.getTime() + REPORT_FINALIZE_GRACE_DAYS * 86_400_000);
-  if (today <= due) return { problems: [], info: [`季度报告: ${row.period} 申报中`] };
+  // 宽限期最后一天 = 截止日 + 10 天;到其次日 0 点(UTC)才告警,与 reportReadiness 的“当天仍算”一致。
+  const alertFrom = deadline.getTime() + (REPORT_FINALIZE_GRACE_DAYS + 1) * 86_400_000;
+  if (today.getTime() < alertFrom) return { problems: [], info: [`季度报告: ${row.period} 申报中`] };
   return {
-    problems: [{ pipeline: "report", source: "季度报告", message: "截止日已过 10 天,报告仍未定稿", asOf: row.period, expected: "审预览后运行 Report finalize & send" }],
+    problems: [{
+      pipeline: "report",
+      source: "季度报告",
+      message: `截止日已过 ${REPORT_FINALIZE_GRACE_DAYS} 天,报告仍未定稿`,
+      asOf: row.period,
+      expected: "若已收到预览：运行 Report finalize & send；若没有预览（覆盖率不足）：先运行 action=preview 或检查覆盖率",
+    }],
     info: [],
   };
 }

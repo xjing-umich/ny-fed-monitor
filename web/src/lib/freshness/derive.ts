@@ -188,6 +188,19 @@ export function filingDeadline(period: string | null): Date | null {
 }
 
 /**
+ * 实际可申报的最后一天:filingDeadline 落在周六/周日时顺延到下周一(SEC 规则;不含联邦假日)。
+ * 只给“等申报季结束”的判断用(报告可定稿、看门狗);filingDeadline 本身保持 +45 天不变。
+ */
+export function effectiveFilingDeadline(period: string | null): Date | null {
+  const d = filingDeadline(period);
+  if (!d) return null;
+  const day = d.getUTCDay(); // 0=Sun, 6=Sat
+  if (day === 6) return addDays(d, 2);
+  if (day === 0) return addDays(d, 1);
+  return d;
+}
+
+/**
  * 报告期(季末 YYYY-MM-DD) → 季度标签("2026-03-31" → "Q1 2026")。
  * 用于把裸日期换成"季度"语感,避免被误读成"某天的过期数据"。非法格式原样返回。
  */

@@ -12,6 +12,8 @@ import {
   effectiveMovesPeriod,
   priorQuarterEnd,
   MOVES_COVERAGE_MIN,
+  filingDeadline,
+  effectiveFilingDeadline,
 } from "./derive";
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
@@ -130,5 +132,15 @@ assert.equal(priorQuarterEnd("2025-09-30"), "2025-06-30");
   assert.equal(r.period, null);
   assert.equal(r.reason, "empty");
 }
+
+// --- effectiveFilingDeadline: 周末顺延到周一(不含联邦假日);filingDeadline 本身不变 ---
+assert.equal(filingDeadline("2026-09-30")!.toISOString().slice(0, 10), "2026-11-14", "filingDeadline 仍是 +45 天(周六)");
+assert.equal(effectiveFilingDeadline("2026-09-30")!.toISOString().slice(0, 10), "2026-11-16", "Q3 2026:周六 11/14 → 周一 11/16");
+assert.equal(effectiveFilingDeadline("2026-06-30")!.toISOString().slice(0, 10), "2026-08-14", "Q2 2026:周五 8/14 不顺延");
+assert.equal(effectiveFilingDeadline("2027-03-31")!.toISOString().slice(0, 10), "2027-05-17", "Q1 2027:周六 5/15 → 周一 5/17");
+assert.equal(effectiveFilingDeadline("2026-03-31")!.toISOString().slice(0, 10), "2026-05-15", "Q1 2026:周五 5/15 不顺延");
+assert.equal(effectiveFilingDeadline("2025-06-30")!.toISOString().slice(0, 10), "2025-08-14", "Q2 2025:周四 8/14");
+assert.equal(effectiveFilingDeadline("2026-12-31")!.toISOString().slice(0, 10), "2027-02-15", "Q4 2026:周日 2/14 → 周一 2/15");
+assert.equal(effectiveFilingDeadline(null), null, "空 → null");
 
 console.log("derive.check.ts: all assertions passed ✓ (incl. freshness13F, effectiveMovesPeriod)");
