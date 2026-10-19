@@ -16,7 +16,7 @@ import type {
   ManagerSummary,
 } from "../src/lib/managers/types.js";
 import { assembleManagerDetail } from "../src/lib/managers/assemble.js";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
@@ -450,6 +450,19 @@ async function main() {
       auth: { persistSession: false },
       realtime: { transport: WebSocket as unknown as never },
     });
+    // 落库前先比对:本次抓到的 filing 里有没有库里还没有的 accession。workflow 只在有新 filing 时
+    // 才整站 revalidate —— 每周两次无差别刷新 ~2200 页会把 Vercel Hobby 的 ISR Writes 额度用穿。
+    const newAccessions = await findNewAccessions(
+      db,
+      allDetails.flatMap((d) => d.filings.map((f) => f.accession)),
+    );
+    if (newAccessions === null) {
+      console.warn("New-filing check failed — assuming changed so the site still gets revalidated.");
+    } else {
+      console.log(`New filings this run: ${newAccessions.length}${newAccessions.length ? ` (${newAccessions.slice(0, 10).join(", ")}${newAccessions.length > 10 ? ", …" : ""})` : ""}`);
+    }
+    setActionOutput("changed", newAccessions === null || newAccessions.length > 0 ? "true" : "false");
+
     for (const detail of allDetails) {
       try { await upsertManagerDetail(db, detail, FORMER_NAMES[detail.manager.slug]); console.log(`[${detail.manager.slug}] upserted to Supabase`); }
       catch (e) { console.warn(`[${detail.manager.slug}] Supabase upsert failed: ${e}`); }
@@ -490,6 +503,29 @@ async function main() {
     );
     process.exitCode = 1;
   }
+}
+
+/** 返回库中尚不存在的 accession;查询出错返回 null(调用方按"有变化"处理,宁可多刷一次)。 */
+async function findNewAccessions(db: SupabaseClient, accessions: string[]): Promise<string[] | null> {
+  const unique = [...new Set(accessions)];
+  const existing = new Set<string>();
+  // 分块:控制 URL 长度,且每块远低于 PostgREST 默认 1000 行上限。
+  for (let i = 0; i < unique.length; i += 100) {
+    const chunk = unique.slice(i, i + 100);
+    const { data, error } = await db.from("filings").select("accession").in("accession", chunk);
+    if (error) {
+      console.warn(`filings lookup failed: ${error.message}`);
+      return null;
+    }
+    for (const row of (data ?? []) as Array<{ accession: string }>) existing.add(row.accession);
+  }
+  return unique.filter((a) => !existing.has(a));
+}
+
+/** 写 GitHub Actions step output;本地运行(无 GITHUB_OUTPUT)时为 no-op。 */
+function setActionOutput(key: string, value: string) {
+  const out = process.env.GITHUB_OUTPUT;
+  if (out) fs.appendFileSync(out, `${key}=${value}\n`);
 }
 
 main().catch((err) => {

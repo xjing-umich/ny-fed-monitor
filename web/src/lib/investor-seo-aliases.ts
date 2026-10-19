@@ -3,9 +3,8 @@
 //（人工审查剔除撞名、过短、复合姓）+ 常见基金简称。新增投资人时在此补充。
 //
 // 消费方：
-//  - next.config.ts redirects()：覆盖 /zh/investors/<alias> 与 /en/investors/<alias>（308）
-//  - src/proxy.ts：覆盖裸 /investors/<alias>（301；本版 Next 的 redirects 正则强制要求
-//    zh|en 前缀段，裸路径永远匹配不到 config 规则，只能由 proxy 在 rewrite 前接住）
+//  - next.config.ts redirects()：覆盖 /zh/investors/<alias> 与 /en/investors/<alias>（308），
+//    以及裸 /investors/<alias>（301，单独一条无前缀规则；redirects 先于 rewrite 到 /en 执行）
 // 与 src/lib/investorAliases.ts（搜索关键词表）是两回事，勿合并。
 export const INVESTOR_ALIASES: Record<string, string> = {
   ackman: "pershing-square",

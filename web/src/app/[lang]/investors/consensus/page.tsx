@@ -17,7 +17,7 @@ import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
 import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
 import { readValuationVerdicts } from "@/lib/valuation/valuationSnapshot";
 
-export const revalidate = 86400; // 季度级数据, 每日 ISR 足够
+export const revalidate = 259200; // 季度级数据;列表页 3 天,见 app/[lang]/page.tsx 注释
 
 export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];

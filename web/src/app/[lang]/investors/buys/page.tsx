@@ -3,7 +3,7 @@ import type { Lang } from "@/lib/nav";
 import { MovesPage, notFoundIfBadLang } from "../_movesPage";
 import { altFor } from "@/lib/seo";
 
-export const revalidate = 86400;
+export const revalidate = 259200; // 列表页 3 天,见 app/[lang]/page.tsx 注释
 export function generateStaticParams() { return [{ lang: "zh" }, { lang: "en" }]; }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {

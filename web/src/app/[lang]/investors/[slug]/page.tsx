@@ -39,9 +39,11 @@ import { Display } from "@/components/common/Display";
 
 const MAX_HOLDINGS = 25;
 
-// ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的 AI 叙述(及更新的持仓)无需重新部署即可在一天内出现, 同时保持静态托管利于 SEO。
-// 13F 季度级数据 → 日级重验足够,避免 76 户详情页每小时各重验一次反复读库(egress)。
-export const revalidate = 86400;
+// ISR: 预渲染 + 周期性重校验, 让「生成在构建之后」的持仓更新无需重新部署即可出现, 同时保持静态托管利于 SEO。
+// 13F 季度级数据 → 详情页 7 天兜底;新 filing 入库后由 ingest workflow 整站刷新。
+// 周期按 Vercel Hobby 额度定(ISR Writes 按 8KB 计、全站 ~2200 页):列表页 3 天、详情页 7 天;
+// 数据批量更新后的整站刷新由 workflow 调 /api/revalidate 承担(13F 有新 filing 时 + 估值每周六)。
+export const revalidate = 604800;
 
 export async function generateStaticParams() {
   const idx = await getManagerIndex();

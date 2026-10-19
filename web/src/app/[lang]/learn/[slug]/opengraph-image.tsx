@@ -5,6 +5,9 @@ import type { Lang } from "@/lib/nav";
 export const alt = "Compounder — Learn";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
+// 静态缓存:否则 [lang] 段下的 OG 图每次被抓取都在函数里重绘 PNG(计入 Vercel Fluid Active CPU)。
+export const dynamic = "force-static";
+export const revalidate = 604800;
 
 function clamp(s: string, n: number): string {
   return s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s;

@@ -53,9 +53,11 @@ import { SectionHeading } from "@/components/common/SectionHeading";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
 // 这些直接成为静态 HTML → CDN 秒开。冷门 ticker 不预渲染,靠 dynamicParams 按需渲染
-// + 日级 ISR 缓存。13F 季度更、价格日更(页面只显示最新价),日级重验足够新鲜,
-// 且避免几千个 ticker 页每小时各重验一次反复读库(egress)。
-export const revalidate = 86400;
+// + ISR 缓存。13F 季度更、价格日更(页面只显示最新价);~2000 个 ticker 页 × ~55 个 8KB 写入单位,
+// 日级重验会把 Hobby 的 ISR Writes 额度用穿 → 详情页 7 天兜底,估值/价格随每周六整站刷新更新。
+// 周期按 Vercel Hobby 额度定(ISR Writes 按 8KB 计、全站 ~2200 页):列表页 3 天、详情页 7 天;
+// 数据批量更新后的整站刷新由 workflow 调 /api/revalidate 承担(13F 有新 filing 时 + 估值每周六)。
+export const revalidate = 604800;
 export const dynamicParams = true;
 
 export async function generateStaticParams(): Promise<Array<{ lang: string; ticker: string }>> {
