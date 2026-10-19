@@ -54,3 +54,31 @@ export async function withRetry<R extends { error: unknown }>(
   }
   return res;
 }
+
+/** PostgREST 单次响应的行数上限(Supabase 默认 max-rows = 1000)。 */
+export const PAGE_SIZE = 1000;
+
+type PageQuery<T> = { range(from: number, to: number): PromiseLike<{ data: T[] | null; error: { message: string } | null }> };
+
+/**
+ * 分页读全量行,返回与单次查询同形的 `{ data, error }`,调用方照旧 `if (error) throw`。
+ * 为什么必须分页:PostgREST 超出 max-rows 时**静默截断、不报错**。2026-10 实测
+ * getManagerDetail 一次取「一户 8 季持仓」:Bridgewater 6757 行只回 1000、最新季 0 行,
+ * GMO 4897 行同样最新季 0 行 → 投资人页空白、估值 universe 少 ~350 只票,且无任何报错。
+ * build 每次必须新建查询,并以唯一键 .order(...) 结尾 —— 否则 OFFSET 分页在页边界会漏行/重行。
+ * 每页走 withRetry;某页重试耗尽仍失败 → 原样返回该 error(不返回半截数据)。
+ */
+export async function selectAllPages<T>(
+  build: () => PageQuery<T>,
+  pageSize = PAGE_SIZE,
+): Promise<{ data: T[]; error: { message: string } | null }> {
+  const data: T[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const res = await withRetry(() => build().range(from, from + pageSize - 1));
+    if (res.error) return { data: [], error: res.error };
+    const page = res.data ?? [];
+    data.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return { data, error: null };
+}
