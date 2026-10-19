@@ -1,9 +1,24 @@
 import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb, withRetry } from "@/lib/managers/db";
-import type { ReportRow, ReportStatus } from "./types";
+import type { ReportPayload, ReportRow, ReportStatus } from "./types";
 
-function mapRow(r: Record<string, any>): ReportRow {
+/** 页面读取的公开列(不含 preview_* 与 sends)。 */
+type PublicReportDbRow = {
+  period: string;
+  status: ReportStatus;
+  payload: ReportPayload;
+  payload_hash: string;
+  coverage_filed: number;
+  coverage_total: number;
+  valuation_as_of: string | null;
+  first_live_at: string;
+  generated_at: string;
+  finalized_at: string | null;
+};
+type ReportListDbRow = Pick<PublicReportDbRow, "period" | "generated_at" | "finalized_at" | "status">;
+
+function mapRow(r: PublicReportDbRow): ReportRow {
   return {
     period: r.period, status: r.status, payload: r.payload, payloadHash: r.payload_hash,
     coverageFiled: r.coverage_filed, coverageTotal: r.coverage_total, valuationAsOf: r.valuation_as_of,
@@ -34,7 +49,7 @@ export const readReportRow = cache(async (period: string): Promise<ReportRow | n
       if (isMissingTable(error)) return null;
       throw new Error(`readReportRow 失败: ${(error as Error).message}`);
     }
-    return data ? mapRow(data) : null;
+    return data ? mapRow(data as PublicReportDbRow) : null;
   } catch (e) {
     console.error(`readReportRow 异常: ${e instanceof Error ? e.message : String(e)}`);
     throw e;
@@ -42,17 +57,21 @@ export const readReportRow = cache(async (period: string): Promise<ReportRow | n
 });
 
 /** 无 env / 表不存在 → [];其它错误 throw(generateStaticParams 在真实故障时让构建大声失败)。 */
-export const listReportPeriods = cache(async (): Promise<Array<{ period: string; generatedAt: string; status: ReportStatus }>> => {
+export type ReportListing = { period: string; generatedAt: string; finalizedAt: string | null; status: ReportStatus };
+
+export const listReportPeriods = cache(async (): Promise<ReportListing[]> => {
   if (!hasSupabaseEnv()) return [];
   try {
     const { data, error } = await withRetry(() =>
-      getDb().from("quarterly_reports").select("period,generated_at,status").order("period", { ascending: false }),
+      getDb().from("quarterly_reports").select("period,generated_at,finalized_at,status").order("period", { ascending: false }),
     );
     if (error) {
       if (isMissingTable(error)) return [];
       throw new Error(`listReportPeriods 失败: ${(error as Error).message}`);
     }
-    return (data ?? []).map((r: any) => ({ period: r.period, generatedAt: r.generated_at, status: r.status }));
+    return ((data ?? []) as ReportListDbRow[]).map((r) => ({
+      period: r.period, generatedAt: r.generated_at, finalizedAt: r.finalized_at, status: r.status,
+    }));
   } catch (e) {
     console.error(`listReportPeriods 异常: ${e instanceof Error ? e.message : String(e)}`);
     throw e;

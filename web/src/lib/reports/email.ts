@@ -1,7 +1,8 @@
 // 季度报告邮件(纯函数)。与报告页同一份 payload、同一套文案;表格式简单 HTML,兼容主流邮件客户端。
 import {
-  disclaimerText, emptyText, kindLabel, noComparableMovesText, notFiledText, personName, pct, positionLabel,
-  reportDescription, reportTitle, reportUrl, sectionTitles, stockHref, valuationNote,
+  disclaimerText, emptyText, holderCountText, holderDeltaText, kindLabel, noComparableMovesText, notFiledText,
+  personName, pct, positionLabel, reportDescription, reportTitle, reportUrl, sectionTitles, stockHref,
+  superinvestorCount, valuationNote,
 } from "./copy";
 import { SITE_ORIGIN } from "../urls";
 import type { EmptyReason, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
@@ -49,24 +50,28 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
   const zh = lang === "zh";
   const title = reportTitle(p.period, lang);
   const conclusion = reportDescription(p, meta.status, lang);
-  const people = zh ? "位" : "superinvestors";
 
   const moveRows = (items: typeof p.bought.items): Row[] =>
-    items.slice(0, EMAIL_TOP).map((i) => ({
-      cells: [stockCellHtml(i, lang), esc(`${i.managerCount} ${people}`), esc(kindLabel(i.dominantKind, lang))],
-      textCells: [stockText(i), `${i.managerCount} ${people}`, kindLabel(i.dominantKind, lang)],
-    }));
+    items.slice(0, EMAIL_TOP).map((i) => {
+      const n = superinvestorCount(i.managerCount, lang);
+      return {
+        cells: [stockCellHtml(i, lang), esc(n), esc(kindLabel(i.dominantKind, lang))],
+        textCells: [stockText(i), n, kindLabel(i.dominantKind, lang)],
+      };
+    });
   const heldRows: Row[] = p.mostHeld.items.slice(0, EMAIL_TOP).map((i) => {
-    const d = i.holderDelta > 0 ? `+${i.holderDelta}` : `${i.holderDelta}`;
-    const c = zh ? `${i.holderCount} 位（较上季 ${d}）` : `${i.holderCount} holders (${d} vs. last quarter)`;
+    const c = zh
+      ? `${holderCountText(i.holderCount, lang)}（${holderDeltaText(i.holderDelta, lang)}）`
+      : `${holderCountText(i.holderCount, lang)} (${holderDeltaText(i.holderDelta, lang)})`;
     return { cells: [stockCellHtml(i, lang), esc(c)], textCells: [stockText(i), c] };
   });
   const szRows: Row[] = p.strikeZone.items.slice(0, EMAIL_TOP).map((i) => {
     const pos = positionLabel(i.position, lang);
-    const c = zh ? `${i.holderCount} 位持有` : `${i.holderCount} holders`;
+    const c = zh ? `${i.holderCount} 位持有` : holderCountText(i.holderCount, lang);
     return { cells: [stockCellHtml(i, lang), esc(c), esc(pos)], textCells: [stockText(i), c, pos] };
   });
-  const featRows: Row[] = p.featured.map((f) => {
+  // 邮件每板块最多 3 条(名家动作即 3 位);页面不限。
+  const featRows: Row[] = p.featured.slice(0, EMAIL_TOP).map((f) => {
     const name = personName(f, lang);
     const what = !f.filed
       ? notFiledText(lang)
@@ -92,7 +97,7 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
   const cta = zh ? "看完整报告" : "Read the full report";
   const disclaimer = disclaimerText(lang);
   const unsub = zh ? "退订" : "Unsubscribe";
-  const source = `${t.source} · ${valuationNote(meta.valuationAsOf, lang)}`;
+  const source = `${t.source} · ${valuationNote(meta.valuationAsOf, lang, p.period)}`;
   const addr = meta.postalAddress ? meta.postalAddress : "";
 
   const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#fff;color:#1a1a1a;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.5">

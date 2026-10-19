@@ -34,6 +34,7 @@ const base: ReportInput = {
   cusipMap,
   bargains: new Map([["GOOG", { inStrikeZone: true, marginPct: 0.35 }], ["AAPL", { inStrikeZone: false, marginPct: 0.1 }]]),
   featuredSlugs: ["a", "d", "c", "zzz-not-tracked"],
+  valuationAvailable: true,
 };
 
 const p = buildQuarterlyReport(base);
@@ -80,9 +81,13 @@ assert(empty.coverage.filed === 0, "无人申报");
 assert(empty.bought.emptyReason === "no_filers" && empty.mostHeld.emptyReason === "no_filers", "无人申报 → no_filers");
 assert(empty.strikeZone.emptyReason === "no_filers", "击球区 no_filers");
 
-// 无估值数据
-const noVal = buildQuarterlyReport({ ...base, bargains: new Map() });
+// 无估值数据(valuation_snapshot 没有任何 reliable 行)
+const noVal = buildQuarterlyReport({ ...base, bargains: new Map(), valuationAvailable: false });
 assert(noVal.strikeZone.items.length === 0 && noVal.strikeZone.emptyReason === "no_valuation", "无估值 → no_valuation");
+
+// 估值可用、只是没有一只票在击球区/价值带以下:不能说“估值暂不可用”
+const noBargain = buildQuarterlyReport({ ...base, bargains: new Map(), valuationAvailable: true });
+assert(noBargain.strikeZone.items.length === 0 && noBargain.strikeZone.emptyReason === "no_qualifying", `估值可用但无便宜票 → no_qualifying, got ${noBargain.strikeZone.emptyReason}`);
 
 // 有估值但无交集
 const noHit = buildQuarterlyReport({ ...base, bargains: new Map([["KO", { inStrikeZone: true, marginPct: 0.4 }]]) });

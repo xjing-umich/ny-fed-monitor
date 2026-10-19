@@ -1,6 +1,6 @@
 // 季度报告双语文案。页面与邮件都从这里取字,保证同一事实同一说法。
 // 只描述已发生的申报与估值位置,不给买卖建议。
-import { quarterLabel } from "../freshness/derive";
+import { effectiveFilingDeadline, parseUTC, quarterLabel } from "../freshness/derive";
 import { localePath, stockPath, SITE_ORIGIN } from "../urls";
 import { reportSlug } from "./period";
 import type { EmptyReason, FeaturedEntry, MoveKind, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
@@ -14,6 +14,24 @@ export function reportTitle(period: string, lang: ReportLang): string {
   return lang === "zh" ? `${q} 超级投资者共识报告` : `${q} Superinvestor Consensus Report`;
 }
 
+/** 英文单复数:1 superinvestor / 2 superinvestors。中文统一“N 位”。 */
+export function superinvestorCount(n: number, lang: ReportLang): string {
+  return lang === "zh" ? `${n} 位` : `${n} ${n === 1 ? "superinvestor" : "superinvestors"}`;
+}
+export function holderCountText(n: number, lang: ReportLang): string {
+  return lang === "zh" ? `${n} 位` : `${n} ${n === 1 ? "holder" : "holders"}`;
+}
+/** 持有人数环比(成句):0 → “较上季持平” / “unchanged vs. last quarter”。 */
+export function holderDeltaText(d: number, lang: ReportLang): string {
+  if (lang === "zh") return d === 0 ? "较上季持平" : `较上季 ${signed(d)}`;
+  return d === 0 ? "unchanged vs. last quarter" : `${signed(d)} vs. last quarter`;
+}
+/** 持有人数环比(表格列,列名已写“较上季”):0 → “持平” / “unchanged”。 */
+export function holderDeltaCell(d: number, lang: ReportLang): string {
+  if (d === 0) return lang === "zh" ? "持平" : "unchanged";
+  return signed(d);
+}
+
 export function reportDescription(p: ReportPayload, status: ReportStatus, lang: ReportLang): string {
   const q = quarterLabel(p.period);
   const parts: string[] = [];
@@ -22,17 +40,17 @@ export function reportDescription(p: ReportPayload, status: ReportStatus, lang: 
   const sz = p.strikeZone.items.length;
   if (lang === "zh") {
     if (b) parts.push(`${b.managerCount} 位超级投资者新建或加仓 ${label(b)}`);
-    if (h) parts.push(`持有人数最多的是 ${label(h)}（${h.holderCount} 位，较上季 ${signed(h.holderDelta)}）`);
+    if (h) parts.push(`持有人数最多的是 ${label(h)}（${holderCountText(h.holderCount, lang)}，${holderDeltaText(h.holderDelta, lang)}）`);
     if (sz) parts.push(`被至少 2 位持有的股票中，有 ${sz} 只处在击球区或价值带以下`);
     const body = parts.length ? parts.join("；") : "已申报的投资人中暂无满足条件的共识动作";
-    const prefix = status === "live" ? `截至目前（${p.coverage.total} 位中 ${p.coverage.filed} 位已申报）` : q;
+    const prefix = status === "live" ? `${q}，截至目前（${p.coverage.total} 位中 ${p.coverage.filed} 位已申报）` : q;
     return `${prefix}：${body}。`;
   }
-  if (b) parts.push(`${b.managerCount} superinvestors opened or added to ${label(b)}`);
-  if (h) parts.push(`the most widely held stock is ${label(h)} (${h.holderCount} holders, ${signed(h.holderDelta)} vs. last quarter)`);
-  if (sz) parts.push(`${sz} ${sz === 1 ? "stock" : "stocks"} held by two or more sit in the strike zone or below the value band`);
+  if (b) parts.push(`${superinvestorCount(b.managerCount, lang)} opened or added to ${label(b)}`);
+  if (h) parts.push(`the most widely held stock is ${label(h)} (${holderCountText(h.holderCount, lang)}, ${holderDeltaText(h.holderDelta, lang)})`);
+  if (sz) parts.push(sz === 1 ? "1 stock held by two or more sits in the strike zone or below the value band" : `${sz} stocks held by two or more sit in the strike zone or below the value band`);
   const body = parts.length ? parts.join("; ") : "no consensus moves qualify among the funds that have filed";
-  const prefix = status === "live" ? `So far (${p.coverage.filed} of ${p.coverage.total} filed)` : q;
+  const prefix = status === "live" ? `${q}, so far (${p.coverage.filed} of ${p.coverage.total} filed)` : q;
   return `${prefix}: ${body}.`;
 }
 
@@ -51,9 +69,17 @@ export function statusLine(
     : `Final as of ${day} · ${row.coverageFiled} of ${row.coverageTotal} filed`;
 }
 
-export function valuationNote(asOf: string | null, lang: ReportLang): string {
+/** 估值快照晚于该季实际申报截止日这么多天以上时,注明“晚于该季申报季”(spec §3.6,如 Q2 补发)。 */
+export const LATE_VALUATION_DAYS = 30;
+
+export function valuationNote(asOf: string | null, lang: ReportLang, period?: string): string {
   if (!asOf) return lang === "zh" ? "估值位置暂不可用。" : "Valuation positions are not available yet.";
-  return lang === "zh" ? `价值位置按 ${asOf} 收盘价计算。` : `Valuation positions use closing prices as of ${asOf}.`;
+  const deadline = period ? effectiveFilingDeadline(period) : null;
+  const at = parseUTC(asOf);
+  const late = !!deadline && !!at && at.getTime() - deadline.getTime() > LATE_VALUATION_DAYS * 86_400_000;
+  return lang === "zh"
+    ? `价值位置按 ${asOf} 收盘价计算${late ? "（晚于该季申报季）" : ""}。`
+    : `Valuation positions use closing prices as of ${asOf}${late ? " (later than that quarter's filing season)" : ""}.`;
 }
 
 export function emptyText(reason: EmptyReason, lang: ReportLang): string {

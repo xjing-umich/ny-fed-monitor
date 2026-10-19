@@ -1,5 +1,6 @@
 // 按报告季度 P 取数。与 computeAndStoreConsensus 同一套表、同一套分页与去重规则,
 // 区别只是 period 锁定在 P,而不是“每户最新两季”。
+import type { SupabaseClient } from "@supabase/supabase-js";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -9,6 +10,14 @@ import { readAll } from "./computeConsensus";
 import type { ReportHolding, ReportInput, ReportManagerInput } from "../../src/lib/reports/types";
 
 type FilingRow = { id: number; period: string; filed_at: string | null };
+type ManagerDbRow = { cik: string; slug: string; person: string };
+type HoldingDbRow = { cusip: string; issuer: string; value: number | string; shares: number | string; weight: number | string | null; put_call: string | null };
+type ValuationDbRow = {
+  ticker: string; range_lo: number | string; range_hi: number | string; price: number | string; price_date: string | null;
+  margin_pct: number | string | null; in_strike_zone: boolean | null; verdict_bucket: string | null;
+};
+/** 每位投资人的最近 16 份申报(足够覆盖同季修正件)与最新申报季。 */
+export type ManagerFilings = { m: ManagerDbRow; latestPeriod: string | null; rows: FilingRow[] };
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const newer = (a: FilingRow, b: FilingRow) => {
@@ -31,12 +40,32 @@ export function pickFilingsForPeriod(rows: FilingRow[], period: string): { curre
   return { current, prior };
 }
 
-const toHolding = (h: any): ReportHolding => ({
+const toHolding = (h: HoldingDbRow): ReportHolding => ({
   cusip: h.cusip, issuer: h.issuer, value: Number(h.value), shares: Number(h.shares),
   weight: Number(h.weight ?? 0), putCall: h.put_call ?? null,
 });
 
-export async function loadReportInput(db: any, period: string): Promise<{ input: ReportInput; valuationAsOf: string | null }> {
+/** 全部投资人及其最近申报。loadReportInput 与 report-consistency 共用(同一“活跃”与“最新季”口径)。 */
+export async function loadManagerFilings(db: SupabaseClient): Promise<ManagerFilings[]> {
+  const managers = (await readAll(db, "managers", "cik,slug,person", (q) => q.order("cik", { ascending: true }))) as ManagerDbRow[];
+  const out: ManagerFilings[] = [];
+  for (const m of managers) {
+    const rows = (await readAll(db, "filings", "id,period,filed_at", (q) =>
+      q.eq("cik", m.cik).order("period", { ascending: false }).order("id", { ascending: false }).limit(16),
+    )) as FilingRow[];
+    const latestPeriod = rows.reduce<string | null>((acc, r) => (!acc || r.period > acc ? r.period : acc), null);
+    out.push({ m, latestPeriod, rows });
+  }
+  return out;
+}
+
+/** 活跃口径与全站一致:相对全库最新季落后 ≥4 季的视为停报,整户剔除。 */
+export function activeOnly<T extends { latestPeriod: string | null }>(all: T[]): T[] {
+  const gl = globalLatestPeriod(all.map((r) => r.latestPeriod));
+  return all.filter((r) => freshness13F(r.latestPeriod, gl) !== "inactive");
+}
+
+export async function loadReportInput(db: SupabaseClient, period: string): Promise<{ input: ReportInput; valuationAsOf: string | null }> {
   const seeds = JSON.parse(fs.readFileSync(path.join(__dirname, "../../config/managers.json"), "utf8")) as Array<{ slug: string; people?: Array<{ name: string; zh?: string }> }>;
   const zhBySlug = new Map(seeds.map((s) => [s.slug, s.people?.[0]?.zh ?? null]));
   const featuredSlugs = JSON.parse(fs.readFileSync(path.join(__dirname, "../../config/report-featured.json"), "utf8")) as string[];
@@ -45,23 +74,11 @@ export async function loadReportInput(db: any, period: string): Promise<{ input:
   for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer", (q) => q.order("cusip", { ascending: true })))
     cusipMap.set(r.cusip, { ticker: r.ticker, name: r.issuer });
 
-  const managers = await readAll(db, "managers", "cik,slug,person", (q) => q.order("cik", { ascending: true }));
-  const raw: Array<{ m: any; latestPeriod: string | null; current: FilingRow | null; prior: FilingRow | null }> = [];
-  for (const m of managers) {
-    const rows = (await readAll(db, "filings", "id,period,filed_at", (q) =>
-      q.eq("cik", m.cik).order("period", { ascending: false }).order("id", { ascending: false }).limit(16),
-    )) as FilingRow[];
-    const latestPeriod = rows.reduce<string | null>((acc, r) => (!acc || r.period > acc ? r.period : acc), null);
-    raw.push({ m, latestPeriod, ...pickFilingsForPeriod(rows, period) });
-  }
-
-  // 活跃口径与全站一致:相对全库最新季落后 ≥4 季的视为停报,整户剔除。
-  const gl = globalLatestPeriod(raw.map((r) => r.latestPeriod));
-  const active = raw.filter((r) => freshness13F(r.latestPeriod, gl) !== "inactive");
+  const active = activeOnly(await loadManagerFilings(db)).map((r) => ({ ...r, ...pickFilingsForPeriod(r.rows, period) }));
 
   const holdingsOf = async (f: FilingRow | null) =>
     f
-      ? (await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) => q.eq("filing_id", f.id).order("id", { ascending: true }))).map(toHolding)
+      ? ((await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) => q.eq("filing_id", f.id).order("id", { ascending: true }))) as HoldingDbRow[]).map(toHolding)
       : null;
 
   const out: ReportManagerInput[] = [];
@@ -82,9 +99,19 @@ export async function loadReportInput(db: any, period: string): Promise<{ input:
     .or("in_strike_zone.eq.true,verdict_bucket.eq.below")
     .limit(500);
   if (verr) throw new Error(`valuation_snapshot read: ${verr.message}`);
+  // 有没有任何可靠估值:区分“估值整体不可用”(no_valuation)与“有估值但没有便宜票”(no_qualifying)。
+  // 顺带取最新价格日期:没有便宜票时 valuationAsOf 也要有值,否则页面会写“估值暂不可用”而与 no_qualifying 矛盾。
+  const { data: latestRel, error: lerr } = await db
+    .from("valuation_snapshot")
+    .select("price_date")
+    .eq("reliable", true)
+    .order("price_date", { ascending: false, nullsFirst: false })
+    .limit(1);
+  if (lerr) throw new Error(`valuation_snapshot reliable check: ${lerr.message}`);
+  const latestReliable = (latestRel ?? []) as Array<{ price_date: string | null }>;
   const bargains = new Map<string, { inStrikeZone: boolean; marginPct: number }>();
   let valuationAsOf: string | null = null;
-  for (const v of vrows ?? []) {
+  for (const v of (vrows ?? []) as ValuationDbRow[]) {
     const marginPct = v.margin_pct == null ? null : Number(v.margin_pct);
     if (marginPct == null || marginPct <= 0) continue;
     if (isImplausibleBand({ rangeLo: Number(v.range_lo), rangeHi: Number(v.range_hi), price: Number(v.price), marginPct })) continue;
@@ -92,5 +119,7 @@ export async function loadReportInput(db: any, period: string): Promise<{ input:
     if (v.price_date && (!valuationAsOf || v.price_date > valuationAsOf)) valuationAsOf = v.price_date;
   }
 
-  return { input: { period, managers: out, cusipMap, bargains, featuredSlugs }, valuationAsOf };
+  const valuationAvailable = latestReliable.length > 0;
+  if (!valuationAsOf && valuationAvailable) valuationAsOf = latestReliable[0].price_date;
+  return { input: { period, managers: out, cusipMap, bargains, featuredSlugs, valuationAvailable }, valuationAsOf };
 }

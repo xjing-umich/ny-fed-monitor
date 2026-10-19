@@ -18,7 +18,7 @@ function section<T>(items: T[], emptyReason: Section<T>["emptyReason"]): Section
 }
 
 export function buildQuarterlyReport(input: ReportInput): ReportPayload {
-  const { period, managers, cusipMap, bargains, featuredSlugs } = input;
+  const { period, managers, cusipMap, bargains, featuredSlugs, valuationAvailable } = input;
   const knownTickers = new Set([...cusipMap.values()].map((v) => v.ticker).filter((t): t is string => !!t));
   const stock = (key: string, issuer: string): ReportStock => ({ key, ticker: knownTickers.has(key) ? key : null, issuer });
   const keyOf = (cusip: string) => cusipMap.get(cusip)?.ticker ?? cusip;
@@ -62,7 +62,8 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
       return { key: r.key, ticker: r.ticker, issuer: r.issuer, holderCount: r.holderCount, position: b.inStrikeZone ? "strike_zone" as const : "below" as const, marginPct: b.marginPct };
     })
     .sort((a, b) => b.holderCount - a.holderCount || b.marginPct - a.marginPct);
-  const strikeReason = noFilers ? "no_filers" : bargains.size === 0 ? "no_valuation" : "no_qualifying";
+  // 估值整体不可用 ≠ 没有便宜票:前者 no_valuation,后者 no_qualifying。
+  const strikeReason = noFilers ? "no_filers" : !valuationAvailable ? "no_valuation" : "no_qualifying";
 
   // —— 名家动作:权重变化绝对值最大的 1–2 条
   const bySlug = new Map(managers.map((m) => [m.slug, m]));

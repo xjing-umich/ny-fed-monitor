@@ -48,4 +48,23 @@ assert(hx.html.includes('href="https://thecompounder.fyi/stocks/A%22B%26C"'), "t
 assert(!hx.html.includes('"B&C'), "HTML 中无未转义的引号/&");
 assert(hx.text.includes('A"B&C'), "纯文本版原样");
 
+// —— 估值晚于该季申报季(Q2 补发场景):邮件与页面同一说法
+assert(en.text.includes("2026-10-24 (later than that quarter's filing season)"), "en 估值晚于申报季提示");
+assert(zh.text.includes("2026-10-24 收盘价计算（晚于该季申报季）"), "zh 估值晚于申报季提示");
+
+// —— 名家动作邮件最多 3 位(页面不限)
+const many = JSON.parse(JSON.stringify(p)) as ReportPayload;
+many.featured = ["A", "B", "C", "D", "E"].map((n) => ({ slug: `s-${n}`, person: `Person ${n}`, personZh: null, filed: false, moves: [] }));
+const mx = renderReportEmail(many, meta, "en");
+assert(mx.text.includes("Person C") && !mx.text.includes("Person D") && !mx.text.includes("Person E"), "名家动作只取前 3 位");
+
+// —— 环比 0 与英文单数
+const flat = JSON.parse(JSON.stringify(p)) as ReportPayload;
+flat.mostHeld.items[0] = { ...flat.mostHeld.items[0], holderDelta: 0 };
+flat.bought.items[0] = { ...flat.bought.items[0], managerCount: 1 };
+const fx = renderReportEmail(flat, meta, "en");
+assert(fx.text.includes("17 holders (unchanged vs. last quarter)"), "en 邮件持平");
+assert(fx.text.includes("GOOG · 1 superinvestor ·"), `en 邮件单数: ${fx.text}`);
+assert(renderReportEmail(flat, meta, "zh").text.includes("17 位（较上季持平）"), "zh 邮件持平");
+
 console.log("email.check OK");

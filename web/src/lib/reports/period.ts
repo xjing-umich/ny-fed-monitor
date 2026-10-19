@@ -43,3 +43,9 @@ export function parseReportSlug(slug: string): string | null {
   const [qm, qd] = QUARTER_ENDS[Number(m[1]) - 1];
   return iso(Number(m[2]), qm, qd);
 }
+
+/** sitemap lastmod / JSON-LD dateModified:max(generatedAt, finalizedAt)。定稿只改状态不改 generated_at。 */
+export function reportLastModified(generatedAt: string, finalizedAt: string | null): string {
+  if (!finalizedAt) return generatedAt;
+  return Date.parse(finalizedAt) > Date.parse(generatedAt) ? finalizedAt : generatedAt;
+}

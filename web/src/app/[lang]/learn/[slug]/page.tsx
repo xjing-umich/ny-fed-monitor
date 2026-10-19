@@ -7,7 +7,7 @@ import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { altFor } from "@/lib/seo";
 import ProseDoc from "@/components/legal/ProseDoc";
-import { parseReportSlug, reportSlug } from "@/lib/reports/period";
+import { parseReportSlug, reportLastModified, reportSlug } from "@/lib/reports/period";
 import { readReportRow, listReportPeriods } from "@/lib/reports/read";
 import { reportTitle, reportDescription } from "@/lib/reports/copy";
 import ReportArticle from "@/components/reports/ReportArticle";
@@ -68,7 +68,7 @@ export default async function ArticlePage({
       description: reportDescription(row.payload, row.status, lang),
       image: `${url}/opengraph-image`,
       datePublished: row.firstLiveAt,
-      dateModified: row.generatedAt,
+      dateModified: reportLastModified(row.generatedAt, row.finalizedAt),
       inLanguage: lang === "zh" ? "zh-CN" : "en",
       author: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
       publisher: { "@type": "Organization", name: "Compounder", logo: { "@type": "ImageObject", url: "https://thecompounder.fyi/icon.png" } },

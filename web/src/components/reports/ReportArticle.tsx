@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import type { Lang } from "@/lib/nav";
 import { investorPath, localePath } from "@/lib/urls";
 import {
-  disclaimerText, emptyText, kindLabel, noComparableMovesText, notFiledText, personName, pct, positionLabel,
-  reportDescription, reportTitle, sectionTitles, statusLine, stockHref, valuationNote,
+  disclaimerText, emptyText, holderDeltaCell, kindLabel, noComparableMovesText, notFiledText, personName, pct,
+  positionLabel, reportDescription, reportTitle, sectionTitles, statusLine, stockHref, valuationNote,
 } from "@/lib/reports/copy";
 import type { ReportRow, ReportStock, Section } from "@/lib/reports/types";
 
@@ -64,12 +64,12 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
         <table className="mt-3 w-full">
           <thead><tr><th className={th}>{zh ? "股票" : "Stock"}</th><th className={th}>{zh ? "持有人数" : "Holders"}</th><th className={th}>{zh ? "较上季" : "vs. last quarter"}</th></tr></thead>
           <tbody>{p.mostHeld.items.map((i) => (
-            <tr key={i.key}><td className={td}><StockCell s={i} lang={lang} /></td><td className={`${td} font-data`}>{i.holderCount}</td><td className={`${td} font-data`}>{i.holderDelta > 0 ? `+${i.holderDelta}` : i.holderDelta}</td></tr>
+            <tr key={i.key}><td className={td}><StockCell s={i} lang={lang} /></td><td className={`${td} font-data`}>{i.holderCount}</td><td className={`${td} font-data`}>{holderDeltaCell(i.holderDelta, lang)}</td></tr>
           ))}</tbody>
         </table>
       </Block>
 
-      <Block title={t.strikeZone} source={valuationNote(row.valuationAsOf, lang)} sec={p.strikeZone} lang={lang}>
+      <Block title={t.strikeZone} source={valuationNote(row.valuationAsOf, lang, p.period)} sec={p.strikeZone} lang={lang}>
         <table className="mt-3 w-full">
           <thead><tr><th className={th}>{zh ? "股票" : "Stock"}</th><th className={th}>{zh ? "持有人数" : "Holders"}</th><th className={th}>{zh ? "位置" : "Position"}</th></tr></thead>
           <tbody>{p.strikeZone.items.map((i) => (
@@ -107,13 +107,13 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
             `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站跟踪的 ${p.coverage.total} 位活跃超级投资者（一年以上未申报者不计）。同季有修正申报时取合并后的版本。`,
             "共识买入 / 卖出：统计本季相对上一季新建仓或加仓 / 减仓或清仓的投资人数，期权不计；没有更早申报可比的投资人不计入买卖。",
             "持有人数“较上季”：只在本季已申报、且有上一季申报的同一批投资人内比较，避免申报季中有人尚未申报造成虚降。",
-            `击球区与价值带：来自本站估值引擎的保守价值区间，只取数据可靠的结果。${valuationNote(row.valuationAsOf, lang)}这里只描述价格相对价值区间的位置，不构成买卖建议。`,
+            `击球区与价值带：来自本站估值引擎的保守价值区间，只取数据可靠的结果。${valuationNote(row.valuationAsOf, lang, p.period)}这里只描述价格相对价值区间的位置，不构成买卖建议。`,
             row.status === "final" ? "本报告定稿后不再随迟到申报或修正申报变化；最新情况见实时共识页。" : "申报季结束、覆盖率达标后，本报告会定稿冻结。",
           ] : [
             `Data comes from 13F filings on SEC EDGAR for the ${p.coverage.total} active superinvestors this site tracks (funds silent for a year or more are excluded). Where a quarter was amended, the merged version is used.`,
             "Consensus buys / sells count the funds that opened or added to / trimmed or sold out of a position versus the prior quarter. Options are excluded, and funds with no earlier filing to compare against are left out of buys and sells.",
             "Holder change vs. last quarter compares the same funds only: those that have filed this quarter and also filed the prior one, so funds that have not filed yet do not drag counts down.",
-            `Strike zone and value band come from this site's conservative valuation range, using reliable results only. ${valuationNote(row.valuationAsOf, lang)} They describe where price sits relative to value and are not a recommendation.`,
+            `Strike zone and value band come from this site's conservative valuation range, using reliable results only. ${valuationNote(row.valuationAsOf, lang, p.period)} They describe where price sits relative to value and are not a recommendation.`,
             row.status === "final" ? "This report is frozen once final; later or amended filings do not change it. See the live consensus page for the current picture." : "Once the filing season closes and coverage is high enough, this report will be finalized and frozen.",
           ]).map((s) => <p key={s.slice(0, 24)}>{s}</p>)}
           <p>

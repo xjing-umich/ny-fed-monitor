@@ -1,5 +1,5 @@
 /** Run: cd web && npx tsx src/lib/reports/period.check.ts */
-import { reportPeriodFor, reportSlug, parseReportSlug, priorQuarter } from "./period";
+import { reportPeriodFor, reportSlug, parseReportSlug, priorQuarter, reportLastModified } from "./period";
 
 function assert(c: boolean, m: string) {
   if (!c) { console.error("FAIL:", m); process.exit(1); }
@@ -20,5 +20,10 @@ assert(parseReportSlug("q3-2026-superinvestor-consensus-x") === null, "尾巴多
 
 assert(priorQuarter("2026-09-30") === "2026-06-30", "prior Q3");
 assert(priorQuarter("2026-03-31") === "2025-12-31", "prior 跨年");
+
+// lastmod / dateModified:定稿时间晚于最后一次生成时取定稿时间
+assert(reportLastModified("2026-11-10T00:00:00+00:00", "2026-11-18T03:00:00+00:00") === "2026-11-18T03:00:00+00:00", "final 取 finalizedAt");
+assert(reportLastModified("2026-11-10T00:00:00+00:00", null) === "2026-11-10T00:00:00+00:00", "live 取 generatedAt");
+assert(reportLastModified("2026-11-20T00:00:00Z", "2026-11-18T03:00:00Z") === "2026-11-20T00:00:00Z", "取两者较晚");
 
 console.log("period.check OK");
