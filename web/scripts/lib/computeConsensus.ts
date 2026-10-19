@@ -1,4 +1,4 @@
-import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
+import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, diffHoldings, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
 import { effectiveMovesPeriod, freshness13F, globalLatestPeriod } from "../../src/lib/freshness/derive";
 
 async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
@@ -15,21 +15,6 @@ async function readAll(db: any, table: string, cols: string, filter?: (q: any) =
     out.push(...data);
     if (data.length < 1000) break;
   }
-  return out;
-}
-
-function diff(latest: any[], prior: any[]): ScanInput["changes"] {
-  const keyOfHolding = (h: any) => `${h.cusip}|${h.put_call ?? ""}`;
-  const lm = new Map(latest.map((h) => [keyOfHolding(h), h]));
-  const pm = new Map(prior.map((h) => [keyOfHolding(h), h]));
-  const out: ScanInput["changes"] = [];
-  for (const [k, lh] of lm) {
-    const ph = pm.get(k);
-    if (!ph) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-    else if (Number(lh.shares) > Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "increased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-    else if (Number(lh.shares) < Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "decreased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-  }
-  for (const [k, ph] of pm) if (!lm.has(k)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", value: Number(ph.value), putCall: ph.put_call ?? undefined });
   return out;
 }
 
@@ -92,7 +77,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const effective = effectiveMovesPeriod(periods, new Date());
   const active = raws.filter((r) => freshness13F(r.period, gl) !== "inactive");
   const changesOf = (r: Raw) =>
-    (effective.period && r.period === effective.period ? diff(r.latestH, r.priorH) : []);
+    (effective.period && r.period === effective.period ? diffHoldings(r.latestH, r.priorH) : []);
 
   const scan: ScanInput[] = active.map((r) => ({
     slug: r.slug,

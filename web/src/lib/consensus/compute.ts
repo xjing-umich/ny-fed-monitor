@@ -254,3 +254,20 @@ export function computeCoOwnership(
   }
   return out;
 }
+
+// QoQ 变动:latest 对 prior 按 cusip+期权类型比对。全站与季度报告共用这一份口径。
+export type DiffRow = { cusip: string; issuer: string; value: number | string; shares: number | string; put_call?: string | null };
+export function diffHoldings(latest: DiffRow[], prior: DiffRow[]): ScanChange[] {
+  const keyOfHolding = (h: DiffRow) => `${h.cusip}|${h.put_call ?? ""}`;
+  const lm = new Map(latest.map((h) => [keyOfHolding(h), h]));
+  const pm = new Map(prior.map((h) => [keyOfHolding(h), h]));
+  const out: ScanChange[] = [];
+  for (const [k, lh] of lm) {
+    const ph = pm.get(k);
+    if (!ph) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+    else if (Number(lh.shares) > Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "increased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+    else if (Number(lh.shares) < Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "decreased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+  }
+  for (const [k, ph] of pm) if (!lm.has(k)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", value: Number(ph.value), putCall: ph.put_call ?? undefined });
+  return out;
+}
