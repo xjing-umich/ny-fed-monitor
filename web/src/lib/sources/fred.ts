@@ -35,8 +35,11 @@ const FRED_TIMEOUT_MS = 8000;
 // timeoutMs 默认 8s(渲染/构建安全上限);批量 ingest 的耐心 writer 可传更长值(graph-CSV 慢)。
 export async function fetchFredSeries(id: string, timeoutMs: number = FRED_TIMEOUT_MS): Promise<FredSeries> {
   const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${encodeURIComponent(id)}`;
+  // fetch 级 revalidate 会把**整页**的 revalidate 压到二者较小值:此前 3600 让首页和 ~2000 个
+  // 个股页(经 getLatestDgs10)实际每小时重生成,是 Vercel ISR Writes 超额的根因。
+  // 取 7 天 = 个股详情页周期,不再压低任何页面;DGS10 用作 DCF 折现锚,周级新鲜度足够。
   const csv = await fetch(url, {
-    next: { revalidate: 3600, tags: [`fred-${id}`] },
+    next: { revalidate: 604800, tags: [`fred-${id}`] },
     signal: AbortSignal.timeout(timeoutMs),
   }).then((res) => {
     if (!res.ok) throw new Error(`${url} ${res.status}`);

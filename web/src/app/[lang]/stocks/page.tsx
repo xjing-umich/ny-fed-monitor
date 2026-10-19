@@ -15,9 +15,11 @@ import { StocksTable, type StockRow } from "./StocksTable";
 import { stockUi } from "@/lib/stocks/stockCopy";
 import { readBargainVerdicts } from "@/lib/valuation/valuationSnapshot";
 
-// 共识持仓为季度级数据,无需每请求重算。静态预渲染 + 日级 ISR → 列表页 CDN 秒开,
-// 且不会每小时把 consensusHeld(最多 5000 行)反复读出(egress)。
-export const revalidate = 86400;
+// 共识持仓为季度级数据,无需每请求重算。静态预渲染 + ISR → 列表页 CDN 秒开,
+// 且不会把 consensusHeld(最多 5000 行)反复读出(egress)。
+// 周期按 Vercel Hobby 额度定(ISR Writes 按 8KB 计、全站 ~2200 页):列表页 3 天、详情页 7 天;
+// 数据批量更新后的整站刷新由 workflow 调 /api/revalidate 承担(13F 有新 filing 时 + 估值每周六)。
+export const revalidate = 259200;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 

@@ -17,8 +17,10 @@ import LearnTeaser from "@/components/home/LearnTeaser";
 import ClosingCTA from "@/components/home/ClosingCTA";
 import { Section } from "@/components/common/Section";
 
-// 13F 季度更、价格日更:日级 ISR 已足够新鲜,避免每小时重验反复读库(egress)。
-export const revalidate = 86400;
+// 13F 季度更、价格日更;首页按列表页节奏重验。
+// 周期按 Vercel Hobby 额度定(ISR Writes 按 8KB 计、全站 ~2200 页):列表页 3 天、详情页 7 天;
+// 数据批量更新后的整站刷新由 workflow 调 /api/revalidate 承担(13F 有新 filing 时 + 估值每周六)。
+export const revalidate = 259200;
 
 export async function generateMetadata({
   params,

@@ -34,7 +34,7 @@ const saira = Saira({
 // title template is used here to avoid double-branding).
 //
 // SEO is English-first: English is the default locale, served bare at "/"
-// (the proxy rewrites "/" and other unprefixed paths to the "/en" segment
+// (next.config.ts rewrites "/" and other unprefixed paths to the "/en" segment
 // internally — there is no root redirect), and default metadata is English,
 // English ranks higher in the sitemap. Chinese (/zh) stays fully indexed as
 // the secondary locale — both are crawlable and paired via hreflang on each page.
