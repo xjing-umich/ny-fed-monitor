@@ -39,6 +39,7 @@ import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/pri
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
+import { holderTrendSeries } from "@/lib/stocks/holderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
@@ -331,7 +332,8 @@ export default async function StockTickerPage({
       }
       holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined, period: r.period ?? undefined });
     }
-    trendSeries = (await readStockTrend(ticker)) ?? [];
+    // 终点对齐展示季度:早申报者交的下一季只有寥寥几份,不能当最新点(否则 "47 → 1")。
+    trendSeries = holderTrendSeries((await readStockTrend(ticker)) ?? [], displayPeriod);
   } else {
     // 回退: 逐户扫描(快照不可用时, 行为与 PR#72 逐户版完全一致)。
     // targetCusips: 该 ticker 下全部 cusip(含历史); 库为空/未解析则把入参当单个 cusip。
@@ -363,7 +365,7 @@ export default async function StockTickerPage({
       else if (ch.kind === "decreased") moves.trimmed++;
       else if (ch.kind === "exited") { moves.exited++; exitedHolders.push({ person: summary.person, slug: summary.slug }); }
     }
-    // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数; 升序取最近 8 季。
+    // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数; 截到展示季度,升序取最近 8 季。
     const periodCounts = new Map<string, number>();
     for (const { detail: d } of details) {
       if (!d) continue;
@@ -373,7 +375,7 @@ export default async function StockTickerPage({
         }
       }
     }
-    trendSeries = [...periodCounts.keys()].sort().slice(-8).map((p) => periodCounts.get(p)!);
+    trendSeries = holderTrendSeries([...periodCounts].map(([period, count]) => ({ period, count })), displayPeriod);
   }
 
   if (holders.length === 0) notFound();
