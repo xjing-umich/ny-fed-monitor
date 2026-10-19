@@ -1,0 +1,208 @@
+import { XMLParser } from "fast-xml-parser";
+import type { CompanyFacts, SecFactUnit } from "./company-facts";
+import type { NormalizedFiling } from "./company-submissions";
+import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
+
+/**
+ * companyfacts 漏收的 10-Q/10-K → 读原始申报的 XBRL instance 回填。
+ *
+ * 为什么:SEC 的 companyfacts 汇总接口会漏掉部分申报。2026-10 审计:约 200 家(V/ABT/CB/MDLZ…)
+ * 7–8 月就交了 Q2 10-Q,companyfacts 里却最新只到 Q1,而我们只读 companyfacts,每周任务照报
+ * "success",估值一直用旧一季的基本面。
+ *
+ * 做法:把 instance 里的无维度 us-gaap 事实转成 companyfacts 同形的条目,注入 facts 后再交给
+ * 现有 normalizer。normalizer 对同一期按「最早申报」取值,所以新申报里的去年同期比较数不会
+ * 覆盖历史,只有真正的新一期被补进来;TTM / 完整性闸 / 估值全部沿用,零分叉。
+ */
+
+export type UnitKind = "USD" | "shares" | "USD/shares";
+
+/** instance 里的一条无维度 us-gaap 事实(已应用 sign/scale)。 */
+export type GaapFact = { tag: string; unit: UnitKind; value: number; start?: string; end?: string; instant?: string };
+
+const FORMS = new Set(["10-Q", "10-K"]);
+/** 每家最多回填的申报份数:正常只差 1 份,多于 3 份说明另有问题,不靠这里补。 */
+export const MAX_BACKFILL_FILINGS = 3;
+
+const localName = (k: string) => k.split(":").pop() ?? k;
+const prefixOf = (k: string) => (k.includes(":") ? k.split(":")[0] : "");
+const asArray = <T,>(x: T | T[] | undefined | null): T[] => (Array.isArray(x) ? x : x == null ? [] : [x]);
+type AnyObj = Record<string, unknown>;
+const findByLocalName = (o: AnyObj, name: string): unknown => {
+  for (const [k, v] of Object.entries(o)) if (localName(k) === name) return v;
+  return undefined;
+};
+const text = (x: unknown): string | undefined =>
+  typeof x === "string" ? x : typeof (x as AnyObj)?.["#text"] === "string" ? ((x as AnyObj)["#text"] as string) : undefined;
+
+function classifyUnit(u: AnyObj): UnitKind | null {
+  const measure = text(findByLocalName(u, "measure"));
+  if (measure) {
+    if (/(^|:)USD$/.test(measure) && measure.startsWith("iso4217")) return "USD";
+    if (localName(measure) === "shares") return "shares";
+    return null;
+  }
+  const div = findByLocalName(u, "divide") as AnyObj | undefined;
+  if (!div) return null;
+  const num = text(findByLocalName(findByLocalName(div, "unitNumerator") as AnyObj ?? {}, "measure"));
+  const den = text(findByLocalName(findByLocalName(div, "unitDenominator") as AnyObj ?? {}, "measure"));
+  return num === "iso4217:USD" && den != null && localName(den) === "shares" ? "USD/shares" : null;
+}
+
+/**
+ * 抽取 instance 的无维度 us-gaap 事实(USD / shares / USD per share)。
+ * 只收无维度事实 —— companyfacts 本身只含无维度事实,收了分部/分类维度就会串值。
+ * 同 (tag, unit, 期间) 重复出现时保留第一条(同一申报内重复即同值)。
+ */
+export function extractGaapFacts(xml: string): GaapFact[] {
+  const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", parseTagValue: false });
+  const root = findByLocalName(parser.parse(xml) as AnyObj, "xbrl") as AnyObj | undefined;
+  if (!root) return [];
+
+  const units = new Map<string, UnitKind>();
+  for (const [k, v] of Object.entries(root)) {
+    if (localName(k) !== "unit") continue;
+    for (const u of asArray(v as AnyObj | AnyObj[])) {
+      const id = (u as AnyObj)["@_id"];
+      const kind = classifyUnit(u as AnyObj);
+      if (typeof id === "string" && kind) units.set(id, kind);
+    }
+  }
+
+  type Ctx = { start?: string; end?: string; instant?: string };
+  const contexts = new Map<string, Ctx>();
+  for (const [k, v] of Object.entries(root)) {
+    if (localName(k) !== "context") continue;
+    for (const c of asArray(v as AnyObj | AnyObj[])) {
+      const ctx = c as AnyObj;
+      const id = ctx["@_id"];
+      const entity = findByLocalName(ctx, "entity") as AnyObj | undefined;
+      const dimensional = (entity && findByLocalName(entity, "segment") != null) || findByLocalName(ctx, "scenario") != null;
+      const period = findByLocalName(ctx, "period") as AnyObj | undefined;
+      if (typeof id !== "string" || !period || dimensional) continue;
+      contexts.set(id, {
+        start: text(findByLocalName(period, "startDate")),
+        end: text(findByLocalName(period, "endDate")),
+        instant: text(findByLocalName(period, "instant")),
+      });
+    }
+  }
+
+  const out: GaapFact[] = [];
+  const seen = new Set<string>();
+  for (const [k, v] of Object.entries(root)) {
+    if (prefixOf(k) !== "us-gaap") continue;
+    const tag = localName(k);
+    for (const f of asArray(v as AnyObj | AnyObj[])) {
+      if (typeof f !== "object" || f === null) continue;
+      const fact = f as AnyObj;
+      const unit = units.get(String(fact["@_unitRef"]));
+      const ctx = contexts.get(String(fact["@_contextRef"]));
+      const raw = fact["#text"];
+      if (!unit || !ctx || typeof raw !== "string") continue;
+      const n = Number(raw);
+      const scale = typeof fact["@_scale"] === "string" ? Number(fact["@_scale"]) : 0;
+      if (!Number.isFinite(n) || !Number.isFinite(scale)) continue;
+      const key = `${tag}|${unit}|${ctx.start ?? ""}|${ctx.end ?? ""}|${ctx.instant ?? ""}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ tag, unit, value: (fact["@_sign"] === "-" ? -1 : 1) * n * Math.pow(10, scale), ...ctx });
+    }
+  }
+  return out;
+}
+
+function factsAccessions(facts: CompanyFacts): { accns: Set<string>; latestEnd: string | null } {
+  const accns = new Set<string>();
+  let latestEnd: string | null = null;
+  for (const concept of Object.values(facts.facts?.["us-gaap"] ?? {})) {
+    for (const list of Object.values(concept.units ?? {})) {
+      for (const u of list) {
+        if (u.accn) accns.add(u.accn);
+        if (u.end && u.form && FORMS.has(u.form) && (!latestEnd || u.end > latestEnd)) latestEnd = u.end;
+      }
+    }
+  }
+  return { accns, latestEnd };
+}
+
+/**
+ * companyfacts 漏收的申报:10-Q/10-K,accession 不在 companyfacts 里,且报告期晚于 companyfacts
+ * 已有的最新一期(只补「新的一期」,不去翻没有 XBRL 的远古申报)。按报告期升序,最多 max 份。
+ */
+export function findMissingFilings(facts: CompanyFacts, filings: NormalizedFiling[], max = MAX_BACKFILL_FILINGS): NormalizedFiling[] {
+  const { accns, latestEnd } = factsAccessions(facts);
+  return filings
+    .filter((f) => FORMS.has(f.form) && f.report_date && f.primary_document && !accns.has(f.accession_number))
+    .filter((f) => latestEnd == null || f.report_date! > latestEnd)
+    .sort((a, b) => (a.report_date! < b.report_date! ? -1 : 1))
+    .slice(-max);
+}
+
+/** 把一份申报的事实以 companyfacts 同形注入(就地修改 facts)。返回注入条数。 */
+export function injectFilingFacts(facts: CompanyFacts, filing: NormalizedFiling, gaap: GaapFact[]): number {
+  facts.facts = facts.facts ?? {};
+  const ns = (facts.facts["us-gaap"] = facts.facts["us-gaap"] ?? {});
+  let n = 0;
+  for (const g of gaap) {
+    const end = g.end ?? g.instant;
+    if (!end) continue;
+    const concept = (ns[g.tag] = ns[g.tag] ?? { units: {} });
+    const list = (concept.units[g.unit] = concept.units[g.unit] ?? []);
+    const unit: SecFactUnit = {
+      ...(g.start ? { start: g.start } : {}),
+      end,
+      val: g.value,
+      accn: filing.accession_number,
+      form: filing.form,
+      filed: filing.filing_date ?? undefined,
+    };
+    list.push(unit);
+    n++;
+  }
+  return n;
+}
+
+type EdgarIndex = { directory?: { item?: { name?: string }[] } };
+
+/** 提取版 instance = primaryDocument 去 .htm 加 _htm.xml;不在则读目录 index.json 找 *_htm.xml。 */
+async function fetchInstance(filing: NormalizedFiling): Promise<string | null> {
+  const dir = filingIndexUrl(filing.cik, filing.accession_number);
+  const guess = filing.primary_document?.replace(/\.htm$/i, "_htm.xml");
+  if (guess) {
+    try {
+      return await secFetchText(`${dir}${guess}`);
+    } catch {
+      // 回退 index.json
+    }
+  }
+  try {
+    const index = await secFetchJson<EdgarIndex>(`${dir}index.json`);
+    const name = index.directory?.item?.map((i) => i.name).find((n) => n?.endsWith("_htm.xml"));
+    return name ? await secFetchText(`${dir}${name}`) : null;
+  } catch {
+    return null;
+  }
+}
+
+export type BackfillResult = { filled: string[]; failed: string[] };
+
+/**
+ * 找出漏收申报并回填进 facts(就地)。任何单份失败只记入 failed,不抛 —— 回填绝不打断主 ingest。
+ */
+export async function backfillMissingFilings(facts: CompanyFacts, filings: NormalizedFiling[]): Promise<BackfillResult> {
+  const result: BackfillResult = { filled: [], failed: [] };
+  for (const filing of findMissingFilings(facts, filings)) {
+    const label = `${filing.form} ${filing.report_date} ${filing.accession_number}`;
+    try {
+      const xml = await fetchInstance(filing);
+      await sleep(150);
+      const gaap = xml ? extractGaapFacts(xml) : [];
+      if (!gaap.length || injectFilingFacts(facts, filing, gaap) === 0) result.failed.push(label);
+      else result.filled.push(label);
+    } catch {
+      result.failed.push(label);
+    }
+  }
+  return result;
+}

@@ -4,6 +4,7 @@ import { COMPANY_UNIVERSE, KNOWN_FOREIGN_ISSUERS, normalizeTicker } from "./comp
 import { fetchCompanyFacts } from "./company-facts";
 import { fetchCompanySubmissions, normalizeRecentFilings } from "./company-submissions";
 import { FundamentalPeriod, normalizeCompanyFacts } from "./normalize-facts";
+import { backfillMissingFilings } from "./filing-backfill";
 import { needsClassSharesFallback, applyClassSharesFallback } from "./class-shares-fallback";
 import { needsHoldcoSotp, ingestHoldcoSotp } from "./holdco-ingest";
 import { resolveTickerCik } from "./ticker-cik";
@@ -187,6 +188,10 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     const { error: filingsError } = await supabase.from("sec_filings").upsert(filings, { onConflict: "accession_number" });
     if (filingsError) throw filingsError;
 
+    // companyfacts 会漏收部分 10-Q/10-K(2026-10:~200 家缺 Q2)→ 从原始申报的 XBRL instance 回填后再归一。
+    const backfill = await backfillMissingFilings(facts, filings);
+    if (backfill.filled.length) console.log(`  ${ticker}: companyfacts 漏收,已从原始申报回填 ${backfill.filled.join("; ")}`);
+    if (backfill.failed.length) console.warn(`  ${ticker}: 漏收申报回填失败 ${backfill.failed.join("; ")}`);
     const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
     // 分股类申报公司(V/BRK 等)在 companyfacts 拿不到无维度股数 → 从 10-K instance 的
     // ClassOfStockAxis 维度事实回退推导经济股数(spec 2026-07-26)。窄闸:全年份缺股数才触发。
