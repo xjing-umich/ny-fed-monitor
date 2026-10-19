@@ -414,13 +414,153 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       ],
     },
   },
+  "q2-2026-superinvestor-consensus": {
+    en: {
+      slug: "q2-2026-superinvestor-consensus",
+      title: "Q2 2026: What the Superinvestors Held, Bought, and Sold",
+      description:
+        "A read of the Q2 2026 13F filings from the 97 investors Compounder tracks: the most widely held stocks, the quarter's biggest buys and sells, and why most of the selling was trimming.",
+      updated: "2026-10-19",
+      snapshotPeriod: "2026-06-30",
+      intro:
+        "The Q2 2026 13F filings cover the quarter that ended June 30, and they were due by August 14. As of 2026-06-30, Compounder tracks 97 investors. Below is what they held, what drew the most buyers, and what drew the most sellers. The short version: the same few mega-caps sit near the top of all three lists, and most of the selling was trimming rather than leaving. Q3 filings are due November 14, so this snapshot has a short shelf life.",
+      sections: [
+        {
+          heading: "What we're reading",
+          paragraphs: [
+            "These figures come from Form 13F, the quarterly filing any manager running at least $100 million in U.S. stocks has to submit to the SEC. We line up the filings from the 97 investors on Compounder's superinvestor list and count where they agree and where they moved. How to Read a 13F covers the mechanics of a single filing.",
+            "Two counting rules shape the numbers. Holder counts include three investors whose latest filing is older than Q2 ([[investor:pershing-square|Bill Ackman]] and Robert Olstein as of Q1 2026, Tom Bancroft as of Q4 2025), counted at their last reported position. The buy and sell counts leave out five investors whose latest filing predates Q2. Alphabet's two share classes, GOOGL and GOOG, are counted separately, so one fund holding both shows up on each line.",
+            "Everything below is as of June 30, 2026. Some of these positions have surely changed since, and none of the figures tell you what anyone paid.",
+          ],
+        },
+        {
+          heading: "The most widely held stocks",
+          paragraphs: [
+            "[[stock:MSFT|Microsoft]] was the most common holding, in 43 of the 97 portfolios, two fewer than a quarter earlier. [[stock:GOOGL|Alphabet]]'s A shares came next at 41, then [[stock:AMZN|Amazon]] at 39 and Alphabet's C shares at 37. [[stock:META|Meta]] closed out the top five at 35, up three on the quarter. Together those five lines appear in 195 portfolios. [[stock:V|Visa]] (32), [[stock:AAPL|Apple]] (28), [[stock:TSM|Taiwan Semiconductor]] (28), [[stock:BRK.B|Berkshire Hathaway]] (27), and [[stock:DIS|Disney]] (22) fill out the top ten.",
+            "Holder count and dollars can tell different stories. Apple has 28 holders among these investors, which sounds like broad agreement. But [[investor:berkshire-hathaway|Warren Buffett]]'s $65.95 billion stake is 86% of the $76.77 billion they hold in it between them. By headcount Apple is a consensus name. By dollars it is mostly one investor's position.",
+          ],
+        },
+        {
+          heading: "What they were buying",
+          paragraphs: [
+            "More investors bought Microsoft than any other stock: 19 in all, 17 adding to positions they already held and two starting new ones. Visa and Amazon drew 13 buyers each, and all 13 of Amazon's were topping up existing stakes. Meta drew 12, four of them new. Most of the buying went to companies these investors already owned.",
+            "The standout new name was [[stock:VEEV|Veeva Systems]]. Seven investors opened it from scratch, and nobody added, trimmed, or sold. The positions are small. [[investor:fundsmith|Terry Smith]]'s $145.0 million stake is the largest at 1.1% of his portfolio, and none of the seven weights it above 1.8%. Seven starter positions tell you a business landed on several research lists in the same quarter. They don't yet tell you anyone is convinced.",
+            "Energy drew new money too. Four investors opened [[stock:DVN|Devon Energy]] and four more added to it. The largest is [[investor:davis-advisors|Christopher Davis]]'s new $1.05 billion position, 4.5% of his portfolio. [[stock:SPGI|S&P Global]] picked up four new holders alongside seven adds.",
+          ],
+        },
+        {
+          heading: "What they were selling",
+          paragraphs: [
+            "Alphabet's A shares topped the sell list. Twenty-six investors sold some, and only three of them sold all of it: [[investor:viking-global|Andreas Halvorsen]], [[investor:cooperman-family-office|Leon Cooperman]], and [[investor:arbiter-partners|Paul Isaac]]. The C shares drew 19 sellers and no full exits. Microsoft came next with 22 sellers and four exits, then Amazon with 20 sellers and none, then Taiwan Semiconductor and Meta at 17 each.",
+            "Read down that list and the same pattern holds. Trims far outnumber exits, so this is investors resizing positions in companies they still own. A trim can mean a position grew bigger than its owner wanted, or that conviction slipped a little. The filing doesn't say which.",
+            "Apple is the one-sided case among the giants. Twelve investors trimmed it, one sold out, four added, and nobody opened a new position.",
+          ],
+        },
+        {
+          heading: "The names on both lists",
+          paragraphs: [
+            "Microsoft drew 19 buyers and 22 sellers in the same three months. Amazon drew 13 and 20, Meta 12 and 17, Visa 13 and 12. Alphabet was the most lopsided of the big names: five buyers against 26 sellers on the A shares, nine against 19 on the C shares.",
+            "[[stock:UNH|UnitedHealth]], the most contested name in Q1, settled into something more ordinary. Eight investors bought it, two of them new. Thirteen sold, and two left entirely: [[investor:markel|Thomas Gayner]] and [[investor:appaloosa|David Tepper]]. The holder count held at 20. A high holder count means a stock is on a lot of screens. Whether those investors agree about it is a separate question, and for most of these names the Q2 buy and sell counts say no.",
+          ],
+        },
+        {
+          heading: "Why none of this is a signal",
+          paragraphs: [
+            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is long-only, can be up to 45 days old when it lands, and says nothing about why a manager bought or what they paid. By the time you read this, the Q2 positions are more than three months old.",
+            "Q3 filings are due November 14, and the live consensus, buy, and sell pages will roll forward as they come in. Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. None of this is investment advice.",
+            "Counts above are from Compounder's consensus, top-buys, and top-sells pages and the linked stock and investor pages, for the quarter ended 2026-06-30, checked on 2026-10-19. Source: SEC Form 13F filings via SEC EDGAR.",
+          ],
+        },
+      ],
+      related: [
+        { kind: "stock", id: "MSFT", label: "Microsoft" },
+        { kind: "stock", id: "GOOGL", label: "Alphabet" },
+        { kind: "stock", id: "AMZN", label: "Amazon" },
+        { kind: "stock", id: "META", label: "Meta" },
+        { kind: "stock", id: "AAPL", label: "Apple" },
+        { kind: "stock", id: "VEEV", label: "Veeva Systems" },
+        { kind: "stock", id: "UNH", label: "UnitedHealth" },
+        { kind: "investor", id: "berkshire-hathaway", label: "Warren Buffett" },
+        { kind: "investor", id: "fundsmith", label: "Terry Smith" },
+      ],
+    },
+    zh: {
+      slug: "q2-2026-superinvestor-consensus",
+      title: "2026 Q2：超级投资者持有、买入与卖出了什么",
+      description:
+        "解读 2026 Q2 的 13F 申报:Compounder 追踪的 97 位投资人最常持有哪些股票、本季买得最广和卖得最广的是谁,以及为什么大部分卖出只是减仓。",
+      updated: "2026-10-19",
+      snapshotPeriod: "2026-06-30",
+      intro:
+        "2026 年 Q2 的 13F 申报,覆盖截至 6 月 30 日的那个季度,8 月 14 日前全部报齐。截至 2026-06-30,Compounder 追踪 97 位投资人。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论:三张榜的前排几乎是同一批大市值公司,而卖出一侧大多是减仓,很少有人真的走人。Q3 申报的截止日是 11 月 14 日,这份快照用不了多久就会被新一季替换。",
+      sections: [
+        {
+          heading: "我们在读什么",
+          paragraphs: [
+            "这些数字来自 Form 13F,任何管理至少 1 亿美元美股的机构,每季度都得向 SEC 提交它。我们把 Compounder 超级投资者名单上这 97 位的申报排在一起,数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读,《如何读懂 13F》讲了机制。",
+            "有两条计数规则会影响下面的数字。持有家数里包含三位最新申报早于 Q2 的投资人:[[investor:pershing-square|Bill Ackman]] 和 Robert Olstein 停在 2026 Q1,Tom Bancroft 停在 2025 Q4,按他们最后一次披露的仓位计入。买入和卖出的家数,则不计五位最新申报早于 Q2 的投资人。Alphabet 的两类股 GOOGL 和 GOOG 分开计,同时持有两类的基金会在两行里各出现一次。",
+            "下面所有数字,都是 2026 年 6 月 30 日的状态。其中一些仓位此后必定已经变了,而且没有一个数字告诉你任何人当初买在什么价位。",
+          ],
+        },
+        {
+          heading: "被最多机构持有的股票",
+          paragraphs: [
+            "[[stock:MSFT|Microsoft]] 是被持有得最广的标的,97 个组合里有 43 个持有它,比上一季少两家。其后是 [[stock:GOOGL|Alphabet]] 的 A 类股,41 家;[[stock:AMZN|Amazon]] 39 家;Alphabet 的 C 类股 37 家。[[stock:META|Meta]] 以 35 家收住前五,比上季多了三家。这五行加起来出现在 195 个组合里。前十的后半段是 [[stock:V|Visa]](32)、[[stock:AAPL|Apple]](28)、[[stock:TSM|台积电]](28)、[[stock:BRK.B|Berkshire Hathaway]](27)和 [[stock:DIS|Disney]](22)。",
+            "家数和金额,讲的可能是两回事。Apple 在这批投资人里有 28 家持有,听上去是广泛共识。可这些人合计持有的 767.7 亿美元里,[[investor:berkshire-hathaway|巴菲特]]一家就占了 659.5 亿,约 86%。按家数数,Apple 是共识股;按金额看,它基本是一个人的仓位。",
+          ],
+        },
+        {
+          heading: "他们在买什么",
+          paragraphs: [
+            "买 Microsoft 的人最多,一共 19 家:17 家在已有仓位上加码,2 家新开仓。Visa 和 Amazon 各有 13 家买入,其中 Amazon 的 13 家全是加仓。Meta 有 12 家买入,4 家是新开。钱大多流向这些投资人本来就持有的公司。",
+            "本季最突出的新名字是 [[stock:VEEV|Veeva Systems]]。7 位投资人从零开仓,没有一家加仓、减仓或卖出。仓位都不大:[[investor:fundsmith|Terry Smith]] 的 1.45 亿美元是最大的一笔,只占他组合的 1.1%;7 家里没有一家的权重超过 1.8%。7 个试探性仓位说明,这门生意在同一个季度进了好几家的研究名单;还说明不了有谁已经下了决心。",
+            "能源股也进了新钱。4 位投资人新开了 [[stock:DVN|Devon Energy]],另有 4 位加仓。最大的一笔是 [[investor:davis-advisors|Christopher Davis]] 新建的 10.5 亿美元仓位,占他组合的 4.5%。[[stock:SPGI|S&P Global]] 则迎来 4 家新持有人,另有 7 家加仓。",
+          ],
+        },
+        {
+          heading: "他们在卖什么",
+          paragraphs: [
+            "Alphabet 的 A 类股排在卖出榜第一。26 位投资人卖了一部分,只有 3 位清仓:[[investor:viking-global|Andreas Halvorsen]]、[[investor:cooperman-family-office|Leon Cooperman]] 和 [[investor:arbiter-partners|Paul Isaac]]。C 类股有 19 家卖出,没有一家清仓。接下来是 Microsoft,22 家卖出、4 家清仓;Amazon 20 家卖出、无人清仓;台积电和 Meta 各 17 家。",
+            "顺着这张榜往下读,规律都一样:减仓的远多于清仓。这些人是在给仍然持有的公司调仓位大小。减仓可能是仓位涨得超出了持有人想要的比例,也可能是信心松了一点;申报不会告诉你是哪一种。",
+            "大名字里一边倒的是 Apple。12 家减仓,1 家清仓,4 家加仓,没有一家新开仓。",
+          ],
+        },
+        {
+          heading: "同时出现在两张榜上的名字",
+          paragraphs: [
+            "同样三个月里,Microsoft 有 19 家买、22 家卖。Amazon 是 13 对 20,Meta 12 对 17,Visa 13 对 12。大名字里最一边倒的是 Alphabet:A 类股 5 家买、26 家卖,C 类股 9 家买、19 家卖。",
+            "Q1 争议最大的 [[stock:UNH|UnitedHealth]],这一季平静了不少。8 家买入,其中 2 家新开;13 家卖出,其中 [[investor:markel|Thomas Gayner]] 和 [[investor:appaloosa|David Tepper]] 清了仓。持有家数仍是 20。持有家数高,只说明一只股票出现在很多人的屏幕上;他们是否认同它,是另一个问题。看 Q2 的买卖家数,这些名字的答案大多是否定的。",
+          ],
+        },
+        {
+          heading: "为什么这些都不是信号",
+          paragraphs: [
+            "一只股票被广泛持有、或被广泛买入,只是让你该看得更近的理由,谈不上结论。13F 只含多头,交上来时最多已滞后 45 天,对一位经理为什么买、买在什么价位只字不提。等你读到这里,这些 Q2 仓位已经是三个多月前的事了。",
+            "Q3 申报 11 月 14 日截止,共识持仓、最多买入、最多卖出这几张实时榜单会随申报陆续滚到新一季。《读懂跨基金共识》更深入地讲了共识设下的陷阱。这一切都不是投资建议。",
+            "上文家数取自 Compounder 的共识持仓、最多买入、最多卖出页面,以及文中链接的个股页和投资人页,报告期截至 2026-06-30,核对于 2026-10-19。来源:SEC EDGAR 上的 Form 13F 申报。",
+          ],
+        },
+      ],
+      related: [
+        { kind: "stock", id: "MSFT", label: "Microsoft" },
+        { kind: "stock", id: "GOOGL", label: "Alphabet" },
+        { kind: "stock", id: "AMZN", label: "Amazon" },
+        { kind: "stock", id: "META", label: "Meta" },
+        { kind: "stock", id: "AAPL", label: "Apple" },
+        { kind: "stock", id: "VEEV", label: "Veeva Systems" },
+        { kind: "stock", id: "UNH", label: "UnitedHealth" },
+        { kind: "investor", id: "berkshire-hathaway", label: "巴菲特" },
+        { kind: "investor", id: "fundsmith", label: "Terry Smith" },
+      ],
+    },
+  },
   "reading-business-quality": {
     en: {
       slug: "reading-business-quality",
       title: "What Makes a Business High Quality: Reading the Numbers Behind Superinvestor Holdings",
       description:
         "How to judge whether a business is any good from a few numbers in its filings: profit margins, free cash flow, and returns on capital, worked through the stocks superinvestors actually own.",
-      updated: "2026-06-11",
+      updated: "2026-10-19",
       intro:
         "Compounder shows you which stocks the superinvestors own and how that ownership shifts each quarter. Knowing who holds a stock is a starting point. The harder and more useful question is whether the underlying business is any good. You can get a long way toward answering that from a handful of numbers in a company's financial statements, and every stock page on the site carries them. This is a guide to reading those numbers, worked through the businesses that turn up most often in superinvestor portfolios. None of it is a verdict on any stock. It is a way to look.",
       sections: [
@@ -435,15 +575,15 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "Profit margins: the first look at pricing power",
           paragraphs: [
             "Net margin is the share of each dollar of revenue that survives all the way down to profit. It is the quickest read on pricing power. A business that can charge well above what it costs to serve a customer, and keep doing it, posts a high and steady margin. One fighting on price cannot.",
-            "The businesses superinvestors cluster in tend to sit at the high end. On their filings for the quarter ended March 2026, Alphabet ran around a 57% net margin, Visa about 54%, Meta near 48%, Mastercard 46%, and Moody's 32%. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. Apple, around 27%, and Amazon, near 17%, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
-            "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read the trend rather than one quarter. A margin that has slid for several years usually means something the latest figure hides.",
+            "The businesses superinvestors cluster in tend to sit at the high end. Take each company's latest full fiscal year, as reported in its 10-K. Visa kept 50.1% of revenue as net profit in the year ended September 30, 2025, and Mastercard 45.6% in calendar 2025. Alphabet ran 32.8%, Moody's 31.9%, and Meta 30.1%, also for calendar 2025. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. Apple, at 26.9% for the year ended September 27, 2025, and Amazon, at 10.8% for calendar 2025, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
+            "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read full years and the trend, not one quarter. In the quarter ended June 30, 2026, Alphabet reported net income equal to 94% of its revenue, because $99.0 billion of its $138.8 billion in pretax income came from gains on investments it holds; operating income that quarter was $40.8 billion. That is why the figures here use full fiscal years. A margin that has slid for several years usually means something the latest figure hides.",
           ],
         },
         {
           heading: "Free cash flow: does the profit turn into cash?",
           paragraphs: [
             "Accounting profit and cash are not the same thing, and the gap between them tells you a lot about a business. Free cash flow is the cash left after a company pays to run its operations and reinvest in them. FCF margin is that cash as a share of revenue. Buffett's 'owner earnings' is the same instinct: what the owner could actually take out at the end of the year.",
-            "Put net margin and FCF margin side by side and the businesses separate. Visa turns revenue into free cash at about 80%, higher than its net margin, because it barely spends on physical assets. Apple is similar, near 70%. These are capital-light machines. Alphabet is a different case: a 57% net margin but an FCF margin around 9% in that same quarter, because it is pouring money into data centers and chips. Amazon's FCF margin was negative on the same basis, near minus 10%, as it reinvests faster than the cash comes in.",
+            "Put net margin and FCF margin side by side and the businesses separate. Visa turned 53.9% of its fiscal 2025 revenue into free cash, more than its 50.1% net margin, because it barely spends on physical assets: capital spending was $1.5 billion against $40.0 billion of revenue. Mastercard has the same shape, a 52.3% FCF margin against 45.6% net in 2025. These are capital-light machines. Apple's free cash ran a little below its profit in fiscal 2025, 23.7% against 26.9%. Alphabet is a different case: a 32.8% net margin but an 18.2% FCF margin in 2025, because it is pouring money into data centers and chips. Its capital spending went from $52.5 billion in 2024 to $91.4 billion in 2025. Amazon's FCF margin was 1.1% on the same basis, against a 10.8% net margin, as $131.8 billion of capital spending absorbed almost all of its $139.5 billion in operating cash flow.",
             "A low or negative FCF margin is not automatically a red flag. It can mean a weak business, or a strong one spending hard on its future. Telling those apart is the actual work, and it is why one number is never enough.",
           ],
         },
@@ -457,7 +597,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "Reading them together",
           paragraphs: [
-            "No single number settles anything, and the interesting cases are the ones where the metrics seem to disagree. Alphabet's thin free cash flow next to its fat net margin is not a flaw. It is a company in a heavy building phase, and the question is whether that spending pays off later. Berkshire Hathaway shows a low headline return on equity, which mostly reflects an enormous equity base built over decades rather than a weak business. Amazon spent most of its life with little or no free cash flow, by choice.",
+            "No single number settles anything, and the interesting cases are the ones where the metrics seem to disagree. Alphabet's free cash flow running at a little more than half its net margin is not a flaw. It is a company in a heavy building phase, and the question is whether that spending pays off later. Berkshire Hathaway shows a low headline return on equity, which mostly reflects an enormous equity base built over decades rather than a weak business. Amazon spent most of its life with little or no free cash flow, by choice.",
             "The reason to look at several metrics is that each one checks the others. A fat margin with no cash behind it, a high return on capital sitting on a pile of debt, a number that looks fine this quarter but has fallen for three years: each of those only shows up when you line the figures up together. Where the site marks data as incomplete or leaves a field blank, that is part of the read too. Treat a gap as a question, not a pass.",
           ],
         },
@@ -466,7 +606,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "These figures describe a business as it was on its last filing, up to a few months ago. They say nothing about what comes next. A moat can erode, a new manager can change how capital gets spent, an industry can turn. They also say nothing about price, which is what actually decides your return. A great business is not automatically a great investment. What you pay decides that.",
             "So treat all of this as a way to ask better questions about the companies superinvestors own, not a scorecard that picks them for you. A 13F tells you who holds a stock. These numbers help you judge the business underneath it. What you do with that judgment, and at what price, is yours alone, and none of this is investment advice. Every figure here lives on the stock pages, refreshed each filing, if you want to run the read yourself.",
-            "Margin figures cited above are from each company's most recent filing on Compounder, through Q1 2026 (periods ending 2026-03-31). Source: SEC filings via SEC EDGAR.",
+            "Margin and free-cash-flow figures above are from each company's most recent full fiscal year, as reported in its 10-K and shown on Compounder: Visa, fiscal year ended 2025-09-30; Apple, fiscal year ended 2025-09-27; Alphabet, Meta, Mastercard, Moody's, and Amazon, fiscal year ended 2025-12-31. The single Alphabet quarter cited is from its 10-Q for the period ended 2026-06-30. Figures checked on 2026-10-19. Source: SEC filings via SEC EDGAR.",
           ],
         },
       ],
@@ -476,7 +616,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "什么样的生意算优质:读懂超级投资者持仓背后的数字",
       description:
         "怎么从申报里的几个数字判断一门生意好不好:利润率、自由现金流、资本回报率,拿超级投资者真实持有的股票逐一做案例。",
-      updated: "2026-06-11",
+      updated: "2026-10-19",
       intro:
         "Compounder 让你看到超级投资者持有哪些股票、这份持有每季怎么变。知道谁在持有,只是起点。更难也更有用的问题是:底下那门生意到底好不好。这件事,你能从公司财报里的几个数字走出很远,而站上每个个股页都带着这些数字。这篇就讲怎么读它们,拿超级投资者持仓里最常出现的那些生意逐一做案例。它不是对任何一只股票的定论,而是一种看法的方法。",
       sections: [
@@ -491,15 +631,15 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "利润率:对定价权的第一眼",
           paragraphs: [
             "净利率,是每一块钱营收里最终活到利润那一步的比例。它是对定价权最快的一眼。一门生意若能收得远高于服务一个客户的成本,还能一直收下去,就会有又高又稳的利润率;靠打价格战的,做不到。",
-            "超级投资者扎堆的生意,往往落在高端。按各家截至 2026 年 3 月那一季的申报:Alphabet 净利率约 57%,Visa 约 54%,Meta 近 48%,Mastercard 46%,Moody's 32%。这些是惊人的数字,也并非偶然:一家支付网络或评级特许经营,只是从一笔它不必出资的庞大流水里抽一小道。Apple 约 27%、Amazon 近 17%,要低一些,这是卖实物、跑仓库而非守收费站的本性。",
-            "两点提醒。利润率要在同行业内比,别跨行业比,因为超市和软件公司活在两个世界。还要读趋势,而不是某一个季度:一个连跌几年的利润率,通常藏着最新数字看不出的东西。",
+            "超级投资者扎堆的生意,往往落在高端。按各家最近一个完整财年的 10-K:Visa 截至 2025 年 9 月 30 日的财年净利率 50.1%,Mastercard 2025 自然年 45.6%;Alphabet 32.8%、Moody's 31.9%、Meta 30.1%,同样是 2025 自然年。这些是惊人的数字,也并非偶然:一家支付网络或评级特许经营,只是从一笔它不必出资的庞大流水里抽一小道。Apple 截至 2025 年 9 月 27 日的财年是 26.9%,Amazon 2025 自然年 10.8%,要低一些,这是卖实物、跑仓库而非守收费站的本性。",
+            "两点提醒。利润率要在同行业内比,别跨行业比,因为超市和软件公司活在两个世界。还要按整年读、看趋势,别盯着某一个季度。截至 2026 年 6 月 30 日那一季,Alphabet 报出的净利润相当于营收的 94%,因为它 1388 亿美元的税前利润里,有 990 亿来自所持投资的公允价值收益;那一季的经营利润是 408 亿。这也是本文统一用完整财年数字的原因。一个连跌几年的利润率,通常藏着最新数字看不出的东西。",
           ],
         },
         {
           heading: "自由现金流:利润变成现金了吗?",
           paragraphs: [
             "账面利润和现金不是一回事,而两者之间的缺口,能告诉你关于一门生意的很多事。自由现金流,是公司付完维持运营、再投资运营的钱之后剩下的现金。FCF 利润率,就是这笔现金占营收的比例。巴菲特的'股东盈余'(owner earnings)是同一个直觉:到年底,所有者真正能拿走多少。",
-            "把净利率和 FCF 利润率并排放,生意就分出来了。Visa 把营收转成自由现金的比例约 80%,高过它的净利率,因为它几乎不用花钱买实物资产。Apple 类似,近 70%,都是轻资本的机器。Alphabet 是另一种情形:净利率 57%,但同一季 FCF 利润率只有约 9%,因为它正把钱砸进数据中心和芯片。Amazon 同口径下 FCF 利润率为负,约 -10%,因为它再投资的速度快过现金进账。",
+            "把净利率和 FCF 利润率并排放,生意就分出来了。Visa 2025 财年把 53.9% 的营收变成了自由现金,高过它 50.1% 的净利率,因为它几乎不用花钱买实物资产:400 亿美元营收,资本开支只有 15 亿。Mastercard 是同一个形状,2025 年 FCF 利润率 52.3%,净利率 45.6%。这些都是轻资本的机器。Apple 2025 财年的自由现金略低于利润,23.7% 对 26.9%。Alphabet 是另一种情形:2025 年净利率 32.8%,FCF 利润率却只有 18.2%,因为它正把钱砸进数据中心和芯片,资本开支从 2024 年的 525 亿美元涨到 2025 年的 914 亿。Amazon 同口径下 FCF 利润率只有 1.1%,净利率 10.8%:1318 亿美元的资本开支,吃掉了 1395 亿经营现金流里的绝大部分。",
             "FCF 利润率低、甚至为负,不一定是坏信号。它可能意味着一门弱生意,也可能是一门强生意在为未来重金投入。把这两者分辨开,才是真正的功夫,也正是为什么一个数字永远不够。",
           ],
         },
@@ -513,7 +653,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "把它们放在一起读",
           paragraphs: [
-            "没有哪个数字能单独说了算,而真正有意思的,是那些指标看上去彼此矛盾的情形。Alphabet 单薄的自由现金流挨着它丰厚的净利率,这不是缺陷。它是一家正处在重投入期的公司,问题在于那些花费日后是否值回。Berkshire Hathaway 的账面 ROE 很低,这多半反映的是几十年攒下的庞大权益基数,并不说明它是一门弱生意。Amazon 大半生都靠主动选择,过着几乎没有自由现金流的日子。",
+            "没有哪个数字能单独说了算,而真正有意思的,是那些指标看上去彼此矛盾的情形。Alphabet 的自由现金流只有净利率的一半出头,这不是缺陷。它是一家正处在重投入期的公司,问题在于那些花费日后是否值回。Berkshire Hathaway 的账面 ROE 很低,这多半反映的是几十年攒下的庞大权益基数,并不说明它是一门弱生意。Amazon 大半生都靠主动选择,过着几乎没有自由现金流的日子。",
             "看好几个指标的意义,在于每一个都在校验其他几个。一个有利润却没有现金垫底的高margin、一个坐在一堆债务上的高资本回报、一个这季看着还行却已连跌三年的数字:这些都只有在你把数字排在一起时才会现形。站上把数据标为不完整、或某个字段留空的地方,也是这套读法的一部分。把缺口当成一个问题,而不是一次放行。",
           ],
         },
@@ -522,7 +662,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "这些数字描述的,是一门生意在它上一份申报时的样子,可能已是几个月前。它们对接下来会怎样只字不提:护城河会被侵蚀、一位新管理者会改变资本怎么花、一个行业会转向。它们对价格也只字不提,而价格才真正决定你的回报。一门好生意,并不自动等于一笔好投资。你付了多少,才决定这一点。",
             "所以把这一切当作向超级投资者所持公司提出更好问题的方法,而不是一张替你挑好股票的评分表。一份 13F 告诉你谁在持有一只股票;这些数字帮你判断它底下那门生意。你拿这份判断去做什么、在什么价位做,只属于你自己,而这一切都不是投资建议。上面每个数字都在个股页上,每期申报刷新,你想自己跑一遍读法,随时可以。",
-            "上文引用的利润率数字,取自各公司在 Compounder 上的最近一期申报,截至 2026 Q1(period 截止 2026-03-31)。来源:SEC EDGAR 申报。",
+            "上文的利润率和自由现金流数字,取自各公司最近一个完整财年的 10-K(即 Compounder 上展示的年度数据):Visa 财年截至 2025-09-30;Apple 财年截至 2025-09-27;Alphabet、Meta、Mastercard、Moody's、Amazon 财年截至 2025-12-31。文中单独引用的 Alphabet 那一季,出自其截至 2026-06-30 的 10-Q。数字核对于 2026-10-19。来源:SEC EDGAR 申报。",
           ],
         },
       ],
@@ -676,6 +816,7 @@ export const ARTICLE_SLUGS: string[] = [
   "what-is-a-superinvestor",
   "what-is-intrinsic-value",
   "reading-cross-fund-consensus",
+  "q2-2026-superinvestor-consensus",
   "q1-2026-superinvestor-consensus",
   "reading-business-quality",
 ];
