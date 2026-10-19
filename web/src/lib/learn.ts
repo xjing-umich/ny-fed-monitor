@@ -428,16 +428,16 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "What we're reading",
           paragraphs: [
-            "These figures come from Form 13F, the quarterly filing any manager running at least $100 million in U.S. stocks has to submit to the SEC. We line up the filings from the 97 investors on Compounder's superinvestor list and count where they agree and where they moved. How to Read a 13F covers the mechanics of a single filing.",
-            "Two counting rules shape the numbers. Holder counts include three investors whose latest filing is older than Q2 ([[investor:pershing-square|Bill Ackman]] and Robert Olstein as of Q1 2026, Tom Bancroft as of Q4 2025), counted at their last reported position. The buy and sell counts leave out five investors whose latest filing predates Q2. Alphabet's two share classes, GOOGL and GOOG, are counted separately, so one fund holding both shows up on each line.",
+            "These figures come from Form 13F, the quarterly filing any manager running at least $100 million in U.S. stocks has to submit to the SEC. We line up the Q2 filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. How to Read a 13F covers the mechanics of a single filing.",
+            "One counting rule shapes every number here: only investors with Q2 holdings on file count. Five of the 97 have nothing newer than an earlier quarter on Compounder ([[investor:pershing-square|Bill Ackman]], Robert Olstein, Tom Bancroft, Brian Bares, and Michael Burry), so the holder, buy, and sell counts below cover the other 92. Alphabet's two share classes, GOOGL and GOOG, are counted separately, so one fund holding both shows up on each line.",
             "Everything below is as of June 30, 2026. Some of these positions have surely changed since, and none of the figures tell you what anyone paid.",
           ],
         },
         {
           heading: "The most widely held stocks",
           paragraphs: [
-            "[[stock:MSFT|Microsoft]] was the most common holding, in 43 of the 97 portfolios, two fewer than a quarter earlier. [[stock:GOOGL|Alphabet]]'s A shares came next at 41, then [[stock:AMZN|Amazon]] at 39 and Alphabet's C shares at 37. [[stock:META|Meta]] closed out the top five at 35, up three on the quarter. Together those five lines appear in 195 portfolios. [[stock:V|Visa]] (32), [[stock:AAPL|Apple]] (28), [[stock:TSM|Taiwan Semiconductor]] (28), [[stock:BRK.B|Berkshire Hathaway]] (27), and [[stock:DIS|Disney]] (22) fill out the top ten.",
-            "Holder count and dollars can tell different stories. Apple has 28 holders among these investors, which sounds like broad agreement. But [[investor:berkshire-hathaway|Warren Buffett]]'s $65.95 billion stake is 86% of the $76.77 billion they hold in it between them. By headcount Apple is a consensus name. By dollars it is mostly one investor's position.",
+            "[[stock:MSFT|Microsoft]] was the most common holding, in 41 of those 92 portfolios. [[stock:GOOGL|Alphabet]]'s A shares came next at 40, then [[stock:AMZN|Amazon]] at 37 and Alphabet's C shares at 35. [[stock:META|Meta]] closed out the top five at 33. Together those five lines appear in 186 portfolios. [[stock:V|Visa]] (31), [[stock:TSM|Taiwan Semiconductor]] (28), [[stock:AAPL|Apple]] (27), and [[stock:BRK.B|Berkshire Hathaway]] (26) come next, with [[stock:DIS|Disney]] and [[stock:MA|Mastercard]] tied at 21.",
+            "Holder count and dollars can tell different stories. Apple has 27 holders among these investors, which sounds like broad agreement. But [[investor:berkshire-hathaway|Warren Buffett]]'s $65.95 billion stake is 86% of the $76.77 billion they hold in it between them. By headcount Apple is a consensus name. By dollars it is mostly one investor's position.",
           ],
         },
         {
@@ -460,7 +460,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "The names on both lists",
           paragraphs: [
             "Microsoft drew 19 buyers and 22 sellers in the same three months. Amazon drew 13 and 20, Meta 12 and 17, Visa 13 and 12. Alphabet was the most lopsided of the big names: five buyers against 26 sellers on the A shares, nine against 19 on the C shares.",
-            "[[stock:UNH|UnitedHealth]], the most contested name in Q1, settled into something more ordinary. Eight investors bought it, two of them new. Thirteen sold, and two left entirely: [[investor:markel|Thomas Gayner]] and [[investor:appaloosa|David Tepper]]. The holder count held at 20. A high holder count means a stock is on a lot of screens. Whether those investors agree about it is a separate question, and for most of these names the Q2 buy and sell counts say no.",
+            "[[stock:UNH|UnitedHealth]], the most contested name in Q1, settled into something more ordinary. Eight investors bought it, two of them new. Thirteen sold, and two left entirely: [[investor:markel|Thomas Gayner]] and [[investor:appaloosa|David Tepper]]. Nineteen of the 92 still hold it. A high holder count means a stock is on a lot of screens. Whether those investors agree about it is a separate question, and for most of these names the Q2 buy and sell counts say no.",
           ],
         },
         {
@@ -468,7 +468,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is long-only, can be up to 45 days old when it lands, and says nothing about why a manager bought or what they paid. By the time you read this, the Q2 positions are more than three months old.",
             "Q3 filings are due November 14, and the live consensus, buy, and sell pages will roll forward as they come in. Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. None of this is investment advice.",
-            "Counts above are from Compounder's consensus, top-buys, and top-sells pages and the linked stock and investor pages, for the quarter ended 2026-06-30, checked on 2026-10-19. Source: SEC Form 13F filings via SEC EDGAR.",
+            "Counts above are from Compounder's top-buys and top-sells pages and the holder tables on the linked stock and investor pages, for the quarter ended 2026-06-30, checked on 2026-10-19. Holder counts leave out positions those tables tag with an older quarter. Source: SEC Form 13F filings via SEC EDGAR.",
           ],
         },
       ],
@@ -497,16 +497,16 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "我们在读什么",
           paragraphs: [
-            "这些数字来自 Form 13F,任何管理至少 1 亿美元美股的机构,每季度都得向 SEC 提交它。我们把 Compounder 超级投资者名单上这 97 位的申报排在一起,数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读,《如何读懂 13F》讲了机制。",
-            "有两条计数规则会影响下面的数字。持有家数里包含三位最新申报早于 Q2 的投资人:[[investor:pershing-square|Bill Ackman]] 和 Robert Olstein 停在 2026 Q1,Tom Bancroft 停在 2025 Q4,按他们最后一次披露的仓位计入。买入和卖出的家数,则不计五位最新申报早于 Q2 的投资人。Alphabet 的两类股 GOOGL 和 GOOG 分开计,同时持有两类的基金会在两行里各出现一次。",
+            "这些数字来自 Form 13F,任何管理至少 1 亿美元美股的机构,每季度都得向 SEC 提交它。我们把 Compounder 超级投资者名单上各位的 Q2 申报排在一起,数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读,《如何读懂 13F》讲了机制。",
+            "下面所有数字只遵循一条计数规则:在 Compounder 上有 Q2 持仓数据的投资人才算。97 位里有 5 位最新数据还停在更早的季度:[[investor:pershing-square|Bill Ackman]]、Robert Olstein、Tom Bancroft、Brian Bares、Michael Burry,所以持有、买入、卖出的家数都只覆盖其余 92 位。Alphabet 的两类股 GOOGL 和 GOOG 分开计,同时持有两类的基金会在两行里各出现一次。",
             "下面所有数字,都是 2026 年 6 月 30 日的状态。其中一些仓位此后必定已经变了,而且没有一个数字告诉你任何人当初买在什么价位。",
           ],
         },
         {
           heading: "被最多机构持有的股票",
           paragraphs: [
-            "[[stock:MSFT|Microsoft]] 是被持有得最广的标的,97 个组合里有 43 个持有它,比上一季少两家。其后是 [[stock:GOOGL|Alphabet]] 的 A 类股,41 家;[[stock:AMZN|Amazon]] 39 家;Alphabet 的 C 类股 37 家。[[stock:META|Meta]] 以 35 家收住前五,比上季多了三家。这五行加起来出现在 195 个组合里。前十的后半段是 [[stock:V|Visa]](32)、[[stock:AAPL|Apple]](28)、[[stock:TSM|台积电]](28)、[[stock:BRK.B|Berkshire Hathaway]](27)和 [[stock:DIS|Disney]](22)。",
-            "家数和金额,讲的可能是两回事。Apple 在这批投资人里有 28 家持有,听上去是广泛共识。可这些人合计持有的 767.7 亿美元里,[[investor:berkshire-hathaway|巴菲特]]一家就占了 659.5 亿,约 86%。按家数数,Apple 是共识股;按金额看,它基本是一个人的仓位。",
+            "[[stock:MSFT|Microsoft]] 是被持有得最广的标的,这 92 个组合里有 41 个持有它。其后是 [[stock:GOOGL|Alphabet]] 的 A 类股,40 家;[[stock:AMZN|Amazon]] 37 家;Alphabet 的 C 类股 35 家。[[stock:META|Meta]] 以 33 家收住前五。这五行加起来出现在 186 个组合里。再往下是 [[stock:V|Visa]](31)、[[stock:TSM|台积电]](28)、[[stock:AAPL|Apple]](27)和 [[stock:BRK.B|Berkshire Hathaway]](26),[[stock:DIS|Disney]] 和 [[stock:MA|Mastercard]] 以 21 家并列第十。",
+            "家数和金额,讲的可能是两回事。Apple 在这批投资人里有 27 家持有,听上去是广泛共识。可这些人合计持有的 767.7 亿美元里,[[investor:berkshire-hathaway|巴菲特]]一家就占了 659.5 亿,约 86%。按家数数,Apple 是共识股;按金额看,它基本是一个人的仓位。",
           ],
         },
         {
@@ -529,7 +529,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "同时出现在两张榜上的名字",
           paragraphs: [
             "同样三个月里,Microsoft 有 19 家买、22 家卖。Amazon 是 13 对 20,Meta 12 对 17,Visa 13 对 12。大名字里最一边倒的是 Alphabet:A 类股 5 家买、26 家卖,C 类股 9 家买、19 家卖。",
-            "Q1 争议最大的 [[stock:UNH|UnitedHealth]],这一季平静了不少。8 家买入,其中 2 家新开;13 家卖出,其中 [[investor:markel|Thomas Gayner]] 和 [[investor:appaloosa|David Tepper]] 清了仓。持有家数仍是 20。持有家数高,只说明一只股票出现在很多人的屏幕上;他们是否认同它,是另一个问题。看 Q2 的买卖家数,这些名字的答案大多是否定的。",
+            "Q1 争议最大的 [[stock:UNH|UnitedHealth]],这一季平静了不少。8 家买入,其中 2 家新开;13 家卖出,其中 [[investor:markel|Thomas Gayner]] 和 [[investor:appaloosa|David Tepper]] 清了仓。92 位里仍有 19 位持有它。持有家数高,只说明一只股票出现在很多人的屏幕上;他们是否认同它,是另一个问题。看 Q2 的买卖家数,这些名字的答案大多是否定的。",
           ],
         },
         {
@@ -537,7 +537,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "一只股票被广泛持有、或被广泛买入,只是让你该看得更近的理由,谈不上结论。13F 只含多头,交上来时最多已滞后 45 天,对一位经理为什么买、买在什么价位只字不提。等你读到这里,这些 Q2 仓位已经是三个多月前的事了。",
             "Q3 申报 11 月 14 日截止,共识持仓、最多买入、最多卖出这几张实时榜单会随申报陆续滚到新一季。《读懂跨基金共识》更深入地讲了共识设下的陷阱。这一切都不是投资建议。",
-            "上文家数取自 Compounder 的共识持仓、最多买入、最多卖出页面,以及文中链接的个股页和投资人页,报告期截至 2026-06-30,核对于 2026-10-19。来源:SEC EDGAR 上的 Form 13F 申报。",
+            "上文家数取自 Compounder 的最多买入、最多卖出页面,以及文中链接的个股页和投资人页上的持有人表,报告期截至 2026-06-30,核对于 2026-10-19。持有家数不含这些表里标注为更早季度的仓位。来源:SEC EDGAR 上的 Form 13F 申报。",
           ],
         },
       ],
