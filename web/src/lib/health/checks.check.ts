@@ -1,7 +1,7 @@
 // 纯判定自检——node:assert,零新依赖。运行: npx tsx src/lib/health/checks.check.ts
 // 项目无常驻测试套件(solo dev),此为 ad-hoc 自检,不接 CI。
 import assert from "node:assert/strict";
-import { evaluate13F, evaluateDbSize, evaluateReport } from "./checks";
+import { evaluate13F, evaluateDbSize, evaluateFundamentalsLag, evaluateReport } from "./checks";
 
 const today = new Date("2026-06-08T12:00:00Z"); // mostRecentDueQuarter → 2026-03-31
 
@@ -73,3 +73,32 @@ const today = new Date("2026-06-08T12:00:00Z"); // mostRecentDueQuarter → 2026
 }
 
 console.log("checks.check.ts: all assertions passed ✓");
+
+// --- evaluateFundamentalsLag ---
+{
+  const ok = Array.from({ length: 100 }, (_, i) => ({ ticker: `T${i}`, filedReport: "2026-06-30", stored: "2026-06-30" }));
+  const r = evaluateFundamentalsLag(ok);
+  assert.equal(r.problems.length, 0, "全部跟上不告警");
+  assert.match(r.info[0], /100\/100/);
+}
+{
+  // 2/100 落后 = 2%,不超阈值 → info 列出落后者
+  const rows = Array.from({ length: 100 }, (_, i) => ({ ticker: `T${i}`, filedReport: "2026-06-30", stored: i < 2 ? "2026-03-31" : "2026-06-30" }));
+  const r = evaluateFundamentalsLag(rows);
+  assert.equal(r.problems.length, 0, "零星落后(≤2%)不告警");
+  assert.match(r.info[0], /T0\(2026-03-31→2026-06-30\)/);
+}
+{
+  // 2026-10 事故形态:~10% 停在 Q1 → 告警
+  const rows = Array.from({ length: 100 }, (_, i) => ({ ticker: `T${i}`, filedReport: "2026-06-30", stored: i < 10 ? "2026-03-31" : "2026-06-30" }));
+  const r = evaluateFundamentalsLag(rows);
+  assert.equal(r.problems.length, 1, "大面积落后应告警");
+  assert.equal(r.problems[0].pipeline, "fundamentals");
+  assert.match(r.problems[0].message, /^10\/100/);
+}
+{
+  // 库里完全没有该公司 → 算落后
+  const r = evaluateFundamentalsLag([{ ticker: "X", filedReport: "2026-06-30", stored: null }]);
+  assert.equal(r.problems.length, 1);
+}
+console.log("evaluateFundamentalsLag OK");

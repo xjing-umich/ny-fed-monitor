@@ -5,7 +5,8 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
-import { altFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
+import { quarterLabel } from "@/lib/freshness/derive";
 import ProseDoc from "@/components/legal/ProseDoc";
 import { parseReportSlug, reportLastModified, reportSlug } from "@/lib/reports/period";
 import { readReportRow, listReportPeriods } from "@/lib/reports/read";
@@ -42,10 +43,13 @@ export async function generateMetadata({
   }
   const article = getArticle(slug, lang);
   if (!article) return {};
+  const title = `${article.title} — Compounder`;
   return {
-    title: `${article.title} — Compounder`,
+    title,
     description: article.description,
     alternates: altFor(lang, `/learn/${slug}`),
+    // 本路由自带 opengraph-image(文章卡),不带品牌卡图以免盖掉它。
+    ...ogFor({ lang, title, description: article.description, path: localePath(lang, `/learn/${slug}`), type: "article", brandImage: false }),
   };
 }
 
@@ -86,6 +90,11 @@ export default async function ArticlePage({
   if (!article) notFound();
 
   const updatedLabel = lang === "zh" ? "最后更新" : "Last updated";
+
+  // 季度快照文章:顶部注明数据季度与写作日期,并指向实时榜单,避免过季数字被当成现状引用。
+  const snapshotNotice = article.snapshotPeriod ? (
+    <SnapshotNotice lang={lang} period={article.snapshotPeriod} written={article.updated} />
+  ) : null;
   const backLabel = lang === "zh" ? "← 返回 学习" : "← Back to Learn";
 
   // Inline entity tokens in article prose — [[investor:slug|Label]] / [[stock:TICKER|Label]] —
@@ -175,7 +184,7 @@ export default async function ArticlePage({
           {backLabel}
         </Link>
       </div>
-      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={article.updated} updatedLabel={updatedLabel} renderParagraph={renderParagraph} />
+      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={article.updated} updatedLabel={updatedLabel} renderParagraph={renderParagraph} notice={snapshotNotice} />
 
       {/* 文中点名实体的内链(SEO 内链: 把文章权重传给对应实体页) */}
       {article.related && article.related.length > 0 && (
@@ -198,5 +207,35 @@ export default async function ArticlePage({
         </nav>
       )}
     </>
+  );
+}
+
+function SnapshotNotice({ lang, period, written }: { lang: Lang; period: string; written: string }) {
+  const q = quarterLabel(period) || period;
+  const links = [
+    { path: "/investors/consensus", en: "Consensus", zh: "共识持仓" },
+    { path: "/investors/buys", en: "Top buys", zh: "最多买入" },
+    { path: "/investors/sells", en: "Top sells", zh: "最多卖出" },
+  ];
+  return (
+    <aside className="mt-6 border-l-2 border-[var(--tt-accent)] pl-4 text-sm leading-relaxed text-[var(--tt-muted)]">
+      <p>
+        {lang === "zh"
+          ? `季度快照：${q} 的 13F 申报（截至 ${period}），写于 ${written}。文中的家数指当时追踪的投资人。最新一季见：`
+          : `Snapshot: ${q} 13F filings (quarter ended ${period}), written ${written}. Counts refer to the investors Compounder tracked at the time. For the latest quarter: `}
+        {links.map((l, i) => (
+          <span key={l.path}>
+            {i > 0 ? " · " : ""}
+            <Link
+              href={localePath(lang, l.path)}
+              className="text-[var(--tt-text)] underline decoration-[var(--tt-faint)] underline-offset-2 hover:text-[var(--tt-accent)]"
+            >
+              {lang === "zh" ? l.zh : l.en}
+            </Link>
+          </span>
+        ))}
+        {lang === "zh" ? "。" : "."}
+      </p>
+    </aside>
   );
 }

@@ -9,7 +9,6 @@ import { displayFundName } from "@/lib/managers/profileProse";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge, type BadgeTone } from "@/components/common/Badge";
 import { quarterLabel, freshness13F, daysAgo, globalLatestPeriod, parseUTC } from "@/lib/freshness/derive";
-import PageHeader from "@/components/common/PageHeader";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
 import { useListState } from "@/components/list/useListState";
@@ -29,9 +28,6 @@ type Row = ManagerSummary & { qoq?: ManagerQoQ };
 
 const COPY = {
   zh: {
-    eyebrow: "SEC 13F · 季度披露",
-    heading: "超级投资者",
-    subtitle: "按组合市值排列 · 最新 13F 季",
     search: "搜索投资人或机构…",
     cols: {
       investor: "投资人 / 机构",
@@ -60,9 +56,6 @@ const COPY = {
     sortDesc: "已按降序排列",
   },
   en: {
-    eyebrow: "SEC 13F · quarterly filings",
-    heading: "Superinvestors",
-    subtitle: "Ranked by portfolio value · latest 13F quarter",
     search: "Search by name or firm…",
     cols: {
       investor: "Investor / Firm",
@@ -264,7 +257,6 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
 
   return (
     <div className="space-y-4">
-      <PageHeader eyebrow={t.eyebrow} title={t.heading} intro={t.subtitle} />
 
       <ListToolbar
         searchLabel={t.search}

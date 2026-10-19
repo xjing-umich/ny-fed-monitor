@@ -6,8 +6,11 @@ import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap } from "@/lib/managers/securities";
 import { getManagerIndex } from "@/lib/managers/source";
 import { altFor, ogFor } from "@/lib/seo";
-import { localePath } from "@/lib/urls";
-import { globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
+import { localePath, stockPath } from "@/lib/urls";
+import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
+import { isLikelyTicker } from "@/lib/externalLinks";
+import { cleanIssuer } from "@/lib/format";
+import { LinkDirectory } from "@/components/list/LinkDirectory";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
@@ -72,8 +75,9 @@ export default async function StocksIndexPage({
 
   const isZh = lang === "zh";
   const ui = stockUi(lang);
-  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
-  const asOfLabel = quarterLabel(globalLatest) || undefined;
+  // 与首页 masthead / 个股页"截至"同一口径:申报季内不跟单只早申报者跳到新季。
+  const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period;
+  const asOfLabel = quarterLabel(displayPeriod) || undefined;
 
   // 服务端预塑形为可序列化行,交给 client 组件(DataTable + 分页)。
   const maxHolders = rows[0]?.holderCount ?? 1;
@@ -89,6 +93,13 @@ export default async function StocksIndexPage({
       barWidth: Math.round((row.holderCount / maxHolders) * 32),
       bargain: bargains.get(ticker.toUpperCase()) ?? null,
     };
+  });
+
+  const seen = new Set<string>();
+  const directory = tableRows.flatMap((r) => {
+    if (!isLikelyTicker(r.ticker) || seen.has(r.ticker)) return [];
+    seen.add(r.ticker);
+    return [{ href: stockPath(lang, r.ticker), label: r.ticker, note: cleanIssuer(r.issuer) }];
   });
 
   return (
@@ -115,6 +126,17 @@ export default async function StocksIndexPage({
       >
         <StocksTable lang={lang} rows={tableRows} />
       </Suspense>
+      {/* 全量目录:与 sitemap 同一谓词(isLikelyTicker + 去重),保证 sitemap 里每个个股 URL
+          都有一条服务端可见的站内链接。 */}
+      <LinkDirectory
+        eyebrow={isZh ? "目录" : "Directory"}
+        title={
+          isZh
+            ? `全部 ${directory.length} 只被两位及以上投资人持有的股票，按代码排序`
+            : `All ${directory.length} stocks held by two or more investors, by ticker`
+        }
+        items={directory}
+      />
     </>
   );
 }

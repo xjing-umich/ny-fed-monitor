@@ -14,13 +14,15 @@ interface ProseDocProps {
    * internal links). Legal/About omit it and render plain text unchanged.
    */
   renderParagraph?: (text: string) => React.ReactNode;
+  /** Optional note between the masthead and the intro (used by /learn for dated snapshots). */
+  notice?: React.ReactNode;
 }
 
 // Shared prose layout for the legal pages and the About page. Pure presentation —
 // content (title / intro / sections) is supplied by the caller, so the pages stay
 // one-liners. Masthead mirrors PageHeader: green-mono eyebrow → display-slab title →
 // mono dateline → hairline rule.
-export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderParagraph }: ProseDocProps) {
+export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderParagraph, notice }: ProseDocProps) {
   return (
     <article className="max-w-[720px] mx-auto py-8 sm:py-10">
       <header className="border-b border-[var(--tt-border)] pb-6">
@@ -38,6 +40,8 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderPa
           </p>
         )}
       </header>
+
+      {notice}
 
       <p className="mt-6 text-sm leading-relaxed text-[var(--tt-muted)]">
         {renderParagraph ? renderParagraph(doc.intro) : doc.intro}

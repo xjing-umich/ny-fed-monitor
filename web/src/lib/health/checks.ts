@@ -4,7 +4,7 @@
 import { effectiveFilingDeadline, mostRecentDueQuarter, parseUTC } from "../freshness/derive";
 
 export type HealthProblem = {
-  pipeline: "13f" | "prices" | "cost" | "report";
+  pipeline: "13f" | "prices" | "fundamentals" | "cost" | "report";
   source: string;
   message: string;
   asOf: string | null;
@@ -99,4 +99,36 @@ export function evaluateReport(
     }],
     info: [],
   };
+}
+
+/** 基本面滞后的容忍比例:超过这一比例的公司「库里落后于已提交申报」即告警。 */
+export const FUNDAMENTALS_LAG_MAX_FRACTION = 0.02;
+
+/**
+ * 基本面滞后(纯判定)。filedReport=该公司已提交 ≥ 宽限期的最新 10-Q/10-K 报告期;
+ * stored=库里该公司最新一期(10-Q/10-K 期末)。filedReport > stored 即「库里落后于 SEC」。
+ *
+ * 为什么要有:2026-10 审计发现 ~200 家公司 Q2 季报 7–8 月就交了,库里仍停在 Q1,
+ * 每周任务却一直报 success —— 上游漏收不报错,只有拿「已交申报」对照「库里最新」才看得见。
+ */
+export function evaluateFundamentalsLag(
+  companies: { ticker: string; filedReport: string; stored: string | null }[],
+): { problems: HealthProblem[]; info: string[] } {
+  if (companies.length === 0) return { problems: [], info: ["基本面滞后: 无可比对公司,跳过"] };
+  const lagging = companies.filter((c) => !c.stored || c.filedReport > c.stored);
+  const frac = lagging.length / companies.length;
+  const sample = lagging.slice(0, 8).map((c) => `${c.ticker}(${c.stored ?? "无"}→${c.filedReport})`).join(", ");
+  if (frac > FUNDAMENTALS_LAG_MAX_FRACTION) {
+    return {
+      problems: [{
+        pipeline: "fundamentals",
+        source: "SEC 基本面",
+        message: `${lagging.length}/${companies.length} 家库里落后于已提交申报,如 ${sample}`,
+        asOf: null,
+        expected: `落后比例应 ≤ ${Math.round(FUNDAMENTALS_LAG_MAX_FRACTION * 100)}%`,
+      }],
+      info: [],
+    };
+  }
+  return { problems: [], info: [`基本面: ${companies.length - lagging.length}/${companies.length} 家跟上最新申报${lagging.length ? `(落后: ${sample})` : ""}`] };
 }
