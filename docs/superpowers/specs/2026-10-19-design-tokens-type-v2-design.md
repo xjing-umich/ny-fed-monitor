@@ -1,7 +1,7 @@
 # 设计令牌 v2 + 字阶 v2
 
 **日期：** 2026-10-19
-**状态：** 方向已获用户认可（首期 UX 改版提案 https://claude.ai/artifact/V52oFBFHX3o5mahrqtAp2y ），本文是首期第一步的设计
+**状态：** 已实现（分支 feat/tokens-type-v2，待合并）
 **范围：** `web/src/app/globals.css`、主题默认值、`viewport.themeColor`、`manifest.ts`、全站字号与等宽字体用法、因去大写而露出的英文文案、桌面导航断点（现网 768px 溢出）
 **所属：** 首期第 1 步，见 `docs/superpowers/specs/2026-10-19-ux-phase1-roadmap.md`
 **不在范围：** 组件形态重做（估值胶囊、13F 动作字形、区块标题“左标题右来源”结构）、页面结构调整、HUD 角标与左侧色条的移除、OG 图、`components/ui/*`（零 import 的死代码，见 `web/docs/cleanup-plan.md`）
