@@ -14,5 +14,5 @@ export default function LegalArticle({ slug, lang }: LegalArticleProps) {
   const doc = getLegalDoc(slug, lang);
   const updatedLabel = lang === "zh" ? "最后更新" : "Last updated";
   const eyebrow = lang === "zh" ? "法律条款" : "Legal";
-  return <ProseDoc doc={doc} eyebrow={eyebrow} updated={LAST_UPDATED} updatedLabel={updatedLabel} />;
+  return <ProseDoc doc={doc} eyebrow={eyebrow} updated={LAST_UPDATED[slug]} updatedLabel={updatedLabel} />;
 }

@@ -2,9 +2,13 @@ import type { Lang } from "@/lib/nav";
 
 // Legal page content, bilingual. These are well-structured templates suitable
 // for a data-aggregation / educational site; have counsel review before relying
-// on them. Update LAST_UPDATED when the substance changes.
+// on them. Update the doc's entry in LAST_UPDATED when its substance changes.
 
-export const LAST_UPDATED = "2026-06-06";
+export const LAST_UPDATED: Record<LegalSlug, string> = {
+  disclaimer: "2026-06-06",
+  terms: "2026-06-06",
+  privacy: "2026-10-19",
+};
 
 export interface LegalSection {
   heading: string;
@@ -159,7 +163,7 @@ const CONTENT: Record<LegalSlug, Record<Lang, LegalDoc>> = {
         {
           heading: "我们收集的信息",
           paragraphs: [
-            "邮件订阅:当你订阅更新时,我们收集你提供的邮箱地址,用于发送 newsletter。订阅记录存储于邮件服务商 Resend。",
+            "邮件订阅:当你订阅更新时,我们收集你提供的邮箱地址,用于发送 newsletter。我们还会记录你订阅时所在页面的语言，以便用该语言给你发信。订阅记录存储于邮件服务商 Resend。",
             "联系表单:当你通过联系表单留言时,我们收集你提供的称呼、邮箱与留言内容,仅用于回复你的咨询。",
             "使用分析:本站使用 Vercel Analytics 与 Speed Insights 收集匿名、聚合的访问与性能数据,不用于识别个人身份。",
           ],
@@ -192,7 +196,7 @@ const CONTENT: Record<LegalSlug, Record<Lang, LegalDoc>> = {
         {
           heading: "Information We Collect",
           paragraphs: [
-            "Newsletter: When you subscribe to updates, we collect the email address you provide in order to send the newsletter. Subscriptions are stored with our email provider, Resend.",
+            "Newsletter: When you subscribe to updates, we collect the email address you provide in order to send the newsletter. We also record the language of the page you subscribed from, so you receive the newsletter in that language. Subscriptions are stored with our email provider, Resend.",
             "Contact form: When you message us via the contact form, we collect the name, email, and message you provide, solely to respond to your inquiry.",
             "Usage analytics: The Site uses Vercel Analytics and Speed Insights to collect anonymous, aggregated traffic and performance data. This is not used to identify individuals.",
           ],

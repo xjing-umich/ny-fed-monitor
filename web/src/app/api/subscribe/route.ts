@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { normalizeLang } from "./lang";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,8 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: "A valid email is required." }, { status: 400 });
   }
 
+  const lang = normalizeLang(body.lang);
+  const segmentId = lang === "zh" ? process.env.RESEND_SEGMENT_ZH_ID : process.env.RESEND_SEGMENT_EN_ID;
   const resend = new Resend(API_KEY);
   try {
     const { error } = await resend.contacts.create({
@@ -47,6 +50,13 @@ export async function POST(req: Request): Promise<Response> {
     // so repeat subscribers see a friendly confirmation.
     if (error && !/already exists/i.test(error.message ?? "")) {
       return Response.json({ ok: false, error: "Failed to subscribe. Please try again." }, { status: 502 });
+    }
+    // 语言分组失败不影响订阅成功:没有分组的联系人按 EN 处理(见 newsletter-backfill-segment)。
+    if (segmentId) {
+      const seg = await resend.contacts.segments.add({ email, segmentId });
+      if (seg.error && !/already/i.test(seg.error.message ?? "")) {
+        console.error(`[subscribe] segment add 失败: ${seg.error.message}`);
+      }
     }
     return Response.json({ ok: true });
   } catch {

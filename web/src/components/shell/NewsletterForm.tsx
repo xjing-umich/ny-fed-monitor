@@ -27,6 +27,7 @@ export default function NewsletterForm({ lang, source = "footer" }: { lang: Lang
         body: JSON.stringify({
           email: data.get("email"),
           company: data.get("company"), // honeypot
+          lang,
         }),
       });
       const json = await res.json();
