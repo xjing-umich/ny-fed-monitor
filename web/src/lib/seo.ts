@@ -27,8 +27,10 @@ export function ogFor(opts: {
   description: string;
   path: string;
   type?: "website" | "article" | "profile";
+  /** false → 不带品牌卡图,交给路由自己的 opengraph-image 文件(metadata 里的 images 会盖掉它)。 */
+  brandImage?: boolean;
 }): Pick<Metadata, "openGraph" | "twitter"> {
-  const { lang, title, description, path, type = "website" } = opts;
+  const { lang, title, description, path, type = "website", brandImage = true } = opts;
   // 站点品牌卡(根 opengraph-image 路由)。en 裸前缀 → /opengraph-image,zh → /zh/opengraph-image。
   const brandCard = absoluteUrl(localePath(lang, "/opengraph-image"));
   return {
@@ -40,13 +42,13 @@ export function ogFor(opts: {
       description,
       locale: OG_LOCALE[lang],
       alternateLocale: lang === "en" ? ["zh_CN"] : ["en_US"],
-      images: [{ url: brandCard, width: 1200, height: 630, alt: SITE_NAME }],
+      ...(brandImage ? { images: [{ url: brandCard, width: 1200, height: 630, alt: SITE_NAME }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [brandCard],
+      ...(brandImage ? { images: [brandCard] } : {}),
     },
   };
 }

@@ -4,6 +4,7 @@ import { consensusHeld } from "@/lib/aggregations";
 import { ARTICLE_SLUGS } from "@/lib/learn";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { localePath } from "@/lib/urls";
+import { effectiveMovesPeriod } from "@/lib/freshness/derive";
 
 const BASE = "https://thecompounder.fyi";
 
@@ -49,10 +50,11 @@ function entry(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [idx, held] = await Promise.all([getManagerIndex(), consensusHeld()]);
 
-  // 全局最新报告期(各投资人 period 的最大值)。13F 数据按季整体刷新,故聚合页/榜单/个股页
-  // 都以此为 lastmod;period 为 YYYY-MM-DD 字符串,按字典序取最大即最新。无数据则留空。
-  const periods = (idx.managers ?? []).map((m) => m.period).filter(Boolean);
-  const globalLatest = periods.length ? periods.reduce((a, b) => (b > a ? b : a)) : undefined;
+  // 全站展示季度(effectiveMovesPeriod,与首页 masthead / buys·sells / 个股页"截至"同一口径)。
+  // 聚合页/榜单/个股页都以此为 lastmod。不取各投资人 period 的最大值:申报季内一两家基金
+  // 提前交了新季时,最大值会把上千个 URL 的 lastmod 一起推到新季,而页面内容仍是上一季。
+  const globalLatest =
+    effectiveMovesPeriod((idx.managers ?? []).map((m) => m.period), new Date()).period ?? undefined;
 
   const urls: MetadataRoute.Sitemap = [
     entry("", "daily", 1, globalLatest),

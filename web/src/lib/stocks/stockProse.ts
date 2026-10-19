@@ -24,6 +24,8 @@ export type StockProseInput = {
   holders: StockProseHolder[];
   totalValue: number;
   latestPeriod: string;
+  /** 已交下一季(latestPeriod 之后)的早申报持有人数与其季度;无 → 不提。 */
+  ahead?: { count: number; period: string };
   /** 本季对本票的动作计数(按持有人计, 每人一次): 新建/加仓/减仓/清仓。 */
   moves: { opened: number; added: number; trimmed: number; exited: number };
 };
@@ -36,7 +38,7 @@ const pct1 = (w: number | undefined): string | null => (w != null ? `${(w * 100)
 export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[] {
   const en = lang === "en";
   const paras: ProseParagraph[] = [];
-  const { issuer, ticker, holders, totalValue, latestPeriod, moves } = d;
+  const { issuer, ticker, holders, totalValue, latestPeriod, ahead, moves } = d;
   const n = holders.length;
   if (n === 0) return paras;
 
@@ -83,11 +85,11 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
     const p: ProseParagraph = [];
     if (en) {
       p.push(
-        `Over the latest quarter, ${moves.opened} of the tracked filers opened a new position in ${ticker}, ${moves.added} added to existing ones, ${moves.trimmed} trimmed, and ${moves.exited} sold out entirely.`,
+        `In the quarter ended ${latestPeriod}, ${moves.opened} of the tracked filers opened a new position in ${ticker}, ${moves.added} added to existing ones, ${moves.trimmed} trimmed, and ${moves.exited} sold out entirely.`,
       );
     } else {
       p.push(
-        `最近一个季度，追踪范围内有 ${moves.opened} 位新建 ${ticker} 仓位，${moves.added} 位加仓，${moves.trimmed} 位减仓，${moves.exited} 位清仓。`,
+        `截至 ${latestPeriod} 的这一季，追踪范围内有 ${moves.opened} 位新建 ${ticker} 仓位，${moves.added} 位加仓，${moves.trimmed} 位减仓，${moves.exited} 位清仓。`,
       );
     }
     paras.push(p);
@@ -97,10 +99,18 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
   paras.push(
     en
       ? [
-          `Holder counts and values reflect the most recent SEC Form 13F filings, through the quarter ended ${latestPeriod}. Source: SEC EDGAR. A 13F shows only long US-listed positions and can lag the real portfolio by up to 45 days, so this is disclosed long ownership, not a complete picture.`,
+          `Holder counts and values reflect the most recent SEC Form 13F filings, through the quarter ended ${latestPeriod}.${
+            ahead
+              ? ` ${ahead.count} holder${ahead.count === 1 ? " has" : "s have"} already filed for the quarter ended ${ahead.period}; ${ahead.count === 1 ? "that row shows" : "those rows show"} the newer filing, and the quarter's moves above count only ${latestPeriod} filings.`
+              : ""
+          } Source: SEC EDGAR. A 13F shows only long US-listed positions and can lag the real portfolio by up to 45 days, so this is disclosed long ownership, not a complete picture.`,
         ]
       : [
-          `以上持有人数与市值来自最新的 SEC Form 13F 申报，截至 ${latestPeriod} 季度。来源：SEC EDGAR。13F 仅涵盖美股多头持仓，且可能滞后实际组合最多 45 天，因此这是已披露的多头持有情况，并非完整全貌。`,
+          `以上持有人数与市值来自最新的 SEC Form 13F 申报，截至 ${latestPeriod} 季度。${
+            ahead
+              ? `其中 ${ahead.count} 位持有人已提前提交截至 ${ahead.period} 的申报，表中对应行显示的是这份更新的申报；本季动向只统计 ${latestPeriod} 季度的申报。`
+              : ""
+          }来源：SEC EDGAR。13F 仅涵盖美股多头持仓，且可能滞后实际组合最多 45 天，因此这是已披露的多头持有情况，并非完整全貌。`,
         ],
   );
 

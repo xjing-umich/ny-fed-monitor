@@ -11,7 +11,7 @@ import {
   getTickerExchangeMap,
   getSecurityMeta,
 } from "@/lib/managers/securities";
-import { filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
+import { effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -157,6 +157,7 @@ function HoldersTable({
   moves,
   lang,
   trend,
+  asOfPeriod,
 }: {
   holders: HolderRow[];
   exited: ExitedHolder[];
@@ -164,6 +165,8 @@ function HoldersTable({
   moves: QuarterMoves;
   lang: Lang;
   trend: number[];
+  /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
+  asOfPeriod: string;
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const ui = stockUi(lang);
@@ -171,8 +174,8 @@ function HoldersTable({
   const sorted = [...holders].sort((a, b) => b.value - a.value);
   const head = sorted.slice(0, HOLDERS_VISIBLE);
   const tail = sorted.slice(HOLDERS_VISIBLE);
-  // 混合期标注:各行来自不同季时,落后于表内最新期的行在人名后加淡色季度小标。全表同期 → 无标。
-  const maxPeriod = globalLatestPeriod(holders.map((h) => h.period ?? null));
+  // 混合期标注:与页面"截至"季度不同期的行在人名后加淡色季度小标。全表同期 → 无标。
+  const refPeriod = asOfPeriod || globalLatestPeriod(holders.map((h) => h.period ?? null));
 
   const columns: Column<HolderRow>[] = [
     {
@@ -180,7 +183,7 @@ function HoldersTable({
       header: t.cols.investor,
       role: "primary",
       cell: (r) =>
-        r.period && maxPeriod && r.period < maxPeriod ? (
+        r.period && refPeriod && r.period !== refPeriod ? (
           <span className="inline-flex items-baseline gap-1.5">
             {r.person}
             <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period)}</span>
@@ -296,23 +299,34 @@ export default async function StockTickerPage({
   const moves = { opened: 0, added: 0, trimmed: 0, exited: 0 };
   const exitedHolders: ExitedHolder[] = [];
   let trendSeries: number[] = [];
-  let latestFiledAt = "";
-  let latestPeriod = "";
+  // 每行(含清仓行)的 period/filedAt,算完再定"截至"与提交日。
+  const filings: { period: string; filedAt: string }[] = [];
 
   // 快路径: ticker-keyed 快照(consensus_stock_holders + consensus_stock_trend),取代对 34 户
   // 逐个 getManagerDetail 的 ~100 次/页往返。快照未部署/未填充(空)→ 回退逐户扫描(行为不变)。
-  const snap = await readStockHolders(ticker);
+  const [snap, idx] = await Promise.all([readStockHolders(ticker), getManagerIndex()]);
+
+  // 全站展示季度:与首页 masthead、buys/sells 同一口径(effectiveMovesPeriod)。申报季内少数基金
+  // 提前交了新季时,"截至"不跟着单只早申报者推到新季;本季动作也只计展示季度的申报
+  // (与 currentQuarterOnly 一致)。早申报者的持仓仍在表里,行内标出其季度。无数据 → 不过滤。
+  const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period ?? "";
+  const inDisplayQuarter = (p: string | null | undefined) => !displayPeriod || p === displayPeriod;
 
   if (snap && snap.length > 0) {
     for (const r of snap) {
-      if (r.filedAt && r.filedAt > latestFiledAt) latestFiledAt = r.filedAt;
-      if (r.period && r.period > latestPeriod) latestPeriod = r.period;
+      if (r.period) filings.push({ period: r.period, filedAt: r.filedAt ?? "" });
+      const countMove = inDisplayQuarter(r.period);
       // 清仓行: 仅计数 + 收进表底 chip 列表, 不进持有人表。
-      if (r.kind === "exited") { moves.exited++; exitedHolders.push({ person: r.person, slug: r.slug }); continue; }
+      if (r.kind === "exited") {
+        if (countMove) { moves.exited++; exitedHolders.push({ person: r.person, slug: r.slug }); }
+        continue;
+      }
       issuerFreq[r.issuer] = (issuerFreq[r.issuer] ?? 0) + 1;
-      if (r.kind === "new") moves.opened++;
-      else if (r.kind === "increased") moves.added++;
-      else if (r.kind === "decreased") moves.trimmed++;
+      if (countMove) {
+        if (r.kind === "new") moves.opened++;
+        else if (r.kind === "increased") moves.added++;
+        else if (r.kind === "decreased") moves.trimmed++;
+      }
       holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined, period: r.period ?? undefined });
     }
     trendSeries = (await readStockTrend(ticker)) ?? [];
@@ -320,7 +334,6 @@ export default async function StockTickerPage({
     // 回退: 逐户扫描(快照不可用时, 行为与 PR#72 逐户版完全一致)。
     // targetCusips: 该 ticker 下全部 cusip(含历史); 库为空/未解析则把入参当单个 cusip。
     const targetCusips = new Set(cusipsForTicker.length ? cusipsForTicker : [ticker]);
-    const idx = await getManagerIndex();
     const details = await Promise.all(
       idx.managers.map(async (summary) => ({ summary, detail: await getManagerDetail(summary.slug) }))
     );
@@ -329,8 +342,7 @@ export default async function StockTickerPage({
       const h = d.latest.holdings.find((holding) => !holding.putCall && targetCusips.has(holding.cusip));
       if (!h) continue;
       issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
-      if (!latestFiledAt || d.latest.filedAt > latestFiledAt) latestFiledAt = d.latest.filedAt;
-      if (!latestPeriod || d.latest.period > latestPeriod) latestPeriod = d.latest.period;
+      filings.push({ period: d.latest.period, filedAt: d.latest.filedAt });
       // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
       const priorWeight = d.prior?.holdings.find((p) => !p.putCall && targetCusips.has(p.cusip))?.weight;
       const kind = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip))?.kind;
@@ -340,7 +352,7 @@ export default async function StockTickerPage({
     for (const { summary, detail: d } of details) {
       if (!d) continue;
       const ch = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip));
-      if (!ch) continue;
+      if (!ch || !inDisplayQuarter(d.latest.period)) continue;
       if (ch.kind === "new") moves.opened++;
       else if (ch.kind === "increased") moves.added++;
       else if (ch.kind === "decreased") moves.trimmed++;
@@ -368,9 +380,20 @@ export default async function StockTickerPage({
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
 
+  // "截至":展示季度;无全站口径时回退到本票持有人的最新期。提交日取该季内最晚一份。
+  const asOfPeriod = displayPeriod || (globalLatestPeriod(filings.map((f) => f.period)) ?? "");
+  const asOfFiledAt = filings
+    .filter((f) => f.period === asOfPeriod)
+    .reduce((max, f) => (f.filedAt > max ? f.filedAt : max), "");
+  // 已交下一季的早申报持有人:正文里点明,避免表内混期让读者误读口径。
+  const aheadPeriods = holders.map((h) => h.period).filter((p): p is string => !!p && p > asOfPeriod);
+  const ahead = aheadPeriods.length
+    ? { count: aheadPeriods.length, period: globalLatestPeriod(aheadPeriods)! }
+    : undefined;
+
   // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
   const stockProse = buildStockProse(
-    { issuer, ticker, holders, totalValue, latestPeriod, moves },
+    { issuer, ticker, holders, totalValue, latestPeriod: asOfPeriod, ahead, moves },
     lang,
   );
 
@@ -508,8 +531,8 @@ export default async function StockTickerPage({
           "@type": "Answer",
           text:
             lang === "zh"
-              ? `根据最新 SEC 13F 披露，${n} 位超级投资者持有 ${issuer}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
-              : `Per the latest SEC 13F filings, ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
+              ? `根据最新 SEC 13F 披露（截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${issuer}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
+              : `Per the latest SEC 13F filings (quarter ended ${asOfPeriod}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
         },
       },
     ],
@@ -580,7 +603,7 @@ export default async function StockTickerPage({
           { label: g.holdersPeople, value: String(n) },
           { label: g.totalValue, value: formatUSD(totalValue) },
         ]}
-        sources={[{ name: "SEC EDGAR 13F", asOf: latestPeriod, filed: latestFiledAt, status: filingFreshness(latestPeriod || null, new Date()) }]}
+        sources={[{ name: "SEC EDGAR 13F", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) }]}
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
         <>
@@ -785,6 +808,7 @@ export default async function StockTickerPage({
               moves={moves}
               lang={lang}
               trend={trendSeries}
+              asOfPeriod={asOfPeriod}
             />
             <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>
               <StockProse paragraphs={stockProse} lang={lang} bare />
