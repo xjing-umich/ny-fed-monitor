@@ -20,7 +20,9 @@ const BARE_PATH =
   "/:path((?!(?:zh|en|api|_next|_vercel)(?:/|$))(?!.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|avif|txt|xml|json|webmanifest)$).+)";
 
 // screener 视图/排序:公开 URL 保持 ?view=…&sort=…,内部改写到可 ISR 缓存的 /stocks/screener/[variant]
-// (见 src/app/[lang]/stocks/screener/_screenerPage.tsx)。必须排在 BARE_PATH 之前,且直接写最终目标。
+// (见 src/app/[lang]/stocks/screener/_screenerPage.tsx)。直接写最终目标。
+// 必须放 beforeFiles:/zh/stocks/screener 本身是预渲染静态文件,在 Vercel 上会在 afterFiles 之前
+// 被文件系统直接命中,afterFiles 里的 query rewrite 永远轮不到(本地 next start 不复现)。
 function screenerRewrites(source: string, dest: string) {
   return [
     {
@@ -82,12 +84,13 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return {
-      beforeFiles: [],
+      beforeFiles: [
+        ...screenerRewrites("/zh/stocks/screener", "/zh/stocks/screener"),
+        ...screenerRewrites("/stocks/screener", "/en/stocks/screener"),
+      ],
       // afterFiles:先查 public/_next/static/非动态路由(sitemap.xml、robots.txt、/api/* 等),
       // 再按顺序匹配下列 rewrite,每次命中后立即检查动态路由(app/[lang]/…)。
       afterFiles: [
-        ...screenerRewrites("/zh/stocks/screener", "/zh/stocks/screener"),
-        ...screenerRewrites("/stocks/screener", "/en/stocks/screener"),
         { source: "/", destination: "/en" },
         { source: BARE_PATH, destination: "/en/:path" },
       ],
