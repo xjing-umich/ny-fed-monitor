@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
 
-interface SearchItem {
+export interface SearchItem {
   label: string;
   href: string;
   /** 额外搜索关键词(中文别名、ticker 等),空格分隔;参与匹配但不展示。 */
@@ -154,7 +154,7 @@ export default function SearchBox({
       <div
         className={[
           "flex items-center rounded-md border border-[var(--tt-border)] bg-[var(--tt-surface)] text-[var(--tt-muted)] focus-within:border-[var(--tt-accent)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--tt-accent)_25%,transparent)] transition-colors",
-          isHero ? "gap-2.5 h-12 px-4" : "gap-1.5 h-8 px-2.5",
+          isHero ? "gap-2.5 h-12 px-4" : fill ? "gap-2 h-11 px-3" : "gap-1.5 h-8 px-2.5",
         ].join(" ")}
       >
         <Search size={isHero ? 18 : 13} className="shrink-0" />

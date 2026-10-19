@@ -3,11 +3,12 @@ import TopNav from "./TopNav";
 import MobileDrawer from "./MobileDrawer";
 import Footer from "./Footer";
 import type { Lang } from "@/lib/nav";
+import type { SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
 
 interface AppShellProps {
   lang: Lang;
-  items: { label: string; href: string }[];
+  items: SearchItem[];
   children: React.ReactNode;
 }
 

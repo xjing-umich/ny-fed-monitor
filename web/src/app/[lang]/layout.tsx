@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "../globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { THEME_COLOR } from "@/lib/themeColor";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getManagerIndex } from "@/lib/managers/source";
@@ -98,11 +99,11 @@ export async function generateMetadata({
   };
 }
 
-// 与 globals.css v2 的 --canvas 一致(浅 oklch(0.985 0.004 165) / 深 oklch(0.175 0.010 165))
+// 首屏按系统配色;用户站内切换后由 ThemeColorSync(theme-provider)改写。
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0c120f" },
-    { media: "(prefers-color-scheme: light)", color: "#f8fbf9" },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
+    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
   ],
 };
 

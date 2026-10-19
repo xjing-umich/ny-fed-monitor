@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
-import SearchBox from "./SearchBox";
+import SearchBox, { type SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
 import { localePath } from "@/lib/urls";
 
@@ -19,7 +19,7 @@ function useMounted() {
 
 interface MobileDrawerProps {
   lang: Lang;
-  items: { label: string; href: string }[];
+  items: SearchItem[];
 }
 
 export default function MobileDrawer({ lang, items }: MobileDrawerProps) {

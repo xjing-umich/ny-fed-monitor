@@ -229,10 +229,6 @@
   :lang(zh) body {
     line-height: 1.8;
   }
-  /* text-xs/sm 自带行高,body 的 1.8 对它们无效;只放宽阅读正文字号 text-base */
-  :lang(zh) .text-base {
-    line-height: 1.8;
-  }
   html {
     @apply font-sans;
     /* 始终预留竖直滚动条宽度, 避免不同页面有无滚动条导致居中内容(含二级导航)横向抖动 */
@@ -253,6 +249,11 @@
      统一在 :lang(zh) 下复位(html lang 由 [lang]/layout 按 locale 写入)。 */
   :lang(zh) .tracking-tight {
     letter-spacing: 0;
+  }
+  /* zh 阅读正文放宽到 1.8。必须在 utilities 层:.text-base 自带的行高也在这一层,
+     放在 base 层会被层序覆盖而失效。只作用于 text-base,text-xs/sm 不动。 */
+  :lang(zh) .text-base {
+    line-height: 1.8;
   }
   /* 数字、标签、表头:Sans + 等宽数字(替代旧的 font-mono 用法) */
   .font-data {
@@ -303,5 +304,17 @@
       calc(100% - 6px) 6px, calc(100% - 6px) 6px,
       6px calc(100% - 6px), 6px calc(100% - 6px),
       calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) calc(100% - 6px);
+  }
+}
+
+/* ── 触屏输入框 16px ─────────────────────────────────────────────────────────
+   iOS Safari 在聚焦字号 < 16px 的输入框时会整页放大,且离开后不复原。
+   触屏设备上把文本输入统一抬到 16px。刻意不放进任何 @layer:未分层样式
+   优先于所有层,才能压过输入框上的 text-sm / text-xs 工具类。 */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
   }
 }
