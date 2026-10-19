@@ -28,6 +28,7 @@ const PAIRS: Array<[string, string]> = [
   ["val-above", "canvas"], ["val-above", "surface"], ["val-above", "val-above-soft"],
   ["alert", "canvas"], ["alert", "surface"], ["alert", "alert-soft"],
   ["ink-1", "brand-soft"], ["ink-2", "brand-soft"],
+  ["brand", "sunk"], ["val-above", "sunk"], ["alert", "sunk"],
 ];
 
 function block(selector: string): string | null {

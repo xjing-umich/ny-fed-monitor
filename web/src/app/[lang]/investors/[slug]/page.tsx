@@ -210,7 +210,7 @@ function HoldingsTable({
       cell: (h) => {
         const s = rowSignals.get(h.cusip);
         if (!s?.conviction) return <span className="text-[var(--tt-faint)]">—</span>;
-        // 无框 mono 文案：避免 SIGNAL 列 pill 长短不一形成锯齿右缘
+        // 无框 font-data 文案：避免 SIGNAL 列 pill 长短不一形成锯齿右缘
         return (
           <span className="inline-block max-w-[9rem] truncate font-data text-xs text-[var(--tt-muted)]" title={s.conviction.label}>
             {s.conviction.label}

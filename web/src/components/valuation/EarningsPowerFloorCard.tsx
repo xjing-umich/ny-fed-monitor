@@ -397,7 +397,7 @@ export function ValueBandGauge({
                   backgroundColor: strike
                     ? "color-mix(in srgb, var(--tt-positive) 15%, transparent)"
                     : `color-mix(in srgb, var(--tt-faint) ${active ? 16 : 7}%, transparent)`,
-                  color: active ? "var(--tt-text)" : "var(--tt-faint)",
+                  color: active ? "var(--tt-text)" : "var(--tt-muted)",
                   ...(strike
                     ? {
                         borderLeft:

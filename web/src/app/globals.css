@@ -3,13 +3,14 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
-@custom-variant light (&:is(.light *));
 
 /* Tokens v2 (2026-10-19) — docs/superpowers/specs/2026-10-19-design-tokens-type-v2-design.md
    :root = 浅色,.dark = 深色;默认跟随系统(next-themes defaultTheme="system")。
    v2 令牌是唯一真相源。下方别名层(--tt-* / shadcn 名)只在 :root 定义一次,
    .dark 只覆盖 v2 原值,别名自动跟随。中性色向品牌绿(色相 165)带少量彩度。
-   改色后跑 npm run check:tokens(两套主题文字配对 ≥ 4.5:1)。 */
+   改色后跑 npm run check:tokens(两套主题文字配对 ≥ 4.5:1)。
+   别名层假定 .dark 与 :root 落在同一元素(<html>)上;若在子树上单独加 .dark,
+   只会翻转 v2 令牌,别名(--tt-* / shadcn 名)不会跟随。 */
 :root {
   /* ── v2 · light ── */
   --canvas:          oklch(0.985 0.004 165);
@@ -226,6 +227,10 @@
   }
   /* 汉字在正文字号下偏密:zh 行高 1.8(html lang 已按 locale 设置) */
   :lang(zh) body {
+    line-height: 1.8;
+  }
+  /* text-xs/sm 自带行高,body 的 1.8 对它们无效;只放宽阅读正文字号 text-base */
+  :lang(zh) .text-base {
     line-height: 1.8;
   }
   html {
