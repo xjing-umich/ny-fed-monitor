@@ -101,14 +101,14 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
       ? [
           `Holder counts and values reflect the most recent SEC Form 13F filings, through the quarter ended ${latestPeriod}.${
             ahead
-              ? ` ${ahead.count} holder${ahead.count === 1 ? " has" : "s have"} already filed for the quarter ended ${ahead.period}; ${ahead.count === 1 ? "that row shows" : "those rows show"} the newer filing, and the quarter's moves above count only ${latestPeriod} filings.`
+              ? ` ${ahead.count} investor${ahead.count === 1 ? " has" : "s have"} already filed for the quarter ended ${ahead.period}. Their positions in the table reflect those newer filings, and the move counts on this page cover only ${latestPeriod} filings.`
               : ""
           } Source: SEC EDGAR. A 13F shows only long US-listed positions and can lag the real portfolio by up to 45 days, so this is disclosed long ownership, not a complete picture.`,
         ]
       : [
           `以上持有人数与市值来自最新的 SEC Form 13F 申报，截至 ${latestPeriod} 季度。${
             ahead
-              ? `其中 ${ahead.count} 位持有人已提前提交截至 ${ahead.period} 的申报，表中对应行显示的是这份更新的申报；本季动向只统计 ${latestPeriod} 季度的申报。`
+              ? `另有 ${ahead.count} 位投资人已提前提交截至 ${ahead.period} 的申报，表中他们的持仓按这份更新的申报列出；本页的动向统计只计 ${latestPeriod} 季度的申报。`
               : ""
           }来源：SEC EDGAR。13F 仅涵盖美股多头持仓，且可能滞后实际组合最多 45 天，因此这是已披露的多头持有情况，并非完整全貌。`,
         ],

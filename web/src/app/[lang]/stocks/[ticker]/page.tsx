@@ -176,6 +176,8 @@ function HoldersTable({
   const tail = sorted.slice(HOLDERS_VISIBLE);
   // 混合期标注:与页面"截至"季度不同期的行在人名后加淡色季度小标。全表同期 → 无标。
   const refPeriod = asOfPeriod || globalLatestPeriod(holders.map((h) => h.period ?? null));
+  // 不同期的行不显示"新建/加仓"等动作标:本季动向计数只含展示季度,行内动作标若照显会与计数对不上。
+  const offQuarter = (r: HolderRow) => !!(r.period && refPeriod && r.period !== refPeriod);
 
   const columns: Column<HolderRow>[] = [
     {
@@ -183,10 +185,10 @@ function HoldersTable({
       header: t.cols.investor,
       role: "primary",
       cell: (r) =>
-        r.period && refPeriod && r.period !== refPeriod ? (
+        offQuarter(r) ? (
           <span className="inline-flex items-baseline gap-1.5">
             {r.person}
-            <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period)}</span>
+            <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period ?? null)}</span>
           </span>
         ) : (
           r.person
@@ -194,7 +196,7 @@ function HoldersTable({
     },
     { key: "value", header: t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value) },
     { key: "shares", header: t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => r.shares.toLocaleString() },
-    { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={r.kind} lang={lang} /> },
+    { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={offQuarter(r) ? undefined : r.kind} lang={lang} /> },
   ];
 
   return (
@@ -300,7 +302,7 @@ export default async function StockTickerPage({
   const exitedHolders: ExitedHolder[] = [];
   let trendSeries: number[] = [];
   // 每行(含清仓行)的 period/filedAt,算完再定"截至"与提交日。
-  const filings: { period: string; filedAt: string }[] = [];
+  const filings: { slug: string; period: string; filedAt: string }[] = [];
 
   // 快路径: ticker-keyed 快照(consensus_stock_holders + consensus_stock_trend),取代对 34 户
   // 逐个 getManagerDetail 的 ~100 次/页往返。快照未部署/未填充(空)→ 回退逐户扫描(行为不变)。
@@ -314,7 +316,7 @@ export default async function StockTickerPage({
 
   if (snap && snap.length > 0) {
     for (const r of snap) {
-      if (r.period) filings.push({ period: r.period, filedAt: r.filedAt ?? "" });
+      if (r.period) filings.push({ slug: r.slug, period: r.period, filedAt: r.filedAt ?? "" });
       const countMove = inDisplayQuarter(r.period);
       // 清仓行: 仅计数 + 收进表底 chip 列表, 不进持有人表。
       if (r.kind === "exited") {
@@ -342,7 +344,7 @@ export default async function StockTickerPage({
       const h = d.latest.holdings.find((holding) => !holding.putCall && targetCusips.has(holding.cusip));
       if (!h) continue;
       issuerFreq[h.issuer] = (issuerFreq[h.issuer] ?? 0) + 1;
-      filings.push({ period: d.latest.period, filedAt: d.latest.filedAt });
+      filings.push({ slug: summary.slug, period: d.latest.period, filedAt: d.latest.filedAt });
       // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
       const priorWeight = d.prior?.holdings.find((p) => !p.putCall && targetCusips.has(p.cusip))?.weight;
       const kind = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip))?.kind;
@@ -352,7 +354,10 @@ export default async function StockTickerPage({
     for (const { summary, detail: d } of details) {
       if (!d) continue;
       const ch = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip));
-      if (!ch || !inDisplayQuarter(d.latest.period)) continue;
+      if (!ch) continue;
+      // 清仓者不在持有人循环里,补记其申报期,让早申报的清仓也计入 ahead。
+      if (ch.kind === "exited") filings.push({ slug: summary.slug, period: d.latest.period, filedAt: d.latest.filedAt });
+      if (!inDisplayQuarter(d.latest.period)) continue;
       if (ch.kind === "new") moves.opened++;
       else if (ch.kind === "increased") moves.added++;
       else if (ch.kind === "decreased") moves.trimmed++;
@@ -385,11 +390,14 @@ export default async function StockTickerPage({
   const asOfFiledAt = filings
     .filter((f) => f.period === asOfPeriod)
     .reduce((max, f) => (f.filedAt > max ? f.filedAt : max), "");
-  // 已交下一季的早申报持有人:正文里点明,避免表内混期让读者误读口径。
-  const aheadPeriods = holders.map((h) => h.period).filter((p): p is string => !!p && p > asOfPeriod);
-  const ahead = aheadPeriods.length
-    ? { count: aheadPeriods.length, period: globalLatestPeriod(aheadPeriods)! }
+  // 已交下一季的早申报者(含在新季清仓、因而不在表里的):正文里点明,避免混期让读者误读口径。
+  const aheadBySlug = new Map<string, string>();
+  for (const f of filings) if (asOfPeriod && f.period > asOfPeriod) aheadBySlug.set(f.slug, f.period);
+  const ahead = aheadBySlug.size
+    ? { count: aheadBySlug.size, period: globalLatestPeriod([...aheadBySlug.values()])! }
     : undefined;
+  // 持有人表是否混期(含落后的旧申报):FAQ 措辞据此区分。
+  const mixedPeriods = holders.some((h) => h.period && h.period !== asOfPeriod);
 
   // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
   const stockProse = buildStockProse(
@@ -531,8 +539,8 @@ export default async function StockTickerPage({
           "@type": "Answer",
           text:
             lang === "zh"
-              ? `根据最新 SEC 13F 披露（截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${issuer}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
-              : `Per the latest SEC 13F filings (quarter ended ${asOfPeriod}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
+              ? `根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${issuer}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
+              : `Per each investor's latest SEC 13F filing (${mixedPeriods ? "most for " : ""}the quarter ended ${asOfPeriod}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
         },
       },
     ],

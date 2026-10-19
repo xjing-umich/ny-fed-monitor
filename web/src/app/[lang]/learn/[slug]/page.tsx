@@ -177,8 +177,8 @@ function SnapshotNotice({ lang, period, written }: { lang: Lang; period: string;
     <aside className="mt-6 border-l-2 border-[var(--tt-accent)] pl-4 text-sm leading-relaxed text-[var(--tt-muted)]">
       <p>
         {lang === "zh"
-          ? `季度快照：${q} 的 13F 申报（截至 ${period}），写于 ${written}。文中的家数指当时追踪的投资人，名单比现在短。最新一季见：`
-          : `Snapshot: ${q} 13F filings (quarter ended ${period}), written ${written}. Counts refer to the investors Compounder tracked at the time, a shorter list than today's. For the latest quarter: `}
+          ? `季度快照：${q} 的 13F 申报（截至 ${period}），写于 ${written}。文中的家数指当时追踪的投资人。最新一季见：`
+          : `Snapshot: ${q} 13F filings (quarter ended ${period}), written ${written}. Counts refer to the investors Compounder tracked at the time. For the latest quarter: `}
         {links.map((l, i) => (
           <span key={l.path}>
             {i > 0 ? " · " : ""}
