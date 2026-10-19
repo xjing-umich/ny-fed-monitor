@@ -39,7 +39,7 @@ import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/pri
 import { WeightQoQ } from "@/components/common/qoqDirection";
 import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
 import { HolderTrend } from "@/components/entity/HolderTrend";
-import { holderTrendSeries } from "@/lib/stocks/holderTrend";
+import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
@@ -301,7 +301,7 @@ export default async function StockTickerPage({
   const issuerFreq: Record<string, number> = {};
   const moves = { opened: 0, added: 0, trimmed: 0, exited: 0 };
   const exitedHolders: ExitedHolder[] = [];
-  let trendSeries: number[] = [];
+  let trendPoints: HolderTrendPoint[] = [];
   // 每行(含清仓行)的 period/filedAt,算完再定"截至"与提交日。
   const filings: { slug: string; period: string; filedAt: string }[] = [];
 
@@ -332,8 +332,7 @@ export default async function StockTickerPage({
       }
       holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined, period: r.period ?? undefined });
     }
-    // 终点对齐展示季度:早申报者交的下一季只有寥寥几份,不能当最新点(否则 "47 → 1")。
-    trendSeries = holderTrendSeries((await readStockTrend(ticker)) ?? [], displayPeriod);
+    trendPoints = (await readStockTrend(ticker)) ?? [];
   } else {
     // 回退: 逐户扫描(快照不可用时, 行为与 PR#72 逐户版完全一致)。
     // targetCusips: 该 ticker 下全部 cusip(含历史); 库为空/未解析则把入参当单个 cusip。
@@ -365,7 +364,7 @@ export default async function StockTickerPage({
       else if (ch.kind === "decreased") moves.trimmed++;
       else if (ch.kind === "exited") { moves.exited++; exitedHolders.push({ person: summary.person, slug: summary.slug }); }
     }
-    // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数; 截到展示季度,升序取最近 8 季。
+    // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数。
     const periodCounts = new Map<string, number>();
     for (const { detail: d } of details) {
       if (!d) continue;
@@ -375,10 +374,14 @@ export default async function StockTickerPage({
         }
       }
     }
-    trendSeries = holderTrendSeries([...periodCounts].map(([period, count]) => ({ period, count })), displayPeriod);
+    trendPoints = [...periodCounts].map(([period, count]) => ({ period, count }));
   }
 
   if (holders.length === 0) notFound();
+
+  // 趋势截到展示季度(早申报者的新季只有寥寥几份,不能当终点,否则 "47 → 1");终点用共识口径的
+  // 当前持有人数(= 本页持有人数 / 共识榜):落后者按最后一次披露计入,与页面 "N 位持有" 一致。
+  const trendSeries = holderTrendSeries(trendPoints, displayPeriod, holders.length);
 
   const coOwned = await readCoOwnership(ticker);
 
