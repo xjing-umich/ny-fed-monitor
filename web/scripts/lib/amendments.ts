@@ -16,6 +16,9 @@ import type { Holding } from "../../src/lib/managers/types";
  *    全表重述(键与原件 100% 重合),照字面追加会把持仓翻倍。真正的新增仓位(新键)照常加入。
  *    已知取舍:若真·新增仓位恰与原件同一证券,会覆盖而非累加 —— 实测未见,宁可少算不重复算。
  *  - 其它(13F NOTICE 等无持仓表的修正):跳过。
+ *  - 零持仓申报(zeroReport:原始件或 RESTATEMENT 的 infotable 只有一行全 0 占位,如 Olstein 2026Q2、
+ *    Makaira 2026Q1):这是申报人明确报告"本季无 13F 持仓",整季替换为空表,而不是当成解析失败跳过。
+ *    否则该季被丢掉,页面继续把上一季持仓当成最新一季展示。
  *
  * 身份:该季在库里的 accession / filedAt 取原始申报(没有原始件时取第一份被采用的修正),
  * 保证「一户一季一行」且修正不会把「刚申报」信号重新点亮。
@@ -31,6 +34,8 @@ export type FilingVersion = {
   amendmentType: AmendmentType;
   /** 已归一(美元口径)且按键聚合后的持仓。 */
   holdings: Holding[];
+  /** infotable 只有全 0 占位行:申报人报告本季持仓为零(holdings 为空)。 */
+  zeroReport?: boolean;
 };
 
 export type ResolvedPeriod = {
@@ -41,6 +46,8 @@ export type ResolvedPeriod = {
   applied: string[];
   /** 被跳过的申报及原因,用于日志。 */
   skipped: { accession: string; reason: string }[];
+  /** 最终结果是申报人报告的零持仓(holdings 为空)。 */
+  zeroReport: boolean;
 };
 
 /** 持仓键:CUSIP 不分大小写(申报人常写小写),期权类型不分大小写。 */
@@ -62,7 +69,7 @@ export function resolvePeriodHoldings(versions: FilingVersion[]): ResolvedPeriod
   for (const v of ordered) {
     const isOriginal = v.form === "13F-HR";
     if (isOriginal || v.amendmentType === "RESTATEMENT") {
-      if (v.holdings.length === 0) {
+      if (v.holdings.length === 0 && !v.zeroReport) {
         skipped.push({ accession: v.accession, reason: isOriginal ? "original with empty table" : "restatement with empty table" });
         continue;
       }
@@ -87,5 +94,6 @@ export function resolvePeriodHoldings(versions: FilingVersion[]): ResolvedPeriod
   }
 
   if (!current || !identity) return null;
-  return { ...identity, holdings: [...current.values()], applied, skipped };
+  const holdings = [...current.values()];
+  return { ...identity, holdings, applied, skipped, zeroReport: holdings.length === 0 };
 }

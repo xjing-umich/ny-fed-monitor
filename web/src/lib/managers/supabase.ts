@@ -4,6 +4,7 @@ import type {
 } from "@/lib/managers/types";
 import { assembleManagerDetail } from "@/lib/managers/assemble";
 import { getDb, withRetry, selectAllPages } from "@/lib/managers/db";
+import { overlayZeroReports, type ZeroFilingRow } from "@/lib/managers/zeroReports";
 
 /**
  * holdings 的显式读取列 —— egress 护栏。表共 9 列，`id` 在读取侧无用
@@ -47,7 +48,12 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
   const db = getDb();
   // latest filing per manager + its top holding, via a view-like query
   const { data, error } = await db.rpc("manager_index"); // see README: optional SQL function; fallback below
-  if (!error && data) return mapIndexRows(data as IndexRow[], generatedAt);
+  if (!error && data) {
+    // 零持仓季补丁(见 overlayZeroReports)。这一查询出错要 THROW:吞掉会让零持仓户悄悄退回旧季。
+    const { data: zeros, error: zErr } = await withRetry(() => db.from("filings").select("cik,period,filed_at").eq("holding_count", 0));
+    if (zErr) throw new Error(`getManagerIndex zero-holding filings query failed: ${zErr.message}`);
+    return mapIndexRows(overlayZeroReports(data as IndexRow[], (zeros ?? []) as ZeroFilingRow[]), generatedAt);
+  }
   // Fallback: compose in TS if the manager_index RPC isn't present.
   // 关键性能点:此前对每个 manager 串行查 filings→holdings(~34×2 次首尾相接的往返,
   // 在远端 Supabase 上累计十几秒),而本函数在根布局里对每个请求都执行——这是全站
@@ -66,7 +72,9 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
         const { data: h, error: hErr } = await selectAllPages(() => db.from("holdings").select("issuer,value,put_call").eq("filing_id", latest.id).order("value", { ascending: false }).order("id", { ascending: true }));
         if (hErr) throw new Error(`getManagerIndex holdings query failed (${m.cik}): ${hErr.message}`);
         const longHoldings = (h ?? []).filter((row: any) => !row.put_call);
-        if (longHoldings.length === 0) continue;
+        // 零持仓申报(holding_count 0 且无 holdings 行)就是该户最新一季,不能跳过退回旧季。
+        const zeroReport = (h ?? []).length === 0 && Number(latest.holding_count) === 0;
+        if (longHoldings.length === 0 && !zeroReport) continue;
         const totalValue = longHoldings.reduce((s: number, row: any) => s + Number(row.value ?? 0), 0);
         return { ...m, period: latest.period, filed_at: latest.filed_at ?? null, filedAt: latest.filed_at ?? null, total_value: totalValue, holding_count: longHoldings.length, top_holding: longHoldings[0]?.issuer ?? "", totalValue, holdingCount: longHoldings.length, topHolding: longHoldings[0]?.issuer ?? "" } as IndexRow;
       }

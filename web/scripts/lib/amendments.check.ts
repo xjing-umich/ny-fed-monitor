@@ -93,6 +93,33 @@ console.log("resolvePeriodHoldings");
   check("同日修正顺序稳定", byKey(r1.holdings).get("A|") === 3 && byKey(r2.holdings).get("A|") === 3);
 }
 
+// 10) 零持仓原始件(Olstein 2026Q2 0000894189-26-021028 形态):不再跳过,整季为空、zeroReport=true。
+{
+  const zero = { ...v("0000894189-26-021028", "2026-07-07", "13F-HR", null, []), zeroReport: true };
+  const r = resolvePeriodHoldings([zero]);
+  check("零持仓原始件 → 收为空季", r !== null && r.holdings.length === 0 && r.zeroReport && r.accession === "0000894189-26-021028");
+}
+
+// 11) 零持仓原始件 + 后续 NEW HOLDINGS 修正补仓 → 有持仓,不再是零持仓。
+{
+  const zero = { ...v("O", "2026-07-07", "13F-HR", null, []), zeroReport: true };
+  const r = resolvePeriodHoldings([zero, v("A1", "2026-07-20", "13F-HR/A", "NEW HOLDINGS", [h("A", 10)])])!;
+  check("零持仓后补仓修正 → 非零", !r.zeroReport && total(r.holdings) === 10 && r.accession === "O");
+}
+
+// 12) 有持仓的原始件 + 零持仓 RESTATEMENT → 重述为零。
+{
+  const restZero = { ...v("A1", "2026-08-20", "13F-HR/A", "RESTATEMENT", []), zeroReport: true };
+  const r = resolvePeriodHoldings([v("O", "2026-08-14", "13F-HR", null, [h("A", 10)]), restZero])!;
+  check("零持仓重述 → 整季归零", r.zeroReport && r.holdings.length === 0);
+}
+
+// 13) 普通有持仓季 zeroReport=false。
+{
+  const r = resolvePeriodHoldings([v("O", "2026-08-14", "13F-HR", null, [h("A", 10)])])!;
+  check("普通季 zeroReport=false", r.zeroReport === false);
+}
+
 if (failed) {
   console.error(`\namendments.check: ${failed} 项失败`);
   process.exit(1);
