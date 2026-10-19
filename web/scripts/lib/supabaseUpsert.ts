@@ -45,6 +45,11 @@ export async function upsertManagerDetail(db: any, d: ManagerDetail, formerNames
     if (fErr) throw new Error(`filings upsert failed (${f.accession}): ${fErr.message}`);
     const filingId = up?.[0]?.id;
     if (!filingId) continue;
+    // 一户一季一行:该季身份(accession)若换了(如此前误存修正件、现由原始件接管),
+    // 旧行必须删掉,否则同季两行 → 持仓双计、QoQ 错位。holdings 随 FK cascade 一并删除。
+    const { error: dupErr } = await db
+      .from("filings").delete().eq("cik", f.cik).eq("period", f.period).neq("accession", f.accession);
+    if (dupErr) throw new Error(`filings dedupe failed (${f.cik} ${f.period}): ${dupErr.message}`);
     const { error: delErr } = await db.from("holdings").delete().eq("filing_id", filingId);
     if (delErr) throw new Error(`holdings delete failed (filing ${filingId}): ${delErr.message}`);
     const rows = p.holdingsByAccession[f.accession].map((h) => ({ ...h, filing_id: filingId }));

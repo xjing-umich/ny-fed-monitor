@@ -23,6 +23,7 @@ import { enrichSecurities } from "./lib/enrichSecurities.js";
 import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
 import { padCusip } from "../src/lib/securities/openfigi.js";
 import { hasLongHoldings, isLongHolding, isRealHolding } from "./lib/holdingFilters.js";
+import { holdingKey, resolvePeriodHoldings, type AmendmentType, type FilingVersion } from "./lib/amendments.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
@@ -96,30 +97,20 @@ async function getLatestFilings(cik: string, maxCount = 2) {
   const name = data.name;
   const formerNames = (data.formerNames ?? []).map((f) => f.name).filter(Boolean);
 
-  // Find 13F-HR indices (prefer non-amendment first)
-  const indices: number[] = [];
+  // 每季收齐原始件(13F-HR)与全部修正(13F-HR/A),由 resolvePeriodHoldings 按申报顺序合并。
+  // 此前每季只取一份(实际总是原始件),修正一律被忽略。
+  type FilingMeta = { accession: string; filedAt: string; form: "13F-HR" | "13F-HR/A" };
+  const byPeriod = new Map<string, FilingMeta[]>();
   form.forEach((f, i) => {
-    if (f === "13F-HR" || f === "13F-HR/A") indices.push(i);
+    if (f !== "13F-HR" && f !== "13F-HR/A") return;
+    const list = byPeriod.get(reportDate[i]) ?? [];
+    list.push({ accession: accessionNumber[i], filedAt: filingDate[i], form: f });
+    byPeriod.set(reportDate[i], list);
   });
-
-  // Sort by reportDate desc
-  indices.sort((a, b) => (reportDate[b] > reportDate[a] ? 1 : -1));
-
-  // Take up to maxCount distinct reportDate filings
-  const seen = new Set<string>();
-  const selected: Array<{ accession: string; filedAt: string; period: string }> = [];
-  for (const i of indices) {
-    const rp = reportDate[i];
-    if (!seen.has(rp)) {
-      seen.add(rp);
-      selected.push({
-        accession: accessionNumber[i],
-        filedAt: filingDate[i],
-        period: rp,
-      });
-    }
-    if (selected.length >= maxCount) break;
-  }
+  const selected = [...byPeriod.entries()]
+    .sort(([a], [b]) => (a < b ? 1 : -1))
+    .slice(0, maxCount)
+    .map(([period, versions]) => ({ period, versions }));
 
   return { name, formerNames, filings: selected };
 }
@@ -201,7 +192,8 @@ async function parseInfoTable(cikInt: string, accession: string): Promise<Holdin
     const rawValue = Number(e?.value ?? 0);
     // CUSIP 归一为标准 9 位(SEC 常缺前导零)。异常长度告警但不丢弃,便于发现脏数据。
     const rawCusip = String(e?.cusip ?? "").trim();
-    const cusip = rawCusip ? padCusip(rawCusip) : "";
+    // 大写:申报人常写小写(如 KKR 48251w104),不归一则与 security_cusips 的大写键对不上、拿不到 ticker。
+    const cusip = rawCusip ? padCusip(rawCusip).toUpperCase() : "";
     if (cusip && cusip.length !== 9) {
       console.warn(`[ingest-13f] 异常 CUSIP 长度(${cusip.length}): "${rawCusip}" → "${cusip}"`);
     }
@@ -221,6 +213,20 @@ async function parseInfoTable(cikInt: string, accession: string): Promise<Holdin
   return holdings.filter(isRealHolding);
 }
 
+/** 修正类型取自封面 primary_doc.xml 的 <amendmentType>;读不到返回 null(按逐键覆盖处理)。 */
+async function fetchAmendmentType(cikInt: string, accession: string): Promise<AmendmentType> {
+  const url = `https://www.sec.gov/Archives/edgar/data/${cikInt}/${accession.replace(/-/g, "")}/primary_doc.xml`;
+  try {
+    const xml = await fetchText(url);
+    await sleep(250);
+    const m = xml.match(/<(?:\w+:)?amendmentType>\s*([^<]+?)\s*</i);
+    const t = m?.[1].toUpperCase();
+    return t === "RESTATEMENT" || t === "NEW HOLDINGS" ? t : null;
+  } catch {
+    return null;
+  }
+}
+
 function normalizeValueForPeriod(holdings: Holding[], period: string): Holding[] {
   const year = parseInt(period.slice(0, 4), 10);
   if (year < 2023) {
@@ -237,10 +243,6 @@ function normalizeValueForPeriod(holdings: Holding[], period: string): Holding[]
 // A 13F lists the same security multiple times (one row per internal sub-manager
 // / account). Aggregate to one row per security (cusip + put/call type) so the UI
 // shows e.g. a single AAPL line, matching how valuesider et al. present portfolios.
-function holdingKey(h: Holding): string {
-  return `${h.cusip}|${h.putCall ?? ""}`;
-}
-
 function aggregateByCusip(holdings: Holding[]): Holding[] {
   const map = new Map<string, Holding>();
   for (const h of holdings) {
@@ -256,12 +258,15 @@ function aggregateByCusip(holdings: Holding[]): Holding[] {
   return [...map.values()];
 }
 
+/** 单份申报:美元口径归一 + 按键聚合(合并修正之前的形态)。 */
+function prepareVersionHoldings(rawHoldings: Holding[], period: string): Holding[] {
+  return aggregateByCusip(normalizeValueForPeriod(rawHoldings, period));
+}
+
 function buildFilingData(
   filingMeta: { accession: string; filedAt: string; period: string },
-  rawHoldings: Holding[]
+  holdings: Holding[]
 ): FilingData {
-  const normalized = normalizeValueForPeriod(rawHoldings, filingMeta.period);
-  const holdings = aggregateByCusip(normalized);
   const totalValue = holdings.filter(isLongHolding).reduce((s, h) => s + h.value, 0);
   const withWeight = holdings.map((h) => ({
     ...h,
@@ -296,21 +301,34 @@ async function ingestManager(seed: Omit<Manager, "name">): Promise<ManagerDetail
 
   // 逐期解析（含礼貌限速）；单期解析失败仅跳过该期，不影响其余季度。
   const filings: FilingData[] = [];
-  for (const meta of metas) {
-    console.log(`[${seed.slug}] Parsing filing ${meta.accession} (${meta.period})...`);
-    try {
-      const raw = await parseInfoTable(cikInt, meta.accession);
-      await sleep(300);
-      const fd = buildFilingData(meta, raw);
-      if (!hasLongHoldings(fd.holdings)) {
-        console.warn(`[ingest-13f] 跳过无长仓 filing(NONE/13F-NT 或仅含期权): ${meta.accession} ${meta.period}`);
-        continue;
+  for (const { period, versions } of metas) {
+    // 逐份解析;单份失败只丢这一份(原始件失败而修正可用时,修正仍能撑起该季)。
+    const parsed: FilingVersion[] = [];
+    for (const v of versions) {
+      try {
+        const raw = await parseInfoTable(cikInt, v.accession);
+        await sleep(300);
+        const amendmentType = v.form === "13F-HR/A" ? await fetchAmendmentType(cikInt, v.accession) : null;
+        parsed.push({ ...v, amendmentType, holdings: prepareVersionHoldings(raw, period) });
+      } catch (err) {
+        console.warn(`[${seed.slug}] Failed to parse ${v.form} ${v.accession} (${period}): ${err instanceof Error ? err.message : err}`);
       }
-      filings.push(fd);
-      console.log(`[${seed.slug}] ${meta.period}: ${fd.holdings.length} holdings, $${fd.totalValue.toLocaleString()}`);
-    } catch (err) {
-      console.warn(`[${seed.slug}] Failed to parse ${meta.period}: ${err instanceof Error ? err.message : err}`);
     }
+    const resolved = resolvePeriodHoldings(parsed);
+    if (!resolved) {
+      console.warn(`[${seed.slug}] ${period}: 无可用申报(全部解析失败或为空表),跳过该季`);
+      continue;
+    }
+    const amendments = resolved.applied.filter((a) => a !== resolved.accession);
+    if (amendments.length) console.log(`[${seed.slug}] ${period}: 已合并修正 ${amendments.join(", ")}`);
+    for (const sk of resolved.skipped) console.log(`[${seed.slug}] ${period}: 跳过 ${sk.accession}(${sk.reason})`);
+    const fd = buildFilingData({ accession: resolved.accession, filedAt: resolved.filedAt, period }, resolved.holdings);
+    if (!hasLongHoldings(fd.holdings)) {
+      console.warn(`[ingest-13f] 跳过无长仓 filing(NONE/13F-NT 或仅含期权): ${resolved.accession} ${period}`);
+      continue;
+    }
+    filings.push(fd);
+    console.log(`[${seed.slug}] ${period}: ${fd.holdings.length} holdings, $${fd.totalValue.toLocaleString()}`);
   }
 
   if (filings.length === 0) {
