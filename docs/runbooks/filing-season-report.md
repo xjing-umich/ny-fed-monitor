@@ -3,7 +3,9 @@
 > 对应 spec：`docs/superpowers/specs/2026-10-19-filing-season-report-engine-design.md`
 > 下列步骤都会动到生产环境（Supabase、Resend、GitHub Secrets、Vercel），由站长亲自执行。代码里没有任何一步会自动群发。
 
-## 一、合并前后一次性准备
+## 一、合并之前的一次性准备
+
+> **顺序很重要：先完成第 1 步迁移再合并 PR。** 否则合并后第一次 ingest 跑报告步骤时会因为函数不存在而失败（整个 ingest workflow 变红）。
 
 1. **执行迁移**：在 Supabase SQL Editor 运行 `web/supabase/migrations/20261019_create_quarterly_reports.sql`，然后验证：
    ```sql
@@ -41,7 +43,7 @@
 
 | 时间 | 发生什么 | 站长要做的 |
 |---|---|---|
-| 合并部署后 | 下一次 ingest 为 Q3 建 live 行（已有早申报者时） | 打开 `/learn/q3-2026-superinvestor-consensus` 看一眼 |
+| 合并部署后 | Q3 覆盖率达到 25%（公开门槛）后，ingest 自动建 live 行，首页进度行随之出现“Q3 报告 →”链接；未达门槛前报告页是 404、首页不出链接，属正常 | 达到门槛后打开 `/learn/q3-2026-superinvestor-consensus` 看一眼 |
 | 11/10–11/20 | 每天 ingest + 报告刷新（与周一、四的 cron 串行，不会并发） | 无 |
 | 11/17 起，覆盖率 ≥ 90% | 系统给站长发中英两封预览（截止日 11/14 是周六，顺延到 11/16，所以 11/17 起才算可定稿） | 审预览 |
 | 审完 | — | Actions → Report finalize & send：`period=2026-09-30`、`action=finalize` |

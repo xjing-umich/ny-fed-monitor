@@ -1,5 +1,5 @@
 /** Run: cd web && npx tsx src/lib/reports/readiness.check.ts */
-import { reportReadiness, payloadHash, planFinalize, type FinalizeGuard } from "./readiness";
+import { reportReadiness, payloadHash, planFinalize, meetsPublishThreshold, PUBLISH_MIN_COVERAGE, type FinalizeGuard } from "./readiness";
 import type { ReportPayload, ReportRow } from "./types";
 
 function assert(c: boolean, m: string) {
@@ -18,6 +18,14 @@ assert(reportReadiness({ ...r, coverageTotal: 0, coverageFiled: 0 }, new Date("2
 const q2 = { period: "2026-06-30", coverageFiled: 90, coverageTotal: 97 };
 assert(reportReadiness(q2, new Date("2026-08-14T23:59:00Z")).reason === "before_deadline", "Q2 截止日当天");
 assert(reportReadiness(q2, new Date("2026-08-15T00:00:00Z")).reason === "ready", "Q2 次日 ready");
+
+// 公开门槛:已申报 / 活跃 ≥ 25% 才建 live 行(之前不上页面、不进 Learn 与 sitemap)。
+assert(PUBLISH_MIN_COVERAGE === 0.25, "门槛 25%");
+assert(!meetsPublishThreshold({ filed: 1, total: 95 }), "1/95 不公开");
+assert(!meetsPublishThreshold({ filed: 23, total: 95 }), "23/95 = 24.2% 不公开");
+assert(meetsPublishThreshold({ filed: 24, total: 95 }), "24/95 = 25.3% 公开");
+assert(meetsPublishThreshold({ filed: 25, total: 100 }), "恰好 25% 公开");
+assert(!meetsPublishThreshold({ filed: 0, total: 0 }), "total=0 不公开");
 
 const p1 = { schemaVersion: 1, period: "2026-09-30", coverage: { filed: 1, total: 2 } } as unknown as ReportPayload;
 const p2 = { coverage: { total: 2, filed: 1 }, period: "2026-09-30", schemaVersion: 1 } as unknown as ReportPayload;

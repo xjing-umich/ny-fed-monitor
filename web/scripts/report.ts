@@ -9,7 +9,7 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { Resend } from "resend";
 import { buildQuarterlyReport } from "../src/lib/reports/build";
-import { payloadHash, reportReadiness } from "../src/lib/reports/readiness";
+import { meetsPublishThreshold, payloadHash, PUBLISH_MIN_COVERAGE, reportReadiness } from "../src/lib/reports/readiness";
 import { renderReportEmail } from "../src/lib/reports/email";
 import { reportPeriodFor, reportSlug } from "../src/lib/reports/period";
 import type { ReportPayload, ReportRow } from "../src/lib/reports/types";
@@ -69,8 +69,10 @@ async function main() {
   const { input, valuationAsOf } = await loadReportInput(db, period);
   const payload = buildQuarterlyReport(input);
 
-  if (payload.coverage.filed === 0) {
-    console.log(`[report] ${period}: 尚无投资人申报,不建行`);
+  // 未达公开门槛不建行;已有的行(此前达标过)照常刷新,不会因门槛被撤下。
+  const existing = await readReport(db, period);
+  if (!existing && !meetsPublishThreshold(payload.coverage)) {
+    console.log(`[report] ${period}: 覆盖 ${payload.coverage.filed}/${payload.coverage.total} 未达公开门槛 ${PUBLISH_MIN_COVERAGE * 100}%,暂不建行`);
     setActionOutput("report_changed", "false");
     return;
   }

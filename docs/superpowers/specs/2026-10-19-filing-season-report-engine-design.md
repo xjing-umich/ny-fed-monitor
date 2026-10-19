@@ -87,7 +87,7 @@ create table quarterly_reports (
 ### 3.5 生成时机
 
 - `scripts/report.ts`（`npm run report`），在 `ingest.yml` 中 consensus 算完之后运行。
-- 报告季度 P = 最近一个已结束的季度（`mostRecentDueQuarter` 的同一套季度算术，取季末 ≤ 今天的最近一季）。P 中至少 1 位活跃投资人已申报时，才 upsert `live` 行；`payload_hash` 不变时只跳过（不改 `generated_at`、不 revalidate），变了才写入并 `POST /api/revalidate?source=report`。
+- 报告季度 P = 最近一个已结束的季度（`mostRecentDueQuarter` 的同一套季度算术，取季末 ≤ 今天的最近一季）。P 的已申报 / 活跃覆盖率达到**公开门槛 25%**（`PUBLISH_MIN_COVERAGE`）时，才首次建 `live` 行；未达门槛前不上页面、不进 Learn 与 sitemap、首页不出链接，避免一两家的动作被当成“共识”公开挂出。行一旦建出，之后照常刷新；`payload_hash` 不变时只跳过（不改 `generated_at`、不 revalidate），变了才写入并 `POST /api/revalidate?source=report`。
 - 失败时非零退出、不覆盖已有行（沿用 consensus 写失败必须抛错的纪律），由 watchdog 发现。
 
 ### 3.6 可定稿条件与 Q2 补发
@@ -119,9 +119,10 @@ create table quarterly_reports (
 ### 4.3 周边
 
 - Learn 首页把最新一份报告置顶（`getFeatured` 优先最新报告）。
-- 首页 masthead 申报季进度行加“Q3 报告”链接（与 UX 第 4 步可能冲突，后合并者处理）。
+- 首页 masthead 申报季进度行加“Q3 报告”链接，**仅当该季报告行已存在**时渲染（否则会链到 404）；`source=report` 的刷新范围因此包含站点首页（与 UX 第 4 步可能冲突，后合并者处理）。
 - sitemap 收录报告页，`lastmod = generated_at`。
 - Article JSON-LD：`datePublished = first_live_at`，`dateModified = generated_at`。
+- 页面 metadata 带 openGraph / twitter（`ogFor`，type=article），分享卡片显示报告标题与结论句。
 - OG：沿用 `ogCard`，副标题放结论句。
 - 文案遵守 `docs/copy-voice.md`，中英各自独立判断。
 
@@ -184,7 +185,7 @@ create table quarterly_reports (
 |---|---|
 | 10/19–10/23 | spec 审阅、plan |
 | 约 11/6 前 | 实现完成，Q2 彩排 |
-| 约 11/9 | Q3 报告页以“申报中”上线 |
+| 覆盖率达 25% 后的下一次 ingest（Q2 于 8/12、Q1 于 5/14 达到 25%，均为截止日前 1–2 天；Q3 预计 11/14–11/16） | Q3 报告页以“申报中”自动上线 |
 | 11/16 后 | 等覆盖率达标 |
 | 约 11/18–20 | 用户审预览，一键发出第一封 |
 

@@ -35,10 +35,15 @@ export async function generateMetadata({
   if (reportPeriod) {
     const row = await readReportRow(reportPeriod);
     if (!row) return {};
+    const title = `${reportTitle(row.period, lang)} — Compounder`;
+    const description = reportDescription(row.payload, row.status, lang);
     return {
-      title: `${reportTitle(row.period, lang)} — Compounder`,
-      description: reportDescription(row.payload, row.status, lang),
+      title,
+      description,
       alternates: altFor(lang, `/learn/${slug}`),
+      // 不设 openGraph 会沿用布局的站点通用标题/摘要,分享卡片里看不到报告结论。
+      // 本路由自带 opengraph-image(结论句卡),不带品牌卡图以免盖掉它。
+      ...ogFor({ lang, title, description, path: localePath(lang, `/learn/${slug}`), type: "article", brandImage: false }),
     };
   }
   const article = getArticle(slug, lang);

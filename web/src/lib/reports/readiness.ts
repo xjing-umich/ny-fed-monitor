@@ -3,7 +3,14 @@ import { effectiveFilingDeadline } from "../freshness/derive";
 import type { ReportLang, ReportPayload, ReportRow } from "./types";
 
 export const READY_COVERAGE = 0.9;
+/** 公开门槛:已申报 / 活跃 ≥ 25% 才建 live 行。之前不上页面、不进 Learn 与 sitemap、首页不出链接,
+ *  避免一两家的动作被当成“共识”公开挂出、被搜索与 AI 引擎收录。 */
+export const PUBLISH_MIN_COVERAGE = 0.25;
 const LANGS: ReportLang[] = ["en", "zh"];
+
+export function meetsPublishThreshold(coverage: { filed: number; total: number }): boolean {
+  return coverage.total > 0 && coverage.filed / coverage.total >= PUBLISH_MIN_COVERAGE;
+}
 
 export function reportReadiness(
   row: Pick<ReportRow, "period" | "coverageFiled" | "coverageTotal">,

@@ -97,6 +97,7 @@ export default function HeroMasthead({
   period,
   movesPeriod,
   filing,
+  filingReportExists = false,
   moves,
   investorCount,
 }: {
@@ -104,6 +105,8 @@ export default function HeroMasthead({
   period: string;
   movesPeriod: string;
   filing?: EffectiveMovesPeriod;
+  /** 申报季对应季度的报告行是否已存在(过了公开门槛)。false → 不渲染报告链接,避免 404。 */
+  filingReportExists?: boolean;
   moves: NotableMoves;
   investorCount?: number;
 }): React.ReactElement {
@@ -140,7 +143,7 @@ export default function HeroMasthead({
         {filingProgressText && filing && (
           <p className="mt-1.5 font-data text-xs text-[var(--tt-muted)]">
             {filingProgressText}
-            {filing.maxPeriod && (
+            {filing.maxPeriod && filingReportExists && (
               <>
                 {" "}
                 <Link
