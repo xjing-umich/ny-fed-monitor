@@ -92,8 +92,9 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const now = new Date();
   const effective = effectiveMovesPeriod(periods, now);
   const active = raws.filter((r) => countsAsCurrentHolder(r.period, now));
+  // 零持仓申报(latestH 为空):不把上季全部仓位记成清仓动作,口径同 assembleManagerDetail。
   const changesOf = (r: Raw) =>
-    (effective.period && r.period === effective.period ? diff(r.latestH, r.priorH) : []);
+    (effective.period && r.period === effective.period && r.latestH.length > 0 ? diff(r.latestH, r.priorH) : []);
 
   const scan: ScanInput[] = active.map((r) => ({
     slug: r.slug,
