@@ -32,13 +32,15 @@ export function computeChanges(latest: Holding[], prior: Holding[]): HoldingChan
  * 从一份 filings[] 装配完整 ManagerDetail（唯一构造入口）。
  * - 按 period 降序排序
  * - latest = [0], prior = [1]
- * - changes = computeChanges(latest, prior)（无 prior → []）
+ * - changes = computeChanges(latest, prior)（无 prior → []；最新一期申报持仓为零 → []）
  * 调用方须保证 filings 非空（空则不应构造 detail，返回 null）。
  */
 export function assembleManagerDetail(manager: Manager, filings: FilingData[]): ManagerDetail {
   const sorted = [...filings].sort((a, b) => (b.period > a.period ? 1 : -1));
   const latest = sorted[0];
   const prior = sorted[1];
-  const changes = prior ? computeChanges(latest.holdings, prior.holdings) : [];
+  // 零持仓申报(如 Olstein 2026Q2)只说明"本季无 13F 持仓",没说原因(清盘/委托转出/跌破门槛)。
+  // 不把上季全部仓位记成"清仓"动作,否则一份空表会变成几十条卖出信号;页面另行说明零持仓。
+  const changes = prior && latest.holdings.length > 0 ? computeChanges(latest.holdings, prior.holdings) : [];
   return { manager, filings: sorted, latest, prior, changes };
 }

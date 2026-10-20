@@ -22,8 +22,9 @@ import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
 import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
 import { padCusip } from "../src/lib/securities/openfigi.js";
-import { hasLongHoldings, isLongHolding, isRealHolding } from "./lib/holdingFilters.js";
+import { hasLongHoldings, isLongHolding, isRealHolding, isZeroHoldingsReport } from "./lib/holdingFilters.js";
 import { holdingKey, resolvePeriodHoldings, type AmendmentType, type FilingVersion } from "./lib/amendments.js";
+import { includedManagerSeq, noticeOtherManagerCiks, rowHasManagerSeq } from "./lib/notice13f.js";
 
 const HEADERS = {
   "User-Agent": "NYFedMonitor research junlinzhu@jobright.ai",
@@ -87,6 +88,13 @@ interface IndexData {
   };
 }
 
+const FILING_FORMS = ["13F-HR", "13F-HR/A", "13F-NT", "13F-NT/A"] as const;
+type FilingForm = (typeof FILING_FORMS)[number];
+type FilingMeta = { accession: string; filedAt: string; form: FilingForm };
+const isFilingForm = (f: string): f is FilingForm => (FILING_FORMS as readonly string[]).includes(f);
+const isHoldingsForm = (m: FilingMeta): m is FilingMeta & { form: "13F-HR" | "13F-HR/A" } =>
+  m.form === "13F-HR" || m.form === "13F-HR/A";
+
 async function getLatestFilings(cik: string, maxCount = 2) {
   const cik10 = cik.replace(/^0+/, "").padStart(10, "0");
   const url = `https://data.sec.gov/submissions/CIK${cik10}.json`;
@@ -99,10 +107,10 @@ async function getLatestFilings(cik: string, maxCount = 2) {
 
   // 每季收齐原始件(13F-HR)与全部修正(13F-HR/A),由 resolvePeriodHoldings 按申报顺序合并。
   // 此前每季只取一份(实际总是原始件),修正一律被忽略。
-  type FilingMeta = { accession: string; filedAt: string; form: "13F-HR" | "13F-HR/A" };
+  // 13F-NT 也收:该季若只有 NT(持仓由他人代报),ingestManager 会去跟随代报方的 13F-HR。
   const byPeriod = new Map<string, FilingMeta[]>();
   form.forEach((f, i) => {
-    if (f !== "13F-HR" && f !== "13F-HR/A") return;
+    if (!isFilingForm(f)) return;
     const list = byPeriod.get(reportDate[i]) ?? [];
     list.push({ accession: accessionNumber[i], filedAt: filingDate[i], form: f });
     byPeriod.set(reportDate[i], list);
@@ -115,7 +123,13 @@ async function getLatestFilings(cik: string, maxCount = 2) {
   return { name, formerNames, filings: selected };
 }
 
-async function parseInfoTable(cikInt: string, accession: string): Promise<Holding[]> {
+type ParsedInfoTable = { holdings: Holding[]; zeroReport: boolean; rowCount: number; keptRows: number };
+
+/**
+ * 解析 infotable。onlyManagerSeq:只保留 <otherManager> 含该序号的行(跟随 13F-NT 代报方时,
+ * 从母公司合并报告里摘出被跟随经理人的仓位,见 lib/notice13f.ts)。
+ */
+async function parseInfoTable(cikInt: string, accession: string, onlyManagerSeq?: number): Promise<ParsedInfoTable> {
   const accNoDashes = accession.replace(/-/g, "");
   const folder = `https://www.sec.gov/Archives/edgar/data/${cikInt}/${accNoDashes}/`;
   const indexUrl = `${folder}index.json`;
@@ -184,7 +198,12 @@ async function parseInfoTable(cikInt: string, accession: string): Promise<Holdin
     throw new Error(`Cannot find infoTable in parsed XML for ${accession}`);
   }
 
-  const entries: unknown[] = Array.isArray(rawEntries) ? rawEntries : [rawEntries];
+  const allEntries: unknown[] = Array.isArray(rawEntries) ? rawEntries : [rawEntries];
+  const entries =
+    onlyManagerSeq == null
+      ? allEntries
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      : allEntries.filter((e: any) => rowHasManagerSeq(e?.otherManager, onlyManagerSeq));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const holdings: Holding[] = entries.map((e: any) => {
@@ -210,21 +229,83 @@ async function parseInfoTable(cikInt: string, accession: string): Promise<Holdin
     };
   });
 
-  return holdings.filter(isRealHolding);
+  // 跟随模式下筛完为空 = 没摘到任何仓位,不能当成"零持仓"。
+  const zeroReport = onlyManagerSeq == null && isZeroHoldingsReport(holdings);
+  return { holdings: holdings.filter(isRealHolding), zeroReport, rowCount: allEntries.length, keptRows: entries.length };
+}
+
+function primaryDocUrl(cikInt: string, accession: string): string {
+  return `https://www.sec.gov/Archives/edgar/data/${cikInt}/${accession.replace(/-/g, "")}/primary_doc.xml`;
 }
 
 /** 修正类型取自封面 primary_doc.xml 的 <amendmentType>;读不到返回 null(按逐键覆盖处理)。 */
 async function fetchAmendmentType(cikInt: string, accession: string): Promise<AmendmentType> {
-  const url = `https://www.sec.gov/Archives/edgar/data/${cikInt}/${accession.replace(/-/g, "")}/primary_doc.xml`;
+  const url = primaryDocUrl(cikInt, accession);
   try {
     const xml = await fetchText(url);
     await sleep(250);
-    const m = xml.match(/<(?:\w+:)?amendmentType>\s*([^<]+?)\s*</i);
-    const t = m?.[1].toUpperCase();
-    return t === "RESTATEMENT" || t === "NEW HOLDINGS" ? t : null;
+    return amendmentTypeOf(xml);
   } catch {
     return null;
   }
+}
+
+function amendmentTypeOf(primaryDocXml: string): AmendmentType {
+  const t = primaryDocXml.match(/<(?:\w+:)?amendmentType>\s*([^<]+?)\s*</i)?.[1].toUpperCase();
+  return t === "RESTATEMENT" || t === "NEW HOLDINGS" ? t : null;
+}
+
+const sameCik = (a: string, b: string) => a.replace(/^0+/, "") === b.replace(/^0+/, "");
+
+/**
+ * 该季只交了 13F-NT:按 NT 封面 <otherManagersInfo> 找代报方,取代报方同季 13F-HR(含修正),
+ * 只摘挂了本经理人序号的行(规则与理由见 lib/notice13f.ts)。找不到可归属的行 → 返回 [],该季照旧跳过。
+ * 身份(accession/filedAt)取代报方的申报 —— 那才是这份持仓真实所在的文件。
+ */
+async function followNotice(slug: string, cik: string, period: string, notices: FilingMeta[]): Promise<FilingVersion[]> {
+  const cikInt = cik.replace(/^0+/, "");
+  const nt = [...notices].sort((a, b) => (a.filedAt < b.filedAt ? -1 : 1)).at(-1)!;
+  const parents = noticeOtherManagerCiks(await fetchText(primaryDocUrl(cikInt, nt.accession))).filter((c) => !sameCik(c, cik));
+  await sleep(250);
+  if (parents.length === 0) {
+    console.warn(`[${slug}] ${period}: 13F-NT ${nt.accession} 未列代报方 CIK,无法跟随`);
+    return [];
+  }
+  for (const parent of parents) {
+    // 代报方本身也在追踪名单里 → 它的页面已收这份申报;再挂到本户名下会与其 accession 冲突(filings 按 accession 唯一)。
+    if (SEED_MANAGERS.some((m) => sameCik(m.cik, parent))) {
+      console.warn(`[${slug}] ${period}: 代报方 CIK ${parent} 已在追踪名单,不重复挂靠`);
+      continue;
+    }
+    const parentInt = parent.replace(/^0+/, "");
+    const { name: parentName, filings: parentPeriods } = await getLatestFilings(parent, QUARTERS_TO_FETCH);
+    const versions = (parentPeriods.find((p) => p.period === period)?.versions ?? []).filter(isHoldingsForm);
+    const parsed: FilingVersion[] = [];
+    for (const v of versions) {
+      try {
+        const cover = await fetchText(primaryDocUrl(parentInt, v.accession));
+        await sleep(250);
+        const seq = includedManagerSeq(cover, cik);
+        if (seq == null) {
+          console.warn(`[${slug}] ${period}: 代报方 ${parentName} ${v.accession} 封面未列本经理人为 included manager,不收`);
+          continue;
+        }
+        const t = await parseInfoTable(parentInt, v.accession, seq);
+        await sleep(300);
+        if (t.holdings.length === 0) {
+          console.warn(`[${slug}] ${period}: 代报方 ${v.accession} 无挂本经理人(序号 ${seq})的行,不收`);
+          continue;
+        }
+        console.log(`[${slug}] ${period}: 跟随 13F-NT → ${parentName}(CIK ${parent})${v.form} ${v.accession},保留序号 ${seq} 的 ${t.keptRows}/${t.rowCount} 行`);
+        const amendmentType = v.form === "13F-HR/A" ? amendmentTypeOf(cover) : null;
+        parsed.push({ ...v, amendmentType, holdings: prepareVersionHoldings(t.holdings, period) });
+      } catch (err) {
+        console.warn(`[${slug}] ${period}: 跟随 ${parent} ${v.accession} 失败: ${err instanceof Error ? err.message : err}`);
+      }
+    }
+    if (parsed.length) return parsed;
+  }
+  return [];
 }
 
 function normalizeValueForPeriod(holdings: Holding[], period: string): Holding[] {
@@ -303,13 +384,22 @@ async function ingestManager(seed: Omit<Manager, "name">): Promise<ManagerDetail
   const filings: FilingData[] = [];
   for (const { period, versions } of metas) {
     // 逐份解析;单份失败只丢这一份(原始件失败而修正可用时,修正仍能撑起该季)。
-    const parsed: FilingVersion[] = [];
-    for (const v of versions) {
+    // 该季没有任何 13F-HR、只有 13F-NT → 持仓在代报方的申报里,去跟随。
+    const holdingsVersions = versions.filter(isHoldingsForm);
+    let parsed: FilingVersion[] = [];
+    if (holdingsVersions.length === 0) {
       try {
-        const raw = await parseInfoTable(cikInt, v.accession);
+        parsed = await followNotice(seed.slug, seed.cik, period, versions);
+      } catch (err) {
+        console.warn(`[${seed.slug}] ${period}: 跟随 13F-NT 失败: ${err instanceof Error ? err.message : err}`);
+      }
+    }
+    for (const v of holdingsVersions) {
+      try {
+        const t = await parseInfoTable(cikInt, v.accession);
         await sleep(300);
         const amendmentType = v.form === "13F-HR/A" ? await fetchAmendmentType(cikInt, v.accession) : null;
-        parsed.push({ ...v, amendmentType, holdings: prepareVersionHoldings(raw, period) });
+        parsed.push({ ...v, amendmentType, holdings: prepareVersionHoldings(t.holdings, period), zeroReport: t.zeroReport });
       } catch (err) {
         console.warn(`[${seed.slug}] Failed to parse ${v.form} ${v.accession} (${period}): ${err instanceof Error ? err.message : err}`);
       }
@@ -323,8 +413,14 @@ async function ingestManager(seed: Omit<Manager, "name">): Promise<ManagerDetail
     if (amendments.length) console.log(`[${seed.slug}] ${period}: 已合并修正 ${amendments.join(", ")}`);
     for (const sk of resolved.skipped) console.log(`[${seed.slug}] ${period}: 跳过 ${sk.accession}(${sk.reason})`);
     const fd = buildFilingData({ accession: resolved.accession, filedAt: resolved.filedAt, period }, resolved.holdings);
+    if (resolved.zeroReport) {
+      // 申报人报告本季零持仓:照收(filings 记 0/0,holdings 不写),页面据此显示"申报持仓为零"而不是上一季。
+      filings.push(fd);
+      console.log(`[${seed.slug}] ${period}: 申报持仓为零 (${resolved.accession})`);
+      continue;
+    }
     if (!hasLongHoldings(fd.holdings)) {
-      console.warn(`[ingest-13f] 跳过无长仓 filing(NONE/13F-NT 或仅含期权): ${resolved.accession} ${period}`);
+      console.warn(`[ingest-13f] 跳过无长仓 filing(仅含期权): ${resolved.accession} ${period}`);
       continue;
     }
     filings.push(fd);

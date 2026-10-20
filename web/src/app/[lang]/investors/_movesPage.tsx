@@ -122,7 +122,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
             eyebrow={isZh ? `13F 动向 · ${qLabel}` : `13F moves · ${qLabel}`}
             title={heading}
             intro={sub}
-            dateline={<DataAsOfBadge lang={lang} />}
+            dateline={<DataAsOfBadge lang={lang} asOf={quarterLabel(baseline) || undefined} />}
             action={
               <ShareButton
                 url={shareUrl}

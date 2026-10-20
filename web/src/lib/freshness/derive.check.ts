@@ -14,6 +14,8 @@ import {
   MOVES_COVERAGE_MIN,
   filingDeadline,
   effectiveFilingDeadline,
+  countsAsCurrentHolder,
+  isScopeChange,
 } from "./derive";
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
@@ -143,4 +145,24 @@ assert.equal(effectiveFilingDeadline("2025-06-30")!.toISOString().slice(0, 10), 
 assert.equal(effectiveFilingDeadline("2026-12-31")!.toISOString().slice(0, 10), "2027-02-15", "Q4 2026:周日 2/14 → 周一 2/15");
 assert.equal(effectiveFilingDeadline(null), null, "空 → null");
 
-console.log("derive.check.ts: all assertions passed ✓ (incl. freshness13F, effectiveMovesPeriod)");
+// --- countsAsCurrentHolder: 截止日过后停在上一季 → 不计入当前持有人 ---
+// 2026-10-19: 最近到期季 = 2026-06-30(Q2 截止 08-14 已过;Q3 截止 11-14 未到)
+assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-10-19")), true, "已交 Q2 = 计入");
+assert.equal(countsAsCurrentHolder("2026-09-30", d("2026-10-19")), true, "早申报 Q3 = 计入");
+assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-10-19")), false, "Q2 截止已过仍停在 Q1(Pershing/Olstein)= 不计入");
+assert.equal(countsAsCurrentHolder("2025-12-31", d("2026-10-19")), false, "落后 3 季(Makaira)= 不计入");
+assert.equal(countsAsCurrentHolder(null, d("2026-10-19")), false, "无申报 = 不计入");
+// 申报季内(Q2 截止 08-14 前)停在 Q1 是正常节奏,照常计入;截止日次日起不计入
+assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-08-01")), true, "申报季内 Q1 仍计入");
+assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-08-14")), true, "截止日当天仍计入");
+assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-08-15")), false, "截止日次日起不计入");
+
+// --- isScopeChange: 组合市值环比量级异常 ---
+assert.equal(isScopeChange(-0.956), true, "Cantillon Q2 2026 −96%");
+assert.equal(isScopeChange(-0.5), true, "−50% 边界计入");
+assert.equal(isScopeChange(-0.3), false, "−30% 属价格/调仓范围");
+assert.equal(isScopeChange(0.8), false, "+80% 不算");
+assert.equal(isScopeChange(1), true, "+100% 计入");
+assert.equal(isScopeChange(null), false, "无环比");
+
+console.log("derive.check.ts: all assertions passed ✓ (incl. freshness13F, effectiveMovesPeriod, countsAsCurrentHolder, isScopeChange, effectiveFilingDeadline)");

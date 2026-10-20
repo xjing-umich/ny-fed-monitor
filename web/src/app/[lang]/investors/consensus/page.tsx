@@ -5,7 +5,7 @@ import type { Lang } from "@/lib/nav";
 import { mostHeld, holderDeltas } from "@/lib/aggregations";
 import { getManagerIndex } from "@/lib/managers/source";
 import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
-import { altFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
@@ -14,7 +14,7 @@ import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
 import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
-import { freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
+import { countsAsCurrentHolder, effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { readValuationVerdicts } from "@/lib/valuation/valuationSnapshot";
 
 export const revalidate = 259200; // 季度级数据;列表页 3 天,见 app/[lang]/page.tsx 注释
@@ -28,9 +28,15 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const isZh = rawLang === "zh";
   const lang = isZh ? "zh" : "en";
   const alternates = altFor(lang, "/investors/consensus");
-  return isZh
-    ? { title: "共识持仓 · 超级投资者 — Compounder · 复利", description: "顶级价值投资者 13F 中被最多人同时持有的股票，含季度环比。", alternates }
-    : { title: "Consensus holdings · Superinvestors — Compounder", description: "Stocks held by the most superinvestors (13F), with quarter-over-quarter change.", alternates };
+  const meta = isZh
+    ? { title: "共识持仓 · 超级投资者 — Compounder · 复利", description: "顶级价值投资者 13F 中被最多人同时持有的股票，含季度环比。" }
+    : { title: "Consensus holdings · Superinvestors — Compounder", description: "Stocks held by the most superinvestors (13F), with quarter-over-quarter change." };
+  return {
+    ...meta,
+    alternates,
+    // 本路由自带 opengraph-image,不带品牌卡图以免盖掉它。
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, "/investors/consensus"), brandImage: false }),
+  };
 }
 
 export default async function ConsensusPage({ params }: { params: Promise<{ lang: string }> }) {
@@ -41,9 +47,12 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
 
   const [rows, deltas, idx] = await Promise.all([mostHeld(50), holderDeltas(), getManagerIndex()]);
   const verdicts = await readValuationVerdicts(rows.map((r) => r.cusip));
-  const managerCount = idx.managers.length;
-  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
-  const staleManagers = idx.managers.filter((m) => freshness13F(m.period, globalLatest) === "stale");
+  // 已过最近到期季截止日仍没交 13F 的 manager 不计入持有人(与 consensus 快照同一判定),分母同步扣除。
+  const now = new Date();
+  const overdueManagers = idx.managers.filter((m) => !countsAsCurrentHolder(m.period, now));
+  const managerCount = idx.managers.length - overdueManagers.length;
+  // 「数据截至」与首页 masthead、buys/sells、个股页同一口径(effectiveMovesPeriod)。
+  const asOfLabel = quarterLabel(effectiveMovesPeriod(idx.managers.map((m) => m.period), now).period) || undefined;
   const totalSum = rows.reduce((s, r) => s + r.totalValue, 0) || 1;
 
   const rankRows: RankRow[] = rows.map((r) => ({
@@ -81,7 +90,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
             eyebrow={isZh ? "跨基金共识 · SEC 13F" : "Cross-fund consensus · SEC 13F"}
             title={isZh ? "共识持仓" : "Consensus holdings"}
             intro={isZh ? "最多超级投资者同时持有的股票，按持有人数排列。" : "Stocks held by the most superinvestors, ranked by holder count."}
-            dateline={<DataAsOfBadge lang={lang} />}
+            dateline={<DataAsOfBadge lang={lang} asOf={asOfLabel} />}
             action={
               <ShareButton
                 url={shareUrl}
@@ -91,11 +100,11 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
               />
             }
           />
-          {staleManagers.length > 0 && (
+          {overdueManagers.length > 0 && (
             <p className="mt-3 text-xs text-[var(--tt-muted)]">
               {isZh
-                ? `注：${staleManagers.map((m) => `${m.person}（数据截至 ${m.period}）`).join("、")} 的持仓按其最新申报计入，环比变动不计。`
-                : `Note: ${staleManagers.map((m) => `${m.person} (as of ${m.period})`).join(", ")} counted per their latest filing; excluded from QoQ deltas.`}
+                ? `未计入：${overdueManagers.map((m) => `${m.person}（最新 13F 停在 ${quarterLabel(m.period)}）`).join("、")}。申报截止日已过仍未交新一季，旧仓位不算当前持有。`
+                : `Not counted: ${overdueManagers.map((m) => `${m.person} (latest 13F: ${quarterLabel(m.period)})`).join(", ")}. They missed the latest filing deadline, so their old positions don't count as current holdings.`}
             </p>
           )}
         </div>

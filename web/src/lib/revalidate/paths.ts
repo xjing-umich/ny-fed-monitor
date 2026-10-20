@@ -38,3 +38,6 @@ export const DATA_DRIVEN_PATHS = [
  * 站点首页在内:报告行首次建出时,首页申报季进度行要出现“Qn 报告 →”链接(ingest 的整站刷新跑在报告生成之前)。
  */
 export const REPORT_PATHS = ["/[lang]/learn/[slug]", "/[lang]/learn", "/[lang]"] as const satisfies readonly (typeof DATA_DRIVEN_PATHS)[number][];
+
+/** 读同一批数据的路由处理器(非 page.tsx,不在上面的双向校验里)。字面路径,revalidatePath 不带 type。 */
+export const DATA_DRIVEN_ROUTE_HANDLERS = ["/llms.txt", "/llms-full.txt"] as const;

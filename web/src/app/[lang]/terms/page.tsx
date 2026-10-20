@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getLegalDoc } from "@/lib/legal";
-import { altFor } from "@/lib/seo";
+import { altFor, ogFor } from "@/lib/seo";
+import { localePath } from "@/lib/urls";
 import LegalArticle from "@/components/legal/LegalArticle";
 
 export function generateStaticParams() {
@@ -16,10 +17,12 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const doc = getLegalDoc("terms", lang);
+  const title = `${doc.title} — Compounder`;
   return {
-    title: `${doc.title} — Compounder`,
+    title,
     description: doc.intro,
     alternates: altFor(lang, "/terms"),
+    ...ogFor({ lang, title, description: doc.intro, path: localePath(lang, "/terms") }),
   };
 }
 

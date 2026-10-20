@@ -12,11 +12,11 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
-import { filingFreshness, freshness13F, quarterLag, globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
+import { filingFreshness, freshness13F, isScopeChange, quarterLag, globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
@@ -81,16 +81,20 @@ export async function generateMetadata({
     lang === "zh"
       ? {
           title: `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`,
-          description: `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
+          description: posCount === 0 && d.latest
+            ? `${person}（${fundName}）${q} 的 SEC 13F 申报持仓为零，未列任何持仓。数据来自 SEC EDGAR。`
+            : `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
         }
       : {
           title: `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`,
-          description: `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
+          description: posCount === 0 && d.latest
+            ? `${person}'s SEC 13F (${fundName}) for ${q} reports zero holdings. Sourced from SEC EDGAR.`
+            : `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
         };
   return {
     ...meta,
     alternates,
-    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/investors/${slug}`), type: "profile" }),
+    ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/investors/${slug}`), type: "profile", brandImage: false }),
   };
 }
 
@@ -396,6 +400,41 @@ export default async function InvestorSlugPage({
       )}
     </span>
   );
+  // 环比量级异常(≤−50% / ≥+100%)的说明:股价一季动不到这个量级,读者容易当成数据错误或"大举清仓"。
+  // 数字照申报原文展示,旁边讲清楚它通常意味着什么(例: Cantillon Q2 2026 $150 亿 → $6.7 亿,−96%)。
+  // 零持仓申报(如 Olstein 2026Q2):明说"本季申报持仓为零",不让读者以为数据缺失,也不展示旧季持仓。
+  // 申报不写原因,故不把它说成卖出(changes 已在 assembleManagerDetail 置空)。
+  const zeroReport = latest.holdings.length === 0;
+  const zeroFilingUrl = `https://www.sec.gov/Archives/edgar/data/${manager.cik.replace(/^0+/, "")}/${latest.accession.replace(/-/g, "")}/`;
+  const zeroNote = zeroReport ? (
+    <p className="mt-2 text-sm text-[var(--tt-muted)]">
+      {lang === "zh" ? (
+        <>
+          <strong className="font-medium text-[var(--tt-text)]">{quarterLabel(latest.period)} 申报持仓为零。</strong>
+          {fund}{latest.filedAt ? ` ${latest.filedAt} ` : ""}提交的 13F（
+          <a href={zeroFilingUrl} className="text-[var(--tt-text)]" rel="noopener noreferrer" target="_blank">SEC 原文</a>
+          ）只有一行全 0 占位，未列任何持仓。申报没写原因，常见的是清盘、委托转给别家管理人，或管理规模跌破 13F 申报门槛，这里不算作卖出。
+          {prior && priorLong ? `上一季 ${quarterLabel(prior.period)} 申报 ${priorLong.length} 只持仓，合计 ${formatUSD(priorLongTotal)}。` : ""}
+        </>
+      ) : (
+        <>
+          <strong className="font-medium text-[var(--tt-text)]">{quarterLabel(latest.period)} 13F reports zero holdings.</strong>{" "}
+          The filing {fund} submitted{latest.filedAt ? ` on ${latest.filedAt}` : ""} (
+          <a href={zeroFilingUrl} className="text-[var(--tt-text)]" rel="noopener noreferrer" target="_blank">SEC original</a>
+          ) has a single all-zero placeholder row and no positions. It gives no reason; the usual ones are a wind-down, discretion moving to another adviser, or assets falling below the 13F threshold. We don&apos;t count it as selling.
+          {prior && priorLong ? ` The prior quarter, ${quarterLabel(prior.period)}, reported ${priorLong.length} positions worth ${formatUSD(priorLongTotal)}.` : ""}
+        </>
+      )}
+    </p>
+  ) : null;
+  const scopeNote =
+    !zeroReport && prior && isScopeChange(valDeltaPct) ? (
+      <p className="mt-2 text-xs text-[var(--tt-muted)]">
+        {lang === "zh"
+          ? `组合市值环比 ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}%（${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}，持仓 ${priorLong!.length} → ${longHoldings.length} 只），数字取自 13F 申报原文。股价一个季度变不了这么多，常见原因是资金赎回、清盘，或部分账户不再计入 13F 申报范围；不等于基金经理主动卖出了这么多。`
+          : `Portfolio value ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}% QoQ (${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}, ${priorLong!.length} → ${longHoldings.length} positions), as reported in the 13F. Prices don't move this much in a quarter: the usual causes are client redemptions, a wind-down, or accounts dropping out of the 13F's reporting scope — not necessarily the manager selling on purpose.`}
+      </p>
+    ) : null;
   const countNode = (
     <span className="tnum font-data text-xl font-medium leading-none text-[var(--tt-text)]">
       {longHoldings.length}
@@ -438,24 +477,10 @@ export default async function InvestorSlugPage({
     .slice(0, 6)
     .map((m) => ({ label: m.person, href: investorPath(lang, m.slug) }));
 
-  const breadcrumb = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: lang === "zh" ? "超级投资者" : "Superinvestors",
-        item: absoluteUrl(localePath(lang, `/investors`)),
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: manager.person,
-        item: absoluteUrl(localePath(lang, `/investors/${manager.slug}`)),
-      },
-    ],
-  };
+  const breadcrumb = breadcrumbLd(lang, [
+    { name: lang === "zh" ? "超级投资者" : "Superinvestors", path: localePath(lang, "/investors") },
+    { name: manager.person, path: localePath(lang, `/investors/${manager.slug}`) },
+  ]);
 
   // Person structured data — identifies the investor as an entity and links the
   // fund they run, so search/AI engines can attribute holdings to a real person.
@@ -467,6 +492,8 @@ export default async function InvestorSlugPage({
     name: manager.person,
     ...(aliasNames.length ? { alternateName: aliasNames } : {}),
     url: absoluteUrl(localePath(lang, `/investors/${manager.slug}`)),
+    // CIK 是该基金(13F 申报主体)在 SEC 的编号;投资人以其掌管的申报主体被识别。
+    identifier: { "@type": "PropertyValue", propertyID: "SEC CIK", value: manager.cik },
     jobTitle: lang === "zh" ? "投资人" : "Investor",
     worksFor: { "@type": "Organization", name: fund },
     subjectOf: {
@@ -483,7 +510,8 @@ export default async function InvestorSlugPage({
       ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
       creator: { "@type": "Organization", name: fund },
       sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
-      license: "https://creativecommons.org/publicdomain/mark/1.0/",
+      isBasedOn: edgarFilingsUrl(manager.cik),
+      license: SEC_DATA_LICENSE,
     },
   };
 
@@ -519,7 +547,13 @@ export default async function InvestorSlugPage({
             meta={{ entity: slug, entityType: "investor", lang }}
           />
         }
-        notice={freshnessNotice}
+        notice={
+          <>
+            {freshnessNotice}
+            {zeroNote}
+            {scopeNote}
+          </>
+        }
         sources={[{ name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
         related={related}
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
@@ -622,7 +656,7 @@ export default async function InvestorSlugPage({
               </ul>
             </section>
           )}
-          <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />
+          {!zeroReport && <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />}
           <LearnLink
             lang={lang}
             slug="what-is-a-superinvestor"

@@ -80,7 +80,8 @@ export default async function InvestorsPage({
   const [idx, qoq] = await Promise.all([getManagerIndex(), getManagerQoQ()]);
   const managers = [...idx.managers]
     .sort((a, b) => b.totalValue - a.totalValue)
-    .map((m) => ({ ...m, qoq: qoq.get(m.cik) }));
+    // 零持仓季(holdingCount 0):manager_qoq RPC 只看有 holdings 行的申报,会拿上两季比,与本行季度对不上 → 不显 QoQ。
+    .map((m) => ({ ...m, qoq: m.holdingCount === 0 ? undefined : qoq.get(m.cik) }));
 
   const head = HEAD[lang];
 

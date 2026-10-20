@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, breadcrumbLd } from "@/lib/seo";
 import { quarterLabel } from "@/lib/freshness/derive";
 import ProseDoc from "@/components/legal/ProseDoc";
 import { parseReportSlug, reportLastModified, reportSlug } from "@/lib/reports/period";
@@ -152,24 +152,10 @@ export default async function ArticlePage({
 
   // Breadcrumb — matches the convention on stock/investor detail pages and
   // surfaces a "Learn › {article}" trail in search results.
-  const breadcrumb = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: lang === "zh" ? "学习" : "Learn",
-        item: absoluteUrl(localePath(lang, `/learn`)),
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: article.title,
-        item: absoluteUrl(localePath(lang, `/learn/${slug}`)),
-      },
-    ],
-  };
+  const breadcrumb = breadcrumbLd(lang, [
+    { name: lang === "zh" ? "学习" : "Learn", path: localePath(lang, "/learn") },
+    { name: article.title, path: localePath(lang, `/learn/${slug}`) },
+  ]);
 
   return (
     <>

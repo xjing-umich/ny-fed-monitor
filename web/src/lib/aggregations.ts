@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange } from "@/lib/managers/types";
-import { effectiveMovesPeriod, freshness13F, globalLatestPeriod } from "@/lib/freshness/derive";
+import { countsAsCurrentHolder, effectiveMovesPeriod } from "@/lib/freshness/derive";
 import { processCached } from "@/lib/managers/processCache";
 
 /** scanAllManagers 的进程级缓存时长。取值理由见 processCache.ts。 */
@@ -46,10 +46,9 @@ const loadScanAllManagers = processCached("scanAllManagers", SCAN_TTL_MS, async 
 
 export const scanAllManagers = cache(loadScanAllManagers);
 
-/** 剔除 inactive(≥4季停报 tripwire)；stale 保留。consensus 持仓口径(spec freshness-guard §C2)。 */
-export function excludeInactive(scan: ScanRow[]): ScanRow[] {
-  const gl = globalLatestPeriod(scan.map((r) => r.period));
-  return scan.filter((r) => freshness13F(r.period, gl) !== "inactive");
+/** 只留当前持有人:最近到期季截止日过后仍没交的 manager 剔除(countsAsCurrentHolder)。consensus 持仓口径。 */
+export function currentHoldersOnly(scan: ScanRow[], today: Date = new Date()): ScanRow[] {
+  return scan.filter((r) => countsAsCurrentHolder(r.period, today));
 }
 
 /** 只留有效变动季有申报者。季度变动(buys/sells/holderDeltas)口径(spec freshness-guard §C2 + effective-moves-period)。 */
@@ -125,7 +124,7 @@ export async function mostHeld(limit = 40): Promise<HeldRow[]> {
   const { readConsensusHeld } = await import("@/lib/managers/consensusRead");
   const fromDb = await readConsensusHeld(limit);
   if (fromDb && fromDb.length) return fromDb;
-  return tickerizeRows(computeMostHeld(excludeInactive(await scanAllManagers()), limit)); // 回退: 无库/空表时请求时计算
+  return tickerizeRows(computeMostHeld(currentHoldersOnly(await scanAllManagers()), limit)); // 回退: 无库/空表时请求时计算
 }
 
 // Minimum holders for a stock to count as "consensus". On a new, low-authority

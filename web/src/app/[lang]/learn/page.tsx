@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { getFeatured, getLatest, listRest, listArticles, FEATURED_SLUG, BRAND } from "@/lib/learn";
-import { altFor } from "@/lib/seo";
+import { getFeatured, getLatest, listRest, listArticles, FEATURED_SLUG, ARTICLE_SLUGS, BRAND } from "@/lib/learn";
+import { altFor, ogFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import PageHeader from "@/components/common/PageHeader";
 import { listReportPeriods, readReportRow } from "@/lib/reports/read";
@@ -45,10 +45,13 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const c = COPY[lang];
+  const title = `${c.title} — Compounder`;
   return {
-    title: `${c.title} — Compounder`,
+    title,
     description: c.intro,
     alternates: altFor(lang, "/learn"),
+    // 本路由自带 opengraph-image,不带品牌卡图以免盖掉它。
+    ...ogFor({ lang, title, description: c.intro, path: localePath(lang, "/learn"), brandImage: false }),
   };
 }
 
@@ -64,7 +67,8 @@ export default async function LearnIndexPage({
   const featured = getFeatured(lang);
   const latest = getLatest(lang);
   // 最新季度报告占据「最新」位;无报告(或无库)时回退到手写文章。读库失败会 throw,不缓存假空态。
-  const [newestReport] = await listReportPeriods();
+  // 已有同 slug 手写文章的季度(如 Q1/Q2 2026)由手写版占位,不让生成报告的标题配上手写文章的链接。
+  const [newestReport] = (await listReportPeriods()).filter((r) => !ARTICLE_SLUGS.includes(reportSlug(r.period)));
   const reportRow = newestReport ? await readReportRow(newestReport.period) : null;
   const latestCard = reportRow
     ? {
