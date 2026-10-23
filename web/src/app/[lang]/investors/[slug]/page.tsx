@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { holdingKey } from "@/lib/managers/assemble";
-import type { Holding, HoldingChange } from "@/lib/managers/types";
+import type { Holding } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -38,6 +38,8 @@ import { LearnLink } from "@/components/common/LearnLink";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Display } from "@/components/common/Display";
+import { splitNames } from "@/lib/entity/quarterMovesText";
+import { countMoves } from "./movesCount";
 
 const MAX_HOLDINGS = 25;
 
@@ -107,21 +109,16 @@ const HOLD_COPY = {
     title: "持仓明细",
     cols: { issuer: "标的", value: "市值", valuation: "估值", consensus: "持有人数", shares: "持股数", weight: "权重", signal: "信号" },
     truncated: (n: number, total: number) => `显示前 ${n} 条，共 ${total} 个持仓`,
-    exitedTitle: (n: number) => `本季清仓 (${n})`,
-    more: (n: number) => `… 等 ${n} 只`,
   },
   en: {
     title: "Holdings",
     cols: { issuer: "Security", value: "Value", valuation: "Valuation", consensus: "Holders", shares: "Shares", weight: "Weight", signal: "Signal" },
     truncated: (n: number, total: number) => `Showing top ${n} of ${total} positions`,
-    exitedTitle: (n: number) => `Exited this quarter (${n})`,
-    more: (n: number) => `… +${n} more`,
   },
 } as const;
 
 function HoldingsTable({
   holdings,
-  changes,
   lang,
   cusipToTicker,
   verdicts,
@@ -129,7 +126,6 @@ function HoldingsTable({
   rowSignals,
 }: {
   holdings: Holding[];
-  changes: HoldingChange[];
   lang: Lang;
   cusipToTicker: Map<string, string>;
   verdicts: Map<string, SnapshotVerdict>;
@@ -142,9 +138,6 @@ function HoldingsTable({
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
-
-  const exits = changes.filter((c) => c.kind === "exited" && !c.putCall);
-  const EXIT_CAP = 12;
 
   const columns: Column<Holding>[] = [
     {
@@ -255,24 +248,23 @@ function HoldingsTable({
       {truncated && (
         <p className="mt-2 text-xs text-[var(--tt-muted)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
       )}
-
-      {exits.length > 0 && (
-        <div className="mt-5 pt-1">
-          <span className="font-data text-xs text-[var(--tt-negative)]">
-            {t.exitedTitle(exits.length)}
-          </span>
-          <span className="ml-2 text-sm text-[var(--tt-muted)]">
-            {exits.slice(0, EXIT_CAP).map((c, i) => (
-              <React.Fragment key={holdingKey(c)}>
-                {i > 0 && "、"}
-                <Link href={stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip)} className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
-              </React.Fragment>
-            ))}
-            {exits.length > EXIT_CAP && <span className="text-[var(--tt-faint)]">{t.more(exits.length - EXIT_CAP)}</span>}
-          </span>
-        </div>
-      )}
     </section>
+  );
+}
+
+function QuarterMovesExited({ lang, exits }: { lang: Lang; exits: { name: string; href: string }[] }) {
+  const { shown, rest } = splitNames(exits);
+  return (
+    <p className="mt-3 text-sm text-[var(--tt-muted)]">
+      {lang === "zh" ? `清仓 ${exits.length}：` : `Exited ${exits.length}: `}
+      {shown.map((e, i) => (
+        <React.Fragment key={e.href}>
+          {i > 0 && (lang === "zh" ? "、" : ", ")}
+          <Link href={e.href} className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">{e.name}</Link>
+        </React.Fragment>
+      ))}
+      {rest > 0 && (lang === "zh" ? ` 另 ${rest} 只` : ` +${rest} more`)}
+    </p>
   );
 }
 
@@ -347,10 +339,8 @@ export default async function InvestorSlugPage({
   // Verdict
   const buying = longChanges.filter((c) => c.kind === "new" || c.kind === "increased").length;
   const selling = longChanges.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
-  // 本季动作三计数(纯 JS 派生自已加载的 longChanges, 零新增 IO; 口径与 verdict 一致, 长仓 only)
-  const added = longChanges.filter((c) => c.kind === "new").length;
-  const increased = longChanges.filter((c) => c.kind === "increased").length;
-  const exited = longChanges.filter((c) => c.kind === "exited").length;
+  // 本季动作四计数(纯 JS 派生自已加载的 longChanges, 零新增 IO; 口径与 verdict 一致, 长仓 only)
+  const moves = countMoves(longChanges);
   let verdict: { label: string; tone: Tone } | undefined;
   if (longChanges.length > 0 && prior) {
     if (buying > selling) {
@@ -579,11 +569,12 @@ export default async function InvestorSlugPage({
         <>
           {/* 本季动作摘要 — masthead/key-facts 之下的第一个重音时刻；计数纯 JS 派生，零新增数据请求；与 verdict 同口径 gating：无 prior 或无变化时不显示，避免 0/0/0 假精确 */}
           {prior && longChanges.length > 0 && (
-            <div className="grid grid-cols-3 gap-4 border-y border-[var(--tt-border)] py-6">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 border-y border-[var(--tt-border)] py-6">
               {[
-                { label: lang === "zh" ? "新建" : "New", value: added, color: "var(--tt-positive)" },
-                { label: lang === "zh" ? "加仓" : "Added", value: increased, color: "var(--ink-1)" },
-                { label: lang === "zh" ? "清仓" : "Exited", value: exited, color: "var(--tt-negative)" },
+                { label: lang === "zh" ? "新建" : "New", value: moves.opened, color: "var(--tt-positive)" },
+                { label: lang === "zh" ? "加仓" : "Added", value: moves.added, color: "var(--ink-1)" },
+                { label: lang === "zh" ? "减仓" : "Trimmed", value: moves.trimmed, color: "var(--ink-1)" },
+                { label: lang === "zh" ? "清仓" : "Exited", value: moves.exited, color: "var(--tt-negative)" },
               ].map((s, i) => (
                 <div key={s.label}>
                   <p className="tt-label">{s.label}</p>
@@ -593,6 +584,9 @@ export default async function InvestorSlugPage({
                 </div>
               ))}
             </div>
+          )}
+          {prior && longChanges.length > 0 && moves.exited > 0 && (
+            <QuarterMovesExited lang={lang} exits={longChanges.filter((c) => c.kind === "exited").map((c) => ({ name: cleanIssuer(c.issuer), href: stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip) }))} />
           )}
           {(() => {
             const held = holdingTickers.map((tk) => verdicts.get(tk.toUpperCase())).filter(Boolean) as SnapshotVerdict[];
@@ -692,7 +686,7 @@ export default async function InvestorSlugPage({
               </ul>
             </section>
           )}
-          {!zeroReport && <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />}
+          {!zeroReport && <HoldingsTable holdings={latest.holdings} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />}
           <LearnLink
             lang={lang}
             slug="what-is-a-superinvestor"
