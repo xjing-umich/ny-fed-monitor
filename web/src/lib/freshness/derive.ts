@@ -117,7 +117,8 @@ export type EffectiveMovesPeriod = {
   period: string | null;
   reason: EffectiveMovesReason;
   maxPeriod: string | null;
-  coverage: { filed: number; total: number };
+  /** total = 应申报 M(isExpectedFiler);excluded = 名单人数 − M(上季未申报或从未申报)。 */
+  coverage: { filed: number; total: number; excluded: number };
 };
 
 /** Prior calendar quarter-end for a YYYY-MM-DD quarter-end string. Illegal → null. */
@@ -134,21 +135,33 @@ export function priorQuarterEnd(period: string): string | null {
 }
 
 /**
+ * 进行中季度 period 的「应申报」判定:最新申报期 ≥ period 的上一季,即进入申报季前的「计入」口径。
+ * 申报进度 n/M、切季覆盖率、季度报告的覆盖率与门槛都用这个分母(spec 2026-10-23 §三.1)。
+ * 停在更早季度或从未申报的人不在分母里,页面旁边写明人数与原因。
+ */
+export function isExpectedFiler(latestPeriod: string | null | undefined, period: string): boolean {
+  const prior = priorQuarterEnd(period);
+  if (!prior || !latestPeriod || !parseUTC(latestPeriod)) return false;
+  return latestPeriod >= prior;
+}
+
+/**
  * Moves baseline quarter: do not follow early filers until SEC deadline (weekend-rolled) passed
- * AND coverage of maxPeriod among tracked periods ≥ MOVES_COVERAGE_MIN.
+ * AND coverage of maxPeriod among expected filers (isExpectedFiler) ≥ MOVES_COVERAGE_MIN.
  */
 export function effectiveMovesPeriod(
   periods: Array<string | null | undefined>,
   today: Date,
 ): EffectiveMovesPeriod {
   const valid = periods.filter((p): p is string => !!p && !!parseUTC(p));
-  const total = valid.length;
   const maxPeriod = globalLatestPeriod(valid);
-  if (!maxPeriod || total === 0) {
-    return { period: null, reason: "empty", maxPeriod: null, coverage: { filed: 0, total: 0 } };
+  if (!maxPeriod || valid.length === 0) {
+    return { period: null, reason: "empty", maxPeriod: null, coverage: { filed: 0, total: 0, excluded: periods.length } };
   }
-  const filed = valid.filter((p) => p === maxPeriod).length;
-  const coverage = { filed, total };
+  const expected = valid.filter((p) => isExpectedFiler(p, maxPeriod));
+  const total = expected.length;
+  const filed = expected.filter((p) => p === maxPeriod).length;
+  const coverage = { filed, total, excluded: periods.length - total };
   const maxDate = parseUTC(maxPeriod)!;
   const deadline = rollWeekend(addDays(maxDate, FILING_DEADLINE_DAYS));
   // Same strictness as mostRecentDueQuarter: due only when today is strictly after deadline day.

@@ -16,6 +16,7 @@ import {
   effectiveFilingDeadline,
   countsAsCurrentHolder,
   isScopeChange,
+  isExpectedFiler,
 } from "./derive";
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
@@ -177,6 +178,45 @@ assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-11-17")), false, "顺�
   const tue = effectiveMovesPeriod(periods, d("2026-11-17"));
   assert.equal(tue.period, "2026-09-30", "11/17 覆盖 ≥50% → 切到 Q3");
   assert.equal(tue.reason, "due_and_covered");
+}
+
+// --- 应申报名单 M:最新申报期 ≥ 该季上一季;停在更早季度或从未申报的人不计入分母 ---
+assert.equal(isExpectedFiler("2026-06-30", "2026-09-30"), true, "交了 Q2 → Q3 应申报");
+assert.equal(isExpectedFiler("2026-09-30", "2026-09-30"), true, "已交 Q3 → 应申报");
+assert.equal(isExpectedFiler("2026-03-31", "2026-09-30"), false, "停在 Q1(Bancroft)→ Q3 不计入分母");
+assert.equal(isExpectedFiler("2025-09-30", "2026-09-30"), false, "停报一年(Burry)→ 不计入");
+assert.equal(isExpectedFiler(null, "2026-09-30"), false, "从未申报 → 不计入");
+assert.equal(isExpectedFiler("2026-03-31", "2026-06-30"), true, "Q2 报告:交了 Q1 → 应申报");
+{
+  // 2026-10-23 线上形态:2 位已交 Q3、92 位停在 Q2、Bancroft 停在 Q1、Bares/Burry 停在 2025Q3
+  const periods = [
+    ...Array(2).fill("2026-09-30"),
+    ...Array(92).fill("2026-06-30"),
+    "2026-03-31",
+    "2025-09-30",
+    "2025-09-30",
+  ];
+  const r = effectiveMovesPeriod(periods, d("2026-10-23"));
+  assert.equal(r.coverage.filed, 2, "已交 Q3 = 2");
+  assert.equal(r.coverage.total, 94, "分母 M = 94(不是 97)");
+  assert.equal(r.coverage.excluded, 3, "上季未申报 3 位");
+}
+{
+  // 名单里有人没有任何申报:计入 excluded,不出现负数
+  const r = effectiveMovesPeriod(["2026-09-30", "2026-06-30", null, undefined], d("2026-10-23"));
+  assert.equal(r.coverage.total, 2);
+  assert.equal(r.coverage.excluded, 2, "null/undefined 期也算上季未申报");
+}
+{
+  // 切季门槛按 M 算:50 位应申报中 26 位已交 → ≥50%,即使名单 97 人
+  const periods = [
+    ...Array(26).fill("2026-09-30"),
+    ...Array(24).fill("2026-06-30"),
+    ...Array(47).fill("2025-12-31"),
+  ];
+  const r = effectiveMovesPeriod(periods, d("2026-11-17"));
+  assert.equal(r.coverage.total, 50);
+  assert.equal(r.reason, "due_and_covered", "26/50 ≥ 50% → 切到 Q3");
 }
 
 // --- isScopeChange: 组合市值环比量级异常 ---
