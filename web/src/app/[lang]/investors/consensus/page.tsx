@@ -16,6 +16,7 @@ import { AggregateRankingList, type RankRow } from "@/components/aggregate/Aggre
 import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
 import { countsAsCurrentHolder, effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { readValuationVerdicts } from "@/lib/valuation/valuationSnapshot";
+import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 
 export const revalidate = 259200; // 季度级数据;列表页 3 天,见 app/[lang]/page.tsx 注释
 
@@ -47,6 +48,8 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
 
   const [rows, deltas, idx] = await Promise.all([mostHeld(50), holderDeltas(), getManagerIndex()]);
   const verdicts = await readValuationVerdicts(rows.map((r) => r.cusip));
+  // 榜上估值徽章来自估值快照:标出所用收盘价日期。
+  const valuationAsOf = valuationAsOfText(lang, latestIsoDate([...verdicts.values()].map((v) => v.priceDate)));
   // 已过最近到期季截止日仍没交 13F 的 manager 不计入持有人(与 consensus 快照同一判定),分母同步扣除。
   const now = new Date();
   const overdueManagers = idx.managers.filter((m) => !countsAsCurrentHolder(m.period, now));
@@ -109,6 +112,11 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
           )}
         </div>
         <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang)} />
+        {valuationAsOf && (
+          <p className="mb-2 font-data text-xs text-[var(--tt-faint)]">
+            {isZh ? `估值徽章：${valuationAsOf}（SEC 财报 × 收盘价）` : `Valuation badges: ${valuationAsOf} (SEC filings × closing prices)`}
+          </p>
+        )}
         <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "持有" : "holders"} />
       </div>
     </>

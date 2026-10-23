@@ -17,6 +17,7 @@ import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { StocksTable, type StockRow } from "./StocksTable";
 import { stockUi } from "@/lib/stocks/stockCopy";
 import { readBargainVerdicts } from "@/lib/valuation/valuationSnapshot";
+import { latestIsoDate } from "@/lib/valuation/asOf";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + ISR → 列表页 CDN 秒开,
 // 且不会把 consensusHeld(最多 5000 行)反复读出(egress)。
@@ -75,6 +76,8 @@ export default async function StocksIndexPage({
 
   const isZh = lang === "zh";
   const ui = stockUi(lang);
+  // 绿标来自估值快照:标出所用收盘价日期(快照 + ISR 可能比 13F 数据新或旧)。
+  const bargainAsOf = latestIsoDate([...bargains.values()].map((b) => b.priceDate));
   // 与首页 masthead / 个股页"截至"同一口径:申报季内不跟单只早申报者跳到新季。
   const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period;
   const asOfLabel = quarterLabel(displayPeriod) || undefined;
@@ -112,8 +115,8 @@ export default async function StocksIndexPage({
           title={ui.stocksTitle}
           dateline={<DataAsOfBadge lang={lang} asOf={asOfLabel} />}
           intro={isZh
-            ? "按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（现价低于保守价值带）的以绿色标出。"
-            : "Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price below our conservative value band — are marked in green."}
+            ? `按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（收盘价低于保守价值带）的以绿色标出${bargainAsOf ? `，估值截至 ${bargainAsOf} 收盘价` : ""}。`
+            : `Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — closing price below our conservative value band — are marked in green${bargainAsOf ? ` (valuations as of the ${bargainAsOf} close)` : ""}.`}
         />
       </div>
 

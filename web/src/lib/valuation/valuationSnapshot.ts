@@ -97,7 +97,7 @@ export const readValuationVerdicts = cache(
   },
 );
 
-export type BargainVerdict = { inStrikeZone: boolean; marginPct: number };
+export type BargainVerdict = { inStrikeZone: boolean; marginPct: number; priceDate: string };
 
 /**
  * 读"便宜"票(击球区 或 低于价值带, reliable)的按-ticker map, 供 /stocks 列表高亮稀有便宜。
@@ -118,7 +118,7 @@ export const readBargainVerdicts = cache(
       const { data, error } = await withRetry(() =>
         getDb()
           .from("valuation_snapshot")
-          .select("ticker,range_lo,range_hi,price,margin_pct,in_strike_zone,verdict_bucket")
+          .select("ticker,range_lo,range_hi,price,margin_pct,in_strike_zone,verdict_bucket,price_date")
           .eq("reliable", true)
           .or("in_strike_zone.eq.true,verdict_bucket.eq.below")
           .limit(500),
@@ -143,6 +143,7 @@ export const readBargainVerdicts = cache(
         out.set(String(r.ticker).toUpperCase(), {
           inStrikeZone: Boolean(r.in_strike_zone),
           marginPct,
+          priceDate: r.price_date == null ? "" : String(r.price_date),
         });
       }
       return out;
@@ -159,6 +160,8 @@ export type StrikeLeader = {
   rangeHi: number;
   marginPct: number | null;
   computedAt: string;
+  /** 估值所用收盘价日期(快照 price_date);页面据此标"估值截至"。 */
+  priceDate: string;
 };
 
 /**
@@ -197,7 +200,7 @@ export const readStrikeZoneLeaders = cache(
       const { data, error } = await withRetry(() =>
         getDb()
           .from("valuation_snapshot")
-          .select("ticker,range_lo,range_hi,price,margin_pct,computed_at")
+          .select("ticker,range_lo,range_hi,price,margin_pct,computed_at,price_date")
           .eq("in_strike_zone", true)
           .eq("reliable", true)
           .order("margin_pct", { ascending: false })
@@ -225,6 +228,7 @@ export const readStrikeZoneLeaders = cache(
           rangeHi: Number(r.range_hi),
           marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
           computedAt: String(r.computed_at),
+          priceDate: r.price_date == null ? "" : String(r.price_date),
         }));
       return { total: count ?? leaders.length, leaders };
     } catch (err) {
