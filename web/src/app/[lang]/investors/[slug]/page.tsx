@@ -33,7 +33,7 @@ import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
 import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
-import { PENDING_WORD } from "@/lib/valuation/valuationLabel";
+import { PENDING_WORD, valuationLabel } from "@/lib/valuation/valuationLabel";
 import { LearnLink } from "@/components/common/LearnLink";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { SectionHeading } from "@/components/common/SectionHeading";
@@ -631,15 +631,16 @@ export default async function InvestorSlugPage({
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
                       {h.marginPct != null ? `${Math.round(h.marginPct * 100)}%` : ""}
                       {h.marginPct != null ? " · " : ""}
-                      {h.inStrikeZone
-                        ? lang === "zh" ? "击球区" : "strike"
-                        : lang === "zh" ? "低于内在价值" : "below"}
+                      {valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: true }, lang).label}
                     </span>
                   </li>
                 ))}
                 {/* 待确认:便宜档但估值带红旗,照实列出,中性色 + 后缀,不计入上面的数 */}
-                {posture.pending.map((h) => (
-                  <li key={`pending-${h.ticker}`} className="flex items-baseline gap-2 text-sm">
+                {posture.pending.map((h) => {
+                  // 档位文案与待确认原因都来自 valuationLabel(单一说法源)
+                  const vl = valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: false }, lang);
+                  return (
+                  <li key={`pending-${h.ticker}`} title={vl.title ?? undefined} className="flex items-baseline gap-2 text-sm">
                     <Link
                       href={stockPath(lang, h.ticker)}
                       className="min-w-0 truncate text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
@@ -648,13 +649,12 @@ export default async function InvestorSlugPage({
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </Link>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)]">
-                      {h.inStrikeZone
-                        ? lang === "zh" ? "击球区" : "strike"
-                        : lang === "zh" ? "低于内在价值" : "below"}
+                      {vl.label}
                       {` · ${PENDING_WORD[lang]}`}
                     </span>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </section>
           )}
