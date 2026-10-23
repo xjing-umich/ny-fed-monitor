@@ -43,14 +43,24 @@ export type FundamentalField =
 export const FUNDAMENTAL_TAGS: Record<FundamentalField, string[]> = {
   // --- flow ---
   revenue: [
+    // 银行/券商总营收(净利息收入 + 非利息收入)。排第一:银行常把手续费子项标成
+    // RevenueFromContract…(COLB FY2025 $1.77 亿 vs 真实 $23 亿),不能让子项抢先。
+    // 自标者(JPM/GS/MS/WFC)直取;其余银行由 bank-revenue.ts 合成注入。非金融公司不用此概念。
+    "RevenuesNetOfInterestExpense",
     "RevenueFromContractWithCustomerExcludingAssessedTax",
     "Revenues",
     "RevenueFromContractWithCustomerIncludingAssessedTax",
-    "SalesRevenueNet"
+    "SalesRevenueNet",
+    // 公用事业(DTE/SWX 只标这一个)
+    "RegulatedAndUnregulatedOperatingRevenue",
+    // BDC(OBDC/OCSL/RWAY):总投资收益即营收
+    "GrossInvestmentIncomeOperating"
   ],
   gross_profit: ["GrossProfit"],
   operating_income: ["OperatingIncomeLoss"],
-  net_income: ["NetIncomeLoss", "ProfitLoss"],
+  // 末位兜底:部分公司季报只标归属普通股净利(BKNG 2025–2026 全部 10-Q;37/53 家受影响金融股同样)。
+  // 与 NetIncomeLoss 只差优先股股息,仅在前两个概念都没有时才用。
+  net_income: ["NetIncomeLoss", "ProfitLoss", "NetIncomeLossAvailableToCommonStockholdersBasic"],
   eps_diluted: ["EarningsPerShareDiluted"],
   shares_diluted: [
     "WeightedAverageNumberOfDilutedSharesOutstanding",

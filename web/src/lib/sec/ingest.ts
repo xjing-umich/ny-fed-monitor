@@ -5,6 +5,7 @@ import { fetchCompanyFacts } from "./company-facts";
 import { fetchCompanySubmissions, normalizeRecentFilings } from "./company-submissions";
 import { FundamentalPeriod, normalizeCompanyFacts } from "./normalize-facts";
 import { backfillMissingFilings } from "./filing-backfill";
+import { synthesizeBankRevenue } from "./bank-revenue";
 import { attachPredecessorHistory } from "./predecessor";
 import { needsClassSharesFallback, applyClassSharesFallback } from "./class-shares-fallback";
 import { needsHoldcoSotp, ingestHoldcoSotp } from "./holdco-ingest";
@@ -164,6 +165,8 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
   const backfill = await backfillMissingFilings(facts, filings);
   if (backfill.filled.length) console.log(`  ${ticker}: companyfacts 漏收,已从原始申报回填 ${backfill.filled.join("; ")}`);
   if (backfill.failed.length) console.warn(`  ${ticker}: 漏收申报回填失败 ${backfill.failed.join("; ")}`);
+  // 银行总营收 = NII + 非利息收入(回填之后合成,回填进来的新季度也覆盖到)。
+  synthesizeBankRevenue(facts);
   const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
   // 分股类申报公司(V/BRK 等)在 companyfacts 拿不到无维度股数 → 从 10-K instance 的
   // ClassOfStockAxis 维度事实回退推导经济股数(spec 2026-07-26)。窄闸:全年份缺股数才触发。
