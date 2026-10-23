@@ -98,7 +98,7 @@ export default async function ArticlePage({
 
   // 季度快照文章:顶部注明数据季度与写作日期,并指向实时榜单,避免过季数字被当成现状引用。
   const snapshotNotice = article.snapshotPeriod ? (
-    <SnapshotNotice lang={lang} period={article.snapshotPeriod} written={article.updated} />
+    <SnapshotNotice lang={lang} period={article.snapshotPeriod} written={article.updated} note={article.snapshotNote} />
   ) : null;
   const backLabel = lang === "zh" ? "← 返回 学习" : "← Back to Learn";
 
@@ -201,7 +201,7 @@ export default async function ArticlePage({
   );
 }
 
-function SnapshotNotice({ lang, period, written }: { lang: Lang; period: string; written: string }) {
+function SnapshotNotice({ lang, period, written, note }: { lang: Lang; period: string; written: string; note?: string }) {
   const q = quarterLabel(period) || period;
   const links = [
     { path: "/investors/consensus", en: "Consensus", zh: "共识持仓" },
@@ -227,6 +227,7 @@ function SnapshotNotice({ lang, period, written }: { lang: Lang; period: string;
         ))}
         {lang === "zh" ? "。" : "."}
       </p>
+      {note && <p className="mt-1">{note}</p>}
     </aside>
   );
 }
