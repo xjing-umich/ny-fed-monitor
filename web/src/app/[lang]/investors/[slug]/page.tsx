@@ -463,7 +463,7 @@ export default async function InvestorSlugPage({
     totalValue: longTotalValue,
   });
 
-  // 估值相关数字(低于价值带计数、估值列、隐含预期句)全部来自估值快照:取其最晚价格日标注。
+  // 估值相关数字(低于内在价值计数、估值列、隐含预期句)全部来自估值快照:取其最晚价格日标注。
   const valuationAsOf = latestIsoDate([...verdicts.values()].map((v) => v.priceDate));
   const keyFacts = [
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
@@ -568,7 +568,7 @@ export default async function InvestorSlugPage({
         }
         sources={[
           { name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) },
-          // 估值列 / 低于价值带 / 隐含预期:估值快照 = SEC 10-K/10-Q 财报 × 收盘价,日期取快照价格日。
+          // 估值列 / 低于内在价值 / 隐含预期:估值快照 = SEC 10-K/10-Q 财报 × 收盘价,日期取快照价格日。
           ...(valuationAsOf
             ? [{ name: lang === "zh" ? "估值(SEC 财报 × 收盘价)" : "Valuations (SEC filings × closing prices)", asOf: valuationAsOf }]
             : []),

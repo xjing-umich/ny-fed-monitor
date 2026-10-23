@@ -534,7 +534,7 @@ export default async function StockTickerPage({
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
   const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
 
-  // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于价值带)。
+  // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于内在价值)。
   const marginShown = !!(
     handoffVerdict &&
     handoffVerdict.reliable &&
@@ -662,7 +662,7 @@ export default async function StockTickerPage({
             note: priceFactNote(lang, latestPrice) ?? undefined,
             muted: latestPrice?.stale === true,
           },
-          // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——
+          // 安全边际只在"已确认便宜"(reliable + 击球区/低于内在价值)时占位并显数字 ——
           // 高于价值 / 带内 / 红旗档不显空格子(那是噪音), 结论交给 masthead 徽章 + 估值区块标题。
           ...(marginShown
             ? [{ label: page.marginOfSafety, value: fmtMarginPct(handoffVerdict!.marginPct!), tone: "positive" as const }]

@@ -89,7 +89,7 @@ export type ReportInput = {
   /** 应申报投资人(expectedOnly)。 */
   managers: ReportManagerInput[];
   cusipMap: Map<string, { ticker: string | null; name: string | null }>;
-  /** key = ticker 大写;只含 reliable 且(击球区 或 价值带以下)且通过 isImplausibleBand 的票。 */
+  /** key = ticker 大写;只含 reliable 且(击球区 或 低于内在价值)且通过 isImplausibleBand 的票。 */
   bargains: Map<string, { inStrikeZone: boolean; marginPct: number }>;
   featuredSlugs: string[];
   /** valuation_snapshot 里至少有一行 reliable 估值。false → 击球区板块写“估值暂不可用”。 */

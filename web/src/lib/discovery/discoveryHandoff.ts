@@ -22,7 +22,7 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
     return {
       eyebrow,
       href: screenerHref(lang),
-      line: zh ? "看哪些股票相对价值带便宜。" : "See which stocks look cheap against a conservative value band.",
+      line: zh ? "看哪些股票现价低于内在价值。" : "See which stocks trade below intrinsic value.",
       ctaLabel: zh ? "浏览全部可估值股票" : "Browse all valued stocks",
     };
   }
@@ -30,7 +30,7 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
     return {
       eyebrow,
       href: screenerHref(lang, "strike_zone"),
-      line: zh ? `${T} 现价落在保守价值带下方。` : `${T}'s price sits below its conservative value band.`,
+      line: zh ? `${T} 现价低于买入线（内在价值扣除安全边际）。` : `${T}'s price is below the buy line (intrinsic value minus a margin of safety).`,
       ctaLabel: zh ? "看全市场击球区" : "See the full strike-zone list",
     };
   }
@@ -38,14 +38,14 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
     return {
       eyebrow,
       href: screenerHref(lang, "below"),
-      line: zh ? `${T} 现价低于保守价值带。` : `${T}'s price is below its conservative value band.`,
+      line: zh ? `${T} 现价低于内在价值。` : `${T}'s price is below its intrinsic value.`,
       ctaLabel: zh ? "按安全边际浏览全部低估股" : "Browse all undervalued stocks by margin of safety",
     };
   }
   return {
     eyebrow,
     href: screenerHref(lang, "strike_zone"),
-    line: zh ? `${T} 现价不低于保守价值带。` : `${T}'s price is not below its conservative value band.`,
+    line: zh ? `${T} 现价不低于内在价值。` : `${T}'s price is not below its intrinsic value.`,
     ctaLabel: zh ? "看当前击球区股票" : "See current strike-zone stocks",
   };
 }
@@ -85,6 +85,6 @@ export function investorHandoffFor(strikeCount: number, person: string, lang: La
     line: zh
       ? `${person} 目前没有已确认的击球区持仓${tailZh}。`
       : `${person} has no confirmed strike-zone positions right now${tailEn}.`,
-    ctaLabel: zh ? "按价值带浏览全市场" : "Browse the whole market by value band",
+    ctaLabel: zh ? "按安全边际浏览低于内在价值的股票" : "Browse stocks below intrinsic value by margin of safety",
   };
 }

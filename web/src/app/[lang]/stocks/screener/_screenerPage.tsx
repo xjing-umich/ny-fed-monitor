@@ -45,7 +45,7 @@ export function screenerMetadata(lang: Lang): Metadata {
         }
       : {
           title: "Stocks · By value — Compounder",
-          description: "Browse stocks by where price sits against a conservative value band — which are in the strike zone, and by margin of safety. Observational, not advice.",
+          description: "Browse stocks by where price sits against intrinsic value — which are in the strike zone, and by margin of safety. Observational, not advice.",
         };
   return {
     ...meta,
@@ -57,7 +57,7 @@ export function screenerMetadata(lang: Lang): Metadata {
 const VIEWS: { key: ScreenView; zh: string; en: string }[] = [
   { key: "conviction", zh: "机构重仓 · 按估值", en: "Most-held · by value" },
   { key: "strike_zone", zh: "击球区", en: "Strike zone" },
-  { key: "below", zh: "有安全边际", en: "Below value" },
+  { key: "below", zh: "有安全边际", en: "Below intrinsic value" },
   { key: "all", zh: "全部可估值", en: "All valued" },
 ];
 
@@ -80,15 +80,15 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const geo =
     strikeTotal > 0
       ? isZh
-        ? `现在 ${strikeTotal} 只可估值股票落在击球区（现价低于保守价值带）${asOf ? `，截至 ${asOf}` : ""}。`
-        : `${strikeTotal} valued stocks are in the strike zone (price below the conservative value band)${asOf ? `, as of ${asOf}` : ""}.`
+        ? `现在 ${strikeTotal} 只可估值股票落在击球区（价格低于买入线：内在价值扣除安全边际）${asOf ? `，截至 ${asOf}` : ""}。`
+        : `${strikeTotal} valued stocks are in the strike zone (price below the buy line: intrinsic value minus a margin of safety)${asOf ? `, as of ${asOf}` : ""}.`
       : isZh
-        ? "当前没有可估值股票落在击球区（现价低于保守价值带，保守引擎常态）。"
-        : "No valued stocks are in the strike zone (price below the conservative value band) right now.";
+        ? "当前没有可估值股票落在击球区（价格低于买入线：内在价值扣除安全边际；保守引擎常态）。"
+        : "No valued stocks are in the strike zone (price below the buy line: intrinsic value minus a margin of safety) right now.";
 
   const convictionIntro = isZh
-    ? `${heldTotal} 只被 ${CONSENSUS_MIN}+ 位机构共同持有的股票，按现价相对保守价值带的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
-    : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers, ordered by where price sits against a conservative value band — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
+    ? `${heldTotal} 只被 ${CONSENSUS_MIN}+ 位机构共同持有的股票，按现价相对内在价值的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
+    : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers, ordered by where price sits against intrinsic value — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
 
   const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
 
@@ -119,8 +119,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
             isConviction
               ? convictionIntro
               : isZh
-                ? `按现价相对保守价值带的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。${geo}`
-                : `Ordered by where price sits against a conservative value band, deepest margin of safety first. Source: company filings and public market prices. ${geo}`
+                ? `按现价相对内在价值的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。${geo}`
+                : `Ordered by where price sits against intrinsic value, deepest margin of safety first. Source: company filings and public market prices. ${geo}`
           }
         />
       </div>
