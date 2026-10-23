@@ -48,7 +48,7 @@ import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker, knownExchange } from "@/lib/externalLinks";
-import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
+import { valuationVerdictChip, valuationSectionTitle } from "@/lib/stocks/valuationVerdictChip";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockGlossary, stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
@@ -530,18 +530,12 @@ export default async function StockTickerPage({
     handoffVerdict.marginPct != null
   );
 
-  // 估值区块 display 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
+  // 估值区块 display 标题直接承载结论 —— 档名取 valuationLabel,与标题徽章同一说法;红旗便宜档带“待确认”。
   // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
   const page = stockPageCopy(lang);
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
-  const valuationTitle = handoffVerdict
-    ? handoffVerdict.bucket === "below"
-      ? page.valuation.below
-      : handoffVerdict.bucket === "within"
-        ? page.valuation.within
-        : page.valuation.above
-    : page.valuation.titleFallback;
+  const valuationTitle = valuationSectionTitle(handoffVerdict, lang);
 
   const subtitle = page.subtitle(n);
   const disclaimer = page.disclaimer;

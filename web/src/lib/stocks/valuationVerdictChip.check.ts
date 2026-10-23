@@ -1,4 +1,4 @@
-import { valuationVerdictChip } from "./valuationVerdictChip";
+import { valuationVerdictChip, valuationSectionTitle } from "./valuationVerdictChip";
 import type { ValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 
 function assert(c: boolean, m: string) { if (!c) { console.error("FAIL:", m); process.exit(1); } }
@@ -27,5 +27,19 @@ const above = valuationVerdictChip(v({ bucket: "above" }), "zh");
 assert(above?.label === "高于价值带" && above?.tone === "warn", `above warn, got ${JSON.stringify(above)}`);
 // zh/en 纯语言
 assert(valuationVerdictChip(v({ bucket: "within" }), "en")?.label === "Within band", "within en label");
+
+// 估值区块标题:档名与标题徽章同源(final-fix B #3),红旗便宜档必带待确认
+const eq = (got: string | null, want: string | null, m: string) => assert(got === want, `${m}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+eq(valuationSectionTitle(v({ inStrikeZone: true, bucket: "below" }), "zh"), "击球区", "strike confirmed zh");
+eq(valuationSectionTitle(v({ inStrikeZone: true, bucket: "below" }), "en"), "Strike zone", "strike confirmed en");
+eq(valuationSectionTitle(v({ inStrikeZone: true, bucket: "below", reliable: false }), "zh"), "击球区 · 待确认", "strike pending zh");
+eq(valuationSectionTitle(v({ inStrikeZone: true, bucket: "below", reliable: false }), "en"), "Strike zone · pending", "strike pending en");
+eq(valuationSectionTitle(v({ bucket: "below", reliable: false }), "zh"), "低于内在价值 · 待确认", "below pending zh");
+eq(valuationSectionTitle(v({ bucket: "above" }), "zh"), "高于价值带", "above zh");
+eq(valuationSectionTitle(v({ bucket: "above" }), "en"), "Above band", "above en");
+eq(valuationSectionTitle(v({ bucket: "within" }), "zh"), "价值带内", "within zh");
+eq(valuationSectionTitle(v({ bucket: "within" }), "en"), "Within band", "within en");
+eq(valuationSectionTitle(null, "zh"), "估值", "null zh → 回退");
+eq(valuationSectionTitle(null, "en"), "Valuation", "null en → 回退");
 
 console.log("valuationVerdictChip.check OK");
