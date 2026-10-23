@@ -2,54 +2,38 @@ import React from "react";
 import type { HoldingChange } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 
-// QoQ 方向原语 —— 从投资人页 WeightQoQ 1:1 抽出，供投资人页 / 个股页共用。
-// 颜色语义诚实、非指示性：▲绿/▼琥珀 描述「机构这季做了什么动作」，不是买卖建议。
-// 减持用 --tt-warn(琥珀) 而非 --tt-negative(红)——红会读成「卖出/坏」，违反品牌无判决。
+// QoQ 原语 —— 供投资人页 / 个股页共用。权重只写数字;动作由 MoveMark 按股数标出。
 // 数字一律 font-data tabular-nums（列对齐）。
 
-const NEW_LABEL: Record<Lang, string> = { zh: "新建", en: "New" };
+const MOVE_LABEL: Record<Lang, Record<"new" | "increased" | "decreased", string>> = {
+  zh: { new: "新建", increased: "增持", decreased: "减持" },
+  en: { new: "New", increased: "Added", decreased: "Trimmed" },
+};
 
 /** 权重百分比，1 位小数；缺失 → 「—」。 */
 export const fmtPct1 = (w: number | undefined): string =>
   w != null ? `${(w * 100).toFixed(1)}%` : "—";
 
+/** 本季动作(按申报股数判断,与报告页同口径);持平 / 不同期 / 清仓 → null。 */
+export function moveMarkText(kind: HoldingChange["kind"] | undefined, lang: Lang): string | null {
+  if (kind === "new" || kind === "increased" || kind === "decreased") return MOVE_LABEL[lang][kind];
+  return null;
+}
+
+/** 名字旁的动作小标:中性色,不带方向箭头(颜色与字形语义留给第 3 步)。 */
+export function MoveMark({ kind, lang }: { kind?: HoldingChange["kind"]; lang: Lang }): React.ReactElement | null {
+  const text = moveMarkText(kind, lang);
+  return text ? <span className="font-data text-xs text-[var(--tt-faint)]">{text}</span> : null;
+}
+
 /**
- * QoQ 权重单元格: 数字取权重, 箭头/色取自 change.kind(持股口径)。
- * - 新建(prior 不存在该持仓) → 「新建/New · X%」+ 绿
- * - increased → ▲ + 绿(--tt-positive)
- * - decreased → ▼ + 琥珀(--tt-warn)
- * - hold(无 kind) → 无箭头 + faint(--tt-faint)
+ * QoQ 权重单元格:只写数字(上季 → 本季)。不带箭头 —— 权重会随股价涨跌变,方向可能与股数相反;
+ * 动作另由 MoveMark 按股数标出(spec 2026-10-23 §三.3)。上季无该持仓 → “— → X%”。
  */
-export function WeightQoQ({
-  cur,
-  prior,
-  kind,
-  lang,
-}: {
-  cur?: number;
-  prior?: number;
-  kind?: HoldingChange["kind"];
-  lang: Lang;
-}): React.ReactElement {
-  // 新建: prior 不存在该持仓
-  if (prior == null) {
-    return (
-      <span className="font-data tabular-nums text-[var(--tt-positive)]">
-        {NEW_LABEL[lang]} · {fmtPct1(cur)}
-      </span>
-    );
-  }
-  const up = cur != null && prior != null && cur > prior;
-  const down = cur != null && prior != null && cur < prior;
-  const arrow = up ? "▲" : down ? "▼" : "";
-  const colorClass = up
-    ? "text-[var(--tt-positive)]"
-    : down
-    ? "text-[var(--tt-warn)]"
-    : "text-[var(--tt-faint)]";
+export function WeightQoQ({ cur, prior }: { cur?: number; prior?: number; lang: Lang }): React.ReactElement {
   return (
     <span className="font-data tabular-nums text-[var(--tt-muted)]">
-      {fmtPct1(prior)} <span className={colorClass}>→ {fmtPct1(cur)} {arrow}</span>
+      {prior == null ? "—" : fmtPct1(prior)} → {fmtPct1(cur)}
     </span>
   );
 }

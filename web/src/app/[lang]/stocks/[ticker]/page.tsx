@@ -37,7 +37,7 @@ import {
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard, ValueBandGauge, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
-import { WeightQoQ } from "@/components/common/qoqDirection";
+import { WeightQoQ, MoveMark } from "@/components/common/qoqDirection";
 import { QuarterMovesLine } from "@/components/entity/QuarterMovesLine";
 import type { MovesCount } from "@/lib/entity/quarterMovesText";
 import { HolderTrend } from "@/components/entity/HolderTrend";
@@ -206,19 +206,20 @@ function HoldersTable({
       key: "investor",
       header: t.cols.investor,
       role: "primary",
-      cell: (r) =>
-        offQuarter(r) ? (
-          <span className="inline-flex items-baseline gap-1.5">
-            {r.person}
+      cell: (r) => (
+        <span className="inline-flex items-baseline gap-1.5">
+          {r.person}
+          {offQuarter(r) ? (
             <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period ?? null)}</span>
-          </span>
-        ) : (
-          r.person
-        ),
+          ) : (
+            <MoveMark kind={r.kind} lang={lang} />
+          )}
+        </span>
+      ),
     },
     { key: "value", header: t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value) },
     { key: "shares", header: t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => r.shares.toLocaleString() },
-    { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={offQuarter(r) ? undefined : r.kind} lang={lang} /> },
+    { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} lang={lang} /> },
   ];
 
   return (
