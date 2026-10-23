@@ -42,4 +42,12 @@ assert.equal(c.href, "/stocks/screener?view=below", "k=0 → below");
 c = investorHandoffFor(1, "X", "en");
 assert.ok(c.line.includes("1 position ") && !c.line.includes("positions"), "singular position");
 
+// 8) 待确认:零已确认 + 有待确认 → 照实写明名单
+c = investorHandoffFor(0, "Warren Buffett", "zh", ["Macy's"]);
+assert.equal(c.line, "Warren Buffett 目前没有已确认的击球区持仓，另有 1 只待确认（Macy's）。", `zh pending, got ${c.line}`);
+c = investorHandoffFor(0, "X", "en", ["A", "B", "C", "D"]);
+assert.equal(c.line, "X has no confirmed strike-zone positions right now; 4 more are pending (A, B, C and 1 more).", `en pending 截断, got ${c.line}`);
+c = investorHandoffFor(0, "X", "en");
+assert.equal(c.line, "X has no confirmed strike-zone positions right now.", `en 无待确认, got ${c.line}`);
+
 console.log("discoveryHandoff.check.ts: all assertions passed");

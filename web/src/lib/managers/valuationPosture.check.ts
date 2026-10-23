@@ -66,4 +66,9 @@ const manyV = new Map<string, SnapshotVerdict>(
 const rMany = deriveValuationPosture({ holdings: many, cusipToTicker: manyC2T, verdicts: manyV });
 assert(rMany.cheap.length === 10, `cheap 返回全部 10(不截断), got ${rMany.cheap.length}`);
 
+// C 是 below+击球区但 reliable=false → 不进 covered/cheap,但进 pending
+const pr = deriveValuationPosture({ holdings, cusipToTicker, verdicts });
+assert(pr.pending.length === 1 && pr.pending[0].ticker === "C", `pending 只含 C, got ${JSON.stringify(pr.pending)}`);
+assert(!pr.cheap.some((c) => c.ticker === "C"), "C 不在 cheap");
+
 console.log("valuationPosture.check OK");

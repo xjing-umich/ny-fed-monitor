@@ -33,6 +33,7 @@ import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
 import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
+import { PENDING_WORD } from "@/lib/valuation/valuationLabel";
 import { LearnLink } from "@/components/common/LearnLink";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { SectionHeading } from "@/components/common/SectionHeading";
@@ -468,10 +469,9 @@ export default async function InvestorSlugPage({
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
-    // cheap.length = below ∪ strike; 估值模型下击球区(跌破保守下限)恒 ⊆ below, 故等同「低于价值带」数;
-    // 与小节引导句同源(N trade below)。chip 逐项标签仍各自精确(击球区/低于价值带)。
+    // cheap = 击球区 ∪ 低于内在价值(reliable);待确认的不计入,写在估值姿态段落里。
     {
-      label: lang === "zh" ? "低于价值带" : "Below band",
+      label: lang === "zh" ? "低于内在价值" : "Below intrinsic value",
       value: String(posture.cheap.length),
       note: valuationAsOfText(lang, valuationAsOf) ?? undefined,
     },
@@ -607,7 +607,7 @@ export default async function InvestorSlugPage({
               </p>
             );
           })()}
-          {posture.cheap.length > 0 && (
+          {(posture.cheap.length > 0 || posture.pending.length > 0) && (
             <section aria-label={lang === "zh" ? "估值姿态" : "Valuation posture"}>
               <SectionHeading
                 eyebrow={lang === "zh" ? "13F × 估值" : "13F × valuation"}
@@ -615,8 +615,8 @@ export default async function InvestorSlugPage({
               />
               <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
-                  ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于保守价值带${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
-                  : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below a conservative value band${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
+                  ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于内在价值${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.pending.length > 0 ? `；另有 ${posture.pending.length} 只待确认` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
+                  : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below intrinsic value${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.pending.length > 0 ? `; ${posture.pending.length} more pending` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
               </p>
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
@@ -633,7 +633,25 @@ export default async function InvestorSlugPage({
                       {h.marginPct != null ? " · " : ""}
                       {h.inStrikeZone
                         ? lang === "zh" ? "击球区" : "strike"
-                        : lang === "zh" ? "低于带" : "below"}
+                        : lang === "zh" ? "低于内在价值" : "below"}
+                    </span>
+                  </li>
+                ))}
+                {/* 待确认:便宜档但估值带红旗,照实列出,中性色 + 后缀,不计入上面的数 */}
+                {posture.pending.map((h) => (
+                  <li key={`pending-${h.ticker}`} className="flex items-baseline gap-2 text-sm">
+                    <Link
+                      href={stockPath(lang, h.ticker)}
+                      className="min-w-0 truncate text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                    >
+                      {cleanIssuer(h.issuer)}
+                      <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
+                    </Link>
+                    <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)]">
+                      {h.inStrikeZone
+                        ? lang === "zh" ? "击球区" : "strike"
+                        : lang === "zh" ? "低于内在价值" : "below"}
+                      {` · ${PENDING_WORD[lang]}`}
                     </span>
                   </li>
                 ))}
@@ -683,7 +701,7 @@ export default async function InvestorSlugPage({
           <FoldedSection title={lang === "zh" ? "关于这位投资者" : "About this investor"}>
             <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
           </FoldedSection>
-          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang)} />
+          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang, posture.pending.map((p) => cleanIssuer(p.issuer)))} />
         </>
       </EntityPage>
     </>

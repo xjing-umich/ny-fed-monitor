@@ -14,6 +14,7 @@ export type ValuationPosture = {
   strikeCount: number; // inStrikeZone && reliable
   belowCount: number; // bucket==="below" && reliable
   cheap: CheapHolding[]; // inStrikeZone ∪ below, marginPct 降序(null 垫底), 不截断
+  pending: CheapHolding[]; // 便宜档但 reliable=false(待确认),不计入 covered/cheap, marginPct 降序
   asOf: string; // 参与计数行最大 priceDate; 无则 ""
 };
 
@@ -34,11 +35,18 @@ export function deriveValuationPosture(input: {
   let belowCount = 0;
   let asOf = "";
   const cheap: CheapHolding[] = [];
+  const pending: CheapHolding[] = [];
   for (const h of input.holdings) {
     const ticker = input.cusipToTicker.get(h.cusip);
     if (!ticker) continue;
     const vd = input.verdicts.get(ticker.toUpperCase());
-    if (vd == null || !vd.reliable) continue; // 信心闸
+    if (vd == null) continue;
+    if (!vd.reliable) {
+      // 待确认:照实列出,但不进分母、不进便宜计数(spec 2026-10-23 §三.2)
+      if (vd.inStrikeZone || vd.bucket === "below")
+        pending.push({ issuer: h.issuer, ticker, marginPct: vd.marginPct, inStrikeZone: vd.inStrikeZone, bucket: vd.bucket });
+      continue; // 信心闸
+    }
     covered += 1;
     if (vd.priceDate && vd.priceDate > asOf) asOf = vd.priceDate;
     const isBelow = vd.bucket === "below";
@@ -55,11 +63,13 @@ export function deriveValuationPosture(input: {
     }
   }
   // marginPct 降序, null 垫底
-  cheap.sort((a, b) => {
+  const byMargin = (a: CheapHolding, b: CheapHolding) => {
     if (a.marginPct == null && b.marginPct == null) return 0;
     if (a.marginPct == null) return 1;
     if (b.marginPct == null) return -1;
     return b.marginPct - a.marginPct;
-  });
-  return { covered, strikeCount, belowCount, cheap, asOf };
+  };
+  cheap.sort(byMargin);
+  pending.sort(byMargin);
+  return { covered, strikeCount, belowCount, cheap, pending, asOf };
 }

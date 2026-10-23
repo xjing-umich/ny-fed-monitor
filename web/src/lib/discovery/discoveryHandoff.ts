@@ -50,8 +50,8 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
   };
 }
 
-/** 投资人页: 把"这个人的击球区持仓"延伸到全市场击球区清单。 */
-export function investorHandoffFor(strikeCount: number, person: string, lang: Lang): DiscoveryCta {
+/** 投资人页: 把"这个人的击球区持仓"延伸到全市场击球区清单。pendingNames=便宜但待确认的持仓名(不计入 strikeCount)。 */
+export function investorHandoffFor(strikeCount: number, person: string, lang: Lang, pendingNames: string[] = []): DiscoveryCta {
   const zh = lang === "zh";
   const eyebrow = EYEBROW[lang];
   if (strikeCount > 0) {
@@ -64,10 +64,27 @@ export function investorHandoffFor(strikeCount: number, person: string, lang: La
       ctaLabel: zh ? "看全市场击球区清单" : "See the full strike-zone list",
     };
   }
+  // 零已确认:不说"没有",照实写明还有几只待确认(最多列 3 个名字)
+  const n = pendingNames.length;
+  const shown = pendingNames.slice(0, 3);
+  const rest = n - shown.length;
+  const tailZh = n > 0 ? `，另有 ${n} 只待确认（${shown.join("、")}${rest > 0 ? ` 等 ${n} 只` : ""}）` : "";
+  const tailEn =
+    n > 0
+      ? `; ${n} more ${n === 1 ? "is" : "are"} pending (${
+          rest > 0
+            ? `${shown.join(", ")} and ${rest} more`
+            : shown.length > 1
+              ? `${shown.slice(0, -1).join(", ")} and ${shown[shown.length - 1]}`
+              : shown[0]
+        })`
+      : "";
   return {
     eyebrow,
     href: screenerHref(lang, "below"),
-    line: zh ? `${person} 当前无持仓落在击球区。` : `${person} has no positions in the strike zone right now.`,
+    line: zh
+      ? `${person} 目前没有已确认的击球区持仓${tailZh}。`
+      : `${person} has no confirmed strike-zone positions right now${tailEn}.`,
     ctaLabel: zh ? "按价值带浏览全市场" : "Browse the whole market by value band",
   };
 }
