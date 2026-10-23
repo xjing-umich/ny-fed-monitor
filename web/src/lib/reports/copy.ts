@@ -175,3 +175,19 @@ export function reportUrl(period: string, lang: ReportLang): string {
 export function personName(f: FeaturedEntry, lang: ReportLang): string {
   return lang === "zh" && f.personZh ? f.personZh : f.person;
 }
+
+/** 方法说明首句:数据来源与覆盖人数口径。excluded 缺省 = 已定稿的旧 payload,沿用原“一年以上未申报者不计”表述。 */
+export function methodologyCoverageText(coverage: ReportPayload["coverage"], lang: ReportLang): string {
+  const { total, excluded } = coverage;
+  if (excluded === undefined) {
+    return lang === "zh"
+      ? `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站跟踪的 ${total} 位活跃超级投资者（一年以上未申报者不计）。同季有修正申报时取合并后的版本。`
+      : `Data comes from 13F filings on SEC EDGAR for the ${total} active superinvestors this site tracks (funds silent for a year or more are excluded). Where a quarter was amended, the merged version is used.`;
+  }
+  if (lang === "zh") {
+    const ex = excluded > 0 ? `，另有 ${excluded} 位上季未申报，不计入` : "";
+    return `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站跟踪的 ${total} 位超级投资者：上一季及之后有申报的人${ex}。同季有修正申报时取合并后的版本。`;
+  }
+  const ex = excluded > 0 ? `; ${excluded} more did not file for the prior quarter and ${excluded === 1 ? "isn't" : "aren't"} counted` : "";
+  return `Data comes from 13F filings on SEC EDGAR for the ${total} superinvestors this site tracks that filed for the prior quarter or later${ex}. Where a quarter was amended, the merged version is used.`;
+}
