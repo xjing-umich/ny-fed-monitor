@@ -178,7 +178,7 @@ function HoldingsTable({
       width: "w-32",
       cell: (h) => {
         const tk = cusipToTicker.get(h.cusip);
-        return <ValuationBadge verdict={tk ? verdicts.get(tk.toUpperCase()) : undefined} lang={lang} density="sparse" />;
+        return <ValuationBadge verdict={tk ? verdicts.get(tk.toUpperCase()) : undefined} lang={lang} density="table" />;
       },
     },
     {

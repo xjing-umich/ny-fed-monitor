@@ -14,14 +14,17 @@ const strike = valuationVerdictChip(v({ inStrikeZone: true, bucket: "below" }), 
 assert(strike?.label === "Strike zone" && strike?.tone === "positive", `strike zone positive, got ${JSON.stringify(strike)}`);
 // below 可信 → positive
 assert(valuationVerdictChip(v({ bucket: "below" }), "zh")?.tone === "positive", "below reliable → positive");
-assert(valuationVerdictChip(v({ bucket: "below" }), "zh")?.label === "低于价值带", "below zh label");
+assert(valuationVerdictChip(v({ bucket: "below" }), "zh")?.label === "低于内在价值", "below zh label");
 // 便宜档但 reliable=false → neutral(不标已确认便宜)
 assert(valuationVerdictChip(v({ bucket: "below", reliable: false }), "en")?.tone === "neutral", "below unreliable → neutral");
 assert(valuationVerdictChip(v({ inStrikeZone: true, reliable: false }), "en")?.tone === "neutral", "strike unreliable → neutral");
+// 红旗便宜档标题芯片带“待确认”字样
+assert(valuationVerdictChip(v({ inStrikeZone: true, reliable: false }), "en")?.label === "Strike zone · pending", "红旗击球区带 pending 字样");
+assert(valuationVerdictChip(v({ inStrikeZone: true, reliable: false }), "zh")?.label === "击球区 · 待确认", "zh 待确认");
 // within → neutral, above → warn
 assert(valuationVerdictChip(v({ bucket: "within" }), "en")?.tone === "neutral", "within → neutral");
 const above = valuationVerdictChip(v({ bucket: "above" }), "zh");
-assert(above?.label === "高于价值" && above?.tone === "warn", `above warn, got ${JSON.stringify(above)}`);
+assert(above?.label === "高于价值带" && above?.tone === "warn", `above warn, got ${JSON.stringify(above)}`);
 // zh/en 纯语言
 assert(valuationVerdictChip(v({ bucket: "within" }), "en")?.label === "Within band", "within en label");
 
