@@ -42,6 +42,7 @@ import { QuarterMovesLine } from "@/components/entity/QuarterMovesLine";
 import type { MovesCount } from "@/lib/entity/quarterMovesText";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
+import { filingSeasonNote } from "@/lib/stocks/filingSeasonNote";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
@@ -178,6 +179,7 @@ function HoldersTable({
   lang,
   trend,
   asOfPeriod,
+  seasonNote,
 }: {
   holders: HolderRow[];
   exited: ExitedHolder[];
@@ -189,6 +191,8 @@ function HoldersTable({
   trend: number[];
   /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
   asOfPeriod: string;
+  /** 申报季说明(新季未切换时的“Qn 申报中 n/M”);参数 = 表里是否有新季行。 */
+  seasonNote: (hasOffQuarterRows: boolean) => string | null;
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const ui = stockUi(lang);
@@ -238,10 +242,15 @@ function HoldersTable({
           unit="investor"
           lang={lang}
         />
+        {(() => {
+          const note = seasonNote(sorted.some(offQuarter));
+          return note ? <p className="text-xs text-[var(--tt-muted)]">{note}</p> : null;
+        })()}
       </div>
       {trend.length >= 2 && (
         <div className="mb-3">
           <HolderTrend series={trend} lang={lang} variant="inline" />
+          {seasonNote(false) && <span className="ml-2 font-data text-xs text-[var(--tt-faint)]">{seasonNote(false)}</span>}
         </div>
       )}
       <DataTable
@@ -315,7 +324,8 @@ export default async function StockTickerPage({
   // 全站展示季度:与首页 masthead、buys/sells 同一口径(effectiveMovesPeriod)。申报季内少数基金
   // 提前交了新季时,"截至"不跟着单只早申报者推到新季;本季动作也只计展示季度的申报
   // (与 currentQuarterOnly 一致)。早申报者的持仓仍在表里,行内标出其季度。无数据 → 不过滤。
-  const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period ?? "";
+  const movesEff = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date());
+  const displayPeriod = movesEff.period ?? "";
   const inDisplayQuarter = (p: string | null | undefined) => !displayPeriod || p === displayPeriod;
   // 当前持有人口径(与 consensus 快照同一判定):最近到期季截止日过后仍没交的 manager 不计入。
   // 快照在 ingest 时已按此过滤;读时再判一次,截止日在两次 ingest 之间跨过时也立即生效。
@@ -863,6 +873,7 @@ export default async function StockTickerPage({
               lang={lang}
               trend={trendSeries}
               asOfPeriod={asOfPeriod}
+              seasonNote={(has) => filingSeasonNote(movesEff, has, lang)}
             />
             <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>
               <StockProse paragraphs={stockProse} lang={lang} bare />
