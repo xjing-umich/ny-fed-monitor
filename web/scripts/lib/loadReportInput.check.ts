@@ -1,5 +1,5 @@
 /** Run: cd web && npx tsx scripts/lib/loadReportInput.check.ts */
-import { pickFilingsForPeriod } from "./loadReportInput";
+import { parseFeaturedConfig, pickFilingsForPeriod } from "./loadReportInput";
 
 function assert(c: boolean, m: string) {
   if (!c) { console.error("FAIL:", m); process.exit(1); }
@@ -26,5 +26,11 @@ assert(d.current?.id === 5 && d.prior === null, "新纳入:无更早申报");
 
 const e = pickFilingsForPeriod([{ id: 1, period: "2026-09-30", filed_at: "2026-11-01" }, { id: 2, period: "2025-12-31", filed_at: "2026-02-10" }], "2026-09-30");
 assert(e.prior?.period === "2025-12-31", "跳季:prior 取早于 P 的最近一季(与全站口径一致)");
+
+const fc = parseFeaturedConfig([{ slug: "himalaya-capital", zh: "李录" }, "oaktree", { slug: "x", zh: "  " }]);
+assert(fc.slugs.join() === "himalaya-capital,oaktree,x", "slug 顺序保留,兼容纯字符串");
+assert(fc.zhBySlug.get("himalaya-capital") === "李录" && !fc.zhBySlug.has("oaktree") && !fc.zhBySlug.has("x"), "中文名只收非空");
+let threw = false; try { parseFeaturedConfig([{ zh: "无 slug" }]); } catch { threw = true; }
+assert(threw, "缺 slug 报错");
 
 console.log("loadReportInput.check OK");

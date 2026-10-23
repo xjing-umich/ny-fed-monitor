@@ -40,6 +40,21 @@ export function pickFilingsForPeriod(rows: FilingRow[], period: string): { curre
   return { current, prior };
 }
 
+/** report-featured.json:[{ slug, zh? }](也兼容旧的纯 slug 字符串数组)。 */
+export function parseFeaturedConfig(raw: unknown): { slugs: string[]; zhBySlug: Map<string, string> } {
+  if (!Array.isArray(raw)) throw new Error("report-featured.json 必须是数组");
+  const slugs: string[] = [];
+  const zhBySlug = new Map<string, string>();
+  for (const item of raw) {
+    if (typeof item === "string") { slugs.push(item); continue; }
+    if (!item || typeof item !== "object" || typeof (item as { slug?: unknown }).slug !== "string") throw new Error(`report-featured.json 条目无效: ${JSON.stringify(item)}`);
+    const { slug, zh } = item as { slug: string; zh?: unknown };
+    slugs.push(slug);
+    if (typeof zh === "string" && zh.trim()) zhBySlug.set(slug, zh.trim());
+  }
+  return { slugs, zhBySlug };
+}
+
 const toHolding = (h: HoldingDbRow): ReportHolding => ({
   cusip: h.cusip, issuer: h.issuer, value: Number(h.value), shares: Number(h.shares),
   weight: Number(h.weight ?? 0), putCall: h.put_call ?? null,
@@ -67,8 +82,11 @@ export function activeOnly<T extends { latestPeriod: string | null }>(all: T[]):
 
 export async function loadReportInput(db: SupabaseClient, period: string): Promise<{ input: ReportInput; valuationAsOf: string | null }> {
   const seeds = JSON.parse(fs.readFileSync(path.join(__dirname, "../../config/managers.json"), "utf8")) as Array<{ slug: string; people?: Array<{ name: string; zh?: string }> }>;
-  const zhBySlug = new Map(seeds.map((s) => [s.slug, s.people?.[0]?.zh ?? null]));
-  const featuredSlugs = JSON.parse(fs.readFileSync(path.join(__dirname, "../../config/report-featured.json"), "utf8")) as string[];
+  const zhBySlug = new Map<string, string | null>(seeds.map((s) => [s.slug, s.people?.[0]?.zh ?? null]));
+  const featured = parseFeaturedConfig(JSON.parse(fs.readFileSync(path.join(__dirname, "../../config/report-featured.json"), "utf8")));
+  const featuredSlugs = featured.slugs;
+  // 名家清单里的中文名优先(managers.json 只给少数人配了中文名)。
+  for (const [slug, zh] of featured.zhBySlug) zhBySlug.set(slug, zh);
 
   const cusipMap = new Map<string, { ticker: string | null; name: string | null }>();
   for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer", (q) => q.order("cusip", { ascending: true })))

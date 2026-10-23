@@ -4,6 +4,7 @@ import {
   positionLabel, notFiledText, noComparableMovesText, disclaimerText, valuationNote, holderDeltaCell,
 } from "./copy";
 import type { ReportPayload } from "./types";
+import { featuredMoveText, featuredWeightNote, STRIKE_ZONE_VISIBLE, strikeZoneMoreLabel } from "./copy";
 
 function assert(c: boolean, m: string) {
   if (!c) { console.error("FAIL:", m); process.exit(1); }
@@ -88,5 +89,23 @@ assert(valuationNote("2026-12-17", "en", "2026-09-30").includes("later than that
 assert(valuationNote("2026-11-17", "zh", "2026-09-30") === "价值位置按 2026-11-17 收盘价计算。", "申报季内不加");
 assert(valuationNote("2026-10-24", "en") === "Valuation positions use closing prices as of 2026-10-24.", "不传 period 不加");
 assert(!/—/.test(valuationNote("2026-10-24", "en", "2026-06-30") + valuationNote(null, "zh", "2026-06-30")), "不出现 —");
+
+// 名家动作:动作按股数口径说,权重放括号里并注明会受股价影响(避免“减仓但权重上升”的误读)。
+const dy = { key: "AAPL", ticker: "AAPL", issuer: "APPLE INC", kind: "decreased" as const, weightBefore: 0.367, weightAfter: 0.411 };
+assert(featuredMoveText(dy, "zh") === "减少股数 AAPL（占组合 36.7% → 41.1%）", `zh 股数口径: ${featuredMoveText(dy, "zh")}`);
+assert(featuredMoveText(dy, "en") === "Shares down AAPL (portfolio weight 36.7% → 41.1%)", `en 股数口径: ${featuredMoveText(dy, "en")}`);
+assert(featuredMoveText({ ...dy, kind: "increased" }, "zh").startsWith("增加股数 "), "zh 增加股数");
+assert(featuredMoveText({ ...dy, kind: "new", weightBefore: 0, weightAfter: 0.047 }, "zh") === "新建仓 AAPL（占组合 0% → 4.7%）", "zh 新建仓");
+assert(featuredMoveText({ ...dy, kind: "exited", weightAfter: 0 }, "en") === "Sold out AAPL (portfolio weight 36.7% → 0%)", "en 清仓");
+assert(featuredMoveText({ ...dy, ticker: null, key: "C_X", issuer: "MYSTERY CORP" }, "en").includes("MYSTERY CORP"), "未解析用 issuer");
+assert(/股数/.test(featuredWeightNote("zh")) && /股价/.test(featuredWeightNote("zh")), "zh 说明提到股数与股价");
+assert(/shares/.test(featuredWeightNote("en")) && /price/.test(featuredWeightNote("en")), "en 说明提到 shares 与 price");
+assert(!/—/.test(featuredWeightNote("zh") + featuredWeightNote("en")), "不出现 —");
+
+// 击球区交集:页面先显示 15 条,其余收进 details
+assert(STRIKE_ZONE_VISIBLE === 15, "首屏 15 条");
+assert(strikeZoneMoreLabel(46, "zh") === "展开其余 46 只", "zh 展开文案");
+assert(strikeZoneMoreLabel(46, "en") === "Show the other 46 stocks", "en 展开文案");
+assert(strikeZoneMoreLabel(1, "en") === "Show the other stock", "en 单数");
 
 console.log("copy.check OK");

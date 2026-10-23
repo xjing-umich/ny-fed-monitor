@@ -3,7 +3,7 @@
 import { effectiveFilingDeadline, parseUTC, quarterLabel } from "../freshness/derive";
 import { localePath, stockPath, SITE_ORIGIN } from "../urls";
 import { reportSlug } from "./period";
-import type { EmptyReason, FeaturedEntry, MoveKind, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
+import type { EmptyReason, FeaturedEntry, FeaturedMove, MoveKind, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
 
 export const pct = (x: number): string => `${Number((x * 100).toFixed(1))}%`;
 const signed = (n: number): string => (n > 0 ? `+${n}` : `${n}`);
@@ -100,6 +100,41 @@ export function kindLabel(kind: MoveKind, lang: ReportLang): string {
   const zh: Record<MoveKind, string> = { new: "新建仓", increased: "加仓", decreased: "减仓", exited: "清仓" };
   const en: Record<MoveKind, string> = { new: "New position", increased: "Added", decreased: "Trimmed", exited: "Sold out" };
   return (lang === "zh" ? zh : en)[kind];
+}
+
+/**
+ * 名家动作:动作按申报股数的增减判断(与 diffHoldings 同口径),所以说“增加股数/减少股数”,
+ * 不说“加仓/减仓”;组合权重放括号里——权重还受股价涨跌影响,方向可能与股数相反(如股数减少但权重上升)。
+ */
+export function featuredKindLabel(kind: MoveKind, lang: ReportLang): string {
+  const zh: Record<MoveKind, string> = { new: "新建仓", increased: "增加股数", decreased: "减少股数", exited: "清仓" };
+  const en: Record<MoveKind, string> = { new: "New position", increased: "Shares up", decreased: "Shares down", exited: "Sold out" };
+  return (lang === "zh" ? zh : en)[kind];
+}
+/** 括号部分(页面里股票名是链接,所以拆开给)。 */
+export function featuredWeightText(m: Pick<FeaturedMove, "weightBefore" | "weightAfter">, lang: ReportLang): string {
+  const w = `${pct(m.weightBefore)} → ${pct(m.weightAfter)}`;
+  return lang === "zh" ? `（占组合 ${w}）` : `(portfolio weight ${w})`;
+}
+export function featuredMoveText(m: FeaturedMove, lang: ReportLang): string {
+  const name = m.ticker ?? m.issuer;
+  return lang === "zh"
+    ? `${featuredKindLabel(m.kind, lang)} ${name}${featuredWeightText(m, lang)}`
+    : `${featuredKindLabel(m.kind, lang)} ${name} ${featuredWeightText(m, lang)}`;
+}
+
+export function featuredWeightNote(lang: ReportLang): string {
+  return lang === "zh"
+    ? "动作按申报股数的增减判断；括号里是该股占组合的权重，它还随股价涨跌变化，方向可能与股数相反。"
+    : "Moves are based on the change in shares reported. The weight in parentheses also moves with the stock price, so it can go the other way.";
+}
+
+/** 击球区交集首屏显示条数;其余收进原生 <details>(SSR,爬虫可读)。 */
+export const STRIKE_ZONE_VISIBLE = 15;
+
+export function strikeZoneMoreLabel(n: number, lang: ReportLang): string {
+  if (lang === "zh") return `展开其余 ${n} 只`;
+  return n === 1 ? "Show the other stock" : `Show the other ${n} stocks`;
 }
 
 export function sectionTitles(lang: ReportLang) {
