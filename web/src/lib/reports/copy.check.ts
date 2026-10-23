@@ -48,8 +48,8 @@ assert(pct(0.042) === "4.2%" && pct(0) === "0%", "百分比");
 assert(emptyText("no_valuation", "zh").length > 0 && kindLabel("exited", "en").length > 0, "标签非空");
 assert(stockHref({ key: 'A"B&C', ticker: 'A"B&C', issuer: "X" }, "en") === "/stocks/A%22B%26C", "ticker 做 URI 编码");
 
-assert(positionLabel("strike_zone", "zh") === "击球区" && positionLabel("below", "zh") === "价值带以下", "zh 位置标签");
-assert(positionLabel("strike_zone", "en") === "Strike zone" && positionLabel("below", "en") === "Below value band", "en 位置标签");
+assert(positionLabel("strike_zone", "zh") === "击球区" && positionLabel("below", "zh") === "低于内在价值", "zh 位置标签");
+assert(positionLabel("strike_zone", "en") === "Strike zone" && positionLabel("below", "en") === "Below intrinsic value", "en 位置标签");
 assert(notFiledText("zh") === "未申报" && notFiledText("en") === "Not filed yet", "申报标签");
 assert(noComparableMovesText("zh") === "本季无可比动作（缺上一季申报）" && noComparableMovesText("en") === "No comparable moves (no prior filing)", "无可比动作标签");
 assert(disclaimerText("zh") === "仅供学习，不构成投资建议。" && disclaimerText("en") === "For education only. Not investment advice.", "免责标签");

@@ -100,7 +100,7 @@ export const readValuationVerdicts = cache(
 export type BargainVerdict = { inStrikeZone: boolean; marginPct: number; priceDate: string };
 
 /**
- * 读"便宜"票(击球区 或 低于价值带, reliable)的按-ticker map, 供 /stocks 列表高亮稀有便宜。
+ * 读"便宜"票(击球区 或 低于内在价值, reliable)的按-ticker map, 供 /stocks 列表高亮稀有便宜。
  * 行数有界(击球区 + 低于价值, 去重后 ≤~110), 无 IN 巨列表 → 无 URL 超长风险。
  * 前景闸: reliable(SQL) + (inStrikeZone||below)(SQL) + marginPct>0(JS) + !isImplausibleBand(JS),
  * 与 readValuationVerdicts / stocks/[ticker] marginShown 同源。
@@ -159,6 +159,8 @@ export type StrikeLeader = {
   rangeLo: number;
   rangeHi: number;
   marginPct: number | null;
+  /** 估值所用收盘价(快照 price),用于反推内在价值。 */
+  price: number;
   computedAt: string;
   /** 估值所用收盘价日期(快照 price_date);页面据此标"估值截至"。 */
   priceDate: string;
@@ -227,6 +229,7 @@ export const readStrikeZoneLeaders = cache(
           rangeLo: Number(r.range_lo),
           rangeHi: Number(r.range_hi),
           marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
+          price: Number(r.price),
           computedAt: String(r.computed_at),
           priceDate: r.price_date == null ? "" : String(r.price_date),
         }));

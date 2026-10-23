@@ -25,18 +25,18 @@ export type StockRow = {
   totalValue: number;
   /** 持有人数条宽(px),服务端按榜首归一化预算 */
   barWidth: number;
-  /** 落在击球区/低于价值带(reliable)才非空 —— 稀有便宜高亮;服务端按前景闸预算 */
+  /** 落在击球区/低于内在价值(reliable)才非空 —— 稀有便宜高亮;服务端按前景闸预算 */
   bargain: { inStrikeZone: boolean; marginPct: number } | null;
 };
 
-// 稀有便宜绿标:击球区显 chip「击球区/Strike zone」+ 安全边际%;低于价值带(非严格击球区)只显绿%。
+// 稀有便宜绿标:击球区显 chip「击球区/Strike zone」+ 安全边际%;低于内在价值(非严格击球区)只显绿%。
 // 颜色不单独承义 —— 整体 aria-label 念全, chip/数字 aria-hidden。
 function BargainMark({ bargain, lang }: { bargain: { inStrikeZone: boolean; marginPct: number }; lang: Lang }) {
   const isZh = lang === "zh";
   const pct = fmtMarginPct(bargain.marginPct);
   const label = bargain.inStrikeZone
     ? isZh ? `击球区，安全边际 ${pct}` : `In strike zone, margin of safety ${pct}`
-    : isZh ? `低于价值带，安全边际 ${pct}` : `Below value band, margin of safety ${pct}`;
+    : isZh ? `低于内在价值，安全边际 ${pct}` : `Below intrinsic value, margin of safety ${pct}`;
   return (
     <span className="inline-flex items-baseline gap-1.5" aria-label={label}>
       {bargain.inStrikeZone && (

@@ -147,7 +147,6 @@ const SIZE_ONLY_FILES = new Set([
   "src/components/shell/MoveTag.tsx",
   "src/components/entity/VerdictChip.tsx",
   "src/components/valuation/ValuationBadge.tsx",
-  "src/components/entity/QuarterMovesPill.tsx",
 ]);
 
 function excluded(rel: string): boolean {

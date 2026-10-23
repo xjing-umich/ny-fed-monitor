@@ -37,16 +37,18 @@ import {
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard, ValueBandGauge, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
-import { WeightQoQ } from "@/components/common/qoqDirection";
-import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
+import { WeightQoQ, MoveMark } from "@/components/common/qoqDirection";
+import { QuarterMovesLine } from "@/components/entity/QuarterMovesLine";
+import type { MovesCount } from "@/lib/entity/quarterMovesText";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
+import { filingSeasonNote, hasNewQuarterRows } from "@/lib/stocks/filingSeasonNote";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker, knownExchange } from "@/lib/externalLinks";
-import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
+import { valuationVerdictChip, valuationSectionTitle } from "@/lib/stocks/valuationVerdictChip";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockGlossary, stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
@@ -150,11 +152,8 @@ const TABLE_COPY = {
       shares: "持股",
       weight: "权重（上季→本季）",
     },
-    exitedTitle: (n: number) => `本季清仓（${n}）`,
-    more: (n: number) => `… 等 ${n} 位`,
     showAll: (n: number) => `展开全部 ${n} 位持有人`,
-    meta: (n: number, total: string, opened: number, exited: number) =>
-      `${n} 位持有 · 合计 ${total} · 本季 +${opened} 新建 / -${exited} 清仓`,
+    meta: (n: number, total: string) => `${n} 位持有 · 合计 ${total}`,
   },
   en: {
     title: "Superinvestors Holding This Security",
@@ -164,15 +163,11 @@ const TABLE_COPY = {
       shares: "Shares",
       weight: "Weight (prev→now)",
     },
-    exitedTitle: (n: number) => `Exited this quarter (${n})`,
-    more: (n: number) => `… +${n} more`,
     showAll: (n: number) => `Show all ${n} holders`,
-    meta: (n: number, total: string, opened: number, exited: number) =>
-      `${n} holder${n === 1 ? "" : "s"} · ${total} combined · this quarter +${opened} opened / -${exited} exited`,
+    meta: (n: number, total: string) => `${n} holder${n === 1 ? "" : "s"} · ${total} combined`,
   },
 } as const;
 
-const EXIT_CAP = 12;
 const HOLDERS_VISIBLE = 10;
 
 function HoldersTable({
@@ -180,18 +175,24 @@ function HoldersTable({
   exited,
   totalValue,
   moves,
+  quarter,
   lang,
   trend,
   asOfPeriod,
+  seasonNote,
 }: {
   holders: HolderRow[];
   exited: ExitedHolder[];
   totalValue: number;
-  moves: QuarterMoves;
+  moves: MovesCount;
+  /** 展示季度标签(如 "Q2 2026"),由页面传 quarterLabel(displayPeriod)。 */
+  quarter: string;
   lang: Lang;
   trend: number[];
   /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
   asOfPeriod: string;
+  /** 申报季说明(新季未切换时的“Qn 申报中 n/M”);参数 = 表里是否有新季行。 */
+  seasonNote: (hasOffQuarterRows: boolean) => string | null;
 }): React.ReactElement {
   const t = TABLE_COPY[lang];
   const ui = stockUi(lang);
@@ -209,19 +210,20 @@ function HoldersTable({
       key: "investor",
       header: t.cols.investor,
       role: "primary",
-      cell: (r) =>
-        offQuarter(r) ? (
-          <span className="inline-flex items-baseline gap-1.5">
-            {r.person}
+      cell: (r) => (
+        <span className="inline-flex items-baseline gap-1.5">
+          {r.person}
+          {offQuarter(r) ? (
             <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period ?? null)}</span>
-          </span>
-        ) : (
-          r.person
-        ),
+          ) : (
+            <MoveMark kind={r.kind} lang={lang} />
+          )}
+        </span>
+      ),
     },
     { key: "value", header: t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value) },
     { key: "shares", header: t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => r.shares.toLocaleString() },
-    { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} kind={offQuarter(r) ? undefined : r.kind} lang={lang} /> },
+    { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} lang={lang} /> },
   ];
 
   return (
@@ -231,11 +233,19 @@ function HoldersTable({
         eyebrow={page.holders.eyebrow}
         title={t.title}
       />
-      <div className="mb-3 mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <p className="font-data text-xs text-[var(--tt-muted)]">
-          {t.meta(sorted.length, formatUSD(totalValue), moves.opened, moves.exited)}
-        </p>
-        <QuarterMovesPill moves={moves} lang={lang} />
+      <div className="mb-3 mt-3 space-y-1">
+        <p className="font-data text-xs text-[var(--tt-muted)]">{t.meta(sorted.length, formatUSD(totalValue))}</p>
+        <QuarterMovesLine
+          q={quarter}
+          moves={moves}
+          exited={exited.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) }))}
+          unit="investor"
+          lang={lang}
+        />
+        {(() => {
+          const note = seasonNote(hasNewQuarterRows(sorted.map((r) => r.period), refPeriod ?? ""));
+          return note ? <p className="text-xs text-[var(--tt-muted)]">{note}</p> : null;
+        })()}
       </div>
       {trend.length >= 2 && (
         <div className="mb-3">
@@ -265,29 +275,6 @@ function HoldersTable({
             breakpoint="lg"
           />
         </details>
-      )}
-
-      {/* 本季清仓:表底 chip 列表;空 → 不渲染 */}
-      {exited.length > 0 && (
-        <div className="mt-5 pt-1">
-          <span className="font-data text-xs text-[var(--tt-negative)]">
-            {t.exitedTitle(exited.length)}
-          </span>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {exited.slice(0, EXIT_CAP).map((e) => (
-              <Link
-                key={e.slug}
-                href={investorPath(lang, e.slug)}
-                className="inline-flex items-center rounded-md border border-[var(--tt-border)] px-2 py-0.5 max-sm:min-h-[44px] font-data text-xs text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
-              >
-                {e.person}
-              </Link>
-            ))}
-            {exited.length > EXIT_CAP && (
-              <span className="self-center text-[var(--tt-faint)] text-xs">{t.more(exited.length - EXIT_CAP)}</span>
-            )}
-          </div>
-        </div>
       )}
     </section>
   );
@@ -336,7 +323,8 @@ export default async function StockTickerPage({
   // 全站展示季度:与首页 masthead、buys/sells 同一口径(effectiveMovesPeriod)。申报季内少数基金
   // 提前交了新季时,"截至"不跟着单只早申报者推到新季;本季动作也只计展示季度的申报
   // (与 currentQuarterOnly 一致)。早申报者的持仓仍在表里,行内标出其季度。无数据 → 不过滤。
-  const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period ?? "";
+  const movesEff = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date());
+  const displayPeriod = movesEff.period ?? "";
   const inDisplayQuarter = (p: string | null | undefined) => !displayPeriod || p === displayPeriod;
   // 当前持有人口径(与 consensus 快照同一判定):最近到期季截止日过后仍没交的 manager 不计入。
   // 快照在 ingest 时已按此过滤;读时再判一次,截止日在两次 ingest 之间跨过时也立即生效。
@@ -534,7 +522,7 @@ export default async function StockTickerPage({
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
   const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
 
-  // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于价值带)。
+  // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于内在价值)。
   const marginShown = !!(
     handoffVerdict &&
     handoffVerdict.reliable &&
@@ -542,18 +530,12 @@ export default async function StockTickerPage({
     handoffVerdict.marginPct != null
   );
 
-  // 估值区块 display 标题直接承载结论 —— bucket 与卡内 deriveValuationVerdict 同源, 永不漂移。
+  // 估值区块 display 标题直接承载结论 —— 档名取 valuationLabel,与标题徽章同一说法;红旗便宜档带“待确认”。
   // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
   const page = stockPageCopy(lang);
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
-  const valuationTitle = handoffVerdict
-    ? handoffVerdict.bucket === "below"
-      ? page.valuation.below
-      : handoffVerdict.bucket === "within"
-        ? page.valuation.within
-        : page.valuation.above
-    : page.valuation.titleFallback;
+  const valuationTitle = valuationSectionTitle(handoffVerdict, lang);
 
   const subtitle = page.subtitle(n);
   const disclaimer = page.disclaimer;
@@ -662,7 +644,7 @@ export default async function StockTickerPage({
             note: priceFactNote(lang, latestPrice) ?? undefined,
             muted: latestPrice?.stale === true,
           },
-          // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——
+          // 安全边际只在"已确认便宜"(reliable + 击球区/低于内在价值)时占位并显数字 ——
           // 高于价值 / 带内 / 红旗档不显空格子(那是噪音), 结论交给 masthead 徽章 + 估值区块标题。
           ...(marginShown
             ? [{ label: page.marginOfSafety, value: fmtMarginPct(handoffVerdict!.marginPct!), tone: "positive" as const }]
@@ -880,9 +862,11 @@ export default async function StockTickerPage({
               exited={exitedHolders}
               totalValue={totalValue}
               moves={moves}
+              quarter={quarterLabel(displayPeriod) || ""}
               lang={lang}
               trend={trendSeries}
               asOfPeriod={asOfPeriod}
+              seasonNote={(has) => filingSeasonNote(movesEff, has, lang)}
             />
             <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>
               <StockProse paragraphs={stockProse} lang={lang} bare />

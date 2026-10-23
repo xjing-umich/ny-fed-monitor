@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { holdingKey } from "@/lib/managers/assemble";
-import type { Holding, HoldingChange } from "@/lib/managers/types";
+import type { Holding } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -32,11 +32,14 @@ import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
-import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
+import { deriveValuationPosture, postureLeadIn, strikePendingIssuers, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
+import { PENDING_WORD, valuationLabel } from "@/lib/valuation/valuationLabel";
 import { LearnLink } from "@/components/common/LearnLink";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Display } from "@/components/common/Display";
+import { splitNames } from "@/lib/entity/quarterMovesText";
+import { countMoves } from "./movesCount";
 
 const MAX_HOLDINGS = 25;
 
@@ -106,21 +109,16 @@ const HOLD_COPY = {
     title: "持仓明细",
     cols: { issuer: "标的", value: "市值", valuation: "估值", consensus: "持有人数", shares: "持股数", weight: "权重", signal: "信号" },
     truncated: (n: number, total: number) => `显示前 ${n} 条，共 ${total} 个持仓`,
-    exitedTitle: (n: number) => `本季清仓 (${n})`,
-    more: (n: number) => `… 等 ${n} 只`,
   },
   en: {
     title: "Holdings",
     cols: { issuer: "Security", value: "Value", valuation: "Valuation", consensus: "Holders", shares: "Shares", weight: "Weight", signal: "Signal" },
     truncated: (n: number, total: number) => `Showing top ${n} of ${total} positions`,
-    exitedTitle: (n: number) => `Exited this quarter (${n})`,
-    more: (n: number) => `… +${n} more`,
   },
 } as const;
 
 function HoldingsTable({
   holdings,
-  changes,
   lang,
   cusipToTicker,
   verdicts,
@@ -128,7 +126,6 @@ function HoldingsTable({
   rowSignals,
 }: {
   holdings: Holding[];
-  changes: HoldingChange[];
   lang: Lang;
   cusipToTicker: Map<string, string>;
   verdicts: Map<string, SnapshotVerdict>;
@@ -141,9 +138,6 @@ function HoldingsTable({
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
-
-  const exits = changes.filter((c) => c.kind === "exited" && !c.putCall);
-  const EXIT_CAP = 12;
 
   const columns: Column<Holding>[] = [
     {
@@ -178,7 +172,9 @@ function HoldingsTable({
       width: "w-32",
       cell: (h) => {
         const tk = cusipToTicker.get(h.cusip);
-        return <ValuationBadge verdict={tk ? verdicts.get(tk.toUpperCase()) : undefined} lang={lang} density="sparse" />;
+        // 无代码(非美股/未映射)→ 估值列不适用,写 —,不写“未评估”
+        if (!tk) return <span className="text-[var(--tt-faint)]">—</span>;
+        return <ValuationBadge verdict={verdicts.get(tk.toUpperCase())} lang={lang} density="table" />;
       },
     },
     {
@@ -254,24 +250,23 @@ function HoldingsTable({
       {truncated && (
         <p className="mt-2 text-xs text-[var(--tt-muted)]">{t.truncated(MAX_HOLDINGS, sorted.length)}</p>
       )}
-
-      {exits.length > 0 && (
-        <div className="mt-5 pt-1">
-          <span className="font-data text-xs text-[var(--tt-negative)]">
-            {t.exitedTitle(exits.length)}
-          </span>
-          <span className="ml-2 text-sm text-[var(--tt-muted)]">
-            {exits.slice(0, EXIT_CAP).map((c, i) => (
-              <React.Fragment key={holdingKey(c)}>
-                {i > 0 && "、"}
-                <Link href={stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip)} className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">{cleanIssuer(c.issuer)}</Link>
-              </React.Fragment>
-            ))}
-            {exits.length > EXIT_CAP && <span className="text-[var(--tt-faint)]">{t.more(exits.length - EXIT_CAP)}</span>}
-          </span>
-        </div>
-      )}
     </section>
+  );
+}
+
+function QuarterMovesExited({ lang, exits }: { lang: Lang; exits: { name: string; href: string }[] }) {
+  const { shown, rest } = splitNames(exits);
+  return (
+    <p className="mt-3 text-sm text-[var(--tt-muted)]">
+      {lang === "zh" ? `清仓 ${exits.length}：` : `Exited ${exits.length}: `}
+      {shown.map((e, i) => (
+        <React.Fragment key={e.href}>
+          {i > 0 && (lang === "zh" ? "、" : ", ")}
+          <Link href={e.href} className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">{e.name}</Link>
+        </React.Fragment>
+      ))}
+      {rest > 0 && (lang === "zh" ? ` 另 ${rest} 只` : ` +${rest} more`)}
+    </p>
   );
 }
 
@@ -346,10 +341,8 @@ export default async function InvestorSlugPage({
   // Verdict
   const buying = longChanges.filter((c) => c.kind === "new" || c.kind === "increased").length;
   const selling = longChanges.filter((c) => c.kind === "exited" || c.kind === "decreased").length;
-  // 本季动作三计数(纯 JS 派生自已加载的 longChanges, 零新增 IO; 口径与 verdict 一致, 长仓 only)
-  const added = longChanges.filter((c) => c.kind === "new").length;
-  const increased = longChanges.filter((c) => c.kind === "increased").length;
-  const exited = longChanges.filter((c) => c.kind === "exited").length;
+  // 本季动作四计数(纯 JS 派生自已加载的 longChanges, 零新增 IO; 口径与 verdict 一致, 长仓 only)
+  const moves = countMoves(longChanges);
   let verdict: { label: string; tone: Tone } | undefined;
   if (longChanges.length > 0 && prior) {
     if (buying > selling) {
@@ -462,16 +455,15 @@ export default async function InvestorSlugPage({
     totalValue: longTotalValue,
   });
 
-  // 估值相关数字(低于价值带计数、估值列、隐含预期句)全部来自估值快照:取其最晚价格日标注。
+  // 估值相关数字(低于内在价值计数、估值列、隐含预期句)全部来自估值快照:取其最晚价格日标注。
   const valuationAsOf = latestIsoDate([...verdicts.values()].map((v) => v.priceDate));
   const keyFacts = [
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
-    // cheap.length = below ∪ strike; 估值模型下击球区(跌破保守下限)恒 ⊆ below, 故等同「低于价值带」数;
-    // 与小节引导句同源(N trade below)。chip 逐项标签仍各自精确(击球区/低于价值带)。
+    // cheap = 击球区 ∪ 低于内在价值(reliable);待确认的不计入,写在估值姿态段落里。
     {
-      label: lang === "zh" ? "低于价值带" : "Below band",
+      label: lang === "zh" ? "低于内在价值" : "Below intrinsic value",
       value: String(posture.cheap.length),
       note: valuationAsOfText(lang, valuationAsOf) ?? undefined,
     },
@@ -568,7 +560,7 @@ export default async function InvestorSlugPage({
         }
         sources={[
           { name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) },
-          // 估值列 / 低于价值带 / 隐含预期:估值快照 = SEC 10-K/10-Q 财报 × 收盘价,日期取快照价格日。
+          // 估值列 / 低于内在价值 / 隐含预期:估值快照 = SEC 10-K/10-Q 财报 × 收盘价,日期取快照价格日。
           ...(valuationAsOf
             ? [{ name: lang === "zh" ? "估值(SEC 财报 × 收盘价)" : "Valuations (SEC filings × closing prices)", asOf: valuationAsOf }]
             : []),
@@ -579,11 +571,12 @@ export default async function InvestorSlugPage({
         <>
           {/* 本季动作摘要 — masthead/key-facts 之下的第一个重音时刻；计数纯 JS 派生，零新增数据请求；与 verdict 同口径 gating：无 prior 或无变化时不显示，避免 0/0/0 假精确 */}
           {prior && longChanges.length > 0 && (
-            <div className="grid grid-cols-3 gap-4 border-y border-[var(--tt-border)] py-6">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 border-y border-[var(--tt-border)] py-6">
               {[
-                { label: lang === "zh" ? "新建" : "New", value: added, color: "var(--tt-positive)" },
-                { label: lang === "zh" ? "加仓" : "Added", value: increased, color: "var(--ink-1)" },
-                { label: lang === "zh" ? "清仓" : "Exited", value: exited, color: "var(--tt-negative)" },
+                { label: lang === "zh" ? "新建" : "New", value: moves.opened, color: "var(--tt-positive)" },
+                { label: lang === "zh" ? "加仓" : "Added", value: moves.added, color: "var(--ink-1)" },
+                { label: lang === "zh" ? "减仓" : "Trimmed", value: moves.trimmed, color: "var(--ink-1)" },
+                { label: lang === "zh" ? "清仓" : "Exited", value: moves.exited, color: "var(--tt-negative)" },
               ].map((s, i) => (
                 <div key={s.label}>
                   <p className="tt-label">{s.label}</p>
@@ -593,6 +586,9 @@ export default async function InvestorSlugPage({
                 </div>
               ))}
             </div>
+          )}
+          {prior && longChanges.length > 0 && moves.exited > 0 && (
+            <QuarterMovesExited lang={lang} exits={longChanges.filter((c) => c.kind === "exited").map((c) => ({ name: cleanIssuer(c.issuer), href: stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip) }))} />
           )}
           {(() => {
             const held = holdingTickers.map((tk) => verdicts.get(tk.toUpperCase())).filter(Boolean) as SnapshotVerdict[];
@@ -607,16 +603,14 @@ export default async function InvestorSlugPage({
               </p>
             );
           })()}
-          {posture.cheap.length > 0 && (
+          {(posture.cheap.length > 0 || posture.pending.length > 0) && (
             <section aria-label={lang === "zh" ? "估值姿态" : "Valuation posture"}>
               <SectionHeading
                 eyebrow={lang === "zh" ? "13F × 估值" : "13F × valuation"}
                 title={lang === "zh" ? "估值姿态" : "Valuation posture"}
               />
               <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
-                {lang === "zh"
-                  ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于保守价值带${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
-                  : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below a conservative value band${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
+                {postureLeadIn(posture, lang)}
               </p>
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
@@ -631,12 +625,30 @@ export default async function InvestorSlugPage({
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
                       {h.marginPct != null ? `${Math.round(h.marginPct * 100)}%` : ""}
                       {h.marginPct != null ? " · " : ""}
-                      {h.inStrikeZone
-                        ? lang === "zh" ? "击球区" : "strike"
-                        : lang === "zh" ? "低于带" : "below"}
+                      {valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: true }, lang).label}
                     </span>
                   </li>
                 ))}
+                {/* 待确认:便宜档但估值带红旗,照实列出,中性色 + 后缀,不计入上面的数 */}
+                {posture.pending.map((h) => {
+                  // 档位文案与待确认原因都来自 valuationLabel(单一说法源)
+                  const vl = valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: false }, lang);
+                  return (
+                  <li key={`pending-${h.ticker}`} title={vl.title ?? undefined} className="flex items-baseline gap-2 text-sm">
+                    <Link
+                      href={stockPath(lang, h.ticker)}
+                      className="min-w-0 truncate text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
+                    >
+                      {cleanIssuer(h.issuer)}
+                      <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
+                    </Link>
+                    <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)]">
+                      {vl.label}
+                      {` · ${PENDING_WORD[lang]}`}
+                    </span>
+                  </li>
+                  );
+                })}
               </ul>
             </section>
           )}
@@ -674,7 +686,7 @@ export default async function InvestorSlugPage({
               </ul>
             </section>
           )}
-          {!zeroReport && <HoldingsTable holdings={latest.holdings} changes={longChanges} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />}
+          {!zeroReport && <HoldingsTable holdings={latest.holdings} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts} holderCounts={holderCounts} rowSignals={rowSignals} />}
           <LearnLink
             lang={lang}
             slug="what-is-a-superinvestor"
@@ -683,7 +695,7 @@ export default async function InvestorSlugPage({
           <FoldedSection title={lang === "zh" ? "关于这位投资者" : "About this investor"}>
             <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
           </FoldedSection>
-          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang)} />
+          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang, strikePendingIssuers(posture).map(cleanIssuer))} />
         </>
       </EntityPage>
     </>

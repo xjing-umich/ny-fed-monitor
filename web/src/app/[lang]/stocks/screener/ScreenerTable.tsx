@@ -9,6 +9,8 @@ import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { deriveFusionSignal } from "@/lib/managers/fusionSignal";
+import { impliedValue } from "@/lib/valuation/impliedValue";
+import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 
 const TOP_N = 60;
 
@@ -74,6 +76,18 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       cell: (r) => <span className="font-data tabular-nums text-[var(--tt-muted)]">{fmtValueBand(r.rangeLo, r.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}</span>,
     },
     {
+      key: "iv",
+      header: isZh ? "内在价值" : "Intrinsic value",
+      align: "right",
+      width: "w-28",
+      hideOnMobile: true,
+      // 由安全边际反推;单法口径(* 标注)时为零增长价值,见表下脚注。
+      cell: (r) => {
+        const iv = impliedValue(r.price, r.marginPct);
+        return <span className="font-data tabular-nums text-[var(--tt-text)]">{iv == null ? "—" : `$${Math.round(iv).toLocaleString()}`}</span>;
+      },
+    },
+    {
       key: "price",
       header: isZh ? "现价" : "Price",
       align: "right",
@@ -106,6 +120,12 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
         showRank
         emptyText={ui.emptyScreener}
       />
+      {/* 价值带 / 内在价值列只在桌面表格出现(hideOnMobile,DataTable 默认 md 断点),脚注同断点隐藏 */}
+      <p className="mt-2 hidden text-xs text-[var(--tt-faint)] md:block">
+        {isZh
+          ? `带 * 的为单法口径，内在价值一列为零增长价值。${BAND_FLOOR_NOTE.zh}`
+          : `Rows marked * use a single method; their intrinsic value is the zero-growth value. ${BAND_FLOOR_NOTE.en}`}
+      </p>
 
       {tail.length > 0 && (
         <details className="group mt-4">

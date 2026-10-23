@@ -44,7 +44,6 @@ const DEFERRED = new Set([
   "components/shell/MoveTag.tsx",
   "components/entity/VerdictChip.tsx",
   "components/valuation/ValuationBadge.tsx",
-  "components/entity/QuarterMovesPill.tsx",
 ]);
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
