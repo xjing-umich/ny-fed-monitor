@@ -1,6 +1,6 @@
 // 运行: npx tsx src/lib/stocks/filingSeasonNote.check.ts
 import assert from "node:assert/strict";
-import { filingSeasonNote } from "./filingSeasonNote";
+import { filingSeasonNote, hasNewQuarterRows } from "./filingSeasonNote";
 
 const season = {
   period: "2026-06-30",
@@ -23,4 +23,8 @@ assert.equal(
   "已切季 → 不写",
 );
 assert.equal(filingSeasonNote({ ...season, reason: "empty", maxPeriod: null }, false, "en"), null);
+assert.equal(hasNewQuarterRows(["2026-06-30", "2026-09-30"], "2026-06-30"), true, "有 Q3 行");
+assert.equal(hasNewQuarterRows(["2026-06-30", "2026-03-31"], "2026-06-30"), false, "只有落后的 Q1 行");
+assert.equal(hasNewQuarterRows(["2026-06-30", "2026-06-30"], "2026-06-30"), false, "全同期");
+assert.equal(hasNewQuarterRows([null, undefined], "2026-06-30"), false, "period 为空");
 console.log("filingSeasonNote.check OK");

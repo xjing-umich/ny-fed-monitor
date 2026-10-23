@@ -42,7 +42,7 @@ import { QuarterMovesLine } from "@/components/entity/QuarterMovesLine";
 import type { MovesCount } from "@/lib/entity/quarterMovesText";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
-import { filingSeasonNote } from "@/lib/stocks/filingSeasonNote";
+import { filingSeasonNote, hasNewQuarterRows } from "@/lib/stocks/filingSeasonNote";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
@@ -243,14 +243,13 @@ function HoldersTable({
           lang={lang}
         />
         {(() => {
-          const note = seasonNote(sorted.some(offQuarter));
+          const note = seasonNote(hasNewQuarterRows(sorted.map((r) => r.period), refPeriod ?? ""));
           return note ? <p className="text-xs text-[var(--tt-muted)]">{note}</p> : null;
         })()}
       </div>
       {trend.length >= 2 && (
         <div className="mb-3">
           <HolderTrend series={trend} lang={lang} variant="inline" />
-          {seasonNote(false) && <span className="ml-2 font-data text-xs text-[var(--tt-faint)]">{seasonNote(false)}</span>}
         </div>
       )}
       <DataTable

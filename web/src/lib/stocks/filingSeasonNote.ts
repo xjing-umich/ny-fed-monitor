@@ -18,3 +18,8 @@ export function filingSeasonNote(eff: EffectiveMovesPeriod, hasOffQuarterRows: b
   const head = `${next} filings arriving: ${filed} of ${total}.`;
   return hasOffQuarterRows ? `${head} Rows marked ${next} are new filings and aren't counted in the ${cur} moves above.` : head;
 }
+
+/** 表里是否有比展示季度更新的行(早申报者的新季行)。落后的旧季行不算。 */
+export function hasNewQuarterRows(periods: (string | null | undefined)[], refPeriod: string): boolean {
+  return !!refPeriod && periods.some((p) => !!p && p > refPeriod);
+}
