@@ -20,7 +20,7 @@ export function consensusBlurb(rows: BlurbRow[], managerCount: number, lang: Lan
     return `本季纳入统计的 ${managerCount} 位超级投资者中，${subjectName(top)} 被 ${top.primary} 位同时持有、居共识首位，${deltaTxt}；前五大共识股合计出现 ${sumTop5} 人次。`;
   }
   const deltaTxt = d === 0 ? "unchanged vs last quarter" : `${d > 0 ? "+" : "−"}${Math.abs(d)} vs last quarter`;
-  return `Among ${managerCount} superinvestors tracked, ${subjectName(top)} is the most widely held — in ${top.primary} portfolios (${deltaTxt}). The top 5 consensus names appear in ${sumTop5} portfolios combined.`;
+  return `Among the ${managerCount} superinvestors counted this quarter, ${subjectName(top)} is the most widely held — in ${top.primary} portfolios (${deltaTxt}). The top 5 consensus names appear in ${sumTop5} portfolios combined.`;
 }
 
 /** 买/卖页解读句。 */
