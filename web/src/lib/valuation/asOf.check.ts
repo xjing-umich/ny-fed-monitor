@@ -17,8 +17,11 @@ assert.equal(priceSourceName("en", "EASTMONEY"), "Eastmoney");
 assert.equal(priceSourceName("zh", undefined), "收盘价", "未知来源不编造");
 
 // WBD 2026-10-23 线上实例:最新收盘 2026-10-06,已过期
-assert.equal(priceFactNote("zh", { date: "2026-10-06", source: "yahoo", stale: true }), "2026-10-06 收盘 · 已过期 · Yahoo Finance");
-assert.equal(priceFactNote("en", { date: "2026-10-22", source: "yahoo", stale: false }), "2026-10-22 close · Yahoo Finance");
+assert.equal(priceFactNote("zh", { date: "2026-10-06", source: "yahoo", stale: true }), "2026-10-06 收盘 · 已过期 · Yahoo\u00a0Finance");
+assert.equal(priceFactNote("en", { date: "2026-10-22", source: "yahoo", stale: false }), "2026-10-22 close · Yahoo\u00a0Finance");
 assert.equal(priceFactNote("zh", null), null);
+
+// 来源名内不可断行(窄屏不把 "Yahoo Finance" 拆两行),日期与来源之间仍可在「·」处换行
+assert.ok(!/Yahoo Finance/.test(priceFactNote("zh", { date: "2026-10-22", source: "yahoo" })!), "来源名用不换行空格");
 
 console.log("asOf.check OK");
