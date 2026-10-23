@@ -32,7 +32,7 @@ import { readHolderCounts } from "@/lib/managers/consensusRead";
 import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction, LONELY_MAX_HOLDERS, MIN_CONVICTION_WEIGHT, LONELY_LIMIT } from "@/lib/managers/lonelyConviction";
-import { deriveValuationPosture, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
+import { deriveValuationPosture, postureLeadIn, strikePendingIssuers, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
 import { PENDING_WORD, valuationLabel } from "@/lib/valuation/valuationLabel";
 import { LearnLink } from "@/components/common/LearnLink";
 import { FoldedSection } from "@/components/entity/FoldedSection";
@@ -172,7 +172,9 @@ function HoldingsTable({
       width: "w-32",
       cell: (h) => {
         const tk = cusipToTicker.get(h.cusip);
-        return <ValuationBadge verdict={tk ? verdicts.get(tk.toUpperCase()) : undefined} lang={lang} density="table" />;
+        // 无代码(非美股/未映射)→ 估值列不适用,写 —,不写“未评估”
+        if (!tk) return <span className="text-[var(--tt-faint)]">—</span>;
+        return <ValuationBadge verdict={verdicts.get(tk.toUpperCase())} lang={lang} density="table" />;
       },
     },
     {
@@ -608,9 +610,7 @@ export default async function InvestorSlugPage({
                 title={lang === "zh" ? "估值姿态" : "Valuation posture"}
               />
               <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
-                {lang === "zh"
-                  ? `这只基金 ${posture.covered} 只可估值美股持仓中，有 ${posture.cheap.length} 只现价低于内在价值${posture.strikeCount > 0 ? `（其中 ${posture.strikeCount} 只落在击球区）` : ""}${posture.pending.length > 0 ? `；另有 ${posture.pending.length} 只待确认` : ""}${posture.asOf ? `（估值截至 ${posture.asOf}）` : ""}：`
-                  : `Of ${posture.covered} valued US positions, ${posture.cheap.length} trade below intrinsic value${posture.strikeCount > 0 ? ` (${posture.strikeCount} in the strike zone)` : ""}${posture.pending.length > 0 ? `; ${posture.pending.length} more pending` : ""}${posture.asOf ? ` (as of ${posture.asOf})` : ""}:`}
+                {postureLeadIn(posture, lang)}
               </p>
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
@@ -695,7 +695,7 @@ export default async function InvestorSlugPage({
           <FoldedSection title={lang === "zh" ? "关于这位投资者" : "About this investor"}>
             <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
           </FoldedSection>
-          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang, posture.pending.map((p) => cleanIssuer(p.issuer)))} />
+          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang, strikePendingIssuers(posture).map(cleanIssuer))} />
         </>
       </EntityPage>
     </>

@@ -62,4 +62,16 @@ assert.equal(stockHandoffFor(v({ bucket: "above" }), "AAPL", "en").line, "AAPL's
 assert.equal(investorHandoffFor(0, "X", "zh").ctaLabel, "按安全边际浏览低于内在价值的股票");
 assert.equal(investorHandoffFor(0, "X", "en").ctaLabel, "Browse stocks below intrinsic value by margin of safety");
 
+// 10) 有已确认击球区 + 击球区待确认 → 同一个尾巴(final-fix B #1)
+c = investorHandoffFor(1, "Warren Buffett", "zh", ["Macy's"]);
+assert.equal(c.line, "Warren Buffett 有 1 只持仓现价落在击球区，另有 1 只待确认（Macy's）。", `zh strike+pending, got ${c.line}`);
+assert.equal(c.href, "/zh/stocks/screener?view=strike_zone");
+c = investorHandoffFor(1, "Warren Buffett", "en", ["Macy's"]);
+assert.equal(c.line, "Warren Buffett holds 1 position now in the strike zone; 1 more is pending (Macy's).", `en strike+pending, got ${c.line}`);
+c = investorHandoffFor(2, "X", "en", ["A", "B"]);
+assert.equal(c.line, "X holds 2 positions now in the strike zone; 2 more are pending (A and B).", `en strike+2 pending, got ${c.line}`);
+// 无待确认时原句不变
+assert.equal(investorHandoffFor(3, "X", "zh").line, "X 有 3 只持仓现价落在击球区。");
+assert.equal(investorHandoffFor(3, "X", "en").line, "X holds 3 positions now in the strike zone.");
+
 console.log("discoveryHandoff.check.ts: all assertions passed");

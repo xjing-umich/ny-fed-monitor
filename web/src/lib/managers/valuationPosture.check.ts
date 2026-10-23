@@ -1,4 +1,4 @@
-import { deriveValuationPosture, type CheapHolding } from "./valuationPosture";
+import { deriveValuationPosture, postureLeadIn, strikePendingIssuers, type CheapHolding, type ValuationPosture } from "./valuationPosture";
 import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 
 function assert(c: boolean, m: string) {
@@ -70,5 +70,34 @@ assert(rMany.cheap.length === 10, `cheap 返回全部 10(不截断), got ${rMany
 const pr = deriveValuationPosture({ holdings, cusipToTicker, verdicts });
 assert(pr.pending.length === 1 && pr.pending[0].ticker === "C", `pending 只含 C, got ${JSON.stringify(pr.pending)}`);
 assert(!pr.cheap.some((c) => c.ticker === "C"), "C 不在 cheap");
+
+// 底部 handoff 讲的是击球区:只把击球区的待确认名字传过去,below-待确认不进(final-fix B #1)
+const sp = deriveValuationPosture({
+  holdings: [{ cusip: "SP", issuer: "Strike Pending Inc" }, { cusip: "BP", issuer: "Below Pending Inc" }],
+  cusipToTicker: new Map([["SP", "SP"], ["BP", "BP"]]),
+  verdicts: new Map<string, SnapshotVerdict>([
+    ["SP", v({ ticker: "SP", bucket: "below", inStrikeZone: true, marginPct: 0.4, reliable: false })],
+    ["BP", v({ ticker: "BP", bucket: "below", inStrikeZone: false, marginPct: 0.1, reliable: false })],
+  ]),
+});
+assert(sp.pending.length === 2, `两只都进 pending, got ${sp.pending.length}`);
+assert(JSON.stringify(strikePendingIssuers(sp)) === JSON.stringify(["Strike Pending Inc"]), `只剩击球区待确认, got ${JSON.stringify(strikePendingIssuers(sp))}`);
+
+// 估值姿态引语:分母写明“估值无红旗”(final-fix B #2)
+const ch = (over: Partial<CheapHolding>): CheapHolding => ({ issuer: "I", ticker: "T", marginPct: 0.2, inStrikeZone: false, bucket: "below", ...over });
+const pp = (over: Partial<ValuationPosture>): ValuationPosture => ({ covered: 12, strikeCount: 0, belowCount: 0, cheap: [], pending: [], asOf: "", ...over });
+const eq = (got: string, want: string, m: string) => assert(got === want, `${m}\n  got:  ${got}\n  want: ${want}`);
+// cheap>0 + strike>0 + pending + asOf
+const full = pp({ strikeCount: 1, cheap: [ch({ inStrikeZone: true }), ch({})], pending: [ch({})], asOf: "2026-10-22" });
+eq(postureLeadIn(full, "zh"), "这只基金 12 只估值无红旗的美股持仓中，有 2 只现价低于内在价值（其中 1 只落在击球区）；另有 1 只待确认（估值截至 2026-10-22）：", "zh full");
+eq(postureLeadIn(full, "en"), "Of 12 valued US positions without red flags, 2 trade below intrinsic value (1 in the strike zone); 1 more pending (as of 2026-10-22):", "en full");
+// cheap>0, 无 strike, 无 pending
+const plain = pp({ cheap: [ch({})], asOf: "2026-10-22" });
+eq(postureLeadIn(plain, "zh"), "这只基金 12 只估值无红旗的美股持仓中，有 1 只现价低于内在价值（估值截至 2026-10-22）：", "zh no pending");
+eq(postureLeadIn(plain, "en"), "Of 12 valued US positions without red flags, 1 trade below intrinsic value (as of 2026-10-22):", "en no pending");
+// cheap=0, 只有待确认, 无 asOf
+const onlyPending = pp({ covered: 5, pending: [ch({}), ch({})] });
+eq(postureLeadIn(onlyPending, "zh"), "这只基金 5 只估值无红旗的美股持仓中，没有现价低于内在价值的；另有 2 只待确认：", "zh only pending");
+eq(postureLeadIn(onlyPending, "en"), "Of 5 valued US positions without red flags, none trade below intrinsic value; 2 more pending:", "en only pending");
 
 console.log("valuationPosture.check OK");
