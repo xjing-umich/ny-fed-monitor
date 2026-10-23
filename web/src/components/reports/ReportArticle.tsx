@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import type { Lang } from "@/lib/nav";
 import { investorPath, localePath } from "@/lib/urls";
 import {
-  disclaimerText, emptyText, holderDeltaCell, kindLabel, noComparableMovesText, notFiledText, personName, pct,
-  positionLabel, reportDescription, reportTitle, sectionTitles, statusLine, stockHref, valuationNote,
+  disclaimerText, emptyText, featuredKindLabel, featuredWeightNote, featuredWeightText, holderDeltaCell, kindLabel,
+  noComparableMovesText, notFiledText, personName, positionLabel, STRIKE_ZONE_VISIBLE, strikeZoneMoreLabel, reportDescription, reportTitle, sectionTitles, statusLine, stockHref, valuationNote,
 } from "@/lib/reports/copy";
 import type { ReportRow, ReportStock, Section } from "@/lib/reports/types";
 
@@ -49,6 +49,15 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
     </table>
   );
 
+  const strikeTable = (items: typeof p.strikeZone.items) => (
+    <table className="mt-3 w-full">
+      <thead><tr><th className={th}>{zh ? "股票" : "Stock"}</th><th className={th}>{zh ? "持有人数" : "Holders"}</th><th className={th}>{zh ? "位置" : "Position"}</th></tr></thead>
+      <tbody>{items.map((i) => (
+        <tr key={i.key}><td className={td}><StockCell s={i} lang={lang} /></td><td className={`${td} font-data`}>{i.holderCount}</td><td className={td}>{positionLabel(i.position, lang)}</td></tr>
+      ))}</tbody>
+    </table>
+  );
+
   return (
     <article className="mx-auto max-w-[720px] py-8 sm:py-10">
       <p className="tt-eyebrow">{zh ? "季度报告" : "Quarterly report"}</p>
@@ -70,12 +79,13 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
       </Block>
 
       <Block title={t.strikeZone} source={valuationNote(row.valuationAsOf, lang, p.period)} sec={p.strikeZone} lang={lang}>
-        <table className="mt-3 w-full">
-          <thead><tr><th className={th}>{zh ? "股票" : "Stock"}</th><th className={th}>{zh ? "持有人数" : "Holders"}</th><th className={th}>{zh ? "位置" : "Position"}</th></tr></thead>
-          <tbody>{p.strikeZone.items.map((i) => (
-            <tr key={i.key}><td className={td}><StockCell s={i} lang={lang} /></td><td className={`${td} font-data`}>{i.holderCount}</td><td className={td}>{positionLabel(i.position, lang)}</td></tr>
-          ))}</tbody>
-        </table>
+        {strikeTable(p.strikeZone.items.slice(0, STRIKE_ZONE_VISIBLE))}
+        {p.strikeZone.items.length > STRIKE_ZONE_VISIBLE ? (
+          <details className="mt-2">
+            <summary className="cursor-pointer py-2 text-sm text-[var(--tt-accent)]">{strikeZoneMoreLabel(p.strikeZone.items.length - STRIKE_ZONE_VISIBLE, lang)}</summary>
+            {strikeTable(p.strikeZone.items.slice(STRIKE_ZONE_VISIBLE))}
+          </details>
+        ) : null}
       </Block>
 
       <section className="mt-10">
@@ -83,6 +93,7 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
           <h2 className="text-lg font-medium text-[var(--tt-text)]">{t.featured}</h2>
           <span className="font-data text-xs text-[var(--tt-muted)]">{src}</span>
         </div>
+        <p className="mt-3 text-sm text-[var(--tt-muted)]">{featuredWeightNote(lang)}</p>
         <ul className="mt-3 flex flex-col gap-3">
           {p.featured.map((f) => (
             <li key={f.slug} className="text-base text-[var(--tt-text)]">
@@ -93,7 +104,7 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
                 : f.moves.length === 0
                   ? <span className="text-[var(--tt-muted)]">{noComparableMovesText(lang)}</span>
                   : f.moves.map((m, i) => (
-                      <span key={m.key}>{i ? (zh ? "；" : "; ") : ""}{kindLabel(m.kind, lang)} <StockCell s={m} lang={lang} /> <span className="font-data">{pct(m.weightBefore)} → {pct(m.weightAfter)}</span></span>
+                      <span key={m.key}>{i ? (zh ? "；" : "; ") : ""}{featuredKindLabel(m.kind, lang)} <StockCell s={m} lang={lang} />{zh ? "" : " "}<span className="font-data text-[var(--tt-muted)]">{featuredWeightText(m, lang)}</span></span>
                     ))}
             </li>
           ))}

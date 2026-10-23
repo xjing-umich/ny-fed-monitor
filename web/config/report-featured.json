@@ -1,1 +1,12 @@
-["berkshire-hathaway", "pershing-square", "scion-asset-management", "himalaya-capital", "hh-international", "baupost-group", "duquesne-family-office", "pabrai-funds", "oaktree", "fundsmith"]
+[
+  { "slug": "berkshire-hathaway", "zh": "巴菲特" },
+  { "slug": "pershing-square", "zh": "比尔·阿克曼" },
+  { "slug": "scion-asset-management", "zh": "迈克尔·伯里" },
+  { "slug": "himalaya-capital", "zh": "李录" },
+  { "slug": "hh-international", "zh": "段永平" },
+  { "slug": "baupost-group", "zh": "塞斯·卡拉曼" },
+  { "slug": "duquesne-family-office", "zh": "斯坦利·德鲁肯米勒" },
+  { "slug": "pabrai-funds", "zh": "莫尼什·帕伯莱" },
+  { "slug": "oaktree", "zh": "霍华德·马克斯" },
+  { "slug": "fundsmith", "zh": "特里·史密斯" }
+]

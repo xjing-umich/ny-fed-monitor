@@ -1,7 +1,7 @@
 // 季度报告邮件(纯函数)。与报告页同一份 payload、同一套文案;表格式简单 HTML,兼容主流邮件客户端。
 import {
-  disclaimerText, emptyText, holderCountText, holderDeltaText, kindLabel, noComparableMovesText, notFiledText,
-  personName, pct, positionLabel, reportDescription, reportTitle, reportUrl, sectionTitles, stockHref,
+  disclaimerText, emptyText, featuredMoveText, featuredWeightNote, holderCountText, holderDeltaText, kindLabel,
+  noComparableMovesText, notFiledText, personName, positionLabel, reportDescription, reportTitle, reportUrl, sectionTitles, stockHref,
   superinvestorCount, valuationNote,
 } from "./copy";
 import { SITE_ORIGIN } from "../urls";
@@ -32,16 +32,17 @@ const stockText = (s: ReportStock) => s.ticker ?? s.issuer;
 
 type Row = { cells: string[]; textCells: string[] };
 
-function block(title: string, sec: { emptyReason: EmptyReason | null }, rows: Row[], lang: ReportLang) {
+function block(title: string, sec: { emptyReason: EmptyReason | null }, rows: Row[], lang: ReportLang, note?: string) {
   const html = rows.length
     ? `<table role="presentation" width="100%" cellpadding="6" style="border-collapse:collapse;font-size:14px">${rows
         .map((r) => `<tr>${r.cells.map((c) => `<td style="border-bottom:1px solid #eee">${c}</td>`).join("")}</tr>`)
         .join("")}</table>`
     : `<p style="color:#666;font-size:14px">${esc(emptyText(sec.emptyReason ?? "no_qualifying", lang))}</p>`;
   const text = rows.length ? rows.map((r) => `- ${r.textCells.join(" · ")}`).join("\n") : emptyText(sec.emptyReason ?? "no_qualifying", lang);
+  const noteHtml = note ? `<p style="color:#666;font-size:13px;margin:0 0 8px">${esc(note)}</p>` : "";
   return {
-    html: `<h2 style="font-size:16px;margin:24px 0 8px">${esc(title)}</h2>${html}`,
-    text: `${title}\n${text}`,
+    html: `<h2 style="font-size:16px;margin:24px 0 8px">${esc(title)}</h2>${noteHtml}${html}`,
+    text: note ? `${title}\n${note}\n${text}` : `${title}\n${text}`,
   };
 }
 
@@ -76,7 +77,7 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
     const what = !f.filed
       ? notFiledText(lang)
       : f.moves.length
-        ? f.moves.map((m) => `${kindLabel(m.kind, lang)} ${stockText(m)} ${pct(m.weightBefore)} → ${pct(m.weightAfter)}`).join(zh ? "；" : "; ")
+        ? f.moves.map((m) => featuredMoveText(m, lang)).join(zh ? "；" : "; ")
         : noComparableMovesText(lang);
     return { cells: [esc(name), esc(what)], textCells: [name, what] };
   });
@@ -86,7 +87,7 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
     block(t.sold, p.sold, moveRows(p.sold.items), lang),
     block(t.mostHeld, p.mostHeld, heldRows, lang),
     block(t.strikeZone, p.strikeZone, szRows, lang),
-    block(t.featured, { emptyReason: "no_qualifying" }, featRows, lang),
+    block(t.featured, { emptyReason: "no_qualifying" }, featRows, lang, featuredWeightNote(lang)),
   ];
 
   const url = reportUrl(p.period, lang);
