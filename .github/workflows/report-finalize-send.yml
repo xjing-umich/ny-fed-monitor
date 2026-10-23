@@ -1,0 +1,48 @@
+name: Report finalize & send
+on:
+  workflow_dispatch:
+    inputs:
+      period:
+        description: "报告季度季末日,如 2026-09-30"
+        required: true
+      action:
+        description: "preview = 用当前数据重发预览;finalize = 冻结预览版本并群发"
+        type: choice
+        options: [finalize, preview]
+        default: finalize
+      dry_run:
+        description: "只发给站长,不改状态(彩排用)"
+        type: boolean
+        default: false
+concurrency: { group: report-finalize, cancel-in-progress: false }
+permissions: { contents: read }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: web
+      - run: npm run report:finalize -- --period="$PERIOD" --action="$ACTION" $DRY_RUN_FLAG
+        working-directory: web
+        env:
+          PERIOD: ${{ inputs.period }}
+          ACTION: ${{ inputs.action }}
+          DRY_RUN_FLAG: ${{ inputs.dry_run && '--dry-run' || '' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_AUDIENCE_API_KEY: ${{ secrets.RESEND_AUDIENCE_API_KEY }}
+          # 群发前核对“没有语言分组的订阅者”要读整个 audience。
+          RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
+          RESEND_SEGMENT_EN_ID: ${{ secrets.RESEND_SEGMENT_EN_ID }}
+          RESEND_SEGMENT_ZH_ID: ${{ secrets.RESEND_SEGMENT_ZH_ID }}
+          # 可选:只含站长的测试 segment。配置后 dry-run 走真实 broadcast 路径(退订链接、replyTo、previewText)。
+          RESEND_SEGMENT_TEST_ID: ${{ secrets.RESEND_SEGMENT_TEST_ID }}
+          RESEND_ALERTS_TO: ${{ secrets.RESEND_ALERTS_TO }}
+          RESEND_ALERTS_FROM: ${{ secrets.RESEND_ALERTS_FROM }}
+          NEWSLETTER_POSTAL_ADDRESS: ${{ secrets.NEWSLETTER_POSTAL_ADDRESS }}
+          NEWSLETTER_REPLY_TO: ${{ secrets.NEWSLETTER_REPLY_TO }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}

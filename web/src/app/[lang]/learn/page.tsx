@@ -1,10 +1,16 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { getFeatured, getLatest, listRest, BRAND } from "@/lib/learn";
+import { getFeatured, getLatest, listRest, listArticles, FEATURED_SLUG, ARTICLE_SLUGS, BRAND } from "@/lib/learn";
 import { altFor, ogFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import PageHeader from "@/components/common/PageHeader";
+import { listReportPeriods, readReportRow } from "@/lib/reports/read";
+import { reportSlug } from "@/lib/reports/period";
+import { reportTitle, reportDescription } from "@/lib/reports/copy";
+
+// 「最新」位可能是数据库里的季度报告 → 周级 ISR;报告刷新由 REPORT_PATHS 按需重生成。
+export const revalidate = 604800;
 
 export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
@@ -60,7 +66,22 @@ export default async function LearnIndexPage({
   const brand = BRAND[lang];
   const featured = getFeatured(lang);
   const latest = getLatest(lang);
-  const rest = listRest(lang);
+  // 最新季度报告占据「最新」位;无报告(或无库)时回退到手写文章。读库失败会 throw,不缓存假空态。
+  // 已有同 slug 手写文章的季度(如 Q1/Q2 2026)由手写版占位,不让生成报告的标题配上手写文章的链接。
+  const [newestReport] = (await listReportPeriods()).filter((r) => !ARTICLE_SLUGS.includes(reportSlug(r.period)));
+  const reportRow = newestReport ? await readReportRow(newestReport.period) : null;
+  const latestCard = reportRow
+    ? {
+        slug: reportSlug(reportRow.period),
+        title: reportTitle(reportRow.period, lang),
+        description: reportDescription(reportRow.payload, reportRow.status, lang),
+        updated: reportRow.generatedAt.slice(0, 10),
+      }
+    : latest;
+  // 报告占「最新」位时,原 latest 手写文章回到列表里。
+  const rest = reportRow
+    ? listArticles(lang).filter((a) => a.slug !== FEATURED_SLUG)
+    : listRest(lang);
 
   return (
     <article className="max-w-[720px] mx-auto py-8 sm:py-10">
@@ -96,23 +117,23 @@ export default async function LearnIndexPage({
       ) : null}
 
       {/* 最新:按 updated 自动置顶 */}
-      {latest ? (
+      {latestCard ? (
         <Link
-          href={localePath(lang, `/learn/${latest.slug}`)}
+          href={localePath(lang, `/learn/${latestCard.slug}`)}
           className="group mt-6 block border-t border-[var(--tt-border)] pt-5 no-underline"
         >
           <span className="tt-eyebrow">
             {c.latest}
           </span>
           <h2 className="mt-2 text-balance text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
-            {latest.title}
+            {latestCard.title}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
-            {latest.description}
+            {latestCard.description}
           </p>
-          {latest.updated ? (
+          {latestCard.updated ? (
             <p className="mt-2 font-data text-xs text-[var(--tt-faint)]">
-              {c.updated} {latest.updated}
+              {c.updated} {latestCard.updated}
             </p>
           ) : null}
         </Link>

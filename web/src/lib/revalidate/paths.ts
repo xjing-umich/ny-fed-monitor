@@ -24,11 +24,20 @@ export const DATA_DRIVEN_PATHS = [
   "/[lang]/investors/buys",
   "/[lang]/investors/consensus",
   "/[lang]/investors/sells",
+  "/[lang]/learn",
+  "/[lang]/learn/[slug]",
   "/[lang]/stocks",
   "/[lang]/stocks/[ticker]",
   "/[lang]/stocks/screener",
   "/[lang]/stocks/screener/[variant]",
 ] as const;
+
+/**
+ * 报告刷新只碰 learn 下的页面(详情十几页 + Learn 首页 2 页)和站点首页 2 页,不触发整站 ~2200 页重新生成,
+ * 避免把 Vercel Hobby 的 ISR Writes 额度用穿。必须是 DATA_DRIVEN_PATHS 的子集。
+ * 站点首页在内:报告行首次建出时,首页申报季进度行要出现“Qn 报告 →”链接(ingest 的整站刷新跑在报告生成之前)。
+ */
+export const REPORT_PATHS = ["/[lang]/learn/[slug]", "/[lang]/learn", "/[lang]"] as const satisfies readonly (typeof DATA_DRIVEN_PATHS)[number][];
 
 /** 读同一批数据的路由处理器(非 page.tsx,不在上面的双向校验里)。字面路径,revalidatePath 不带 type。 */
 export const DATA_DRIVEN_ROUTE_HANDLERS = ["/llms.txt", "/llms-full.txt"] as const;

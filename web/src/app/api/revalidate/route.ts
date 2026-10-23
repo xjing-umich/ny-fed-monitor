@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
-import { DATA_DRIVEN_PATHS, DATA_DRIVEN_ROUTE_HANDLERS } from "@/lib/revalidate/paths";
+import { DATA_DRIVEN_PATHS, DATA_DRIVEN_ROUTE_HANDLERS, REPORT_PATHS } from "@/lib/revalidate/paths";
 
 export const dynamic = "force-dynamic";
 
@@ -12,23 +12,27 @@ export const dynamic = "force-dynamic";
  * 上次生成的时间)→ 申报季站点长时间半新半旧:2026-08 Q2 申报季实测,Berkshire 页已翻到
  * Q2、段永平页仍停在 Q1,只因后者恰好在 ingest 前两小时重新生成过。
  *
- * `source` 仅用于回显/排障,不改变行为 —— 刷新范围恒为全部数据驱动页,理由见 paths.ts。
+ * `source=report` 只刷新报告相关页(learn),其余来源刷新全部数据页,理由见 paths.ts。
  */
 export async function POST(request: Request): Promise<Response> {
   if (!isAuthorizedIngestRequest(request)) return unauthorizedResponse();
 
   const source = new URL(request.url).searchParams.get("source") ?? "manual";
-  for (const path of DATA_DRIVEN_PATHS) {
+  const paths: readonly string[] = source === "report" ? REPORT_PATHS : DATA_DRIVEN_PATHS;
+  for (const path of paths) {
     revalidatePath(path, "page");
   }
-  for (const path of DATA_DRIVEN_ROUTE_HANDLERS) {
-    revalidatePath(path);
+  // 报告刷新不碰 llms.txt 等路由处理器(它们不读报告);其余来源照常刷新。
+  if (source !== "report") {
+    for (const path of DATA_DRIVEN_ROUTE_HANDLERS) {
+      revalidatePath(path);
+    }
   }
 
   return Response.json({
     ok: true,
     source,
-    revalidated: [...DATA_DRIVEN_PATHS, ...DATA_DRIVEN_ROUTE_HANDLERS],
+    revalidated: source === "report" ? paths : [...paths, ...DATA_DRIVEN_ROUTE_HANDLERS],
     at: new Date().toISOString(),
   });
 }

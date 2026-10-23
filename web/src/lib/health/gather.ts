@@ -3,6 +3,7 @@ import { getDb, selectAllPages } from "@/lib/managers/db";
 import {
   evaluate13F,
   evaluateDbSize,
+  evaluateReport,
   evaluateFundamentalsLag,
   type HealthProblem,
   type HealthReport,
@@ -104,9 +105,20 @@ async function gatherCost(_today: Date): Promise<{ problems: HealthProblem[]; in
   }
 }
 
+// 季度报告:最新一期未定稿且截止日 + 10 天已过 → 告警。取数失败降级为 info(不误报)。
+async function gatherReport(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
+  try {
+    const { data, error } = await getDb().from("quarterly_reports").select("period,status").order("period", { ascending: false }).limit(1);
+    if (error) throw error;
+    return evaluateReport((data?.[0] as { period: string; status: "live" | "final" }) ?? null, today);
+  } catch (e) {
+    return { problems: [], info: [`季度报告: 核查不可用(${e instanceof Error ? e.message : String(e)})`] };
+  }
+}
+
 export async function gatherHealth(today: Date): Promise<HealthReport> {
-  const [r13, rPrices, rFund, rCost] = await Promise.all([gather13F(today), gatherPrices(today), gatherFundamentals(today), gatherCost(today)]);
-  const problems = [...r13.problems, ...rPrices.problems, ...rFund.problems, ...rCost.problems];
-  const info = [...r13.info, ...rPrices.info, ...rFund.info, ...rCost.info];
+  const [r13, rPrices, rFund, rCost, rReport] = await Promise.all([gather13F(today), gatherPrices(today), gatherFundamentals(today), gatherCost(today), gatherReport(today)]);
+  const problems = [...r13.problems, ...rPrices.problems, ...rFund.problems, ...rCost.problems, ...rReport.problems];
+  const info = [...r13.info, ...rPrices.info, ...rFund.info, ...rCost.info, ...rReport.info];
   return { ok: problems.length === 0, checkedAt: today.toISOString(), problems, info };
 }

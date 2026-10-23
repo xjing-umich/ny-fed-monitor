@@ -1,6 +1,9 @@
 import { ogCard, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/ogCard";
 import { getArticle } from "@/lib/learn";
 import type { Lang } from "@/lib/nav";
+import { parseReportSlug } from "@/lib/reports/period";
+import { readReportRow } from "@/lib/reports/read";
+import { reportTitle, reportDescription } from "@/lib/reports/copy";
 
 export const alt = "Compounder — Learn";
 export const size = OG_SIZE;
@@ -21,6 +24,15 @@ export default async function Image({
   const { lang: rawLang, slug } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const article = getArticle(slug, lang);
+  const reportPeriod = !article ? parseReportSlug(slug) : null;
+  if (reportPeriod) {
+    const row = await readReportRow(reportPeriod);
+    return ogCard({
+      eyebrow: lang === "zh" ? "季度报告" : "Quarterly report",
+      title: reportTitle(reportPeriod, lang),
+      subtitle: row ? clamp(reportDescription(row.payload, row.status, lang), 110) : undefined,
+    });
+  }
 
   return ogCard({
     eyebrow: lang === "zh" ? "学习" : "Learn",

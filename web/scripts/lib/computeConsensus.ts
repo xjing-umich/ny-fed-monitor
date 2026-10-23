@@ -1,7 +1,7 @@
-import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
+import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, diffHoldings, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
 import { countsAsCurrentHolder, effectiveMovesPeriod } from "../../src/lib/freshness/derive";
 
-async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
+export async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
   // PostgREST OFFSET 分页要求排序以唯一列结尾,否则页边界并列行会整行跳过。
   // 调用方须在 filter 里带 .order(...唯一键);本函数先 filter 再 range。
   const out: any[] = [];
@@ -15,21 +15,6 @@ async function readAll(db: any, table: string, cols: string, filter?: (q: any) =
     out.push(...data);
     if (data.length < 1000) break;
   }
-  return out;
-}
-
-function diff(latest: any[], prior: any[]): ScanInput["changes"] {
-  const keyOfHolding = (h: any) => `${h.cusip}|${h.put_call ?? ""}`;
-  const lm = new Map(latest.map((h) => [keyOfHolding(h), h]));
-  const pm = new Map(prior.map((h) => [keyOfHolding(h), h]));
-  const out: ScanInput["changes"] = [];
-  for (const [k, lh] of lm) {
-    const ph = pm.get(k);
-    if (!ph) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-    else if (Number(lh.shares) > Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "increased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-    else if (Number(lh.shares) < Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "decreased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-  }
-  for (const [k, ph] of pm) if (!lm.has(k)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", value: Number(ph.value), putCall: ph.put_call ?? undefined });
   return out;
 }
 
@@ -94,7 +79,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const active = raws.filter((r) => countsAsCurrentHolder(r.period, now));
   // 零持仓申报(latestH 为空):不把上季全部仓位记成清仓动作,口径同 assembleManagerDetail。
   const changesOf = (r: Raw) =>
-    (effective.period && r.period === effective.period && r.latestH.length > 0 ? diff(r.latestH, r.priorH) : []);
+    (effective.period && r.period === effective.period && r.latestH.length > 0 ? diffHoldings(r.latestH, r.priorH) : []);
 
   const scan: ScanInput[] = active.map((r) => ({
     slug: r.slug,

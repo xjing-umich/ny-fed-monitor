@@ -8,9 +8,17 @@ import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { altFor, ogFor, breadcrumbLd } from "@/lib/seo";
 import { quarterLabel } from "@/lib/freshness/derive";
 import ProseDoc from "@/components/legal/ProseDoc";
+import { parseReportSlug, reportLastModified, reportSlug } from "@/lib/reports/period";
+import { readReportRow, listReportPeriods } from "@/lib/reports/read";
+import { reportTitle, reportDescription } from "@/lib/reports/copy";
+import ReportArticle from "@/components/reports/ReportArticle";
 
-export function generateStaticParams() {
-  return ARTICLE_SLUGS.flatMap((slug) => [
+// 报告页读库:ingest / 定稿后由 /api/revalidate?source=report 按需刷新;7 天兜底。
+export const revalidate = 604800;
+
+export async function generateStaticParams() {
+  const reports = (await listReportPeriods()).map((r) => reportSlug(r.period)).filter((s) => !ARTICLE_SLUGS.includes(s));
+  return [...ARTICLE_SLUGS, ...reports].flatMap((slug) => [
     { lang: "en", slug },
     { lang: "zh", slug },
   ]);
@@ -23,6 +31,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang: rawLang, slug } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
+  const reportPeriod = !getArticle(slug, lang) ? parseReportSlug(slug) : null;
+  if (reportPeriod) {
+    const row = await readReportRow(reportPeriod);
+    if (!row) return {};
+    const title = `${reportTitle(row.period, lang)} — Compounder`;
+    const description = reportDescription(row.payload, row.status, lang);
+    return {
+      title,
+      description,
+      alternates: altFor(lang, `/learn/${slug}`),
+      // 不设 openGraph 会沿用布局的站点通用标题/摘要,分享卡片里看不到报告结论。
+      // 本路由自带 opengraph-image(结论句卡),不带品牌卡图以免盖掉它。
+      ...ogFor({ lang, title, description, path: localePath(lang, `/learn/${slug}`), type: "article", brandImage: false }),
+    };
+  }
   const article = getArticle(slug, lang);
   if (!article) return {};
   const title = `${article.title} — Compounder`;
@@ -42,6 +65,32 @@ export default async function ArticlePage({
 }) {
   const { lang: rawLang, slug } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
+  const reportPeriod = !getArticle(slug, lang) ? parseReportSlug(slug) : null;
+  if (reportPeriod) {
+    const row = await readReportRow(reportPeriod);
+    if (!row) notFound();
+    const url = absoluteUrl(localePath(lang, `/learn/${slug}`));
+    const reportJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: reportTitle(row.period, lang),
+      description: reportDescription(row.payload, row.status, lang),
+      image: `${url}/opengraph-image`,
+      datePublished: row.firstLiveAt,
+      dateModified: reportLastModified(row.generatedAt, row.finalizedAt),
+      inLanguage: lang === "zh" ? "zh-CN" : "en",
+      author: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
+      publisher: { "@type": "Organization", name: "Compounder", logo: { "@type": "ImageObject", url: "https://thecompounder.fyi/icon.png" } },
+      mainEntityOfPage: url,
+    };
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reportJsonLd) }} />
+        <ReportArticle row={row} lang={lang} />
+      </>
+    );
+  }
+
   const article = getArticle(slug, lang);
   if (!article) notFound();
 

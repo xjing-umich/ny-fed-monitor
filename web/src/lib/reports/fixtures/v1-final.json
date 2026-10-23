@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "period": "2026-06-30",
+  "coverage": { "filed": 94, "total": 97 },
+  "bought": { "items": [
+    { "key": "GOOG", "ticker": "GOOG", "issuer": "ALPHABET INC", "managerCount": 9, "netValue": 1200000000, "dominantKind": "increased" },
+    { "key": "T", "ticker": "T", "issuer": "AT&T INC", "managerCount": 5, "netValue": 300000000, "dominantKind": "new" },
+    { "key": "C_UNRES", "ticker": null, "issuer": "SMITH <&> \"JONES\" HOLDINGS", "managerCount": 2, "netValue": 1000000, "dominantKind": "new" }
+  ], "emptyReason": null },
+  "sold": { "items": [], "emptyReason": "no_qualifying" },
+  "mostHeld": { "items": [
+    { "key": "GOOG", "ticker": "GOOG", "issuer": "ALPHABET INC", "holderCount": 17, "holderDelta": 2 }
+  ], "emptyReason": null },
+  "strikeZone": { "items": [], "emptyReason": "no_valuation" },
+  "featured": [
+    { "slug": "berkshire-hathaway", "person": "Warren Buffett", "personZh": "巴菲特", "filed": true, "moves": [
+      { "key": "AAPL", "ticker": "AAPL", "issuer": "APPLE INC", "kind": "decreased", "weightBefore": 0.28, "weightAfter": 0.22 }
+    ] },
+    { "slug": "scion-asset-management", "person": "Michael Burry", "personZh": null, "filed": false, "moves": [] }
+  ]
+}

@@ -4,6 +4,8 @@ import { consensusHeld } from "@/lib/aggregations";
 import { ARTICLE_SLUGS } from "@/lib/learn";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { localePath } from "@/lib/urls";
+import { listReportPeriods } from "@/lib/reports/read";
+import { reportLastModified, reportSlug } from "@/lib/reports/period";
 import { effectiveMovesPeriod } from "@/lib/freshness/derive";
 
 const BASE = "https://thecompounder.fyi";
@@ -71,6 +73,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const slug of ARTICLE_SLUGS) {
     urls.push(entry(`/learn/${slug}`, "monthly", 0.6));
+  }
+
+  for (const r of await listReportPeriods()) {
+    const slug = reportSlug(r.period);
+    if (ARTICLE_SLUGS.includes(slug)) continue; // 手写版优先(Q1)
+    urls.push(entry(`/learn/${slug}`, "weekly", 0.7, reportLastModified(r.generatedAt, r.finalizedAt).slice(0, 10)));
   }
 
   for (const m of idx.managers ?? []) {

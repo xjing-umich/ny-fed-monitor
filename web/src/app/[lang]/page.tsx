@@ -7,6 +7,7 @@ import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { investorPath, localePath } from "@/lib/urls";
 import { altFor, ogFor } from "@/lib/seo";
 import { effectiveMovesPeriod } from "@/lib/freshness/derive";
+import { listReportPeriods } from "@/lib/reports/read";
 import type { Lang } from "@/lib/nav";
 import HeroMasthead from "@/components/home/HeroMasthead";
 import { DataStrip } from "@/components/common/DataStrip";
@@ -61,13 +62,14 @@ export default async function HomePage({
   const isZh = lang === "zh";
 
   // 全部廉价并行读(Supabase / bundled JSON)。无外部 API、无重计算。
-  const [idx, moves, heldTop, heldCount, strike, dgs10] = await Promise.all([
+  const [idx, moves, heldTop, heldCount, strike, dgs10, reports] = await Promise.all([
     getManagerIndex(),
     notableMoves(6),
     consensusHeldTop(8),
     consensusCount(),
     readStrikeZoneLeaders(6),
     getLatestDgs10(),
+    listReportPeriods(),
   ]);
 
   const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
@@ -79,6 +81,8 @@ export default async function HomePage({
   // 基金的最新期。否则 13F 申报季内,头部基金已交新季但整体未过披露门槛时,masthead 会显示
   // "as of Q2" 而 moves 面板显示 "Q1",同屏自相矛盾且夸大覆盖。无数据时回退到头部基金期。
   const period = movesEffective.period ?? topManagers[0]?.period ?? "";
+  // 申报季进度行上的“Qn 报告 →”只在该季报告行已存在(已过公开门槛)时出现,否则会链到 404。
+  const filingReportExists = !!movesEffective.maxPeriod && reports.some((r) => r.period === movesEffective.maxPeriod);
 
   // Link the philosophy band's featured quote to Buffett's page if we track him.
   const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
@@ -120,6 +124,7 @@ export default async function HomePage({
         period={period}
         movesPeriod={movesEffective.period ?? ""}
         filing={movesEffective}
+        filingReportExists={filingReportExists}
         moves={moves}
         investorCount={topManagers.length}
       />
