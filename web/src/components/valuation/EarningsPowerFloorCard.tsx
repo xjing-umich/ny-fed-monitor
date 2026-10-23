@@ -5,7 +5,7 @@ import { deriveValuationMethods, deriveValuationVerdict, type ValuationVerdict }
 import { isNetNetAssetFloor, isNetNetBuy } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation, MoatCapAssessment } from "@/lib/valuation/types";
 import { fmtValueBand } from "@/lib/format";
-import { priceVsBandAndIv } from "@/lib/valuation/bandPosition";
+import { priceVsBand, priceVsBandAndIv } from "@/lib/valuation/bandPosition";
 import { Display } from "@/components/common/Display";
 
 // USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
@@ -559,15 +559,21 @@ function ValueSpine({
     hasGrowthBand && hasIv
       ? priceVsBandAndIv({ price, rangeLo, rangeHi, iv: IV!, date: sz.price?.date, lang, fmt: usd0 })
       : "";
+  // 两法分支:有 IV 时与含增长分支同一说法;无 IV 时只说带位置(旧文案按 bucket 写“低于二者”,bucket 锚的是 IV)
+  const bothClause = bothMethods
+    ? hasIv
+      ? priceVsBandAndIv({ price, rangeLo, rangeHi, iv: IV!, date: sz.price?.date, lang, fmt: usd0 })
+      : priceVsBand({ price, rangeLo, rangeHi, date: sz.price?.date, lang, fmt: usd0 })
+    : "";
   const sentence =
     lang === "zh"
       ? bothMethods
-        ? `${who}两种方法为该业务估值 — 一为保守的所有者盈利 DCF，一为计入增长的 Greenwald 估计，${valueRange}。今日价格${bucket === "below" ? "低于二者" : bucket === "within" ? "落在二者之间" : "高于二者"}${asOf}。`
+        ? `${who}两种方法为该业务估值 — 一为保守的所有者盈利 DCF，一为计入增长的 Greenwald 估计，${valueRange}。${bothClause}`
         : hasGrowthBand && hasIv
           ? `${who}保守价值带 ${valueRange}（零增长底到增速封顶的乐观上沿）。${ivClause}`
           : `${who}一项保守的盈利能力估计，${valueRange}；今日价格${posZh}${bucket === "within" ? "其中" : "它"}${asOf}。`
       : bothMethods
-        ? `${who}Two methods value the business — a conservative owner-earnings DCF and a growth-credited Greenwald estimate, ${valueRange}. Today’s price sits ${bucket === "below" ? "below both" : bucket === "within" ? "inside both" : "above both"}${asOf}.`
+        ? `${who}Two methods value the business — a conservative owner-earnings DCF and a growth-credited Greenwald estimate, ${valueRange}. ${bothClause}`
         : hasGrowthBand && hasIv
           ? `${who}A conservative value band ${valueRange} (zero-growth floor to growth-capped optimistic top). ${ivClause}`
           : `${who}A conservative earnings-power estimate, ${valueRange}; today’s price sits ${posEn} it${asOf}.`;

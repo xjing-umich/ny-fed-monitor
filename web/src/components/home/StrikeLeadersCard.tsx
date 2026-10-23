@@ -79,7 +79,7 @@ export default function StrikeLeadersCard({
         </tbody>
       </table>
       <p className="mt-3 text-xs leading-relaxed text-[var(--tt-muted)]">
-        {asOf && <span className="font-data text-[var(--tt-faint)]">{asOf}。</span>}
+        {asOf && <span className="font-data text-[var(--tt-faint)]">{asOf}{lang === "zh" ? "。" : ". "}</span>}
         {c.note}
       </p>
     </div>

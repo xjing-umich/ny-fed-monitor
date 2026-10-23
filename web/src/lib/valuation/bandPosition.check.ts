@@ -1,6 +1,6 @@
 // 运行: npx tsx src/lib/valuation/bandPosition.check.ts
 import assert from "node:assert/strict";
-import { bandPosition, priceVsBandAndIv } from "./bandPosition";
+import { bandPosition, priceVsBandAndIv, priceVsBand } from "./bandPosition";
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 
@@ -35,4 +35,13 @@ assert.equal(at(500, 66, 424, 600, "en"), "Today’s price ($500) sits above the
 assert.equal(at(343, 66, 424, 343, "zh"), "今天的价格 $343 落在价值带内，与中枢约 $343 持平。");
 assert.equal(at(343, 66, 424, 343, "en"), "Today’s price ($343) sits inside the band, level with the central read of about $343.");
 
+// 无含增长中枢(两法但 IV 不可得):只说带位置,不再用 bucket 说“低于二者”
+const pb = (price: number, lo: number, hi: number, lang: "zh" | "en", date?: string) =>
+  priceVsBand({ price, rangeLo: lo, rangeHi: hi, date, lang, fmt });
+assert.equal(pb(24, 39, 50, "zh", "2026-10-22"), "今天的价格 $24（截至 2026-10-22）低于这个区间。");
+assert.equal(pb(24, 39, 50, "en", "2026-10-22"), "Today’s price ($24, as of 2026-10-22) sits below this range.");
+assert.equal(pb(45, 39, 50, "zh"), "今天的价格 $45 落在这个区间内。");
+assert.equal(pb(45, 39, 50, "en"), "Today’s price ($45) sits inside this range.");
+assert.equal(pb(60, 39, 50, "zh"), "今天的价格 $60 高于这个区间。");
+assert.equal(pb(60, 39, 50, "en"), "Today’s price ($60) sits above this range.");
 console.log("bandPosition.check OK");
