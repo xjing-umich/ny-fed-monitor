@@ -38,7 +38,8 @@ import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard, ValueBandGauge, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
 import { WeightQoQ } from "@/components/common/qoqDirection";
-import { QuarterMovesPill, type QuarterMoves } from "@/components/entity/QuarterMovesPill";
+import { QuarterMovesLine } from "@/components/entity/QuarterMovesLine";
+import type { MovesCount } from "@/lib/entity/quarterMovesText";
 import { HolderTrend } from "@/components/entity/HolderTrend";
 import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
 import { FoldedSection } from "@/components/entity/FoldedSection";
@@ -150,11 +151,8 @@ const TABLE_COPY = {
       shares: "持股",
       weight: "权重（上季→本季）",
     },
-    exitedTitle: (n: number) => `本季清仓（${n}）`,
-    more: (n: number) => `… 等 ${n} 位`,
     showAll: (n: number) => `展开全部 ${n} 位持有人`,
-    meta: (n: number, total: string, opened: number, exited: number) =>
-      `${n} 位持有 · 合计 ${total} · 本季 +${opened} 新建 / -${exited} 清仓`,
+    meta: (n: number, total: string) => `${n} 位持有 · 合计 ${total}`,
   },
   en: {
     title: "Superinvestors Holding This Security",
@@ -164,15 +162,11 @@ const TABLE_COPY = {
       shares: "Shares",
       weight: "Weight (prev→now)",
     },
-    exitedTitle: (n: number) => `Exited this quarter (${n})`,
-    more: (n: number) => `… +${n} more`,
     showAll: (n: number) => `Show all ${n} holders`,
-    meta: (n: number, total: string, opened: number, exited: number) =>
-      `${n} holder${n === 1 ? "" : "s"} · ${total} combined · this quarter +${opened} opened / -${exited} exited`,
+    meta: (n: number, total: string) => `${n} holder${n === 1 ? "" : "s"} · ${total} combined`,
   },
 } as const;
 
-const EXIT_CAP = 12;
 const HOLDERS_VISIBLE = 10;
 
 function HoldersTable({
@@ -180,6 +174,7 @@ function HoldersTable({
   exited,
   totalValue,
   moves,
+  quarter,
   lang,
   trend,
   asOfPeriod,
@@ -187,7 +182,9 @@ function HoldersTable({
   holders: HolderRow[];
   exited: ExitedHolder[];
   totalValue: number;
-  moves: QuarterMoves;
+  moves: MovesCount;
+  /** 展示季度标签(如 "Q2 2026"),由页面传 quarterLabel(displayPeriod)。 */
+  quarter: string;
   lang: Lang;
   trend: number[];
   /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
@@ -231,11 +228,15 @@ function HoldersTable({
         eyebrow={page.holders.eyebrow}
         title={t.title}
       />
-      <div className="mb-3 mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <p className="font-data text-xs text-[var(--tt-muted)]">
-          {t.meta(sorted.length, formatUSD(totalValue), moves.opened, moves.exited)}
-        </p>
-        <QuarterMovesPill moves={moves} lang={lang} />
+      <div className="mb-3 mt-3 space-y-1">
+        <p className="font-data text-xs text-[var(--tt-muted)]">{t.meta(sorted.length, formatUSD(totalValue))}</p>
+        <QuarterMovesLine
+          q={quarter}
+          moves={moves}
+          exited={exited.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) }))}
+          unit="investor"
+          lang={lang}
+        />
       </div>
       {trend.length >= 2 && (
         <div className="mb-3">
@@ -265,29 +266,6 @@ function HoldersTable({
             breakpoint="lg"
           />
         </details>
-      )}
-
-      {/* 本季清仓:表底 chip 列表;空 → 不渲染 */}
-      {exited.length > 0 && (
-        <div className="mt-5 pt-1">
-          <span className="font-data text-xs text-[var(--tt-negative)]">
-            {t.exitedTitle(exited.length)}
-          </span>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {exited.slice(0, EXIT_CAP).map((e) => (
-              <Link
-                key={e.slug}
-                href={investorPath(lang, e.slug)}
-                className="inline-flex items-center rounded-md border border-[var(--tt-border)] px-2 py-0.5 max-sm:min-h-[44px] font-data text-xs text-[var(--tt-muted)] no-underline transition-colors hover:border-[var(--tt-accent)] hover:text-[var(--tt-accent)]"
-              >
-                {e.person}
-              </Link>
-            ))}
-            {exited.length > EXIT_CAP && (
-              <span className="self-center text-[var(--tt-faint)] text-xs">{t.more(exited.length - EXIT_CAP)}</span>
-            )}
-          </div>
-        </div>
       )}
     </section>
   );
@@ -880,6 +858,7 @@ export default async function StockTickerPage({
               exited={exitedHolders}
               totalValue={totalValue}
               moves={moves}
+              quarter={quarterLabel(displayPeriod) || ""}
               lang={lang}
               trend={trendSeries}
               asOfPeriod={asOfPeriod}
