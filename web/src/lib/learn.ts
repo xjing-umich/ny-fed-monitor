@@ -731,7 +731,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "How this shows up on Compounder",
           paragraphs: [
-            "This is the frame behind what you see on a stock page here. The value estimate shows up as a band, not a single target, because an honest estimate is a range. The margin-of-safety figure only appears when a stock sits genuinely below that band, since flashing a discount on a fairly priced stock would just be noise. And the ten-year Treasury yield sits under all of it as the discount anchor, because that's the opportunity cost everything gets measured against.",
+            "This is the frame behind what you see on a stock page here. The value estimate shows up as a band, not a single target, because an honest estimate is a range. The margin-of-safety figure only appears when the price sits genuinely below intrinsic value, since flashing a discount on a fairly priced stock would just be noise. And the ten-year Treasury yield sits under all of it as the discount anchor, because that's the opportunity cost everything gets measured against.",
             "None of this tells you to buy or sell anything. It's the list of questions worth asking before you decide, and the deciding is yours.",
             "Sources: Benjamin Graham, The Intelligent Investor; Warren Buffett, Berkshire Hathaway shareholder letters and \"Mr. Buffett on the Stock Market\" (Fortune, Nov. 22, 1999); Li Lu, lecture at Peking University (Oct. 23, 2015); Duan Yongping, published investment Q&A.",
           ],
@@ -800,7 +800,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "这些在 Compounder 上怎么体现",
           paragraphs: [
-            "这就是你在这里个股页上看到的东西背后的框架。价值估算显示成一条带,不是单一目标价,因为诚实的估计本就是个区间。安全边际的数字,只在股价确实落到这条带以下时才出现,因为给一只定价合理的股票标个「折扣」,只是噪音。而十年期美国国债收益率垫在这一切底下,作为折现的锚,因为那是一切用来衡量的机会成本。",
+            "这就是你在这里个股页上看到的东西背后的框架。价值估算显示成一条带,不是单一目标价,因为诚实的估计本就是个区间。安全边际的数字,只在股价确实低于内在价值时才出现,因为给一只定价合理的股票标个「折扣」,只是噪音。而十年期美国国债收益率垫在这一切底下,作为折现的锚,因为那是一切用来衡量的机会成本。",
             "这里没有一句叫你买或卖什么。它只是你自己下判断前该先问的一组问题。答案,没人能替你给。",
             "参考来源:格雷厄姆《聪明的投资者》;巴菲特致伯克希尔股东的信,以及《Mr. Buffett on the Stock Market》(Fortune,1999-11-22);李录北京大学演讲(2015-10-23);段永平公开投资问答。",
           ],

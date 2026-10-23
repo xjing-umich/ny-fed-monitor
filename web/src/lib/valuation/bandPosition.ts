@@ -35,3 +35,22 @@ export function priceVsBandAndIv(input: {
   const center = rel === "level" ? `level with the central read of about ${c}` : `${rel} the central read of about ${c}`;
   return `Today’s price (${p}${date ? `, as of ${date}` : ""}) sits ${band}, ${center}.`;
 }
+
+/** 两法但无含增长中枢 IV 时:只说现价相对这个区间的位置(不借 bucket,bucket 锚的是 IV)。 */
+export function priceVsBand(input: {
+  price: number;
+  rangeLo: number;
+  rangeHi: number;
+  date?: string;
+  lang: Lang;
+  fmt: (n: number) => string;
+}): string {
+  const { price, rangeLo, rangeHi, date, lang, fmt } = input;
+  const pos = bandPosition(price, rangeLo, rangeHi);
+  const p = fmt(price);
+  if (lang === "zh") {
+    const where = pos === "inside" ? "落在这个区间内" : pos === "below" ? "低于这个区间" : "高于这个区间";
+    return `今天的价格 ${p}${date ? `（截至 ${date}）` : " "}${where}。`;
+  }
+  return `Today’s price (${p}${date ? `, as of ${date}` : ""}) sits ${pos} this range.`;
+}

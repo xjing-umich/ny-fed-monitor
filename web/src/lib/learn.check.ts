@@ -1,6 +1,6 @@
 // 运行: npx tsx src/lib/learn.check.ts
 import assert from "node:assert/strict";
-import { getArticle } from "./learn";
+import { getArticle, listArticles } from "./learn";
 
 const en = getArticle("q2-2026-superinvestor-consensus", "en")!;
 const zh = getArticle("q2-2026-superinvestor-consensus", "zh")!;
@@ -17,6 +17,13 @@ for (const [lang, a] of [["en", en], ["zh", zh]] as const) {
       assert.ok(!p.includes("November 14"), `${lang} 正文不再写 November 14`);
       assert.ok(!p.includes("11 月 14"), `${lang} 正文不再写 11 月 14`);
     }
+  }
+}
+// 安全边际出现的条件是“低于内在价值”,不是“低于价值带”(spec 2026-10-23 §三.2 I)
+for (const lang of ["en", "zh"] as const) {
+  for (const a of listArticles(lang)) {
+    const text = [a.intro ?? "", ...a.sections.flatMap((sec) => sec.paragraphs)].join("\n");
+    assert.ok(!/below that band|落到这条带以下/.test(text), `${lang}/${a.slug} 仍把安全边际说成低于价值带`);
   }
 }
 console.log("learn.check OK");
