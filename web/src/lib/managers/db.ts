@@ -82,3 +82,25 @@ export async function selectAllPages<T>(
   }
   return { data, error: null };
 }
+
+/**
+ * 分页读前 limit 行(Top-N 列表用)。单次 `.limit(n)` 在 n > max-rows 时同样被静默截在 1000 行:
+ * 2026-10 个股目录与 sitemap 用 limit=5000 读共识表,1205 只共识股只出 998。
+ * 约定同 selectAllPages:build 每次新建、以唯一键 .order(...) 结尾;某页失败 → 原样返回 error、不给半截数据。
+ */
+export async function selectPagesUpTo<T>(
+  build: () => PageQuery<T>,
+  limit: number,
+  pageSize = PAGE_SIZE,
+): Promise<{ data: T[]; error: { message: string } | null }> {
+  const data: T[] = [];
+  for (let from = 0; from < limit; from += pageSize) {
+    const to = Math.min(from + pageSize, limit) - 1;
+    const res = await withRetry(() => build().range(from, to));
+    if (res.error) return { data: [], error: res.error };
+    const page = res.data ?? [];
+    data.push(...page);
+    if (page.length < to - from + 1) break;
+  }
+  return { data, error: null };
+}

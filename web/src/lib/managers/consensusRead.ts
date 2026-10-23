@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
+import { hasSupabaseEnv, getDb, selectPagesUpTo } from "@/lib/managers/db";
 import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
 import { CONSENSUS_MIN_HOLDERS } from "@/lib/aggregations";
 import { mapHolderCountRows, type HolderCountDbRow } from "@/lib/managers/holderCounts";
@@ -28,14 +28,19 @@ export function mapMoveRows(rows: MoveDbRow[]): NotableMoves {
   };
 }
 
-/** 读 most-held 快照(已按 holder_count 排序)。无 env → null(调用方回退扫描)。 */
-export const readConsensusHeld = cache(async (limit: number): Promise<HeldRow[] | null> => {
+/**
+ * 读 most-held 快照(已按 holder_count 排序)的前 limit 行;minHolders>0 时在库里先筛持有人数。无 env → null(调用方回退扫描)。
+ * 分页读:单次 .limit() 超过 1000 行会被 PostgREST 静默截断(个股目录 / sitemap 曾只出 998 只)。ticker 是主键,兜底排序保证分页不漏不重。
+ */
+export const readConsensusHeld = cache(async (limit: number, minHolders = 0): Promise<HeldRow[] | null> => {
   if (!hasSupabaseEnv()) return null;
-  const { data, error } = await getDb()
-    .from("consensus_holdings").select("ticker,issuer,holder_count,total_value")
-    .order("holder_count", { ascending: false }).order("total_value", { ascending: false }).limit(limit);
+  const { data, error } = await selectPagesUpTo<HeldDbRow>(() => {
+    const q = getDb().from("consensus_holdings").select("ticker,issuer,holder_count,total_value");
+    return (minHolders > 0 ? q.gte("holder_count", minHolders) : q)
+      .order("holder_count", { ascending: false }).order("total_value", { ascending: false }).order("ticker", { ascending: true });
+  }, limit);
   if (error) { console.error(`readConsensusHeld 失败: ${error.message}`); return null; }
-  return mapHeldRows((data ?? []) as HeldDbRow[]);
+  return mapHeldRows(data);
 });
 
 /** 共识票计数(holder_count>=CONSENSUS_MIN_HOLDERS)。count-only,零行传输。无 env→null。 */

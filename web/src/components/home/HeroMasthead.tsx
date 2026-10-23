@@ -5,7 +5,7 @@ import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
 import MoveTag from "@/components/shell/MoveTag";
 import { FreshnessDot } from "@/components/entity/FreshnessDot";
-import { filingFreshness, quarterLabel, filingDeadline, type EffectiveMovesPeriod } from "@/lib/freshness/derive";
+import { filingFreshness, quarterLabel, effectiveFilingDeadline, type EffectiveMovesPeriod } from "@/lib/freshness/derive";
 import { stockPath, localePath } from "@/lib/urls";
 import RevealStagger from "@/components/home/RevealStagger";
 import { reportSlug } from "@/lib/reports/period";
@@ -122,7 +122,8 @@ export default function HeroMasthead({
           quarterLabel(filing.maxPeriod),
           filing.coverage.filed,
           filing.coverage.total,
-          fmtDeadline(filingDeadline(filing.maxPeriod), lang),
+          // 周末截止顺延到周一(Q3 2026:周六 11/14 → 11/16),与切季、当前持有人判断同一天。
+          fmtDeadline(effectiveFilingDeadline(filing.maxPeriod), lang),
         )
       : null;
   const panelTitle = lang === "zh" ? `${q} 显著动向` : `Notable moves · ${q}`;
