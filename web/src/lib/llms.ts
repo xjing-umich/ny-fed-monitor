@@ -35,9 +35,9 @@ function quarterPhrase(period: string): string {
   return `${quarterLabel(period)} (quarter ended ${period})`;
 }
 
-/** "1 of 97 tracked managers has" / "3 of 97 tracked managers have" */
+/** "1 of 94 managers expected to file has" —— 分母 = 应申报 M,与首页进度行同一口径。 */
 function filedOf(c: { filed: number; total: number }): string {
-  return `${c.filed} of ${c.total} tracked managers ${c.filed === 1 ? "has" : "have"}`;
+  return `${c.filed} of ${c.total} managers expected to file ${c.filed === 1 ? "has" : "have"}`;
 }
 
 function baselineSentence(eff: EffectiveMovesPeriod): string {
@@ -54,7 +54,7 @@ function baselineSentence(eff: EffectiveMovesPeriod): string {
   if (coverage.filed < coverage.total) {
     return `${head} ${filedOf(coverage)} filed for it; the rest are shown as of their latest earlier filing.`;
   }
-  return `${head} All ${coverage.total} tracked managers have filed for it.`;
+  return `${head} All ${coverage.total} managers expected to file have filed for it.`;
 }
 
 type Ctx = {
