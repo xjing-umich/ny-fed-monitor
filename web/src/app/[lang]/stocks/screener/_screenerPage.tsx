@@ -41,7 +41,7 @@ export function screenerMetadata(lang: Lang): Metadata {
     lang === "zh"
       ? {
           title: "个股 · 按价值带 — Compounder · 复利",
-          description: "按现价相对保守价值带的位置筛选个股：哪些落在击球区、安全边际多少。位置观察，非买卖建议。",
+          description: "按现价相对内在价值的位置筛选个股：哪些落在击球区、安全边际多少。位置观察，非买卖建议。",
         }
       : {
           title: "Stocks · By value — Compounder",
@@ -180,8 +180,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh
-          ? `估值${asOf ? `截至 ${asOf}` : "刷新中"} · 方法：保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼。安全边际只是现价与保守价值带的距离，不含质量或时机判断；仅供参考，非投资建议。`
-          : `Valuation ${asOf ? `as of ${asOf}` : "refreshing"} · method: conservative Greenwald value band + Owner-Earnings DCF. Margin of safety is the distance from the conservative value band, not a quality or timing judgment. For reference only, not investment advice.`}
+          ? `估值${asOf ? `截至 ${asOf}` : "刷新中"} · 方法：保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
+          : `Valuation ${asOf ? `as of ${asOf}` : "refreshing"} · method: conservative Greenwald value band + Owner-Earnings DCF. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
       </p>
     </>
   );
