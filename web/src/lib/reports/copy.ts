@@ -1,6 +1,7 @@
 // 季度报告双语文案。页面与邮件都从这里取字,保证同一事实同一说法。
 // 只描述已发生的申报与估值位置,不给买卖建议。
 import { effectiveFilingDeadline, parseUTC, quarterLabel } from "../freshness/derive";
+import { excludedClause } from "../freshness/excludedClause";
 import { localePath, stockPath, SITE_ORIGIN } from "../urls";
 import { reportSlug } from "./period";
 import type { EmptyReason, FeaturedEntry, FeaturedMove, MoveKind, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
@@ -60,8 +61,8 @@ export function statusLine(
   excluded = 0,
 ): string {
   const day = row.finalizedAt ? row.finalizedAt.slice(0, 10) : "";
-  const exZh = excluded > 0 ? `（另有 ${excluded} 位上季未申报，不计入）` : "";
-  const exEn = excluded > 0 ? ` (${excluded} more missed last quarter and ${excluded === 1 ? "isn't" : "aren't"} counted)` : "";
+  const exZh = excludedClause(excluded, "zh");
+  const exEn = excludedClause(excluded, "en");
   if (row.status === "live") {
     return lang === "zh"
       ? `${row.coverageTotal} 位中已有 ${row.coverageFiled} 位申报${exZh} · 每次有新申报后更新`
@@ -184,10 +185,10 @@ export function methodologyCoverageText(coverage: ReportPayload["coverage"], lan
       ? `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站跟踪的 ${total} 位活跃超级投资者（一年以上未申报者不计）。同季有修正申报时取合并后的版本。`
       : `Data comes from 13F filings on SEC EDGAR for the ${total} active superinvestors this site tracks (funds silent for a year or more are excluded). Where a quarter was amended, the merged version is used.`;
   }
+  // 追踪 = 全名单(total + excluded);计入 = 上一季及之后有申报的 total 位。
+  const roster = total + excluded;
   if (lang === "zh") {
-    const ex = excluded > 0 ? `，另有 ${excluded} 位上季未申报，不计入` : "";
-    return `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站跟踪的 ${total} 位超级投资者：上一季及之后有申报的人${ex}。同季有修正申报时取合并后的版本。`;
+    return `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站追踪的 ${roster} 位中、上一季及之后有申报的 ${total} 位超级投资者${excludedClause(excluded, "zh")}。同季有修正申报时取合并后的版本。`;
   }
-  const ex = excluded > 0 ? `; ${excluded} more did not file for the prior quarter and ${excluded === 1 ? "isn't" : "aren't"} counted` : "";
-  return `Data comes from 13F filings on SEC EDGAR for the ${total} superinvestors this site tracks that filed for the prior quarter or later${ex}. Where a quarter was amended, the merged version is used.`;
+  return `Data comes from 13F filings on SEC EDGAR for the ${total} of the ${roster} superinvestors this site tracks that filed for the prior quarter or later${excludedClause(excluded, "en")}. Where a quarter was amended, the merged version is used.`;
 }

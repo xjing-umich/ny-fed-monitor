@@ -1,6 +1,6 @@
 /**
  * 报告 vs 实时共识表逐数核对。只在两边是同一批投资人时才判失败:
- * 实时页的买卖只算“最新申报 == 有效变动季”的活跃投资人,报告算所有已申报 P 的活跃投资人;
+ * 实时页的买卖只算“最新申报 == 有效变动季”的应申报投资人,报告算所有已申报 P 的应申报投资人;
  * 两边 cohort 不同(有人已申报下一季、截止后才申报、有效季还不是 P、新纳入无上季)时只列差异、退出 0。
  * 持有人数允许差异(实时表按每户最新申报计)。
  * 用法: npm run report:consistency -- --period=YYYY-MM-DD   (cohort 相同且买卖不一致时非零退出)
@@ -30,7 +30,7 @@ async function main() {
   if (!row) throw new Error(`无报告行: ${period}`);
   const p = row.payload;
 
-  // 与 loadReportInput / computeAndStoreConsensus 同一口径:有效季用全部有申报的投资人,cohort 只数活跃户。
+  // 与 loadReportInput / computeAndStoreConsensus 同一口径:有效季用全部有申报的投资人,cohort 只数应申报户。
   const all = await loadManagerFilings(db);
   const effective = effectiveMovesPeriod(all.map((r) => r.latestPeriod), new Date());
   const cohort = expectedOnly(all, period).filter((r) => r.latestPeriod === period);
@@ -38,7 +38,7 @@ async function main() {
   const verdict = compareCohorts({
     period, reportFiled: p.coverage.filed, siteCohort: cohort.length, siteEffectivePeriod: effective.period, cohortWithoutPrior,
   });
-  console.log(`[consistency] 报告 ${p.coverage.filed} 位已申报 · 实时页按 ${period} 计算的活跃投资人 ${cohort.length} 位 · 有效变动季 ${effective.period ?? "无"}`);
+  console.log(`[consistency] 报告 ${p.coverage.filed} 位已申报 · 实时页按 ${period} 计算的应申报投资人 ${cohort.length} 位 · 有效变动季 ${effective.period ?? "无"}`);
   verdict.notes.forEach((n) => console.log(`[consistency] ${n}`));
 
   // consensus_moves 主键 (ticker,direction);PostgREST 默认单页 1000 行,必须分页读全,否则会把未读到的票误报为“无”。

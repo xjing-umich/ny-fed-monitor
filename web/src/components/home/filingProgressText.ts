@@ -1,4 +1,5 @@
 import type { Lang } from "@/lib/nav";
+import { excludedClause } from "@/lib/freshness/excludedClause";
 
 /** 首页申报进度行。分母 = 应申报 M(isExpectedFiler);上季未申报的人数写在括号里。 */
 export function filingProgressText(
@@ -8,12 +9,7 @@ export function filingProgressText(
   deadline: string,
 ): string {
   if (lang === "zh") {
-    const ex = c.excluded > 0 ? `（另有 ${c.excluded} 位上季未申报，不计入）` : "";
-    return `${q} 申报进行中 · ${c.total} 位中 ${c.filed} 位已交${ex} · ${deadline}截止后切换`;
+    return `${q} 申报进行中 · ${c.total} 位中 ${c.filed} 位已交${excludedClause(c.excluded, "zh")} · ${deadline}截止后切换`;
   }
-  const ex =
-    c.excluded > 0
-      ? ` (${c.excluded} more missed last quarter and ${c.excluded === 1 ? "isn't" : "aren't"} counted)`
-      : "";
-  return `${q} filings arriving · ${c.filed} of ${c.total} in${ex} · switches after ${deadline}`;
+  return `${q} filings arriving · ${c.filed} of ${c.total} in${excludedClause(c.excluded, "en")} · switches after ${deadline}`;
 }

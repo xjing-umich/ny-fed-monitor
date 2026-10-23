@@ -425,7 +425,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       updated: "2026-10-19",
       snapshotPeriod: "2026-06-30",
       snapshotNote:
-        "Written 2026-10-19, when 92 investors counted. Two filings were read correctly only after a later fix (Ackman's 13F-NT notice and Olstein's zero-holdings report), so the live pages now count 94.",
+        "At the time, 92 investors counted. Two filings were read correctly only after a later fix (Ackman's 13F-NT notice and Olstein's zero-holdings report), so the live pages now count 94.",
       intro:
         "The Q2 2026 13F filings cover the quarter that ended June 30, and they were due by August 14. As of 2026-06-30, Compounder tracks 97 investors. Below is what they held, what drew the most buyers, and what drew the most sellers. The short version: the same few mega-caps sit near the top of all three lists, and most of the selling was trimming rather than leaving. Q3 filings are due November 16 (the 45-day mark falls on a Saturday), so this snapshot has a short shelf life.",
       sections: [
@@ -495,7 +495,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         "解读 2026 Q2 的 13F 申报:Compounder 追踪的 97 位投资人最常持有哪些股票、本季买得最广和卖得最广的是谁,以及为什么大部分卖出只是减仓。",
       updated: "2026-10-19",
       snapshotPeriod: "2026-06-30",
-      snapshotNote: "写于 2026-10-19，当时计入 92 位。之后修复了两位投资人的申报读取（Ackman 的 13F-NT 代报、Olstein 的零持仓申报），实时页现为 94 位。",
+      snapshotNote: "当时计入 92 位。之后修复了两位投资人的申报读取（Ackman 的 13F-NT 代报、Olstein 的零持仓申报），实时页现为 94 位。",
       intro:
         "2026 年 Q2 的 13F 申报,覆盖截至 6 月 30 日的那个季度,8 月 14 日前全部报齐。截至 2026-06-30,Compounder 追踪 97 位投资人。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论:三张榜的前排几乎是同一批大市值公司,而卖出一侧大多是减仓,很少有人真的走人。Q3 申报的截止日是 11 月 16 日(第 45 天是周六,顺延到周一),这份快照用不了多久就会被新一季替换。",
       sections: [

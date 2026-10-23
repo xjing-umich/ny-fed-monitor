@@ -1,12 +1,12 @@
 // 报告 vs 实时共识表:两边的“投资人集合”(cohort)是否相同。不同则逐数差异是预期的,不能判失败。
-// 实时页的买卖只算“最新申报 == 有效变动季”的活跃投资人;报告算所有已申报 P 的活跃投资人。
+// 实时页的买卖只算“最新申报 == 有效变动季”的应申报投资人;报告算所有已申报 P 的应申报投资人。
 // 早申报下一季的户(实时页已不按 P 算)、或截止后才申报的户,都会让两边合理地不一样。
 
 export type CohortInput = {
   period: string;
-  /** payload.coverage.filed:报告里已申报 P 的活跃投资人数。 */
+  /** payload.coverage.filed:报告里已申报 P 的应申报投资人数。 */
   reportFiled: number;
-  /** 活跃投资人中最新申报季 === P 的人数(实时页按 P 计算买卖的那批人)。 */
+  /** 应申报投资人中最新申报季 === P 的人数(实时页按 P 计算买卖的那批人)。 */
   siteCohort: number;
   /** effectiveMovesPeriod(...).period:实时页当前的有效变动季。 */
   siteEffectivePeriod: string | null;

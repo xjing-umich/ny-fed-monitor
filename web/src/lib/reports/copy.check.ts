@@ -2,10 +2,9 @@
 import {
   reportTitle, reportDescription, statusLine, stockHref, reportUrl, pct, emptyText, kindLabel,
   positionLabel, notFiledText, noComparableMovesText, disclaimerText, valuationNote, holderDeltaCell,
+  methodologyCoverageText, featuredMoveText, featuredWeightNote, STRIKE_ZONE_VISIBLE, strikeZoneMoreLabel,
 } from "./copy";
 import type { ReportPayload } from "./types";
-import { methodologyCoverageText } from "./copy";
-import { featuredMoveText, featuredWeightNote, STRIKE_ZONE_VISIBLE, strikeZoneMoreLabel } from "./copy";
 
 function assert(c: boolean, m: string) {
   if (!c) { console.error("FAIL:", m); process.exit(1); }
@@ -132,17 +131,18 @@ assert(
   "excluded 缺省 en 原句不变",
 );
 assert(
-  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "zh").includes("94 位超级投资者：上一季及之后有申报的人，另有 3 位上季未申报，不计入。"),
+  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "zh").includes("覆盖本站追踪的 97 位中、上一季及之后有申报的 94 位超级投资者（另有 3 位上季未申报，不计入）。同季"),
   "zh excluded=3 写明口径与人数",
 );
 assert(
-  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "en").includes("94 superinvestors this site tracks that filed for the prior quarter or later; 3 more did not file for the prior quarter and aren't counted."),
+  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "en").includes("for the 94 of the 97 superinvestors this site tracks that filed for the prior quarter or later (3 more missed last quarter and aren't counted). Where"),
   "en excluded=3",
 );
-assert(methodologyCoverageText({ filed: 2, total: 94, excluded: 1 }, "en").includes("1 more did not file for the prior quarter and isn't counted"), "en 单数");
+assert(methodologyCoverageText({ filed: 2, total: 94, excluded: 1 }, "en").includes("the 94 of the 95 superinvestors this site tracks that filed for the prior quarter or later (1 more missed last quarter and isn't counted)"), "en 单数 + 名单 = total+excluded");
 for (const lang of ["zh", "en"] as const) {
   const t0 = methodologyCoverageText({ filed: 2, total: 94, excluded: 0 }, lang);
-  assert(!t0.includes("一年以上") && !t0.includes("silent") && !t0.includes("另有") && !t0.includes("more did not"), `excluded=0 不出人数从句 (${lang})`);
+  assert(!t0.includes("一年以上") && !t0.includes("silent") && !t0.includes("另有") && !t0.includes("more missed"), `excluded=0 不出人数从句 (${lang})`);
+  assert(t0.includes(lang === "zh" ? "追踪的 94 位中、上一季及之后有申报的 94 位" : "the 94 of the 94 superinvestors"), `excluded=0 名单 = total (${lang})`);
 }
 
 console.log("copy.check OK");

@@ -13,8 +13,8 @@ export function NotCountedNote({
   return (
     <p className="mt-3 text-xs text-[var(--tt-muted)]">
       {lang === "zh"
-        ? `未计入：${managers.map((m) => `${m.person}（最新 13F 停在 ${quarterLabel(m.period) || "无"}）`).join("、")}。申报截止日已过仍未交新一季，旧仓位不算当前持有。`
-        : `Not counted: ${managers.map((m) => `${m.person} (latest 13F: ${quarterLabel(m.period) || "none"})`).join(", ")}. They missed the latest filing deadline, so their old positions don't count as current holdings.`}
+        ? `未计入：${managers.map((m) => `${m.person}${m.period ? `（最新 13F 停在 ${quarterLabel(m.period)}）` : "（尚无 13F）"}`).join("、")}。申报截止日已过仍未交新一季，旧仓位不算当前持有。`
+        : `Not counted: ${managers.map((m) => `${m.person} ${m.period ? `(latest 13F: ${quarterLabel(m.period)})` : "(no 13F yet)"}`).join(", ")}. They missed the latest filing deadline, so their old positions don't count as current holdings.`}
     </p>
   );
 }
