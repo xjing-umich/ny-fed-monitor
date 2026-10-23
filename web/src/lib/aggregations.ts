@@ -120,9 +120,9 @@ async function tickerizeRows<T extends { cusip: string }>(rows: T[]): Promise<T[
   });
 }
 
-export async function mostHeld(limit = 40): Promise<HeldRow[]> {
+export async function mostHeld(limit = 40, minHolders = 0): Promise<HeldRow[]> {
   const { readConsensusHeld } = await import("@/lib/managers/consensusRead");
-  const fromDb = await readConsensusHeld(limit);
+  const fromDb = await readConsensusHeld(limit, minHolders);
   if (fromDb && fromDb.length) return fromDb;
   return tickerizeRows(computeMostHeld(currentHoldersOnly(await scanAllManagers()), limit)); // 回退: 无库/空表时请求时计算
 }
@@ -136,7 +136,8 @@ export const CONSENSUS_MIN_HOLDERS = 2;
 
 /** Stocks held by at least CONSENSUS_MIN_HOLDERS superinvestors, ranked by mostHeld. */
 export async function consensusHeld(): Promise<HeldRow[]> {
-  const rows = await mostHeld(5000);
+  // 库里先筛 ≥2 人持有,只读 ~1200 行(2 页),不把单人持有的长尾整表拉下来。
+  const rows = await mostHeld(5000, CONSENSUS_MIN_HOLDERS);
   return rows.filter((r) => r.holderCount >= CONSENSUS_MIN_HOLDERS);
 }
 

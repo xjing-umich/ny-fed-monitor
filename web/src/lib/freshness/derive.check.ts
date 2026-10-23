@@ -157,6 +157,28 @@ assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-08-01")), true, "申报
 assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-08-14")), true, "截止日当天仍计入");
 assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-08-15")), false, "截止日次日起不计入");
 
+// --- 周末截止顺延:Q3 2026 的 +45 天是周六 11/14,SEC 顺延到周一 11/16;11/17 起才算到期 ---
+// 否则 11/15–11/16 会把合规地周一才交 Q3 的投资人踢出当前持有人,并提前切季。
+assert.equal(mostRecentDueQuarter(d("2026-11-15")).toISOString().slice(0, 10), "2026-06-30", "周六截止的次日(周日)Q3 未到期");
+assert.equal(mostRecentDueQuarter(d("2026-11-16")).toISOString().slice(0, 10), "2026-06-30", "顺延后的截止日当天 Q3 未到期");
+assert.equal(mostRecentDueQuarter(d("2026-11-17")).toISOString().slice(0, 10), "2026-09-30", "顺延截止日次日 Q3 到期");
+assert.equal(mostRecentDueQuarter(d("2027-02-15")).toISOString().slice(0, 10), "2026-09-30", "Q4 2026 周日截止顺延到 2/15,当天未到期");
+assert.equal(mostRecentDueQuarter(d("2027-02-16")).toISOString().slice(0, 10), "2026-12-31", "Q4 2026 顺延截止次日到期");
+assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-11-15")), true, "11/15 停在 Q2 仍计入");
+assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-11-16")), true, "11/16 周一当天交 Q3 合规,仍计入");
+assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-11-17")), false, "顺延截止次日起停在 Q2 不计入");
+{
+  const periods = [...Array(70).fill("2026-09-30"), ...Array(27).fill("2026-06-30")];
+  const sat = effectiveMovesPeriod(periods, d("2026-11-15"));
+  assert.equal(sat.period, "2026-06-30", "11/15 不提前切到 Q3");
+  assert.equal(sat.reason, "before_deadline");
+  const mon = effectiveMovesPeriod(periods, d("2026-11-16"));
+  assert.equal(mon.reason, "before_deadline", "11/16 顺延截止日当天仍未到期");
+  const tue = effectiveMovesPeriod(periods, d("2026-11-17"));
+  assert.equal(tue.period, "2026-09-30", "11/17 覆盖 ≥50% → 切到 Q3");
+  assert.equal(tue.reason, "due_and_covered");
+}
+
 // --- isScopeChange: 组合市值环比量级异常 ---
 assert.equal(isScopeChange(-0.956), true, "Cantillon Q2 2026 −96%");
 assert.equal(isScopeChange(-0.5), true, "−50% 边界计入");

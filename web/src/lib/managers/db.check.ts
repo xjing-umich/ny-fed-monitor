@@ -2,7 +2,7 @@
  * selectAllPages 行为校验。跑法: npx tsx src/lib/managers/db.check.ts
  * 无 IO:用假查询模拟 PostgREST「超出 max-rows 静默截断」。
  */
-import { selectAllPages, PAGE_SIZE } from "./db";
+import { selectAllPages, selectPagesUpTo, PAGE_SIZE } from "./db";
 
 let failed = 0;
 function check(name: string, ok: boolean, detail = "") {
@@ -61,6 +61,30 @@ async function main() {
   const flaky = fakeTable(rows(2500), { failAt: 1000, failTimes: 1 });
   const r5 = await selectAllPages<Row>(flaky.build);
   check("单页抖动重试后读全", r5.error === null && r5.data.length === 2500, `实际 ${r5.data.length}`);
+
+  console.log("selectPagesUpTo");
+
+  // 6) 回归:个股目录 / sitemap 用 limit=5000 读共识表,单次 .limit() 被截在 1000 行(2026-10 线上 1205 只共识股只出 998)。
+  const held = fakeTable(rows(1205));
+  const r6 = await selectPagesUpTo<Row>(held.build, 5000);
+  check("上限大于 1000 时读到全部 1205 行", r6.data.length === 1205 && r6.error === null, `实际 ${r6.data.length}`);
+  check("1205 行读两页即停", held.calls.join(",") === "0,1000", `offset 序列 ${held.calls.join(",")}`);
+
+  // 7) 上限截在第二页中间:只取到上限,不多读。
+  const big = fakeTable(rows(6757));
+  const r7 = await selectPagesUpTo<Row>(big.build, 1500);
+  check("只返回上限行数", r7.data.length === 1500, `实际 ${r7.data.length}`);
+  check("第二页只请求到上限", big.calls.join(",") === "0,1000", `offset 序列 ${big.calls.join(",")}`);
+
+  // 8) 小上限单页。
+  const top = fakeTable(rows(6757));
+  const r8 = await selectPagesUpTo<Row>(top.build, 40);
+  check("上限 40 只查一次、返回 40 行", r8.data.length === 40 && top.calls.length === 1, `实际 ${r8.data.length} 行 / ${top.calls.length} 次`);
+
+  // 9) 中间页失败 → error,不给半截数据。
+  const brokenUpTo = fakeTable(rows(2500), { failAt: 1000 });
+  const r9 = await selectPagesUpTo<Row>(brokenUpTo.build, 5000);
+  check("中间页失败时返回 error 且无数据", r9.error?.message === "boom" && r9.data.length === 0);
 
   if (failed) {
     console.error(`\ndb.check: ${failed} 项失败`);

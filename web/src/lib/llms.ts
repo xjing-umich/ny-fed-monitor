@@ -2,6 +2,7 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { mostHeld, notableMoves } from "@/lib/aggregations";
 import {
   effectiveMovesPeriod,
+  effectiveFilingDeadline,
   quarterLabel,
   FILING_DEADLINE_DAYS,
   type EffectiveMovesPeriod,
@@ -23,10 +24,10 @@ function isoDay(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
+// 周末截止顺延到周一,与站内切季同一天。
 function deadlineOf(periodEnd: string): string {
-  const d = new Date(`${periodEnd}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + FILING_DEADLINE_DAYS);
-  return isoDay(d);
+  const d = effectiveFilingDeadline(periodEnd);
+  return d ? isoDay(d) : periodEnd;
 }
 
 /** "Q2 2026 (quarter ended 2026-06-30)" */
@@ -87,7 +88,7 @@ function header(ctx: Ctx, title: string): string[] {
 
 const DATA_SCOPE = [
   `Holdings come from each manager's latest Form 13F-HR on SEC EDGAR. Investor and stock pages count long equity positions; put and call options are left out of position counts and values.`,
-  `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days) has passed and at least half of tracked managers have filed for it.`,
+  `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days, moved to the next Monday when it falls on a weekend) has passed and at least half of tracked managers have filed for it.`,
   "A manager who has not filed for the most recent quarter past its deadline is not counted as a current holder on consensus and stock pages; the consensus page lists them by name with the quarter their last 13F covers. Before the deadline, the prior quarter's filing still counts.",
   "Valuation bands are conservative ranges built from reported fundamentals. They show where a price sits against that range; they are not price targets or buy/sell calls.",
 ];
