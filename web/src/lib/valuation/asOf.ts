@@ -34,13 +34,16 @@ export function priceSourceName(lang: Lang, source: string | null | undefined): 
   return lang === "zh" ? "收盘价" : "Closing price";
 }
 
+const NBSP = "\u00a0";
+
 /** 个股页"现价"下方的注:日期 + 来源;过期加标记。 */
 export function priceFactNote(
   lang: Lang,
   p: { date: string; source?: string | null; stale?: boolean } | null,
 ): string | null {
   if (!p?.date) return null;
-  const src = priceSourceName(lang, p.source);
+  // 来源名内部用不换行空格:窄屏下只允许在「·」处换行,不把 "Yahoo Finance" 拆成两行。
+  const src = priceSourceName(lang, p.source).replace(/ /g, NBSP);
   if (lang === "zh") return p.stale ? `${p.date} 收盘 · 已过期 · ${src}` : `${p.date} 收盘 · ${src}`;
   return p.stale ? `${p.date} close · stale · ${src}` : `${p.date} close · ${src}`;
 }
