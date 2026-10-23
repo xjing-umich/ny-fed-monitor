@@ -4,18 +4,19 @@ import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { stockPath } from "@/lib/urls";
 import { fmtValueBand } from "@/lib/format";
 import { impliedValue } from "@/lib/valuation/impliedValue";
+import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 
 const COPY = {
   zh: {
     title: (n: number) => `${n} 只在击球区`,
-    cols: { band: "价值带", iv: "内在价值", margin: "安全边际" },
-    note: "价格低于买入线（内在价值扣除安全边际）的标的，按安全边际排序。仅为位置观察，非建议。",
+    cols: { ticker: "代码", band: "价值带", iv: "内在价值", margin: "安全边际" },
+    note: `价格低于买入线（内在价值扣除安全边际）的标的，按安全边际排序。${BAND_FLOOR_NOTE.zh}仅为位置观察，非建议。`,
   },
   en: {
     title: (n: number) => `${n} in the strike zone`,
-    cols: { band: "Band", iv: "Intrinsic value", margin: "Margin" },
-    note: "Priced below the buy line (intrinsic value minus a margin of safety), ranked by margin of safety. An observation, not advice.",
+    cols: { ticker: "Ticker", band: "Band", iv: "Intrinsic value", margin: "Margin" },
+    note: `Priced below the buy line (intrinsic value minus a margin of safety), ranked by margin of safety. ${BAND_FLOOR_NOTE.en} An observation, not advice.`,
   },
 } as const;
 
@@ -41,7 +42,7 @@ export default function StrikeLeadersCard({
       <table className="mt-2 w-full border-collapse text-sm">
         <thead>
           <tr className="font-data text-xs text-[var(--tt-faint)]">
-            <th className="py-1 pr-3 text-left font-normal" />
+            <th className="py-1 pr-3 text-left font-normal"><span className="sr-only">{c.cols.ticker}</span></th>
             <th className="py-1 pr-3 text-right font-normal">{c.cols.band}</th>
             <th className="py-1 pr-3 text-right font-normal">{c.cols.iv}</th>
             <th className="py-1 text-right font-normal">{c.cols.margin}</th>

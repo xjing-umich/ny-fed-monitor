@@ -10,6 +10,7 @@ import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { deriveFusionSignal } from "@/lib/managers/fusionSignal";
 import { impliedValue } from "@/lib/valuation/impliedValue";
+import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 
 const TOP_N = 60;
 
@@ -119,10 +120,11 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
         showRank
         emptyText={ui.emptyScreener}
       />
-      <p className="mt-2 text-xs text-[var(--tt-faint)]">
+      {/* 价值带 / 内在价值列只在桌面表格出现(hideOnMobile,DataTable 默认 md 断点),脚注同断点隐藏 */}
+      <p className="mt-2 hidden text-xs text-[var(--tt-faint)] md:block">
         {isZh
-          ? "带 * 的为单法口径，内在价值一列为零增长价值。"
-          : "Rows marked * use a single method; their intrinsic value is the zero-growth value."}
+          ? `带 * 的为单法口径，内在价值一列为零增长价值。${BAND_FLOOR_NOTE.zh}`
+          : `Rows marked * use a single method; their intrinsic value is the zero-growth value. ${BAND_FLOOR_NOTE.en}`}
       </p>
 
       {tail.length > 0 && (
