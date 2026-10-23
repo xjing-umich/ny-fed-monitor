@@ -16,6 +16,7 @@ import { filingFreshness, freshness13F, isScopeChange, quarterLag, globalLatestP
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer } from "@/lib/format";
+import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
@@ -135,6 +136,8 @@ function HoldingsTable({
   rowSignals: Map<string, RowSignal>;
 }): React.ReactElement {
   const t = HOLD_COPY[lang];
+  // 估值列读的是估值快照:标出它用的是哪天的收盘价(快照 + ISR 可能落后页面其余数据几天)。
+  const valuationAsOf = valuationAsOfText(lang, latestIsoDate([...verdicts.values()].map((v) => v.priceDate)));
   const sorted = [...holdings].sort((a, b) => b.value - a.value);
   const capped = sorted.slice(0, MAX_HOLDINGS);
   const truncated = sorted.length > MAX_HOLDINGS;
@@ -231,6 +234,9 @@ function HoldingsTable({
       <SectionHeading
         eyebrow={lang === "zh" ? "SEC 13F · 最新持仓" : "SEC 13F · latest filing"}
         title={t.title}
+        trailing={
+          valuationAsOf ? <span className="font-data text-xs text-[var(--tt-faint)]">{valuationAsOf}</span> : undefined
+        }
       />
       <div className="mt-3">
         <DataTable
@@ -456,13 +462,19 @@ export default async function InvestorSlugPage({
     totalValue: longTotalValue,
   });
 
+  // 估值相关数字(低于价值带计数、估值列、隐含预期句)全部来自估值快照:取其最晚价格日标注。
+  const valuationAsOf = latestIsoDate([...verdicts.values()].map((v) => v.priceDate));
   const keyFacts = [
     { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
     // cheap.length = below ∪ strike; 估值模型下击球区(跌破保守下限)恒 ⊆ below, 故等同「低于价值带」数;
     // 与小节引导句同源(N trade below)。chip 逐项标签仍各自精确(击球区/低于价值带)。
-    { label: lang === "zh" ? "低于价值带" : "Below band", value: String(posture.cheap.length) },
+    {
+      label: lang === "zh" ? "低于价值带" : "Below band",
+      value: String(posture.cheap.length),
+      note: valuationAsOfText(lang, valuationAsOf) ?? undefined,
+    },
   ];
 
   // Subtitle
@@ -554,7 +566,13 @@ export default async function InvestorSlugPage({
             {scopeNote}
           </>
         }
-        sources={[{ name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) }]}
+        sources={[
+          { name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) },
+          // 估值列 / 低于价值带 / 隐含预期:估值快照 = SEC 10-K/10-Q 财报 × 收盘价,日期取快照价格日。
+          ...(valuationAsOf
+            ? [{ name: lang === "zh" ? "估值(SEC 财报 × 收盘价)" : "Valuations (SEC filings × closing prices)", asOf: valuationAsOf }]
+            : []),
+        ]}
         related={related}
         footerCta={<NewsletterCTA lang={lang} source="investor" />}
       >
@@ -584,8 +602,8 @@ export default async function InvestorSlugPage({
             return (
               <p className="mb-3 text-sm text-[var(--tt-faint)]">
                 {lang === "zh"
-                  ? `按现价隐含预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
-                  : `By what price implies: ${demanding} demand a demanding growth rate, ${modest} modest.`}
+                  ? `按${valuationAsOf ? ` ${valuationAsOf} ` : "现"}收盘价隐含的预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
+                  : `By what the${valuationAsOf ? ` ${valuationAsOf}` : ""} close implies: ${demanding} demand a demanding growth rate, ${modest} modest.`}
               </p>
             );
           })()}

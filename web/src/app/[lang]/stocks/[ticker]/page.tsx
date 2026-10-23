@@ -19,6 +19,7 @@ import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
+import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { altFor, ogFor, datasetLd, breadcrumbLd } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
@@ -490,6 +491,19 @@ export default async function StockTickerPage({
   // Second intrinsic-value method (Buffett owner-earnings DCF) + two-method cross-check.
   // DGS10 read is best-effort; null → DCF uses the 9–11% fallback band (flagged in-card).
   const dgs10 = await getLatestDgs10();
+  // 基本面来源脚注:TTM 生效 = 最新 10-K 叠加 10-Q(提交日取 TTM 期末那份 10-Q);否则最新年报。
+  const fundamentalsFiled = floorInput.ttm
+    ? sec.quarterly?.find((q) => q.period_end === floorInput.ttm!.period_end && !q.is_derived)?.filing_date ?? undefined
+    : sec.annual?.[0]?.filing_date ?? undefined;
+  const annualForm = sec.annual?.[0]?.form ?? "10-K";
+  const fundamentalsSource = fundamentalsAsOf
+    ? {
+        name: floorInput.ttm ? `SEC ${annualForm} + 10-Q (XBRL)` : `SEC ${annualForm} (XBRL)`,
+        asOf: fundamentalsAsOf,
+        filed: fundamentalsFiled,
+        status: fundamentalsStale ? ("stale" as const) : ("fresh" as const),
+      }
+    : null;
   const run = runValuation({
     floorInput,
     price: valuationPrice,
@@ -640,7 +654,14 @@ export default async function StockTickerPage({
             : undefined
         }
         keyFacts={[
-          { label: page.price, value: fmtPriceFact(latestPrice) },
+          // 现价必须带日期与来源;过期(超过估值可用期限)置灰并标"已过期"——
+          // 退市/换代码的票(WBD 2026-10-06、EA 2026-08-10)最新一条收盘价会一直挂在这里。
+          {
+            label: page.price,
+            value: fmtPriceFact(latestPrice),
+            note: priceFactNote(lang, latestPrice) ?? undefined,
+            muted: latestPrice?.stale === true,
+          },
           // 安全边际只在"已确认便宜"(reliable + 击球区/低于价值带)时占位并显数字 ——
           // 高于价值 / 带内 / 红旗档不显空格子(那是噪音), 结论交给 masthead 徽章 + 估值区块标题。
           ...(marginShown
@@ -649,7 +670,14 @@ export default async function StockTickerPage({
           { label: g.holdersPeople, value: String(n) },
           { label: g.totalValue, value: formatUSD(totalValue) },
         ]}
-        sources={[{ name: "SEC EDGAR 13F", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) }]}
+        sources={[
+          { name: "SEC EDGAR 13F", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) },
+          ...(latestPrice
+            ? [{ name: priceSourceName(lang, latestPrice.source), asOf: latestPrice.date, status: latestPrice.stale ? ("stale" as const) : ("fresh" as const) }]
+            : []),
+          ...(fundamentalsSource ? [fundamentalsSource] : []),
+          ...(dgs10 ? [{ name: lang === "zh" ? "FRED 10 年期美债(DGS10)" : "FRED 10-year Treasury (DGS10)", asOf: dgs10.date }] : []),
+        ]}
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
         <>

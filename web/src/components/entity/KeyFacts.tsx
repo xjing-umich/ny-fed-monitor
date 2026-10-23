@@ -8,6 +8,10 @@ export type KeyFact = {
   tone?: Tone;
   /** 若提供, 渲染此 node 取代 value 文本(用于嵌入图标行等)。 */
   node?: ReactNode;
+  /** 数值下方的小字注(如价格的"2026-10-22 收盘 · Yahoo Finance"),标注日期与来源。 */
+  note?: string;
+  /** 数值已过期:置灰,提醒读者这不是当前值。 */
+  muted?: boolean;
 };
 
 const VALUE_TONE_CLASS: Record<Tone, string> = {
@@ -43,10 +47,22 @@ export function KeyFacts({ facts }: { facts: KeyFact[] }) {
             <span
               className={cn(
                 "tnum font-data text-lg font-medium leading-tight break-words sm:text-xl sm:leading-none",
-                fact.tone ? VALUE_TONE_CLASS[fact.tone] : "text-[var(--tt-text)]"
+                fact.muted
+                  ? "text-[var(--tt-faint)]"
+                  : fact.tone ? VALUE_TONE_CLASS[fact.tone] : "text-[var(--tt-text)]"
               )}
             >
               {fact.value}
+            </span>
+          )}
+          {fact.note && (
+            <span
+              className={cn(
+                "font-data text-xs leading-snug",
+                fact.muted ? "text-[var(--tt-warn)]" : "text-[var(--tt-faint)]"
+              )}
+            >
+              {fact.note}
             </span>
           )}
         </div>
