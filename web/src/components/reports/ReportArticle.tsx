@@ -62,7 +62,7 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
     <article className="mx-auto max-w-[720px] py-8 sm:py-10">
       <p className="tt-eyebrow">{zh ? "季度报告" : "Quarterly report"}</p>
       <h1 className="mt-2 text-balance text-3xl font-medium leading-tight text-[var(--tt-text)]">{reportTitle(p.period, lang)}</h1>
-      <p className="mt-3 font-data text-xs text-[var(--tt-muted)]">{statusLine(row, lang)}</p>
+      <p className="mt-3 font-data text-xs text-[var(--tt-muted)]">{statusLine(row, lang, row.payload.coverage.excluded ?? 0)}</p>
       <p className="mt-5 text-lg leading-relaxed text-[var(--tt-text)]">{reportDescription(p, row.status, lang)}</p>
       {inProgress ? <p className="mt-2 text-sm text-[var(--tt-muted)]">{zh ? "申报季进行中，下表计数均以已申报者为准，不是终值。" : "Filing season is in progress. Counts below cover only funds that have filed and are not final."}</p> : null}
 

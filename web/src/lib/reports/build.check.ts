@@ -35,12 +35,15 @@ const base: ReportInput = {
   bargains: new Map([["GOOG", { inStrikeZone: true, marginPct: 0.35 }], ["AAPL", { inStrikeZone: false, marginPct: 0.1 }]]),
   featuredSlugs: ["a", "d", "c", "zzz-not-tracked"],
   valuationAvailable: true,
+  excludedCount: 3,
 };
 
 const p = buildQuarterlyReport(base);
 
 assert(p.schemaVersion === 1 && p.period === "2026-09-30", "版本与季度");
 assert(p.coverage.filed === 4 && p.coverage.total === 5, `覆盖 4/5, got ${p.coverage.filed}/${p.coverage.total}`);
+
+assert(p.coverage.excluded === 3, "payload 带上上季未申报人数");
 
 const goodBuy = p.bought.items.find((i) => i.key === "GOOG");
 assert(!!goodBuy && goodBuy.managerCount === 2, `GOOG 买入应为 a+b=2(c 无上季不计), got ${goodBuy?.managerCount}`);

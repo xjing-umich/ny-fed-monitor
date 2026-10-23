@@ -1,5 +1,5 @@
 /** Run: cd web && npx tsx scripts/lib/loadReportInput.check.ts */
-import { parseFeaturedConfig, pickFilingsForPeriod } from "./loadReportInput";
+import { expectedOnly, parseFeaturedConfig, pickFilingsForPeriod } from "./loadReportInput";
 
 function assert(c: boolean, m: string) {
   if (!c) { console.error("FAIL:", m); process.exit(1); }
@@ -32,5 +32,20 @@ assert(fc.slugs.join() === "himalaya-capital,oaktree,x", "slug 顺序保留,兼�
 assert(fc.zhBySlug.get("himalaya-capital") === "李录" && !fc.zhBySlug.has("oaktree") && !fc.zhBySlug.has("x"), "中文名只收非空");
 let threw = false; try { parseFeaturedConfig([{ zh: "无 slug" }]); } catch { threw = true; }
 assert(threw, "缺 slug 报错");
+
+// 报告分母 = 应申报 M:最新申报期 ≥ 报告季的上一季
+{
+  const all = [
+    { slug: "a", latestPeriod: "2026-09-30" },
+    { slug: "b", latestPeriod: "2026-06-30" },
+    { slug: "bancroft", latestPeriod: "2026-03-31" },
+    { slug: "burry", latestPeriod: "2025-09-30" },
+    { slug: "none", latestPeriod: null },
+  ];
+  const q3 = expectedOnly(all, "2026-09-30").map((r) => r.slug);
+  assert(JSON.stringify(q3) === JSON.stringify(["a", "b"]), "Q3 报告:停在 Q1 / 2025Q3 / 无申报的人不在分母, got " + q3.join());
+  const q2 = expectedOnly(all, "2026-06-30").map((r) => r.slug);
+  assert(JSON.stringify(q2) === JSON.stringify(["a", "b", "bancroft"]), "Q2 报告:交了 Q1 的 Bancroft 在分母, got " + q2.join());
+}
 
 console.log("loadReportInput.check OK");

@@ -57,16 +57,19 @@ export function reportDescription(p: ReportPayload, status: ReportStatus, lang: 
 export function statusLine(
   row: { status: ReportStatus; coverageFiled: number; coverageTotal: number; finalizedAt: string | null },
   lang: ReportLang,
+  excluded = 0,
 ): string {
   const day = row.finalizedAt ? row.finalizedAt.slice(0, 10) : "";
+  const exZh = excluded > 0 ? `（另有 ${excluded} 位上季未申报，不计入）` : "";
+  const exEn = excluded > 0 ? ` (${excluded} more missed last quarter and ${excluded === 1 ? "isn't" : "aren't"} counted)` : "";
   if (row.status === "live") {
     return lang === "zh"
-      ? `${row.coverageTotal} 位中已有 ${row.coverageFiled} 位申报 · 每次有新申报后更新`
-      : `${row.coverageFiled} of ${row.coverageTotal} have filed · updates after each new filing`;
+      ? `${row.coverageTotal} 位中已有 ${row.coverageFiled} 位申报${exZh} · 每次有新申报后更新`
+      : `${row.coverageFiled} of ${row.coverageTotal} have filed${exEn} · updates after each new filing`;
   }
   return lang === "zh"
-    ? `定稿于 ${day} · ${row.coverageTotal} 位中 ${row.coverageFiled} 位已申报`
-    : `Final as of ${day} · ${row.coverageFiled} of ${row.coverageTotal} filed`;
+    ? `定稿于 ${day} · ${row.coverageTotal} 位中 ${row.coverageFiled} 位已申报${exZh}`
+    : `Final as of ${day} · ${row.coverageFiled} of ${row.coverageTotal} filed${exEn}`;
 }
 
 /** 估值快照晚于该季实际申报截止日这么多天以上时,注明“晚于该季申报季”(spec §3.6,如 Q2 补发)。 */

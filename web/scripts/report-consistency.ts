@@ -8,7 +8,7 @@
 import { effectiveMovesPeriod } from "../src/lib/freshness/derive";
 import { readAll } from "./lib/computeConsensus";
 import { compareCohorts } from "./lib/consistency";
-import { activeOnly, loadManagerFilings } from "./lib/loadReportInput";
+import { expectedOnly, loadManagerFilings } from "./lib/loadReportInput";
 import { readReport } from "./lib/reportDb";
 import { makeDb } from "./report";
 
@@ -33,7 +33,7 @@ async function main() {
   // 与 loadReportInput / computeAndStoreConsensus 同一口径:有效季用全部有申报的投资人,cohort 只数活跃户。
   const all = await loadManagerFilings(db);
   const effective = effectiveMovesPeriod(all.map((r) => r.latestPeriod), new Date());
-  const cohort = activeOnly(all).filter((r) => r.latestPeriod === period);
+  const cohort = expectedOnly(all, period).filter((r) => r.latestPeriod === period);
   const cohortWithoutPrior = cohort.filter((r) => !r.rows.some((f) => f.period < period)).length;
   const verdict = compareCohorts({
     period, reportFiled: p.coverage.filed, siteCohort: cohort.length, siteEffectivePeriod: effective.period, cohortWithoutPrior,

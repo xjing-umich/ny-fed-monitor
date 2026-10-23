@@ -108,4 +108,17 @@ assert(strikeZoneMoreLabel(46, "zh") === "展开其余 46 只", "zh 展开文案
 assert(strikeZoneMoreLabel(46, "en") === "Show the other 46 stocks", "en 展开文案");
 assert(strikeZoneMoreLabel(1, "en") === "Show the other stock", "en 单数");
 
+assert(
+  statusLine({ status: "live", coverageFiled: 2, coverageTotal: 94, finalizedAt: null }, "zh", 3).includes("94 位中已有 2 位申报（另有 3 位上季未申报，不计入）"),
+  "zh live 状态条写明未计入人数",
+);
+assert(
+  statusLine({ status: "live", coverageFiled: 2, coverageTotal: 94, finalizedAt: null }, "en", 1).includes("2 of 94 have filed (1 more missed last quarter and isn't counted)"),
+  "en live 状态条单数",
+);
+assert(
+  !statusLine({ status: "final", coverageFiled: 94, coverageTotal: 94, finalizedAt: "2026-11-18T03:00:00Z" }, "zh").includes("另有"),
+  "excluded 缺省 = 0 → 不出括号",
+);
+
 console.log("copy.check OK");

@@ -24,7 +24,7 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
   const keyOf = (cusip: string) => cusipMap.get(cusip)?.ticker ?? cusip;
 
   const filers = managers.filter((m) => m.current !== null);
-  const coverage = { filed: filers.length, total: managers.length };
+  const coverage = { filed: filers.length, total: managers.length, excluded: input.excludedCount };
   const noFilers = filers.length === 0;
 
   // —— 共识买卖:复用全站 computeConsensus
