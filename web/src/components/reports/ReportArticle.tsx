@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { Lang } from "@/lib/nav";
 import { investorPath, localePath } from "@/lib/urls";
 import {
-  disclaimerText, emptyText, featuredKindLabel, featuredWeightNote, featuredWeightText, holderDeltaCell, kindLabel,
+  disclaimerText, emptyText, featuredKindLabel, methodologyCoverageText, featuredWeightNote, featuredWeightText, holderDeltaCell, kindLabel,
   noComparableMovesText, notFiledText, personName, positionLabel, STRIKE_ZONE_VISIBLE, strikeZoneMoreLabel, reportDescription, reportTitle, sectionTitles, statusLine, stockHref, valuationNote,
 } from "@/lib/reports/copy";
 import type { ReportRow, ReportStock, Section } from "@/lib/reports/types";
@@ -62,7 +62,7 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
     <article className="mx-auto max-w-[720px] py-8 sm:py-10">
       <p className="tt-eyebrow">{zh ? "季度报告" : "Quarterly report"}</p>
       <h1 className="mt-2 text-balance text-3xl font-medium leading-tight text-[var(--tt-text)]">{reportTitle(p.period, lang)}</h1>
-      <p className="mt-3 font-data text-xs text-[var(--tt-muted)]">{statusLine(row, lang)}</p>
+      <p className="mt-3 font-data text-xs text-[var(--tt-muted)]">{statusLine(row, lang, row.payload.coverage.excluded ?? 0)}</p>
       <p className="mt-5 text-lg leading-relaxed text-[var(--tt-text)]">{reportDescription(p, row.status, lang)}</p>
       {inProgress ? <p className="mt-2 text-sm text-[var(--tt-muted)]">{zh ? "申报季进行中，下表计数均以已申报者为准，不是终值。" : "Filing season is in progress. Counts below cover only funds that have filed and are not final."}</p> : null}
 
@@ -115,13 +115,13 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
         <summary className="cursor-pointer text-base font-medium text-[var(--tt-text)]">{t.method}</summary>
         <div className="mt-3 flex flex-col gap-2 text-base leading-relaxed text-[var(--ink-2)]">
           {(zh ? [
-            `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站跟踪的 ${p.coverage.total} 位活跃超级投资者（一年以上未申报者不计）。同季有修正申报时取合并后的版本。`,
+            methodologyCoverageText(p.coverage, lang),
             "共识买入 / 卖出：统计本季相对上一季新建仓或加仓 / 减仓或清仓的投资人数，期权不计；没有更早申报可比的投资人不计入买卖。",
             "持有人数“较上季”：只在本季已申报、且有上一季申报的同一批投资人内比较，避免申报季中有人尚未申报造成虚降。",
             `击球区与价值带：来自本站估值引擎的保守价值区间，只取数据可靠的结果。${valuationNote(row.valuationAsOf, lang, p.period)}这里只描述价格相对价值区间的位置，不构成买卖建议。`,
             row.status === "final" ? "本报告定稿后不再随迟到申报或修正申报变化；最新情况见实时共识页。" : "申报季结束、覆盖率达标后，本报告会定稿冻结。",
           ] : [
-            `Data comes from 13F filings on SEC EDGAR for the ${p.coverage.total} active superinvestors this site tracks (funds silent for a year or more are excluded). Where a quarter was amended, the merged version is used.`,
+            methodologyCoverageText(p.coverage, lang),
             "Consensus buys / sells count the funds that opened or added to / trimmed or sold out of a position versus the prior quarter. Options are excluded, and funds with no earlier filing to compare against are left out of buys and sells.",
             "Holder change vs. last quarter compares the same funds only: those that have filed this quarter and also filed the prior one, so funds that have not filed yet do not drag counts down.",
             `Strike zone and value band come from this site's conservative valuation range, using reliable results only. ${valuationNote(row.valuationAsOf, lang, p.period)} They describe where price sits relative to value and are not a recommendation.`,

@@ -1,6 +1,7 @@
 // 季度报告双语文案。页面与邮件都从这里取字,保证同一事实同一说法。
 // 只描述已发生的申报与估值位置,不给买卖建议。
 import { effectiveFilingDeadline, parseUTC, quarterLabel } from "../freshness/derive";
+import { excludedClause } from "../freshness/excludedClause";
 import { localePath, stockPath, SITE_ORIGIN } from "../urls";
 import { reportSlug } from "./period";
 import type { EmptyReason, FeaturedEntry, FeaturedMove, MoveKind, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
@@ -57,16 +58,19 @@ export function reportDescription(p: ReportPayload, status: ReportStatus, lang: 
 export function statusLine(
   row: { status: ReportStatus; coverageFiled: number; coverageTotal: number; finalizedAt: string | null },
   lang: ReportLang,
+  excluded = 0,
 ): string {
   const day = row.finalizedAt ? row.finalizedAt.slice(0, 10) : "";
+  const exZh = excludedClause(excluded, "zh");
+  const exEn = excludedClause(excluded, "en");
   if (row.status === "live") {
     return lang === "zh"
-      ? `${row.coverageTotal} 位中已有 ${row.coverageFiled} 位申报 · 每次有新申报后更新`
-      : `${row.coverageFiled} of ${row.coverageTotal} have filed · updates after each new filing`;
+      ? `${row.coverageTotal} 位中已有 ${row.coverageFiled} 位申报${exZh} · 每次有新申报后更新`
+      : `${row.coverageFiled} of ${row.coverageTotal} have filed${exEn} · updates after each new filing`;
   }
   return lang === "zh"
-    ? `定稿于 ${day} · ${row.coverageTotal} 位中 ${row.coverageFiled} 位已申报`
-    : `Final as of ${day} · ${row.coverageFiled} of ${row.coverageTotal} filed`;
+    ? `定稿于 ${day} · ${row.coverageTotal} 位中 ${row.coverageFiled} 位已申报${exZh}`
+    : `Final as of ${day} · ${row.coverageFiled} of ${row.coverageTotal} filed${exEn}`;
 }
 
 /** 估值快照晚于该季实际申报截止日这么多天以上时,注明“晚于该季申报季”(spec §3.6,如 Q2 补发)。 */
@@ -171,4 +175,20 @@ export function reportUrl(period: string, lang: ReportLang): string {
 
 export function personName(f: FeaturedEntry, lang: ReportLang): string {
   return lang === "zh" && f.personZh ? f.personZh : f.person;
+}
+
+/** 方法说明首句:数据来源与覆盖人数口径。excluded 缺省 = 已定稿的旧 payload,沿用原“一年以上未申报者不计”表述。 */
+export function methodologyCoverageText(coverage: ReportPayload["coverage"], lang: ReportLang): string {
+  const { total, excluded } = coverage;
+  if (excluded === undefined) {
+    return lang === "zh"
+      ? `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站跟踪的 ${total} 位活跃超级投资者（一年以上未申报者不计）。同季有修正申报时取合并后的版本。`
+      : `Data comes from 13F filings on SEC EDGAR for the ${total} active superinvestors this site tracks (funds silent for a year or more are excluded). Where a quarter was amended, the merged version is used.`;
+  }
+  // 追踪 = 全名单(total + excluded);计入 = 上一季及之后有申报的 total 位。
+  const roster = total + excluded;
+  if (lang === "zh") {
+    return `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站追踪的 ${roster} 位中、上一季及之后有申报的 ${total} 位超级投资者${excludedClause(excluded, "zh")}。同季有修正申报时取合并后的版本。`;
+  }
+  return `Data comes from 13F filings on SEC EDGAR for the ${total} of the ${roster} superinvestors this site tracks that filed for the prior quarter or later${excludedClause(excluded, "en")}. Where a quarter was amended, the merged version is used.`;
 }

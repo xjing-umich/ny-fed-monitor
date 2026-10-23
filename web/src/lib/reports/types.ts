@@ -33,7 +33,8 @@ export type Section<T> = { items: T[]; emptyReason: EmptyReason | null };
 export type ReportPayload = {
   schemaVersion: 1;
   period: string; // 季末 YYYY-MM-DD
-  coverage: { filed: number; total: number };
+  /** total = 应申报 M;excluded = 上季未申报、不计入的人数(Q2 定稿 payload 无此字段)。 */
+  coverage: { filed: number; total: number; excluded?: number };
   bought: Section<ConsensusMoveItem>;
   sold: Section<ConsensusMoveItem>;
   mostHeld: Section<MostHeldItem>;
@@ -85,7 +86,7 @@ export type ReportManagerInput = {
 
 export type ReportInput = {
   period: string;
-  /** 仅活跃投资人(freshness13F !== "inactive")。 */
+  /** 应申报投资人(expectedOnly)。 */
   managers: ReportManagerInput[];
   cusipMap: Map<string, { ticker: string | null; name: string | null }>;
   /** key = ticker 大写;只含 reliable 且(击球区 或 价值带以下)且通过 isImplausibleBand 的票。 */
@@ -93,4 +94,6 @@ export type ReportInput = {
   featuredSlugs: string[];
   /** valuation_snapshot 里至少有一行 reliable 估值。false → 击球区板块写“估值暂不可用”。 */
   valuationAvailable: boolean;
+  /** 名单里上季未申报、不计入分母的人数。 */
+  excludedCount: number;
 };

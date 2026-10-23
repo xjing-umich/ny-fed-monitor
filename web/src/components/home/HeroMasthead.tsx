@@ -8,6 +8,7 @@ import { FreshnessDot } from "@/components/entity/FreshnessDot";
 import { filingFreshness, quarterLabel, effectiveFilingDeadline, type EffectiveMovesPeriod } from "@/lib/freshness/derive";
 import { stockPath, localePath } from "@/lib/urls";
 import RevealStagger from "@/components/home/RevealStagger";
+import { filingProgressText } from "@/components/home/filingProgressText";
 import { reportSlug } from "@/lib/reports/period";
 
 const COPY = {
@@ -26,8 +27,6 @@ const COPY = {
     bought: "最多人增持",
     sold: "最多人减持",
     asOf: (p: string) => `截至 ${p} · 来源 SEC 13F · 上报延迟 45 天`,
-    filingProgress: (q: string, filed: number, total: number, deadline: string) =>
-      `${q} 申报进行中 · ${filed}/${total} 已交 · ${deadline}截止后切换`,
   },
   en: {
     brand: "Compounder",
@@ -43,8 +42,6 @@ const COPY = {
     bought: "Most bought",
     sold: "Most sold",
     asOf: (p: string) => `As of ${p} · Source SEC 13F · 45-day reporting lag`,
-    filingProgress: (q: string, filed: number, total: number, deadline: string) =>
-      `${q} filings arriving · ${filed} of ${total} in · switches after ${deadline}`,
   },
 };
 
@@ -116,12 +113,12 @@ export default function HeroMasthead({
   // due_and_covered / empty(非申报季窗口)一个字都不渲染。
   const showFilingProgress =
     !!filing && (filing.reason === "before_deadline" || filing.reason === "low_coverage");
-  const filingProgressText =
+  const progressLine =
     showFilingProgress && filing
-      ? c.filingProgress(
+      ? filingProgressText(
+          lang,
           quarterLabel(filing.maxPeriod),
-          filing.coverage.filed,
-          filing.coverage.total,
+          filing.coverage,
           // 周末截止顺延到周一(Q3 2026:周六 11/14 → 11/16),与切季、当前持有人判断同一天。
           fmtDeadline(effectiveFilingDeadline(filing.maxPeriod), lang),
         )
@@ -141,9 +138,9 @@ export default function HeroMasthead({
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
           {c.asOf(quarterLabel(period) || period)}
         </p>
-        {filingProgressText && filing && (
+        {progressLine && filing && (
           <p className="mt-1.5 font-data text-xs text-[var(--tt-muted)]">
-            {filingProgressText}
+            {progressLine}
             {filing.maxPeriod && filingReportExists && (
               <>
                 {" "}

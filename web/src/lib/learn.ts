@@ -27,6 +27,8 @@ export interface Article {
    * 并链到实时榜单;也不再参与 Learn 首页"最新"位的竞争(过季的复盘不该顶在最新位)。
    */
   snapshotPeriod?: string;
+  /** 快照文章写成后口径有变时的补充说明,显示在顶部快照提示里。 */
+  snapshotNote?: string;
 }
 
 const ARTICLES: Record<string, Record<Lang, Article>> = {
@@ -422,8 +424,10 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         "A read of the Q2 2026 13F filings from the 97 investors Compounder tracks: the most widely held stocks, the quarter's biggest buys and sells, and why most of the selling was trimming.",
       updated: "2026-10-19",
       snapshotPeriod: "2026-06-30",
+      snapshotNote:
+        "At the time, 92 investors counted. Two filings were read correctly only after a later fix (Ackman's 13F-NT notice and Olstein's zero-holdings report), so the live pages now count 94.",
       intro:
-        "The Q2 2026 13F filings cover the quarter that ended June 30, and they were due by August 14. As of 2026-06-30, Compounder tracks 97 investors. Below is what they held, what drew the most buyers, and what drew the most sellers. The short version: the same few mega-caps sit near the top of all three lists, and most of the selling was trimming rather than leaving. Q3 filings are due November 14, so this snapshot has a short shelf life.",
+        "The Q2 2026 13F filings cover the quarter that ended June 30, and they were due by August 14. As of 2026-06-30, Compounder tracks 97 investors. Below is what they held, what drew the most buyers, and what drew the most sellers. The short version: the same few mega-caps sit near the top of all three lists, and most of the selling was trimming rather than leaving. Q3 filings are due November 16 (the 45-day mark falls on a Saturday), so this snapshot has a short shelf life.",
       sections: [
         {
           heading: "What we're reading",
@@ -467,7 +471,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "Why none of this is a signal",
           paragraphs: [
             "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is long-only, can be up to 45 days old when it lands, and says nothing about why a manager bought or what they paid. By the time you read this, the Q2 positions are more than three months old.",
-            "Q3 filings are due November 14, and the live consensus, buy, and sell pages will roll forward as they come in. Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. None of this is investment advice.",
+            "Q3 filings are due November 16, and the live consensus, buy, and sell pages will roll forward as they come in. Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. None of this is investment advice.",
             "Counts above are from Compounder's top-buys and top-sells pages and the holder tables on the linked stock and investor pages, for the quarter ended 2026-06-30, checked on 2026-10-19. Holder counts leave out positions those tables tag with an older quarter. Source: SEC Form 13F filings via SEC EDGAR.",
           ],
         },
@@ -491,8 +495,9 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         "解读 2026 Q2 的 13F 申报:Compounder 追踪的 97 位投资人最常持有哪些股票、本季买得最广和卖得最广的是谁,以及为什么大部分卖出只是减仓。",
       updated: "2026-10-19",
       snapshotPeriod: "2026-06-30",
+      snapshotNote: "当时计入 92 位。之后修复了两位投资人的申报读取（Ackman 的 13F-NT 代报、Olstein 的零持仓申报），实时页现为 94 位。",
       intro:
-        "2026 年 Q2 的 13F 申报,覆盖截至 6 月 30 日的那个季度,8 月 14 日前全部报齐。截至 2026-06-30,Compounder 追踪 97 位投资人。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论:三张榜的前排几乎是同一批大市值公司,而卖出一侧大多是减仓,很少有人真的走人。Q3 申报的截止日是 11 月 14 日,这份快照用不了多久就会被新一季替换。",
+        "2026 年 Q2 的 13F 申报,覆盖截至 6 月 30 日的那个季度,8 月 14 日前全部报齐。截至 2026-06-30,Compounder 追踪 97 位投资人。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论:三张榜的前排几乎是同一批大市值公司,而卖出一侧大多是减仓,很少有人真的走人。Q3 申报的截止日是 11 月 16 日(第 45 天是周六,顺延到周一),这份快照用不了多久就会被新一季替换。",
       sections: [
         {
           heading: "我们在读什么",
@@ -536,7 +541,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "为什么这些都不是信号",
           paragraphs: [
             "一只股票被广泛持有、或被广泛买入,只是让你该看得更近的理由,谈不上结论。13F 只含多头,交上来时最多已滞后 45 天,对一位经理为什么买、买在什么价位只字不提。等你读到这里,这些 Q2 仓位已经是三个多月前的事了。",
-            "Q3 申报 11 月 14 日截止,共识持仓、最多买入、最多卖出这几张实时榜单会随申报陆续滚到新一季。《读懂跨基金共识》更深入地讲了共识设下的陷阱。这一切都不是投资建议。",
+            "Q3 申报 11 月 16 日截止(第 45 天是周六,顺延到周一),共识持仓、最多买入、最多卖出这几张实时榜单会随申报陆续滚到新一季。《读懂跨基金共识》更深入地讲了共识设下的陷阱。这一切都不是投资建议。",
             "上文家数取自 Compounder 的最多买入、最多卖出页面,以及文中链接的个股页和投资人页上的持有人表,报告期截至 2026-06-30,核对于 2026-10-19。持有家数不含这些表里标注为更早季度的仓位。来源:SEC EDGAR 上的 Form 13F 申报。",
           ],
         },

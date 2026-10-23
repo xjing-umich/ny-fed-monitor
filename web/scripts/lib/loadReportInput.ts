@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { freshness13F, globalLatestPeriod } from "../../src/lib/freshness/derive";
+import { isExpectedFiler } from "../../src/lib/freshness/derive";
 import { isImplausibleBand } from "../../src/lib/valuation/deriveValuationVerdict";
 import { readAll } from "./computeConsensus";
 import type { ReportHolding, ReportInput, ReportManagerInput } from "../../src/lib/reports/types";
@@ -60,7 +60,7 @@ const toHolding = (h: HoldingDbRow): ReportHolding => ({
   weight: Number(h.weight ?? 0), putCall: h.put_call ?? null,
 });
 
-/** 全部投资人及其最近申报。loadReportInput 与 report-consistency 共用(同一“活跃”与“最新季”口径)。 */
+/** 全部投资人及其最近申报。loadReportInput 与 report-consistency 共用(同一“应申报”与“最新季”口径)。 */
 export async function loadManagerFilings(db: SupabaseClient): Promise<ManagerFilings[]> {
   const managers = (await readAll(db, "managers", "cik,slug,person", (q) => q.order("cik", { ascending: true }))) as ManagerDbRow[];
   const out: ManagerFilings[] = [];
@@ -74,10 +74,9 @@ export async function loadManagerFilings(db: SupabaseClient): Promise<ManagerFil
   return out;
 }
 
-/** 活跃口径与全站一致:相对全库最新季落后 ≥4 季的视为停报,整户剔除。 */
-export function activeOnly<T extends { latestPeriod: string | null }>(all: T[]): T[] {
-  const gl = globalLatestPeriod(all.map((r) => r.latestPeriod));
-  return all.filter((r) => freshness13F(r.latestPeriod, gl) !== "inactive");
+/** 报告分母 = 应申报 M(与首页申报进度、切季覆盖率同一口径):最新申报期 ≥ 报告季的上一季。 */
+export function expectedOnly<T extends { latestPeriod: string | null }>(all: T[], period: string): T[] {
+  return all.filter((r) => isExpectedFiler(r.latestPeriod, period));
 }
 
 export async function loadReportInput(db: SupabaseClient, period: string): Promise<{ input: ReportInput; valuationAsOf: string | null }> {
@@ -92,7 +91,9 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
   for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer", (q) => q.order("cusip", { ascending: true })))
     cusipMap.set(r.cusip, { ticker: r.ticker, name: r.issuer });
 
-  const active = activeOnly(await loadManagerFilings(db)).map((r) => ({ ...r, ...pickFilingsForPeriod(r.rows, period) }));
+  const allFilings = await loadManagerFilings(db);
+  const expected = expectedOnly(allFilings, period);
+  const active = expected.map((r) => ({ ...r, ...pickFilingsForPeriod(r.rows, period) }));
 
   const holdingsOf = async (f: FilingRow | null) =>
     f
@@ -139,5 +140,5 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
 
   const valuationAvailable = latestReliable.length > 0;
   if (!valuationAsOf && valuationAvailable) valuationAsOf = latestReliable[0].price_date;
-  return { input: { period, managers: out, cusipMap, bargains, featuredSlugs, valuationAvailable }, valuationAsOf };
+  return { input: { period, managers: out, cusipMap, bargains, featuredSlugs, valuationAvailable, excludedCount: allFilings.length - expected.length }, valuationAsOf };
 }

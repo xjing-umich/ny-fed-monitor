@@ -9,6 +9,7 @@ import {
 } from "@/lib/freshness/derive";
 import { listArticles, type Article } from "@/lib/learn";
 import { getAboutDoc } from "@/lib/about";
+import { excludedClause } from "@/lib/freshness/excludedClause";
 import { getLegalDoc, type LegalDoc } from "@/lib/legal";
 import { absoluteUrl, localePath, stockPath, investorPath } from "@/lib/urls";
 import { formatUSD, cleanIssuer } from "@/lib/format";
@@ -35,9 +36,10 @@ function quarterPhrase(period: string): string {
   return `${quarterLabel(period)} (quarter ended ${period})`;
 }
 
-/** "1 of 97 tracked managers has" / "3 of 97 tracked managers have" */
-function filedOf(c: { filed: number; total: number }): string {
-  return `${c.filed} of ${c.total} tracked managers ${c.filed === 1 ? "has" : "have"}`;
+/** "1 of 94 managers expected to file (3 more … aren't counted) has" —— 分母 = 应申报 M,与首页进度行同一口径;
+ *  M 小于名单时紧跟着写明少的是谁(同一从句)。 */
+function filedOf(c: { filed: number; total: number; excluded: number }): string {
+  return `${c.filed} of ${c.total} managers expected to file${excludedClause(c.excluded, "en")} ${c.filed === 1 ? "has" : "have"}`;
 }
 
 function baselineSentence(eff: EffectiveMovesPeriod): string {
@@ -54,7 +56,7 @@ function baselineSentence(eff: EffectiveMovesPeriod): string {
   if (coverage.filed < coverage.total) {
     return `${head} ${filedOf(coverage)} filed for it; the rest are shown as of their latest earlier filing.`;
   }
-  return `${head} All ${coverage.total} tracked managers have filed for it.`;
+  return `${head} All ${coverage.total} managers expected to file${excludedClause(coverage.excluded, "en")} have filed for it.`;
 }
 
 type Ctx = {
@@ -88,7 +90,7 @@ function header(ctx: Ctx, title: string): string[] {
 
 const DATA_SCOPE = [
   `Holdings come from each manager's latest Form 13F-HR on SEC EDGAR. Investor and stock pages count long equity positions; put and call options are left out of position counts and values.`,
-  `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days, moved to the next Monday when it falls on a weekend) has passed and at least half of tracked managers have filed for it.`,
+  `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days, moved to the next Monday when it falls on a weekend) has passed and at least half of the managers expected to file (those that filed the prior quarter or later) have filed for it.`,
   "A manager who has not filed for the most recent quarter past its deadline is not counted as a current holder on consensus and stock pages; the consensus page lists them by name with the quarter their last 13F covers. Before the deadline, the prior quarter's filing still counts.",
   "Valuation bands are conservative ranges built from reported fundamentals. They show where a price sits against that range; they are not price targets or buy/sell calls.",
 ];

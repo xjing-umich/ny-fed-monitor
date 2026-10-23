@@ -11,6 +11,7 @@ import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
+import { NotCountedNote } from "@/components/aggregate/NotCountedNote";
 import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
 import { consensusBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
@@ -103,13 +104,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
               />
             }
           />
-          {overdueManagers.length > 0 && (
-            <p className="mt-3 text-xs text-[var(--tt-muted)]">
-              {isZh
-                ? `未计入：${overdueManagers.map((m) => `${m.person}（最新 13F 停在 ${quarterLabel(m.period)}）`).join("、")}。申报截止日已过仍未交新一季，旧仓位不算当前持有。`
-                : `Not counted: ${overdueManagers.map((m) => `${m.person} (latest 13F: ${quarterLabel(m.period)})`).join(", ")}. They missed the latest filing deadline, so their old positions don't count as current holdings.`}
-            </p>
-          )}
+          <NotCountedNote lang={lang} managers={overdueManagers} />
         </div>
         <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang)} />
         {valuationAsOf && (
