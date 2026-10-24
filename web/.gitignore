@@ -45,3 +45,6 @@ next-env.d.ts
 # former-names.json 例外 —— 构建期 aliases/config.ts 静态 import 它,必须保留追踪。
 src/data/13f/*.json
 !src/data/13f/former-names.json
+
+# 数据审计结果(npm run audit:data):含生产快照,不提交
+/.audit/
