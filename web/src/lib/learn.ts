@@ -580,7 +580,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "Profit margins: the first look at pricing power",
           paragraphs: [
             "Net margin is the share of each dollar of revenue that survives all the way down to profit. It is the quickest read on pricing power. A business that can charge well above what it costs to serve a customer, and keep doing it, posts a high and steady margin. One fighting on price cannot.",
-            "The businesses superinvestors cluster in tend to sit at the high end. Take each company's latest full fiscal year, as reported in its 10-K. Visa kept 50.1% of revenue as net profit in the year ended September 30, 2025, and Mastercard 45.6% in calendar 2025. Alphabet ran 32.8%, Moody's 31.9%, and Meta 30.1%, also for calendar 2025. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. Apple, at 26.9% for the year ended September 27, 2025, and Amazon, at 10.8% for calendar 2025, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
+            "The businesses superinvestors cluster in tend to sit at the high end. Take each company's latest full fiscal year, as reported in its 10-K. [[stock:V|Visa]] kept 50.1% of revenue as net profit in the year ended September 30, 2025, and [[stock:MA|Mastercard]] 45.6% in calendar 2025. [[stock:GOOGL|Alphabet]] ran 32.8%, [[stock:MCO|Moody's]] 31.9%, and [[stock:META|Meta]] 30.1%, also for calendar 2025. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. [[stock:AAPL|Apple]], at 26.9% for the year ended September 27, 2025, and [[stock:AMZN|Amazon]], at 10.8% for calendar 2025, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
             "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read full years and the trend, not one quarter. In the quarter ended June 30, 2026, Alphabet reported net income equal to 94% of its revenue, because $99.0 billion of its $138.8 billion in pretax income came from gains on investments it holds; operating income that quarter was $40.8 billion. That is why the figures here use full fiscal years. A margin that has slid for several years usually means something the latest figure hides.",
           ],
         },
@@ -602,7 +602,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "Reading them together",
           paragraphs: [
-            "No single number settles anything, and the interesting cases are the ones where the metrics seem to disagree. Alphabet's free cash flow running at a little more than half its net margin is not a flaw. It is a company in a heavy building phase, and the question is whether that spending pays off later. Berkshire Hathaway shows a low headline return on equity, which mostly reflects an enormous equity base built over decades rather than a weak business. Amazon spent most of its life with little or no free cash flow, by choice.",
+            "No single number settles anything, and the interesting cases are the ones where the metrics seem to disagree. Alphabet's free cash flow running at a little more than half its net margin is not a flaw. It is a company in a heavy building phase, and the question is whether that spending pays off later. [[stock:BRK.B|Berkshire Hathaway]] shows a low headline return on equity, which mostly reflects an enormous equity base built over decades rather than a weak business. Amazon spent most of its life with little or no free cash flow, by choice.",
             "The reason to look at several metrics is that each one checks the others. A fat margin with no cash behind it, a high return on capital sitting on a pile of debt, a number that looks fine this quarter but has fallen for three years: each of those only shows up when you line the figures up together. Where the site marks data as incomplete or leaves a field blank, that is part of the read too. Treat a gap as a question, not a pass.",
           ],
         },
@@ -614,6 +614,16 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
             "Margin and free-cash-flow figures above are from each company's most recent full fiscal year, as reported in its 10-K and shown on Compounder: Visa, fiscal year ended 2025-09-30; Apple, fiscal year ended 2025-09-27; Alphabet, Meta, Mastercard, Moody's, and Amazon, fiscal year ended 2025-12-31. The single Alphabet quarter cited is from its 10-Q for the period ended 2026-06-30. Figures checked on 2026-10-19. Source: SEC filings via SEC EDGAR.",
           ],
         },
+      ],
+      related: [
+        { kind: "stock", id: "V", label: "Visa" },
+        { kind: "stock", id: "MA", label: "Mastercard" },
+        { kind: "stock", id: "GOOGL", label: "Alphabet" },
+        { kind: "stock", id: "MCO", label: "Moody's" },
+        { kind: "stock", id: "META", label: "Meta" },
+        { kind: "stock", id: "AAPL", label: "Apple" },
+        { kind: "stock", id: "AMZN", label: "Amazon" },
+        { kind: "stock", id: "BRK.B", label: "Berkshire Hathaway" },
       ],
     },
     zh: {
@@ -636,7 +646,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "利润率:对定价权的第一眼",
           paragraphs: [
             "净利率,是每一块钱营收里最终活到利润那一步的比例。它是对定价权最快的一眼。一门生意若能收得远高于服务一个客户的成本,还能一直收下去,就会有又高又稳的利润率;靠打价格战的,做不到。",
-            "超级投资者扎堆的生意,往往落在高端。按各家最近一个完整财年的 10-K:Visa 截至 2025 年 9 月 30 日的财年净利率 50.1%,Mastercard 2025 自然年 45.6%;Alphabet 32.8%、Moody's 31.9%、Meta 30.1%,同样是 2025 自然年。这些是惊人的数字,也并非偶然:一家支付网络或评级特许经营,只是从一笔它不必出资的庞大流水里抽一小道。Apple 截至 2025 年 9 月 27 日的财年是 26.9%,Amazon 2025 自然年 10.8%,要低一些,这是卖实物、跑仓库而非守收费站的本性。",
+            "超级投资者扎堆的生意,往往落在高端。按各家最近一个完整财年的 10-K:[[stock:V|Visa]] 截至 2025 年 9 月 30 日的财年净利率 50.1%,[[stock:MA|Mastercard]] 2025 自然年 45.6%;[[stock:GOOGL|Alphabet]] 32.8%、[[stock:MCO|Moody's]] 31.9%、[[stock:META|Meta]] 30.1%,同样是 2025 自然年。这些是惊人的数字,也并非偶然:一家支付网络或评级特许经营,只是从一笔它不必出资的庞大流水里抽一小道。[[stock:AAPL|Apple]] 截至 2025 年 9 月 27 日的财年是 26.9%,[[stock:AMZN|Amazon]] 2025 自然年 10.8%,要低一些,这是卖实物、跑仓库而非守收费站的本性。",
             "两点提醒。利润率要在同行业内比,别跨行业比,因为超市和软件公司活在两个世界。还要按整年读、看趋势,别盯着某一个季度。截至 2026 年 6 月 30 日那一季,Alphabet 报出的净利润相当于营收的 94%,因为它 1388 亿美元的税前利润里,有 990 亿来自所持投资的公允价值收益;那一季的经营利润是 408 亿。这也是本文统一用完整财年数字的原因。一个连跌几年的利润率,通常藏着最新数字看不出的东西。",
           ],
         },
@@ -658,8 +668,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "把它们放在一起读",
           paragraphs: [
-            "没有哪个数字能单独说了算,而真正有意思的,是那些指标看上去彼此矛盾的情形。Alphabet 的自由现金流只有净利率的一半出头,这不是缺陷。它是一家正处在重投入期的公司,问题在于那些花费日后是否值回。Berkshire Hathaway 的账面 ROE 很低,这多半反映的是几十年攒下的庞大权益基数,并不说明它是一门弱生意。Amazon 大半生都靠主动选择,过着几乎没有自由现金流的日子。",
-            "看好几个指标的意义,在于每一个都在校验其他几个。一个有利润却没有现金垫底的高margin、一个坐在一堆债务上的高资本回报、一个这季看着还行却已连跌三年的数字:这些都只有在你把数字排在一起时才会现形。站上把数据标为不完整、或某个字段留空的地方,也是这套读法的一部分。把缺口当成一个问题,而不是一次放行。",
+            "没有哪个数字能单独说了算,而真正有意思的,是那些指标看上去彼此矛盾的情形。Alphabet 的自由现金流只有净利率的一半出头,这不是缺陷。它是一家正处在重投入期的公司,问题在于那些花费日后是否值回。[[stock:BRK.B|Berkshire Hathaway]] 的账面 ROE 很低,这多半反映的是几十年攒下的庞大权益基数,并不说明它是一门弱生意。Amazon 大半生都靠主动选择,过着几乎没有自由现金流的日子。",
+            "看好几个指标的意义,在于每一个都在校验其他几个。一个有利润却没有现金垫底的高利润率、一个坐在一堆债务上的高资本回报、一个这季看着还行却已连跌三年的数字:这些都只有在你把数字排在一起时才会现形。站上把数据标为不完整、或某个字段留空的地方,也是这套读法的一部分。把缺口当成一个问题,而不是一次放行。",
           ],
         },
         {
@@ -670,6 +680,16 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
             "上文的利润率和自由现金流数字,取自各公司最近一个完整财年的 10-K(即 Compounder 上展示的年度数据):Visa 财年截至 2025-09-30;Apple 财年截至 2025-09-27;Alphabet、Meta、Mastercard、Moody's、Amazon 财年截至 2025-12-31。文中单独引用的 Alphabet 那一季,出自其截至 2026-06-30 的 10-Q。数字核对于 2026-10-19。来源:SEC EDGAR 申报。",
           ],
         },
+      ],
+      related: [
+        { kind: "stock", id: "V", label: "Visa" },
+        { kind: "stock", id: "MA", label: "Mastercard" },
+        { kind: "stock", id: "GOOGL", label: "Alphabet" },
+        { kind: "stock", id: "MCO", label: "Moody's" },
+        { kind: "stock", id: "META", label: "Meta" },
+        { kind: "stock", id: "AAPL", label: "Apple" },
+        { kind: "stock", id: "AMZN", label: "Amazon" },
+        { kind: "stock", id: "BRK.B", label: "Berkshire Hathaway" },
       ],
     },
   },

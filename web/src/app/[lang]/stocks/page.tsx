@@ -11,6 +11,7 @@ import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { cleanIssuer } from "@/lib/format";
 import { LinkDirectory } from "@/components/list/LinkDirectory";
+import { ListFallback } from "@/components/list/ListFallback";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
@@ -120,13 +121,7 @@ export default async function StocksIndexPage({
         />
       </div>
 
-      <Suspense
-        fallback={
-          <p className="font-data text-xs text-[var(--tt-faint)]">
-            …
-          </p>
-        }
-      >
+      <Suspense fallback={<ListFallback />}>
         <StocksTable lang={lang} rows={tableRows} />
       </Suspense>
       {/* 全量目录:与 sitemap 同一谓词(isLikelyTicker + 去重),保证 sitemap 里每个个股 URL
