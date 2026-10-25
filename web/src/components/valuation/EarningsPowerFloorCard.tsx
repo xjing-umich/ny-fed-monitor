@@ -779,6 +779,8 @@ export const EarningsPowerFloorCard: FC<{
   showStatus?: boolean;
   /** TTM 基点生效时的 TTM 期末(ISO date);传入则 years_used 头部显示 "TTM {期末}" 而非假 FY 标签。 */
   ttmPeriodEnd?: string;
+  /** 个股页结论带只要摘要(标尺 + 结论句),估值区块只要明细(方法与数字);默认两半都渲染。 */
+  part?: "all" | "summary" | "details";
 }> = ({
   floor,
   strikeZone,
@@ -790,19 +792,22 @@ export const EarningsPowerFloorCard: FC<{
   lang,
   showStatus = true,
   ttmPeriodEnd,
+  part = "all",
 }) => {
   if (!floor) return null;
   const t = COPY[lang];
   if (floor.kind === "per_share_unavailable") {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-[var(--tt-muted)]">{floor.reason}</p>
-        <details className="text-xs text-[var(--tt-muted)]">
-          <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">
-            {t.methodSummary}
-          </summary>
-          <p className="mt-2">{t.methodDisclaimer}</p>
-        </details>
+        {part !== "details" && <p className="text-sm text-[var(--tt-muted)]">{floor.reason}</p>}
+        {part !== "summary" && (
+          <details className="text-xs text-[var(--tt-muted)]">
+            <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">
+              {t.methodSummary}
+            </summary>
+            <p className="mt-2">{t.methodDisclaimer}</p>
+          </details>
+        )}
       </div>
     );
   }
@@ -815,16 +820,19 @@ export const EarningsPowerFloorCard: FC<{
 
   return (
     <div className="space-y-3">
-      {showSpine ? (
-        <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} />
-      ) : showCompactFloor ? (
-        <CompactFloor
-          suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
-          lang={lang}
-        />
-      ) : null}
+      {part !== "details" &&
+        (showSpine ? (
+          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} />
+        ) : showCompactFloor ? (
+          <CompactFloor
+            suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
+            lang={lang}
+          />
+        ) : null)}
 
-      <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
+      {part !== "summary" && (
+        <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
+      )}
     </div>
   );
 };
