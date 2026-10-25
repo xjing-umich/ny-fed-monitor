@@ -257,7 +257,11 @@ export function runChecks(dir: string, managersConfigPath: string, meta: Snapsho
   const issKeys = ["revenue<0", "营业利润>营收", "权益>总资产", "资产≠负债+权益(>15%)", "EPS×股数≠净利(>35%)", "股数跳变 ×2.5 无拆股", "股数跳变(有拆股记录)", "同财年重复 FY 行", "同 period_end+form 两行(财年标签漂移)"];
   issKeys.forEach((k, i) => {
     const v = iss.get(k) ?? [];
-    watch(`F2${String.fromCharCode(97 + i)}`, C, `完整性:${k}`, v, `涉及 ${new Set(v.map((x) => (x as unknown[])[0])).size} 家`);
+    const id = `F2${String.fromCharCode(97 + i)}`;
+    const who = `涉及 ${new Set(v.map((x) => (x as unknown[])[0])).size} 家`;
+    // 有拆股记录的跳变是已被解释的,只计数不判对错;新记入拆股会让它变多、F2f 变少
+    if (k === "股数跳变(有拆股记录)") add({ id, area: C, title: `完整性:${k}`, status: "info", value: v.length, detail: who, examples: v.slice(0, 8) });
+    else watch(id, C, `完整性:${k}`, v, who);
   });
 
   const mis: unknown[] = [];

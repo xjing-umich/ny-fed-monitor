@@ -6,7 +6,7 @@ const ICON: Record<Status, string> = { ok: "✅", warn: "⚠️", watch: "👀",
 
 type Delta = { check: Check; prev?: Check; change: string };
 
-/** 观察项数量比上次多 → 升为需关注;硬约束、信息项保持原状态。 */
+/** 观察项比上次增加 ≥ max(1, 上次的 10%) → 升为需关注(小幅波动不报警);硬约束、信息项保持原状态。 */
 export function compare(cur: AuditResult, prev: AuditResult | null): { checks: Check[]; deltas: Delta[] } {
   const prevMap = new Map((prev?.checks ?? []).map((c) => [c.id, c]));
   const deltas: Delta[] = [];
@@ -25,7 +25,8 @@ export function compare(cur: AuditResult, prev: AuditResult | null): { checks: C
     }
     if (p.status !== c.status) change += `,状态 ${LABEL[p.status]} → ${LABEL[c.status]}`;
     const grew = c.status === "watch" && typeof c.value === "number" && typeof p.value === "number" ? c.value - p.value : 0;
-    const out: Check = grew > 0 ? { ...c, status: "warn", detail: [c.detail, `观察项较上次增加 ${grew}`].filter(Boolean).join(";") } : c;
+    const escalate = grew > 0 && grew >= Math.max(1, Math.ceil(Number(p.value) * 0.1));
+    const out: Check = escalate ? { ...c, status: "warn", detail: [c.detail, `观察项较上次增加 ${grew}`].filter(Boolean).join(";") } : c;
     deltas.push({ check: out, prev: p, change });
     return out;
   });
@@ -74,6 +75,6 @@ export function renderSummary(cur: AuditResult, prev: AuditResult | null): strin
       L.push(`| ${ICON[c.status]} ${LABEL[c.status]} | ${c.id} | ${cell(c.title)} | ${cell(c.value)} | ${cell([c.detail, ex(c)].filter(Boolean).join(" "))} |`);
     L.push("");
   }
-  L.push("> 状态说明:OK = 硬约束为 0;需关注 = 硬约束不为 0,或观察项比上次变多;观察 = 已知的长期项,只看趋势;信息 = 只是数字或日期。");
+  L.push("> 状态说明:OK = 硬约束为 0;需关注 = 硬约束不为 0,或观察项比上次增加 ≥10%(至少 1 项);观察 = 已知的长期项,只看趋势;信息 = 只是数字或日期。");
   return L.join("\n") + "\n";
 }
