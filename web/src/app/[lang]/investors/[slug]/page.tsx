@@ -7,7 +7,8 @@ import { holdingKey } from "@/lib/managers/assemble";
 import type { Holding } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
-import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
+import { resolveEntity } from "@/lib/aliases/resolve";
+import { personNameAliases } from "@/lib/aliases/config";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -488,8 +489,8 @@ export default async function InvestorSlugPage({
 
   // Person structured data — identifies the investor as an entity and links the
   // fund they run, so search/AI engines can attribute holdings to a real person.
-  // 别名外露:把人名/接班人/票代/中英/曾用名喂给搜索/AI(spec §5.2)。排除与主名重复者。
-  const aliasNames = (await getEntityAliases("investor", manager.slug)).filter((a) => a !== manager.person);
+  // 别名只放本人的名字变体(中文名等);接班人、票代、基金名、曾用名不进 Person,见 personNameAliases。
+  const aliasNames = personNameAliases(manager.slug, manager.person).filter((a) => a !== manager.person);
   const person = {
     "@context": "https://schema.org",
     "@type": "Person",

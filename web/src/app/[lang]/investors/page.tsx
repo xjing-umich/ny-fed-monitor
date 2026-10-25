@@ -10,6 +10,7 @@ import { InvestorListClient } from "./InvestorListClient";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { LinkDirectory } from "@/components/list/LinkDirectory";
+import { ListFallback } from "@/components/list/ListFallback";
 
 // 页头在服务端渲染(而非放进客户端列表组件):列表组件读 useSearchParams,预渲染时整块
 // 落到 Suspense fallback,页头放在里面 → 服务端 HTML 没有 H1。
@@ -91,13 +92,7 @@ export default async function InvestorsPage({
       <div className="mb-4">
         <PageHeader eyebrow={head.eyebrow} title={head.heading} intro={head.subtitle} />
       </div>
-      <Suspense
-        fallback={
-          <p className="font-data text-xs text-[var(--tt-faint)]">
-            …
-          </p>
-        }
-      >
+      <Suspense fallback={<ListFallback />}>
         <InvestorListClient lang={lang} managers={managers} nowMs={Date.now()} />
       </Suspense>
       <LinkDirectory

@@ -41,3 +41,26 @@ export function investorAliasEntries(): AliasEntry[] {
   }
   return out;
 }
+
+// Person 结构化数据的 alternateName 只放「这个人本人」的名字变体。
+// 上面的解析层故意宽:接班人、合伙人、票代、基金中文名、EDGAR 曾用名都能命中同一投资人页;
+// 但把它们写进 Person.alternateName,等于声明"Greg Abel / BRK.B / NBH INC 是巴菲特的别名",
+// 搜索和 AI 引擎会把不同实体并成一个。
+// 判定:中文锚名 = people[] 里本人那条的 zh,没有则取 INVESTOR_ALIASES 首词(约定为人名)。
+// 中文人名姓在后,所以与锚名互为结尾的词算本人变体(沃伦巴菲特、伯里/迈克尔伯里);
+// 盖茨基金会、米勒价值这类以姓开头的基金名因此自然排除。
+// 以人姓结尾的公司名(加德纳鲁索 = Gardner Russo)规则分不出,列在下面;新增此类别名时补进来。
+const FIRM_NAMES_ENDING_IN_SURNAME = new Set(["加德纳鲁索", "林赛尔特雷恩"]);
+
+export function personNameAliases(slug: string, person: string): string[] {
+  const m = MANAGERS.find((x) => x.slug === slug);
+  const zhTokens = INVESTOR_ALIASES[slug]?.split(/\s+/).filter(Boolean) ?? [];
+  const anchor = m?.people?.find((p) => p.name === person)?.zh ?? zhTokens[0];
+  if (!anchor) return [];
+  const out = new Set([anchor]);
+  for (const t of [...(m?.aliases ?? []), ...zhTokens]) {
+    if (t.length < 2 || FIRM_NAMES_ENDING_IN_SURNAME.has(t)) continue;
+    if (t.endsWith(anchor) || anchor.endsWith(t)) out.add(t);
+  }
+  return [...out];
+}
