@@ -1,7 +1,7 @@
 // 运行: npx tsx src/components/valuation/EarningsPowerFloorCard.check.tsx
 import assert from "node:assert/strict";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EarningsPowerFloorCard } from "./EarningsPowerFloorCard";
+import { EarningsPowerFloorCard, cardSummaryMode } from "./EarningsPowerFloorCard";
 import { runValuation } from "@/lib/valuation/runValuation";
 import type { PerShareUnavailable, ValuationFloorYear } from "@/lib/valuation/types";
 
@@ -85,5 +85,17 @@ for (const lang of ["zh", "en"] as const) {
   ).replace(/<[^>]+>/g, " ");
   assert.ok(!d.includes("中间是主读数") && !d.includes("零增长下行"), "verdict=null 时 details 不补脊柱附注");
   assert.ok(d.includes("方法与数字"), "verdict=null 时 details 仍有方法折叠");
+}
+// cardSummaryMode:页面据此判断摘要是否为空(空 → 结论带补未评估原因,左栏不只剩一个价格)。
+{
+  assert.equal(cardSummaryMode(run.strikeZone, verdict), "spine");
+  assert.equal(cardSummaryMode(run.strikeZone, undefined), "spine", "undefined = 遗留自算,脊柱照常");
+  assert.equal(cardSummaryMode(run.strikeZone, null), "none", "可比但无权威判定 → 摘要为空");
+  assert.equal(cardSummaryMode(undefined, null), "compactFloor", "无价格轴 → 缺价格说明");
+  assert.equal(cardSummaryMode({ ...run.strikeZone!, currencyMismatch: true }, verdict), "compactFloor", "币种不匹配");
+  const empty = renderToStaticMarkup(
+    <EarningsPowerFloorCard floor={run.floor} strikeZone={run.strikeZone} oeDcf={run.oeDcf} lang="zh" verdict={null} part="summary" />,
+  ).replace(/<[^>]+>/g, "").trim();
+  assert.equal(empty, "", "mode=none 时摘要确实什么字都不出");
 }
 console.log("EarningsPowerFloorCard.check OK");

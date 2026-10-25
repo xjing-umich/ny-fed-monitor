@@ -37,7 +37,7 @@ import {
   runValuation,
 } from "@/lib/valuation";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { EarningsPowerFloorCard, ValueBandGauge, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
+import { EarningsPowerFloorCard, ValueBandGauge, cardSummaryMode, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
 import { WeightQoQ, MoveMark } from "@/components/common/qoqDirection";
 import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
@@ -51,7 +51,7 @@ import { valuationVerdictChip, valuationSectionTitle } from "@/lib/stocks/valuat
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
-import { conclusionLeftState, stockAnchors, holdersLine } from "@/lib/stocks/stockConclusion";
+import { conclusionLeftState, stockAnchors, holdersLine, valuationDetailsShown, verdictGaugeReady } from "@/lib/stocks/stockConclusion";
 import { StockConclusionBand } from "@/components/stocks/StockConclusionBand";
 import { StockAnchorNav } from "@/components/stocks/StockAnchorNav";
 import { valuationLabel } from "@/lib/valuation/valuationLabel";
@@ -535,7 +535,8 @@ export default async function StockTickerPage({
     valuationFloor.asset_floor.per_share != null &&
     Number.isFinite(valuationFloor.asset_floor.per_share) &&
     valuationFloor.asset_floor.per_share > 0;
-  const hasValuationDetails = leftState === "card" || leftState === "holdcoSotp" || (leftState === "holdcoNotAssessable" && assetFloorShown);
+  // holdcoNotAssessable 的资产底一行放在结论带(紧跟“下面的资产底只作参考下限”那句),不再单开 #valuation。
+  const hasValuationDetails = valuationDetailsShown(leftState);
   const anchors = stockAnchors({ valuation: hasValuationDetails, quality: !!bq, coOwned: coOwned.length > 0 }, lang);
 
   const subtitle = page.subtitle(n);
@@ -622,44 +623,69 @@ export default async function StockTickerPage({
       <p className="text-sm text-[var(--tt-muted)]">{text}</p>
     </>
   );
+  // 未评估:档名单独一行(短、muted),原因作为下面一句,不用冒号把两句硬接。
   const unassessed = valuationLabel(null, lang);
+  const unassessedLeft = (
+    <>
+      {priceLine}
+      <p className="text-xs font-medium text-[var(--tt-muted)]">{unassessed.label}</p>
+      {unassessed.title && <p className="text-sm text-[var(--tt-muted)]">{unassessed.title}</p>}
+    </>
+  );
+  // 卡摘要为空(价格轴可比、但没有权威判定 → 脊柱与缺价格说明都不出):左栏不能只剩一个价格。
+  const cardSummaryEmpty = valuationFloor?.kind === "floor" && cardSummaryMode(strikeZone, handoffVerdict) === "none";
   const bandLeft =
     leftState === "card" ? (
-      <>
-        {/* 卡的价值脊柱自带现价/日期/来源;脊柱不出现(无权威判定)时补一行现价,别让现价从页面消失。 */}
-        {!handoffVerdict && priceLine}
-        <EarningsPowerFloorCard
-          floor={valuationFloor}
-          strikeZone={strikeZone}
-          oeDcf={oeDcf}
-          reconciliation={reconciliation}
-          issuer={issuer}
-          ticker={ticker}
-          lang={lang}
-          showStatus={false}
-          verdict={run.verdict}
-          ttmPeriodEnd={floorInput.ttm?.period_end}
-          part="summary"
-        />
-      </>
+      cardSummaryEmpty ? (
+        unassessedLeft
+      ) : (
+        <>
+          {/* 卡的价值脊柱自带现价/日期/来源;脊柱不出现(无权威判定)时补一行现价,别让现价从页面消失。 */}
+          {!handoffVerdict && priceLine}
+          <EarningsPowerFloorCard
+            floor={valuationFloor}
+            strikeZone={strikeZone}
+            oeDcf={oeDcf}
+            reconciliation={reconciliation}
+            issuer={issuer}
+            ticker={ticker}
+            lang={lang}
+            showStatus={false}
+            verdict={run.verdict}
+            ttmPeriodEnd={floorInput.ttm?.period_end}
+            part="summary"
+          />
+        </>
+      )
     ) : leftState === "holdcoSotp" && holdcoSotp ? (
-      <>
-        <div className="flex items-baseline gap-2">
-          <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{fmtPerShare(holdcoSotp.per_share.base)}</span>
-          <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
-        </div>
-        {handoffVerdict && Number.isFinite(handoffVerdict.rangeLo) && Number.isFinite(handoffVerdict.rangeHi) && Number.isFinite(handoffVerdict.price) ? (
+      // 每股中枢与刻度盘同进同出(与改版前一致):没有权威判定就不在首屏亮一个大数,改说未评估。
+      // 三栏 SOTP 推导表仍在 #valuation。
+      verdictGaugeReady(handoffVerdict) ? (
+        <>
+          <div className="flex items-baseline gap-2">
+            <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{fmtPerShare(holdcoSotp.per_share.base)}</span>
+            <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
+          </div>
           <ValueBandGauge bucket={handoffVerdict.bucket} rangeLo={handoffVerdict.rangeLo} rangeHi={handoffVerdict.rangeHi} price={handoffVerdict.price} lang={lang} />
-        ) : (
-          // 刻度盘不画(无权威判定)时,现价没有别处可看,补回原 keyFacts 的现价行。
-          priceLine
+        </>
+      ) : (
+        unassessedLeft
+      )
+    ) : leftState === "splitPaused" ? messageLeft(page.valuation.splitPaused)
+    : leftState === "holdcoNotAssessable" ? (
+      <>
+        {messageLeft(page.valuation.holdcoNotAssessable)}
+        {/* 文案说“下面的资产底只作参考下限”——资产底就紧跟在这句下面。 */}
+        {assetFloorShown && valuationFloor?.kind === "floor" && (
+          <p className="text-sm text-[var(--tt-muted)]">
+            {page.valuation.assetFloorLabel}: {fmtPerShare(valuationFloor.asset_floor.per_share)}
+          </p>
         )}
       </>
-    ) : leftState === "splitPaused" ? messageLeft(page.valuation.splitPaused)
-    : leftState === "holdcoNotAssessable" ? messageLeft(page.valuation.holdcoNotAssessable)
+    )
     : leftState === "moatDistorted" ? messageLeft(page.valuation.moatDistorted)
     : leftState === "fundamentalsSuspect" ? messageLeft(page.valuation.fundamentalsSuspect)
-    : messageLeft(`${unassessed.label}${lang === "zh" ? "：" : ": "}${unassessed.title ?? ""}`);
+    : unassessedLeft;
 
   return (
     <>
@@ -827,11 +853,6 @@ export default async function StockTickerPage({
                     <p className="mt-3 text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpNote}</p>
                   </div>
                 ) : null
-              ) : valuationFloor?.kind === "floor" && assetFloorShown ? (
-                // holdcoNotAssessable 且有资产底:原资产底那一行
-                <p className="mt-3 text-sm text-[var(--tt-muted)]">
-                  {page.valuation.assetFloorLabel}: {fmtPerShare(valuationFloor.asset_floor.per_share)}
-                </p>
               ) : null}
             </section>
           )}

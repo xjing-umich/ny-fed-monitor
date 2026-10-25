@@ -23,6 +23,18 @@ export function conclusionLeftState(input: {
   return "card";
 }
 
+/** #valuation(及其锚点)是否出现:只有估值卡明细与控股集团 SOTP 表要放。其余状态的话已在结论带里说完。 */
+export function valuationDetailsShown(state: ConclusionLeftState): boolean {
+  return state === "card" || state === "holdcoSotp";
+}
+
+/** 刻度盘(及 SOTP 每股中枢)只在权威判定存在、区间与现价都有限时画。 */
+export function verdictGaugeReady<V extends { rangeLo: number; rangeHi: number; price: number }>(
+  v: V | null | undefined,
+): v is V {
+  return !!v && Number.isFinite(v.rangeLo) && Number.isFinite(v.rangeHi) && Number.isFinite(v.price);
+}
+
 export type StockAnchor = { id: "holders" | "valuation" | "quality" | "co-owned" | "sources"; label: string };
 
 const ANCHOR_LABEL: Record<Lang, Record<StockAnchor["id"], string>> = {

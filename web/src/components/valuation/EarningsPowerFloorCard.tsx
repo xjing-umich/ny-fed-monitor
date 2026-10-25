@@ -797,6 +797,18 @@ function MethodDetails({
   );
 }
 
+/** 估值卡摘要(kind="floor")渲染哪一种:价值脊柱 / 缺价格说明 / 什么都不出。
+ *  可比价格轴 = 有 epv 且币种匹配;权威 verdict=null 只抑制脊柱,不误报「缺价格」。
+ *  页面据 "none" 在结论带补未评估原因。 */
+export function cardSummaryMode(
+  strikeZone: StrikeZoneAssessment | undefined,
+  verdict: ValuationVerdict | null | undefined,
+): "spine" | "compactFloor" | "none" {
+  const canCompare = !!strikeZone?.epv && !strikeZone.currencyMismatch;
+  if (!canCompare) return "compactFloor";
+  return verdict === null ? "none" : "spine";
+}
+
 export const EarningsPowerFloorCard: FC<{
   floor: ValuationFloor | PerShareUnavailable | undefined;
   strikeZone?: StrikeZoneAssessment;
@@ -847,9 +859,9 @@ export const EarningsPowerFloorCard: FC<{
 
   // 可比价格轴：有 epv 且币种匹配。权威 verdict=null 只抑制脊柱，不误报「缺价格」
   // （旧行为：ValueSpine 内 return null，MethodDetails 仍在）。
-  const canCompare = !!strikeZone?.epv && !strikeZone.currencyMismatch;
-  const showSpine = canCompare && verdict !== null;
-  const showCompactFloor = !canCompare;
+  const mode = cardSummaryMode(strikeZone, verdict);
+  const showSpine = mode === "spine";
+  const showCompactFloor = mode === "compactFloor";
 
   return (
     <div className="space-y-3">
