@@ -27,7 +27,8 @@
 - 中英文对等，各自核对 `docs/copy-voice.md`；合规只说位置和计数。
 - 每个事实一页只可见一次：持有人数、本季动作、标尺从原位置**移到**结论带，不复制。
 - 颜色：`--val-below`（击球区 / 低于内在价值）、`--val-within`（价值带内）、`--val-above`（高于价值带）只给估值；13F 动作用 ● 新建 ▲ 增持 ▼ 减持 ○ 清仓，正文色。
-- 顶栏高度：手机 56px（`h-14`），≥lg 60px；锚点导航 `top` 与之对齐，区块 `scroll-margin-top` 用 `scroll-mt-32`（128px）。
+- 顶栏高度：<1024px 为 56px（`h-14`），≥1024px（lg）为 60px。锚点导航只在 ≥768px（md）吸顶，`md:sticky md:top-14 lg:top-[60px]`；<768px 不吸顶。区块 `scroll-margin-top` 用 `scroll-mt-32`（128px）。
+- 结论带不写“最大持有人”一句（持有人表第一行和文字摘要已有）。
 
 ## 关于 spec 的一处细化
 
@@ -167,7 +168,6 @@ export function conclusionLeftState(input: {
 export type StockAnchor = { id: "holders" | "valuation" | "quality" | "co-owned" | "sources"; label: string };
 export function stockAnchors(has: { valuation: boolean; quality: boolean; coOwned: boolean }, lang: Lang): StockAnchor[];
 export function holdersLine(n: number, total: string, lang: Lang): string;
-export function largestHolderText(person: string, weight: number | undefined, lang: Lang): string | null;
 export const BAND_COPY: Record<Lang, { left: string; right: string; anchorsAria: string }>;
 ```
 
@@ -176,7 +176,7 @@ export const BAND_COPY: Record<Lang, { left: string; right: string; anchorsAria:
 ```ts
 // 运行: npx tsx src/lib/stocks/stockConclusion.check.ts
 import assert from "node:assert/strict";
-import { conclusionLeftState, stockAnchors, holdersLine, largestHolderText } from "./stockConclusion";
+import { conclusionLeftState, stockAnchors, holdersLine } from "./stockConclusion";
 
 const base = { hasFloor: true, splitCoverageStale: false, holdcoNotAssessable: false, hasHoldcoSotp: false, capitalStructureDistorted: false, fundamentalsCorrupt: false };
 assert.equal(conclusionLeftState(base), "card");
@@ -204,9 +204,6 @@ assert.equal(holdersLine(27, "$76.77B", "zh"), "27 位持有 · 合计 $76.77B")
 assert.equal(holdersLine(1, "$5.0M", "en"), "1 holder · $5.0M combined");
 assert.equal(holdersLine(27, "$76.77B", "en"), "27 holders · $76.77B combined");
 
-assert.equal(largestHolderText("Warren Buffett", 0.2204, "zh"), "最大持有人 Warren Buffett，占其组合 22.0%");
-assert.equal(largestHolderText("Warren Buffett", 0.2204, "en"), "Largest holder: Warren Buffett, 22.0% of its portfolio");
-assert.equal(largestHolderText("X", undefined, "zh"), null, "无权重 → 不写");
 console.log("stockConclusion.check OK");
 ```
 
@@ -264,12 +261,6 @@ export function holdersLine(n: number, total: string, lang: Lang): string {
   return lang === "zh" ? `${n} 位持有 · 合计 ${total}` : `${n} holder${n === 1 ? "" : "s"} · ${total} combined`;
 }
 
-export function largestHolderText(person: string, weight: number | undefined, lang: Lang): string | null {
-  if (weight == null || !Number.isFinite(weight)) return null;
-  const pct = `${(weight * 100).toFixed(1)}%`;
-  return lang === "zh" ? `最大持有人 ${person}，占其组合 ${pct}` : `Largest holder: ${person}, ${pct} of its portfolio`;
-}
-
 export const BAND_COPY: Record<Lang, { left: string; right: string; anchorsAria: string }> = {
   zh: { left: "价格相对价值带", right: "谁在持有", anchorsAria: "本页目录" },
   en: { left: "Price vs. value band", right: "Who holds it", anchorsAria: "On this page" },
@@ -312,7 +303,6 @@ export function StockConclusionBand(props: {
     moves: MovesCount;
     exited: { name: string; href: string }[];
     trend: number[];
-    largest: string | null;     // largestHolderText(...)
   };
 }): React.ReactElement;
 export function StockAnchorNav(props: { lang: Lang; anchors: StockAnchor[] }): React.ReactElement;
@@ -339,25 +329,24 @@ const html = renderToStaticMarkup(
       moves: { opened: 0, added: 4, trimmed: 12, exited: 1 },
       exited: [{ name: "Andreas Halvorsen", href: "/zh/investors/viking" }],
       trend: [26, 27, 27],
-      largest: "最大持有人 Warren Buffett，占其组合 22.0%",
     }}
   />,
 );
 const plain = html.replace(/<[^>]+>/g, " ");
-for (const s of ["价格相对价值带", "谁在持有", "LEFT-SLOT", "安全边际 77%", "27 位持有 · 合计 $76.77B", "Andreas Halvorsen", "最大持有人 Warren Buffett"]) {
+for (const s of ["价格相对价值带", "谁在持有", "LEFT-SLOT", "安全边际 77%", "27 位持有 · 合计 $76.77B", "Andreas Halvorsen"]) {
   assert.ok(plain.includes(s), `结论带含 ${s}`);
 }
 const noMargin = renderToStaticMarkup(
   <StockConclusionBand lang="en" left={null} marginText={null}
-    holders={{ line: "1 holder · $5.0M combined", quarter: "Q2 2026", moves: { opened: 1, added: 0, trimmed: 0, exited: 0 }, exited: [], trend: [1], largest: null }} />,
+    holders={{ line: "1 holder · $5.0M combined", quarter: "Q2 2026", moves: { opened: 1, added: 0, trimmed: 0, exited: 0 }, exited: [], trend: [1] }} />,
 ).replace(/<[^>]+>/g, " ");
 assert.ok(!noMargin.includes("Margin"), "无安全边际时不渲染");
-assert.ok(!noMargin.includes("Largest holder"), "无最大持有人时不渲染");
 
 const nav = renderToStaticMarkup(<StockAnchorNav lang="zh" anchors={stockAnchors({ valuation: true, quality: false, coOwned: false }, "zh")} />);
 assert.ok(nav.includes('href="#holders"') && nav.includes('href="#valuation"') && nav.includes('href="#sources"'), "锚点链接");
 assert.ok(!nav.includes('href="#quality"'), "没有的区块不出现");
-assert.ok(nav.includes("sticky") && nav.includes("top-14") && nav.includes("lg:top-[60px]"), "吸顶并避开顶栏");
+assert.ok(nav.includes("md:sticky") && nav.includes("md:top-14") && nav.includes("lg:top-[60px]"), "≥768px 吸顶并避开顶栏");
+assert.ok(!/class="[^"]*(?<![:\w-])sticky/.test(nav), "<768px 不吸顶(没有无前缀的 sticky)");
 console.log("StockConclusionBand.check OK");
 ```
 
@@ -394,7 +383,6 @@ export function StockConclusionBand({
     moves: MovesCount;
     exited: { name: string; href: string }[];
     trend: number[];
-    largest: string | null;
   };
 }): React.ReactElement {
   const c = BAND_COPY[lang];
@@ -413,7 +401,6 @@ export function StockConclusionBand({
         <p className="font-display text-xl font-medium text-[var(--tt-text)]">{holders.line}</p>
         <QuarterMovesLine q={holders.quarter} moves={holders.moves} exited={holders.exited} unit="investor" lang={lang} />
         {holders.trend.length >= 2 && <HolderTrend series={holders.trend} lang={lang} variant="inline" />}
-        {holders.largest && <p className="text-xs text-[var(--tt-muted)]">{holders.largest}</p>}
       </div>
     </section>
   );
@@ -426,12 +413,12 @@ export function StockConclusionBand({
 import type { Lang } from "@/lib/nav";
 import { BAND_COPY, type StockAnchor } from "@/lib/stocks/stockConclusion";
 
-// 页内锚点:纯 CSS sticky,避开顶栏(手机 56px / ≥lg 60px);零 JS,不做当前区块高亮。
+// 页内锚点:≥768px 纯 CSS sticky,避开顶栏(768–1023px 56px / ≥1024px 60px);手机不吸顶,免得两条常驻栏挤占阅读空间。零 JS,不做当前区块高亮。
 export function StockAnchorNav({ lang, anchors }: { lang: Lang; anchors: StockAnchor[] }) {
   return (
     <nav
       aria-label={BAND_COPY[lang].anchorsAria}
-      className="sticky top-14 lg:top-[60px] z-20 border-b border-[var(--tt-border)] bg-[var(--tt-bg)]"
+      className="md:sticky md:top-14 lg:top-[60px] z-20 border-b border-[var(--tt-border)] bg-[var(--tt-bg)]"
     >
       <ul className="flex list-none gap-1 overflow-x-auto p-0">
         {anchors.map((a) => (
@@ -471,7 +458,7 @@ git commit -m "feat(stocks): 结论带与吸顶页内锚点组件"
 - Modify: `src/components/entity/EntityPage.tsx`（给来源区包一层 `id="sources"`）
 
 **Interfaces:**
-- Consumes: `part`（Task 1）；`conclusionLeftState`、`stockAnchors`、`holdersLine`、`largestHolderText`（Task 2）；`StockConclusionBand`、`StockAnchorNav`（Task 3）。
+- Consumes: `part`（Task 1）；`conclusionLeftState`、`stockAnchors`、`holdersLine`（Task 2）；`StockConclusionBand`、`StockAnchorNav`（Task 3）。
 
 - [ ] **Step 1: `EntityPage` 来源区加锚点**
 
@@ -586,7 +573,6 @@ git commit -m "feat(stocks): 结论带与吸顶页内锚点组件"
               moves,
               exited: exitedHolders.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) })),
               trend: trendSeries,
-              largest: topHolder ? largestHolderText(topHolder.person, topHolder.weight, lang) : null,
             }}
           />
           <StockAnchorNav lang={lang} anchors={anchors} />
@@ -646,7 +632,7 @@ git commit -m "feat(stocks): 结论带与吸顶页内锚点组件"
 - 原估值区块里 `splitPaused / moatDistorted / fundamentalsSuspect / holdcoNotAssessable` 的提示句已经进了结论带，估值区块不再重复。
 - 现在估值区块外层条件 `{valuationFloor && (` 被 `hasValuationDetails` 取代。
 
-导入：`StockConclusionBand`、`StockAnchorNav`、`conclusionLeftState`、`stockAnchors`、`holdersLine`、`largestHolderText`、`valuationLabel`。
+导入：`StockConclusionBand`、`StockAnchorNav`、`conclusionLeftState`、`stockAnchors`、`holdersLine`、`valuationLabel`。
 
 - [ ] **Step 6: 检查与 lint**
 
@@ -678,7 +664,7 @@ Expected: 只列出 3 个已知失败。
   - 首屏结论带两栏（窄屏堆叠），左栏有标尺和结论句、右栏有持有人和本季动作；
   - 持有人表上方不再出现持有人数、本季动作、趋势（已移到结论带），申报季说明仍在表上方；
   - 估值区块只有方法与数字、价格在押注什么，没有第二个标尺；BRK.B 只有 SOTP 细表；
-  - 点击每个锚点，目标区块标题不被顶栏或锚点导航挡住；
+  - 点击每个锚点，目标区块标题不被顶栏或锚点导航挡住；1440px 下锚点导航吸顶，375px 下锚点只是一行普通链接、不吸顶；
   - 375px 下 `document.documentElement.scrollWidth === clientWidth`。
 
 ---
@@ -889,7 +875,9 @@ git add src/lib/entity src/components/common "src/app/[lang]/investors/[slug]/pa
 git commit -m "feat(moves): 13F 动作改用 ●▲▼○ 字形、正文色;投资人页四格去色并统一为增持/减持"
 ```
 
-### Task 9：投资人页本季动作列出新建与清仓的名字
+### Task 9：投资人页本季动作列出新建与清仓的名字（最后做，时间紧可砍）
+
+> 这一项与主线关系最弱（spec §三.5）。PR 2 的其他任务不依赖它；若 11/10 前时间不够，跳过本任务直接做 Task 10，并在 PR 描述里注明。
 
 **Files:**
 - Create: `src/lib/managers/movesNames.ts`、`src/lib/managers/movesNames.check.ts`
