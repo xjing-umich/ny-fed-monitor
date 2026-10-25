@@ -34,7 +34,8 @@
     "sec:ingest:holdings": "tsx scripts/sec-ingest-holdings.ts",
     "valuation:ingest": "tsx --tsconfig scripts/tsconfig.json scripts/valuation-ingest.ts",
     "expansion:accept": "tsx scripts/expansion-acceptance.ts",
-    "sec:runs:prune": "tsx scripts/sec-runs-prune.ts"
+    "sec:runs:prune": "tsx scripts/sec-runs-prune.ts",
+    "audit:data": "tsx --tsconfig scripts/tsconfig.json scripts/audit/run.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
