@@ -25,9 +25,10 @@ export function StockConclusionBand({
 }): React.ReactElement {
   const c = BAND_COPY[lang];
   return (
+    // 只画上边线:下边由紧随其后的锚点栏 border-b 收口,避免两条 hairline 叠成双线。
     <section
       aria-label={`${c.left} · ${c.right}`}
-      className="grid gap-6 border-y border-[var(--tt-border)] py-5 md:grid-cols-[3fr_2fr] md:gap-8"
+      className="grid gap-6 border-t border-[var(--tt-border)] pt-5 md:grid-cols-[3fr_2fr] md:gap-8"
     >
       <div className="min-w-0 space-y-3">
         <p className="text-xs text-[var(--tt-muted)]">{c.left}</p>

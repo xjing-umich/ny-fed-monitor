@@ -40,9 +40,6 @@ import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard, ValueBandGauge, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
 import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
 import { WeightQoQ, MoveMark } from "@/components/common/qoqDirection";
-import { QuarterMovesLine } from "@/components/entity/QuarterMovesLine";
-import type { MovesCount } from "@/lib/entity/quarterMovesText";
-import { HolderTrend } from "@/components/entity/HolderTrend";
 import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
 import { filingSeasonNote, hasNewQuarterRows } from "@/lib/stocks/filingSeasonNote";
 import { FoldedSection } from "@/components/entity/FoldedSection";
@@ -53,7 +50,11 @@ import { isLikelyTicker, knownExchange } from "@/lib/externalLinks";
 import { valuationVerdictChip, valuationSectionTitle } from "@/lib/stocks/valuationVerdictChip";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
-import { stockGlossary, stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
+import { stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
+import { conclusionLeftState, stockAnchors, holdersLine } from "@/lib/stocks/stockConclusion";
+import { StockConclusionBand } from "@/components/stocks/StockConclusionBand";
+import { StockAnchorNav } from "@/components/stocks/StockAnchorNav";
+import { valuationLabel } from "@/lib/valuation/valuationLabel";
 import { Sparkline } from "@/components/common/Sparkline";
 import { SectionHeading } from "@/components/common/SectionHeading";
 
@@ -158,7 +159,6 @@ const TABLE_COPY = {
       weight: "权重（上季→本季）",
     },
     showAll: (n: number) => `展开全部 ${n} 位持有人`,
-    meta: (n: number, total: string) => `${n} 位持有 · 合计 ${total}`,
   },
   en: {
     title: "Superinvestors Holding This Security",
@@ -169,7 +169,6 @@ const TABLE_COPY = {
       weight: "Weight (prev→now)",
     },
     showAll: (n: number) => `Show all ${n} holders`,
-    meta: (n: number, total: string) => `${n} holder${n === 1 ? "" : "s"} · ${total} combined`,
   },
 } as const;
 
@@ -177,23 +176,12 @@ const HOLDERS_VISIBLE = 10;
 
 function HoldersTable({
   holders,
-  exited,
-  totalValue,
-  moves,
-  quarter,
   lang,
-  trend,
   asOfPeriod,
   seasonNote,
 }: {
   holders: HolderRow[];
-  exited: ExitedHolder[];
-  totalValue: number;
-  moves: MovesCount;
-  /** 展示季度标签(如 "Q2 2026"),由页面传 quarterLabel(displayPeriod)。 */
-  quarter: string;
   lang: Lang;
-  trend: number[];
   /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
   asOfPeriod: string;
   /** 申报季说明(新季未切换时的“Qn 申报中 n/M”);参数 = 表里是否有新季行。 */
@@ -232,38 +220,26 @@ function HoldersTable({
   ];
 
   return (
-    <section>
+    <section id="holders" className="scroll-mt-32">
       {/* 支柱②标题:绿眉标 → display 标题(语义 h2, 文档大纲/SEO) */}
       <SectionHeading
         eyebrow={page.holders.eyebrow}
         title={t.title}
       />
-      <div className="mb-3 mt-3 space-y-1">
-        <p className="font-data text-xs text-[var(--tt-muted)]">{t.meta(sorted.length, formatUSD(totalValue))}</p>
-        <QuarterMovesLine
-          q={quarter}
-          moves={moves}
-          exited={exited.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) }))}
-          unit="investor"
-          lang={lang}
+      {/* 持有人数/合计/本季动向/趋势已上移到首屏结论带;此处只留申报季说明。 */}
+      {(() => {
+        const note = seasonNote(hasNewQuarterRows(sorted.map((r) => r.period), refPeriod ?? ""));
+        return note ? <p className="mt-3 text-xs text-[var(--tt-muted)]">{note}</p> : null;
+      })()}
+      <div className="mt-3">
+        <DataTable
+          columns={columns}
+          rows={head}
+          getKey={(r) => r.slug}
+          rowHref={(r) => investorPath(lang, r.slug)}
+          breakpoint="lg"
         />
-        {(() => {
-          const note = seasonNote(hasNewQuarterRows(sorted.map((r) => r.period), refPeriod ?? ""));
-          return note ? <p className="text-xs text-[var(--tt-muted)]">{note}</p> : null;
-        })()}
       </div>
-      {trend.length >= 2 && (
-        <div className="mb-3">
-          <HolderTrend series={trend} lang={lang} variant="inline" />
-        </div>
-      )}
-      <DataTable
-        columns={columns}
-        rows={head}
-        getKey={(r) => r.slug}
-        rowHref={(r) => investorPath(lang, r.slug)}
-        breakpoint="lg"
-      />
 
       {/* 溢出行:全部留 DOM,默认折叠(原生 <details>,零 JS) */}
       {tail.length > 0 && (
@@ -540,9 +516,27 @@ export default async function StockTickerPage({
   // 估值区块 display 标题直接承载结论 —— 档名取 valuationLabel,与标题徽章同一说法;红旗便宜档带“待确认”。
   // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
   const page = stockPageCopy(lang);
-  const g = stockGlossary(lang);
   const ui = stockUi(lang);
   const valuationTitle = valuationSectionTitle(handoffVerdict, lang);
+
+  // 结论带(spec 2026-10-25 §三.1):左栏状态与原估值区块同一优先级。
+  const leftState = conclusionLeftState({
+    hasFloor: !!valuationFloor,
+    splitCoverageStale,
+    holdcoNotAssessable,
+    hasHoldcoSotp: !!holdcoSotp,
+    capitalStructureDistorted,
+    fundamentalsCorrupt,
+  });
+  const assetFloorShown =
+    holdcoNotAssessable &&
+    valuationFloor?.kind === "floor" &&
+    valuationFloor.asset_floor.assessable &&
+    valuationFloor.asset_floor.per_share != null &&
+    Number.isFinite(valuationFloor.asset_floor.per_share) &&
+    valuationFloor.asset_floor.per_share > 0;
+  const hasValuationDetails = leftState === "card" || leftState === "holdcoSotp" || (leftState === "holdcoNotAssessable" && assetFloorShown);
+  const anchors = stockAnchors({ valuation: hasValuationDetails, quality: !!bq, coOwned: coOwned.length > 0 }, lang);
 
   const subtitle = page.subtitle(n);
   const disclaimer = page.disclaimer;
@@ -615,6 +609,58 @@ export default async function StockTickerPage({
         : ["Holder", "Position value (USD)", "Shares held", "Portfolio weight", "Quarter-over-quarter change"],
   });
 
+  // 结论带左栏:现价(带日期/来源,过期置灰)并入左栏,不再单列 keyFacts。
+  const priceLine = (
+    <p className={latestPrice?.stale ? "font-data text-sm text-[var(--tt-faint)]" : "font-data text-sm text-[var(--tt-text)]"}>
+      {page.price} {fmtPriceFact(latestPrice)}
+      {priceFactNote(lang, latestPrice) ? <span className="ml-2 text-xs text-[var(--tt-muted)]">{priceFactNote(lang, latestPrice)}</span> : null}
+    </p>
+  );
+  const messageLeft = (text: string) => (
+    <>
+      {priceLine}
+      <p className="text-sm text-[var(--tt-muted)]">{text}</p>
+    </>
+  );
+  const unassessed = valuationLabel(null, lang);
+  const bandLeft =
+    leftState === "card" ? (
+      <>
+        {/* 卡的价值脊柱自带现价/日期/来源;脊柱不出现(无权威判定)时补一行现价,别让现价从页面消失。 */}
+        {!handoffVerdict && priceLine}
+        <EarningsPowerFloorCard
+          floor={valuationFloor}
+          strikeZone={strikeZone}
+          oeDcf={oeDcf}
+          reconciliation={reconciliation}
+          issuer={issuer}
+          ticker={ticker}
+          lang={lang}
+          showStatus={false}
+          verdict={run.verdict}
+          ttmPeriodEnd={floorInput.ttm?.period_end}
+          part="summary"
+        />
+      </>
+    ) : leftState === "holdcoSotp" && holdcoSotp ? (
+      <>
+        <div className="flex items-baseline gap-2">
+          <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{fmtPerShare(holdcoSotp.per_share.base)}</span>
+          <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
+        </div>
+        {handoffVerdict && Number.isFinite(handoffVerdict.rangeLo) && Number.isFinite(handoffVerdict.rangeHi) && Number.isFinite(handoffVerdict.price) ? (
+          <ValueBandGauge bucket={handoffVerdict.bucket} rangeLo={handoffVerdict.rangeLo} rangeHi={handoffVerdict.rangeHi} price={handoffVerdict.price} lang={lang} />
+        ) : (
+          // 刻度盘不画(无权威判定)时,现价没有别处可看,补回原 keyFacts 的现价行。
+          priceLine
+        )}
+      </>
+    ) : leftState === "splitPaused" ? messageLeft(page.valuation.splitPaused)
+    : leftState === "holdcoNotAssessable" ? messageLeft(page.valuation.holdcoNotAssessable)
+    : leftState === "moatDistorted" ? messageLeft(page.valuation.moatDistorted)
+    : leftState === "fundamentalsSuspect" ? messageLeft(page.valuation.fundamentalsSuspect)
+    : messageLeft(`${unassessed.label}${lang === "zh" ? "：" : ": "}${unassessed.title ?? ""}`);
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
@@ -643,23 +689,8 @@ export default async function StockTickerPage({
             ? expectationsBadge(expectations, lang) ?? undefined
             : undefined
         }
-        keyFacts={[
-          // 现价必须带日期与来源;过期(超过估值可用期限)置灰并标"已过期"——
-          // 退市/换代码的票(WBD 2026-10-06、EA 2026-08-10)最新一条收盘价会一直挂在这里。
-          {
-            label: page.price,
-            value: fmtPriceFact(latestPrice),
-            note: priceFactNote(lang, latestPrice) ?? undefined,
-            muted: latestPrice?.stale === true,
-          },
-          // 安全边际只在"已确认便宜"(reliable + 击球区/低于内在价值)时占位并显数字 ——
-          // 高于价值 / 带内 / 红旗档不显空格子(那是噪音), 结论交给 masthead 徽章 + 估值区块标题。
-          ...(marginShown
-            ? [{ label: page.marginOfSafety, value: fmtMarginPct(handoffVerdict!.marginPct!), tone: "positive" as const }]
-            : []),
-          { label: g.holdersPeople, value: String(n) },
-          { label: g.totalValue, value: formatUSD(totalValue) },
-        ]}
+        // 现价、安全边际、持有人数、合计市值都移进首屏结论带,不在这里重复。
+        keyFacts={[]}
         sources={[
           { name: "SEC EDGAR 13F", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) },
           ...(latestPrice
@@ -671,8 +702,142 @@ export default async function StockTickerPage({
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
         <>
+          <StockConclusionBand
+            lang={lang}
+            left={bandLeft}
+            marginText={marginShown ? `${page.marginOfSafety} ${fmtMarginPct(handoffVerdict!.marginPct!)}` : null}
+            holders={{
+              line: holdersLine(n, formatUSD(totalValue), lang),
+              quarter: quarterLabel(displayPeriod) || "",
+              moves,
+              exited: exitedHolders.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) })),
+              trend: trendSeries,
+            }}
+          />
+          <StockAnchorNav lang={lang} anchors={anchors} />
+
+          {/* 持有人 — 表 + 文字说明同簇，避免与表双份叙事抢独立一节 */}
+          <div>
+            <HoldersTable
+              holders={holders}
+              lang={lang}
+              asOfPeriod={asOfPeriod}
+              seasonNote={(has) => filingSeasonNote(movesEff, has, lang)}
+            />
+            <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>
+              <StockProse paragraphs={stockProse} lang={lang} bare />
+            </FoldedSection>
+            <LearnLink
+              lang={lang}
+              slug="how-to-read-a-13f"
+              label={page.holders.learn}
+            />
+          </div>
+
+          {/* 估值与方法:结论(标尺/中枢/提示句)已在首屏结论带,这里只放明细 */}
+          {hasValuationDetails && (
+            <section id="valuation" className="scroll-mt-32">
+              <SectionHeading
+                eyebrow={page.valuation.eyebrow}
+                title={valuationTitle}
+              />
+              {leftState === "card" ? (
+                <>
+                  <div className="mt-3">
+                    <EarningsPowerFloorCard
+                      floor={valuationFloor}
+                      strikeZone={strikeZone}
+                      oeDcf={oeDcf}
+                      reconciliation={reconciliation}
+                      issuer={issuer}
+                      ticker={ticker}
+                      lang={lang}
+                      showStatus={false}
+                      verdict={run.verdict}
+                      ttmPeriodEnd={floorInput.ttm?.period_end}
+                      part="details"
+                    />
+                  </div>
+                  {floorInput.ttm && (
+                    <p className="mt-2 text-xs text-[var(--tt-muted)]">
+                      {page.valuation.ttmBasis(floorInput.ttm.period_end)}
+                    </p>
+                  )}
+                  {expectations?.assessable && (
+                    <PriceBetBlock
+                      expectations={expectations}
+                      lang={lang}
+                      lowConfidence={!handoffVerdict?.reliable}
+                    />
+                  )}
+                  <LearnLink
+                    lang={lang}
+                    slug="what-is-intrinsic-value"
+                    label={page.valuation.learn}
+                  />
+                </>
+              ) : leftState === "holdcoSotp" ? (
+                holdcoSotp ? (
+                  <div className="mt-3">
+                    <p className="text-sm text-[var(--tt-muted)]">{page.valuation.holdcoSotpIntro}</p>
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="w-full min-w-[420px] text-sm tabular-nums">
+                        <thead>
+                          <tr className="text-[var(--tt-muted)]">
+                            <th className="py-1 text-left font-normal"> </th>
+                            <th className="py-1 text-right font-normal">{page.valuation.tierPessimistic}</th>
+                            <th className="py-1 text-right font-normal">{page.valuation.tierBase}</th>
+                            <th className="py-1 text-right font-normal">{page.valuation.tierOptimistic}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="py-1">{page.valuation.holdcoSotpInvestments}</td>
+                            <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
+                              {fmtPerShare(holdcoSotp.columns.investments)}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="py-1">{page.valuation.holdcoSotpOperating}</td>
+                            <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.pessimistic)}</td>
+                            <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.base)}</td>
+                            <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.optimistic)}</td>
+                          </tr>
+                          <tr>
+                            <td className="py-1">{page.valuation.holdcoSotpUnderwriting}</td>
+                            <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.pessimistic)}</td>
+                            <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.base)}</td>
+                            <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.optimistic)}</td>
+                          </tr>
+                          <tr>
+                            <td className="py-1">{page.valuation.holdcoSotpDeferredTax}</td>
+                            <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
+                              −{fmtPerShare(holdcoSotp.columns.deferred_tax)}
+                            </td>
+                          </tr>
+                          <tr className="border-t border-[var(--tt-border)] font-medium">
+                            <td className="py-2">{page.valuation.holdcoSotpTotal}</td>
+                            <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.pessimistic)}</td>
+                            <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.base)}</td>
+                            <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.optimistic)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-3 text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpNote}</p>
+                  </div>
+                ) : null
+              ) : valuationFloor?.kind === "floor" && assetFloorShown ? (
+                // holdcoNotAssessable 且有资产底:原资产底那一行
+                <p className="mt-3 text-sm text-[var(--tt-muted)]">
+                  {page.valuation.assetFloorLabel}: {fmtPerShare(valuationFloor.asset_floor.per_share)}
+                </p>
+              ) : null}
+            </section>
+          )}
+
           {bq && (
-            <section aria-label={page.bq.aria}>
+            <section id="quality" aria-label={page.bq.aria} className="scroll-mt-32">
               <SectionHeading
                 eyebrow={page.bq.eyebrow}
                 title={page.bq.title}
@@ -731,163 +896,8 @@ export default async function StockTickerPage({
             </section>
           )}
 
-          {/* 支柱① 估值结论(头条) — display 标题直接是结论, 位置带/句子/方法在卡内 */}
-          {valuationFloor && (
-            <section>
-              <SectionHeading
-                eyebrow={page.valuation.eyebrow}
-                title={valuationTitle}
-              />
-              {splitCoverageStale ? (
-                <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.splitPaused}</p>
-              ) : holdcoNotAssessable && holdcoSotp ? (
-                <div className="mt-3">
-                  {/* 与其他股票同款的价值带刻度盘 —— 现价游标 + within/below/above 三段;
-                      下方三栏 SOTP 表作为推导明细,比普通股票多一层"拆开给你看"。 */}
-                  {handoffVerdict &&
-                    Number.isFinite(handoffVerdict.rangeLo) &&
-                    Number.isFinite(handoffVerdict.rangeHi) &&
-                    Number.isFinite(handoffVerdict.price) && (
-                      <div className="mb-6">
-                        <div className="mb-3 flex items-baseline gap-2">
-                          <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">
-                            {fmtPerShare(holdcoSotp.per_share.base)}
-                          </span>
-                          <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
-                        </div>
-                        <ValueBandGauge
-                          bucket={handoffVerdict.bucket}
-                          rangeLo={handoffVerdict.rangeLo}
-                          rangeHi={handoffVerdict.rangeHi}
-                          price={handoffVerdict.price}
-                          lang={lang}
-                        />
-                      </div>
-                    )}
-                  <p className="text-sm text-[var(--tt-muted)]">{page.valuation.holdcoSotpIntro}</p>
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="w-full min-w-[420px] text-sm tabular-nums">
-                      <thead>
-                        <tr className="text-[var(--tt-muted)]">
-                          <th className="py-1 text-left font-normal"> </th>
-                          <th className="py-1 text-right font-normal">{page.valuation.tierPessimistic}</th>
-                          <th className="py-1 text-right font-normal">{page.valuation.tierBase}</th>
-                          <th className="py-1 text-right font-normal">{page.valuation.tierOptimistic}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="py-1">{page.valuation.holdcoSotpInvestments}</td>
-                          <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
-                            {fmtPerShare(holdcoSotp.columns.investments)}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="py-1">{page.valuation.holdcoSotpOperating}</td>
-                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.pessimistic)}</td>
-                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.base)}</td>
-                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.operating.optimistic)}</td>
-                        </tr>
-                        <tr>
-                          <td className="py-1">{page.valuation.holdcoSotpUnderwriting}</td>
-                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.pessimistic)}</td>
-                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.base)}</td>
-                          <td className="py-1 text-right">{fmtPerShare(holdcoSotp.columns.underwriting.optimistic)}</td>
-                        </tr>
-                        <tr>
-                          <td className="py-1">{page.valuation.holdcoSotpDeferredTax}</td>
-                          <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
-                            −{fmtPerShare(holdcoSotp.columns.deferred_tax)}
-                          </td>
-                        </tr>
-                        <tr className="border-t border-[var(--tt-border)] font-medium">
-                          <td className="py-2">{page.valuation.holdcoSotpTotal}</td>
-                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.pessimistic)}</td>
-                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.base)}</td>
-                          <td className="py-2 text-right">{fmtPerShare(holdcoSotp.per_share.optimistic)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="mt-3 text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpNote}</p>
-                </div>
-              ) : holdcoNotAssessable ? (
-                <>
-                  <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.holdcoNotAssessable}</p>
-                  {valuationFloor.asset_floor.assessable && valuationFloor.asset_floor.per_share != null &&
-                  Number.isFinite(valuationFloor.asset_floor.per_share) && valuationFloor.asset_floor.per_share > 0 ? (
-                    <p className="mt-2 text-sm text-[var(--tt-muted)]">
-                      {page.valuation.assetFloorLabel}: {fmtPerShare(valuationFloor.asset_floor.per_share)}
-                    </p>
-                  ) : null}
-                </>
-              ) : capitalStructureDistorted ? (
-                <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.moatDistorted}</p>
-              ) : fundamentalsCorrupt ? (
-                <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.fundamentalsSuspect}</p>
-              ) : (
-                <>
-                  <div className="mt-3">
-                    <EarningsPowerFloorCard
-                      floor={valuationFloor}
-                      strikeZone={strikeZone}
-                      oeDcf={oeDcf}
-                      reconciliation={reconciliation}
-                      issuer={issuer}
-                      ticker={ticker}
-                      lang={lang}
-                      showStatus={false}
-                      verdict={run.verdict}
-                      ttmPeriodEnd={floorInput.ttm?.period_end}
-                    />
-                  </div>
-                  {floorInput.ttm && (
-                    <p className="mt-2 text-xs text-[var(--tt-muted)]">
-                      {page.valuation.ttmBasis(floorInput.ttm.period_end)}
-                    </p>
-                  )}
-                  {expectations?.assessable && (
-                    <PriceBetBlock
-                      expectations={expectations}
-                      lang={lang}
-                      lowConfidence={!handoffVerdict?.reliable}
-                    />
-                  )}
-                  <LearnLink
-                    lang={lang}
-                    slug="what-is-intrinsic-value"
-                    label={page.valuation.learn}
-                  />
-                </>
-              )}
-            </section>
-          )}
-
-          {/* 支柱② 谁持有 — 表 + 文字说明同簇，避免与表双份叙事抢独立一节 */}
-          <div>
-            <HoldersTable
-              holders={holders}
-              exited={exitedHolders}
-              totalValue={totalValue}
-              moves={moves}
-              quarter={quarterLabel(displayPeriod) || ""}
-              lang={lang}
-              trend={trendSeries}
-              asOfPeriod={asOfPeriod}
-              seasonNote={(has) => filingSeasonNote(movesEff, has, lang)}
-            />
-            <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>
-              <StockProse paragraphs={stockProse} lang={lang} bare />
-            </FoldedSection>
-            <LearnLink
-              lang={lang}
-              slug="how-to-read-a-13f"
-              label={page.holders.learn}
-            />
-          </div>
-
           {coOwned.length > 0 && (
-            <section aria-label={page.coOwned.aria}>
+            <section id="co-owned" aria-label={page.coOwned.aria} className="scroll-mt-32">
               <SectionHeading
                 eyebrow={page.coOwned.eyebrow}
                 title={page.coOwned.title}
