@@ -470,38 +470,18 @@ export function ValueBandGauge({
   );
 }
 
-// The readable read: a plain status (margin of safety / fair value / above fair value),
-// a neutral cheaper→pricier gauge with the price marker, one sentence. Every precise
-// number lives in the folded method section. Renders only with a price-aware assessment.
-function ValueSpine({
-  floor,
-  sz,
-  oeDcf,
-  reconciliation,
-  issuer,
-  ticker,
-  lang,
-  showStatus = true,
-  verdict: suppliedVerdict,
-}: {
+type SpineInput = {
   floor: ValuationFloor;
   sz: StrikeZoneAssessment;
   oeDcf?: OeDcfAssessment;
   reconciliation?: MethodReconciliation;
-  issuer?: string;
-  ticker?: string;
-  lang: Lang;
-  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 display
-   *  标题时传 false, 避免与标题重复 —— 位置带与句子仍留在卡内。 */
-  showStatus?: boolean;
   /** undefined 保留遗留自算；null 或对象使用编排层的权威结论。 */
   verdict?: ValuationVerdict | null;
-}) {
-  const t = COPY[lang];
-  const epv = sz.epv;
-  if (!epv) return null;
-  const price = sz.price.close;
+};
 
+// ValueSpine 与 SpineNotes 共用的判定 + 中枢 IV:同一份推导,两处(摘要/明细)永不漂移。
+function resolveSpine({ floor, sz, oeDcf, reconciliation, verdict: suppliedVerdict }: SpineInput) {
+  if (!sz.epv) return null;
   // Single source of truth: bucket + range come from the shared pure verdict (extracted from
   // this very logic), so the card and the investor-page overlay can never drift apart.
   const verdict =
@@ -515,6 +495,68 @@ function ValueSpine({
         })
       : suppliedVerdict;
   if (!verdict) return null;
+  // Growth-anchored intrinsic value (headline number) — mirrors deriveValuationVerdict's own
+  // hasIv/IV derivation so the headline can never disagree with the bucket it's inside of.
+  // No IV (oeDcf not assessable / tiers missing) → single-lamp fallback, headline drops to the
+  // zero-growth floor F (today's number), same as the verdict's own fallback anchor.
+  const ivRaw = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
+  const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
+  const IV = hasIv ? (ivRaw as number) : undefined;
+  return { verdict, hasIv, IV };
+}
+
+// 价值带怎么读 + 假设明示行。part="all" 时在脊柱内(结论句/低信心原因之后);个股页
+// part="summary" 的精简脊柱不带它们,改由 part="details" 放在明细顶部 —— 全页只出现一次。
+function BandHowToRead({ hasIv, lang }: { hasIv: boolean; lang: Lang }) {
+  return hasIv ? <p className="text-sm leading-relaxed text-[var(--tt-muted)]">{COPY[lang].bandHowToRead}</p> : null;
+}
+function AssumptionsLine({ oeDcf, rangeLo, lang, hasIv }: { oeDcf?: OeDcfAssessment; rangeLo: number; lang: Lang; hasIv: boolean }) {
+  // assumptions — what the headline IV rests on: growth source, moat CAP, discount, and
+  // the zero-growth downside if growth doesn't show up.
+  return <p className="text-xs leading-relaxed text-[var(--tt-muted)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>;
+}
+
+/** part="details" 顶部:精简脊柱挪走的两行。脊柱不渲染(无判定)时同样不渲染。 */
+function SpineNotes({ lang, ...input }: SpineInput & { lang: Lang }) {
+  const r = resolveSpine(input);
+  if (!r) return null;
+  return (
+    <div className="space-y-3">
+      <BandHowToRead hasIv={r.hasIv} lang={lang} />
+      <AssumptionsLine oeDcf={input.oeDcf} rangeLo={r.verdict.rangeLo} lang={lang} hasIv={r.hasIv} />
+    </div>
+  );
+}
+
+// The readable read: a plain status (margin of safety / fair value / above fair value),
+// a neutral cheaper→pricier gauge with the price marker, one sentence. Every precise
+// number lives in the folded method section. Renders only with a price-aware assessment.
+function ValueSpine({
+  floor,
+  sz,
+  oeDcf,
+  reconciliation,
+  issuer,
+  ticker,
+  lang,
+  showStatus = true,
+  verdict: suppliedVerdict,
+  compact = false,
+}: SpineInput & {
+  issuer?: string;
+  ticker?: string;
+  lang: Lang;
+  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 display
+   *  标题时传 false, 避免与标题重复 —— 位置带与句子仍留在卡内。 */
+  showStatus?: boolean;
+  /** 个股页结论带(part="summary"):不渲染 bandHowToRead 与假设行(它们由 SpineNotes 放进明细)。 */
+  compact?: boolean;
+}) {
+  const t = COPY[lang];
+  const resolved = resolveSpine({ floor, sz, oeDcf, reconciliation, verdict: suppliedVerdict });
+  if (!resolved) return null;
+  const { verdict, hasIv, IV } = resolved;
+  const price = sz.price.close;
 
   const oeOk =
     verdict.methods.oeDcf &&
@@ -529,14 +571,6 @@ function ValueSpine({
   const rangeLo = verdict.rangeLo;
   const rangeHi = verdict.rangeHi;
   const bothMethods = verdict.methods.oeDcf && verdict.methods.greenwaldGrowthCeilings;
-
-  // Growth-anchored intrinsic value (headline number) — mirrors deriveValuationVerdict's own
-  // hasIv/IV derivation so the headline can never disagree with the bucket it's inside of.
-  // No IV (oeDcf not assessable / tiers missing) → single-lamp fallback, headline drops to the
-  // zero-growth floor F (today's number), same as the verdict's own fallback anchor.
-  const ivRaw = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
-  const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
-  const IV = hasIv ? (ivRaw as number) : undefined;
   const headline = hasIv ? IV! : rangeLo;
 
   const bucket = verdict.bucket;
@@ -611,8 +645,8 @@ function ValueSpine({
 
       <p className="text-sm leading-relaxed text-[var(--tt-text)]">{sentence}</p>
 
-      {/* 首屏可读：价值带怎么读 + 低信心具体原因（不进折叠）。 */}
-      {hasIv ? <p className="text-sm leading-relaxed text-[var(--tt-muted)]">{t.bandHowToRead}</p> : null}
+      {/* 首屏可读：价值带怎么读 + 低信心具体原因（不进折叠）。compact 时「怎么读」挪到明细顶部。 */}
+      {!compact && <BandHowToRead hasIv={hasIv} lang={lang} />}
       {callouts.length > 0 ? (
         <ul className="space-y-1.5 border-l-2 border-[color-mix(in_srgb,var(--tt-warn)_55%,transparent)] pl-3">
           {callouts.map((line) => (
@@ -623,9 +657,7 @@ function ValueSpine({
         </ul>
       ) : null}
 
-      {/* assumptions — what the headline IV rests on: growth source, moat CAP, discount, and
-          the zero-growth downside if growth doesn't show up. */}
-      <p className="text-xs leading-relaxed text-[var(--tt-muted)]">{assumptionsLine(oeDcf, rangeLo, lang, hasIv)}</p>
+      {!compact && <AssumptionsLine oeDcf={oeDcf} rangeLo={rangeLo} lang={lang} hasIv={hasIv} />}
 
       <p className="text-xs leading-relaxed text-[var(--tt-faint)]">
         {t.priceAsOf} {sz.price.date}
@@ -779,7 +811,8 @@ export const EarningsPowerFloorCard: FC<{
   showStatus?: boolean;
   /** TTM 基点生效时的 TTM 期末(ISO date);传入则 years_used 头部显示 "TTM {期末}" 而非假 FY 标签。 */
   ttmPeriodEnd?: string;
-  /** 个股页结论带只要摘要(标尺 + 结论句),估值区块只要明细(方法与数字);默认两半都渲染。 */
+  /** 个股页结论带只要摘要(头条/标尺/结论句/低信心原因/价格截至),估值区块只要明细(怎么读 + 假设行 +
+   *  方法与数字);默认 all 两半都渲染,输出与拆分前一致。 */
   part?: "all" | "summary" | "details";
 }> = ({
   floor,
@@ -822,13 +855,18 @@ export const EarningsPowerFloorCard: FC<{
     <div className="space-y-3">
       {part !== "details" &&
         (showSpine ? (
-          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} />
+          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} compact={part === "summary"} />
         ) : showCompactFloor ? (
           <CompactFloor
             suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
             lang={lang}
           />
         ) : null)}
+
+      {/* 精简脊柱挪走的「怎么读」与假设行:明细顶部、方法折叠之前。 */}
+      {part === "details" && showSpine && (
+        <SpineNotes floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} verdict={verdict} lang={lang} />
+      )}
 
       {part !== "summary" && (
         <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
