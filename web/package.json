@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run -s check:tokens && npm run -s check:type",
+    "prebuild": "npm run -s check:tokens && npm run -s check:type && npm run -s check:isr",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -23,6 +23,7 @@
     "prices:prune": "tsx scripts/prices-prune.ts",
     "ai-check": "tsx scripts/ai-tells.ts",
     "check:revalidate-paths": "tsx scripts/revalidate-paths.check.ts",
+    "check:isr": "tsx scripts/isr-budget.check.ts",
     "check:color": "tsx scripts/color.check.ts",
     "check:tokens": "tsx scripts/design-tokens.check.ts",
     "check:type": "tsx scripts/type-scale.check.ts",
