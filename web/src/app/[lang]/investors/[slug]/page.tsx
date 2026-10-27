@@ -17,7 +17,7 @@ import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { filingFreshness, freshness13F, isScopeChange, quarterLag, globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
-import { formatUSD, cleanIssuer } from "@/lib/format";
+import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -652,7 +652,7 @@ export default async function InvestorSlugPage({
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </Link>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
-                      {h.marginPct != null ? `${Math.round(h.marginPct * 100)}%` : ""}
+                      {h.marginPct != null ? fmtMarginPct(h.marginPct) : ""}
                       {h.marginPct != null ? " · " : ""}
                       {valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: true }, lang).label}
                     </span>
