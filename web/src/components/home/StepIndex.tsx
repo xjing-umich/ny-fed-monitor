@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import type { ManagerSummary } from "@/lib/managers/types";
+import { managerLabel } from "@/lib/managers/displayName";
 import type { HeldRow } from "@/lib/aggregations";
 import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { EntityName } from "@/components/common/EntityName";
@@ -184,7 +185,7 @@ export default function StepIndex({
               <span className="flex min-w-0 items-center gap-2">
                 <FreshnessDot status={filingFreshness(m.period || null, now)} lang={lang} />
                 <span className="truncate text-sm text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
-                  {m.person}
+                  {managerLabel(lang, m.slug, m.person)}
                 </span>
               </span>
               <span className="shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)] whitespace-nowrap">

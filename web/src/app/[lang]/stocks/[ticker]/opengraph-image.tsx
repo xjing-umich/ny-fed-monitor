@@ -1,5 +1,7 @@
 import { ogCard, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/ogCard";
 import { getCusipMap, tickerToCusips } from "@/lib/managers/securities";
+import { cleanIssuer } from "@/lib/format";
+import { stockDisplayName } from "@/lib/stocks/zhNames";
 
 export const alt = "Who's holding — Compounder";
 export const size = OG_SIZE;
@@ -22,7 +24,7 @@ export default async function Image({
   for (const c of cusips) {
     const info = cusipMap.get(c);
     if (info?.name) {
-      issuer = info.name;
+      issuer = stockDisplayName(isEn ? "en" : "zh", ticker, cleanIssuer(info.name));
       break;
     }
   }

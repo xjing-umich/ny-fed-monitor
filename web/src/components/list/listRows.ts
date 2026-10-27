@@ -7,6 +7,8 @@ export type InvestorSearchRow = {
   slug: string;
   person: string;
   name: string;
+  /** 展示名(中文站为中文名);有则一并参与搜索。 */
+  label?: string;
 };
 
 export function filterInvestors<T extends InvestorSearchRow>(rows: T[], q: string): T[] {
@@ -16,6 +18,7 @@ export function filterInvestors<T extends InvestorSearchRow>(rows: T[], q: strin
     const alias = (INVESTOR_ALIASES[m.slug] ?? "").toLowerCase();
     return (
       m.person.toLowerCase().includes(needle) ||
+      (m.label ?? "").toLowerCase().includes(needle) ||
       m.name.toLowerCase().includes(needle) ||
       m.slug.toLowerCase().includes(needle) ||
       alias.includes(needle)

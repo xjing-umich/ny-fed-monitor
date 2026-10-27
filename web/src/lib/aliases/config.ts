@@ -7,6 +7,7 @@
 import managersRaw from "../../../config/managers.json";
 import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import formerNamesRaw from "@/data/13f/former-names.json";
+import featuredRaw from "../../../config/report-featured.json";
 import type { AliasEntry } from "./types";
 
 type CuratedPerson = { name: string; zh?: string; role?: string };
@@ -20,6 +21,12 @@ type CuratedManager = {
 
 const MANAGERS = managersRaw as CuratedManager[];
 const FORMER = formerNamesRaw as Record<string, string[]>;
+// 名家清单(季报邮件用)里的中文全名,如"比尔·阿克曼""塞斯·卡拉曼"。
+const FEATURED_ZH = new Map(
+  (featuredRaw as Array<string | { slug: string; zh?: string }>)
+    .filter((x): x is { slug: string; zh: string } => typeof x === "object" && !!x.zh)
+    .map((x) => [x.slug, x.zh]),
+);
 
 export function investorAliasEntries(): AliasEntry[] {
   const out: AliasEntry[] = [];
@@ -52,12 +59,24 @@ export function investorAliasEntries(): AliasEntry[] {
 // 以人姓结尾的公司名(加德纳鲁索 = Gardner Russo)规则分不出,列在下面;新增此类别名时补进来。
 const FIRM_NAMES_ENDING_IN_SURNAME = new Set(["加德纳鲁索", "林赛尔特雷恩"]);
 
+// 中文站上显示的中文名:名家清单的全名 > people[] 本人的 zh > INVESTOR_ALIASES 首词。没有 → null(显示英文名)。
+export function managerZhName(slug: string, person: string): string | null {
+  return FEATURED_ZH.get(slug) ?? zhAnchor(slug, person);
+}
+
+function zhAnchor(slug: string, person: string): string | null {
+  const m = MANAGERS.find((x) => x.slug === slug);
+  return m?.people?.find((p) => p.name === person)?.zh ?? INVESTOR_ALIASES[slug]?.split(/\s+/).filter(Boolean)[0] ?? null;
+}
+
 export function personNameAliases(slug: string, person: string): string[] {
   const m = MANAGERS.find((x) => x.slug === slug);
   const zhTokens = INVESTOR_ALIASES[slug]?.split(/\s+/).filter(Boolean) ?? [];
-  const anchor = m?.people?.find((p) => p.name === person)?.zh ?? zhTokens[0];
+  const anchor = zhAnchor(slug, person);
   if (!anchor) return [];
   const out = new Set([anchor]);
+  const full = FEATURED_ZH.get(slug);
+  if (full) out.add(full);
   for (const t of [...(m?.aliases ?? []), ...zhTokens]) {
     if (t.length < 2 || FIRM_NAMES_ENDING_IN_SURNAME.has(t)) continue;
     if (t.endsWith(anchor) || anchor.endsWith(t)) out.add(t);

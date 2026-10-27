@@ -5,6 +5,8 @@ import type { Lang } from "@/lib/nav";
 import { mostHeld, holderDeltas } from "@/lib/aggregations";
 import { getManagerIndex } from "@/lib/managers/source";
 import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { cleanIssuer } from "@/lib/format";
+import { isLikelyTicker } from "@/lib/externalLinks";
 import { altFor, ogFor } from "@/lib/seo";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
@@ -82,8 +84,10 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ItemList",
+          // 条目带清洗后的名称和个股页链接,AI/搜索引擎能把榜单项对到具体实体。
           itemListElement: rankRows.slice(0, 20).map((r, i) => ({
-            "@type": "ListItem", position: i + 1, name: r.issuer,
+            "@type": "ListItem", position: i + 1, name: cleanIssuer(r.issuer),
+            ...(isLikelyTicker(r.ticker) ? { url: absoluteUrl(stockPath(lang, r.ticker)) } : {}),
           })),
         }) }}
       />

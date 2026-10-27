@@ -24,7 +24,7 @@ import {
   visibleSlice,
 } from "@/components/list/listRows";
 
-type Row = ManagerSummary & { qoq?: ManagerQoQ };
+type Row = ManagerSummary & { qoq?: ManagerQoQ; label?: string };
 
 const COPY = {
   zh: {
@@ -161,7 +161,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
       role: "primary",
       cell: (m, i) => (
         <>
-          <span className={i < 10 ? "font-semibold" : ""}>{m.person}</span>
+          <span className={i < 10 ? "font-semibold" : ""}>{m.label ?? m.person}</span>
           <span className="mt-0.5 block text-xs font-normal text-[var(--tt-faint)]">
             {displayFundName(m.name)}
           </span>

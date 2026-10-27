@@ -4,6 +4,8 @@ import type { Lang } from "@/lib/nav";
 import type { MoveRow, MoveKind } from "@/lib/aggregations";
 import { notableMoves } from "@/lib/aggregations";
 import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { cleanIssuer } from "@/lib/format";
+import { isLikelyTicker } from "@/lib/externalLinks";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
@@ -13,6 +15,7 @@ import { AggregateBlurb } from "@/components/aggregate/AggregateBlurb";
 import { AggregateRankingList, type RankRow } from "@/components/aggregate/AggregateRankingList";
 import { movesBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
 import { getManagerIndex } from "@/lib/managers/source";
+import { managerLabel } from "@/lib/managers/displayName";
 import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
 
 const KIND_LABEL: Record<MoveKind, { zh: string; en: string; tone: "positive" | "warn" }> = {
@@ -25,7 +28,7 @@ const KIND_LABEL: Record<MoveKind, { zh: string; en: string; tone: "positive" | 
 function movesFootnote(
   lang: Lang,
   effective: ReturnType<typeof effectiveMovesPeriod>,
-  lagged: { person: string; period: string }[],
+  lagged: { slug: string; person: string; period: string }[],
 ): string {
   // 季度标签统一走 quarterLabel:同页正文与标题已是「Q2 2026」,此处若留裸 ISO
   // (「2026-06-30」)会让同一个季度在一屏里出现两种写法,还容易被读成「某天的过期数据」。
@@ -43,7 +46,7 @@ function movesFootnote(
       }
     }
     if (lagged.length > 0) {
-      s += `未计入（最新申报更早）：${lagged.map((m) => `${m.person}（${quarterLabel(m.period)}）`).join("、")}。`;
+      s += `未计入（最新申报更早）：${lagged.map((m) => `${managerLabel(lang, m.slug, m.person)}（${quarterLabel(m.period)}）`).join("、")}。`;
     }
     return s;
   }
@@ -59,7 +62,7 @@ function movesFootnote(
     }
   }
   if (lagged.length > 0) {
-    s += ` Not counted (older latest filing): ${lagged.map((m) => `${m.person} (${quarterLabel(m.period)})`).join(", ")}.`;
+    s += ` Not counted (older latest filing): ${lagged.map((m) => `${managerLabel(lang, m.slug, m.person)} (${quarterLabel(m.period)})`).join(", ")}.`;
   }
   return s;
 }
@@ -110,8 +113,10 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ItemList",
+          // 条目带清洗后的名称和个股页链接,AI/搜索引擎能把榜单项对到具体实体。
           itemListElement: rankRows.slice(0, 20).map((r, i) => ({
-            "@type": "ListItem", position: i + 1, name: r.issuer,
+            "@type": "ListItem", position: i + 1, name: cleanIssuer(r.issuer),
+            ...(isLikelyTicker(r.ticker) ? { url: absoluteUrl(stockPath(lang, r.ticker)) } : {}),
           })),
         }) }}
       />

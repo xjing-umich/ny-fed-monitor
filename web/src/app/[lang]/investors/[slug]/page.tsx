@@ -9,6 +9,7 @@ import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { resolveEntity } from "@/lib/aliases/resolve";
 import { personNameAliases } from "@/lib/aliases/config";
+import { managerLabel, managerTitleName, managerSubtitle, managerIsOrganization, managerStewardPeople } from "@/lib/managers/displayName";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import { EntityPage } from "@/components/entity/EntityPage";
@@ -82,19 +83,22 @@ export async function generateMetadata({
       ? cleanIssuer([...longHoldings].sort((a, b) => b.value - a.value)[0].issuer)
       : "";
   const alternates = altFor(lang, `/investors/${slug}`);
+  // 中文页用中文名(段永平、巴菲特……);伯克希尔/Daily Journal 按现任掌管人改写,见 displayName.ts。
+  const who = managerLabel(lang, slug, person);
+  const titleName = managerTitleName(lang, slug, person);
   const meta =
     lang === "zh"
       ? {
-          title: `${person} 持仓组合 — 13F${qSuffix} | Compounder · 复利`,
+          title: `${titleName} — 13F${qSuffix} | Compounder · 复利`,
           description: posCount === 0 && d.latest
-            ? `${person}（${fundName}）${q} 的 SEC 13F 申报持仓为零，未列任何持仓。数据来自 SEC EDGAR。`
-            : `${person}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
+            ? `${who}（${fundName}）${q} 的 SEC 13F 申报持仓为零，未列任何持仓。数据来自 SEC EDGAR。`
+            : `${who}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
         }
       : {
-          title: `${person} Portfolio — 13F Holdings${qSuffix} | Compounder`,
+          title: `${titleName} — 13F Holdings${qSuffix} | Compounder`,
           description: posCount === 0 && d.latest
-            ? `${person}'s SEC 13F (${fundName}) for ${q} reports zero holdings. Sourced from SEC EDGAR.`
-            : `${person}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
+            ? `${who}'s SEC 13F (${fundName}) for ${q} reports zero holdings. Sourced from SEC EDGAR.`
+            : `${who}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
         };
   return {
     ...meta,
@@ -297,6 +301,7 @@ export default async function InvestorSlugPage({
   const longChanges = changes.filter((c) => !c.putCall);
   // 基金名展示化(全大写 EDGAR 名 → 标题化, 策展混合大小写名原样): 副标题/结构化数据/正文统一口径。
   const fund = displayFundName(manager.name);
+  const who = managerLabel(lang, slug, manager.person);
 
   // CUSIP→ticker 内链解析(spec §5.3)。无库(本地)→ 空 Map → 退回原 cusip 链接(行为不变)。
   // 仅收 ticker 形态的值:脊梁富化偶有脏 ticker(如数字 "9.2343e+106"),否则会生成坏内链;
@@ -373,9 +378,9 @@ export default async function InvestorSlugPage({
   const shareAddedName = longChanges.find((c) => c.kind === "new")?.issuer ?? null;
   const shareUrl = absoluteUrl(investorPath(lang, slug));
   const shareText = buildShareText(
-    { kind: "investor", managerName: manager.person, topHolding: shareTopHolding, addedName: shareAddedName },
+    { kind: "investor", managerName: who, topHolding: shareTopHolding, addedName: shareAddedName },
     lang,
-    manager.person,
+    who,
   );
 
   // 组合级 QoQ(无 prior 时不显环比;对照组同样限定长仓 only,避免期权进出污染环比)
@@ -471,54 +476,77 @@ export default async function InvestorSlugPage({
   ];
 
   // Subtitle
-  const subtitle =
-    lang === "zh"
-      ? `${fund} — ${manager.person} 掌管，美股持仓通过 SEC 13F 季度披露`
-      : `${fund} — managed by ${manager.person}; US equity positions disclosed quarterly via SEC 13F`;
+  const subtitle = managerSubtitle(lang, slug, manager.person, fund);
 
   // Related: up to 6 other managers from the index
   const related = idx.managers
     .filter((m) => m.slug !== slug)
     .slice(0, 6)
-    .map((m) => ({ label: m.person, href: investorPath(lang, m.slug) }));
+    .map((m) => ({ label: managerLabel(lang, m.slug, m.person), href: investorPath(lang, m.slug) }));
 
   const breadcrumb = breadcrumbLd(lang, [
     { name: lang === "zh" ? "超级投资者" : "Superinvestors", path: localePath(lang, "/investors") },
-    { name: manager.person, path: localePath(lang, `/investors/${manager.slug}`) },
+    { name: who, path: localePath(lang, `/investors/${manager.slug}`) },
   ]);
 
-  // Person structured data — identifies the investor as an entity and links the
-  // fund they run, so search/AI engines can attribute holdings to a real person.
+  // 实体结构化数据:一般是 Person(投资人)+ 其申报主体;库里"人名"本身是机构名、或掌管人已变的
+  // (伯克希尔、Daily Journal)改用 Organization,不把新一季持仓挂在一个不再做决定的人名下。
   // 别名只放本人的名字变体(中文名等);接班人、票代、基金名、曾用名不进 Person,见 personNameAliases。
-  const aliasNames = personNameAliases(manager.slug, manager.person).filter((a) => a !== manager.person);
-  const person = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: manager.person,
-    ...(aliasNames.length ? { alternateName: aliasNames } : {}),
-    url: absoluteUrl(localePath(lang, `/investors/${manager.slug}`)),
-    // CIK 是该基金(13F 申报主体)在 SEC 的编号;投资人以其掌管的申报主体被识别。
-    identifier: { "@type": "PropertyValue", propertyID: "SEC CIK", value: manager.cik },
-    jobTitle: lang === "zh" ? "投资人" : "Investor",
-    worksFor: { "@type": "Organization", name: fund },
-    subjectOf: {
-      "@type": "Dataset",
-      name:
-        lang === "zh"
-          ? `${manager.person} 的 SEC 13F 持仓`
-          : `${manager.person}'s SEC 13F holdings`,
-      description:
-        lang === "zh"
-          ? `${fund} 向美国证券交易委员会（SEC）申报的 13F 季度持仓数据，包含个股、持股数量与申报市值。`
-          : `Quarterly 13F holdings disclosed by ${fund} to the U.S. Securities and Exchange Commission (SEC), including positions, share counts, and reported market values.`,
-      isAccessibleForFree: true,
-      ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
-      creator: { "@type": "Organization", name: fund },
-      sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
-      isBasedOn: edgarFilingsUrl(manager.cik),
-      license: SEC_DATA_LICENSE,
-    },
+  const dataset = {
+    "@type": "Dataset",
+    name: lang === "zh" ? `${who} 的 SEC 13F 持仓` : `${who}'s SEC 13F holdings`,
+    description:
+      lang === "zh"
+        ? `${fund} 向美国证券交易委员会（SEC）申报的 13F 季度持仓数据，包含个股、持股数量与申报市值。`
+        : `Quarterly 13F holdings disclosed by ${fund} to the U.S. Securities and Exchange Commission (SEC), including positions, share counts, and reported market values.`,
+    isAccessibleForFree: true,
+    ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
+    creator: { "@type": "Organization", name: fund },
+    sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
+    isBasedOn: edgarFilingsUrl(manager.cik),
+    license: SEC_DATA_LICENSE,
   };
+  const pageUrl = absoluteUrl(localePath(lang, `/investors/${manager.slug}`));
+  // CIK 是该基金(13F 申报主体)在 SEC 的编号;投资人以其掌管的申报主体被识别。
+  const cikId = { "@type": "PropertyValue", propertyID: "SEC CIK", value: manager.cik };
+  let entityLd: Record<string, unknown>;
+  if (managerIsOrganization(slug)) {
+    const zhName = managerLabel("zh", slug, manager.person);
+    const steward = managerStewardPeople(slug);
+    entityLd = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: fund,
+      // 机构名本身的中文名(道奇考克斯等)才作别名;伯克希尔的展示名是两个人名,不能当机构别名。
+      ...(!steward.length && zhName !== fund && zhName !== manager.person ? { alternateName: [zhName] } : {}),
+      url: pageUrl,
+      identifier: cikId,
+      ...(steward.length
+        ? {
+            employee: steward.map((p) => ({
+              "@type": "Person",
+              name: p.name,
+              ...(p.zh ? { alternateName: [p.zh] } : {}),
+              jobTitle: p.jobTitle,
+            })),
+          }
+        : {}),
+      subjectOf: dataset,
+    };
+  } else {
+    const aliasNames = personNameAliases(manager.slug, manager.person).filter((a) => a !== manager.person);
+    entityLd = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: manager.person,
+      ...(aliasNames.length ? { alternateName: aliasNames } : {}),
+      url: pageUrl,
+      identifier: cikId,
+      jobTitle: lang === "zh" ? "投资人" : "Investor",
+      worksFor: { "@type": "Organization", name: fund },
+      subjectOf: dataset,
+    };
+  }
 
   return (
     <>
@@ -528,11 +556,11 @@ export default async function InvestorSlugPage({
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(entityLd) }}
       />
       <EntityPage
         lang={lang}
-        title={manager.person}
+        title={who}
         subtitle={subtitle}
         topAction={
           <Link
@@ -696,7 +724,7 @@ export default async function InvestorSlugPage({
           <FoldedSection title={lang === "zh" ? "关于这位投资者" : "About this investor"}>
             <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
           </FoldedSection>
-          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, manager.person, lang, strikePendingIssuers(posture).map(cleanIssuer))} />
+          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, who, lang, strikePendingIssuers(posture).map(cleanIssuer))} />
         </>
       </EntityPage>
     </>

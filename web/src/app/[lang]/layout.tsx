@@ -15,6 +15,8 @@ import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath } from "@/lib/urls";
+import { managerLabel } from "@/lib/managers/displayName";
+import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
 
 // Engineered industrial sans for the wordmark and headlines: straight-sided
 // "spec-sheet nameplate" geometry that pairs cleanly with PingFang/system CJK
@@ -130,9 +132,10 @@ export default async function LangLayout({
   const [managerIdx, held] = await Promise.all([getManagerIndex(), mostHeld(250)]);
 
   const managerItems = managerIdx.managers.map((m) => ({
-    label: m.person,
+    label: managerLabel(lang, m.slug, m.person),
     href: investorPath(lang, m.slug),
-    keywords: INVESTOR_ALIASES[m.slug],
+    // 展示名换成中文后,英文原名留在关键词里,搜 Buffett 仍能命中。
+    keywords: [INVESTOR_ALIASES[m.slug], m.person].filter(Boolean).join(" "),
   }));
 
   // 个股建议:按持有人数排序的共识标的(cusip 字段已解析为 ticker)。以 ticker 去重。
@@ -142,9 +145,10 @@ export default async function LangLayout({
     if (seenTickers.has(ticker)) return [];
     seenTickers.add(ticker);
     return [{
-      label: cleanIssuer(row.issuer),
+      label: stockDisplayName(lang, ticker, cleanIssuer(row.issuer)),
       href: stockPath(lang, ticker),
-      keywords: ticker,
+      // 中文名也进关键词,英文站搜"苹果"同样能命中。
+      keywords: [ticker, stockZhName(ticker)].filter(Boolean).join(" "),
     }];
   });
 
