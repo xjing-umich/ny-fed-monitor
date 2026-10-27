@@ -1,7 +1,7 @@
 // 纯判定自检——node:assert,零新依赖。运行: npx tsx src/lib/health/checks.check.ts
 // 项目无常驻测试套件(solo dev),此为 ad-hoc 自检,不接 CI。
 import assert from "node:assert/strict";
-import { evaluate13F, evaluateDbSize, evaluateFundamentalsLag, evaluateReport } from "./checks";
+import { evaluate13F, evaluateDbSize, evaluateFundamentalsLag, evaluateReport, evaluateIngestRuns, evaluateEdgarSync, isFilingSeason, ingestMaxAgeHours } from "./checks";
 
 const today = new Date("2026-06-08T12:00:00Z"); // mostRecentDueQuarter → 2026-03-31
 
@@ -102,3 +102,52 @@ console.log("checks.check.ts: all assertions passed ✓");
   assert.equal(r.problems.length, 1);
 }
 console.log("evaluateFundamentalsLag OK");
+
+// --- 13F 入库运行(工作流运行记录)---
+{
+  const at = (s: string) => new Date(s);
+  assert.equal(isFilingSeason(at("2026-11-10T00:00:00Z")), true);
+  assert.equal(isFilingSeason(at("2026-11-20T23:00:00Z")), true);
+  assert.equal(isFilingSeason(at("2026-11-21T00:00:00Z")), false);
+  assert.equal(isFilingSeason(at("2026-10-27T00:00:00Z")), false);
+  assert.equal(ingestMaxAgeHours(at("2026-11-14T00:00:00Z")), 30);
+  assert.equal(ingestMaxAgeHours(at("2026-10-27T00:00:00Z")), 108);
+
+  const now = at("2026-10-27T13:00:00Z");
+  // 无记录 → 告警
+  assert.equal(evaluateIngestRuns(null, null, now).problems.length, 1);
+  // 最近一次成功、2 天前 → 平时 OK
+  assert.equal(evaluateIngestRuns({ status: "success", finished_at: "2026-10-25T13:00:00Z" }, "2026-10-25T13:00:00Z", now).problems.length, 0);
+  // 2026-08~10 事故形态:最近一次失败(页面刷新 401)→ 告警,哪怕上次成功不久
+  const fail = evaluateIngestRuns({ status: "error", finished_at: "2026-10-26T15:00:00Z", error_message: "ingest=success revalidate=failure report=skipped" }, "2026-10-25T14:30:00Z", now);
+  assert.equal(fail.problems.length, 1);
+  assert.match(fail.problems[0].message, /revalidate=failure/);
+  // 平时 5 天没成功 → 告警
+  assert.equal(evaluateIngestRuns({ status: "success", finished_at: "2026-10-22T09:00:00Z" }, "2026-10-22T09:00:00Z", now).problems.length, 1);
+  // 申报季 31 小时没成功 → 告警;29 小时 → OK
+  const season = at("2026-11-14T12:00:00Z");
+  assert.equal(evaluateIngestRuns({ status: "success", finished_at: "2026-11-13T05:00:00Z" }, "2026-11-13T05:00:00Z", season).problems.length, 1);
+  assert.equal(evaluateIngestRuns({ status: "success", finished_at: "2026-11-13T07:00:00Z" }, "2026-11-13T07:00:00Z", season).problems.length, 0);
+}
+console.log("evaluateIngestRuns OK");
+
+// --- EDGAR 对照 ---
+{
+  const now = new Date("2026-10-27T13:00:00Z");
+  const db = new Map([["matrix", new Set(["2026-09-30", "2026-06-30"])], ["egerton", new Set(["2026-06-30"])], ["olstein", new Set(["2026-06-30"])]]);
+  // egerton 已交 Q3 7 天未入库 → 告警;matrix 已入库;olstein 最新 HR 是 Q2 且在库
+  const r = evaluateEdgarSync([
+    { slug: "matrix", period: "2026-09-30", acceptedAt: "2026-10-13T17:26:52.000Z" },
+    { slug: "egerton", period: "2026-09-30", acceptedAt: "2026-10-20T14:45:47.000Z" },
+    { slug: "olstein", period: "2026-06-30", acceptedAt: "2026-07-07T12:00:00.000Z" },
+  ], db, now);
+  assert.equal(r.problems.length, 1);
+  assert.match(r.problems[0].message, /egerton 2026-09-30/);
+  assert.match(r.info[0], /2026-09-30 已交 13F-HR 2 位 \/ 库内 1 位/);
+  // 宽限期内(平时 108h)刚交的不告警
+  const fresh = evaluateEdgarSync([{ slug: "egerton", period: "2026-09-30", acceptedAt: "2026-10-26T20:00:00.000Z" }], db, now);
+  assert.equal(fresh.problems.length, 0);
+  // 全部在库 → 无告警
+  assert.equal(evaluateEdgarSync([{ slug: "matrix", period: "2026-09-30", acceptedAt: "2026-10-13T17:26:52.000Z" }], db, now).problems.length, 0);
+}
+console.log("evaluateEdgarSync OK");

@@ -132,3 +132,97 @@ export function evaluateFundamentalsLag(
   }
   return { problems: [], info: [`基本面: ${companies.length - lagging.length}/${companies.length} 家跟上最新申报${lagging.length ? `(落后: ${sample})` : ""}`] };
 }
+
+// ── 13F 入库运行 & EDGAR 同步 ──────────────────────────────────────────────────
+// 为什么:2026-08-20 ~ 10-15 定时 ingest 连续 17 次失败(页面刷新 401),看门狗毫无察觉 ——
+// evaluate13F 只看"库里有没有人到期",数据在库、页面陈旧、工作流红灯它都看不见。
+// 这里补两条:① 工作流运行记录(price_ingest_runs, run_type='13f',每次运行由 workflow 最后一步写入,
+// 含刷新/报告步骤的成败);② 直接对照 SEC EDGAR:已交的 13F-HR 超过宽限期仍没入库 → 告警。
+
+export const INGEST_RUN_TYPE_13F = "13f";
+
+/** 申报季:2/5/8/11 月 10–20 日(与 ingest.yml 的每日两次 cron 同一窗口)。UTC 日期。 */
+export function isFilingSeason(today: Date): boolean {
+  const m = today.getUTCMonth() + 1;
+  const d = today.getUTCDate();
+  return [2, 5, 8, 11].includes(m) && d >= 10 && d <= 20;
+}
+
+/**
+ * 13F 入库允许的最大间隔(小时)。申报季每天两次 → 12h 一轮,加 GitHub cron 常见 5–10h 延迟 → 30h;
+ * 平时周一/周四(最长隔 4 天)+ 延迟 → 108h。
+ */
+export function ingestMaxAgeHours(today: Date): number {
+  return isFilingSeason(today) ? 30 : 108;
+}
+
+export type IngestRun = { status: string; finished_at: string | null; error_message?: string | null };
+
+/** 最近一次 13F 工作流运行:失败 → 告警;最近一次成功距今超过 ingestMaxAgeHours → 告警。 */
+export function evaluateIngestRuns(latest: IngestRun | null, latestSuccessAt: string | null, today: Date): { problems: HealthProblem[]; info: string[] } {
+  const maxH = ingestMaxAgeHours(today);
+  if (!latest) {
+    return {
+      problems: [{ pipeline: "13f", source: "13F 入库运行", message: "没有任何 13F 工作流运行记录", asOf: null, expected: `最近 ${maxH} 小时内应有一次成功` }],
+      info: [],
+    };
+  }
+  const problems: HealthProblem[] = [];
+  if (latest.status !== "success") {
+    problems.push({
+      pipeline: "13f",
+      source: "13F 入库运行",
+      message: `最近一次 13F 工作流失败${latest.error_message ? `(${latest.error_message})` : ""}`,
+      asOf: latest.finished_at?.slice(0, 16) ?? null,
+      expected: "应成功(入库 + 页面刷新 + 报告)",
+    });
+  }
+  const ageH = latestSuccessAt ? (today.getTime() - Date.parse(latestSuccessAt)) / 3_600_000 : Infinity;
+  if (ageH > maxH) {
+    problems.push({
+      pipeline: "13f",
+      source: "13F 入库运行",
+      message: latestSuccessAt ? `已 ${Math.round(ageH)} 小时没有成功的 13F 入库` : "从未有成功的 13F 入库记录",
+      asOf: latestSuccessAt?.slice(0, 16) ?? null,
+      expected: `≤ ${maxH} 小时${isFilingSeason(today) ? "(申报季)" : ""}`,
+    });
+  }
+  return { problems, info: [`13F 最近成功入库 ${latestSuccessAt ? latestSuccessAt.slice(0, 16).replace("T", " ") + " UTC" : "无"}`] };
+}
+
+/** 某投资人在 EDGAR 上最新的一份 13F-HR(含 /A)。 */
+export type EdgarLatest13F = { slug: string; period: string; acceptedAt: string };
+
+/**
+ * EDGAR vs 库内:EDGAR 上已交、且提交时间早于宽限期(ingestMaxAgeHours)的 13F-HR,其报告期不在库内 → 告警。
+ * 13F-NT(由他人代报)不在比较范围 —— 调用方只传 13F-HR/13F-HR/A。
+ * info 给出"最新报告期 EDGAR 已交 n 位 / 库内 m 位"。
+ */
+export function evaluateEdgarSync(
+  edgar: EdgarLatest13F[],
+  dbPeriodsBySlug: Map<string, Set<string>>,
+  today: Date,
+): { problems: HealthProblem[]; info: string[] } {
+  const graceH = ingestMaxAgeHours(today);
+  const overdue = edgar.filter(
+    (e) => !dbPeriodsBySlug.get(e.slug)?.has(e.period) && (today.getTime() - Date.parse(e.acceptedAt)) / 3_600_000 > graceH,
+  );
+  const latestPeriod = edgar.reduce<string | null>((m, e) => (!m || e.period > m ? e.period : m), null);
+  const info: string[] = [];
+  if (latestPeriod) {
+    const onEdgar = edgar.filter((e) => e.period === latestPeriod).length;
+    const inDb = edgar.filter((e) => e.period === latestPeriod && dbPeriodsBySlug.get(e.slug)?.has(latestPeriod)).length;
+    info.push(`EDGAR 对照: ${latestPeriod} 已交 13F-HR ${onEdgar} 位 / 库内 ${inDb} 位`);
+  }
+  if (!overdue.length) return { problems: [], info };
+  return {
+    problems: [{
+      pipeline: "13f",
+      source: "EDGAR 对照",
+      message: `${overdue.length} 份已交 13F 超过 ${graceH} 小时仍未入库: ${overdue.slice(0, 8).map((e) => `${e.slug} ${e.period}`).join(", ")}${overdue.length > 8 ? " …" : ""}`,
+      asOf: overdue.map((e) => e.acceptedAt).sort()[0]?.slice(0, 16) ?? null,
+      expected: `EDGAR 已交 ${graceH} 小时内应入库`,
+    }],
+    info,
+  };
+}
