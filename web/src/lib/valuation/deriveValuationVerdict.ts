@@ -236,6 +236,12 @@ export function deriveValuationVerdict(input: {
   const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
   const IV = hasIv ? (ivRaw as number) : undefined;
 
+  // 两法互斥闸:中枢 IV 低于零增长底 F(ROE 低于折现率的金融股、OE-DCF 口径失效的 REIT/公用事业),
+  // 现价又落在 [IV, F) 之间时,bucket 锚 IV 判"带内",价值带下沿锚 F 显示"低于价值带",页面自相矛盾
+  // (2026-10 生产库:BHF 带 $113、IV $0.13、现价 $45 标"价值带内",共 36 只)。此时一法说不便宜、
+  // 一法说低于底,便宜与否没有可信答案 → 无判定。现价 < IV(两法都说便宜)或 ≥ F 时判定照常。
+  if (IV != null && IV < F && price >= IV && price < F) return null;
+
   let bucket: VerdictBucket;
   let inStrikeZone: boolean;
   let marginPct: number | null;

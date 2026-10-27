@@ -22,6 +22,9 @@ const FRESH_MIN_WEIGHT = 0.03;   // fresh_conviction: 最新季权重 ≥3%
 const LONG_CORE_MIN_QUARTERS = 6; // long_core: 连续持有 ≥6 季
 const LONG_CORE_TOP_N = 5;       // long_core: 最新季权重排组合前 5
 const NEVER_TRIM_MIN_QUARTERS = 4; // never_trimmed: 连续持有 ≥4 季
+// accumulating / fresh_conviction 的最小增幅:加仓须让持股至少多 10%。此前多 1 股就算,
+// Greenhaven GM +0.26%、TCI Visa +0.09% 都被标"重磅加仓"(2026-10 生产库 78 处)。
+const MIN_ADD_GROWTH = 0.1;
 
 // 信号优先级（1 最强）。排序与"取最强档"都用它。
 const PRIORITY: Record<ConvictionSignal, number> = {
@@ -94,9 +97,10 @@ export function deriveConviction(filings: FilingData[], limit = 3): ConvictionPi
 
     // 取最强适用档（spec §3.3：不堆标签）
     let signal: ConvictionSignal | null = null;
-    if (addStreak >= MIN_ADD_STREAK) {
+    const grewEnough = (from: number) => series[from] <= 0 || series[last] >= series[from] * (1 + MIN_ADD_GROWTH);
+    if (addStreak >= MIN_ADD_STREAK && grewEnough(last - addStreak)) {
       signal = "accumulating";
-    } else if (last > 0 && series[last] > series[last - 1] && latestWeight != null && latestWeight >= FRESH_MIN_WEIGHT) { // last>0: 短历史（单季）容忍——单条 filing 无法区分新买/加仓
+    } else if (last > 0 && series[last] > series[last - 1] && grewEnough(last - 1) && latestWeight != null && latestWeight >= FRESH_MIN_WEIGHT) { // last>0: 短历史（单季）容忍——单条 filing 无法区分新买/加仓
       signal = "fresh_conviction";
     } else if (quartersHeld >= LONG_CORE_MIN_QUARTERS && topNCusips.has(cusip)) {
       signal = "long_core";

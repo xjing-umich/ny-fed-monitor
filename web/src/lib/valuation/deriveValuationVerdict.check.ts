@@ -491,4 +491,21 @@ assert.ok(
   "fundamentalsCorrupt=false → 判定照常算出",
 );
 
+// IV<F) 中枢 IV 低于零增长底 F=120(BHF 形态):现价落在 [IV, F) → 两法冲突,无判定;
+//        现价 < IV 仍 below,F ≤ 现价 ≤ 上沿仍 within,高于上沿仍 above。
+{
+  const run = (iv: number, price: number, pos: ValuePosition) =>
+    deriveValuationVerdict({
+      floor: floorStub(),
+      strikeZone: sz(pos, { valueFloor: 120, price }),
+      oeDcf: oeWithIv(iv),
+      reconciliation: recon("within_value_range"),
+    });
+  assert(run(10, 45, "in_strike_zone") === null, "IV 10 ≤ price 45 < F 120 → no verdict (was 'within' below the band)");
+  assert(run(100, 110, "approaching") === null, "IV 100 ≤ price 110 < F 120 → no verdict");
+  assert(run(100, 90, "in_strike_zone")?.bucket === "below", "price 90 < IV 100 < F → below (both cheap)");
+  assert(run(100, 150, "moat_band")?.bucket === "within", "F 120 ≤ price 150 ≤ rangeHi → within");
+  assert(run(100, 350, "above_optimistic")?.bucket === "above", "price > rangeHi → above");
+}
+
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");

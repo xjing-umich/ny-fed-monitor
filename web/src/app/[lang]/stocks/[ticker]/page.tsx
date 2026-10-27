@@ -116,15 +116,19 @@ export async function generateMetadata({
   }
 
   const alternates = altFor(lang, `/stocks/${ticker}`);
+  // 未映射到代码的持仓(多为可转债/票据,如 008073AA6)以 CUSIP 作路由键:不叫"股票",也不进索引。
+  const isCusipKey = /^[0-9A-Z]{8}[0-9]$/i.test(ticker);
+  const noun = isCusipKey ? { zh: "证券", en: "Security" } : { zh: "股票", en: "Stock" };
   const meta =
     lang === "zh"
-      ? { title: `${zhIssuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
+      ? { title: `${zhIssuer}（${ticker}）${noun.zh} — 谁在持有 | Compounder · 复利`,
           description: description?.zh ?? `谁在持有 ${zhIssuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
-      : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
+      : { title: `${issuer} (${ticker}) ${noun.en} — Who's Holding | Compounder`,
           description: description?.en ?? `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
   return {
     ...meta,
     alternates,
+    ...(isCusipKey ? { robots: { index: false, follow: true } } : {}),
     // 本路由自带 opengraph-image(个股卡),不带品牌卡图以免盖掉它。
     ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/stocks/${ticker}`), brandImage: false }),
   };
@@ -527,7 +531,14 @@ export default async function StockTickerPage({
   const expectations = run.expectations;
 
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
-  const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
+  // 最新一期(任何报表)也超 18 个月 → 不展示:PBR/VALE/AEM 改报 20-F/40-F 后 XBRL 只剩
+  // 2011–2014 年的 10-Q,曾以"生意质量 截至 2010-12-31"示人。
+  const newestSecPeriod = [fundamentalsAsOf, sec.latest?.latest_10q_period_end, sec.latest?.latest_10k_period_end]
+    .filter((d): d is string => !!d)
+    .sort()
+    .pop();
+  const secTooOld = newestSecPeriod != null && isFundamentalsStale(newestSecPeriod, new Date().toISOString());
+  const bq = secTooOld ? null : deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
 
   // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于内在价值)。
   const marginShown = !!(

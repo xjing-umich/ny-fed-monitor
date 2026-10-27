@@ -28,7 +28,8 @@ export function priceVsBandAndIv(input: {
   const c = fmt(iv);
   if (lang === "zh") {
     const band = pos === "inside" ? "落在价值带内" : pos === "below" ? "低于价值带" : "高于价值带";
-    const center = rel === "level" ? `与中枢约 ${c} 持平` : `${rel === "below" ? "低于" : "高于"}中枢约 ${c}`;
+    // "低于中枢约 $350" 会被读成"差 $350";括号写明这是中枢本身的值。
+    const center = rel === "level" ? `与中枢（约 ${c}）持平` : `${rel === "below" ? "低于" : "高于"}中枢（约 ${c}）`;
     return `今天的价格 ${p}${date ? `（截至 ${date}）` : " "}${band}，${center}。`;
   }
   const band = pos === "inside" ? "inside the band" : `${pos} the band`;
