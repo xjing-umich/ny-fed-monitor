@@ -119,6 +119,16 @@ function clamp01(x: number): number {
 }
 
 /**
+ * 两法互斥:中枢 IV 低于零增长底 F(ROE 低于折现率的金融股、OE-DCF 口径失效的 REIT/公用事业),
+ * 现价又落在 [IV, F) 之间。bucket 锚 IV 会判"带内",价值带下沿锚 F 会显示"低于价值带",页面自相矛盾
+ * (2026-10 生产库:BHF 带 $113、IV $0.13、现价 $45 标"价值带内",共 36 只)。一法说不便宜、一法说
+ * 低于底 → 无判定。现价 < IV(两法都说便宜)或 ≥ F 时不触发。个股页用它给出不判定的原因。
+ */
+export function ivBelowFloorConflict(v: { iv: number; valueFloor: number; price: number }): boolean {
+  return v.iv < v.valueFloor && v.price >= v.iv && v.price < v.valueFloor;
+}
+
+/**
  * 价值带与现价严重脱节 = 坏数据,判定应整条抑制(返回 null,即"无可信判定")。
  * 守 [[valuation-philosophy-constraint]]:宁可诚实空缺,也不把"打一折"的算崩当真实
  * 安全边际推到最敏感的面(strike zone / below)。screener/卡片/投资人页共用此判据。
@@ -236,11 +246,7 @@ export function deriveValuationVerdict(input: {
   const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
   const IV = hasIv ? (ivRaw as number) : undefined;
 
-  // 两法互斥闸:中枢 IV 低于零增长底 F(ROE 低于折现率的金融股、OE-DCF 口径失效的 REIT/公用事业),
-  // 现价又落在 [IV, F) 之间时,bucket 锚 IV 判"带内",价值带下沿锚 F 显示"低于价值带",页面自相矛盾
-  // (2026-10 生产库:BHF 带 $113、IV $0.13、现价 $45 标"价值带内",共 36 只)。此时一法说不便宜、
-  // 一法说低于底,便宜与否没有可信答案 → 无判定。现价 < IV(两法都说便宜)或 ≥ F 时判定照常。
-  if (IV != null && IV < F && price >= IV && price < F) return null;
+  if (IV != null && ivBelowFloorConflict({ iv: IV, valueFloor: F, price })) return null;
 
   let bucket: VerdictBucket;
   let inStrikeZone: boolean;

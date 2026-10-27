@@ -22,6 +22,7 @@ import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
+import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
 import { altFor, ogFor, datasetLd, breadcrumbLd } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
@@ -524,6 +525,15 @@ export default async function StockTickerPage({
     valuationFloor?.kind === "floor" ? valuationFloor.holdco_sotp : undefined;
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
+  // 两法互斥(中枢 IV < 零增长底且现价夹在中间)→ 引擎不出判定;这里取出数字,卡片写明原因而非留空。
+  const conflictIv = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
+  const conflictFloor = strikeZone?.epv?.valueFloor;
+  const conflictPrice = strikeZone?.price.close;
+  const methodsConflict =
+    !handoffVerdict && conflictIv != null && conflictIv > 0 && conflictFloor != null && conflictPrice != null &&
+    ivBelowFloorConflict({ iv: conflictIv, valueFloor: conflictFloor, price: conflictPrice })
+      ? { iv: conflictIv, floor: conflictFloor, price: conflictPrice }
+      : null;
 
   // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照)。
   // 个股页即使 reliable=false 仍展示「价格在赌什么」(对照用,非确认便宜);ingest/快照仍可
@@ -836,6 +846,10 @@ export default async function StockTickerPage({
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.moatDistorted}</p>
               ) : fundamentalsCorrupt ? (
                 <p className="mt-3 text-sm text-[var(--tt-muted)]">{page.valuation.fundamentalsSuspect}</p>
+              ) : methodsConflict ? (
+                <p className="mt-3 text-sm text-[var(--tt-muted)]">
+                  {page.valuation.methodsConflict(fmtPerShare(methodsConflict.iv), fmtPerShare(methodsConflict.floor), fmtPerShare(methodsConflict.price))}
+                </p>
               ) : (
                 <>
                   <div className="mt-3">
