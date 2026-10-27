@@ -558,6 +558,7 @@ async function main() {
       console.log(`New filings this run: ${newAccessions.length}${newAccessions.length ? ` (${newAccessions.slice(0, 10).join(", ")}${newAccessions.length > 10 ? ", …" : ""})` : ""}`);
     }
     setActionOutput("changed", newAccessions === null || newAccessions.length > 0 ? "true" : "false");
+    if (newAccessions !== null) setActionOutput("new_filings", String(newAccessions.length));
 
     for (const detail of allDetails) {
       try { await upsertManagerDetail(db, detail, FORMER_NAMES[detail.manager.slug]); console.log(`[${detail.manager.slug}] upserted to Supabase`); }
@@ -591,6 +592,7 @@ async function main() {
   // Partial runs (INGEST_ONLY) gate against the filtered seed subset only.
   const expected = seeds.length;
   const succeeded = summaries.length;
+  setActionOutput("managers_ok", String(succeeded));
   const ratio = expected > 0 ? succeeded / expected : 0;
   if (ratio < MIN_SUCCESS_RATIO) {
     console.error(

@@ -1,7 +1,12 @@
 import "server-only";
 import { getDb, selectAllPages } from "@/lib/managers/db";
+import { secFetchJson } from "@/lib/sec/sec-client";
 import {
   evaluate13F,
+  evaluateEdgarSync,
+  evaluateIngestRuns,
+  INGEST_RUN_TYPE_13F,
+  type EdgarLatest13F,
   evaluateDbSize,
   evaluateReport,
   evaluateFundamentalsLag,
@@ -116,9 +121,94 @@ async function gatherReport(today: Date): Promise<{ problems: HealthProblem[]; i
   }
 }
 
+// 13F 工作流运行记录(workflow 最后一步写 price_ingest_runs, run_type='13f')。
+async function gatherIngestRuns(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
+  try {
+    const db = getDb();
+    const [latestQ, successQ] = await Promise.all([
+      db.from("price_ingest_runs").select("status,finished_at,error_message").eq("run_type", INGEST_RUN_TYPE_13F)
+        .order("finished_at", { ascending: false, nullsFirst: false }).limit(1),
+      db.from("price_ingest_runs").select("finished_at").eq("run_type", INGEST_RUN_TYPE_13F).eq("status", "success")
+        .order("finished_at", { ascending: false, nullsFirst: false }).limit(1),
+    ]);
+    if (latestQ.error) throw latestQ.error;
+    if (successQ.error) throw successQ.error;
+    const latest = (latestQ.data?.[0] as { status: string; finished_at: string | null; error_message: string | null }) ?? null;
+    const latestSuccessAt = (successQ.data?.[0] as { finished_at: string | null })?.finished_at ?? null;
+    return evaluateIngestRuns(latest, latestSuccessAt, today);
+  } catch (e) {
+    return { problems: [{ pipeline: "13f", source: "13F 入库运行核查", message: `核查自身出错: ${e instanceof Error ? e.message : String(e)}`, asOf: null, expected: "核查应成功" }], info: [] };
+  }
+}
+
+type SecSubmissions = { filings?: { recent?: { form: string[]; reportDate: string[]; acceptanceDateTime: string[] } } };
+const EDGAR_CONCURRENCY = 5; // SEC 公平访问上限 10 req/s,留余量
+
+/** 每位投资人在 EDGAR 上最新一份 13F-HR(含 /A);取不到的跳过(记入 failed 计数,不当作缺失)。 */
+async function fetchEdgarLatest(managers: { cik: string; slug: string }[]): Promise<{ rows: EdgarLatest13F[]; failed: number }> {
+  const rows: EdgarLatest13F[] = [];
+  let failed = 0;
+  let next = 0;
+  async function worker() {
+    while (next < managers.length) {
+      const m = managers[next++];
+      try {
+        const cik10 = m.cik.replace(/^0+/, "").padStart(10, "0");
+        const r = (await secFetchJson<SecSubmissions>(`https://data.sec.gov/submissions/CIK${cik10}.json`)).filings?.recent;
+        if (!r) continue;
+        let best: EdgarLatest13F | null = null;
+        for (let i = 0; i < r.form.length; i++) {
+          if (r.form[i] !== "13F-HR" && r.form[i] !== "13F-HR/A") continue;
+          const cand = { slug: m.slug, period: r.reportDate[i], acceptedAt: r.acceptanceDateTime[i] };
+          if (!best || cand.period > best.period || (cand.period === best.period && cand.acceptedAt < best.acceptedAt)) best = cand;
+        }
+        if (best) rows.push(best);
+      } catch {
+        failed++;
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: EDGAR_CONCURRENCY }, worker));
+  return { rows, failed };
+}
+
+// EDGAR 对照:已交但超过宽限期仍没入库的 13F-HR → 告警。EDGAR 不可用时降级为 info(不误报)。
+async function gatherEdgarSync(today: Date): Promise<{ problems: HealthProblem[]; info: string[] }> {
+  try {
+    const db = getDb();
+    const [mq, fq] = await Promise.all([
+      db.from("managers").select("cik,slug"),
+      db.from("filings").select("cik,period").range(0, 99999),
+    ]);
+    if (mq.error) throw mq.error;
+    if (fq.error) throw fq.error;
+    const managers = (mq.data ?? []) as { cik: string; slug: string }[];
+    const slugByCik = new Map(managers.map((m) => [m.cik, m.slug]));
+    const dbPeriodsBySlug = new Map<string, Set<string>>();
+    for (const f of (fq.data ?? []) as { cik: string; period: string }[]) {
+      const slug = slugByCik.get(f.cik);
+      if (!slug) continue;
+      (dbPeriodsBySlug.get(slug) ?? dbPeriodsBySlug.set(slug, new Set()).get(slug)!).add(f.period);
+    }
+    const { rows, failed } = await fetchEdgarLatest(managers);
+    const r = evaluateEdgarSync(rows, dbPeriodsBySlug, today);
+    if (failed > 0) r.info.push(`EDGAR 对照: ${failed} 位取数失败,本次跳过`);
+    // 大面积取数失败本身值得一看(SEC 限流 / UA 失效),但不当成"未入库"。
+    if (failed > managers.length / 2) {
+      r.problems.push({ pipeline: "13f", source: "EDGAR 对照", message: `EDGAR 取数失败 ${failed}/${managers.length},无法核对`, asOf: null, expected: "应能读取 SEC submissions" });
+    }
+    return r;
+  } catch (e) {
+    return { problems: [], info: [`EDGAR 对照: 核查不可用(${e instanceof Error ? e.message : String(e)})`] };
+  }
+}
+
 export async function gatherHealth(today: Date): Promise<HealthReport> {
-  const [r13, rPrices, rFund, rCost, rReport] = await Promise.all([gather13F(today), gatherPrices(today), gatherFundamentals(today), gatherCost(today), gatherReport(today)]);
-  const problems = [...r13.problems, ...rPrices.problems, ...rFund.problems, ...rCost.problems, ...rReport.problems];
-  const info = [...r13.info, ...rPrices.info, ...rFund.info, ...rCost.info, ...rReport.info];
+  const parts = await Promise.all([
+    gather13F(today), gatherIngestRuns(today), gatherEdgarSync(today),
+    gatherPrices(today), gatherFundamentals(today), gatherCost(today), gatherReport(today),
+  ]);
+  const problems = parts.flatMap((p) => p.problems);
+  const info = parts.flatMap((p) => p.info);
   return { ok: problems.length === 0, checkedAt: today.toISOString(), problems, info };
 }
