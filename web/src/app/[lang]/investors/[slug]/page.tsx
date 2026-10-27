@@ -18,6 +18,7 @@ import { filingFreshness, freshness13F, isScopeChange, quarterLag, globalLatestP
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
 import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
+import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -78,27 +79,42 @@ export async function generateMetadata({
   const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
   const posCount = longHoldings.length;
   const totalLabel = d.latest ? formatUSD(longTotalValue) : "";
-  const topName =
-    longHoldings.length > 0
-      ? cleanIssuer([...longHoldings].sort((a, b) => b.value - a.value)[0].issuer)
-      : "";
+  const top = longHoldings.length > 0 ? [...longHoldings].sort((a, b) => b.value - a.value)[0] : null;
+  const topName = top
+    ? stockDisplayName(lang, (await getCusipMap()).get(top.cusip)?.ticker ?? "", cleanIssuer(top.issuer))
+    : "";
   const alternates = altFor(lang, `/investors/${slug}`);
   // 中文页用中文名(段永平、巴菲特……);伯克希尔/Daily Journal 按现任掌管人改写,见 displayName.ts。
   const who = managerLabel(lang, slug, person);
   const titleName = managerTitleName(lang, slug, person);
+  // 停报(一年无新 13F)的申报人:标题、描述直接说明是最后一份、已停报 —— 搜索结果和 AI 引用只看得到这两行,
+  // 不能让 "Michael Burry Portfolio — 13F Holdings Q3 2025" 被当成当前持仓。偏旧(落后 2~3 季)的在描述里注明。
+  const globalLatest = globalLatestPeriod((await getManagerIndex()).managers.map((m) => m.period));
+  const fresh = d.latest?.period ? freshness13F(d.latest.period, globalLatest) : "current";
+  const lag = d.latest?.period ? quarterLag(d.latest.period, globalLatest) ?? 0 : 0;
+  const zhLead = fresh === "inactive"
+    ? `${who}（${fundName}）最后一份 SEC 13F 持仓（${q}），此后未再申报`
+    : `${who}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}${fresh === "stale" ? `（最新公开申报，落后 ${lag} 季）` : ""}`;
+  const enLead = fresh === "inactive"
+    ? `${who}'s last SEC 13F (${fundName}), ${q}; none filed since`
+    : `${who}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}${fresh === "stale" ? ` (latest public filing, ${lag} quarters behind)` : ""}`;
   const meta =
     lang === "zh"
       ? {
-          title: `${titleName} — 13F${qSuffix} | Compounder · 复利`,
+          title: fresh === "inactive"
+            ? `${titleName} — 最后一份 13F${qSuffix}（已停报） | Compounder · 复利`
+            : `${titleName} — 13F${qSuffix} | Compounder · 复利`,
           description: posCount === 0 && d.latest
             ? `${who}（${fundName}）${q} 的 SEC 13F 申报持仓为零，未列任何持仓。数据来自 SEC EDGAR。`
-            : `${who}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。含环比变动，数据来自 SEC EDGAR。`,
+            : `${zhLead}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。${fresh === "inactive" ? "为历史数据" : "含环比变动"}，数据来自 SEC EDGAR。`,
         }
       : {
-          title: `${titleName} — 13F Holdings${qSuffix} | Compounder`,
+          title: fresh === "inactive"
+            ? `${titleName} — Last 13F Holdings${qSuffix} (No Longer Filing) | Compounder`
+            : `${titleName} — 13F Holdings${qSuffix} | Compounder`,
           description: posCount === 0 && d.latest
             ? `${who}'s SEC 13F (${fundName}) for ${q} reports zero holdings. Sourced from SEC EDGAR.`
-            : `${who}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. Quarter-over-quarter changes, sourced from SEC EDGAR.`,
+            : `${enLead}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. ${fresh === "inactive" ? "Historical holdings from SEC EDGAR." : "Quarter-over-quarter changes, sourced from SEC EDGAR."}`,
         };
   return {
     ...meta,
@@ -151,7 +167,7 @@ function HoldingsTable({
       role: "primary",
       cell: (h) => (
         <span className="inline-flex items-center gap-1.5">
-          <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} />
+          <EntityName issuer={h.issuer} ticker={cusipToTicker.get(h.cusip) ?? h.cusip} lang={lang} />
           {h.putCall && (
             <span
               className={`rounded-sm px-1 py-0.5 font-data text-xs border border-current/40 ${h.putCall === "Put" ? "text-[var(--tt-warn)]" : "text-[var(--tt-muted)]"}`}
@@ -364,18 +380,18 @@ export default async function InvestorSlugPage({
   // 持仓表(HoldingsTable)仍传入全量 latest.holdings —— 期权行照常列出(后续任务加 PUT/CALL 徽章)。
   const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
 
+  // 页面上的个股名:中文页带通行中文名("苹果 Apple Inc"),与个股页同一叫法。
+  const stockName = (cusip: string, issuer: string): string =>
+    stockDisplayName(lang, cusipToTicker.get(cusip) ?? "", cleanIssuer(issuer));
+
   // Key facts
-  const topHolding =
-    longHoldings.length > 0
-      ? cleanIssuer([...longHoldings].sort((a, b) => b.value - a.value)[0].issuer)
-      : "—";
+  const top = longHoldings.length > 0 ? [...longHoldings].sort((a, b) => b.value - a.value)[0] : null;
+  const topHolding = top ? stockName(top.cusip, top.issuer) : "—";
 
   // 分享文案数据（确定性，缺失走退化）
-  const shareTopHolding =
-    longHoldings.length > 0
-      ? [...longHoldings].sort((a, b) => b.value - a.value)[0].issuer
-      : null;
-  const shareAddedName = longChanges.find((c) => c.kind === "new")?.issuer ?? null;
+  const shareTopHolding = top ? topHolding : null;
+  const added = longChanges.find((c) => c.kind === "new");
+  const shareAddedName = added ? stockName(added.cusip, added.issuer) : null;
   const shareUrl = absoluteUrl(investorPath(lang, slug));
   const shareText = buildShareText(
     { kind: "investor", managerName: who, topHolding: shareTopHolding, addedName: shareAddedName },
@@ -617,7 +633,7 @@ export default async function InvestorSlugPage({
             </div>
           )}
           {prior && longChanges.length > 0 && moves.exited > 0 && (
-            <QuarterMovesExited lang={lang} exits={longChanges.filter((c) => c.kind === "exited").map((c) => ({ name: cleanIssuer(c.issuer), href: stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip) }))} />
+            <QuarterMovesExited lang={lang} exits={longChanges.filter((c) => c.kind === "exited").map((c) => ({ name: stockDisplayName(lang, cusipToTicker.get(c.cusip) ?? "", cleanIssuer(c.issuer)), href: stockPath(lang, cusipToTicker.get(c.cusip) ?? c.cusip) }))} />
           )}
           {(() => {
             const held = holdingTickers.map((tk) => verdicts.get(tk.toUpperCase())).filter(Boolean) as SnapshotVerdict[];
@@ -648,7 +664,7 @@ export default async function InvestorSlugPage({
                       href={stockPath(lang, h.ticker)}
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
-                      {cleanIssuer(h.issuer)}
+                      {stockDisplayName(lang, h.ticker, cleanIssuer(h.issuer))}
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </Link>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
@@ -668,7 +684,7 @@ export default async function InvestorSlugPage({
                       href={stockPath(lang, h.ticker)}
                       className="min-w-0 truncate text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
-                      {cleanIssuer(h.issuer)}
+                      {stockDisplayName(lang, h.ticker, cleanIssuer(h.issuer))}
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </Link>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)]">
@@ -704,7 +720,7 @@ export default async function InvestorSlugPage({
                       href={stockPath(lang, h.ticker)}
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
-                      {cleanIssuer(h.issuer)}
+                      {stockDisplayName(lang, h.ticker, cleanIssuer(h.issuer))}
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </Link>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">

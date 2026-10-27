@@ -79,9 +79,9 @@ export function cleanIssuer(raw: string): string {
 // 固定写法:缩写、品牌大小写、13F 里的简写。键是标题化之后的单词。只列确知的,不做猜测式全大写。
 const WORD_CASE: Record<string, string> = {
   // 法律形式与通用缩写
-  Etf: "ETF", Adr: "ADR", Us: "US", Usa: "USA", Uk: "UK", Plc: "PLC", Llc: "LLC", Lp: "LP", Nv: "NV", Sa: "SA",
+  Etf: "ETF", Adr: "ADR", Us: "US", Usa: "USA", Uk: "UK", Plc: "PLC", Llc: "LLC", Lp: "LP", Llp: "LLP", Nv: "NV", Sa: "SA",
   Ag: "AG", Se: "SE", Asa: "ASA", Sab: "SAB", Cv: "CV", Pbc: "PBC", Reit: "REIT", Ai: "AI", Xm: "XM",
-  Msci: "MSCI", Spdr: "SPDR", Ftse: "FTSE", Qqq: "QQQ", Iii: "III", "G-Iii": "G-III", Lpg: "LPG",
+  Msci: "MSCI", Spdr: "SPDR", Ftse: "FTSE", Qqq: "QQQ", Ii: "II", Iii: "III", "G-Iii": "G-III", Lpg: "LPG",
   // 13F 简写
   Hldgs: "Holdings", Mgmt: "Management", Intl: "International", Natl: "National", Bcshs: "Bancshares",
   // 字母缩写的公司名
@@ -113,6 +113,23 @@ function fixWordCase(w: string, i: number): string {
   if (i > 0 && LOWER_MID.has(w)) return w.toLowerCase();
   if (/\.Com$/.test(w)) return w.replace(/\.Com$/, ".com").replace(/^Jd\./, "JD.");
   return w;
+}
+
+/**
+ * 全大写的申报主体(基金)名转展示名:"VIKING GLOBAL INVESTORS LP" → "Viking Global Investors LP"、
+ * "HARRIS ASSOCIATES L P" → "Harris Associates LP"。只修大小写和法律形式写法,不动名称主体。
+ */
+export function cleanFilerName(raw: string): string {
+  return titleCase(raw)
+    .replace(/\s+/g, " ")
+    .replace(/ L P$/, " LP") // "Harris Associates L P";"L.P." 本来就对,不动
+    .split(" ")
+    .map((w, i) => {
+      const bare = w.replace(/,$/, "");
+      const fixed = /^\d+[a-z]$/.test(bare) ? bare.toUpperCase() : fixWordCase(bare, i); // "7g" → "7G"
+      return w.endsWith(",") ? `${fixed},` : fixed;
+    })
+    .join(" ");
 }
 
 // 13F 名被截断到 28 字符、规则补不回来的(多为 ETF),按清洗后的样子写出全名。

@@ -1,4 +1,4 @@
-import { formatUSD, fmtMarginPct, cleanIssuer } from "./format";
+import { formatUSD, fmtMarginPct, cleanIssuer, cleanFilerName } from "./format";
 function assert(c: boolean, m: string){ if(!c){ console.error("FAIL:", m); process.exit(1);} }
 assert(formatUSD(999_999_999) === "$1.00B", `边界滚B, got ${formatUSD(999_999_999)}`);
 assert(formatUSD(1_500_000_000) === "$1.50B", "常规B");
@@ -32,5 +32,19 @@ for (const [raw, want] of names) {
   const got = cleanIssuer(raw);
   assert(got === want, `cleanIssuer(${raw}) → ${got}, want ${want}`);
   assert(cleanIssuer(got) === got, `cleanIssuer 幂等: ${got} → ${cleanIssuer(got)}`);
+}
+// 申报主体名:法律形式写回大写(线上曾显示 "Viking Global Investors Lp"、"Harris Associates L P")。
+const filers: [string, string][] = [
+  ["VIKING GLOBAL INVESTORS LP", "Viking Global Investors LP"],
+  ["MILLER VALUE PARTNERS, LLC", "Miller Value Partners, LLC"],
+  ["HARRIS ASSOCIATES L P", "Harris Associates LP"],
+  ["7G CAPITAL MANAGEMENT, LLC", "7G Capital Management, LLC"],
+  ["BERKSHIRE HATHAWAY INC", "Berkshire Hathaway Inc"],
+  ["VAN DEN BERG MANAGEMENT I, INC", "Van Den Berg Management I, Inc"],
+  ["BANK OF AMERICA CORP", "Bank of America Corp"],
+];
+for (const [raw, want] of filers) {
+  const got = cleanFilerName(raw);
+  assert(got === want, `cleanFilerName(${raw}) → ${got}, want ${want}`);
 }
 console.log("format.check OK");

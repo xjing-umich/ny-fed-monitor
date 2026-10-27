@@ -5,13 +5,13 @@
 
 import type { ManagerDetail, Holding } from "./types";
 import type { Lang } from "@/lib/nav";
-import { cleanIssuer, formatUSD, titleCase } from "@/lib/format";
+import { cleanIssuer, cleanFilerName, formatUSD } from "@/lib/format";
 import { managerLabel } from "./displayName";
 
-// 基金名展示化: 仅当名称全大写(EDGAR 原始态, 如 "BERKSHIRE HATHAWAY INC")才标题化;
-// 已是混合大小写的策展名(如 "Appaloosa LP"、"Fundsmith LLP")原样保留, 避免 LP→Lp 被误改。
+// 基金名展示化: 仅当名称全大写(EDGAR 原始态, 如 "BERKSHIRE HATHAWAY INC")才标题化, 并把 LLC/LP 等法律形式写回大写;
+// 已是混合大小写的策展名(如 "Appaloosa LP"、"Fundsmith LLP")原样保留。
 export const displayFundName = (name: string): string =>
-  name === name.toUpperCase() ? titleCase(name) : name;
+  name === name.toUpperCase() ? cleanFilerName(name) : name;
 
 // 段落以 segment 序列表示: 纯字符串, 或一个指向个股页的内链 token(cusip→ticker 由组件解析)。
 // 让 lib 保持无 JSX、可测; 内链既服务正文阅读, 也稠化站内链接(任务 3)。

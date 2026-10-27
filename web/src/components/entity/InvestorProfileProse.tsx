@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
 import type { ProseParagraph } from "@/lib/managers/profileProse";
+import { stockDisplayName } from "@/lib/stocks/zhNames";
 
 /**
  * 投资人页的确定性服务端正文(纯 SSR, 零 client JS)。每段由真实 13F 数字派生、彼此独一无二,
@@ -39,7 +40,7 @@ export function InvestorProfileProse({
                   href={stockPath(lang, cusipToTicker.get(seg.cusip) ?? seg.cusip)}
                   className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
                 >
-                  {seg.label}
+                  {stockDisplayName(lang, cusipToTicker.get(seg.cusip) ?? "", seg.label)}
                 </Link>
               ),
             )}
