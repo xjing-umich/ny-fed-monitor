@@ -441,7 +441,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "The most widely held stocks",
           paragraphs: [
             "[[stock:MSFT|Microsoft]] was the most common holding, in 41 of those 92 portfolios. [[stock:GOOGL|Alphabet]]'s A shares came next at 40, then [[stock:AMZN|Amazon]] at 37 and Alphabet's C shares at 35. [[stock:META|Meta]] closed out the top five at 33. Together those five lines appear in 186 portfolios. [[stock:V|Visa]] (31), [[stock:TSM|Taiwan Semiconductor]] (28), [[stock:AAPL|Apple]] (27), and [[stock:BRK.B|Berkshire Hathaway]] (26) come next, with [[stock:DIS|Disney]] and [[stock:MA|Mastercard]] tied at 21.",
-            "Holder count and dollars can tell different stories. Apple has 27 holders among these investors, which sounds like broad agreement. But [[investor:berkshire-hathaway|Warren Buffett]]'s $65.95 billion stake is 86% of the $76.77 billion they hold in it between them. By headcount Apple is a consensus name. By dollars it is mostly one investor's position.",
+            "Holder count and dollars can tell different stories. Apple has 27 holders among these investors, which sounds like broad agreement. But [[investor:berkshire-hathaway|Berkshire Hathaway]]'s $65.95 billion stake is 86% of the $76.77 billion they hold in it between them. By headcount Apple is a consensus name. By dollars it is mostly one investor's position.",
           ],
         },
         {
@@ -484,7 +484,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         { kind: "stock", id: "AAPL", label: "Apple" },
         { kind: "stock", id: "VEEV", label: "Veeva Systems" },
         { kind: "stock", id: "UNH", label: "UnitedHealth" },
-        { kind: "investor", id: "berkshire-hathaway", label: "Warren Buffett" },
+        { kind: "investor", id: "berkshire-hathaway", label: "Berkshire Hathaway" },
         { kind: "investor", id: "fundsmith", label: "Terry Smith" },
       ],
     },
@@ -511,7 +511,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "被最多机构持有的股票",
           paragraphs: [
             "[[stock:MSFT|Microsoft]] 是被持有得最广的标的,这 92 个组合里有 41 个持有它。其后是 [[stock:GOOGL|Alphabet]] 的 A 类股,40 家;[[stock:AMZN|Amazon]] 37 家;Alphabet 的 C 类股 35 家。[[stock:META|Meta]] 以 33 家收住前五。这五行加起来出现在 186 个组合里。再往下是 [[stock:V|Visa]](31)、[[stock:TSM|台积电]](28)、[[stock:AAPL|Apple]](27)和 [[stock:BRK.B|Berkshire Hathaway]](26),[[stock:DIS|Disney]] 和 [[stock:MA|Mastercard]] 以 21 家并列第十。",
-            "家数和金额,讲的可能是两回事。Apple 在这批投资人里有 27 家持有,听上去是广泛共识。可这些人合计持有的 767.7 亿美元里,[[investor:berkshire-hathaway|巴菲特]]一家就占了 659.5 亿,约 86%。按家数数,Apple 是共识股;按金额看,它基本是一个人的仓位。",
+            "家数和金额,讲的可能是两回事。Apple 在这批投资人里有 27 家持有,听上去是广泛共识。可这些人合计持有的 767.7 亿美元里,[[investor:berkshire-hathaway|伯克希尔]]一家就占了 659.5 亿,约 86%。按家数数,Apple 是共识股;按金额看,它基本是一家的仓位。",
           ],
         },
         {
@@ -554,7 +554,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         { kind: "stock", id: "AAPL", label: "Apple" },
         { kind: "stock", id: "VEEV", label: "Veeva Systems" },
         { kind: "stock", id: "UNH", label: "UnitedHealth" },
-        { kind: "investor", id: "berkshire-hathaway", label: "巴菲特" },
+        { kind: "investor", id: "berkshire-hathaway", label: "伯克希尔" },
         { kind: "investor", id: "fundsmith", label: "Terry Smith" },
       ],
     },

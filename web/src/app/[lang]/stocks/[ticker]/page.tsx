@@ -15,6 +15,8 @@ import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLa
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, localePath } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
+import { managerLabel } from "@/lib/managers/displayName";
+import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
@@ -87,6 +89,8 @@ export async function generateMetadata({
   const cusipMap = await getCusipMap();
   let issuer = ticker;
   for (const c of cusips) { const info = cusipMap.get(c); if (info?.name) { issuer = cleanIssuer(info.name); break; } }
+  // 中文页标题/描述带通行中文名("苹果 Apple Inc"),中文用户按中文名搜。
+  const zhIssuer = stockDisplayName("zh", ticker, issuer);
 
   // 数据驱动 description:持有人数/合计市值/截至季度/最大持有人,与页面持有人表同源同口径
   // (快照非清仓行、按 countsAsCurrentHolder 排除逾期未申报者;"截至"走 effectiveMovesPeriod)。readStockHolders/getManagerIndex 有 cache(),
@@ -101,20 +105,21 @@ export async function generateMetadata({
   if (held.length > 0 && displayPeriod) {
     const n = held.length;
     const total = formatUSD(held.reduce((s, r) => s + r.value, 0));
-    const top = [...held].sort((a, b) => b.value - a.value)[0].person;
+    const topRow = [...held].sort((a, b) => b.value - a.value)[0];
+    const topFor = (l: Lang) => managerLabel(l, topRow.slug, topRow.person);
     const q = quarterLabel(displayPeriod);
     const mixed = held.some((r) => r.period && r.period !== displayPeriod);
     description = {
-      zh: `${n} 位超级投资者持有 ${issuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}），最大持有人 ${top}。各家仓位与季度增减，来自 SEC 13F 申报。`,
-      en: `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined as of ${q}${mixed ? " (most filings)" : ""}, led by ${top}. Position sizes and quarter-over-quarter moves from SEC 13F filings.`,
+      zh: `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}），最大持有人 ${topFor("zh")}。各家仓位与季度增减，来自 SEC 13F 申报。`,
+      en: `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined as of ${q}${mixed ? " (most filings)" : ""}, led by ${topFor("en")}. Position sizes and quarter-over-quarter moves from SEC 13F filings.`,
     };
   }
 
   const alternates = altFor(lang, `/stocks/${ticker}`);
   const meta =
     lang === "zh"
-      ? { title: `${issuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
-          description: description?.zh ?? `谁在持有 ${issuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
+      ? { title: `${zhIssuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
+          description: description?.zh ?? `谁在持有 ${zhIssuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
       : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
           description: description?.en ?? `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
   return {
@@ -338,7 +343,7 @@ export default async function StockTickerPage({
       const countMove = inDisplayQuarter(r.period);
       // 清仓行: 仅计数 + 收进表底 chip 列表, 不进持有人表。
       if (r.kind === "exited") {
-        if (countMove) { moves.exited++; exitedHolders.push({ person: r.person, slug: r.slug }); }
+        if (countMove) { moves.exited++; exitedHolders.push({ person: managerLabel(lang, r.slug, r.person), slug: r.slug }); }
         continue;
       }
       issuerFreq[r.issuer] = (issuerFreq[r.issuer] ?? 0) + 1;
@@ -347,7 +352,7 @@ export default async function StockTickerPage({
         else if (r.kind === "increased") moves.added++;
         else if (r.kind === "decreased") moves.trimmed++;
       }
-      holders.push({ person: r.person, slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined, period: r.period ?? undefined });
+      holders.push({ person: managerLabel(lang, r.slug, r.person), slug: r.slug, value: r.value, shares: r.shares, weight: r.weight, priorWeight: r.priorWeight, kind: r.kind ?? undefined, period: r.period ?? undefined });
     }
     trendPoints = (await readStockTrend(ticker)) ?? [];
   } else {
@@ -366,7 +371,7 @@ export default async function StockTickerPage({
       // QoQ 口径(零新增 IO)：上季同票权重取自 d.prior，本季动作 kind 取自 d.changes。
       const priorWeight = d.prior?.holdings.find((p) => !p.putCall && targetCusips.has(p.cusip))?.weight;
       const kind = d.changes.find((c) => !c.putCall && targetCusips.has(c.cusip))?.kind;
-      holders.push({ person: summary.person, slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind, period: d.latest.period });
+      holders.push({ person: managerLabel(lang, summary.slug, summary.person), slug: summary.slug, value: h.value, shares: h.shares, weight: h.weight, priorWeight, kind, period: d.latest.period });
     }
     // 本季动作 + 清仓 chip(按持有人计, 含已清仓者): 复用已加载的 details.changes, 零新增 IO。
     for (const { summary, detail: d } of details) {
@@ -379,7 +384,7 @@ export default async function StockTickerPage({
       if (ch.kind === "new") moves.opened++;
       else if (ch.kind === "increased") moves.added++;
       else if (ch.kind === "decreased") moves.trimmed++;
-      else if (ch.kind === "exited") { moves.exited++; exitedHolders.push({ person: summary.person, slug: summary.slug }); }
+      else if (ch.kind === "exited") { moves.exited++; exitedHolders.push({ person: managerLabel(lang, summary.slug, summary.person), slug: summary.slug }); }
     }
     // 持有人数趋势: 跨全部 manager 的 filings 历史, 按 period 统计持有本票的人数。
     const periodCounts = new Map<string, number>();
@@ -403,6 +408,8 @@ export default async function StockTickerPage({
   const coOwned = await readCoOwnership(ticker);
 
   const issuer = cleanIssuer(Object.entries(issuerFreq).sort((a, b) => b[1] - a[1])[0][0]);
+  // 页头、面包屑、FAQ 用的名字:中文页带通行中文名("苹果 Apple Inc"),英文页就是 issuer。
+  const displayName = stockDisplayName(lang, ticker, issuer);
   const n = holders.length;
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
@@ -544,7 +551,7 @@ export default async function StockTickerPage({
 
   const breadcrumb = breadcrumbLd(lang, [
     { name: page.breadcrumbStocks, path: localePath(lang, "/stocks") },
-    { name: issuer, path: localePath(lang, `/stocks/${ticker}`) },
+    { name: displayName, path: localePath(lang, `/stocks/${ticker}`) },
   ]);
 
   // FAQ structured data — answers the canonical "who holds X?" query with the
@@ -558,21 +565,22 @@ export default async function StockTickerPage({
         "@type": "Question",
         name:
           lang === "zh"
-            ? `哪些超级投资者持有 ${issuer}（${ticker}）？`
+            ? `哪些超级投资者持有 ${displayName}（${ticker}）？`
             : `Which superinvestors hold ${issuer} (${ticker})?`,
         acceptedAnswer: {
           "@type": "Answer",
           text:
             lang === "zh"
-              ? `根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${issuer}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
+              ? `根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
               : `Per each investor's latest SEC 13F filing (${mixedPeriods ? "most for " : ""}the quarter ended ${asOfPeriod}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
         },
       },
     ],
   };
 
-  // 个股别名外露:公司名变体 + 票代(CUSIP 不外露——非用户语义;中文名待 Tier 2)。
-  const stockAliases = (await getEntityAliases("stock", ticker)).filter(
+  // 个股别名外露:公司名变体 + 票代 + 通行中文名(CUSIP 不外露——非用户语义)。
+  const zhName = stockZhName(ticker);
+  const stockAliases = [...(await getEntityAliases("stock", ticker)), ...(zhName ? [zhName] : [])].filter(
     (a) => a !== issuer && a !== ticker
   );
   // 上市公司实体:Corporation + tickerSymbol(schema.org 约定 "交易所 代码",交易所未知时只给代码)。不设 url——
@@ -615,7 +623,7 @@ export default async function StockTickerPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }} />
       <EntityPage
         lang={lang}
-        title={issuer}
+        title={displayName}
         titleMeta={ticker}
         subtitle={subtitle}
         disclaimer={disclaimer}

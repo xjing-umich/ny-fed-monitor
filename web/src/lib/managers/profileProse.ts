@@ -6,6 +6,7 @@
 import type { ManagerDetail, Holding } from "./types";
 import type { Lang } from "@/lib/nav";
 import { cleanIssuer, formatUSD, titleCase } from "@/lib/format";
+import { managerLabel } from "./displayName";
 
 // 基金名展示化: 仅当名称全大写(EDGAR 原始态, 如 "BERKSHIRE HATHAWAY INC")才标题化;
 // 已是混合大小写的策展名(如 "Appaloosa LP"、"Fundsmith LLP")原样保留, 避免 LP→Lp 被误改。
@@ -116,13 +117,13 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
     const p: ProseParagraph = [];
     if (en) {
       p.push(
-        `Against the prior quarter, ${manager.person} opened ${news.length} new ${news.length === 1 ? "position" : "positions"}, exited ${exits.length}, added to ${incs.length}, and trimmed ${decs.length}.`,
+        `Against the prior quarter, ${managerLabel(lang, manager.slug, manager.person)} opened ${news.length} new ${news.length === 1 ? "position" : "positions"}, exited ${exits.length}, added to ${incs.length}, and trimmed ${decs.length}.`,
       );
       if (news[0]) p.push(" The largest new buy was ", stock(cleanIssuer(news[0].issuer), news[0].cusip), ".");
       if (exits[0]) p.push(" The most notable sale was the full exit from ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), ".");
     } else {
       p.push(
-        `较上一季度，${manager.person} 新建 ${news.length} 个持仓，清仓 ${exits.length} 个，加仓 ${incs.length} 个，减仓 ${decs.length} 个。`,
+        `较上一季度，${managerLabel(lang, manager.slug, manager.person)} 新建 ${news.length} 个持仓，清仓 ${exits.length} 个，加仓 ${incs.length} 个，减仓 ${decs.length} 个。`,
       );
       if (news[0]) p.push("其中最大的新建仓位是 ", stock(cleanIssuer(news[0].issuer), news[0].cusip), "。");
       if (exits[0]) p.push("最受关注的卖出是清仓 ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), "。");

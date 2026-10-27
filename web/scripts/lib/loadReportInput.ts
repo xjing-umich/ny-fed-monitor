@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import { isExpectedFiler } from "../../src/lib/freshness/derive";
 import { isImplausibleBand } from "../../src/lib/valuation/deriveValuationVerdict";
 import { readAll } from "./computeConsensus";
+import { managerLabel } from "../../src/lib/managers/displayName";
 import type { ReportHolding, ReportInput, ReportManagerInput } from "../../src/lib/reports/types";
 
 type FilingRow = { id: number; period: string; filed_at: string | null };
@@ -80,12 +81,8 @@ export function expectedOnly<T extends { latestPeriod: string | null }>(all: T[]
 }
 
 export async function loadReportInput(db: SupabaseClient, period: string): Promise<{ input: ReportInput; valuationAsOf: string | null }> {
-  const seeds = JSON.parse(fs.readFileSync(path.join(__dirname, "../../config/managers.json"), "utf8")) as Array<{ slug: string; people?: Array<{ name: string; zh?: string }> }>;
-  const zhBySlug = new Map<string, string | null>(seeds.map((s) => [s.slug, s.people?.[0]?.zh ?? null]));
   const featured = parseFeaturedConfig(JSON.parse(fs.readFileSync(path.join(__dirname, "../../config/report-featured.json"), "utf8")));
   const featuredSlugs = featured.slugs;
-  // 名家清单里的中文名优先(managers.json 只给少数人配了中文名)。
-  for (const [slug, zh] of featured.zhBySlug) zhBySlug.set(slug, zh);
 
   const cusipMap = new Map<string, { ticker: string | null; name: string | null }>();
   for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer", (q) => q.order("cusip", { ascending: true })))
@@ -104,8 +101,9 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
   for (const r of active) {
     out.push({
       slug: r.m.slug,
-      person: r.m.person,
-      personZh: zhBySlug.get(r.m.slug) ?? null,
+      // 展示名与站内同源(displayName.ts):中文名取名家清单/managers.json;伯克希尔、Daily Journal 按现任掌管人写。
+      person: managerLabel("en", r.m.slug, r.m.person),
+      personZh: managerLabel("zh", r.m.slug, r.m.person) === r.m.person ? null : managerLabel("zh", r.m.slug, r.m.person),
       current: await holdingsOf(r.current),
       prior: await holdingsOf(r.prior),
     });

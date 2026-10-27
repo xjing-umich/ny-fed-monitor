@@ -1,5 +1,6 @@
 import { ogCard, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/ogCard";
 import { getManagerDetail } from "@/lib/managers/source";
+import { managerLabel } from "@/lib/managers/displayName";
 
 export const alt = "Superinvestor 13F holdings — Compounder";
 export const size = OG_SIZE;
@@ -17,7 +18,7 @@ export default async function Image({
   const isEn = lang !== "zh";
 
   const d = await getManagerDetail(slug);
-  const person = d?.manager.person ?? slug;
+  const person = d ? managerLabel(isEn ? "en" : "zh", slug, d.manager.person) : slug;
   const fund = d?.manager.name ?? "";
 
   return ogCard({

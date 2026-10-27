@@ -9,9 +9,9 @@ const eq = (a: string[], b: string[]) => JSON.stringify([...a].sort()) === JSON.
 // 巴菲特页:只留本人中文名;接班人/芒格/票代/伯克希尔/EDGAR 曾用名都不算巴菲特的别名。
 const brk = personNameAliases("berkshire-hathaway", "Warren Buffett");
 assert(eq(brk, ["巴菲特", "沃伦巴菲特"]), `berkshire → ${JSON.stringify(brk)}`);
-// 无 people[] 的投资人:INVESTOR_ALIASES 首词作锚,包含它的全名保留,基金名去掉。
+// 无 people[] 的投资人:INVESTOR_ALIASES 首词作锚,包含它的全名保留,基金名去掉;名家清单的中文全名也算。
 const ps = personNameAliases("pershing-square", "Bill Ackman");
-assert(eq(ps, ["阿克曼", "比尔阿克曼"]), `pershing → ${JSON.stringify(ps)}`);
+assert(eq(ps, ["阿克曼", "比尔阿克曼", "比尔·阿克曼"]), `pershing → ${JSON.stringify(ps)}`);
 const hk = personNameAliases("southeastern-asset", "Mason Hawkins");
 assert(eq(hk, ["霍金斯", "梅森霍金斯"]), `southeastern → ${JSON.stringify(hk)}`);
 // 以姓开头或以姓结尾的基金名不算本人别名。

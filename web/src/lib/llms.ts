@@ -14,6 +14,7 @@ import { getLegalDoc, type LegalDoc } from "@/lib/legal";
 import { absoluteUrl, localePath, stockPath, investorPath } from "@/lib/urls";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { displayFundName } from "@/lib/managers/profileProse";
+import { managerLabel } from "@/lib/managers/displayName";
 
 // /llms.txt 与 /llms-full.txt 的正文(llmstxt.org 规范:H1 → 摘要 blockquote → 说明段 → H2 分节链接)。
 // 数据相关的句子(最新季度、申报覆盖、榜单)从库里现算,与站内页面同一口径(effectiveMovesPeriod),
@@ -137,6 +138,15 @@ export async function buildLlmsTxt(): Promise<string> {
   return lines.join("\n");
 }
 
+// Learn 正文里的实体内链标记 [[investor:slug|Label]] / [[stock:TICKER|Label]](页面上渲染成 <Link>,
+// 见 learn/[slug]/page.tsx)。纯文本里要转成 Markdown 链接,否则 AI 读到的是原始标记。
+const ENTITY_TOKEN = /\[\[(investor|stock):([^|\]]+)\|([^\]]+)\]\]/g;
+function entityLinksToMarkdown(text: string): string {
+  return text.replace(ENTITY_TOKEN, (_, kind: string, id: string, label: string) =>
+    `[${label}](${absoluteUrl(kind === "investor" ? investorPath("en", id) : stockPath("en", id))})`,
+  );
+}
+
 function docText(doc: LegalDoc, level: "##" | "###"): string[] {
   const sub = level === "##" ? "###" : "####";
   return [
@@ -154,7 +164,9 @@ export async function buildLlmsFullTxt(): Promise<string> {
   const [held, moves, idx] = await Promise.all([mostHeld(25), notableMoves(15), getManagerIndex()]);
   const q = ctx.eff.period ? quarterLabel(ctx.eff.period) : "the baseline quarter";
 
-  const managers = [...idx.managers].sort((a, b) => a.person.localeCompare(b.person));
+  const managers = [...idx.managers].sort((a, b) =>
+    managerLabel("en", a.slug, a.person).localeCompare(managerLabel("en", b.slug, b.person)),
+  );
   const lines = [
     ...header(ctx, "Compounder (full text)"),
     "",
@@ -182,7 +194,7 @@ export async function buildLlmsFullTxt(): Promise<string> {
     `### Tracked superinvestors (${managers.length})`,
     "",
     ...managers.map(
-      (m) => `- ${m.person} (${displayFundName(m.name)}): latest 13F for ${quarterLabel(m.period)}. ${absoluteUrl(investorPath("en", m.slug))}`,
+      (m) => `- ${managerLabel("en", m.slug, m.person)} (${displayFundName(m.name)}): latest 13F for ${quarterLabel(m.period)}. ${absoluteUrl(investorPath("en", m.slug))}`,
     ),
     "",
     "## Methodology and data scope",
@@ -197,9 +209,9 @@ export async function buildLlmsFullTxt(): Promise<string> {
       "",
       `${url(`/learn/${a.slug}`)} · Last updated ${a.updated}${a.snapshotPeriod ? ` · Snapshot of ${quarterLabel(a.snapshotPeriod)} data` : ""}`,
       "",
-      a.intro,
+      entityLinksToMarkdown(a.intro),
       "",
-      ...a.sections.flatMap((s) => [`#### ${s.heading}`, "", ...s.paragraphs.flatMap((p) => [p, ""])]),
+      ...a.sections.flatMap((s) => [`#### ${s.heading}`, "", ...s.paragraphs.flatMap((p) => [entityLinksToMarkdown(p), ""])]),
     ]),
   ];
   return lines.join("\n");

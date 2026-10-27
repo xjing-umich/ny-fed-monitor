@@ -11,6 +11,7 @@ import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { LinkDirectory } from "@/components/list/LinkDirectory";
 import { ListFallback } from "@/components/list/ListFallback";
+import { managerLabel } from "@/lib/managers/displayName";
 
 // 页头在服务端渲染(而非放进客户端列表组件):列表组件读 useSearchParams,预渲染时整块
 // 落到 Suspense fallback,页头放在里面 → 服务端 HTML 没有 H1。
@@ -82,7 +83,8 @@ export default async function InvestorsPage({
   const managers = [...idx.managers]
     .sort((a, b) => b.totalValue - a.totalValue)
     // 零持仓季(holdingCount 0):manager_qoq RPC 只看有 holdings 行的申报,会拿上两季比,与本行季度对不上 → 不显 QoQ。
-    .map((m) => ({ ...m, qoq: m.holdingCount === 0 ? undefined : qoq.get(m.cik) }));
+    // label:展示名(中文站用中文名),服务端算好再传给客户端列表,免得把别名配置打进前端包。
+    .map((m) => ({ ...m, label: managerLabel(lang, m.slug, m.person), qoq: m.holdingCount === 0 ? undefined : qoq.get(m.cik) }));
 
   const head = HEAD[lang];
 
@@ -100,7 +102,7 @@ export default async function InvestorsPage({
         title={head.dirTitle(managers.length)}
         items={managers.map((m) => ({
           href: investorPath(lang, m.slug),
-          label: m.person,
+          label: m.label,
           note: displayFundName(m.name),
         }))}
       />
