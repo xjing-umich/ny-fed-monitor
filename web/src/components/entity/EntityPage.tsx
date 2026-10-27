@@ -99,7 +99,9 @@ export function EntityPage({
       <div className="space-y-6 sm:space-y-7">{children}</div>
 
       {/* ⑤ Source footer + optional compliance line (kept out of masthead to free the standfirst) */}
-      <SourceFooter lang={lang} sources={sources} />
+      <div id="sources" className="scroll-mt-32">
+        <SourceFooter lang={lang} sources={sources} />
+      </div>
       {disclaimer && (
         <p className="-mt-4 max-w-3xl text-xs leading-relaxed text-[var(--tt-muted)]">
           {disclaimer}
