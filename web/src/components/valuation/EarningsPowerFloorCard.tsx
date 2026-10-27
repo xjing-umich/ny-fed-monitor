@@ -96,6 +96,8 @@ const COPY = {
     modelCautions: "Model cautions",
     methodDisclaimer: "A conservative intrinsic-value band (zero-growth floor to growth-capped DCF) plus a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
     priceUnavailable: "No usable market price is available, so this page does not place price on the value gauge.",
+    earningsValueUnavailable: "Earnings in the filings don't support a positive per-share value (typically a company still losing money), so this page does not place price on the value gauge.",
+    currencyMismatch: (cur: string) => `The price is quoted in ${cur} while per-share values come from USD filings, so the two aren't comparable and this page does not place price on the value gauge.`,
     priceAsOf: "Price as of",
     mayBeStale: "may be stale",
     reproductionValue: "Reproduction value",
@@ -142,6 +144,8 @@ const COPY = {
     modelCautions: "模型警示",
     methodDisclaimer: "保守内在价值带（零增长底到增速封顶的 DCF）加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
     priceUnavailable: "缺少可用市场价格，因此不把现价放进价值带位置条。",
+    earningsValueUnavailable: "按现有财报，盈利撑不出一个为正的每股价值（常见于仍在亏损的公司），因此不把现价放进价值带位置条。",
+    currencyMismatch: (cur: string) => `现价以 ${cur} 计价，每股价值按美元财报算，两者不可比，因此不把现价放进价值带位置条。`,
     priceAsOf: "价格截至",
     mayBeStale: "可能已过时",
     reproductionValue: "重置价值",
@@ -669,16 +673,27 @@ function ValueSpine({
   );
 }
 
-// Price-free fallback: no axis is meaningful without a price, so keep the public
-// read to one sentence and leave numbers in MethodDetails.
-function CompactFloor({ suppressedReason, lang }: { suppressedReason?: string; lang: Lang }) {
+// 没有价格轴时,按真实原因说一句:缺现价 / 盈利撑不出正的每股价值 / 币种不可比。
+// 页面若已在旁边写了现价,就不能再说"缺价格"(IONS 曾两句挨着自相矛盾)。
+export type CompactFloorReason = "noPrice" | "noEarningsValue" | "currency";
+export function compactFloorReason(
+  strikeZone: StrikeZoneAssessment | undefined,
+  priceKnown: boolean | undefined,
+): CompactFloorReason {
+  if (strikeZone?.currencyMismatch) return "currency";
+  // strikeZone 存在即有现价;undefined 时有现价 → 两盏 EPV 灯与资产底都算不出(deriveStrikeZone)。
+  if (strikeZone || priceKnown) return "noEarningsValue";
+  return "noPrice";
+}
+
+// Price-free fallback: keep the public read to one sentence and leave numbers in MethodDetails.
+function CompactFloor({ reason, currency, lang }: { reason: CompactFloorReason; currency?: string; lang: Lang }) {
   const t = COPY[lang];
-  return (
-    <div className="space-y-2">
-      {suppressedReason ? <p className="text-sm text-[var(--tt-muted)]">{suppressedReason}</p> : null}
-      <p className="text-sm text-[var(--tt-text)]">{t.priceUnavailable}</p>
-    </div>
-  );
+  const line =
+    reason === "currency" ? t.currencyMismatch(currency ?? "non-USD")
+    : reason === "noEarningsValue" ? t.earningsValueUnavailable
+    : t.priceUnavailable;
+  return <p className="text-sm text-[var(--tt-text)]">{line}</p>;
 }
 
 // Everything precise and secondary, collapsed by default: a one-line numbers summary,
@@ -826,6 +841,8 @@ export const EarningsPowerFloorCard: FC<{
   /** 个股页结论带只要摘要(头条/标尺/结论句/低信心原因/价格截至),估值区块只要明细(怎么读 + 假设行 +
    *  方法与数字);默认 all 两半都渲染,输出与拆分前一致。 */
   part?: "all" | "summary" | "details";
+  /** 页面手里有可用现价。无价格轴时据此区分"缺现价"和"盈利撑不出正的每股价值";不传按缺现价说。 */
+  priceKnown?: boolean;
 }> = ({
   floor,
   strikeZone,
@@ -838,6 +855,7 @@ export const EarningsPowerFloorCard: FC<{
   showStatus = true,
   ttmPeriodEnd,
   part = "all",
+  priceKnown,
 }) => {
   if (!floor) return null;
   const t = COPY[lang];
@@ -870,7 +888,8 @@ export const EarningsPowerFloorCard: FC<{
           <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} compact={part === "summary"} />
         ) : showCompactFloor ? (
           <CompactFloor
-            suppressedReason={strikeZone?.currencyMismatch ? strikeZone.suppressedReason : undefined}
+            reason={compactFloorReason(strikeZone, priceKnown)}
+            currency={strikeZone?.price.currency}
             lang={lang}
           />
         ) : null)}

@@ -654,6 +654,7 @@ export default async function StockTickerPage({
             verdict={run.verdict}
             ttmPeriodEnd={floorInput.ttm?.period_end}
             part="summary"
+            priceKnown={!!valuationPrice && valuationPrice.close > 0}
           />
         </>
       )

@@ -1,7 +1,7 @@
 // 运行: npx tsx src/components/valuation/EarningsPowerFloorCard.check.tsx
 import assert from "node:assert/strict";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EarningsPowerFloorCard, cardSummaryMode } from "./EarningsPowerFloorCard";
+import { EarningsPowerFloorCard, cardSummaryMode, compactFloorReason } from "./EarningsPowerFloorCard";
 import { runValuation } from "@/lib/valuation/runValuation";
 import type { PerShareUnavailable, ValuationFloorYear } from "@/lib/valuation/types";
 
@@ -97,5 +97,26 @@ for (const lang of ["zh", "en"] as const) {
     <EarningsPowerFloorCard floor={run.floor} strikeZone={run.strikeZone} oeDcf={run.oeDcf} lang="zh" verdict={null} part="summary" />,
   ).replace(/<[^>]+>/g, "").trim();
   assert.equal(empty, "", "mode=none 时摘要确实什么字都不出");
+}
+// 无价格轴的说法按真实原因:有现价时绝不说"缺价格"(IONS:现价旁边写"缺少可用市场价格"自相矛盾)。
+{
+  assert.equal(compactFloorReason(undefined, false), "noPrice", "无现价 → 缺价格");
+  assert.equal(compactFloorReason(undefined, undefined), "noPrice", "不传 priceKnown → 按缺价格说(旧行为)");
+  assert.equal(compactFloorReason(undefined, true), "noEarningsValue", "有现价但无比较轴 → 盈利撑不出正的每股价值");
+  assert.equal(compactFloorReason({ ...run.strikeZone!, epv: undefined }, true), "noEarningsValue", "只有资产底、没有 EPV");
+  const fx = { ...run.strikeZone!, currencyMismatch: true, epv: undefined, price: { ...run.strikeZone!.price, currency: "HKD" } };
+  assert.equal(compactFloorReason(fx, true), "currency", "币种不匹配");
+  const sum = (sz: typeof fx | undefined, priceKnown: boolean | undefined, lang: "zh" | "en") =>
+    renderToStaticMarkup(
+      <EarningsPowerFloorCard floor={run.floor} strikeZone={sz} oeDcf={run.oeDcf} lang={lang} verdict={null} part="summary" priceKnown={priceKnown} />,
+    ).replace(/<[^>]+>/g, " ");
+  const noEv = sum(undefined, true, "zh");
+  assert.ok(noEv.includes("盈利撑不出一个为正的每股价值") && !noEv.includes("缺少可用市场价格"), "zh 有现价:不说缺价格");
+  const noEvEn = sum(undefined, true, "en");
+  assert.ok(noEvEn.includes("positive per-share value") && !noEvEn.includes("No usable market price"), "en 有现价:不说缺价格");
+  assert.ok(sum(undefined, false, "zh").includes("缺少可用市场价格"), "zh 无现价:仍说缺价格");
+  const cur = sum(fx, true, "zh");
+  assert.ok(cur.includes("现价以 HKD 计价") && !cur.includes("Latest price is in"), "zh 币种:中文说法,不再夹英文原因");
+  assert.ok(sum(fx, true, "en").includes("quoted in HKD"), "en 币种");
 }
 console.log("EarningsPowerFloorCard.check OK");
