@@ -574,7 +574,7 @@ async function main() {
     }
     try {
       const c = await computeAndStoreConsensus(db);
-      console.log(`Consensus: holdings ${c.holdings} 行, moves ${c.moves} 行`);
+      console.log(`Consensus: holdings ${c.holdings} 行, moves ${c.moves} 行, 拆股系数 ${c.splitFactors} 条, 季度汇总 ${c.summaries} 户`);
     } catch (e) {
       // Consensus is derived from the just-ingested 13F data. A write failure
       // here (schema drift, missing column, stale cache) must NOT pass as green

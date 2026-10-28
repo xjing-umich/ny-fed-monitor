@@ -1,4 +1,5 @@
 import type { Manager, FilingData, Holding, HoldingChange, ManagerDetail } from "./types";
+import { NO_SPLITS, rescaleToLatestBasis, type SplitFactorLookup } from "./splitAdjust";
 
 // 13F 同一证券可多行(子账户),按 cusip + put/call 归并后再比对。
 // 同口径的归并键也供 UI 层复用(正股与 put/call 同 CUSIP,不可仅按 cusip 归并)。
@@ -18,7 +19,7 @@ export function computeChanges(latest: Holding[], prior: Holding[]): HoldingChan
     } else {
       const delta = lh.shares - ph.shares;
       if (delta !== 0) {
-        out.push({ cusip: lh.cusip, putCall: lh.putCall, issuer: lh.issuer, kind: delta > 0 ? "increased" : "decreased", prevShares: ph.shares, shares: lh.shares, value: lh.value, deltaPct: ph.shares !== 0 ? delta / ph.shares : null });
+        out.push({ cusip: lh.cusip, putCall: lh.putCall, issuer: lh.issuer, kind: delta > 0 ? "increased" : "decreased", prevShares: ph.shares, shares: lh.shares, value: lh.value, deltaPct: ph.shares !== 0 ? delta / ph.shares : null, splitFactor: ph.splitFactor });
       }
     }
   }
@@ -30,13 +31,14 @@ export function computeChanges(latest: Holding[], prior: Holding[]): HoldingChan
 
 /**
  * 从一份 filings[] 装配完整 ManagerDetail（唯一构造入口）。
- * - 按 period 降序排序
+ * - 按 period 降序排序，较早各季股数换算到最新季口径
  * - latest = [0], prior = [1]
  * - changes = computeChanges(latest, prior)（无 prior → []；最新一期申报持仓为零 → []）
  * 调用方须保证 filings 非空（空则不应构造 detail，返回 null）。
  */
-export function assembleManagerDetail(manager: Manager, filings: FilingData[]): ManagerDetail {
-  const sorted = [...filings].sort((a, b) => (b.period > a.period ? 1 : -1));
+export function assembleManagerDetail(manager: Manager, filings: FilingData[], splits: SplitFactorLookup = NO_SPLITS): ManagerDetail {
+  // 拆股:较早各季股数先换算到最新季口径,本季变动与 8 季信号(conviction)同用一份(见 splitAdjust.ts)。
+  const sorted = rescaleToLatestBasis(filings, splits);
   const latest = sorted[0];
   const prior = sorted[1];
   // 零持仓申报(如 Olstein 2026Q2)只说明"本季无 13F 持仓",没说原因(清盘/委托转出/跌破门槛)。

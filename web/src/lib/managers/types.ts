@@ -6,6 +6,8 @@ export type Holding = {
   shares: number;
   putCall?: string;
   weight?: number;
+  /** 拆股换算系数(换算到最新季口径时写入;≠1 才有)。见 splitAdjust.ts。 */
+  splitFactor?: number;
 };
 
 export type FilingData = {
@@ -25,6 +27,8 @@ export type HoldingChange = {
   shares: number;
   value: number;
   deltaPct: number | null;
+  /** 拆股换算系数(换算到最新季口径时写入;≠1 才有)。见 splitAdjust.ts。 */
+  splitFactor?: number;
 };
 
 export type Manager = {

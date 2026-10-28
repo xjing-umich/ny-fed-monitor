@@ -41,13 +41,15 @@ export function getDb(): SupabaseClient {
  * → 调用方 throw → 500/构建失败,绝不缓存假 404。退避抖动还顺带打散并发预渲染
  * 对 Supabase 的瞬时压力(即当初触发假 404 的"压力窗口"成因)。
  * happy path 首试即成、零额外开销。
+ * retryable:可选;返回 false 的错误(如表未迁移 42P01,重试也不会好)直接透出、不退避重试。
  */
 export async function withRetry<R extends { error: unknown }>(
   run: () => PromiseLike<R>,
   attempts = 3,
+  retryable: (error: NonNullable<R["error"]>) => boolean = () => true,
 ): Promise<R> {
   let res: R = await run();
-  for (let i = 1; i < attempts && res.error; i++) {
+  for (let i = 1; i < attempts && res.error && retryable(res.error as NonNullable<R["error"]>); i++) {
     const backoff = 150 * 2 ** (i - 1) + Math.floor(Math.random() * 120);
     await new Promise((r) => setTimeout(r, backoff));
     res = await run();
@@ -67,14 +69,16 @@ type PageQuery<T> = { range(from: number, to: number): PromiseLike<{ data: T[] |
  * GMO 4897 行同样最新季 0 行 → 投资人页空白、估值 universe 少 ~350 只票,且无任何报错。
  * build 每次必须新建查询,并以唯一键 .order(...) 结尾 —— 否则 OFFSET 分页在页边界会漏行/重行。
  * 每页走 withRetry;某页重试耗尽仍失败 → 原样返回该 error(不返回半截数据)。
+ * retryable 同 withRetry:调用方可让"表未迁移"这类确定性错误不重试(见 getManagerDetail 读 split_adjustments)。
  */
 export async function selectAllPages<T>(
   build: () => PageQuery<T>,
   pageSize = PAGE_SIZE,
+  retryable?: (error: { message: string }) => boolean,
 ): Promise<{ data: T[]; error: { message: string } | null }> {
   const data: T[] = [];
   for (let from = 0; ; from += pageSize) {
-    const res = await withRetry(() => build().range(from, from + pageSize - 1));
+    const res = await withRetry(() => build().range(from, from + pageSize - 1), 3, retryable);
     if (res.error) return { data: [], error: res.error };
     const page = res.data ?? [];
     data.push(...page);
@@ -103,4 +107,9 @@ export async function selectPagesUpTo<T>(
     if (page.length < to - from + 1) break;
   }
   return { data, error: null };
+}
+
+/** 表未迁移(Postgres 42P01 / PostgREST PGRST205):新派生表先于 DDL 部署时据此降级,其他错误照常抛。 */
+export function isMissingTableError(error: { code?: string } | null | undefined): boolean {
+  return error?.code === "42P01" || error?.code === "PGRST205";
 }

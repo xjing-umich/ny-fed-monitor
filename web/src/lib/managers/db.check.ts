@@ -2,7 +2,7 @@
  * selectAllPages 行为校验。跑法: npx tsx src/lib/managers/db.check.ts
  * 无 IO:用假查询模拟 PostgREST「超出 max-rows 静默截断」。
  */
-import { selectAllPages, selectPagesUpTo, PAGE_SIZE } from "./db";
+import { selectAllPages, selectPagesUpTo, isMissingTableError, PAGE_SIZE } from "./db";
 
 let failed = 0;
 function check(name: string, ok: boolean, detail = "") {
@@ -61,6 +61,23 @@ async function main() {
   const flaky = fakeTable(rows(2500), { failAt: 1000, failTimes: 1 });
   const r5 = await selectAllPages<Row>(flaky.build);
   check("单页抖动重试后读全", r5.error === null && r5.data.length === 2500, `实际 ${r5.data.length}`);
+
+  // 5b) retryable 返回 false(表未迁移 42P01)→ 只查一次、不退避重试;其他错误仍重试。
+  {
+    let calls = 0;
+    const build = () => ({
+      range() {
+        calls++;
+        return Promise.resolve({ data: null, error: { message: "relation does not exist", code: "42P01" } as { message: string; code: string } });
+      },
+    });
+    const t0 = Date.now();
+    const r = await selectAllPages<Row>(build, PAGE_SIZE, (e) => !isMissingTableError(e as { code?: string }));
+    check("表缺失错误不重试", calls === 1 && r.error?.message === "relation does not exist" && Date.now() - t0 < 100, `查询 ${calls} 次`);
+    calls = 0;
+    await selectAllPages<Row>(build);
+    check("不传 retryable 时照旧重试 3 次", calls === 3, `查询 ${calls} 次`);
+  }
 
   console.log("selectPagesUpTo");
 

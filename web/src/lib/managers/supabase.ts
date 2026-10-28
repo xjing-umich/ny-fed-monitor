@@ -3,7 +3,8 @@ import type {
   ManagerIndex, ManagerSummary, ManagerDetail, Manager, FilingData, Holding, ManagerQoQ,
 } from "@/lib/managers/types";
 import { assembleManagerDetail } from "@/lib/managers/assemble";
-import { getDb, withRetry, selectAllPages } from "@/lib/managers/db";
+import { getDb, withRetry, selectAllPages, isMissingTableError } from "@/lib/managers/db";
+import { factorLookup, NO_SPLITS, type SplitFactorLookup } from "@/lib/managers/splitAdjust";
 import { overlayZeroReports, type ZeroFilingRow } from "@/lib/managers/zeroReports";
 
 /**
@@ -36,11 +37,11 @@ function rowToHolding(r: any): Holding {
     putCall: r.put_call ?? undefined, weight: Number(r.weight),
   };
 }
-export function mapDetailRows(manager: Manager, filingRows: any[], holdingRows: any[]): ManagerDetail {
+export function mapDetailRows(manager: Manager, filingRows: any[], holdingRows: any[], splits: SplitFactorLookup = NO_SPLITS): ManagerDetail {
   const byFiling = (fid: number) => holdingRows.filter((h) => h.filing_id === fid).map(rowToHolding).sort((a, b) => b.value - a.value);
   const toFiling = (r: any): FilingData => ({ period: r.period, filedAt: r.filed_at, accession: r.accession, totalValue: Number(r.total_value), holdings: byFiling(r.id) });
   const filings = filingRows.map(toFiling);
-  return assembleManagerDetail(manager, filings);
+  return assembleManagerDetail(manager, filings, splits);
 }
 
 // --- live queries (verified manually once creds exist) ---
@@ -95,13 +96,39 @@ type QoQRow = {
   top_move_kind: string | null;
 };
 
+export type SummaryRow = { cik: string; latest_value: number | string; prior_value: number | string; latest_count: number; prior_count: number; count_verdict: string; top_moves: { issuer: string; kind: string }[] };
+/** manager_quarter_summary 行 → 列表页 ManagerQoQ。PR A 阶段 verdict 仍用只数口径(count_verdict),与详情页一致。 */
+export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
+  const out = new Map<string, ManagerQoQ>();
+  for (const r of rows) {
+    const prior = Number(r.prior_value);
+    const top = r.top_moves?.[0];
+    out.set(r.cik, {
+      valueDeltaPct: prior > 0 ? (Number(r.latest_value) - prior) / prior : null,
+      countDelta: r.latest_count - r.prior_count,
+      verdict: (r.count_verdict as ManagerQoQ["verdict"]) ?? null,
+      topMoveIssuer: top?.issuer ?? null,
+      topMoveKind: (top?.kind as ManagerQoQ["topMoveKind"]) ?? null,
+    });
+  }
+  return out;
+}
+
 /**
- * 每户季度变化信号 Map(cik → ManagerQoQ)。仅 /investors 列表页调用。
- * 函数未部署/出错 → 返回空 Map(优雅降级,列表不显 QoQ,不抛)。
+ * 每户季度变化信号(cik → ManagerQoQ)。仅 /investors 列表页调用。
+ * 读 manager_quarter_summary;表未迁移、或表已建但还没有行(DDL 之后、首次共识运行之前)→ 回退 RPC manager_qoq
+ * (空表若直接返回空 Map,/investors 的 ISR 会把"—"缓存 3 天);其他出错 → console.error 后返回空 Map(优雅降级)。
  */
 export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
-  const out = new Map<string, ManagerQoQ>();
   const db = getDb();
+  // 读入库时算好的季度汇总(拆股已换算,与详情页同一函数);表未迁移 → 回退旧 RPC manager_qoq。
+  const { data: rows, error: tErr } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,top_moves");
+  if (!tErr && rows?.length) return mapSummaryRows(rows as SummaryRow[]);
+  if (tErr && !isMissingTableError(tErr)) {
+    console.error(`getManagerQoQ manager_quarter_summary query failed: ${tErr.message}`);
+    return new Map(); // 与原函数一致:出错优雅降级为空 Map(列表不显 QoQ)
+  }
+  const out = new Map<string, ManagerQoQ>();
   const { data, error } = await db.rpc("manager_qoq");
   if (error || !data) return out;
   for (const r of data as QoQRow[]) {
@@ -116,7 +143,7 @@ export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
   return out;
 }
 
-export async function getManagerDetail(cikOrSlug: string): Promise<ManagerDetail | null> {
+export async function getManagerDetail(cikOrSlug: string, opts: { adjustSplits?: boolean } = {}): Promise<ManagerDetail | null> {
   const db = getDb();
   // 关键:查询出错(超时/限流/后端抖动)必须 THROW,不能吞成 null。
   // 吞成 null → 页面 notFound() → ISR 把 404 缓存 revalidate(1h),一次后端抖动 = 招牌页死链一小时,
@@ -133,5 +160,20 @@ export async function getManagerDetail(cikOrSlug: string): Promise<ManagerDetail
   const { data: holdings, error: hErr } = await selectAllPages(() => db.from("holdings").select(HOLDINGS_SELECT).in("filing_id", ids).order("id", { ascending: true }));
   if (hErr) throw new Error(`getManagerDetail holdings query failed (${m.cik}): ${hErr.message}`);
   if (!filings?.length) return null;
-  return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? []);
+  // 拆股换算系数:只取本人各季作为 to_period 的行(全表约几百行,按季过滤后更少)。
+  // 表未迁移 → 系数 1(旧行为);其他错误照样 THROW(见上方注释:不能吞成 404)。
+  let splits: SplitFactorLookup = NO_SPLITS;
+  if (opts.adjustSplits !== false) {
+    const periods = filings.map((f: { period: string }) => f.period);
+    // 分页 + 稳定排序(几百行逼近 1000 行上限时不能静默截断);表缺失不重试(withRetry 会对 42P01 退避 3 次,白等 ~0.5s)。
+    const { data: sa, error: sErr } = await selectAllPages<{ cusip: string; from_period: string; to_period: string; factor: number | string }>(
+      () => db.from("split_adjustments").select("cusip,from_period,to_period,factor").in("to_period", periods).order("cusip").order("from_period").order("to_period"),
+      undefined,
+      (e) => !isMissingTableError(e as { code?: string }),
+    );
+    // selectAllPages 原样透出 PostgREST error(含 code),类型上只声明了 message,故断言。
+    if (sErr && !isMissingTableError(sErr as { code?: string })) throw new Error(`getManagerDetail split_adjustments query failed (${m.cik}): ${sErr.message}`);
+    if (sa?.length) splits = factorLookup(sa.map((r: { cusip: string; from_period: string; to_period: string; factor: number | string }) => ({ cusip: r.cusip, fromPeriod: r.from_period, toPeriod: r.to_period, factor: Number(r.factor) })));
+  }
+  return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? [], splits);
 }

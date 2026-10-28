@@ -1,3 +1,6 @@
+import { computeChanges } from "../managers/assemble";
+import type { HoldingChange } from "../managers/types";
+
 // 共识计算纯逻辑(无 I/O): 把各经理人 latest 持仓/changes 聚合为 ticker-keyed 快照行。
 // cusip → ticker 经传入的 map; 未解析 cusip 用 cusip 自身作兜底键(与个股页回退一致)。
 
@@ -255,19 +258,12 @@ export function computeCoOwnership(
   return out;
 }
 
-// QoQ 变动:latest 对 prior 按 cusip+期权类型比对。全站与季度报告共用这一份口径。
-export type DiffRow = { cusip: string; issuer: string; value: number | string; shares: number | string; put_call?: string | null };
+// QoQ 变动:全站唯一口径是 managers/assemble.ts 的 computeChanges(按 cusip+期权类型、可带拆股换算);这里只做形状转换。
+export type DiffRow = { cusip: string; issuer: string; value: number | string; shares: number | string; put_call?: string | null; splitFactor?: number };
+export function toScanChanges(changes: HoldingChange[]): ScanChange[] {
+  return changes.map((c) => ({ cusip: c.cusip, issuer: c.issuer, kind: c.kind, value: c.value, putCall: c.putCall }));
+}
 export function diffHoldings(latest: DiffRow[], prior: DiffRow[]): ScanChange[] {
-  const keyOfHolding = (h: DiffRow) => `${h.cusip}|${h.put_call ?? ""}`;
-  const lm = new Map(latest.map((h) => [keyOfHolding(h), h]));
-  const pm = new Map(prior.map((h) => [keyOfHolding(h), h]));
-  const out: ScanChange[] = [];
-  for (const [k, lh] of lm) {
-    const ph = pm.get(k);
-    if (!ph) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-    else if (Number(lh.shares) > Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "increased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-    else if (Number(lh.shares) < Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "decreased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
-  }
-  for (const [k, ph] of pm) if (!lm.has(k)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", value: Number(ph.value), putCall: ph.put_call ?? undefined });
-  return out;
+  const toH = (h: DiffRow) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value), shares: Number(h.shares), putCall: h.put_call ?? undefined, splitFactor: h.splitFactor });
+  return toScanChanges(computeChanges(latest.map(toH), prior.map(toH)));
 }
