@@ -183,3 +183,50 @@ export function factorLookup(rows: { cusip: string; fromPeriod: string; toPeriod
   const m = new Map(rows.map((r) => [`${r.cusip}|${r.fromPeriod}|${r.toPeriod}`, r.factor]));
   return (cusip, fromPeriod, toPeriod) => m.get(`${cusip}|${fromPeriod}|${toPeriod}`) ?? 1;
 }
+
+// 零碎股按惯例换成现金:BN 3:2 拆股后股数是 ×1.497 而不是 ×1.5(差 0.2%)。有拆股系数的行,换算后与下一季相差 0.5% 以内即贴齐为"未变"。
+export const SNAP_TOL = 0.005;
+
+/**
+ * 把较早各季的股数换算到最新季口径(乘以"从该季到最新季"的累计系数),返回按 period 降序的新数组,不改入参。
+ * 按 CUSIP+期权类型汇总后再判断是否贴齐(同券多行时逐行比会让容差失效);期权行同样乘系数。
+ */
+export function rescaleToLatestBasis<
+  H extends { cusip: string; putCall?: string | null; shares: number; splitFactor?: number },
+  F extends { period: string; holdings: H[] },
+>(filings: F[], lookup: SplitFactorLookup): F[] {
+  const desc = [...filings].sort((a, b) => (a.period < b.period ? 1 : a.period > b.period ? -1 : 0));
+  if (desc.length < 2) return desc;
+  const keyOf = (h: H) => `${h.cusip}|${h.putCall ?? ""}`;
+  const totals = (hs: H[]) => {
+    const m = new Map<string, number>();
+    for (const h of hs) m.set(keyOf(h), (m.get(keyOf(h)) ?? 0) + h.shares);
+    return m;
+  };
+  const out: F[] = [desc[0]];
+  let cum = new Map<string, number>(); // cusip → 从下一季到最新季的累计系数
+  let nextTotals = totals(desc[0].holdings);
+  for (let i = 1; i < desc.length; i++) {
+    const f = desc[i];
+    const toPeriod = desc[i - 1].period;
+    const stepCum = new Map<string, number>();
+    const cusips = new Set([...cum.keys(), ...f.holdings.map((h) => h.cusip)]);
+    for (const c of cusips) stepCum.set(c, (cum.get(c) ?? 1) * lookup(c, f.period, toPeriod));
+    const adjTotals = new Map<string, number>();
+    for (const h of f.holdings) adjTotals.set(keyOf(h), (adjTotals.get(keyOf(h)) ?? 0) + h.shares * stepCum.get(h.cusip)!);
+    const holdings = f.holdings.map((h) => {
+      const c = stepCum.get(h.cusip)!;
+      if (c === 1) return h;
+      let shares = h.shares * c;
+      const stepFactor = lookup(h.cusip, f.period, toPeriod);
+      const adj = adjTotals.get(keyOf(h))!;
+      const next = nextTotals.get(keyOf(h));
+      if (stepFactor !== 1 && next != null && adj > 0 && Math.abs(adj - next) <= SNAP_TOL * next) shares = shares * (next / adj);
+      return { ...h, shares, splitFactor: c };
+    });
+    out.push({ ...f, holdings });
+    cum = stepCum;
+    nextTotals = totals(holdings);
+  }
+  return out;
+}

@@ -1,5 +1,6 @@
 // Task 10: 期权(put/call)必须被剔除出四张共识快照——不是长仓,别算持有人/买卖动向。
-import { computeConsensus, computeStockHolders, computeCoOwnership } from "./compute";
+import { computeConsensus, computeStockHolders, computeCoOwnership, diffHoldings } from "./compute";
+import type { DiffRow, ScanChange } from "./compute";
 
 function assert(c: boolean, m: string) {
   if (!c) { console.error("FAIL:", m); process.exit(1); }
@@ -100,5 +101,31 @@ assert(aRows[0]?.co_issuer === "Bravo", `co_issuer 应解析为 Bravo, got ${aRo
 const aC = aRows.find((r) => r.co_ticker === "C");
 assert(aC?.shared_holders === 1, `A↔C 共持 1 人(仅 m2), got ${aC?.shared_holders}`);
 assert(!co.some((r) => r.ticker === r.co_ticker), `不得出现自反行(ticker===co_ticker)`);
+
+// diffHoldings 改为 computeChanges 的封装:无拆股 fixture 上与旧实现逐条一致(含顺序、期权键、清仓取上季市值)。
+{
+  const legacy = (latest: DiffRow[], prior: DiffRow[]) => {
+    const k = (h: DiffRow) => `${h.cusip}|${h.put_call ?? ""}`;
+    const lm = new Map(latest.map((h) => [k(h), h])), pm = new Map(prior.map((h) => [k(h), h]));
+    const out: ScanChange[] = [];
+    for (const [key, lh] of lm) {
+      const ph = pm.get(key);
+      if (!ph) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "new", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+      else if (Number(lh.shares) > Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "increased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+      else if (Number(lh.shares) < Number(ph.shares)) out.push({ cusip: lh.cusip, issuer: lh.issuer, kind: "decreased", value: Number(lh.value), putCall: lh.put_call ?? undefined });
+    }
+    for (const [key, ph] of pm) if (!lm.has(key)) out.push({ cusip: ph.cusip, issuer: ph.issuer, kind: "exited", value: Number(ph.value), putCall: ph.put_call ?? undefined });
+    return out;
+  };
+  const L: DiffRow[] = [
+    { cusip: "A", issuer: "A", value: "200", shares: "20" }, { cusip: "B", issuer: "B", value: 50, shares: 5 },
+    { cusip: "C", issuer: "C", value: 10, shares: 1, put_call: "Put" }, { cusip: "D", issuer: "D", value: 9, shares: 9 },
+  ];
+  const P: DiffRow[] = [
+    { cusip: "A", issuer: "A", value: 100, shares: 10 }, { cusip: "B", issuer: "B", value: 60, shares: 6 },
+    { cusip: "C", issuer: "C", value: 10, shares: 1 }, { cusip: "D", issuer: "D", value: 9, shares: 9 }, { cusip: "E", issuer: "E", value: 7, shares: 7 },
+  ];
+  assert(JSON.stringify(diffHoldings(L, P)) === JSON.stringify(legacy(L, P)), "diffHoldings 与旧实现一致");
+}
 
 console.log("compute.check OK");

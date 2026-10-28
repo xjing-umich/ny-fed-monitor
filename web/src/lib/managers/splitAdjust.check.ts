@@ -1,6 +1,9 @@
 // 运行: cd web && npx tsx src/lib/managers/splitAdjust.check.ts
 import assert from "node:assert/strict";
-import { isRealSplit, dedupeSplitEvents, deriveSplitFactor, deriveSplitFactors, factorLookup, NO_SPLITS } from "./splitAdjust";
+import { isRealSplit, dedupeSplitEvents, deriveSplitFactor, deriveSplitFactors, factorLookup, NO_SPLITS, rescaleToLatestBasis } from "./splitAdjust";
+import { assembleManagerDetail } from "./assemble";
+import { deriveConviction } from "./conviction";
+import type { Holding } from "./types";
 
 // ── 真拆股 vs 价格复权(Yahoo 把分拆上市/股票股息也记成小数"拆股",股数并不变) ──
 for (const r of [2, 3, 4, 5, 10, 25, 1.5, 4 / 3, 0.5, 0.25, 0.1, 0.05, 1 / 12, 0.333333]) assert.ok(isRealSplit(r), `真拆股 ${r}`);
@@ -124,6 +127,73 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
   const ba = key(deriveSplitFactors([gB, gA], tickerOf, evs));
   assert.deepEqual(ba, ab, "输入顺序不影响输出顺序");
   assert.deepEqual(ab, [`G|${Q1}|${Q2}|2|table`, `G|${Q1}|${Q3}|2|table`]);
+}
+
+// ── 较早季股数换算到最新季口径 + 变动/8 季信号联动 ──
+{
+  const Q1 = "2026-03-31", Q2 = "2026-06-30", Q3 = "2026-09-30";
+  // B:Q2 拆 3:2、Q3 拆 2:1;零碎股换现金 → Q2 只有 ×1.497。A:无拆股。B 的 Call 行同 CUSIP。
+  const look = factorLookup([
+    { cusip: "B", fromPeriod: Q1, toPeriod: Q2, factor: 1.5 },
+    { cusip: "B", fromPeriod: Q2, toPeriod: Q3, factor: 2 },
+  ]);
+  const hold = (cusip: string, shares: number, putCall?: string): Holding => ({ cusip, issuer: cusip, shares, value: shares, putCall, weight: 0.1 });
+  const filings = [
+    { period: Q1, filedAt: "", accession: "1", totalValue: 0, holdings: [hold("A", 100), hold("B", 1000), hold("B", 10, "Call")] },
+    { period: Q3, filedAt: "", accession: "3", totalValue: 0, holdings: [hold("A", 120), hold("B", 2994), hold("B", 30, "Call")] },
+    { period: Q2, filedAt: "", accession: "2", totalValue: 0, holdings: [hold("A", 100), hold("B", 1497), hold("B", 15, "Call")] },
+  ];
+  const r = rescaleToLatestBasis(filings, look);
+  assert.deepEqual(r.map((f) => f.period), [Q3, Q2, Q1], "降序");
+  assert.equal(r[0].holdings.find((h) => h.cusip === "B" && !h.putCall)!.shares, 2994, "最新季不动");
+  assert.equal(r[0].holdings[0].splitFactor, undefined);
+  const q2b = r[1].holdings.find((h) => h.cusip === "B" && !h.putCall)!;
+  assert.equal(q2b.shares, 2994); assert.equal(q2b.splitFactor, 2);
+  const q1b = r[2].holdings.find((h) => h.cusip === "B" && !h.putCall)!;
+  assert.equal(q1b.shares, 2994, "1000×1.5×2=3000,与 Q2 换算后的 2994 差 0.2%(<0.5%)→ 贴齐为未变");
+  assert.equal(r[2].holdings.find((h) => h.cusip === "B" && h.putCall)!.shares, 30, "期权行同样换算");
+  assert.equal(r[2].holdings.find((h) => h.cusip === "A")!.shares, 100, "无拆股不动");
+  assert.equal(filings[0].holdings[1].shares, 1000, "不改入参");
+
+  // 同券两行(子账户):按 CUSIP+期权类型汇总后与下一季比较,贴齐后两行合计 = 下一季合计。
+  const multi = rescaleToLatestBasis([
+    { period: Q1, holdings: [hold("M", 500), hold("M", 500)] },
+    { period: Q2, holdings: [hold("M", 1996)] },
+  ], factorLookup([{ cusip: "M", fromPeriod: Q1, toPeriod: Q2, factor: 2 }]));
+  const mSum = multi[1].holdings.reduce((t, x) => t + x.shares, 0);
+  assert.ok(Math.abs(mSum - 1996) < 1e-9, `多行汇总贴齐,got ${mSum}`);
+
+  // 联动:投资人页的本季变动与 8 季信号。B 只是拆股 → 不是增持;A 是真增持。
+  const mgr = { cik: "1", slug: "m", name: "M", person: "M" };
+  const d = assembleManagerDetail(mgr, filings, look);
+  assert.deepEqual(d.changes.filter((c) => !c.putCall).map((c) => `${c.cusip}:${c.kind}`), ["A:increased"]);
+  const raw = assembleManagerDetail(mgr, filings);
+  assert.ok(raw.changes.some((c) => c.cusip === "B" && c.kind === "increased"), "不传系数 = 旧行为(对照)");
+  assert.ok(!deriveConviction(d.filings, 12).some((p) => p.cusip === "B" && p.signal === "accumulating"), "拆股季不算连续增持");
+}
+{
+  // 贴齐只对有系数的行:无拆股的 0.05% 小变动仍记为增持。
+  // (另:拆股行若差 0.6%(>0.5%)不贴齐,见下方 KLAC 例的真实减持。)
+  const look = factorLookup([]);
+  const hold = (shares: number) => ({ cusip: "Z", issuer: "Z", shares, value: shares, weight: 0.1 });
+  const d = assembleManagerDetail({ cik: "1", slug: "m", name: "M", person: "M" }, [
+    { period: "2026-03-31", filedAt: "", accession: "1", totalValue: 0, holdings: [hold(10000)] },
+    { period: "2026-06-30", filedAt: "", accession: "2", totalValue: 0, holdings: [hold(10005)] },
+  ], look);
+  assert.equal(d.changes[0]?.kind, "increased");
+}
+{
+  // 拆股后真减仓:10 拆 1,股数 ×8.44 → 实际 −15.6%,必须是减持并带 splitFactor。
+  const look = factorLookup([{ cusip: "K", fromPeriod: "2026-03-31", toPeriod: "2026-06-30", factor: 10 }]);
+  const hold = (shares: number) => ({ cusip: "K", issuer: "K", shares, value: shares, weight: 0.1 });
+  const d = assembleManagerDetail({ cik: "1", slug: "m", name: "M", person: "M" }, [
+    { period: "2026-03-31", filedAt: "", accession: "1", totalValue: 0, holdings: [hold(1000)] },
+    { period: "2026-06-30", filedAt: "", accession: "2", totalValue: 0, holdings: [hold(8440)] },
+  ], look);
+  assert.equal(d.changes[0].kind, "decreased");
+  assert.equal(d.changes[0].prevShares, 10000);
+  assert.equal(d.changes[0].splitFactor, 10);
+  assert.ok(Math.abs(d.changes[0].deltaPct! + 0.156) < 1e-9);
 }
 
 console.log("splitAdjust.check OK");
