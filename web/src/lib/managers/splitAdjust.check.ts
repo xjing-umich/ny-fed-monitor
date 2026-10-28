@@ -1,7 +1,7 @@
 // 运行: cd web && npx tsx src/lib/managers/splitAdjust.check.ts
 import assert from "node:assert/strict";
 import { isRealSplit, dedupeSplitEvents, deriveSplitFactor, deriveSplitFactors, deriveSplitFactorsWithRejections, factorLookup, NO_SPLITS, rescaleToLatestBasis } from "./splitAdjust";
-import { assembleManagerDetail } from "./assemble";
+import { assembleManagerDetail, computeChanges } from "./assemble";
 import { deriveConviction } from "./conviction";
 import { summarizeQuarter } from "./quarterSummary";
 import { consensusChangesFor } from "../../../scripts/lib/splitStore";
@@ -308,6 +308,45 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
   // 只有伪拆股(1.067)的表事件不算拒绝;没有表事件的 CUSIP 也不算。
   const none = deriveSplitFactorsWithRejections(histories, tickerOf, [{ ticker: "RR", date: "2026-05-15", ratio: 1.067 }]);
   assert.deepEqual(none.rejected, []);
+}
+
+// 换 CUSIP 换股(HON 2026 形态):旧码 A 消失、同 ticker 新码 B 出现,两位持有人股数比 1% 内一致 → 记在 A 上的系数;
+// 再配合 canon 按 ticker 归并,两季比对不再记成"清仓 + 新建",也不记成减持。
+{
+  const tickerOf = (c: string) => ({ OLDHON001: "HON", NEWHON001: "HON", OLDXOM001: "XOM", NEWXOM001: "XOM" } as Record<string, string>)[c] ?? null;
+  const h = (cusip: string, shares: number, price: number) => ({ cusip, shares, value: shares * price });
+  const hist = (slug: string, a: number, b: number, extra: { period: string; holdings: ReturnType<typeof h>[] }[] = []) => ({
+    slug,
+    filings: [{ period: "2026-03-31", holdings: [h("OLDHON001", a, 200)] }, { period: "2026-06-30", holdings: [h("NEWHON001", b, 220)] }, ...extra],
+  });
+  const histories = [hist("cullen", 213_520, 106_631), hist("dodge", 8_019, 4_010), hist("trader", 25_656, 4_506)];
+  const fs = deriveSplitFactors(histories, tickerOf, []);
+  const f = fs.find((x) => x.cusip === "OLDHON001");
+  assert.ok(f && Math.abs(f.factor - 0.4994) < 0.001 && f.evidence.matching === 2 && f.evidence.bothHolders === 3, `HON 换股系数,got ${JSON.stringify(fs)}`);
+  // 1:1 换码(XOM 控股重组)不写系数。
+  const xom = deriveSplitFactors(
+    [["a", 3_749, 3_521], ["b", 1_499_613, 1_492_052]].map(([slug, x, y]) => ({
+      slug: slug as string,
+      filings: [{ period: "2026-03-31", holdings: [h("OLDXOM001", x as number, 110)] }, { period: "2026-06-30", holdings: [h("NEWXOM001", y as number, 112)] }],
+    })),
+    tickerOf,
+    [],
+  );
+  assert.deepEqual(xom, [], "1:1 换码不写系数");
+  // 只有一位持有人:无法区分换股与真实买卖 → 不写。
+  assert.deepEqual(deriveSplitFactors([hist("cullen", 213_520, 106_631)], tickerOf, []), [], "单一持有人不推断");
+  // 端到端:系数 + canon → cullen/dodge 未变,trader 真实减持。
+  const lookup = factorLookup(fs);
+  const canon = (c: string) => tickerOf(c);
+  const changesFor = (slug: string) => {
+    const hh = histories.find((x) => x.slug === slug)!;
+    const [L, P] = rescaleToLatestBasis([{ period: "2026-06-30", holdings: hh.filings[1].holdings }, { period: "2026-03-31", holdings: hh.filings[0].holdings }], lookup);
+    return computeChanges(L.holdings as Holding[], P.holdings as Holding[], canon);
+  };
+  assert.deepEqual(changesFor("cullen"), [], "cullen 换股后未变(零碎股折现差 <0.5% 贴齐)");
+  assert.deepEqual(changesFor("dodge"), [], "dodge 换股后未变");
+  const t = changesFor("trader");
+  assert.ok(t.length === 1 && t[0].kind === "decreased", `trader 真实减持,got ${JSON.stringify(t)}`);
 }
 
 console.log("splitAdjust.check OK");

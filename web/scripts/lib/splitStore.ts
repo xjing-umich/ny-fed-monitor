@@ -1,7 +1,7 @@
 // splitStore.ts — 拆股系数与季度汇总的落库(共识步骤用)。纯映射 + 一个带过期清理的写入函数。
 import type { SplitFactor, SplitFactorLookup } from "../../src/lib/managers/splitAdjust";
 import { rescaleToLatestBasis } from "../../src/lib/managers/splitAdjust";
-import { computeChanges } from "../../src/lib/managers/assemble";
+import { computeChanges, type CanonicalKey } from "../../src/lib/managers/assemble";
 import { toScanChanges, type ScanChange } from "../../src/lib/consensus/compute";
 import type { QuarterSummary } from "../../src/lib/managers/quarterSummary";
 import type { Holding } from "../../src/lib/managers/types";
@@ -29,12 +29,12 @@ export const toHolding = (h: DbHolding): Holding => ({
 });
 
 /** 两季持仓 → 拆股换算后的共识动作(与投资人页 assembleManagerDetail 同一口径)。 */
-export function consensusChangesFor(latestH: DbHolding[], priorH: DbHolding[], latestPeriod: string, priorPeriod: string, lookup: SplitFactorLookup): ScanChange[] {
+export function consensusChangesFor(latestH: DbHolding[], priorH: DbHolding[], latestPeriod: string, priorPeriod: string, lookup: SplitFactorLookup, canon?: CanonicalKey): ScanChange[] {
   const [latest, prior] = rescaleToLatestBasis(
     [{ period: latestPeriod, holdings: latestH.map(toHolding) }, { period: priorPeriod, holdings: priorH.map(toHolding) }],
     lookup,
   );
-  return toScanChanges(computeChanges(latest.holdings, prior.holdings));
+  return toScanChanges(computeChanges(latest.holdings, prior.holdings, canon));
 }
 
 /**
