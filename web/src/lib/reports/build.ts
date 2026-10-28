@@ -2,6 +2,7 @@
 // 不同点只有一处:输入锁定在报告季度 P,且没有更早申报的投资人不产生买卖(否则其全部持仓都会被算成“新建仓”)。
 import { computeConsensus, diffHoldings, type ScanInput, type ScanChange } from "../consensus/compute";
 import { NO_SPLITS, rescaleToLatestBasis } from "../managers/splitAdjust";
+import { tickerCanon } from "../managers/assemble";
 import type {
   ConsensusMoveItem, FeaturedEntry, FeaturedMove, MostHeldItem, MoveKind, ReportHolding,
   ReportInput, ReportManagerInput, ReportPayload, ReportStock, Section, StrikeZoneItem,
@@ -23,6 +24,7 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
   const knownTickers = new Set([...cusipMap.values()].map((v) => v.ticker).filter((t): t is string => !!t));
   const stock = (key: string, issuer: string): ReportStock => ({ key, ticker: knownTickers.has(key) ? key : null, issuer });
   const keyOf = (cusip: string) => cusipMap.get(cusip)?.ticker ?? cusip;
+  const canon = tickerCanon((c) => cusipMap.get(c)?.ticker);
   // 拆股:上季股数先换算到报告季口径,买卖口径与全站一致(splitAdjust.ts)。
   const splits = input.splits ?? NO_SPLITS;
   const priorOf = (m: ReportManagerInput): ReportHolding[] | null =>
@@ -38,7 +40,7 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
   const scan: ScanInput[] = filers.map((m) => ({
     slug: m.slug,
     holdings: m.current!.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: h.value, putCall: h.putCall ?? undefined })),
-    changes: m.prior ? diffHoldings(toDiffRows(m.current!), toDiffRows(priorOf(m)!)) : [],
+    changes: m.prior ? diffHoldings(toDiffRows(m.current!), toDiffRows(priorOf(m)!), canon) : [],
   }));
   const { holdings, moves } = computeConsensus(scan, cusipMap);
   const toMove = (r: (typeof moves)[number]): ConsensusMoveItem => ({

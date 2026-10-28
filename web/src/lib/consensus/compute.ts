@@ -1,4 +1,4 @@
-import { computeChanges } from "../managers/assemble";
+import { computeChanges, type CanonicalKey } from "../managers/assemble";
 import type { HoldingChange } from "../managers/types";
 
 // 共识计算纯逻辑(无 I/O): 把各经理人 latest 持仓/changes 聚合为 ticker-keyed 快照行。
@@ -258,12 +258,13 @@ export function computeCoOwnership(
   return out;
 }
 
-// QoQ 变动:全站唯一口径是 managers/assemble.ts 的 computeChanges(按 cusip+期权类型、可带拆股换算);这里只做形状转换。
+// QoQ 变动:全站唯一口径是 managers/assemble.ts 的 computeChanges(按 cusip+期权类型,传 canon 时按 ticker 归并换 CUSIP;
+// 可带拆股换算);这里只做形状转换。
 export type DiffRow = { cusip: string; issuer: string; value: number | string; shares: number | string; put_call?: string | null; splitFactor?: number };
 export function toScanChanges(changes: HoldingChange[]): ScanChange[] {
   return changes.map((c) => ({ cusip: c.cusip, issuer: c.issuer, kind: c.kind, value: c.value, putCall: c.putCall }));
 }
-export function diffHoldings(latest: DiffRow[], prior: DiffRow[]): ScanChange[] {
+export function diffHoldings(latest: DiffRow[], prior: DiffRow[], canon?: CanonicalKey): ScanChange[] {
   const toH = (h: DiffRow) => ({ cusip: h.cusip, issuer: h.issuer, value: Number(h.value), shares: Number(h.shares), putCall: h.put_call ?? undefined, splitFactor: h.splitFactor });
-  return toScanChanges(computeChanges(latest.map(toH), prior.map(toH)));
+  return toScanChanges(computeChanges(latest.map(toH), prior.map(toH), canon));
 }

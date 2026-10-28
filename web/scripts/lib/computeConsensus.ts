@@ -1,7 +1,7 @@
 import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
 import { deriveSplitFactorsWithRejections, factorLookup, NO_SPLITS, rescaleToLatestBasis, type ManagerHistory, type SplitEvent } from "../../src/lib/managers/splitAdjust";
 import { summarizeQuarter } from "../../src/lib/managers/quarterSummary";
-import { computeChanges } from "../../src/lib/managers/assemble";
+import { computeChanges, tickerCanon } from "../../src/lib/managers/assemble";
 import { consensusChangesFor, replaceDerivedRows, splitRow, summaryRow, toHolding, type DbHolding } from "./splitStore";
 import { countsAsCurrentHolder, effectiveMovesPeriod } from "../../src/lib/freshness/derive";
 
@@ -94,9 +94,11 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const effective = effectiveMovesPeriod(periods, now);
   const active = raws.filter((r) => countsAsCurrentHolder(r.period, now));
   // 零持仓申报(latestH 为空):不把上季全部仓位记成清仓动作,口径同 assembleManagerDetail。
+  // 换 CUSIP 归并(XOM/HON/DD):两季按 ticker 比对,与投资人详情页同一口径。
+  const canon = tickerCanon((c) => cmap.get(c)?.ticker);
   const changesOf = (r: Raw) =>
     (effective.period && r.period === effective.period && r.latestH.length > 0 && r.priorPeriod
-      ? consensusChangesFor(r.latestH, r.priorH, r.period, r.priorPeriod, splits)
+      ? consensusChangesFor(r.latestH, r.priorH, r.period, r.priorPeriod, splits, canon)
       : []);
 
   const scan: ScanInput[] = active.map((r) => ({
@@ -125,7 +127,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
         [{ period: r.period, holdings: r.latestH.map(toHolding) }, { period: r.priorPeriod!, holdings: r.priorH.map(toHolding) }],
         splits,
       );
-      const s = summarizeQuarter({ period: r.period, priorPeriod: r.priorPeriod!, latest: latest.holdings, prior: prior.holdings, changes: computeChanges(latest.holdings, prior.holdings) });
+      const s = summarizeQuarter({ period: r.period, priorPeriod: r.priorPeriod!, latest: latest.holdings, prior: prior.holdings, changes: computeChanges(latest.holdings, prior.holdings, canon) });
       return summaryRow(r.cik, s, computedAt);
     });
 

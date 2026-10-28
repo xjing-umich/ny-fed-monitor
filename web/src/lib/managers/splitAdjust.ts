@@ -128,6 +128,45 @@ function longByCusip(holdings: HistoryHolding[]): Map<string, { shares: number; 
   return out;
 }
 
+// 同 isLikelyTicker:脏 ticker(OpenFIGI 回传数字)不能用来配对新旧 CUSIP。
+const TICKER_SHAPE = /^[A-Za-z]{1,6}(\.[A-Za-z])?$/;
+/** 换 CUSIP 时股数比在 1 附近(±5%)按 1:1 处理,不写系数:XOM 2026-07 控股重组就是 1:1,剩下的差是真实买卖。 */
+const CUSIP_CHANGE_ONE_TO_ONE = 0.05;
+/**
+ * 换 CUSIP 的价值比下限比拆股(PLAUSIBLE_MIN 0.6)宽:换码常伴随分拆,一部分价值转到新 ticker 上
+ * (HON 2026:每股旧 HON → 0.5 新 HON + 0.5 HONA,留在 HON 的价值不到六成)。
+ * 证据主要靠"≥2 位持有人股数比 1% 内一致"—— 真实买卖几乎不会在换码当季恰好同比例。
+ */
+const CUSIP_CHANGE_VALUE_MIN = 0.25;
+
+/**
+ * 发行人换 CUSIP 并同时换股(HON 2026 分拆后 213,520 → 106,631 股、DD 约 2:3)时的股数换算系数,
+ * 记在旧 CUSIP A 上(上季 A 的股数 × factor = 本季新 CUSIP 口径),与拆股系数同表同用法;
+ * 调用方再按 ticker 归并两季(computeChanges 的 canon),才不会把换股记成减持。
+ * 证据要求与表外拆股推断同级:≥2 位、超过半数持有人的股数比在 1% 内一致,且价值比(q·r)落在合理区间。
+ * 只有一位持有人、或比值在 1 附近 → 不写(1:1 换码不需要系数,单人无法区分换股与真实买卖)。
+ */
+export function deriveCusipChangeFactor(input: {
+  from: string;
+  to: string;
+  ticker: string;
+  fromPeriod: string;
+  toPeriod: string;
+  priceRatio: number;
+  holders: PairHolder[];
+}): SplitFactor | null {
+  const { from, ticker, fromPeriod, toPeriod, priceRatio: q, holders } = input;
+  const ratios = holders.filter((h) => h.prevShares > 0 && h.shares > 0).map((h) => h.shares / h.prevShares);
+  if (ratios.length < 2 || !Number.isFinite(q) || q <= 0) return null;
+  const r = median(ratios);
+  if (!(r > 0) || Math.abs(r - 1) <= CUSIP_CHANGE_ONE_TO_ONE) return null;
+  const m = ratios.filter((x) => Math.abs(x / r - 1) <= MATCH_TOL).length;
+  if (m < 2 || m <= ratios.length / 2) return null;
+  const v = q * r; // 持有人手里同一笔仓位的价值比:换股不该凭空变出或蒸发大半价值(分拆出去的部分在新 ticker 上)
+  if (v < CUSIP_CHANGE_VALUE_MIN || v > PLAUSIBLE_MAX) return null;
+  return { cusip: from, ticker, fromPeriod, toPeriod, factor: r, source: "inferred", evidence: { q, r, events: [], matching: m, bothHolders: ratios.length } };
+}
+
 /**
  * 全部经理、全部相邻季度对的拆股系数。季度对按每位经理实际申报的相邻两季(漏报一季时是 (Q1,Q3)),
  * 同一季度对的经理合在一起做交叉验证。季末单价取同一季全部持有人的中位数(同券同日同价,中位数抗个别脏行)。
@@ -143,6 +182,7 @@ export function deriveSplitFactors(histories: ManagerHistory[], tickerOf: (cusip
 export function deriveSplitFactorsWithRejections(histories: ManagerHistory[], tickerOf: (cusip: string) => string | null, events: SplitEvent[]): { factors: SplitFactor[]; rejected: SplitRejection[] } {
   const prices = new Map<string, number[]>(); // `${cusip}|${period}` → 各持有人季末单价
   const pairs = new Map<string, { fromPeriod: string; toPeriod: string; holders: Map<string, PairHolder[]> }>();
+  const changes = new Map<string, { from: string; to: string; ticker: string; fromPeriod: string; toPeriod: string; holders: PairHolder[] }>();
   for (const m of histories) {
     const asc = [...m.filings].sort((a, b) => (a.period < b.period ? -1 : a.period > b.period ? 1 : 0));
     const agg = asc.map((f) => longByCusip(f.holdings));
@@ -169,6 +209,23 @@ export function deriveSplitFactorsWithRejections(histories: ManagerHistory[], ti
         p.holders.set(cusip, a);
       }
       pairs.set(pk, p);
+      // 换 CUSIP:上季持有旧 A、本季不再持有 A,且本季新出现同 ticker 的 B(本季有、上季没有)→ 记一对。
+      const goneByTicker = new Map<string, string[]>();
+      for (const cusip of prev.keys()) {
+        if (cur.has(cusip)) continue;
+        const t = tickerOf(cusip);
+        if (t && TICKER_SHAPE.test(t)) (goneByTicker.get(t) ?? goneByTicker.set(t, []).get(t)!).push(cusip);
+      }
+      for (const [cusipB, c] of cur) {
+        if (prev.has(cusipB)) continue;
+        const t = tickerOf(cusipB);
+        const gone = t ? goneByTicker.get(t) : undefined;
+        if (!gone || gone.length !== 1) continue; // 同 ticker 多个旧 CUSIP 同时消失 → 不猜配对
+        const ck = `${gone[0]}|${cusipB}|${asc[i].period}|${asc[i + 1].period}`;
+        const e = changes.get(ck) ?? { from: gone[0], to: cusipB, ticker: t!, fromPeriod: asc[i].period, toPeriod: asc[i + 1].period, holders: [] as PairHolder[] };
+        e.holders.push({ prevShares: prev.get(gone[0])!.shares, shares: c.shares });
+        changes.set(ck, e);
+      }
     }
   }
 
@@ -193,6 +250,11 @@ export function deriveSplitFactorsWithRejections(histories: ManagerHistory[], ti
         if (win.length) rejected.push({ cusip, ticker, fromPeriod: p.fromPeriod, toPeriod: p.toPeriod, q, r: win.reduce((acc, e) => acc * e.ratio, 1) });
       }
     }
+  }
+  for (const c of changes.values()) {
+    const q = median(prices.get(`${c.to}|${c.toPeriod}`) ?? []) / median(prices.get(`${c.from}|${c.fromPeriod}`) ?? []);
+    const f = deriveCusipChangeFactor({ ...c, priceRatio: q });
+    if (f) out.push(f);
   }
   // 排序键含 toPeriod 作末位 tiebreak:同券同起点季的两个季度对,输出顺序不依赖经理输入顺序。
   const byKey = (a: { cusip: string; fromPeriod: string; toPeriod: string }, b: { cusip: string; fromPeriod: string; toPeriod: string }) =>
