@@ -4,7 +4,7 @@ assert(formatUSD(999_999_999) === "$1.00B", `边界滚B, got ${formatUSD(999_999
 assert(formatUSD(1_500_000_000) === "$1.50B", "常规B");
 assert(formatUSD(1_500_000) === "$1.5M", "常规M");
 assert(fmtMarginPct(0.002) === "<1%", `微小正margin显示<1%, got ${fmtMarginPct(0.002)}`);
-assert(fmtMarginPct(0.23) === "−23%", "常规margin带负号");
+assert(fmtMarginPct(0.23) === "23%", "常规margin不带符号(标签已是安全边际)");
 // 13F 原始发行人名 → 展示名(取自线上个股页的真实样本)。
 const names: [string, string][] = [
   ["MICROSOFT CORP.", "Microsoft Corp"],

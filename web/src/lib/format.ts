@@ -11,11 +11,12 @@ export function formatUSD(v: number): string {
 }
 
 /**
- * 安全边际展示:−N%;四舍五入到 0 但实际 >0 → "<1%"(不带负号,避免 −0%)。
+ * 安全边际展示:N%(不带符号)。标签都写"安全边际",带负号会读成"负的安全边际";
+ * 四舍五入到 0 但实际 >0 → "<1%"。全站安全边际数字都走这里。
  */
 export function fmtMarginPct(pct: number): string {
   const n = Math.round(pct * 100);
-  return n <= 0 ? "<1%" : `−${n}%`;
+  return n <= 0 ? "<1%" : `${n}%`;
 }
 
 /**

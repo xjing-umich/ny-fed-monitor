@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { stockPath } from "@/lib/urls";
-import { fmtValueBand } from "@/lib/format";
+import { fmtMarginPct, fmtValueBand } from "@/lib/format";
 import { impliedValue } from "@/lib/valuation/impliedValue";
 import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
@@ -72,7 +72,7 @@ export default function StrikeLeadersCard({
                 className="py-2 text-right font-data text-xs tabular-nums text-[var(--tt-accent)] whitespace-nowrap"
                 style={{ textShadow: "var(--glow-primary)" }}
               >
-                {row.marginPct != null && row.marginPct > 0 ? `−${Math.round(row.marginPct * 100)}%` : "—"}
+                {row.marginPct != null && row.marginPct > 0 ? fmtMarginPct(row.marginPct) : "—"}
               </td>
             </tr>
           ))}
