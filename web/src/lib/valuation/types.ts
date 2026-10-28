@@ -360,6 +360,13 @@ export type OeDcfAssessment = {
   cagr_window?: number[];    // fiscal years at the two CAGR endpoints
   growth_g1?: number;        // clamp(cagr_raw, 0, 0.10)
   declined?: boolean;        // history declining → g1 forced 0
+  /**
+   * 模型假设增速 g1 由哪一条约束定下(展示「模型假设 X%(已封顶,原因)」用):
+   *  history=历史营收回归本身(未封顶);fundamentals=基本面再投资上限(ROIC×再投资/SGR)更低;
+   *  net_income=净利润 CAGR 更低;moat_cap=护城河分档上限;declined=净利润下滑,强制为 0;none=无可用增长证据(0)。
+   * history 以外都意味着「模型假设低于历史营收增速」。
+   */
+  growth_g1_limited_by?: "history" | "fundamentals" | "net_income" | "moat_cap" | "declined" | "none";
   discount?: DiscountBandProvenance;
   tiers?: { pessimistic: OeDcfTier; neutral: OeDcfTier; optimistic: OeDcfTier };
   per_share_low?: number;    // = tiers.pessimistic.per_share

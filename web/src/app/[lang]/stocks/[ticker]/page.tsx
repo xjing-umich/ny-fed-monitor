@@ -57,6 +57,7 @@ import { StockConclusionBand } from "@/components/stocks/StockConclusionBand";
 import { StockAnchorNav } from "@/components/stocks/StockAnchorNav";
 import { valuationLabel } from "@/lib/valuation/valuationLabel";
 import { Sparkline } from "@/components/common/Sparkline";
+import { revenueGrowthStandard } from "@/lib/valuation/growthBaseRate";
 import { SectionHeading } from "@/components/common/SectionHeading";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
@@ -526,6 +527,8 @@ export default async function StockTickerPage({
   // 个股页即使 reliable=false 仍展示「价格在赌什么」(对照用,非确认便宜);ingest/快照仍可
   // 用 suppressed 闸聚合面——此处不写库。
   const expectations = run.expectations;
+  // 全站唯一的历史营收增速(与引擎 gRaw、「价格在赌什么」同一函数同一输入):生意质量头条引用它。
+  const revenueGrowth = revenueGrowthStandard(floorInput.years);
 
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
   // 最新一期(任何报表)也超 18 个月 → 不展示:PBR/VALE/AEM 改报 20-F/40-F 后 XBRL 只剩
@@ -830,6 +833,7 @@ export default async function StockTickerPage({
                       expectations={expectations}
                       lang={lang}
                       lowConfidence={!handoffVerdict?.reliable}
+                      historicalSpan={revenueGrowth}
                     />
                   )}
                   <LearnLink
@@ -913,7 +917,9 @@ export default async function StockTickerPage({
               )}
               <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
-                  { k: page.bq.revenueGrowth, v: bq.revenueYoy, sign: true },
+                  revenueGrowth
+                    ? { k: page.bq.revenueGrowth(`${revenueGrowth.fromYear}–${revenueGrowth.toYear}`), v: revenueGrowth.rate, sign: true }
+                    : { k: page.bq.revenueYoy, v: bq.revenueYoy, sign: true },
                   { k: page.bq.netMargin, v: bq.netMargin, sign: false },
                   { k: "ROE", v: bq.roe, sign: false },
                   { k: page.bq.fcfMargin, v: bq.fcfMargin, sign: false },
@@ -934,7 +940,7 @@ export default async function StockTickerPage({
                     {page.bq.revenueTrail(
                       formatUSD(bq.revenueSeries[0]),
                       formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1]),
-                      bq.revenueSeries.length,
+                      bq.revenueSpan,
                     )}
                   </span>
                   <Sparkline series={bq.revenueSeries} color="var(--tt-muted)" />

@@ -200,15 +200,33 @@ function assumptionsLine(
   const floorPart = zh ? `零增长底 ${usd0(rangeLo)}` : `Zero-growth floor ${usd0(rangeLo)}`;
   if (!hasIv || !oeDcf?.assessable) return floorPart;
 
+  // 模型假设增速 ≠ 历史营收增速:一律写「模型假设」并说清是谁把它压低的(growth_g1_limited_by),
+  // 不再写成「营收增」(OMF 曾写"营收增 0%(历史下滑)",实际下滑的是净利润,同页营收 +8.9%)。
   const g1 = oeDcf.growth_g1;
-  const growthPart = oeDcf.declined
-    ? zh
-      ? "营收增 0%（历史下滑，封顶为零）"
-      : "Revenue growth 0% (history declining, capped at zero)"
-    : g1 != null
+  const why = oeDcf.declined ? "declined" : oeDcf.growth_g1_limited_by;
+  const reason = {
+    zh: {
+      history: "取历史营收增速，未封顶",
+      fundamentals: "已封顶：再投资能力撑不起更快的增长",
+      net_income: "已封顶：净利润增速更低",
+      moat_cap: "已封顶：护城河分档上限",
+      declined: "已封顶：净利润下滑，按零增长算",
+      none: "缺少增长证据，按零增长算",
+    },
+    en: {
+      history: "historical revenue trend, not capped",
+      fundamentals: "capped: reinvestment can't fund faster growth",
+      net_income: "capped: net income grew more slowly",
+      moat_cap: "capped at the moat-tier ceiling",
+      declined: "capped: net income declining, treated as zero growth",
+      none: "no growth evidence, treated as zero growth",
+    },
+  }[zh ? "zh" : "en"];
+  const growthPart =
+    g1 != null
       ? zh
-        ? `营收增 ${pct(g1)}（历史增长与基本面上限的较小值，受护城河封顶）`
-        : `Revenue growth ${pct(g1)} (lower of historical trend and fundamental cap, capped by moat)`
+        ? `模型假设增速 ${pct(oeDcf.declined ? 0 : g1)}${why ? `（${reason[why]}）` : ""}`
+        : `Model growth assumption ${pct(oeDcf.declined ? 0 : g1)}${why ? ` (${reason[why]})` : ""}`
       : null;
   const moatPart =
     oeDcf.moatCap?.capYears != null ? (zh ? `护城河 ${oeDcf.moatCap.capYears} 年` : `moat ${oeDcf.moatCap.capYears} yr`) : null;

@@ -168,11 +168,13 @@ export type StrikeLeader = {
 
 /**
  * 取"现在落在 strike zone"的全表总数 + 安全边际最高的 Top N(首页值不值腿用)。
- * 同样优雅降级:无 env / 表未迁移(42P01 / PGRST205)/ 出错 → { total:0, leaders:[] },绝不抛。
+ * total = 已确认(reliable);pending = 击球区但待确认(reliable=false,screener 全部视图里标
+ * "Strike zone · pending" 的那些)。两数分开给,页面不再只报 19 却在表里出现 31 个击球区标签。
+ * 同样优雅降级:无 env / 表未迁移(42P01 / PGRST205)/ 出错 → { total:0, pending:0, leaders:[] },绝不抛。
  */
 export const readStrikeZoneLeaders = cache(
-  async (limit: number): Promise<{ total: number; leaders: StrikeLeader[] }> => {
-    const empty = { total: 0, leaders: [] as StrikeLeader[] };
+  async (limit: number): Promise<{ total: number; pending: number; leaders: StrikeLeader[] }> => {
+    const empty = { total: 0, pending: 0, leaders: [] as StrikeLeader[] };
     if (!hasSupabaseEnv()) return empty;
     const isMissingTable = (e: unknown) => {
       const code = (e as { code?: string }).code;
@@ -184,13 +186,15 @@ export const readStrikeZoneLeaders = cache(
       // 单法但无红旗仍算数(OE-DCF 对多数深折价名算不出值,若强求两法夹逼会把 tab 架空成几乎为空;
       // 见 [[valuation-broad-universe-guardrails]] 的口径修订)。(head 计数无法过 isImplausibleBand,
       // 可能仍含极少脏行;重跑 valuation:ingest 清表后彻底干净。)
-      const { count, error: cErr } = await withRetry(() =>
-        getDb()
-          .from("valuation_snapshot")
-          .select("ticker", { count: "exact", head: true })
-          .eq("in_strike_zone", true)
-          .eq("reliable", true),
-      );
+      const countWhere = (reliable: boolean) =>
+        withRetry(() =>
+          getDb()
+            .from("valuation_snapshot")
+            .select("ticker", { count: "exact", head: true })
+            .eq("in_strike_zone", true)
+            .eq("reliable", reliable),
+        );
+      const [{ count, error: cErr }, { count: pendingCount }] = await Promise.all([countWhere(true), countWhere(false)]);
       if (cErr) {
         if (!isMissingTable(cErr))
           console.error(`readStrikeZoneLeaders count 失败: ${(cErr as Error).message}`);
@@ -233,7 +237,7 @@ export const readStrikeZoneLeaders = cache(
           computedAt: String(r.computed_at),
           priceDate: r.price_date == null ? "" : String(r.price_date),
         }));
-      return { total: count ?? leaders.length, leaders };
+      return { total: count ?? leaders.length, pending: pendingCount ?? 0, leaders };
     } catch (err) {
       console.error(`readStrikeZoneLeaders 异常: ${err instanceof Error ? err.message : String(err)}`);
       return empty;
@@ -282,13 +286,15 @@ export const readValuationScreen = cache(
       // ① strike-zone 全表计数(顶部句)。只数可靠(reliable)的 —— 与下方视图口径一致:
       // 带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)不足以认定"落在 strike zone"。
       // single_lamp 单法但无红旗仍计入(不强求两法夹逼,见下 ②)。
-      const { count, error: cErr } = await withRetry(() =>
-        getDb()
-          .from("valuation_snapshot")
-          .select("ticker", { count: "exact", head: true })
-          .eq("in_strike_zone", true)
-          .eq("reliable", true),
-      );
+      const countWhere = (reliable: boolean) =>
+        withRetry(() =>
+          getDb()
+            .from("valuation_snapshot")
+            .select("ticker", { count: "exact", head: true })
+            .eq("in_strike_zone", true)
+            .eq("reliable", reliable),
+        );
+      const [{ count, error: cErr }, { count: pendingCount }] = await Promise.all([countWhere(true), countWhere(false)]);
       if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
       const strikeTotal = cErr ? 0 : count ?? 0;
 
