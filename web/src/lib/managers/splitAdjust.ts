@@ -175,7 +175,8 @@ export function deriveSplitFactors(histories: ManagerHistory[], tickerOf: (cusip
       if (f) out.push(f);
     }
   }
-  return out.sort((a, b) => a.cusip.localeCompare(b.cusip) || a.fromPeriod.localeCompare(b.fromPeriod));
+  // 排序键含 toPeriod 作末位 tiebreak:同券同起点季的两个季度对,输出顺序不依赖经理输入顺序。
+  return out.sort((a, b) => a.cusip.localeCompare(b.cusip) || a.fromPeriod.localeCompare(b.fromPeriod) || a.toPeriod.localeCompare(b.toPeriod));
 }
 
 export function factorLookup(rows: { cusip: string; fromPeriod: string; toPeriod: string; factor: number }[]): SplitFactorLookup {

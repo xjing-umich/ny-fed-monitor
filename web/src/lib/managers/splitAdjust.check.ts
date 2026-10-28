@@ -79,4 +79,51 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
   assert.equal(NO_SPLITS("C", Q1, Q2), 1);
 }
 
+// 期权行不进证据(E):mA 在 Q2 的 Call 行若混入正股口径,单价中位数与股数比都会变。
+{
+  const h = (cusip: string, shares: number, px: number, putCall?: string) => ({ cusip, shares, value: shares * px, putCall });
+  const Q1 = "2026-03-31", Q2 = "2026-06-30";
+  // mA:Q2 同券有正股 200 股 @50 与 Call 100 股 @80。正股口径单价 50;若 Call 混入,mA 变 (10000+8000)/300=60,中位数 55 → q=0.55。
+  // mB:Q2 只有正股 200 股 @50。
+  const histories = [
+    { slug: "mA", filings: [{ period: Q1, holdings: [h("E", 100, 100)] }, { period: Q2, holdings: [h("E", 200, 50), h("E", 100, 80, "Call")] }] },
+    { slug: "mB", filings: [{ period: Q1, holdings: [h("E", 100, 100)] }, { period: Q2, holdings: [h("E", 200, 50)] }] },
+  ];
+  const fe = deriveSplitFactors(histories, (c) => (c === "E" ? "EE" : null), [{ ticker: "EE", date: "2026-05-15", ratio: 2 }]);
+  assert.equal(fe.length, 1);
+  assert.equal(fe[0].evidence.q, 0.5, "Call 行不进单价中位数");
+  assert.equal(fe[0].evidence.bothHolders, 2);
+  assert.equal(fe[0].evidence.matching, 2, "Call 行不改正股股数比");
+}
+
+// 期权行不进持有人判定(F):mC 在 Q2 只有 Call(无正股),不能算作两季都持有的经理。
+{
+  const h = (cusip: string, shares: number, px: number, putCall?: string) => ({ cusip, shares, value: shares * px, putCall });
+  const Q1 = "2026-03-31", Q2 = "2026-06-30";
+  const histories = [
+    { slug: "mC", filings: [{ period: Q1, holdings: [h("F", 100, 100)] }, { period: Q2, holdings: [h("F", 50, 50, "Call")] }] },
+    { slug: "mD", filings: [{ period: Q1, holdings: [h("F", 100, 100)] }, { period: Q2, holdings: [h("F", 200, 50)] }] },
+    { slug: "mE", filings: [{ period: Q1, holdings: [h("F", 100, 100)] }, { period: Q2, holdings: [h("F", 200, 50)] }] },
+  ];
+  const ff = deriveSplitFactors(histories, (c) => (c === "F" ? "FF" : null), [{ ticker: "FF", date: "2026-05-15", ratio: 2 }]);
+  assert.equal(ff.length, 1);
+  assert.equal(ff[0].evidence.bothHolders, 2, "只有 Call 的经理不计入两季持有人");
+  assert.equal(ff[0].evidence.matching, 2);
+}
+
+// 输出顺序确定(G):同一 CUSIP、同一起点季的两个季度对(Q1→Q2 与 Q1→Q3),输出顺序不依赖经理输入顺序。
+{
+  const h = (cusip: string, shares: number, px: number, putCall?: string) => ({ cusip, shares, value: shares * px, putCall });
+  const Q1 = "2026-03-31", Q2 = "2026-06-30", Q3 = "2026-09-30";
+  const gA = { slug: "gA", filings: [{ period: Q1, holdings: [h("G", 100, 100)] }, { period: Q2, holdings: [h("G", 200, 50)] }] };
+  const gB = { slug: "gB", filings: [{ period: Q1, holdings: [h("G", 100, 100)] }, { period: Q3, holdings: [h("G", 200, 50)] }] };
+  const tickerOf = (c: string) => (c === "G" ? "GG" : null);
+  const evs = [{ ticker: "GG", date: "2026-05-15", ratio: 2 }];
+  const key = (fs: ReturnType<typeof deriveSplitFactors>) => fs.map((f) => `${f.cusip}|${f.fromPeriod}|${f.toPeriod}|${f.factor}|${f.source}`);
+  const ab = key(deriveSplitFactors([gA, gB], tickerOf, evs));
+  const ba = key(deriveSplitFactors([gB, gA], tickerOf, evs));
+  assert.deepEqual(ba, ab, "输入顺序不影响输出顺序");
+  assert.deepEqual(ab, [`G|${Q1}|${Q2}|2|table`, `G|${Q1}|${Q3}|2|table`]);
+}
+
 console.log("splitAdjust.check OK");
