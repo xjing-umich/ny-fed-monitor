@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/analytics/track";
 import { xIntentUrl, telegramIntentUrl } from "@/lib/share/intents";
 import type { ShareLabels } from "@/lib/share/shareText";
 

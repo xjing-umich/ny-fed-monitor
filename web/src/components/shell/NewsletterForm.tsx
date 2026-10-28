@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/analytics/track";
 import type { Lang } from "@/lib/nav";
 import { footerCopy } from "@/lib/footer";
 

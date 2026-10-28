@@ -46,7 +46,17 @@ function screenerRewrites(source: string, dest: string) {
   ];
 }
 
+// PostHog 反代(src/instrumentation-client.ts 的 api_host="/ingest"):浏览器只连本站,国内可达、不易被拦。
+// PostHog 的部分端点以 / 结尾(如 /e/、/flags/),Next 默认的去尾斜杠 308 会打断上报,
+// 所以关掉默认行为(skipTrailingSlashRedirect),再在 redirects() 里对 /ingest 以外的路径原样补回。
+const POSTHOG_REWRITES = [
+  { source: "/ingest/static/:path*", destination: "https://us-assets.i.posthog.com/static/:path*" },
+  { source: "/ingest/array/:path*", destination: "https://us-assets.i.posthog.com/array/:path*" },
+  { source: "/ingest/:path*", destination: "https://us.i.posthog.com/:path*" },
+];
+
 const nextConfig: NextConfig = {
+  skipTrailingSlashRedirect: true,
   turbopack: {
     root: path.join(__dirname),
   },
@@ -70,6 +80,8 @@ const nextConfig: NextConfig = {
     ]);
 
     return [
+      // 等同 Next 默认的去尾斜杠 308(见 POSTHOG_REWRITES 上方说明),仅放过 /ingest/。
+      { source: "/:path((?!ingest/).+)/", destination: "/:path", permanent: true },
       ...investorAliasRedirects,
       {
         source: "/:lang(zh|en)/managers",
@@ -89,6 +101,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
+        ...POSTHOG_REWRITES,
         ...screenerRewrites("/zh/stocks/screener", "/zh/stocks/screener"),
         ...screenerRewrites("/stocks/screener", "/en/stocks/screener"),
       ],
