@@ -79,7 +79,9 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const heldTotal = isConviction ? (screen as { heldTotal: number }).heldTotal : 0;
   const sortedRows = isConviction ? rows : sortScreenerRows(rows, sort);
   // 估值锚定的是收盘价日期;computedAt 是任务跑完的 UTC 日期,美东晚上跑会显示成"明天"。
-  const asOf = latestIsoDate(rows.map((r) => r.priceDate)) ?? (computedAt ? computedAt.slice(0, 10) : "");
+  // 只有行里都没有价格日期时才退回 computedAt,此时不写"收盘价"。
+  const priceAsOf = latestIsoDate(rows.map((r) => r.priceDate));
+  const asOf = priceAsOf ?? (computedAt ? computedAt.slice(0, 10) : "");
 
   const geo =
     strikeTotal > 0
@@ -115,7 +117,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
           dateline={
             asOf ? (
               <span className="font-data text-xs text-[var(--tt-muted)]">
-                {valuationAsOfText(lang, asOf)}
+                {priceAsOf ? valuationAsOfText(lang, priceAsOf) : isZh ? `估值截至 ${asOf}` : `Valuation as of ${asOf}`}
               </span>
             ) : undefined
           }
