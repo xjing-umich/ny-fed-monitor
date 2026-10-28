@@ -78,7 +78,7 @@ export const STOCK_PAGE_COPY = {
       asOf: (d: string) => `截至 ${d}`,
       revenueGrowth: "营收增速",
       netMargin: "净利率",
-      fcfMargin: "FCF 利润率",
+      fcfMargin: "自由现金流利润率",
       revenueTrail: (from: string, to: string, years: number) =>
         `营收 ${from} → ${to} · 近 ${years} 年`,
       incomplete: "基本面数据不完整，仅供参考。",

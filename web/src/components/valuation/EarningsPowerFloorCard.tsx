@@ -70,6 +70,15 @@ const MOAT_VIA_GROWTH: Record<Lang, string> = {
   zh: "特许经营（凭盈利增长）",
 };
 
+
+// 价格来源的展示名(库里存的是 provider id)。未知 id 原样显示。
+const PRICE_SOURCE_LABEL: Record<string, { en: string; zh: string }> = {
+  yahoo: { en: "Yahoo Finance", zh: "Yahoo Finance" },
+  stooq: { en: "Stooq", zh: "Stooq" },
+  eastmoney: { en: "Eastmoney", zh: "东方财富" },
+  twelvedata: { en: "Twelve Data", zh: "Twelve Data" },
+};
+const priceSourceLabel = (src: string, lang: Lang) => PRICE_SOURCE_LABEL[src]?.[lang] ?? src;
 const COPY = {
   en: {
     statusBelow: "Below fair value",
@@ -104,6 +113,9 @@ const COPY = {
     currencyMismatch: (cur: string) => `The price is quoted in ${cur} while per-share values come from USD filings, so the two aren't comparable and this page does not place price on the value gauge.`,
     priceAsOf: "Price as of",
     mayBeStale: "may be stale",
+    sourceLine: (src: string | null, date: string, stale: boolean, dgs10: { value: string; date: string } | null) =>
+      `Price${src ? ` from ${src}` : ""} as of ${date}${stale ? " (may be stale)" : ""}` +
+      `${dgs10 ? `; discount rate anchored to the 10-year Treasury yield, ${dgs10.value} (${dgs10.date})` : ""}.`,
     reproductionValue: "Reproduction value",
     moat: "Moat",
     directional: "(directional)",
@@ -153,6 +165,9 @@ const COPY = {
     currencyMismatch: (cur: string) => `现价以 ${cur} 计价，每股价值按美元财报算，两者不可比，因此不把现价放进价值带位置条。`,
     priceAsOf: "价格截至",
     mayBeStale: "可能已过时",
+    sourceLine: (src: string | null, date: string, stale: boolean, dgs10: { value: string; date: string } | null) =>
+      `${src ? `价格来源 ${src}，截至` : "价格截至"} ${date}${stale ? "（可能已过时）" : ""}` +
+      `${dgs10 ? `；折现率参照 10 年期美债收益率 ${dgs10.value}（${dgs10.date}）` : ""}。`,
     reproductionValue: "重置价值",
     moat: "护城河",
     directional: "（方向性）",
@@ -671,10 +686,14 @@ function ValueSpine({
       {!compact && <AssumptionsLine oeDcf={oeDcf} rangeLo={rangeLo} lang={lang} hasIv={hasIv} />}
 
       <p className="text-xs leading-relaxed text-[var(--tt-faint)]">
-        {t.priceAsOf} {sz.price.date}
-        {sz.price.source ? ` · ${sz.price.source}` : ""}
-        {sz.stale ? ` · ${t.mayBeStale}` : ""}
-        {oeDcf?.discount?.dgs10_date ? ` · DGS10 ${oeDcf.discount.dgs10_value != null ? pct1(oeDcf.discount.dgs10_value) : ""} @ ${oeDcf.discount.dgs10_date}` : ""}.
+        {t.sourceLine(
+          sz.price.source ? priceSourceLabel(sz.price.source, lang) : null,
+          sz.price.date,
+          sz.stale,
+          oeDcf?.discount?.dgs10_date && oeDcf.discount.dgs10_value != null
+            ? { value: pct1(oeDcf.discount.dgs10_value), date: oeDcf.discount.dgs10_date }
+            : null,
+        )}
       </p>
     </div>
   );

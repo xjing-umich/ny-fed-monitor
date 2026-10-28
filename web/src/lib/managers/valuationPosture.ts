@@ -87,7 +87,8 @@ export function postureLeadIn(posture: ValuationPosture, lang: Lang): string {
   const pending = posture.pending.length;
   const asOf = posture.asOf;
   if (lang === "zh") {
-    const head = `这只基金 ${posture.covered} 只估值无红旗的美股持仓中，`;
+    // 不写「这只基金」:伯克希尔、Daily Journal 等不是基金。
+    const head = `该组合的 ${posture.covered} 只估值无红旗的美股持仓中，`;
     const body = cheap > 0
       ? `有 ${cheap} 只现价低于内在价值${strike > 0 ? `（其中 ${strike} 只落在击球区）` : ""}`
       : "没有现价低于内在价值的";

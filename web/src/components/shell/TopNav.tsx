@@ -2,14 +2,15 @@
 
 import React, { useSyncExternalStore } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
 import SearchBox, { type SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
-import { localePath } from "@/lib/urls";
+import { localePath, HTML_LANG } from "@/lib/urls";
+import { switchLangKeepingQuery } from "./langSwitch";
 
 /** true on the client after hydration, false during SSR — no effect/setState needed. */
 const subscribe = () => () => {};
@@ -24,6 +25,7 @@ interface TopNavProps {
 
 export default function TopNav({ lang, items }: TopNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
   // next-themes can't know the theme during SSR; gate theme-dependent UI on mount
   // so the server and first client render agree (prevents hydration mismatch).
@@ -113,7 +115,8 @@ export default function TopNav({ lang, items }: TopNavProps) {
               key={l}
               href={otherLangPath}
               lang={l}
-              hrefLang={l}
+              hrefLang={HTML_LANG[l]}
+              onClick={(e) => switchLangKeepingQuery(e, otherLangPath, router.push)}
               className="inline-flex items-center justify-center min-h-[32px] px-2 rounded text-xs font-data transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-transparent"
             >
               {l === "zh" ? "中文" : "EN"}

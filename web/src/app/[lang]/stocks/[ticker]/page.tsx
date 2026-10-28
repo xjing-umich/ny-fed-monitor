@@ -13,7 +13,7 @@ import {
 } from "@/lib/managers/securities";
 import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, localePath } from "@/lib/urls";
+import { investorPath, stockPath, localePath, HTML_LANG } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { managerLabel } from "@/lib/managers/displayName";
 import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
@@ -588,6 +588,7 @@ export default async function StockTickerPage({
   const faq = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    inLanguage: HTML_LANG[lang],
     mainEntity: [
       {
         "@type": "Question",
