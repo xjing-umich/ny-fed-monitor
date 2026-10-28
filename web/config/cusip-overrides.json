@@ -1,0 +1,18 @@
+{
+  "_doc": "OpenFIGI 解不出的 CUSIP → ticker 人工映射。只收两类:申报人写错的 CUSIP、改号前的旧 CUSIP(拆股/迁册/重组后申报人仍沿用)。每条都用 13F 隐含价(value/shares)对过同日收盘价。enrichSecurities 每次跑都会覆盖写入 security_cusips(source=manual)。",
+  "overrides": {
+    "35045V100": { "ticker": "GM", "why": "Greenhaven 把 GM 的 37045V100 写成 35045V100;2026-06-30 隐含价 77.08 = GM 收盘 77.08" },
+    "38259P706": { "ticker": "GOOG", "why": "Google 2015 年改组前的 C 类 CUSIP;Check Capital 仍沿用;2026-06-30 隐含价 353.33 = GOOG 收盘" },
+    "38259P508": { "ticker": "GOOGL", "why": "Google 2015 年改组前的 A 类 CUSIP;2026-06-30 隐含价 357.41 ≈ GOOGL 收盘 357.37" },
+    "369604103": { "ticker": "GE", "why": "GE 2021 年 1:8 并股前的 CUSIP;2026-06-30 隐含价 373.73 = GE 收盘" },
+    "512807108": { "ticker": "LRCX", "why": "Lam 2024-10 拆股前的 CUSIP;2026-06-30 隐含价 433.33 = LRCX 收盘" },
+    "G3421J106": { "ticker": "FERG", "why": "Ferguson plc 2024 年迁册前的 CUSIP;2026-06-30 隐含价 237.33 = FERG 收盘" },
+    "045290255": { "ticker": "CMPR", "why": "Check Capital 申报的 Cimpress CUSIP;2026-06-30 隐含价 101.70 = CMPR 收盘" },
+    "143658300": { "ticker": "CCL", "why": "Carnival Corp 双上市结构统一前的 CUSIP" },
+    "H84989104": { "ticker": "TEL", "why": "TE Connectivity 2024 年迁册爱尔兰前的瑞士 CUSIP" },
+    "09247X101": { "ticker": "BLK", "why": "BlackRock 2024-10 控股公司重组前的 CUSIP" },
+    "040413106": { "ticker": "ANET", "why": "Arista 2024-12 拆股前的 CUSIP" },
+    "86800U104": { "ticker": "SMCI", "why": "Super Micro 2024-10 拆股前的 CUSIP" },
+    "48251w104": { "ticker": "KKR", "why": "Akre 2024-06-30 申报写成小写,入库早于大写归一" }
+  }
+}

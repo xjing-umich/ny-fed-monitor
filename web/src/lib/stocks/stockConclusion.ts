@@ -4,7 +4,7 @@ import type { Lang } from "@/lib/nav";
 
 export type ConclusionLeftState =
   | "card" | "holdcoSotp" | "unassessed" | "splitPaused"
-  | "holdcoNotAssessable" | "moatDistorted" | "fundamentalsSuspect";
+  | "holdcoNotAssessable" | "moatDistorted" | "fundamentalsSuspect" | "methodsConflict";
 
 /** 结论带左栏显示什么。优先级与原估值区块的分支顺序一致。 */
 export function conclusionLeftState(input: {
@@ -14,12 +14,15 @@ export function conclusionLeftState(input: {
   hasHoldcoSotp: boolean;
   capitalStructureDistorted: boolean;
   fundamentalsCorrupt: boolean;
+  /** 中枢 IV 低于零增长底、现价夹在中间 → 引擎不出判定,写明两法数字(ivBelowFloorConflict)。 */
+  methodsConflict?: boolean;
 }): ConclusionLeftState {
   if (!input.hasFloor) return "unassessed";
   if (input.splitCoverageStale) return "splitPaused";
   if (input.holdcoNotAssessable) return input.hasHoldcoSotp ? "holdcoSotp" : "holdcoNotAssessable";
   if (input.capitalStructureDistorted) return "moatDistorted";
   if (input.fundamentalsCorrupt) return "fundamentalsSuspect";
+  if (input.methodsConflict) return "methodsConflict";
   return "card";
 }
 

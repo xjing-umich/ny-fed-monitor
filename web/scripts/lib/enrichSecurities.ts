@@ -1,8 +1,18 @@
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
 import { padCusip, openfigiIdType, parseMappingResult, type MappingResultItem, type SecurityRow } from "../../src/lib/securities/openfigi";
 
 const OPENFIGI_URL = "https://api.openfigi.com/v3/mapping";
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
+
+/** config/cusip-overrides.json → [{cusip, ticker}]。cusip 原样保留(holdings 里可能是小写旧数据)。 */
+export function loadCusipOverrides(): { cusip: string; ticker: string }[] {
+  const file = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../config/cusip-overrides.json");
+  const { overrides } = JSON.parse(fs.readFileSync(file, "utf8")) as { overrides: Record<string, { ticker: string }> };
+  return Object.entries(overrides).map(([cusip, o]) => ({ cusip, ticker: o.ticker }));
+}
 
 /** 调 OpenFIGI 映射一批(已补零)。返回与输入等长的结果数组。 */
 export async function mapBatch(
@@ -39,6 +49,18 @@ export async function enrichSecurities(db: any, apiKey?: string): Promise<{ tota
     if (!data?.length) break;
     for (const r of data) if (!cusipIssuer.has(r.cusip)) cusipIssuer.set(r.cusip, r.issuer);
     if (data.length < 1000) break;
+  }
+
+  // 1b) 人工映射(config/cusip-overrides.json):OpenFIGI 解不出的错号/旧号,每次覆盖写入,
+  //     随后在 2) 里被当作已 resolved 跳过。
+  const overrides = loadCusipOverrides();
+  if (overrides.length) {
+    const { error } = await db.from("security_cusips").upsert(
+      overrides.map((o) => ({ cusip: o.cusip, ticker: o.ticker, issuer: cusipIssuer.get(o.cusip) ?? null, resolved: true, source: "manual" })),
+      { onConflict: "cusip" },
+    );
+    if (error) console.warn(`cusip overrides upsert err: ${error.message}`);
+    else console.log(`cusip overrides: ${overrides.length} 条已写入`);
   }
 
   // 2) 已 resolved 的跳过(幂等;cusip PK 作唯一排序键)

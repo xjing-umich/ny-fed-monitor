@@ -10,6 +10,7 @@ assert.equal(conclusionLeftState({ ...base, holdcoNotAssessable: true, hasHoldco
 assert.equal(conclusionLeftState({ ...base, holdcoNotAssessable: true }), "holdcoNotAssessable");
 assert.equal(conclusionLeftState({ ...base, capitalStructureDistorted: true }), "moatDistorted");
 assert.equal(conclusionLeftState({ ...base, fundamentalsCorrupt: true }), "fundamentalsSuspect");
+assert.equal(conclusionLeftState({ ...base, methodsConflict: true }), "methodsConflict", "BHF:中枢低于零增长底");
 // 优先级与原估值区块分支一致:拆股暂停先于控股公司
 assert.equal(conclusionLeftState({ ...base, splitCoverageStale: true, holdcoNotAssessable: true, hasHoldcoSotp: true }), "splitPaused");
 
@@ -32,7 +33,7 @@ assert.equal(holdersLine(27, "$76.77B", "en"), "27 holders · $76.77B combined")
 // holdcoNotAssessable 的资产底一行已在结论带里,不再单开一节(锚点随之消失)。
 assert.equal(valuationDetailsShown("card"), true);
 assert.equal(valuationDetailsShown("holdcoSotp"), true);
-for (const s of ["unassessed", "splitPaused", "holdcoNotAssessable", "moatDistorted", "fundamentalsSuspect"] as const) {
+for (const s of ["unassessed", "splitPaused", "holdcoNotAssessable", "moatDistorted", "fundamentalsSuspect", "methodsConflict"] as const) {
   assert.equal(valuationDetailsShown(s), false, `${s} 无估值明细`);
 }
 

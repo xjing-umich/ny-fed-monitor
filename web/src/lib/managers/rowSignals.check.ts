@@ -31,4 +31,24 @@ for (const [lang, newLabel, addLabel] of [
   assert(a?.signal === "fresh_conviction" && a.label === addLabel, `${lang} ADD → ${addLabel}, got ${JSON.stringify(a)}`);
 }
 
+// 微小增持不算加仓(Greenhaven GM +0.26% 曾被标"重磅加仓"):增幅 <10% → 不出 fresh_conviction;
+// 连续 3 季每季多几股、累计 <10% → 不出 accumulating。
+{
+  const tiny: FilingData[] = [
+    filing("2026-06-30", [
+      { cusip: "GM", issuer: "General Motors", value: 100, shares: 1026, weight: 0.12 },
+      { cusip: "DRIP", issuer: "Dripco", value: 10, shares: 1030, weight: 0.01 },
+    ]),
+    filing("2026-03-31", [
+      { cusip: "GM", issuer: "General Motors", value: 100, shares: 1000, weight: 0.12 },
+      { cusip: "DRIP", issuer: "Dripco", value: 10, shares: 1020, weight: 0.01 },
+    ]),
+    filing("2025-12-31", [{ cusip: "DRIP", issuer: "Dripco", value: 10, shares: 1010, weight: 0.01 }]),
+    filing("2025-09-30", [{ cusip: "DRIP", issuer: "Dripco", value: 10, shares: 1000, weight: 0.01 }]),
+  ];
+  const sig = deriveRowSignals({ filings: tiny, lang: "en" });
+  assert(sig.get("GM")?.conviction?.signal !== "fresh_conviction", `GM +2.6% must not be Big add, got ${JSON.stringify(sig.get("GM"))}`);
+  assert(sig.get("DRIP")?.conviction?.signal !== "accumulating", `DRIP +3% over 3 quarters must not be accumulating, got ${JSON.stringify(sig.get("DRIP"))}`);
+}
+
 console.log("rowSignals.check.ts: all assertions passed ✓ (fresh_conviction 新建/加仓分标)");

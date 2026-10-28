@@ -22,6 +22,7 @@ import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
+import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
 import { altFor, ogFor, datasetLd, breadcrumbLd } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
@@ -117,15 +118,19 @@ export async function generateMetadata({
   }
 
   const alternates = altFor(lang, `/stocks/${ticker}`);
+  // 未映射到代码的持仓(多为可转债/票据,如 008073AA6)以 CUSIP 作路由键:不叫"股票",也不进索引。
+  const isCusipKey = /^[0-9A-Z]{8}[0-9]$/i.test(ticker);
+  const noun = isCusipKey ? { zh: "证券", en: "Security" } : { zh: "股票", en: "Stock" };
   const meta =
     lang === "zh"
-      ? { title: `${zhIssuer}（${ticker}）股票 — 谁在持有 | Compounder · 复利`,
+      ? { title: `${zhIssuer}（${ticker}）${noun.zh} — 谁在持有 | Compounder · 复利`,
           description: description?.zh ?? `谁在持有 ${zhIssuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
-      : { title: `${issuer} (${ticker}) Stock — Who's Holding | Compounder`,
+      : { title: `${issuer} (${ticker}) ${noun.en} — Who's Holding | Compounder`,
           description: description?.en ?? `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
   return {
     ...meta,
     alternates,
+    ...(isCusipKey ? { robots: { index: false, follow: true } } : {}),
     // 本路由自带 opengraph-image(个股卡),不带品牌卡图以免盖掉它。
     ...ogFor({ lang, title: meta.title, description: meta.description, path: localePath(lang, `/stocks/${ticker}`), brandImage: false }),
   };
@@ -496,6 +501,15 @@ export default async function StockTickerPage({
     valuationFloor?.kind === "floor" ? valuationFloor.holdco_sotp : undefined;
   const capitalStructureDistorted =
     valuationFloor?.kind === "floor" && valuationFloor.moat_reading.capital_structure_distorted === true;
+  // 两法互斥(中枢 IV < 零增长底且现价夹在中间)→ 引擎不出判定;这里取出数字,卡片写明原因而非留空。
+  const conflictIv = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
+  const conflictFloor = strikeZone?.epv?.valueFloor;
+  const conflictPrice = strikeZone?.price.close;
+  const methodsConflict =
+    !handoffVerdict && conflictIv != null && conflictIv > 0 && conflictFloor != null && conflictPrice != null &&
+    ivBelowFloorConflict({ iv: conflictIv, valueFloor: conflictFloor, price: conflictPrice })
+      ? { iv: conflictIv, floor: conflictFloor, price: conflictPrice }
+      : null;
 
   // 反向 DCF 隐含预期(现价背后隐含的 owner-earnings 增速档位)。个股页全程实时计算(不读快照)。
   // 个股页即使 reliable=false 仍展示「价格在赌什么」(对照用,非确认便宜);ingest/快照仍可
@@ -503,7 +517,14 @@ export default async function StockTickerPage({
   const expectations = run.expectations;
 
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
-  const bq = deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
+  // 最新一期(任何报表)也超 18 个月 → 不展示:PBR/VALE/AEM 改报 20-F/40-F 后 XBRL 只剩
+  // 2011–2014 年的 10-Q,曾以"生意质量 截至 2010-12-31"示人。
+  const newestSecPeriod = [fundamentalsAsOf, sec.latest?.latest_10q_period_end, sec.latest?.latest_10k_period_end]
+    .filter((d): d is string => !!d)
+    .sort()
+    .pop();
+  const secTooOld = newestSecPeriod != null && isFundamentalsStale(newestSecPeriod, new Date().toISOString());
+  const bq = secTooOld ? null : deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
 
   // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于内在价值)。
   const marginShown = !!(
@@ -527,6 +548,7 @@ export default async function StockTickerPage({
     hasHoldcoSotp: !!holdcoSotp,
     capitalStructureDistorted,
     fundamentalsCorrupt,
+    methodsConflict: !!methodsConflict,
   });
   const assetFloorShown =
     holdcoNotAssessable &&
@@ -686,6 +708,8 @@ export default async function StockTickerPage({
     )
     : leftState === "moatDistorted" ? messageLeft(page.valuation.moatDistorted)
     : leftState === "fundamentalsSuspect" ? messageLeft(page.valuation.fundamentalsSuspect)
+    : leftState === "methodsConflict" && methodsConflict
+      ? messageLeft(page.valuation.methodsConflict(fmtPerShare(methodsConflict.iv), fmtPerShare(methodsConflict.floor), fmtPerShare(methodsConflict.price)))
     : unassessedLeft;
 
   return (
