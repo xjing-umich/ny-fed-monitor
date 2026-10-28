@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { isRealSplit, dedupeSplitEvents, deriveSplitFactor, deriveSplitFactors, factorLookup, NO_SPLITS, rescaleToLatestBasis } from "./splitAdjust";
 import { assembleManagerDetail } from "./assemble";
 import { deriveConviction } from "./conviction";
+import { summarizeQuarter } from "./quarterSummary";
+import { consensusChangesFor } from "../../../scripts/lib/splitStore";
 import type { Holding } from "./types";
 
 // ── 真拆股 vs 价格复权(Yahoo 把分拆上市/股票股息也记成小数"拆股",股数并不变) ──
@@ -153,6 +155,9 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
   assert.equal(q2b.shares, 2994); assert.equal(q2b.splitFactor, 2);
   const q1b = r[2].holdings.find((h) => h.cusip === "B" && !h.putCall)!;
   assert.equal(q1b.shares, 2994, "1000×1.5×2=3000,与 Q2 换算后的 2994 差 0.2%(<0.5%)→ 贴齐为未变");
+  assert.equal(q1b.splitFactor, 3, "贴齐的行仍带累计系数(1.5×2)");
+  assert.equal(r[3].holdings.find((h) => h.cusip === "B")!.splitFactor, 3, "最老一季(Q0→Q1 无拆股)也带 Q1→最新的累计系数 3");
+  assert.equal(r[3].holdings.find((h) => h.cusip === "B")!.shares, 2700, "900×3");
   assert.equal(r[2].holdings.find((h) => h.cusip === "B" && h.putCall)!.shares, 30, "期权行同样换算");
   assert.equal(r[2].holdings.find((h) => h.cusip === "A")!.shares, 100, "无拆股不动");
   assert.equal(filings[1].holdings[1].shares, 1000, "不改入参"); // filings[1] = Q1(加 Q0 后下标后移)
@@ -163,7 +168,7 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
     { period: Q2, holdings: [hold("M", 1996)] },
   ], factorLookup([{ cusip: "M", fromPeriod: Q1, toPeriod: Q2, factor: 2 }]));
   const mSum = multi[1].holdings.reduce((t, x) => t + x.shares, 0);
-  assert.ok(Math.abs(mSum - 1996) < 1e-9, `多行汇总贴齐,got ${mSum}`);
+  assert.equal(mSum, 1996, "多行汇总贴齐,合计与下一季精确相等(不是近似)");
 
   // 联动:投资人页的本季变动与 8 季信号。B 只是拆股 → 不是增持;A 是真增持。
   const mgr = { cik: "1", slug: "m", name: "M", person: "M" };
@@ -177,7 +182,7 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
 }
 {
   // 贴齐只对有系数的行:无拆股的 0.05% 小变动仍记为增持。
-  // (0.5% 边界本身不在此测;下方 K 例验证拆股后的大幅真减仓不会被贴齐吞掉。)
+  // (拆股行的 0.5% 容差边界见后面的"贴齐边界"一例;K 例验证拆股后的大幅真减仓不会被贴齐吞掉。)
   const look = factorLookup([]);
   const hold = (shares: number) => ({ cusip: "Z", issuer: "Z", shares, value: shares, weight: 0.1 });
   const d = assembleManagerDetail({ cik: "1", slug: "m", name: "M", person: "M" }, [
@@ -198,6 +203,87 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
   assert.equal(d.changes[0].prevShares, 10000);
   assert.equal(d.changes[0].splitFactor, 10);
   assert.ok(Math.abs(d.changes[0].deltaPct! + 0.156) < 1e-9);
+}
+
+// ── 贴齐必须"精确":浮点乘除不能让纯拆股在 computeChanges 的 `delta !== 0` 下留下 ±1e-16 的假增减 ──
+{
+  const Q1 = "2026-03-31", Q2 = "2026-06-30";
+  const mgr = { cik: "1", slug: "m", name: "M", person: "M" };
+  const hold = (cusip: string, shares: number): Holding => ({ cusip, issuer: cusip, shares, value: shares * 10, weight: 0.1 });
+  const row = (cusip: string, shares: number) => ({ cusip, issuer: cusip, shares: String(shares), value: String(shares * 10), weight: "0.1" });
+  // BN 形态 3:2,零碎股换现金:上季 ×1.5 与本季差 <0.1%。这两组数在旧实现下 shares*(next/adj) 落不到 next 上(分别被判 decreased / increased)。
+  for (const [prior, latest] of [[1212493, 1819447], [953752, 1431471]]) {
+    const look = factorLookup([{ cusip: "BN", fromPeriod: Q1, toPeriod: Q2, factor: 1.5 }]);
+    const filings = [
+      { period: Q2, filedAt: "", accession: "2", totalValue: 0, holdings: [hold("BN", latest), hold("ZZ", 500)] },
+      { period: Q1, filedAt: "", accession: "1", totalValue: 0, holdings: [hold("BN", prior), hold("ZZ", 500)] },
+    ];
+    const d = assembleManagerDetail(mgr, filings, look);
+    assert.equal(d.prior!.holdings.find((h) => h.cusip === "BN")!.shares, latest, `${prior}→${latest}:贴齐后精确等于本季股数`);
+    assert.equal(d.prior!.holdings.find((h) => h.cusip === "BN")!.splitFactor, 1.5, "贴齐的行保留系数");
+    assert.deepEqual(d.changes.filter((c) => c.cusip === "BN"), [], `${prior}→${latest}:投资人页无变动`);
+    assert.deepEqual(consensusChangesFor([row("BN", latest)], [row("BN", prior)], Q2, Q1, look), [], `${prior}→${latest}:共识无动作`);
+    const s = summarizeQuarter({ period: Q2, priorPeriod: Q1, latest: d.latest.holdings, prior: d.prior!.holdings, changes: d.changes });
+    assert.equal(s.counts.trimmed, 0); assert.equal(s.counts.added, 0);
+    assert.equal(s.netFlowUsd, 0);
+  }
+
+  // 批量:各种股数 × 1.5 贴齐后全部精确等于本季股数(旧实现约 14% 落不到)。
+  {
+    const look = factorLookup([{ cusip: "BN", fromPeriod: Q1, toPeriod: Q2, factor: 1.5 }]);
+    let bad = 0;
+    for (let p = 100001; p < 100001 + 5000; p += 7) {
+      const latest = Math.round(p * 1.5);
+      const [lat, pri] = rescaleToLatestBasis([{ period: Q2, holdings: [hold("BN", latest)] }, { period: Q1, holdings: [hold("BN", p)] }], look);
+      if (pri.holdings[0].shares !== lat.holdings[0].shares) bad++;
+    }
+    assert.equal(bad, 0, "批量贴齐全部精确");
+  }
+
+  // 同券多行(子账户):按行等比换算,余数落在该键最后一行,合计精确 = 本季合计。
+  {
+    const look = factorLookup([{ cusip: "MR", fromPeriod: Q1, toPeriod: Q2, factor: 1.5 }]);
+    const [lat, pri] = rescaleToLatestBasis([
+      { period: Q2, holdings: [hold("MR", 1519447)] },
+      { period: Q1, holdings: [hold("MR", 600001), hold("MR", 412492), hold("MZ", 5)] },
+    ], look);
+    const mr = pri.holdings.filter((h) => h.cusip === "MR");
+    assert.equal(mr.reduce((t, h) => t + h.shares, 0), 1519447, "多行合计精确 = 本季");
+    assert.ok(mr.every((h) => h.splitFactor === 1.5));
+    assert.ok(Math.abs(mr[0].shares - 600001 * 1.5 * (1519447 / 1518739.5)) < 1e-6, "非末行按比例换算");
+    assert.equal(pri.holdings.find((h) => h.cusip === "MZ")!.shares, 5, "无拆股不动");
+    assert.equal(lat.holdings[0].shares, 1519447);
+  }
+
+  // 贴齐边界(0.5%):拆股后差 0.45% 贴齐为未变;差 0.55% 不贴齐 → 仍是增持(真加仓)。
+  {
+    const look = factorLookup([{ cusip: "E", fromPeriod: Q1, toPeriod: Q2, factor: 2 }]);
+    const chg = (latest: number) => assembleManagerDetail(mgr, [
+      { period: Q2, filedAt: "", accession: "2", totalValue: 0, holdings: [hold("E", latest)] },
+      { period: Q1, filedAt: "", accession: "1", totalValue: 0, holdings: [hold("E", 1000)] },
+    ], look).changes;
+    assert.deepEqual(chg(2009), [], "差 0.45% → 贴齐");
+    assert.equal(chg(2011)[0]?.kind, "increased", "差 0.55% → 不贴齐");
+  }
+}
+
+// ── 断季保链:持有 Q1、Q2 缺席、Q3 持有,Q1→Q2、Q2→Q3 各拆 2:1(系数来自其他经理的季度对)→ Q1 应 ×4 ──
+{
+  const Q1 = "2026-03-31", Q2 = "2026-06-30", Q3 = "2026-09-30";
+  const hold = (cusip: string, shares: number): Holding => ({ cusip, issuer: cusip, shares, value: shares, weight: 0.1 });
+  const look = factorLookup([
+    { cusip: "G", fromPeriod: Q1, toPeriod: Q2, factor: 2 },
+    { cusip: "G", fromPeriod: Q2, toPeriod: Q3, factor: 2 },
+  ]);
+  const [, q2, q1] = rescaleToLatestBasis([
+    { period: Q3, holdings: [hold("G", 400), hold("A", 10)] },
+    { period: Q2, holdings: [hold("A", 10)] },
+    { period: Q1, holdings: [hold("G", 100), hold("A", 10)] },
+  ], look);
+  const g1 = q1.holdings.find((h) => h.cusip === "G")!;
+  assert.equal(g1.shares, 400, "Q2 缺席也不丢累计系数");
+  assert.equal(g1.splitFactor, 4);
+  assert.deepEqual(q2.holdings.map((h) => h.cusip), ["A"]);
 }
 
 console.log("splitAdjust.check OK");

@@ -204,24 +204,46 @@ export function rescaleToLatestBasis<
     return m;
   };
   const out: F[] = [desc[0]];
+  // 全部申报里出现过的 CUSIP:某季缺席(Q1 持有、Q2 没有、Q3 持有)时累计系数也要跟着往前传,否则链在缺席季断掉。
+  const allCusips = new Set(desc.flatMap((f) => f.holdings.map((h) => h.cusip)));
   let cum = new Map<string, number>(); // cusip → 从下一季到最新季的累计系数
   let nextTotals = totals(desc[0].holdings);
   for (let i = 1; i < desc.length; i++) {
     const f = desc[i];
     const toPeriod = desc[i - 1].period;
     const stepCum = new Map<string, number>();
-    const cusips = new Set([...cum.keys(), ...f.holdings.map((h) => h.cusip)]);
-    for (const c of cusips) stepCum.set(c, (cum.get(c) ?? 1) * lookup(c, f.period, toPeriod));
+    for (const c of allCusips) stepCum.set(c, (cum.get(c) ?? 1) * lookup(c, f.period, toPeriod));
     const adjTotals = new Map<string, number>();
     for (const h of f.holdings) adjTotals.set(keyOf(h), (adjTotals.get(keyOf(h)) ?? 0) + h.shares * stepCum.get(h.cusip)!);
-    const holdings = f.holdings.map((h) => {
+    // 贴齐的键:换算后与下一季相差 0.5% 以内(且本步确实有拆股系数)。贴齐必须"精确":
+    // shares*(next/adj) 的浮点结果常落不到 next 上,computeChanges 的 delta !== 0 会把纯拆股记成 ±1e-16 的假增减。
+    // 做法:单行键直接取 next;多行键各行等比换算,余数(next − 其余行之和)给该键最后一行,合计恰好 = next。
+    const snapTo = new Map<string, number>();
+    for (const [k, adj] of adjTotals) {
+      const next = nextTotals.get(k);
+      const cusip = k.slice(0, k.indexOf("|"));
+      if (lookup(cusip, f.period, toPeriod) !== 1 && stepCum.get(cusip) !== 1 && next != null && adj > 0 && Math.abs(adj - next) <= SNAP_TOL * next) snapTo.set(k, next);
+    }
+    const lastIdx = new Map<string, number>(); // 键 → 该键最后一行的下标
+    f.holdings.forEach((h, i) => lastIdx.set(keyOf(h), i));
+    const scaledSum = new Map<string, number>(); // 键 → 已处理行(换算后)的累计,用来算余数
+    const holdings = f.holdings.map((h, i) => {
       const c = stepCum.get(h.cusip)!;
       if (c === 1) return h;
+      const k = keyOf(h);
       let shares = h.shares * c;
-      const stepFactor = lookup(h.cusip, f.period, toPeriod);
-      const adj = adjTotals.get(keyOf(h))!;
-      const next = nextTotals.get(keyOf(h));
-      if (stepFactor !== 1 && next != null && adj > 0 && Math.abs(adj - next) <= SNAP_TOL * next) shares = shares * (next / adj);
+      const next = snapTo.get(k);
+      if (next != null) {
+        const before = scaledSum.get(k) ?? 0;
+        if (lastIdx.get(k) === i) {
+          shares = next - before;
+          // 取余后再按行序累加可能差一个 ulp:微调到合计恰好 = next。
+          for (let n = 0; n < 4 && before + shares !== next; n++) shares += next - (before + shares);
+        } else {
+          shares = shares * (next / adjTotals.get(k)!);
+          scaledSum.set(k, before + shares);
+        }
+      }
       return { ...h, shares, splitFactor: c };
     });
     out.push({ ...f, holdings });
