@@ -43,6 +43,24 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.9, both: H(1.0, 1.02), e
 assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.34, both: H(3, 3), events: [{ ticker: "T", date: "2026-05-20", ratio: 3 }, { ticker: "T", date: "2026-05-21", ratio: 3 }] })?.factor, 3);
 // 表事件与价格矛盾(单价没跳变)→ 不采用表事件;推断也不成立 → null。
 assert.equal(deriveSplitFactor({ ...pair, priceRatio: 1.05, both: H(1.1, 0.9), events: [{ ticker: "T", date: "2026-05-01", ratio: 2 }] }), null);
+// 表内真拆股,价格校验不过但持有人股数比中位数更接近 r → 仍采用(2026-10 生产库三例,数字取自 13F)。
+{
+  // KLAC 10:1(2026Q2):当季股价约翻倍,q·r=2.05>1.67;两位持有人 ×3.019、×8.443,中位数 5.73 更接近 10。
+  const klac = deriveSplitFactor({ ...pair, priceRatio: 0.205, both: H(3.019, 8.443), events: [{ ticker: "T", date: "2026-05-01", ratio: 10 }] });
+  assert.equal(klac?.factor, 10); assert.equal(klac?.source, "table"); assert.equal(klac?.evidence.via, "holders");
+  // PEGA 2:1(2025Q2):q·r=1.56 在区间内但不比不调整更平滑;持有人 ×1.766、×2.000。
+  assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.779, both: H(1.766, 2.0), events: [{ ticker: "T", date: "2026-05-01", ratio: 2 }] })?.factor, 2);
+  // SNEX 3:2(2026Q1):只有一位持有人,拆股同时加仓 ×2.383,仍比 1 更接近 1.5。
+  assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.848, both: H(2.383), events: [{ ticker: "T", date: "2026-05-01", ratio: 1.5 }] })?.factor, 1.5);
+  // 价格校验通过的照旧标 price。
+  assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.21, both: H(4.97, 4.43), events: [{ ticker: "T", date: "2026-05-01", ratio: 5 }] })?.evidence.via, "price");
+  // 表事件日期记错(13F 股数没变)且价格也不支持 → 拒绝。
+  assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.45, both: H(1, 1.01), events: [{ ticker: "T", date: "2026-05-01", ratio: 4 }] }), null);
+  // 没有两季都持有的人、价格又不过 → 拒绝(没有持有人证据可用)。
+  assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.205, both: [], events: [{ ticker: "T", date: "2026-05-01", ratio: 10 }] }), null);
+  // 反向拆股同样适用:1:10,价格不过,持有人 ×0.1 附近。
+  assert.equal(deriveSplitFactor({ ...pair, priceRatio: 5, both: H(0.1, 0.12), events: [{ ticker: "T", date: "2026-05-01", ratio: 0.1 }] })?.factor, 0.1);
+}
 // 反向拆股 1:10:单价 ×10、股数 ×0.1 → 系数 0.1。
 assert.equal(deriveSplitFactor({ ...pair, priceRatio: 9.5, both: H(0.1), events: [{ ticker: "T", date: "2026-05-01", ratio: 0.1 }] })?.factor, 0.1);
 // 表外推断:单价减半、3 位持有人里 2 位股数恰好翻倍 → inferred 2。
@@ -290,16 +308,17 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
 {
   const h = (cusip: string, shares: number, px: number) => ({ cusip, shares, value: shares * px, putCall: null });
   const Q1 = "2026-03-31", Q2 = "2026-06-30";
-  const tickerOf = (c: string) => (c === "R" ? "RR" : c === "OK" ? "OKT" : null);
-  // R:表里 4:1(窗口内),但当季股价 +80% → 单价比 q=0.45,q·r=1.8>1.67 被拒;两位持有人股数 ×4 → 推断也要过同一价格校验,同样失败。
-  // OK:同样 4:1、单价比 0.26 → 正常采用,不应出现在 rejected。
+  const tickerOf = (c: string) => (c === "R" ? "RR" : c === "OK" ? "OKT" : c === "UP" ? "UPT" : null);
+  // R:表里 4:1(窗口内),但 13F 股数没变(表日期记错)、单价却 ×0.45 → 价格校验(q·r=1.8>1.67)与持有人校验都不过 → 被拒。
+  // UP:同样 4:1、当季股价 +80%(q=0.45),两位持有人股数 ×4 → 价格校验不过,持有人校验通过 → 采用。
+  // OK:同样 4:1、单价比 0.26 → 价格校验通过,正常采用。
   const histories = [
-    { slug: "a", filings: [{ period: Q1, holdings: [h("R", 100, 100), h("OK", 100, 100)] }, { period: Q2, holdings: [h("R", 400, 45), h("OK", 400, 26)] }] },
-    { slug: "b", filings: [{ period: Q1, holdings: [h("R", 50, 100), h("OK", 50, 100)] }, { period: Q2, holdings: [h("R", 200, 45), h("OK", 200, 26)] }] },
+    { slug: "a", filings: [{ period: Q1, holdings: [h("R", 100, 100), h("UP", 100, 100), h("OK", 100, 100)] }, { period: Q2, holdings: [h("R", 100, 45), h("UP", 400, 45), h("OK", 400, 26)] }] },
+    { slug: "b", filings: [{ period: Q1, holdings: [h("R", 50, 100), h("UP", 50, 100), h("OK", 50, 100)] }, { period: Q2, holdings: [h("R", 50, 45), h("UP", 200, 45), h("OK", 200, 26)] }] },
   ];
-  const events = [{ ticker: "RR", date: "2026-05-15", ratio: 4 }, { ticker: "OKT", date: "2026-05-15", ratio: 4 }];
+  const events = [{ ticker: "RR", date: "2026-05-15", ratio: 4 }, { ticker: "UPT", date: "2026-05-15", ratio: 4 }, { ticker: "OKT", date: "2026-05-15", ratio: 4 }];
   const res = deriveSplitFactorsWithRejections(histories, tickerOf, events);
-  assert.deepEqual(res.factors.map((f) => `${f.cusip}:${f.factor}`), ["OK:4"]);
+  assert.deepEqual(res.factors.map((f) => `${f.cusip}:${f.factor}:${f.evidence.via}`), ["OK:4:price", "UP:4:holders"]);
   assert.equal(res.rejected.length, 1);
   const rj = res.rejected[0];
   assert.equal(rj.cusip, "R"); assert.equal(rj.ticker, "RR"); assert.equal(rj.fromPeriod, Q1); assert.equal(rj.toPeriod, Q2);
