@@ -34,6 +34,7 @@ const COPY = {
     outOfRange: "（已超出常规区间）",
     sentencePrefix: "现价把公司未来几年的 owner-earnings 年增定在 ",
     sentenceMid: "；公司过去营收年增 ",
+    span: (from: number, to: number) => `（${from}–${to} 年化）`,
     sentenceSuffix: "。",
     tierNote: {
       modest: "低于它自己做到过的。",
@@ -52,6 +53,7 @@ const COPY = {
     outOfRange: " (outside the usual range)",
     sentencePrefix: "Today's price pencils in about ",
     sentenceMid: " a year in owner-earnings for the next few years. Revenue actually grew ",
+    span: (from: number, to: number) => ` (${from}–${to}, annualized)`,
     sentenceSuffix: " a year.",
     tierNote: {
       modest: "Below what it has already done.",
@@ -70,7 +72,9 @@ export const PriceBetBlock: FC<{
   lang: Lang;
   /** 价值带 reliable=false 时仍展示本块，但加一句「只读预期、不确认便宜」。 */
   lowConfidence?: boolean;
-}> = ({ expectations, lang, lowConfidence = false }) => {
+  /** historicalGrowth 所用财年区间(revenueGrowthStandard),与生意质量头条同一个数、同一区间。 */
+  historicalSpan?: { fromYear: number; toYear: number };
+}> = ({ expectations, lang, lowConfidence = false, historicalSpan }) => {
   if (
     !expectations.assessable ||
     expectations.impliedGrowth == null ||
@@ -98,6 +102,7 @@ export const PriceBetBlock: FC<{
         {bounded ? t.outOfRange : ""}
         {t.sentenceMid}
         <span className="font-semibold font-data">{historicalLabel}</span>
+        {historicalSpan ? t.span(historicalSpan.fromYear, historicalSpan.toYear) : ""}
         {t.sentenceSuffix}
       </p>
       <p className="mt-1 text-sm text-[var(--tt-muted)]">{t.tierNote[expectations.tier]}</p>

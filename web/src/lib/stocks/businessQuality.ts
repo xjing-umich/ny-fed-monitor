@@ -8,6 +8,7 @@ export type BusinessQuality = {
   asOf: string;              // 基本面 as-of; 无则 ""
   reliable: boolean;         // quality_status ∉ {low, unresolved, missing, null}
   revenueSeries: number[];   // 营收, 升序(最早→最新)
+  revenueSpan: string;       // revenueSeries 首末财年,如 "2020–2025";单点为该年;无则 ""
   marginSeries: number[];    // 净利率 = net_income/revenue, 升序
 };
 
@@ -46,10 +47,12 @@ export function deriveBusinessQuality(input: {
     .filter((r) => r.period_end != null)
     .sort((a, b) => (a.period_end as string).localeCompare(b.period_end as string));
   const revenueSeries: number[] = [];
+  const revenueYears: string[] = [];
   const marginSeries: number[] = [];
   for (const r of asc) {
     if (r.revenue != null && r.revenue > 0) {
       revenueSeries.push(r.revenue);
+      revenueYears.push((r.period_end as string).slice(0, 4));
       if (r.net_income != null) marginSeries.push(r.net_income / r.revenue);
     }
   }
@@ -72,5 +75,7 @@ export function deriveBusinessQuality(input: {
   const qs = latest.quality_status;
   const reliable = !(qs == null || LOW_QUALITY.has(qs));
 
-  return { revenueYoy, netMargin, roe, fcfMargin, asOf, reliable, revenueSeries, marginSeries };
+  const revenueSpan =
+    revenueYears.length === 0 ? "" : revenueYears.length === 1 ? revenueYears[0] : `${revenueYears[0]}–${revenueYears[revenueYears.length - 1]}`;
+  return { revenueYoy, netMargin, roe, fcfMargin, asOf, reliable, revenueSeries, revenueSpan, marginSeries };
 }

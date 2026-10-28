@@ -126,7 +126,7 @@ export default async function HomePage({
         filing={movesEffective}
         filingReportExists={filingReportExists}
         moves={moves}
-        investorCount={topManagers.length}
+        investorCount={movesEffective.coverage.total > 0 ? movesEffective.coverage.total : topManagers.length}
       />
 
       {/* Real-data stat bar — carries the 10Y macro signal + real-data proof (own top margin, no wrapper). */}
