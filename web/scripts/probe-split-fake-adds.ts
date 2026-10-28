@@ -40,23 +40,29 @@ async function main() {
   console.log(`split_adjustments: ${sa?.length ?? 0} 行`, bySource);
 
   const { data: mgrs } = await db.from("managers").select("slug,cik");
-  let changed = 0, flipped = 0, vanished = 0;
+  let changed = 0, flipped = 0, vanished = 0, appeared = 0;
   for (const m of (mgrs ?? []) as { slug: string; cik: string }[]) {
     const raw = await getManagerDetail(m.slug, { adjustSplits: false });
     const adj = await getManagerDetail(m.slug);
     if (!raw || !adj) continue;
+    // 取原始与调整后两边变动键的并集:只在调整后才出现的变动(例如拆股后才露出的真加减仓)同样要列出。
+    const rm = new Map(raw.changes.map((c) => [holdingKey(c), c]));
     const am = new Map(adj.changes.map((c) => [holdingKey(c), c]));
-    for (const rc of raw.changes) {
-      const ac = am.get(holdingKey(rc));
-      if (ac && ac.kind === rc.kind && ac.deltaPct === rc.deltaPct) continue;
+    const pct = (x: number | null | undefined) => (x == null ? "—" : `${(x * 100).toFixed(1)}%`);
+    const fmt = (c: { kind: string; deltaPct: number | null } | undefined, factor?: number) => (c ? `${c.kind} ${pct(c.deltaPct)}${factor ? ` ×${factor}` : ""}` : "未变");
+    for (const k of new Set([...rm.keys(), ...am.keys()])) {
+      const rc = rm.get(k);
+      const ac = am.get(k);
+      if (rc && ac && ac.kind === rc.kind && ac.deltaPct === rc.deltaPct) continue;
       changed++;
-      if (!ac) vanished++;
-      else if ((rc.kind === "increased") !== (ac.kind === "increased")) flipped++;
-      const pct = (x: number | null | undefined) => (x == null ? "—" : `${(x * 100).toFixed(1)}%`);
-      console.log(`  ${m.slug.padEnd(28)} ${rc.issuer.slice(0, 24).padEnd(24)} 原:${rc.kind} ${pct(rc.deltaPct)} → 调:${ac ? `${ac.kind} ${pct(ac.deltaPct)} ×${ac.splitFactor}` : "未变(纯拆股)"}`);
+      if (rc && !ac) vanished++;
+      else if (!rc) appeared++;
+      else if (ac && (rc.kind === "increased") !== (ac.kind === "increased")) flipped++;
+      const c = (rc ?? ac)!;
+      console.log(`  ${m.slug.padEnd(28)} ${c.issuer.slice(0, 24).padEnd(24)} 原:${fmt(rc)} → 调:${rc && !ac ? "未变(纯拆股)" : fmt(ac, ac?.splitFactor)}`);
     }
   }
-  console.log(`\n最新季被改正 ${changed} 条:方向翻转 ${flipped}、变为未变 ${vanished}、其余为幅度修正。基线:24 条(反向 11、纯拆股 3、幅度 10)。`);
+  console.log(`\n最新季被改正 ${changed} 条:方向翻转 ${flipped}、变为未变 ${vanished}、调整后才出现 ${appeared}、其余为幅度修正(split_adjustments 共 ${sa?.length ?? 0} 行)。基线:24 条(反向 11、纯拆股 3、幅度 10)。`);
 
   const { data: mv } = await db.from("consensus_moves").select("ticker,direction,manager_count").in("ticker", ["CVNA", "BKNG", "KLAC"]);
   console.log("共识榜(修正后):", (mv ?? []).map((r: { ticker: string; direction: string; manager_count: number }) => `${r.ticker} ${r.direction} ${r.manager_count}位`).join(" | "), "  基线:CVNA bought 8位、BKNG bought 7位、KLAC bought 3位");
