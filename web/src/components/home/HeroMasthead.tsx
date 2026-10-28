@@ -27,6 +27,9 @@ const COPY = {
     ctaInvestors: "浏览投资人",
     bought: "最多人增持",
     sold: "最多人减持",
+    // 金额 = 这些买方期末持仓市值合计(aggregations.computeNotableMoves),不是买入金额。
+    boughtCols: "人数 · 买方持仓合计",
+    soldCols: "人数",
     asOf: (p: string) => `截至 ${p} · 来源 SEC 13F · 上报延迟 45 天`,
   },
   en: {
@@ -42,6 +45,8 @@ const COPY = {
     ctaInvestors: "Browse investors",
     bought: "Most bought",
     sold: "Most sold",
+    boughtCols: "Investors · Buyers' combined stake",
+    soldCols: "Investors",
     asOf: (p: string) => `As of ${p} · Source SEC 13F · 45-day reporting lag`,
   },
 };
@@ -56,7 +61,8 @@ function fmtDeadline(d: Date | null, lang: Lang): string {
   return lang === "zh" ? `${mo + 1} 月 ${day} 日` : `${EN_MONTHS[mo]} ${day}`;
 }
 
-function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
+// 卖方金额混了两种口径(减持按剩余持仓、清仓按上季持仓),不展示;买方金额是期末持仓合计。
+function PanelRows({ lang, rows, showValue }: { lang: Lang; rows: MoveRow[]; showValue: boolean }) {
   return (
     <RevealStagger className="mt-1.5" stepMs={70} delayMs={200}>
       {rows.map((row) => (
@@ -65,12 +71,12 @@ function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
           className="flex items-center justify-between gap-3 border-b border-[var(--tt-border)] py-2 last:border-0"
         >
           <span className="flex min-w-0 items-center gap-2">
-            <MoveTag kind={row.dominantKind} />
+            <MoveTag kind={row.dominantKind} lang={lang} />
             <Link
               href={stockPath(lang, row.cusip)}
               className="truncate font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
             >
-              <EntityName issuer={row.issuer} ticker={row.cusip} />
+              <EntityName issuer={row.issuer} ticker={row.cusip} lang={lang} />
             </Link>
           </span>
           <span
@@ -82,7 +88,8 @@ function PanelRows({ lang, rows }: { lang: Lang; rows: MoveRow[] }) {
                   : "var(--tt-positive)",
             }}
           >
-            {lang === "zh" ? `${row.count} 位 · ${formatUSD(row.value)}` : `${row.count} · ${formatUSD(row.value)}`}
+            {lang === "zh" ? `${row.count} 位` : `${row.count}`}
+            {showValue && ` · ${formatUSD(row.value)}`}
           </span>
         </div>
       ))}
@@ -207,18 +214,20 @@ export default function HeroMasthead({
           </div>
           {moves.mostBought.length > 0 && (
             <div>
-              <p className="pt-3 font-data text-xs text-[var(--tt-faint)]">
-                {c.bought}
+              <p className="flex items-baseline justify-between gap-3 pt-3 font-data text-xs text-[var(--tt-faint)]">
+                <span>{c.bought}</span>
+                <span>{c.boughtCols}</span>
               </p>
-              <PanelRows lang={lang} rows={moves.mostBought.slice(0, 4)} />
+              <PanelRows lang={lang} rows={moves.mostBought.slice(0, 4)} showValue />
             </div>
           )}
           {moves.mostSold.length > 0 && (
             <div>
-              <p className="pt-4 font-data text-xs text-[var(--tt-faint)]">
-                {c.sold}
+              <p className="flex items-baseline justify-between gap-3 pt-4 font-data text-xs text-[var(--tt-faint)]">
+                <span>{c.sold}</span>
+                <span>{c.soldCols}</span>
               </p>
-              <PanelRows lang={lang} rows={moves.mostSold.slice(0, 3)} />
+              <PanelRows lang={lang} rows={moves.mostSold.slice(0, 3)} showValue={false} />
             </div>
           )}
         </aside>

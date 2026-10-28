@@ -116,7 +116,7 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
         <div className="mt-3 flex flex-col gap-2 text-base leading-relaxed text-[var(--ink-2)]">
           {(zh ? [
             methodologyCoverageText(p.coverage, lang),
-            "共识买入 / 卖出：统计本季相对上一季新建仓或加仓 / 减仓或清仓的投资人数，期权不计；没有更早申报可比的投资人不计入买卖。",
+            "共识买入 / 卖出：统计本季相对上一季新进或增持 / 减持或清仓的投资人数，期权不计；没有更早申报可比的投资人不计入买卖。",
             "持有人数“较上季”：只在本季已申报、且有上一季申报的同一批投资人内比较，避免申报季中有人尚未申报造成虚降。",
             `击球区与价值带：来自本站估值引擎的保守价值区间，只取数据可靠的结果。${valuationNote(row.valuationAsOf, lang, p.period)}这里只描述价格相对价值区间的位置，不构成买卖建议。`,
             row.status === "final" ? "本报告定稿后不再随迟到申报或修正申报变化；最新情况见实时共识页。" : "申报季结束、覆盖率达标后，本报告会定稿冻结。",

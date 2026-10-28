@@ -124,9 +124,9 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
       if (exits[0]) p.push(" The largest exit was ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), ".");
     } else {
       p.push(
-        zhSpacing(`较上一季度，${managerLabel(lang, manager.slug, manager.person)} 新建 ${news.length} 个持仓，清仓 ${exits.length} 个，加仓 ${incs.length} 个，减仓 ${decs.length} 个。`),
+        zhSpacing(`较上一季度，${managerLabel(lang, manager.slug, manager.person)} 新进 ${news.length} 只，清仓 ${exits.length} 只，增持 ${incs.length} 只，减持 ${decs.length} 只。`),
       );
-      if (news[0]) p.push("其中最大的新建仓位是 ", stock(cleanIssuer(news[0].issuer), news[0].cusip), "。");
+      if (news[0]) p.push("其中最大的新进持仓是 ", stock(cleanIssuer(news[0].issuer), news[0].cusip), "。");
       if (exits[0]) p.push("清仓里金额最大的是 ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), "。");
     }
     paras.push(p);

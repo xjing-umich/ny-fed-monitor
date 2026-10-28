@@ -19,10 +19,10 @@ import { managerLabel } from "@/lib/managers/displayName";
 import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
 
 const KIND_LABEL: Record<MoveKind, { zh: string; en: string; tone: "positive" | "warn" }> = {
-  new: { zh: "新建仓", en: "Opened", tone: "positive" },
-  increased: { zh: "加仓", en: "Added", tone: "positive" },
+  new: { zh: "新进", en: "Opened", tone: "positive" },
+  increased: { zh: "增持", en: "Added", tone: "positive" },
   exited: { zh: "清仓", en: "Exited", tone: "warn" },
-  decreased: { zh: "减仓", en: "Trimmed", tone: "warn" },
+  decreased: { zh: "减持", en: "Trimmed", tone: "warn" },
 };
 
 function movesFootnote(
@@ -84,7 +84,9 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
   const rankRows: RankRow[] = data.map((r) => {
     const k = KIND_LABEL[r.dominantKind];
     return {
-      ticker: r.cusip, issuer: r.issuer, primary: r.count, value: r.value,
+      ticker: r.cusip, issuer: r.issuer, primary: r.count,
+      // 金额是买方期末持仓市值合计,只在买入榜带标签展示;卖出榜的金额混了两种口径(减持按剩余、清仓按上季),不展示。
+      ...(side === "buy" ? { value: r.value, valueLabel: isZh ? "买方持仓合计" : "Buyers' combined stake" } : {}),
       kindLabel: isZh ? k.zh : k.en, kindTone: k.tone,
       href: stockPath(lang, r.cusip),
     };
@@ -103,8 +105,8 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
     heading,
   );
   const sub = side === "buy"
-    ? (isZh ? `在 ${qLabel} 被最多超级投资者新建仓或加仓的股票。` : `Stocks most superinvestors opened or added in ${qLabel}.`)
-    : (isZh ? `在 ${qLabel} 被最多超级投资者清仓或减仓的股票。` : `Stocks most superinvestors exited or trimmed in ${qLabel}.`);
+    ? (isZh ? `在 ${qLabel} 被最多超级投资者新进或增持的股票。` : `Stocks most superinvestors opened or added in ${qLabel}.`)
+    : (isZh ? `在 ${qLabel} 被最多超级投资者清仓或减持的股票。` : `Stocks most superinvestors exited or trimmed in ${qLabel}.`);
 
   return (
     <>

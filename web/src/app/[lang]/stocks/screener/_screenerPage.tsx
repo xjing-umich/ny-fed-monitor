@@ -10,6 +10,7 @@ import { ScreenerTable } from "./ScreenerTable";
 import { sortScreenerRows, type ScreenSort } from "@/lib/valuation/screenerSort";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { CONSENSUS_MIN } from "@/lib/managers/fusionSignal";
+import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 
 const SCREEN_LIMIT = 200;
 
@@ -77,7 +78,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const strikeTotal = isConviction ? 0 : (screen as { strikeTotal: number }).strikeTotal;
   const heldTotal = isConviction ? (screen as { heldTotal: number }).heldTotal : 0;
   const sortedRows = isConviction ? rows : sortScreenerRows(rows, sort);
-  const asOf = computedAt ? computedAt.slice(0, 10) : "";
+  // 估值锚定的是收盘价日期;computedAt 是任务跑完的 UTC 日期,美东晚上跑会显示成"明天"。
+  const asOf = latestIsoDate(rows.map((r) => r.priceDate)) ?? (computedAt ? computedAt.slice(0, 10) : "");
 
   const geo =
     strikeTotal > 0
@@ -113,7 +115,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
           dateline={
             asOf ? (
               <span className="font-data text-xs text-[var(--tt-muted)]">
-                {isZh ? `估值截至 ${asOf}` : `Valuation as of ${asOf}`}
+                {valuationAsOfText(lang, asOf)}
               </span>
             ) : undefined
           }
@@ -178,7 +180,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
         )}
       </nav>
 
-      <ScreenerTable lang={lang} rows={sortedRows} highlight={isConviction} />
+      <ScreenerTable lang={lang} rows={sortedRows} highlight={isConviction} asOf={asOf} />
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh

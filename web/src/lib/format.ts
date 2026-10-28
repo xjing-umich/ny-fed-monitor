@@ -10,6 +10,19 @@ export function formatUSD(v: number): string {
   return `$${v.toLocaleString()}`;
 }
 
+const USD_2DP = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const USD_0DP = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+/** 股价:一律到美分("$2.88"),行情站的底线;取整会让读者复算安全边际对不上。 */
+export function fmtPrice(v: number): string {
+  return `$${USD_2DP.format(v)}`;
+}
+
+/** 每股估值:是估计值,≥$10 取整;<$10 时取整误差太大(如 $2.51 → $3),保留到美分。 */
+export function fmtPerShareValue(v: number): string {
+  return Math.abs(v) >= 10 ? `$${USD_0DP.format(v)}` : fmtPrice(v);
+}
+
 /**
  * 安全边际展示:N%(不带符号)。标签都写"安全边际",带负号会读成"负的安全边际";
  * 四舍五入到 0 但实际 >0 → "<1%"。全站安全边际数字都走这里。
@@ -206,7 +219,7 @@ export function trendDirection(value: string | undefined | null): "up" | "down" 
 
 /** 价值带展示：下沿≈上沿(取整相等,如单灯无增长名 valueFloor=rangeHi)时折叠为单值，否则 lo–hi。 */
 export function fmtValueBand(lo: number, hi: number, fmt: (n: number) => string): string {
-  return Math.round(lo) === Math.round(hi) ? fmt(lo) : `${fmt(lo)}–${fmt(hi)}`;
+  return fmt(lo) === fmt(hi) ? fmt(lo) : `${fmt(lo)}–${fmt(hi)}`;
 }
 
 // 两个汉字/全角标点之间的空白。

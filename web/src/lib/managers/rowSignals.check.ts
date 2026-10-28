@@ -22,7 +22,7 @@ const filings: FilingData[] = [
 
 for (const [lang, newLabel, addLabel] of [
   ["en", "Big new position", "Big add"],
-  ["zh", "重磅新建", "重磅加仓"],
+  ["zh", "重仓新进", "重仓增持"],
 ] as const) {
   const sig = deriveRowSignals({ filings, lang });
   const n = sig.get("NEW")?.conviction;

@@ -30,7 +30,7 @@ export function movesBlurb(rows: BlurbRow[], side: "buy" | "sell", lang: Lang, q
   const sep = lang === "zh" ? "、" : " and ";
   const names = [...new Set([b, c].filter(Boolean).map((r) => subjectName(r as BlurbRow)))].join(sep);
   if (lang === "zh") {
-    const verb = side === "buy" ? "买入（新建仓或加仓）" : "卖出（清仓或减仓）";
+    const verb = side === "buy" ? "买入（新进或增持）" : "卖出（清仓或减持）";
     const tail = names ? `，其后是 ${names}` : "";
     return `${quarterLabel}，${subjectName(a)} 获最多投资者${verb}——${a.primary} 位${tail}。`;
   }

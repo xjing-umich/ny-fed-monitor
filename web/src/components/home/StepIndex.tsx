@@ -154,7 +154,7 @@ export default function StepIndex({
                       href={stockPath(lang, row.cusip)}
                       className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
-                      <EntityName issuer={row.issuer} ticker={row.cusip} />
+                      <EntityName issuer={row.issuer} ticker={row.cusip} lang={lang} />
                     </Link>
                   </td>
                   <td className="py-2 text-right font-data text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">

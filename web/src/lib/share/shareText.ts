@@ -53,8 +53,8 @@ export function buildShareText(raw: ShareInput, lang: Lang, fallbackTitle: strin
       const q = input.quarterLabel;
       if (lang === "zh") {
         return q
-          ? `${q} ${input.topName} 遭最多顶级投资者减持（${input.count} 位）。${VIA}`
-          : `${input.topName} 遭最多顶级投资者减持（${input.count} 位）。${VIA}`;
+          ? `${q} ${input.topName} 被最多超级投资者减持（${input.count} 位）。${VIA}`
+          : `${input.topName} 被最多超级投资者减持（${input.count} 位）。${VIA}`;
       }
       return q
         ? `In ${q}, ${input.topName} saw the most selling from top investors (${input.count}). ${VIA}`

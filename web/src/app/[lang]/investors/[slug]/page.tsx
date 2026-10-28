@@ -149,7 +149,7 @@ export async function generateMetadata({
 const HOLD_COPY = {
   zh: {
     title: "持仓明细",
-    cols: { issuer: "标的", value: "市值", valuation: "估值", consensus: "持有人数", shares: "持股数", weight: "权重", signal: "信号" },
+    cols: { issuer: "标的", value: "持仓市值", valuation: "估值", consensus: "持有人数", shares: "持股数", weight: "权重", signal: "信号" },
     truncated: (n: number, total: number) => `显示前 ${n} 条，共 ${total} 个持仓`,
   },
   en: {
@@ -194,7 +194,7 @@ function HoldingsTable({
               className={`rounded-sm px-1 py-0.5 font-data text-xs border border-current/40 ${h.putCall === "Put" ? "text-[var(--tt-warn)]" : "text-[var(--tt-muted)]"}`}
               title={lang === "zh" ? "期权:市值为标的名义价值,非权利金" : "Option: value is notional, not premium"}
             >
-              {h.putCall === "Put" ? "PUT" : "CALL"}
+              {lang === "zh" ? (h.putCall === "Put" ? "看跌期权" : "看涨期权") : h.putCall === "Put" ? "PUT" : "CALL"}
             </span>
           )}
         </span>
@@ -389,9 +389,9 @@ export default async function InvestorSlugPage({
   let verdict: { label: string; tone: Tone } | undefined;
   if (longChanges.length > 0 && prior) {
     if (buying > selling) {
-      verdict = { label: lang === "zh" ? "整体加仓" : "Net buying", tone: "positive" };
+      verdict = { label: lang === "zh" ? "整体增持" : "Net buying", tone: "positive" };
     } else if (selling > buying) {
-      verdict = { label: lang === "zh" ? "整体减仓" : "Net selling", tone: "warn" };
+      verdict = { label: lang === "zh" ? "整体减持" : "Net selling", tone: "warn" };
     } else {
       // 买入笔数 = 卖出笔数(且 longChanges 非空 → 两边都 ≥1),不是"没怎么动"。
       verdict = { label: lang === "zh" ? "有买有卖" : "Mixed", tone: "neutral" };
@@ -474,7 +474,7 @@ export default async function InvestorSlugPage({
     !zeroReport && prior && isScopeChange(valDeltaPct) ? (
       <p className="mt-2 text-xs text-[var(--tt-muted)]">
         {lang === "zh"
-          ? `组合市值环比 ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}%（${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}，持仓 ${priorLong!.length} → ${longHoldings.length} 只），数字取自 13F 申报原文。股价一个季度变不了这么多，常见原因是资金赎回、清盘，或部分账户不再计入 13F 申报范围；不等于基金经理主动卖出了这么多。`
+          ? `持仓市值环比 ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}%（${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}，持仓 ${priorLong!.length} → ${longHoldings.length} 只），数字取自 13F 申报原文。股价一个季度变不了这么多，常见原因是资金赎回、清盘，或部分账户不再计入 13F 申报范围；不等于基金经理主动卖出了这么多。`
           : `Portfolio value ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}% QoQ (${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}, ${priorLong!.length} → ${longHoldings.length} positions), as reported in the 13F. Prices don't move this much in a quarter: the usual causes are client redemptions, a wind-down, or accounts dropping out of the 13F's reporting scope — not necessarily the manager selling on purpose.`}
       </p>
     ) : null;
@@ -502,7 +502,7 @@ export default async function InvestorSlugPage({
   // 估值相关数字(低于内在价值计数、估值列、隐含预期句)全部来自估值快照:取其最晚价格日标注。
   const valuationAsOf = latestIsoDate([...verdicts.values()].map((v) => v.priceDate));
   const keyFacts = [
-    { label: lang === "zh" ? "组合市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
+    { label: lang === "zh" ? "持仓市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
     // cheap = 击球区 ∪ 低于内在价值(reliable);待确认的不计入,写在估值姿态段落里。
@@ -640,9 +640,9 @@ export default async function InvestorSlugPage({
           {prior && longChanges.length > 0 && (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 border-y border-[var(--tt-border)] py-6">
               {[
-                { label: lang === "zh" ? "新建" : "New", value: moves.opened, color: "var(--tt-positive)" },
-                { label: lang === "zh" ? "加仓" : "Added", value: moves.added, color: "var(--ink-1)" },
-                { label: lang === "zh" ? "减仓" : "Trimmed", value: moves.trimmed, color: "var(--ink-1)" },
+                { label: lang === "zh" ? "新进" : "New", value: moves.opened, color: "var(--tt-positive)" },
+                { label: lang === "zh" ? "增持" : "Added", value: moves.added, color: "var(--ink-1)" },
+                { label: lang === "zh" ? "减持" : "Trimmed", value: moves.trimmed, color: "var(--ink-1)" },
                 { label: lang === "zh" ? "清仓" : "Exited", value: moves.exited, color: "var(--tt-negative)" },
               ].map((s, i) => (
                 <div key={s.label}>

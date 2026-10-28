@@ -170,7 +170,7 @@ const TABLE_COPY = {
     title: "持有该证券的超级投资者",
     cols: {
       investor: "投资人",
-      value: "市值",
+      value: "持仓市值",
       shares: "持股",
       weight: "权重（上季→本季）",
     },
@@ -969,7 +969,7 @@ export default async function StockTickerPage({
                       href={stockPath(lang, c.coTicker)}
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
                     >
-                      {cleanIssuer(c.coIssuer)}
+                      {stockDisplayName(lang, c.coTicker, cleanIssuer(c.coIssuer))}
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{c.coTicker}</span>
                     </Link>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">

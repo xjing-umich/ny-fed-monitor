@@ -14,7 +14,8 @@ export type RankRow = {
   href: string;
   delta?: number | null;      // 共识页: 持有人净增减
   pctOfAggregate?: number;    // 共识页: 0–1
-  value?: number;             // 买卖页: 涉及金额
+  value?: number;             // 买入页: 买方期末持仓市值合计(不是买入金额),配 valueLabel 展示
+  valueLabel?: string;
   kindLabel?: string;         // 买卖页: 动作标签
   kindTone?: "positive" | "warn" | "neutral";
   valuation?: SnapshotVerdict;   // 共识页:该票当前估值位置(可缺 → 不渲染)
@@ -38,7 +39,7 @@ export function AggregateRankingList({
           <span className="w-6 shrink-0 font-data text-sm tabular-nums text-[var(--tt-faint)]">{i + 1}</span>
           <div className="min-w-0 flex-1">
             <Link href={r.href} className="font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
-              <EntityName issuer={r.issuer} ticker={r.ticker} />
+              <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
             </Link>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--tt-faint)]">
               {r.pctOfAggregate != null && (
@@ -47,7 +48,9 @@ export function AggregateRankingList({
                 </span>
               )}
               {r.kindLabel && <Badge tone={r.kindTone ?? "neutral"}>{r.kindLabel}</Badge>}
-              {r.value != null && <span className="font-data tabular-nums">{formatUSD(r.value)}</span>}
+              {r.value != null && (
+                <span className="font-data tabular-nums">{r.valueLabel ? `${r.valueLabel} ` : ""}{formatUSD(r.value)}</span>
+              )}
               {r.valuation && <ValuationBadge verdict={r.valuation} lang={lang} />}
             </div>
           </div>

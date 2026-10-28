@@ -20,7 +20,7 @@ const HEAD = {
   zh: {
     eyebrow: "SEC 13F · 季度披露",
     heading: "超级投资者",
-    subtitle: "按组合市值排列 · 最新 13F 季",
+    subtitle: "按持仓市值排列 · 最新 13F 季",
     dirEyebrow: "目录",
     dirTitle: (n: number) => `全部 ${n} 位投资人，按姓名排序`,
   },

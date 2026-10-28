@@ -2,9 +2,10 @@ import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
-import { cleanIssuer, fmtMarginPct, fmtValueBand } from "@/lib/format";
+import { cleanIssuer, fmtMarginPct, fmtValueBand, fmtPrice, fmtPerShareValue } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
+import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
@@ -14,7 +15,8 @@ import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 
 const TOP_N = 60;
 
-export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; rows: ScreenerRow[]; highlight?: boolean }) {
+/** asOf = 页头标的价格日期;某行价格日期不同时才在该行标出。 */
+export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: Lang; rows: ScreenerRow[]; highlight?: boolean; asOf?: string | null }) {
   const isZh = lang === "zh";
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
@@ -30,7 +32,7 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
         const top = highlight && deriveFusionSignal({ holderCount: r.holderCount, verdict: r }).isCheapConsensus;
         return (
           <span className={top ? "block border-l-2 border-[var(--tt-positive)] pl-2 -ml-2" : undefined}>
-            <EntityName issuer={r.issuer} ticker={r.ticker} />
+            <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
           </span>
         );
       },
@@ -73,7 +75,7 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       align: "right",
       width: "w-32",
       hideOnMobile: true,
-      cell: (r) => <span className="font-data tabular-nums text-[var(--tt-muted)]">{fmtValueBand(r.rangeLo, r.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}</span>,
+      cell: (r) => <span className="font-data tabular-nums text-[var(--tt-muted)]">{fmtValueBand(r.rangeLo, r.rangeHi, fmtPerShareValue)}</span>,
     },
     {
       key: "iv",
@@ -84,7 +86,7 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       // 由安全边际反推;单法口径(* 标注)时为零增长价值,见表下脚注。
       cell: (r) => {
         const iv = impliedValue(r.price, r.marginPct);
-        return <span className="font-data tabular-nums text-[var(--tt-text)]">{iv == null ? "—" : `$${Math.round(iv).toLocaleString()}`}</span>;
+        return <span className="font-data tabular-nums text-[var(--tt-text)]">{iv == null ? "—" : fmtPerShareValue(iv)}</span>;
       },
     },
     {
@@ -95,8 +97,8 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
       mobileLabel: isZh ? "现价" : "Price",
       cell: (r) => (
         <span className="font-data tabular-nums text-[var(--tt-text)]">
-          ${Math.round(r.price).toLocaleString()}
-          {r.priceDate ? <span className="ml-1 text-xs text-[var(--tt-faint)]">{r.priceDate}</span> : null}
+          {fmtPrice(r.price)}
+          {r.priceDate && r.priceDate !== asOf ? <span className="ml-1 text-xs text-[var(--tt-faint)]">{r.priceDate}</span> : null}
         </span>
       ),
     },
@@ -138,7 +140,7 @@ export function ScreenerTable({ lang, rows, highlight = false }: { lang: Lang; r
               <li key={r.ticker} className="flex items-baseline gap-2 text-sm">
                 <span className="w-8 shrink-0 text-right font-data text-xs tabular-nums text-[var(--tt-faint)]">{TOP_N + i + 1}</span>
                 <Link href={stockPath(lang, r.ticker)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
-                  {cleanIssuer(r.issuer)}
+                  {stockDisplayName(lang, r.ticker, cleanIssuer(r.issuer))}
                   <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{r.ticker}</span>
                   {r.marginPct != null && r.marginPct > 0 ? (
                     r.reliable ? (

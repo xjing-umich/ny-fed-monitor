@@ -40,7 +40,7 @@ export function reportDescription(p: ReportPayload, status: ReportStatus, lang: 
   const h = p.mostHeld.items[0];
   const sz = p.strikeZone.items.length;
   if (lang === "zh") {
-    if (b) parts.push(`${b.managerCount} 位超级投资者新建或加仓 ${label(b)}`);
+    if (b) parts.push(`${b.managerCount} 位超级投资者新进或增持 ${label(b)}`);
     if (h) parts.push(`持有人数最多的是 ${label(h)}（${holderCountText(h.holderCount, lang)}，${holderDeltaText(h.holderDelta, lang)}）`);
     if (sz) parts.push(`被至少 2 位持有的股票中，有 ${sz} 只处在击球区或低于内在价值`);
     const body = parts.length ? parts.join("；") : "已申报的投资人中暂无满足条件的共识动作";
@@ -101,18 +101,18 @@ export function emptyText(reason: EmptyReason, lang: ReportLang): string {
 }
 
 export function kindLabel(kind: MoveKind, lang: ReportLang): string {
-  const zh: Record<MoveKind, string> = { new: "新建仓", increased: "加仓", decreased: "减仓", exited: "清仓" };
+  const zh: Record<MoveKind, string> = { new: "新进", increased: "增持", decreased: "减持", exited: "清仓" };
   const en: Record<MoveKind, string> = { new: "New position", increased: "Added", decreased: "Trimmed", exited: "Sold out" };
   return (lang === "zh" ? zh : en)[kind];
 }
 
 /**
- * 名家动作:动作按申报股数的增减判断(与 diffHoldings 同口径),所以标签说买卖行为(加买/卖出部分),
- * 不说"加仓/减仓"那种会被读成权重的词;组合权重放括号里——权重还受股价涨跌影响,方向可能与股数相反
+ * 名家动作:动作按申报股数的增减判断(与 diffHoldings 同口径)。zh 用 13F 报道的通行四件套
+ * (新进/增持/减持/清仓,指股数),en 说买卖行为(Bought more/Sold some);组合权重放括号里——权重还受股价涨跌影响,方向可能与股数相反
  * (如股数减少但权重上升)。标签后面直接接股票名,要能连读成一句("Sold some AAPL")。
  */
 export function featuredKindLabel(kind: MoveKind, lang: ReportLang): string {
-  const zh: Record<MoveKind, string> = { new: "新买入", increased: "加买", decreased: "卖出部分", exited: "清仓" };
+  const zh: Record<MoveKind, string> = { new: "新进", increased: "增持", decreased: "减持", exited: "清仓" };
   const en: Record<MoveKind, string> = { new: "Opened", increased: "Bought more", decreased: "Sold some", exited: "Exited" };
   return (lang === "zh" ? zh : en)[kind];
 }
