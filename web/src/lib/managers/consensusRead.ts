@@ -29,6 +29,13 @@ export function mapMoveRows(rows: MoveDbRow[]): NotableMoves {
 }
 
 /**
+ * 「个股」口径:ticker 形态(与 isLikelyTicker 同式)。consensus_holdings 里未映射的 CUSIP 行(多为可转债,
+ * 如 278768AB2)不是股票,不进个股计数/目录/共识榜 —— 首页「共识持仓 1206」与 /stocks 目录「1204」曾因此对不上。
+ * 在库里用正则筛(POSIX ~),count-only 的计数也能同口径。
+ */
+const TICKER_SHAPE = "^[A-Za-z]{1,6}([.][A-Za-z])?$";
+
+/**
  * 读 most-held 快照(已按 holder_count 排序)的前 limit 行;minHolders>0 时在库里先筛持有人数。无 env → null(调用方回退扫描)。
  * 分页读:单次 .limit() 超过 1000 行会被 PostgREST 静默截断(个股目录 / sitemap 曾只出 998 只)。ticker 是主键,兜底排序保证分页不漏不重。
  */
@@ -37,6 +44,7 @@ export const readConsensusHeld = cache(async (limit: number, minHolders = 0): Pr
   const { data, error } = await selectPagesUpTo<HeldDbRow>(() => {
     const q = getDb().from("consensus_holdings").select("ticker,issuer,holder_count,total_value");
     return (minHolders > 0 ? q.gte("holder_count", minHolders) : q)
+      .filter("ticker", "match", TICKER_SHAPE)
       .order("holder_count", { ascending: false }).order("total_value", { ascending: false }).order("ticker", { ascending: true });
   }, limit);
   if (error) { console.error(`readConsensusHeld 失败: ${error.message}`); return null; }
@@ -49,7 +57,8 @@ export const readConsensusCount = cache(async (): Promise<number | null> => {
   const { count, error } = await getDb()
     .from("consensus_holdings")
     .select("ticker", { count: "exact", head: true })
-    .gte("holder_count", CONSENSUS_MIN_HOLDERS);
+    .gte("holder_count", CONSENSUS_MIN_HOLDERS)
+    .filter("ticker", "match", TICKER_SHAPE);
   if (error) { console.error(`readConsensusCount 失败: ${error.message}`); return null; }
   return count ?? 0;
 });
@@ -60,6 +69,7 @@ export const readConsensusHeldTop = cache(async (n: number): Promise<HeldRow[] |
   const { data, error } = await getDb()
     .from("consensus_holdings").select("ticker,issuer,holder_count,total_value")
     .gte("holder_count", CONSENSUS_MIN_HOLDERS)
+    .filter("ticker", "match", TICKER_SHAPE)
     .order("holder_count", { ascending: false }).order("total_value", { ascending: false })
     .limit(n);
   if (error) { console.error(`readConsensusHeldTop 失败: ${error.message}`); return null; }

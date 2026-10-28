@@ -17,8 +17,8 @@ const COPY = {
     valuation: {
       eyebrow: "估值",
       title: "只为已被证明的盈利和资产付钱",
-      body: "我们用可查的盈利和资产给每一只标的定价，不押注任何你必须相信的成长故事。这是竞品的持仓榜给不了的第二只眼。",
-      cta: "看最多机构持有的个股",
+      body: "我们用可查的盈利和资产给每一只标的定价，不押注任何你必须相信的成长故事。这是单看持仓榜给不了的第二只眼。",
+      cta: (n: number) => (n > 0 ? `看全部 ${n} 只击球区个股` : "打开价值筛选器"),
     },
     consensus: {
       eyebrow: "跨基金共识",
@@ -40,7 +40,7 @@ const COPY = {
       eyebrow: "Valuation",
       title: "Pay only for earnings and assets already proven",
       body: "We value every holding on proven earnings and assets — no growth story you have to believe. It's the second eye a holdings tracker alone can't give you.",
-      cta: "See the most-held stocks",
+      cta: (n: number) => (n > 0 ? `See all ${n} in the strike zone` : "Open the value screener"),
     },
     consensus: {
       eyebrow: "Cross-fund consensus",
@@ -85,9 +85,9 @@ function Row({
         {body ? <p className="mt-4 max-w-[44ch] text-sm leading-relaxed text-[var(--tt-muted)]">{body}</p> : null}
         <Link
           href={href}
-          className="mt-5 inline-flex min-h-11 items-center font-data text-xs text-[var(--tt-accent)] no-underline hover:underline"
+          className="mt-5 inline-flex min-h-11 items-center text-sm text-[var(--tt-text)] underline decoration-[var(--tt-faint)] underline-offset-4 transition-colors hover:text-[var(--tt-accent)]"
         >
-          {ctaLabel}
+          {ctaLabel} →
         </Link>
       </div>
       <div>{children}</div>
@@ -117,8 +117,8 @@ export default function StepIndex({
         eyebrow={c.valuation.eyebrow}
         title={c.valuation.title}
         body={c.valuation.body}
-        ctaLabel={c.valuation.cta}
-        href={localePath(lang, "/stocks")}
+        ctaLabel={c.valuation.cta(strike.total)}
+        href={localePath(lang, strike.total > 0 ? "/stocks/screener?view=strike_zone" : "/stocks/screener")}
       >
         {strike.leaders.length > 0 ? (
           <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
@@ -135,7 +135,7 @@ export default function StepIndex({
         ctaLabel={c.consensus.cta}
         href={consensusHref}
       >
-        <div className="ticks rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+        <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
           <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
             <span className="text-sm font-medium text-[var(--tt-text)]">{c.consensus.holders}</span>
             <Link

@@ -76,11 +76,13 @@ export const STOCK_PAGE_COPY = {
       eyebrow: "SEC 10-K · 基本面",
       title: "生意质量",
       asOf: (d: string) => `截至 ${d}`,
-      revenueGrowth: "营收增速",
+      // 全站唯一的历史营收增速口径(revenueGrowthStandard),带年份区间;无则退回最近财年同比并写明。
+      revenueGrowth: (span: string) => `营收年化增速（${span}）`,
+      revenueYoy: "最近财年营收同比",
       netMargin: "净利率",
       fcfMargin: "自由现金流利润率",
-      revenueTrail: (from: string, to: string, years: number) =>
-        `营收 ${from} → ${to} · 近 ${years} 年`,
+      revenueTrail: (from: string, to: string, span: string) =>
+        `营收 ${from} → ${to} · ${span}`,
       incomplete: "基本面数据不完整，仅供参考。",
       learn: "什么样的生意算优质",
     },
@@ -138,11 +140,12 @@ export const STOCK_PAGE_COPY = {
       eyebrow: "SEC 10-K · fundamentals",
       title: "Business quality",
       asOf: (d: string) => `As of ${d}`,
-      revenueGrowth: "Revenue growth",
+      revenueGrowth: (span: string) => `Revenue growth, annualized (${span})`,
+      revenueYoy: "Revenue, latest FY vs prior",
       netMargin: "Net margin",
       fcfMargin: "FCF margin",
-      revenueTrail: (from: string, to: string, years: number) =>
-        `Revenue ${from} → ${to} · ${years}y`,
+      revenueTrail: (from: string, to: string, span: string) =>
+        `Revenue ${from} → ${to} · ${span}`,
       incomplete: "Fundamentals data incomplete — read with care.",
       learn: "What makes a business high quality",
     },

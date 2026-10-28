@@ -45,12 +45,12 @@ export function FreshnessBadge({
         {t.provenance(period, filedAt)}
       </p>
       {status === "stale" && (
-        <div className="border-l-2 border-[var(--tt-warn)] bg-[var(--tt-surface)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
+        <div className="rounded-md border border-[color-mix(in_srgb,var(--alert)_45%,transparent)] bg-[var(--alert-soft)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
           {t.stale(period, lagQuarters)}
         </div>
       )}
       {status === "inactive" && (
-        <div className="border-l-2 border-[var(--tt-negative)] bg-[var(--tt-surface)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
+        <div className="rounded-md border border-[color-mix(in_srgb,var(--alert)_45%,transparent)] bg-[var(--alert-soft)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
           {t.inactive(period)}
         </div>
       )}

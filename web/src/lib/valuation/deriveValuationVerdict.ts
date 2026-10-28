@@ -51,6 +51,13 @@ export type ValuationVerdict = {
    */
   reliable: boolean;
   /**
+   * 内在价值落在价值带外:中枢 IV 低于零增长底 F,而现价不在 [IV, F) 之间(那一段已整条无判定)。
+   * 两法对"便宜与否"结论一致(都便宜或都不便宜),位置照常给出;但 IV 不在 [下沿, 上沿] 内,
+   * 读数自相矛盾(WB 带 $17、IV $13 进击球区;MRK 带 $30、IV $6),故 reliable=false → 待确认。
+   * 供页面写出待确认原因。仅在为 true 时出现。
+   */
+  ivBelowFloor?: true;
+  /**
    * Graham 净流动资产(net-net)双层信号:assetFloor=现价低于每股 NCAV(识别信号);
    * buy=现价不高于⅔每股 NCAV(安全边际达标的买入线)。平时 undefined(不可评估)或两者 false。
    * 独立于 6 档价值带与 reliable,仅供个股页注脚。
@@ -270,7 +277,9 @@ export function deriveValuationVerdict(input: {
   if (isImplausibleBand({ rangeLo, rangeHi, price, marginPct })) return null;
 
   // 可靠性:位置可算但便宜信号是否可信(周期峰值/高杠杆/模型不稳/per-share疑错)。floor 此处已窄化为 ValuationFloor。
-  const reliable = assessReliability({ floor, oeDcf });
+  // 另:IV 低于零增长底(现价不在两者之间,两法结论一致)→ lo ≤ IV ≤ hi 不成立,也降为待确认。
+  const ivBelowFloor = IV != null && IV < F;
+  const reliable = assessReliability({ floor, oeDcf }) && !ivBelowFloor;
 
   // net-net:现价 < 每股 NCAV → 触发(独立信号,不入 bucket、不入 reliable)。
   const nn = floor.net_net;
@@ -279,5 +288,8 @@ export function deriveValuationVerdict(input: {
       ? { perShare: nn.per_share, assetFloor: isNetNetAssetFloor(nn, price), buy: isNetNetBuy(nn, price) }
       : undefined;
 
-  return { bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, methods, reliable, netNet };
+  return {
+    bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, methods, reliable, netNet,
+    ...(ivBelowFloor ? { ivBelowFloor: true as const } : {}),
+  };
 }

@@ -94,6 +94,9 @@ const COPY = {
     zoneAbove: "above fair value",
     cheaper: "cheaper",
     pricier: "pricier",
+    priceNow: "Price",
+    aboveTop: (pct: string) => `Price is ${pct} above the optimistic top`,
+    belowFloor: (pct: string) => `Price is ${pct} below the zero-growth floor`,
     valueEstimate: (r: string) => `${r} value estimate`,
     capexRamp: "Capex doubled within two years: maintenance is floored then capped at D&A (OE may look optimistic); Greenwald growth value is closed — growth credit stays in the owner-earnings DCF only.",
     capexRampShort: "Capex doubled in two years, so maintenance is hard to pin down — read the band conservatively.",
@@ -103,7 +106,7 @@ const COPY = {
     lowConfidenceFallback: "Inputs look fragile this year — we won't mark this as confirmed cheap.",
     bandHowToRead: "The middle figure is the main read. The right end is the optimistic case under the same conservative caps — not an absolute ceiling.",
     legendFloor: "Zero-growth floor",
-    legendIv: "Central IV",
+    legendIv: "Intrinsic value",
     legendHi: "Optimistic top",
     assetBelow: (ps: string) => `Price is at or below the reproducible tangible asset base (${ps} / sh) — a rarer, harder floor.`,
     modelCautions: "Model cautions",
@@ -146,6 +149,9 @@ const COPY = {
     zoneAbove: "高于合理价值",
     cheaper: "更便宜",
     pricier: "更贵",
+    priceNow: "现价",
+    aboveTop: (pct: string) => `现价高于乐观上沿 ${pct}`,
+    belowFloor: (pct: string) => `现价低于零增长底 ${pct}`,
     valueEstimate: (r: string) => `${r} 价值估计`,
     capexRamp: "资本开支两年翻倍：维持性 CapEx 下限后按 D&A 封顶（OE 可能偏乐观）；Greenwald 增长价值已关闭 — 成长只留在所有者盈利 DCF。",
     capexRampShort: "资本开支两年翻倍，维持性投入难分清，价值带按保守口径读。",
@@ -155,7 +161,7 @@ const COPY = {
     lowConfidenceFallback: "今年输入偏脆，不把便宜当成确认信号。",
     bandHowToRead: "中间是主读数；右侧上沿是同一套保守假设下的乐观档，不是绝对上限。",
     legendFloor: "零增长底",
-    legendIv: "中枢 IV",
+    legendIv: "内在价值",
     legendHi: "乐观上沿",
     assetBelow: (ps: string) => `现价已等于或低于可重置的有形资产基础（${ps} / 股）— 一道更罕见、更硬的地板。`,
     modelCautions: "模型警示",
@@ -215,15 +221,33 @@ function assumptionsLine(
   const floorPart = zh ? `零增长底 ${usd0(rangeLo)}` : `Zero-growth floor ${usd0(rangeLo)}`;
   if (!hasIv || !oeDcf?.assessable) return floorPart;
 
+  // 模型假设增速 ≠ 历史营收增速:一律写「模型假设」并说清是谁把它压低的(growth_g1_limited_by),
+  // 不再写成「营收增」(OMF 曾写"营收增 0%(历史下滑)",实际下滑的是净利润,同页营收 +8.9%)。
   const g1 = oeDcf.growth_g1;
-  const growthPart = oeDcf.declined
-    ? zh
-      ? "营收增 0%（历史下滑，封顶为零）"
-      : "Revenue growth 0% (history declining, capped at zero)"
-    : g1 != null
+  const why = oeDcf.declined ? "declined" : oeDcf.growth_g1_limited_by;
+  const reason = {
+    zh: {
+      history: "取历史营收增速，未封顶",
+      fundamentals: "已封顶：再投资能力撑不起更快的增长",
+      net_income: "已封顶：净利润增速更低",
+      moat_cap: "已封顶：护城河分档上限",
+      declined: "已封顶：净利润下滑，按零增长算",
+      none: "缺少增长证据，按零增长算",
+    },
+    en: {
+      history: "historical revenue trend, not capped",
+      fundamentals: "capped: reinvestment can't fund faster growth",
+      net_income: "capped: net income grew more slowly",
+      moat_cap: "capped at the moat-tier ceiling",
+      declined: "capped: net income declining, treated as zero growth",
+      none: "no growth evidence, treated as zero growth",
+    },
+  }[zh ? "zh" : "en"];
+  const growthPart =
+    g1 != null
       ? zh
-        ? `营收增 ${pct(g1)}（历史增长与基本面上限的较小值，受护城河封顶）`
-        : `Revenue growth ${pct(g1)} (lower of historical trend and fundamental cap, capped by moat)`
+        ? `模型假设增速 ${pct(oeDcf.declined ? 0 : g1)}${why ? `（${reason[why]}）` : ""}`
+        : `Model growth assumption ${pct(oeDcf.declined ? 0 : g1)}${why ? ` (${reason[why]})` : ""}`
       : null;
   const moatPart =
     oeDcf.moatCap?.capYears != null ? (zh ? `护城河 ${oeDcf.moatCap.capYears} 年` : `moat ${oeDcf.moatCap.capYears} yr`) : null;
@@ -459,18 +483,32 @@ export function ValueBandGauge({
           }}
           title={`${t.priceAsOf} ${perShare(price)}`}
         />
-        {/* 价格读数:Display xl 刻度盘读数窗,跟随游标;max/min 钳制防贴边溢出。 */}
+        {/* 价格读数:Display xl 刻度盘读数窗,跟随游标;max/min 钳制防贴边溢出(含"现价"标签,半宽约 7rem)。 */}
         <span
           className="absolute top-0 -translate-x-1/2"
-          style={{ left: `max(4.5rem, min(calc(100% - 4.5rem), ${markerPct}%))` }}
+          style={{ left: `max(7rem, min(calc(100% - 7rem), ${markerPct}%))` }}
         >
-          <Display as="span" size="xl">{px(price)}</Display>
+          {/* 读数必须带"现价"标签:否则与下方加粗的内在价值争主次,冷访客会把 IV 读成股价。 */}
+          <span className="flex items-baseline gap-1.5 whitespace-nowrap">
+            <span className="text-sm text-[var(--ink-2)]">{t.priceNow}</span>
+            <Display as="span" size="xl">{px(price)}</Display>
+          </span>
         </span>
       </div>
       <div className="mt-1.5 flex justify-between font-data text-xs text-[var(--tt-faint)]">
         <span>{t.cheaper}</span>
         <span>{t.pricier}</span>
       </div>
+      {/* 游标钳在两端时,刻度盘看不出偏离多远:带外超过 5% 就写出距离。 */}
+      {price > rangeHi * 1.05 ? (
+        <p className="mt-1 text-right font-data text-xs text-[var(--ink-2)]">
+          {t.aboveTop(`${Math.round((price / rangeHi - 1) * 100)}%`)} →
+        </p>
+      ) : rangeLo > 0 && price < rangeLo * 0.95 ? (
+        <p className="mt-1 font-data text-xs text-[var(--ink-2)]">
+          ← {t.belowFloor(`${Math.round((1 - price / rangeLo) * 100)}%`)}
+        </p>
+      ) : null}
       {/* 三锚点图例：H5 三列等宽，避免一条长破折号在窄屏挤成一团。 */}
       {hasIv ? (
         <div className="mt-2 grid grid-cols-3 gap-2 text-center">
@@ -548,7 +586,7 @@ function SpineNotes({ lang, ...input }: SpineInput & { lang: Lang }) {
   if (!r) return null;
   return (
     <div className="space-y-3">
-      <BandHowToRead hasIv={r.hasIv} lang={lang} />
+      {/* "怎么读"解释的是结论带里的刻度盘,放在明细里就失去了对象(2026-10-28 评审),这里只留假设行。 */}
       <AssumptionsLine oeDcf={input.oeDcf} rangeLo={r.verdict.rangeLo} lang={lang} hasIv={r.hasIv} />
     </div>
   );
@@ -674,7 +712,7 @@ function ValueSpine({
       {/* 首屏可读：价值带怎么读 + 低信心具体原因（不进折叠）。compact 时「怎么读」挪到明细顶部。 */}
       {!compact && <BandHowToRead hasIv={hasIv} lang={lang} />}
       {callouts.length > 0 ? (
-        <ul className="space-y-1.5 border-l-2 border-[color-mix(in_srgb,var(--tt-warn)_55%,transparent)] pl-3">
+        <ul className="space-y-1.5 rounded-md bg-[var(--val-above-soft)] px-3 py-2">
           {callouts.map((line) => (
             <li key={line} className="text-sm leading-relaxed text-[var(--tt-warn)]">
               {line}

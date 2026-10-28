@@ -328,6 +328,18 @@ export function deriveOeDcf(
   );
   // gRaw/gFund 皆缺 → candidates 仅剩 cagrFallback(退回今天行为,但用新 cap);全缺 → 0。
   const g1 = declined ? 0 : candidates.length ? clamp(Math.min(...candidates), 0, cap) : 0;
+  const minCandidate = candidates.length ? Math.min(...candidates) : undefined;
+  const g1LimitedBy: OeDcfAssessment["growth_g1_limited_by"] = declined
+    ? "declined"
+    : minCandidate == null
+    ? "none"
+    : minCandidate > cap
+    ? "moat_cap"
+    : minCandidate === gRaw
+    ? "history"
+    : minCandidate === cagrFallback
+    ? "net_income"
+    : "fundamentals";
 
   // owner earnings 是股权流,读 floor.leverage_premium(epvFloor 已发布,单一真相源)——不本地重算。
   const discount = discountBand(dgs10, floor.leverage_premium ?? 0);
@@ -395,6 +407,7 @@ export function deriveOeDcf(
     cagr_raw: cagr,
     cagr_window: window,
     growth_g1: g1,
+    growth_g1_limited_by: g1LimitedBy,
     declined,
     discount,
     tiers: { pessimistic, neutral, optimistic },

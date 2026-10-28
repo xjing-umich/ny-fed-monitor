@@ -34,7 +34,7 @@ const COPY = {
   },
   en: {
     brand: "Compounder",
-    headline: (n: number) => `${n} investors. One quarter. Every position they just reported.`,
+    headline: (n: number, q: string) => `${n} investors. ${q}. Every position they just reported.`,
     headlineNoCount: (q: string) => `${q}. Every position the smart money just reported.`,
     headlineMuted: "Each holding checked against a first-principles valuation.",
     sub: (n: number) =>
@@ -113,6 +113,10 @@ export default function HeroMasthead({
   /** 申报季对应季度的报告行是否已存在(过了公开门槛)。false → 不渲染报告链接,避免 404。 */
   filingReportExists?: boolean;
   moves: NotableMoves;
+  /**
+   * 计入本季统计的投资人数 = 申报进度行的分母(effectiveMovesPeriod.coverage.total,剔除上季未申报者),
+   * 与「94 位中 3 位已交」同一个数;不再用追踪总数(97)。差额只在进度行的括号里解释一次。
+   */
   investorCount?: number;
 }): React.ReactElement {
   const c = COPY[lang];
@@ -164,8 +168,9 @@ export default function HeroMasthead({
             )}
           </p>
         )}
-        <h1 className="mt-6 max-w-[20ch] text-balance font-display text-[2rem] font-medium leading-[1.08] tracking-tight text-[var(--tt-text)] sm:text-[2.6rem]">
-          {headline}
+        <h1 className="mt-6 max-w-[20ch] text-balance font-display text-3xl font-medium leading-[1.12] tracking-tight text-[var(--tt-text)] sm:text-5xl [&:lang(zh)]:leading-[1.3]">
+          {/* 期次("Q2 2026")不在中间断行 */}
+          {headline.replace(/(Q\d) (\d{4})/g, "$1\u00a0$2")}
         </h1>
         <p className="mt-4 max-w-[34ch] text-lg leading-snug text-[var(--ink-2)]">
           {c.headlineMuted}
@@ -205,7 +210,7 @@ export default function HeroMasthead({
 
       {/* 动向面板 — 首屏即真数据。镶边 + 刻度角标,与全站仪表盘一致。 */}
       {(moves.mostBought.length > 0 || moves.mostSold.length > 0) && (
-        <aside className="ticks rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+        <aside className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
           <div className="flex items-baseline justify-between border-b border-[var(--tt-border-strong)] pb-2">
             <span className="text-sm font-medium text-[var(--tt-text)]">{panelTitle}</span>
             <span className="font-data text-xs text-[var(--tt-faint)]">
