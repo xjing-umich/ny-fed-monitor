@@ -104,3 +104,8 @@ export async function selectPagesUpTo<T>(
   }
   return { data, error: null };
 }
+
+/** 表未迁移(Postgres 42P01 / PostgREST PGRST205):新派生表先于 DDL 部署时据此降级,其他错误照常抛。 */
+export function isMissingTableError(error: { code?: string } | null | undefined): boolean {
+  return error?.code === "42P01" || error?.code === "PGRST205";
+}
