@@ -68,7 +68,7 @@ const MOAT_VIA_GROWTH: Record<Lang, string> = {
 
 const COPY = {
   en: {
-    statusBelow: "Margin of safety",
+    statusBelow: "Below fair value",
     statusWithin: "In fair-value range",
     statusAbove: "Above fair value",
     bothMethods: "both methods",
@@ -76,7 +76,7 @@ const COPY = {
     subBelow: (m: string) => `Price sits below ${m}’ value estimate.`,
     subWithin: (m: string) => `Price sits within ${m}’ value estimate.`,
     subAbove: "Little to no margin of safety today.",
-    zoneBelow: "margin of safety",
+    zoneBelow: "below fair value",
     zoneWithin: "fair value",
     zoneAbove: "above fair value",
     cheaper: "cheaper",
@@ -106,6 +106,7 @@ const COPY = {
     oeDcfCompact: (r: string) => `Owner-earnings DCF (Buffett): ${r} / sh. Floor keeps a zero-growth terminal; the upper end caps perpetual growth at min(10-year treasury, 3% nominal GDP).`,
     highLeverageWarning: "High leverage — ranges are a degraded approximation (see method).",
     methodSummary: "Method & numbers",
+    perShareUnavailable: "This company has more than one share class, and our data source doesn't give a combined share count, so we don't compute a per-share value.",
     perSh: "/ sh",
     ivHeadline: "growth-anchored intrinsic value",
     zeroGrowthHeadline: "zero-growth intrinsic value",
@@ -116,7 +117,7 @@ const COPY = {
     buybackOffsetsSbc: "Buybacks over the years shown roughly only offset stock-based-compensation dilution — read them as maintaining the share count, not a net return of capital.",
   },
   zh: {
-    statusBelow: "安全边际",
+    statusBelow: "低于合理价值",
     statusWithin: "处于合理价值区间",
     statusAbove: "高于合理价值",
     bothMethods: "两种方法",
@@ -124,7 +125,7 @@ const COPY = {
     subBelow: (m: string) => `现价低于${m}的价值估计。`,
     subWithin: (m: string) => `现价落在${m}的价值估计区间内。`,
     subAbove: "当前几乎没有安全边际。",
-    zoneBelow: "安全边际",
+    zoneBelow: "低于合理价值",
     zoneWithin: "合理价值",
     zoneAbove: "高于合理价值",
     cheaper: "更便宜",
@@ -154,6 +155,7 @@ const COPY = {
     oeDcfCompact: (r: string) => `所有者盈利 DCF（巴菲特）：${r} / 股。下限保留零增长终值；上限的永续增长封顶在「10 年期国债」与「3% 名义 GDP」两者的较低值。`,
     highLeverageWarning: "高杠杆 — 价值区间为降级近似（见方法）。",
     methodSummary: "方法与数字",
+    perShareUnavailable: "这家公司有多类股票，我们的数据源拿不到合并后的总股数，所以暂不给出每股估值。",
     perSh: "/ 股",
     netNet: (ps: string) =>
       `⚑ 现价低于每股净流动资产（${ps}）。格雷厄姆式深度价值信号，历史极罕见——常伴随经营困境，须警惕价值陷阱。`,
@@ -391,7 +393,7 @@ export function ValueBandGauge({
         <div className="flex h-8 overflow-hidden rounded-md sm:h-7">
           {zones.map((z) => {
             const active = z.key === bucket;
-            // 击球区段(below=安全边际,与 deriveValuationVerdict.inStrikeZone 同侧):
+            // 击球区段(below=低于合理价值,与 deriveValuationVerdict.inStrikeZone 同侧):
             // var(--tt-positive) 15% 底 + 1px 边缘 50%,刻度盘上的"可行动区"。
             const strike = z.key === "below";
             return (
@@ -532,7 +534,7 @@ function SpineNotes({ lang, ...input }: SpineInput & { lang: Lang }) {
   );
 }
 
-// The readable read: a plain status (margin of safety / fair value / above fair value),
+// The readable read: a plain status (below fair value / fair value / above fair value),
 // a neutral cheaper→pricier gauge with the price marker, one sentence. Every precise
 // number lives in the folded method section. Renders only with a price-aware assessment.
 function ValueSpine({
@@ -550,7 +552,7 @@ function ValueSpine({
   issuer?: string;
   ticker?: string;
   lang: Lang;
-  /** 结论状态(安全边际/合理区间/高于价值)是否在卡内渲染。个股页把结论上提到区块 display
+  /** 结论状态(低于合理价值/合理区间/高于合理价值)是否在卡内渲染。个股页把结论上提到区块 display
    *  标题时传 false, 避免与标题重复 —— 位置带与句子仍留在卡内。 */
   showStatus?: boolean;
   /** 个股页结论带(part="summary"):不渲染 bandHowToRead 与假设行(它们由 SpineNotes 放进明细)。 */
@@ -862,7 +864,7 @@ export const EarningsPowerFloorCard: FC<{
   if (floor.kind === "per_share_unavailable") {
     return (
       <div className="space-y-3">
-        {part !== "details" && <p className="text-sm text-[var(--tt-muted)]">{floor.reason}</p>}
+        {part !== "details" && <p className="text-sm text-[var(--tt-muted)]">{t.perShareUnavailable}</p>}
         {part !== "summary" && (
           <details className="text-xs text-[var(--tt-muted)]">
             <summary className="cursor-pointer text-[var(--tt-faint)] max-sm:min-h-[44px] max-sm:py-1">
