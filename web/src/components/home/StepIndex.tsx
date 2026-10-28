@@ -104,7 +104,7 @@ export default function StepIndex({
   lang: Lang;
   investors: ManagerSummary[];
   held: HeldRow[];
-  strike: { total: number; leaders: StrikeLeader[] };
+  strike: { total: number; pending?: number; leaders: StrikeLeader[] };
 }): React.ReactElement {
   const c = COPY[lang];
   const now = new Date();
@@ -121,7 +121,7 @@ export default function StepIndex({
         href={localePath(lang, strike.total > 0 ? "/stocks/screener?view=strike_zone" : "/stocks/screener")}
       >
         {strike.leaders.length > 0 ? (
-          <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} />
+          <StrikeLeadersCard lang={lang} leaders={strike.leaders} total={strike.total} pending={strike.pending} />
         ) : (
           <ValueBandCard lang={lang} />
         )}
