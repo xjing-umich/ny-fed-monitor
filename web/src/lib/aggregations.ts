@@ -3,6 +3,7 @@ import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { Holding, HoldingChange } from "@/lib/managers/types";
 import { countsAsCurrentHolder, effectiveMovesPeriod } from "@/lib/freshness/derive";
 import { processCached } from "@/lib/managers/processCache";
+import { tableVersion } from "@/lib/managers/tableVersion";
 
 /** scanAllManagers 的进程级缓存时长。取值理由见 processCache.ts。 */
 const SCAN_TTL_MS = 10 * 60 * 1000;
@@ -31,6 +32,8 @@ export type NotableMoves = { mostBought: MoveRow[]; mostSold: MoveRow[] };
  * 两层缓存:processCached 跨请求(同一函数实例内 TTL 复用,让相近时间的多次 ISR 重建
  * 共用一次扫描),cache() 再在单次渲染内去重。TTL 取值理由见 processCache.ts;
  * 13F 数据一周只在周一/周四 ingest 后变,十分钟窗口远短于此。
+ * 版本标记 = holdings 行数 + 最大 id:ingest 重写某份申报时先删后插，两者必变，
+ * 所以 ingest 后的 revalidate 重建不会吃到旧扫描。
  */
 const loadScanAllManagers = processCached("scanAllManagers", SCAN_TTL_MS, async (): Promise<ScanRow[]> => {
   const idx = await getManagerIndex();
@@ -42,7 +45,7 @@ const loadScanAllManagers = processCached("scanAllManagers", SCAN_TTL_MS, async 
     })
   );
   return rows.filter((r): r is ScanRow => r !== null);
-});
+}, () => tableVersion("holdings", "id"));
 
 export const scanAllManagers = cache(loadScanAllManagers);
 
