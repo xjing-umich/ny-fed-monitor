@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import type { Lang } from "@/lib/nav";
 
 // Shared 1200×630 social card used by the site-wide and per-page opengraph-image
 // routes. Dark, on-brand (warm near-black ground, lifted compounding green, paper
@@ -18,10 +19,12 @@ const GREEN = "#4FBF8A"; // lifted money-green for dark surfaces
 const MUTED = "#A89C8A"; // secondary text
 
 export function ogCard({
+  lang,
   eyebrow,
   title,
   subtitle,
 }: {
+  lang: Lang;
   eyebrow?: string;
   title: string;
   subtitle?: string;
@@ -107,7 +110,7 @@ export function ogCard({
           }}
         >
           <div style={{ display: "flex" }}>thecompounder.fyi</div>
-          <div style={{ display: "flex" }}>Sources: SEC EDGAR · NY Fed</div>
+          <div style={{ display: "flex" }}>{lang === "zh" ? "数据来源：SEC EDGAR" : "Source: SEC EDGAR"}</div>
         </div>
       </div>
     ),

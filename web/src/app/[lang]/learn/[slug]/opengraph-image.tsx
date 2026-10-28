@@ -28,6 +28,7 @@ export default async function Image({
   if (reportPeriod) {
     const row = await readReportRow(reportPeriod);
     return ogCard({
+      lang,
       eyebrow: lang === "zh" ? "季度报告" : "Quarterly report",
       title: reportTitle(reportPeriod, lang),
       subtitle: row ? clamp(reportDescription(row.payload, row.status, lang), 110) : undefined,
@@ -35,6 +36,7 @@ export default async function Image({
   }
 
   return ogCard({
+    lang,
     eyebrow: lang === "zh" ? "学习" : "Learn",
     title: article?.title ?? (lang === "zh" ? "学习" : "Learn"),
     subtitle: article ? clamp(article.description, 110) : undefined,

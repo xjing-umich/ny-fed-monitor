@@ -17,7 +17,7 @@ export async function POST(req: Request): Promise<Response> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || !TO_EMAIL) {
     return Response.json(
-      { ok: false, error: "Contact form is not configured." },
+      { ok: false, code: "not_configured", error: "Contact form is not configured." },
       { status: 503 },
     );
   }
@@ -26,7 +26,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ ok: false, error: "Invalid request." }, { status: 400 });
+    return Response.json({ ok: false, code: "bad_request", error: "Invalid request." }, { status: 400 });
   }
 
   // Honeypot: bots fill hidden fields. Silently accept to avoid signalling.
@@ -39,13 +39,13 @@ export async function POST(req: Request): Promise<Response> {
   const message = typeof body.message === "string" ? body.message.trim() : "";
 
   if (!email || !EMAIL_RE.test(email)) {
-    return Response.json({ ok: false, error: "A valid email is required." }, { status: 400 });
+    return Response.json({ ok: false, code: "invalid_email", error: "A valid email is required." }, { status: 400 });
   }
   if (message.length < 5) {
-    return Response.json({ ok: false, error: "Message is too short." }, { status: 400 });
+    return Response.json({ ok: false, code: "too_short", error: "Message is too short." }, { status: 400 });
   }
   if (name.length > 200 || email.length > 200 || message.length > 5000) {
-    return Response.json({ ok: false, error: "Input too long." }, { status: 400 });
+    return Response.json({ ok: false, code: "too_long", error: "Input too long." }, { status: 400 });
   }
 
   const displayName = name || "(no name)";
@@ -61,10 +61,10 @@ export async function POST(req: Request): Promise<Response> {
     });
 
     if (error) {
-      return Response.json({ ok: false, error: "Failed to send. Please try again." }, { status: 502 });
+      return Response.json({ ok: false, code: "send_failed", error: "Failed to send. Please try again." }, { status: 502 });
     }
     return Response.json({ ok: true });
   } catch {
-    return Response.json({ ok: false, error: "Failed to send. Please try again." }, { status: 502 });
+    return Response.json({ ok: false, code: "send_failed", error: "Failed to send. Please try again." }, { status: 502 });
   }
 }

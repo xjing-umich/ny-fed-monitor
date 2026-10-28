@@ -372,7 +372,8 @@ export default async function InvestorSlugPage({
     } else if (selling > buying) {
       verdict = { label: lang === "zh" ? "整体减仓" : "Net selling", tone: "warn" };
     } else {
-      verdict = { label: lang === "zh" ? "持仓微调" : "Mostly held", tone: "neutral" };
+      // 买入笔数 = 卖出笔数(且 longChanges 非空 → 两边都 ≥1),不是"没怎么动"。
+      verdict = { label: lang === "zh" ? "有买有卖" : "Mixed", tone: "neutral" };
     }
   }
 

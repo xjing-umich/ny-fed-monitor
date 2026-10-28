@@ -7,9 +7,16 @@ export const contentType = OG_CONTENT_TYPE;
 export const dynamic = "force-static";
 export const revalidate = 604800;
 
-export default function Image() {
+export default async function Image({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const isEn = lang !== "zh";
   return ogCard({
-    eyebrow: "Superinvestor 13F",
-    title: "Top sells",
+    lang: isEn ? "en" : "zh",
+    eyebrow: isEn ? "Superinvestor 13F" : "超级投资者 13F",
+    title: isEn ? "Top sells" : "最多人卖",
   });
 }

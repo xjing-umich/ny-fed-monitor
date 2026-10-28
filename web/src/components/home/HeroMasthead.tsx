@@ -15,7 +15,8 @@ const COPY = {
   zh: {
     // 主张：真数字（投资者数 + 季度）领句，第二句弱化补估值交叉验证的立场
     brand: "Compounder · 复利",
-    headline: (n: number) => `${n} 位投资者，上季度刚上报的每一笔持仓。`,
+    // 写明季度而非"上季度":申报季里首屏仍是上一季数据,"上季度"会指错季。
+    headline: (n: number, q: string) => `${n} 位超级投资者，${q} 的每一笔持仓。`,
     headlineNoCount: (q: string) => `${q}，超级投资者刚上报的每一笔持仓。`,
     headlineMuted: "逐笔对齐第一性原理估值。",
     sub: (n: number) =>
@@ -126,7 +127,7 @@ export default function HeroMasthead({
   const panelTitle = lang === "zh" ? `${q} 显著动向` : `Notable moves · ${q}`;
   const headline =
     typeof investorCount === "number" && investorCount > 0
-      ? c.headline(investorCount)
+      ? c.headline(investorCount, quarterLabel(period) || period)
       : c.headlineNoCount(period);
 
   return (

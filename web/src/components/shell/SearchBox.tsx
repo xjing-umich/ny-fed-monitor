@@ -141,7 +141,7 @@ export default function SearchBox({
 
   const placeholder =
     placeholderProp ??
-    (lang === "zh" ? "搜索投资者 / 股票 / 指标…" : "Search investors / stocks / indicators…");
+    (lang === "zh" ? "搜索投资者或股票…" : "Search investors or stocks…");
 
   const isHero = variant === "hero";
   const listOpen = open && hasOptions;

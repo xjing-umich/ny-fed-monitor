@@ -39,7 +39,7 @@ function quarterPhrase(period: string): string {
   return `${quarterLabel(period)} (quarter ended ${period})`;
 }
 
-/** "1 of 94 managers expected to file (3 more … aren't counted) has" —— 分母 = 应申报 M,与首页进度行同一口径;
+/** "1 of 94 managers expected to file (3 others … aren't counted) has" —— 分母 = 应申报 M,与首页进度行同一口径;
  *  M 小于名单时紧跟着写明少的是谁(同一从句)。 */
 function filedOf(c: { filed: number; total: number; excluded: number }): string {
   return `${c.filed} of ${c.total} managers expected to file${excludedClause(c.excluded, "en")} ${c.filed === 1 ? "has" : "have"}`;

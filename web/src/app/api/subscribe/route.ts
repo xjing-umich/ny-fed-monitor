@@ -15,7 +15,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function POST(req: Request): Promise<Response> {
   if (!API_KEY || !AUDIENCE_ID) {
     return Response.json(
-      { ok: false, error: "Newsletter is not configured." },
+      { ok: false, code: "not_configured", error: "Newsletter is not configured." },
       { status: 503 },
     );
   }
@@ -24,7 +24,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ ok: false, error: "Invalid request." }, { status: 400 });
+    return Response.json({ ok: false, code: "bad_request", error: "Invalid request." }, { status: 400 });
   }
 
   // Honeypot — silently accept bots without adding them.
@@ -34,7 +34,7 @@ export async function POST(req: Request): Promise<Response> {
 
   const email = typeof body.email === "string" ? body.email.trim() : "";
   if (!email || !EMAIL_RE.test(email) || email.length > 200) {
-    return Response.json({ ok: false, error: "A valid email is required." }, { status: 400 });
+    return Response.json({ ok: false, code: "invalid_email", error: "A valid email is required." }, { status: 400 });
   }
 
   const lang = normalizeLang(body.lang);
@@ -50,7 +50,7 @@ export async function POST(req: Request): Promise<Response> {
     // Resend treats an existing contact as a soft error; we still report success
     // so repeat subscribers see a friendly confirmation.
     if (error && !/already exists/i.test(error.message ?? "")) {
-      return Response.json({ ok: false, error: "Failed to subscribe. Please try again." }, { status: 502 });
+      return Response.json({ ok: false, code: "send_failed", error: "Failed to subscribe. Please try again." }, { status: 502 });
     }
     // 语言分组是尽力而为:任何失败(含抛错)都不影响订阅成功;没有分组的联系人按 EN 处理(见 newsletter-backfill-segment)。
     try {
@@ -73,6 +73,6 @@ export async function POST(req: Request): Promise<Response> {
     }
     return Response.json({ ok: true });
   } catch {
-    return Response.json({ ok: false, error: "Failed to subscribe. Please try again." }, { status: 502 });
+    return Response.json({ ok: false, code: "send_failed", error: "Failed to subscribe. Please try again." }, { status: 502 });
   }
 }

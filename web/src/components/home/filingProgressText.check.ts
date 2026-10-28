@@ -9,11 +9,11 @@ assert.equal(
 );
 assert.equal(
   filingProgressText("en", "Q3 2026", c, "Nov 16"),
-  "Q3 2026 filings arriving · 2 of 94 in (3 more missed last quarter and aren't counted) · switches after Nov 16",
+  "Q3 2026 filings arriving · 2 of 94 in (3 others missed last quarter and aren't counted) · switches after Nov 16",
 );
 assert.equal(
   filingProgressText("en", "Q3 2026", { filed: 1, total: 94, excluded: 1 }, "Nov 16"),
-  "Q3 2026 filings arriving · 1 of 94 in (1 more missed last quarter and isn't counted) · switches after Nov 16",
+  "Q3 2026 filings arriving · 1 of 94 in (1 other missed last quarter and isn't counted) · switches after Nov 16",
   "单数",
 );
 assert.equal(

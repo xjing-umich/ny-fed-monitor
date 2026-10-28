@@ -41,7 +41,8 @@ export default function NewsletterForm({ lang, source = "footer" }: { lang: Lang
         }
       } else {
         setStatus("error");
-        setErrorMsg(typeof json.error === "string" ? json.error : c.subscribeError);
+        // 接口报错是英文;按 code 取本语言文案。
+        setErrorMsg(json.code === "invalid_email" ? c.invalidEmail : c.subscribeError);
       }
     } catch {
       setStatus("error");

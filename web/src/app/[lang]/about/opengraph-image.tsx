@@ -15,10 +15,11 @@ export default async function Image({
   const { lang } = await params;
   const isEn = lang !== "zh";
   return ogCard({
+    lang: isEn ? "en" : "zh",
     eyebrow: "Compounder",
     title: isEn ? "About Compounder" : "关于 Compounder",
     subtitle: isEn
-      ? "Smart-money holdings & valuation — editorial, not advice"
-      : "超级投资者持仓与估值 — 编辑视角，不构成建议",
+      ? "Superinvestor holdings and valuations. Research, not stock picks."
+      : "超级投资者持仓与个股估值。只做研究，不荐股。",
   });
 }
