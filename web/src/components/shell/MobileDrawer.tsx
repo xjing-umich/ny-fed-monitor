@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { TOP_NAV } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
 import SearchBox, { type SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
-import { localePath } from "@/lib/urls";
+import { localePath, HTML_LANG } from "@/lib/urls";
+import { switchLangKeepingQuery } from "./langSwitch";
 
 /** true on the client after hydration, false during SSR — no effect/setState needed. */
 const subscribe = () => () => {};
@@ -26,6 +27,7 @@ export default function MobileDrawer({ lang, items }: MobileDrawerProps) {
   // openFor 记录打开时的 pathname;路由变化后自动视为已关闭 —— 无需 effect setState。
   const [openFor, setOpenFor] = useState<string | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
   const open = openFor !== null && openFor === pathname;
   const setOpen = (v: boolean) => setOpenFor(v ? pathname : null);
   const { resolvedTheme, setTheme } = useTheme();
@@ -171,8 +173,11 @@ export default function MobileDrawer({ lang, items }: MobileDrawerProps) {
                   key={l}
                   href={otherLangPath}
                   lang={l}
-                  hrefLang={l}
-                  onClick={() => setOpen(false)}
+                  hrefLang={HTML_LANG[l]}
+                  onClick={(e) => {
+                    setOpen(false);
+                    switchLangKeepingQuery(e, otherLangPath, router.push);
+                  }}
                   className="inline-flex items-center justify-center min-h-[44px] px-3 rounded text-xs font-data transition-colors no-underline text-[var(--tt-muted)] hover:text-[var(--tt-text)] border border-[var(--tt-border)]"
                 >
                   {l === "zh" ? "中文" : "EN"}

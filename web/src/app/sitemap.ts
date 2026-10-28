@@ -3,7 +3,7 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { consensusHeld } from "@/lib/aggregations";
 import { ARTICLE_SLUGS, getArticle } from "@/lib/learn";
 import { isLikelyTicker } from "@/lib/externalLinks";
-import { localePath } from "@/lib/urls";
+import { localePath, hreflangs } from "@/lib/urls";
 import { listReportPeriods } from "@/lib/reports/read";
 import { reportLastModified, reportSlug } from "@/lib/reports/period";
 import { displayedDataModified } from "@/lib/freshness/derive";
@@ -22,10 +22,9 @@ export const revalidate = 86400;
 
 type ChangeFreq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 
-// One entry per page with English as the primary (English-first) URL and the
-// zh version expressed via hreflang alternates (+ x-default → en). This matches
-// the on-page <link rel="alternate"> tags and is the correct way to pair
-// localized URLs in a sitemap — better than emitting duplicate en/zh entries.
+// 每个语言版本各占一条 <url>,两条带完全相同的 alternates 组(含自身 + x-default → en)。
+// 这是 Google 多语言 sitemap 的写法;只给英文 <loc>、把中文放在 xhtml:link 里,
+// 不读 xhtml:link 的 Bing / 百度就等于没收到中文页。
 // lastModified: 取内容真正变化的日期 —— 数据页用 13F 的 SEC 提交日(数据就是那天进来的),
 // 文章用其 updated。不用报告期(季末日):Q2 的数据 8 月中才报齐,写 06-30 等于说页面在数据出来前就定稿了。
 // 无真实日期的纯编辑页(about/disclaimer)不带 lastmod,不凭空造日期。
@@ -34,20 +33,17 @@ function entry(
   changeFrequency: ChangeFreq,
   priority: number,
   lastModified?: string
-): MetadataRoute.Sitemap[number] {
-  return {
-    url: `${BASE}${localePath("en", path)}`,
+): MetadataRoute.Sitemap {
+  const languages = Object.fromEntries(
+    Object.entries(hreflangs(path)).map(([k, v]) => [k, `${BASE}${v}`]),
+  );
+  return (["en", "zh"] as const).map((lang) => ({
+    url: `${BASE}${localePath(lang, path)}`,
     changeFrequency,
     priority,
     ...(lastModified ? { lastModified } : {}),
-    alternates: {
-      languages: {
-        en: `${BASE}${localePath("en", path)}`,
-        "zh-CN": `${BASE}${localePath("zh", path)}`,
-        "x-default": `${BASE}${localePath("en", path)}`,
-      },
-    },
-  };
+    alternates: { languages },
+  }));
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -74,30 +70,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .at(-1);
 
   const urls: MetadataRoute.Sitemap = [
-    entry("", "daily", 1, dataModified),
-    entry("/investors", "weekly", 0.8, dataModified),
-    entry("/investors/consensus", "weekly", 0.8, dataModified),
-    entry("/investors/buys", "weekly", 0.8, dataModified),
-    entry("/investors/sells", "weekly", 0.8, dataModified),
-    entry("/stocks", "weekly", 0.8, dataModified),
-    entry("/stocks/screener", "weekly", 0.7, dataModified),
-    entry("/about", "monthly", 0.4),
-    entry("/disclaimer", "yearly", 0.3),
-    entry("/learn", "weekly", 0.6, learnModified),
+    ...entry("", "daily", 1, dataModified),
+    ...entry("/investors", "weekly", 0.8, dataModified),
+    ...entry("/investors/consensus", "weekly", 0.8, dataModified),
+    ...entry("/investors/buys", "weekly", 0.8, dataModified),
+    ...entry("/investors/sells", "weekly", 0.8, dataModified),
+    ...entry("/stocks", "weekly", 0.8, dataModified),
+    ...entry("/stocks/screener", "weekly", 0.7, dataModified),
+    ...entry("/about", "monthly", 0.4),
+    ...entry("/disclaimer", "yearly", 0.3),
+    ...entry("/learn", "weekly", 0.6, learnModified),
   ];
 
   for (const a of articleDates) {
-    urls.push(entry(`/learn/${a.slug}`, "monthly", 0.6, a.lastModified));
+    urls.push(...entry(`/learn/${a.slug}`, "monthly", 0.6, a.lastModified));
   }
 
   for (const r of reports) {
-    urls.push(entry(`/learn/${r.slug}`, "weekly", 0.7, r.lastModified));
+    urls.push(...entry(`/learn/${r.slug}`, "weekly", 0.7, r.lastModified));
   }
 
   for (const m of idx.managers ?? []) {
     // 每位投资人用其最新一份 13F 的提交日 —— 停报者的日期停在一年多前,正确告诉 Google
     // 该页不必频繁重抓。
-    urls.push(entry(`/investors/${m.slug}`, "weekly", 0.7, m.filedAt?.slice(0, 10) || m.period || undefined));
+    urls.push(...entry(`/investors/${m.slug}`, "weekly", 0.7, m.filedAt?.slice(0, 10) || m.period || undefined));
   }
 
   // mostHeld returns rows whose `cusip` field already holds the canonical ticker
@@ -118,7 +114,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!h.cusip || !isLikelyTicker(h.cusip) || seenStocks.has(h.cusip)) continue;
     seenStocks.add(h.cusip);
     // 个股共识快照随整库按季刷新 → 与聚合页同一日期。
-    urls.push(entry(`/stocks/${h.cusip}`, "weekly", 0.6, dataModified));
+    urls.push(...entry(`/stocks/${h.cusip}`, "weekly", 0.6, dataModified));
   }
 
   return urls;

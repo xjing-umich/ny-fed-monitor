@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { SITE_ORIGIN, absoluteUrl, localePath } from "@/lib/urls";
+import { SITE_ORIGIN, absoluteUrl, localePath, HTML_LANG, hreflangs } from "@/lib/urls";
 
 export const SITE_NAME = "Compounder";
 
@@ -116,7 +116,7 @@ export function datasetLd(opts: {
     name: opts.name,
     description: opts.description,
     url: absoluteUrl(opts.path),
-    inLanguage: opts.lang === "zh" ? "zh-CN" : "en",
+    inLanguage: HTML_LANG[opts.lang],
     isAccessibleForFree: true,
     license: SEC_DATA_LICENSE,
     ...(opts.period ? { temporalCoverage: quarterInterval(opts.period) } : {}),
@@ -150,7 +150,7 @@ export function collectionLd(opts: {
     name,
     description,
     url: absoluteUrl(path),
-    inLanguage: lang === "zh" ? "zh-CN" : "en",
+    inLanguage: HTML_LANG[lang],
     isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_ORIGIN },
     ...(opts.dateModified ? { dateModified: opts.dateModified } : {}),
     mainEntity: {
@@ -184,15 +184,11 @@ export function breadcrumbLd(lang: Lang, crumbs: { name: string; path: string }[
 /**
  * 每页 alternates（canonical + hreflang）统一构造器。
  * path 是无语言前缀的应用内路径,如 "/investors/AAPL"、"" (首页)。
- * en/x-default → 裸；zh-CN → /zh 前缀。杜绝各页散拼 /en 硬编码。
+ * en/x-default → 裸；zh-CN / zh → /zh 前缀。杜绝各页散拼 /en 硬编码。
  */
 export function altFor(lang: Lang, path: string) {
   return {
     canonical: localePath(lang, path),
-    languages: {
-      en: localePath("en", path),
-      "zh-CN": localePath("zh", path),
-      "x-default": localePath("en", path),
-    },
+    languages: hreflangs(path),
   };
 }

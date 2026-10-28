@@ -2,7 +2,8 @@ import "server-only";
 import type {
   ManagerIndex, ManagerSummary, ManagerDetail, Manager, FilingData, Holding, ManagerQoQ,
 } from "@/lib/managers/types";
-import { assembleManagerDetail } from "@/lib/managers/assemble";
+import { assembleManagerDetail, tickerCanon, type CanonicalKey } from "@/lib/managers/assemble";
+import { getCusipMap } from "@/lib/managers/securities";
 import { getDb, withRetry, selectAllPages, isMissingTableError } from "@/lib/managers/db";
 import { factorLookup, NO_SPLITS, type SplitFactorLookup } from "@/lib/managers/splitAdjust";
 import { overlayZeroReports, type ZeroFilingRow } from "@/lib/managers/zeroReports";
@@ -37,11 +38,11 @@ function rowToHolding(r: any): Holding {
     putCall: r.put_call ?? undefined, weight: Number(r.weight),
   };
 }
-export function mapDetailRows(manager: Manager, filingRows: any[], holdingRows: any[], splits: SplitFactorLookup = NO_SPLITS): ManagerDetail {
+export function mapDetailRows(manager: Manager, filingRows: any[], holdingRows: any[], splits: SplitFactorLookup = NO_SPLITS, canon?: CanonicalKey): ManagerDetail {
   const byFiling = (fid: number) => holdingRows.filter((h) => h.filing_id === fid).map(rowToHolding).sort((a, b) => b.value - a.value);
   const toFiling = (r: any): FilingData => ({ period: r.period, filedAt: r.filed_at, accession: r.accession, totalValue: Number(r.total_value), holdings: byFiling(r.id) });
   const filings = filingRows.map(toFiling);
-  return assembleManagerDetail(manager, filings, splits);
+  return assembleManagerDetail(manager, filings, splits, canon);
 }
 
 // --- live queries (verified manually once creds exist) ---
@@ -175,5 +176,8 @@ export async function getManagerDetail(cikOrSlug: string, opts: { adjustSplits?:
     if (sErr && !isMissingTableError(sErr as { code?: string })) throw new Error(`getManagerDetail split_adjustments query failed (${m.cik}): ${sErr.message}`);
     if (sa?.length) splits = factorLookup(sa.map((r: { cusip: string; from_period: string; to_period: string; factor: number | string }) => ({ cusip: r.cusip, fromPeriod: r.from_period, toPeriod: r.to_period, factor: Number(r.factor) })));
   }
-  return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? [], splits);
+  // 换 CUSIP 归并:按 ticker 比对两季(进程级缓存的证券脊梁,不另起查询)。
+  const cusipMap = await getCusipMap();
+  const canon = tickerCanon((c) => cusipMap.get(c)?.ticker);
+  return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? [], splits, canon);
 }

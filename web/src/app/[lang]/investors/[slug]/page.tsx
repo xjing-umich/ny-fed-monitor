@@ -6,7 +6,7 @@ import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { holdingKey } from "@/lib/managers/assemble";
 import type { Holding } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { investorPath, stockPath, absoluteUrl, localePath, HTML_LANG } from "@/lib/urls";
 import { resolveEntity } from "@/lib/aliases/resolve";
 import { personNameAliases } from "@/lib/aliases/config";
 import { managerLabel, managerTitleName, managerSubtitle, managerIsOrganization, managerStewardPeople } from "@/lib/managers/displayName";
@@ -537,6 +537,7 @@ export default async function InvestorSlugPage({
       lang === "zh"
         ? `${fund} 向美国证券交易委员会（SEC）申报的 13F 季度持仓数据，包含个股、持股数量与申报市值。`
         : `Quarterly 13F holdings disclosed by ${fund} to the U.S. Securities and Exchange Commission (SEC), including positions, share counts, and reported market values.`,
+    inLanguage: HTML_LANG[lang],
     isAccessibleForFree: true,
     ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
     creator: { "@type": "Organization", name: fund },
@@ -666,7 +667,7 @@ export default async function InvestorSlugPage({
               <p className="mb-3 text-sm text-[var(--tt-faint)]">
                 {lang === "zh"
                   ? `按${valuationAsOf ? ` ${valuationAsOf} ` : "现"}收盘价隐含的预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
-                  : `By what the${valuationAsOf ? ` ${valuationAsOf}` : ""} close implies: ${demanding} demand a demanding growth rate, ${modest} modest.`}
+                  : `At the${valuationAsOf ? ` ${valuationAsOf}` : ""} close, the price implies demanding growth for ${demanding} ${demanding === 1 ? "holding" : "holdings"} and modest growth for ${modest}.`}
               </p>
             );
           })()}

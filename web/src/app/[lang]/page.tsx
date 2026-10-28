@@ -4,7 +4,7 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { notableMoves, consensusHeldTop, consensusCount } from "@/lib/aggregations";
 import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { investorPath, localePath } from "@/lib/urls";
+import { investorPath, localePath, HTML_LANG } from "@/lib/urls";
 import { altFor, ogFor } from "@/lib/seo";
 import { effectiveMovesPeriod } from "@/lib/freshness/derive";
 import { listReportPeriods } from "@/lib/reports/read";
@@ -109,7 +109,7 @@ export default async function HomePage({
         url: "https://thecompounder.fyi",
         name: "Compounder",
         alternateName: "复利",
-        inLanguage: isZh ? "zh-CN" : "en",
+        inLanguage: HTML_LANG[lang],
         publisher: { "@id": "https://thecompounder.fyi/#org" },
       },
     ],
@@ -126,7 +126,7 @@ export default async function HomePage({
         filing={movesEffective}
         filingReportExists={filingReportExists}
         moves={moves}
-        investorCount={topManagers.length}
+        investorCount={movesEffective.coverage.total > 0 ? movesEffective.coverage.total : topManagers.length}
       />
 
       {/* Real-data stat bar — carries the 10Y macro signal + real-data proof (own top margin, no wrapper). */}

@@ -492,7 +492,8 @@ assert.ok(
 );
 
 // IV<F) 中枢 IV 低于零增长底 F=120(BHF 形态):现价落在 [IV, F) → 两法冲突,无判定;
-//        现价 < IV 仍 below,F ≤ 现价 ≤ 上沿仍 within,高于上沿仍 above。
+//        现价 < IV 仍 below,F ≤ 现价 ≤ 上沿仍 within,高于上沿仍 above —— 但 IV 落在价值带外,
+//        一律 reliable=false(待确认)并带 ivBelowFloor,不进击球区/低于内在价值的面(WB/MRK/GM 形态)。
 {
   const run = (iv: number, price: number, pos: ValuePosition) =>
     deriveValuationVerdict({
@@ -506,6 +507,12 @@ assert.ok(
   assert(run(100, 90, "in_strike_zone")?.bucket === "below", "price 90 < IV 100 < F → below (both cheap)");
   assert(run(100, 150, "moat_band")?.bucket === "within", "F 120 ≤ price 150 ≤ rangeHi → within");
   assert(run(100, 350, "above_optimistic")?.bucket === "above", "price > rangeHi → above");
+  for (const [price, pos] of [[90, "in_strike_zone"], [150, "moat_band"], [350, "above_optimistic"]] as const) {
+    const v = run(100, price, pos);
+    assert(v?.reliable === false && v.ivBelowFloor === true, `IV 100 < F 120, price ${price} → 待确认(reliable=false, ivBelowFloor)`);
+  }
+  // IV ≥ F 时不带 ivBelowFloor 标记(对照)。
+  assert(run(130, 150, "moat_band")?.ivBelowFloor === undefined, "IV 130 ≥ F 120 → 无 ivBelowFloor");
 }
 
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");

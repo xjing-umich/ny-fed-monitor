@@ -13,7 +13,7 @@ import {
 } from "@/lib/managers/securities";
 import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, localePath } from "@/lib/urls";
+import { investorPath, stockPath, localePath, HTML_LANG } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
 import { managerLabel } from "@/lib/managers/displayName";
 import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
@@ -48,7 +48,7 @@ import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker, knownExchange } from "@/lib/externalLinks";
-import { valuationVerdictChip, valuationSectionTitle } from "@/lib/stocks/valuationVerdictChip";
+import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
@@ -57,6 +57,7 @@ import { StockConclusionBand } from "@/components/stocks/StockConclusionBand";
 import { StockAnchorNav } from "@/components/stocks/StockAnchorNav";
 import { valuationLabel } from "@/lib/valuation/valuationLabel";
 import { Sparkline } from "@/components/common/Sparkline";
+import { revenueGrowthStandard } from "@/lib/valuation/growthBaseRate";
 import { SectionHeading } from "@/components/common/SectionHeading";
 
 // 预渲染共识热门个股(被最多机构持有的标的,几乎覆盖全部点击来源:首页/搜索/列表),
@@ -526,6 +527,8 @@ export default async function StockTickerPage({
   // 个股页即使 reliable=false 仍展示「价格在赌什么」(对照用,非确认便宜);ingest/快照仍可
   // 用 suppressed 闸聚合面——此处不写库。
   const expectations = run.expectations;
+  // 全站唯一的历史营收增速(与引擎 gRaw、「价格在赌什么」同一函数同一输入):生意质量头条引用它。
+  const revenueGrowth = revenueGrowthStandard(floorInput.years);
 
   // 生意质量(复用已加载 sec.latest/sec.annual, 零新查询)。null → 整节不渲染。
   // 最新一期(任何报表)也超 18 个月 → 不展示:PBR/VALE/AEM 改报 20-F/40-F 后 XBRL 只剩
@@ -545,11 +548,10 @@ export default async function StockTickerPage({
     handoffVerdict.marginPct != null
   );
 
-  // 估值区块 display 标题直接承载结论 —— 档名取 valuationLabel,与标题徽章同一说法;红旗便宜档带“待确认”。
-  // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
+  // 结论已在标题徽章与结论带里说过一次;估值区块是"证据",标题说它讲什么,不再重复档名(同一事实只说一次)。
   const page = stockPageCopy(lang);
   const ui = stockUi(lang);
-  const valuationTitle = valuationSectionTitle(handoffVerdict, lang);
+  const valuationTitle = lang === "zh" ? "估值怎么算的" : "How it’s valued";
 
   // 结论带(spec 2026-10-25 §三.1):左栏状态与原估值区块同一优先级。
   const leftState = conclusionLeftState({
@@ -588,6 +590,7 @@ export default async function StockTickerPage({
   const faq = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    inLanguage: HTML_LANG[lang],
     mainEntity: [
       {
         "@type": "Question",
@@ -830,6 +833,7 @@ export default async function StockTickerPage({
                       expectations={expectations}
                       lang={lang}
                       lowConfidence={!handoffVerdict?.reliable}
+                      historicalSpan={revenueGrowth}
                     />
                   )}
                   <LearnLink
@@ -913,7 +917,9 @@ export default async function StockTickerPage({
               )}
               <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
-                  { k: page.bq.revenueGrowth, v: bq.revenueYoy, sign: true },
+                  revenueGrowth
+                    ? { k: page.bq.revenueGrowth(`${revenueGrowth.fromYear}–${revenueGrowth.toYear}`), v: revenueGrowth.rate, sign: true }
+                    : { k: page.bq.revenueYoy, v: bq.revenueYoy, sign: true },
                   { k: page.bq.netMargin, v: bq.netMargin, sign: false },
                   { k: "ROE", v: bq.roe, sign: false },
                   { k: page.bq.fcfMargin, v: bq.fcfMargin, sign: false },
@@ -934,7 +940,7 @@ export default async function StockTickerPage({
                     {page.bq.revenueTrail(
                       formatUSD(bq.revenueSeries[0]),
                       formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1]),
-                      bq.revenueSeries.length,
+                      bq.revenueSpan,
                     )}
                   </span>
                   <Sparkline series={bq.revenueSeries} color="var(--tt-muted)" />

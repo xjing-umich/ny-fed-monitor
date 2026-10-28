@@ -27,6 +27,7 @@
     "check:color": "tsx scripts/color.check.ts",
     "check:tokens": "tsx scripts/design-tokens.check.ts",
     "check:type": "tsx scripts/type-scale.check.ts",
+    "check:decor": "tsx scripts/decor.check.ts",
     "check:codemod": "tsx scripts/codemods/type-v2.check.ts",
     "check:holder-trend": "tsx scripts/holderTrend.check.ts",
     "check:analytics": "tsx src/lib/analytics/exclusion.check.ts",

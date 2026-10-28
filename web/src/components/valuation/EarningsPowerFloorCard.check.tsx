@@ -57,8 +57,8 @@ const count = (hay: string, needle: string) => hay.split(needle).length - 1;
 
 for (const lang of ["zh", "en"] as const) {
   const fact = lang === "zh"
-    ? { how: "中间是主读数", assume: "营收增", asOf: "价格截至", headline: "含增长中枢内在价值", callout: "今年输入偏脆", method: "方法与数字" }
-    : { how: "The middle figure is the main read", assume: "Revenue growth", asOf: "Price as of", headline: "growth-anchored intrinsic value", callout: "Inputs look fragile", method: "Method & numbers" };
+    ? { how: "中间是主读数", assume: "模型假设增速", asOf: "价格来源 test，截至", headline: "含增长中枢内在价值", callout: "今年输入偏脆", method: "方法与数字" }
+    : { how: "The middle figure is the main read", assume: "Model growth assumption", asOf: "Price from test as of", headline: "growth-anchored intrinsic value", callout: "Inputs look fragile", method: "Method & numbers" };
   const s = spine("summary", lang);
   const d = spine("details", lang);
   const a = spine("all", lang);
@@ -69,16 +69,21 @@ for (const lang of ["zh", "en"] as const) {
   // summary 不含:怎么读 + 假设行。
   assert.ok(!s.includes(fact.how), `${lang} summary 不含 bandHowToRead`);
   assert.ok(!s.includes(fact.assume), `${lang} summary 不含假设行`);
-  // details 顶部补上这两行,且排在方法折叠之前。
-  assert.ok(d.includes(fact.how) && d.includes(fact.assume), `${lang} details 含 bandHowToRead 与假设行`);
+  // details 顶部只补假设行,排在方法折叠之前。"怎么读"解释的是刻度盘,刻度盘在结论带(summary),
+  // 放进明细就失去对象 → 个股页(summary+details)不再出现(2026-10-28 评审,#243)。
+  assert.ok(d.includes(fact.assume), `${lang} details 含假设行`);
+  assert.ok(!d.includes(fact.how), `${lang} details 不含 bandHowToRead`);
   assert.ok(d.indexOf(fact.assume) < d.indexOf(fact.method), `${lang} 假设行在方法折叠之前`);
   assert.ok(!d.includes(fact.headline) && !d.includes(fact.asOf) && !d.includes(fact.callout), `${lang} details 不重复摘要`);
   // 个股页 = summary + details:每条事实恰好一次;all 与之等量。
   const page = s + d;
-  for (const f of [fact.how, fact.assume, fact.asOf, fact.headline, fact.callout, fact.method]) {
+  for (const f of [fact.assume, fact.asOf, fact.headline, fact.callout, fact.method]) {
     assert.equal(count(page, f), 1, `${lang} 个股页「${f}」恰好一次`);
     assert.equal(count(a, f), 1, `${lang} all「${f}」恰好一次`);
   }
+  // part="all"(刻度盘与"怎么读"同处一卡)仍保留这句;个股页拆开后不出现。
+  assert.equal(count(page, fact.how), 0, `${lang} 个股页不含 bandHowToRead`);
+  assert.equal(count(a, fact.how), 1, `${lang} all 含 bandHowToRead 一次`);
 }
 
 // verdict=null:脊柱不渲染 → details 也不补那两行(无判定就没有可解释的带)。
@@ -86,7 +91,7 @@ for (const lang of ["zh", "en"] as const) {
   const d = renderToStaticMarkup(
     <EarningsPowerFloorCard floor={run.floor} strikeZone={run.strikeZone} oeDcf={run.oeDcf} lang="zh" verdict={null} part="details" />,
   ).replace(/<[^>]+>/g, " ");
-  assert.ok(!d.includes("中间是主读数") && !d.includes("营收增"), "verdict=null 时 details 不补脊柱附注");
+  assert.ok(!d.includes("中间是主读数") && !d.includes("模型假设增速"), "verdict=null 时 details 不补脊柱附注");
   assert.ok(d.includes("方法与数字"), "verdict=null 时 details 仍有方法折叠");
 }
 // cardSummaryMode:页面据此判断摘要是否为空(空 → 结论带补未评估原因,左栏不只剩一个价格)。

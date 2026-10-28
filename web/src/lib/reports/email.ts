@@ -4,7 +4,7 @@ import {
   noComparableMovesText, notFiledText, personName, positionLabel, reportDescription, reportTitle, reportUrl, sectionTitles, stockHref,
   superinvestorCount, valuationNote,
 } from "./copy";
-import { SITE_ORIGIN } from "../urls";
+import { SITE_ORIGIN, HTML_LANG } from "../urls";
 import type { EmptyReason, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
 
 export const UNSUBSCRIBE_TOKEN = "{{{RESEND_UNSUBSCRIBE_URL}}}";
@@ -101,9 +101,13 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
   const source = `${t.source} · ${valuationNote(meta.valuationAsOf, lang, p.period)}`;
   const addr = meta.postalAddress ? meta.postalAddress : "";
 
-  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#fff;color:#1a1a1a;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.5">
+  // 写明 lang 和 charset,并给中文指定字体:Windows 版 Outlook 遇到没指定字体的汉字常回退到宋体。
+  const fontFamily = zh
+    ? "-apple-system,'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Segoe UI',Helvetica,Arial,sans-serif"
+    : "-apple-system,'Segoe UI',Helvetica,Arial,sans-serif";
+  const html = `<!doctype html><html lang="${HTML_LANG[lang]}"><head><meta charset="utf-8"></head><body style="margin:0;padding:24px;background:#fff;color:#1a1a1a;font-family:${fontFamily};line-height:${zh ? 1.7 : 1.5}">
 <div style="max-width:600px;margin:0 auto">
-${zh ? "" : `<p style="font-size:13px;margin:0 0 12px"><a href="${esc(zhLink)}" style="color:#555">中文版 →</a></p>`}
+${zh ? "" : `<p style="font-size:13px;margin:0 0 12px"><a href="${esc(zhLink)}" lang="zh-CN" style="color:#555">中文版 →</a></p>`}
 ${first ? `<p style="font-size:14px;color:#555">${esc(first)}</p>` : ""}
 <h1 style="font-size:20px;margin:0 0 8px">${esc(title)}</h1>
 <p style="font-size:15px">${esc(conclusion)}</p>

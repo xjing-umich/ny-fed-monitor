@@ -12,6 +12,10 @@
    别名层假定 .dark 与 :root 落在同一元素(<html>)上;若在子树上单独加 .dark,
    只会翻转 v2 令牌,别名(--tt-* / shadcn 名)不会跟随。 */
 :root {
+  /* 中文字体回退,接在拉丁字体之后(见 @theme inline 的 --font-sans)。macOS 苹方 → 冬青黑,
+     Windows 微软雅黑,Android / Linux 思源黑体。与主题无关,.dark 不覆盖。 */
+  --font-cjk: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans CJK SC", "Source Han Sans SC", ui-sans-serif, system-ui, sans-serif;
   /* ── v2 · light ── */
   --canvas:          oklch(0.985 0.004 165);
   --surface:         oklch(1 0 0);
@@ -124,10 +128,12 @@
 @theme inline {
   --color-background:    var(--background);
   --color-foreground:    var(--foreground);
-  --font-sans:           var(--font-geist-sans);
+  /* Geist / Saira 只有拉丁字形:汉字落到后面显式写出的中文字体,而不是由浏览器默认设置决定
+     (Windows / Linux 上可能落到宋体)。 */
+  --font-sans:           var(--font-geist-sans), var(--font-cjk);
   --font-mono:           var(--font-geist-mono);
-  --font-display:        var(--font-display), "Helvetica Neue", Arial, sans-serif;
-  --font-heading:        var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display:        var(--font-display), "Helvetica Neue", Arial, var(--font-cjk);
+  --font-heading:        var(--font-geist-sans), var(--font-cjk);
 
   /* v2 语义色工具类(bg-canvas / text-ink-2 / border-line / bg-val-below-soft …) */
   --color-canvas:          var(--canvas);
@@ -242,7 +248,7 @@
     font-variant-numeric: tabular-nums;
   }
   .font-display {
-    font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-display), "Helvetica Neue", Arial, var(--font-cjk);
     font-optical-sizing: auto;
   }
   /* 负字距只对 latin 生效:zh 标题落到系统 CJK 后 tracking-tight 会显得局促,
@@ -257,7 +263,7 @@
   }
   /* 数字、标签、表头:Sans + 等宽数字(替代旧的 font-mono 用法) */
   .font-data {
-    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-geist-sans), var(--font-cjk);
     font-variant-numeric: tabular-nums;
   }
   /* 代码类内容专用:ticker、CUSIP */

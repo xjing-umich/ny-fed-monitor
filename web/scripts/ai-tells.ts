@@ -2,7 +2,7 @@
  * AI-tell self-check for human-facing prose.
  *
  * Scans the editorial content that ships in the bundle (Learn articles, the
- * About page) for phrasing that makes writing read as
+ * Learn brand block, the About page, the legal pages) for phrasing that makes writing read as
  * machine-generated, plus structural signals (sentence-length variety). The
  * goal: keep the site's prose sounding like a person wrote it, and catch
  * regressions before they ship.
@@ -17,8 +17,9 @@
  * by their generation prompt, not by static content; keep that prompt honest.
  */
 
-import { ARTICLE_SLUGS, getArticle } from "../src/lib/learn.js";
+import { ARTICLE_SLUGS, getArticle, BRAND } from "../src/lib/learn.js";
 import { getAboutDoc } from "../src/lib/about.js";
+import { getLegalDoc, type LegalSlug } from "../src/lib/legal.js";
 
 type Lang = "en" | "zh";
 type Block = { source: string; lang: Lang; text: string };
@@ -79,6 +80,9 @@ const HARD_ZH: RegExp[] = [
   /众所周知/,
   /(助力|赋能|深入探讨)/,
   /不仅仅是/,
+  // 中文正文里紧挨汉字的半角标点(「数字,可它」「下称“本站”)」)一律用全角。
+  // 只看汉字和中文引号两侧,ticker、网址、[[investor:slug|…]] 内链记号里的半角不受影响。
+  /(?<=[\u4e00-\u9fff“”])[,:;?!()]|[,:;?!()](?=[\u4e00-\u9fff“”])/,
 ];
 
 const SOFT_ZH: RegExp[] = [
@@ -108,12 +112,19 @@ function collect(): Block[] {
       }
     }
 
-    const about = getAboutDoc(lang);
-    push(blocks, "about", lang, about.title);
-    push(blocks, "about", lang, about.intro);
-    for (const s of about.sections) {
-      push(blocks, "about", lang, s.heading);
-      for (const p of s.paragraphs) push(blocks, "about", lang, p);
+    push(blocks, "learn/brand", lang, BRAND[lang].body);
+
+    const docs: [string, ReturnType<typeof getAboutDoc>][] = [
+      ["about", getAboutDoc(lang)],
+      ...(["disclaimer", "terms", "privacy"] as LegalSlug[]).map((slug) => [slug, getLegalDoc(slug, lang)] as [string, ReturnType<typeof getAboutDoc>]),
+    ];
+    for (const [src, doc] of docs) {
+      push(blocks, src, lang, doc.title);
+      push(blocks, src, lang, doc.intro);
+      for (const s of doc.sections) {
+        push(blocks, src, lang, s.heading);
+        for (const p of s.paragraphs) push(blocks, src, lang, p);
+      }
     }
   }
 
@@ -188,7 +199,7 @@ function main() {
   console.log(`\nAI-tell self-check — scanned ${blocks.length} prose blocks\n${"─".repeat(56)}`);
 
   if (hard.length) {
-    console.log(`\n❌ HARD hits (${hard.length}) — clichés to rewrite:`);
+    console.log(`\n❌ HARD hits (${hard.length}) — clichés or half-width zh punctuation to fix:`);
     for (const h of hard) console.log(`   [${h.source} ${h.lang}] "${h.phrase}"  →  ${h.snippet}`);
   } else {
     console.log(`\n✅ No HARD AI-tell phrases found.`);

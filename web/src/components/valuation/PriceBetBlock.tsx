@@ -32,8 +32,9 @@ const COPY = {
     boundedAbove: (v: string) => `高于 ${v}`,
     boundedBelow: (v: string) => `低于 ${v}`,
     outOfRange: "（已超出常规区间）",
-    sentencePrefix: "现价把公司未来几年的 owner-earnings 年增定在 ",
+    sentencePrefix: "现价把公司未来几年的所有者盈利年增速定在 ",
     sentenceMid: "；公司过去营收年增 ",
+    span: (from: number, to: number) => `（${from}–${to} 年化）`,
     sentenceSuffix: "。",
     tierNote: {
       modest: "低于它自己做到过的。",
@@ -41,7 +42,7 @@ const COPY = {
       demanding: "市场要它明显快过自己一贯的水平。",
     } as Record<ExpectationsTier, string>,
     capPrefix: "粗略地说，现价要它按历史营收增速再增长约 ",
-    capSuffix: " 年，才刚好撑得起。",
+    capSuffix: () => " 年，才刚好撑得起。",
     lowConfidence:
       "价值带信心不足时仍可对照：这里只说明市场在赌多快，不把它当成「确认便宜」。",
   },
@@ -52,6 +53,7 @@ const COPY = {
     outOfRange: " (outside the usual range)",
     sentencePrefix: "Today's price pencils in about ",
     sentenceMid: " a year in owner-earnings for the next few years. Revenue actually grew ",
+    span: (from: number, to: number) => ` (${from}–${to}, annualized)`,
     sentenceSuffix: " a year.",
     tierNote: {
       modest: "Below what it has already done.",
@@ -59,7 +61,7 @@ const COPY = {
       demanding: "The market wants it well ahead of its own track record.",
     } as Record<ExpectationsTier, string>,
     capPrefix: "Roughly, the price needs its historical revenue growth to run about ",
-    capSuffix: " more years to hold up.",
+    capSuffix: (n: number) => (n === 1 ? " more year to hold up." : " more years to hold up."),
     lowConfidence:
       "Even when the value band is low-confidence: use this to see what the price assumes — not as a cheapness confirmation.",
   },
@@ -70,7 +72,9 @@ export const PriceBetBlock: FC<{
   lang: Lang;
   /** 价值带 reliable=false 时仍展示本块，但加一句「只读预期、不确认便宜」。 */
   lowConfidence?: boolean;
-}> = ({ expectations, lang, lowConfidence = false }) => {
+  /** historicalGrowth 所用财年区间(revenueGrowthStandard),与生意质量头条同一个数、同一区间。 */
+  historicalSpan?: { fromYear: number; toYear: number };
+}> = ({ expectations, lang, lowConfidence = false, historicalSpan }) => {
   if (
     !expectations.assessable ||
     expectations.impliedGrowth == null ||
@@ -98,6 +102,7 @@ export const PriceBetBlock: FC<{
         {bounded ? t.outOfRange : ""}
         {t.sentenceMid}
         <span className="font-semibold font-data">{historicalLabel}</span>
+        {historicalSpan ? t.span(historicalSpan.fromYear, historicalSpan.toYear) : ""}
         {t.sentenceSuffix}
       </p>
       <p className="mt-1 text-sm text-[var(--tt-muted)]">{t.tierNote[expectations.tier]}</p>
@@ -105,7 +110,7 @@ export const PriceBetBlock: FC<{
         <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
           {t.capPrefix}
           <span className="font-semibold font-data text-[var(--tt-muted)]">{expectations.impliedCapYears}</span>
-          {t.capSuffix}
+          {t.capSuffix(expectations.impliedCapYears)}
         </p>
       ) : null}
       {lowConfidence ? (
