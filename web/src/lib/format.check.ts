@@ -1,4 +1,4 @@
-import { formatUSD, fmtMarginPct, cleanIssuer, cleanFilerName } from "./format";
+import { formatUSD, fmtMarginPct, cleanIssuer, cleanFilerName, zhSpacing, zhJoin } from "./format";
 function assert(c: boolean, m: string){ if(!c){ console.error("FAIL:", m); process.exit(1);} }
 assert(formatUSD(999_999_999) === "$1.00B", `边界滚B, got ${formatUSD(999_999_999)}`);
 assert(formatUSD(1_500_000_000) === "$1.50B", "常规B");
@@ -47,4 +47,18 @@ for (const [raw, want] of filers) {
   const got = cleanFilerName(raw);
   assert(got === want, `cleanFilerName(${raw}) → ${got}, want ${want}`);
 }
+// 中文模板里名字两侧的空格:两边都是汉字/全角标点才去掉,汉字与英文、数字之间保留。
+const spacing: [string, string][] = [
+  ["27 位超级投资者持有 苹果 Apple Inc（AAPL），最大持有人 巴菲特与阿贝尔。", "27 位超级投资者持有苹果 Apple Inc（AAPL），最大持有人巴菲特与阿贝尔。"],
+  ["持有 Apple Inc（AAPL）", "持有 Apple Inc（AAPL）"],
+  ["（4.5%） 和 盖纳", "（4.5%）和盖纳"],
+  ["截至 Q2 2026", "截至 Q2 2026"],
+];
+for (const [raw, want] of spacing) {
+  const got = zhSpacing(raw);
+  assert(got === want, `zhSpacing(${raw}) → ${got}, want ${want}`);
+}
+const joined = zhJoin(["第一大持仓为 ", "苹果 Apple Inc", "，其次是 ", "Visa Inc", "（12%） 和 ", "可口可乐 Coca-Cola Co", "。"]);
+assert(joined.join("") === "第一大持仓为苹果 Apple Inc，其次是 Visa Inc（12%）和可口可乐 Coca-Cola Co。", `zhJoin → ${joined.join("")}`);
+
 console.log("format.check OK");

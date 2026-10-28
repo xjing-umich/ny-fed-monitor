@@ -20,10 +20,10 @@ import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
-import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
+import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
-import { altFor, ogFor, datasetLd, breadcrumbLd } from "@/lib/seo";
+import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -111,9 +111,20 @@ export async function generateMetadata({
     const topFor = (l: Lang) => managerLabel(l, topRow.slug, topRow.person);
     const q = quarterLabel(displayPeriod);
     const mixed = held.some((r) => r.period && r.period !== displayPeriod);
+    // 从详到简,取第一个不超出搜索摘要长度的写法:先省来源句,再省最大持有人。
+    const zhHead = `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}）`;
+    const enHead = `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined as of ${q}${mixed ? " (most filings)" : ""}`;
     description = {
-      zh: `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}），最大持有人 ${topFor("zh")}。各家仓位与季度增减，来自 SEC 13F 申报。`,
-      en: `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined as of ${q}${mixed ? " (most filings)" : ""}, led by ${topFor("en")}. Position sizes and quarter-over-quarter moves from SEC 13F filings.`,
+      zh: zhSpacing(fitSnippet(
+        `${zhHead}，最大持有人 ${topFor("zh")}。各家仓位与季度增减，来自 SEC 13F 申报。`,
+        `${zhHead}，最大持有人 ${topFor("zh")}。来自 SEC 13F 申报。`,
+        `${zhHead}。来自 SEC 13F 申报。`,
+      )),
+      en: fitSnippet(
+        `${enHead}, led by ${topFor("en")}. Position sizes and quarter-over-quarter moves from SEC 13F filings.`,
+        `${enHead}, led by ${topFor("en")}. From SEC 13F filings.`,
+        `${enHead}. From SEC 13F filings.`,
+      ),
     };
   }
 
@@ -124,7 +135,7 @@ export async function generateMetadata({
   const meta =
     lang === "zh"
       ? { title: `${zhIssuer}（${ticker}）${noun.zh} — 谁在持有 | Compounder · 复利`,
-          description: description?.zh ?? `谁在持有 ${zhIssuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。` }
+          description: description?.zh ?? zhSpacing(`谁在持有 ${zhIssuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。`) }
       : { title: `${issuer} (${ticker}) ${noun.en} — Who's Holding | Compounder`,
           description: description?.en ?? `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
   return {
@@ -582,13 +593,13 @@ export default async function StockTickerPage({
         "@type": "Question",
         name:
           lang === "zh"
-            ? `哪些超级投资者持有 ${displayName}（${ticker}）？`
+            ? zhSpacing(`哪些超级投资者持有 ${displayName}（${ticker}）？`)
             : `Which superinvestors hold ${issuer} (${ticker})?`,
         acceptedAnswer: {
           "@type": "Answer",
           text:
             lang === "zh"
-              ? `根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`
+              ? zhSpacing(`根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`)
               : `Per each investor's latest SEC 13F filing (${mixedPeriods ? "most for " : ""}the quarter ended ${asOfPeriod}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
         },
       },

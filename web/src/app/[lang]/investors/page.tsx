@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, collectionLd, breadcrumbLd } from "@/lib/seo";
+import { displayedDataModified } from "@/lib/freshness/derive";
 import { investorPath, localePath } from "@/lib/urls";
 import { displayFundName } from "@/lib/managers/profileProse";
 import { InvestorListClient } from "./InvestorListClient";
@@ -43,6 +44,17 @@ export function generateStaticParams() {
   return [{ lang: "zh" }, { lang: "en" }];
 }
 
+const META = {
+  zh: {
+    title: "超级投资者 — Compounder · 复利",
+    description: "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。",
+  },
+  en: {
+    title: "Superinvestors — Compounder",
+    description: "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.",
+  },
+} as const;
+
 export async function generateMetadata({
   params,
 }: {
@@ -51,16 +63,7 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const alternates = altFor(lang, "/investors");
-  const meta =
-    lang === "zh"
-      ? {
-          title: "超级投资者 — Compounder · 复利",
-          description: "追踪顶级基金经理的 SEC 13F 季度持仓披露，了解聪明钱在买什么。",
-        }
-      : {
-          title: "Superinvestors — Compounder",
-          description: "Track top fund managers' quarterly SEC 13F disclosures to see what smart money is buying.",
-        };
+  const meta = META[lang];
   return {
     ...meta,
     alternates,
@@ -87,9 +90,22 @@ export default async function InvestorsPage({
     .map((m) => ({ ...m, label: managerLabel(lang, m.slug, m.person), qoq: m.holdingCount === 0 ? undefined : qoq.get(m.cik) }));
 
   const head = HEAD[lang];
+  const path = localePath(lang, "/investors");
+  const ld = [
+    collectionLd({
+      lang,
+      name: head.heading,
+      description: META[lang].description,
+      path,
+      items: managers.map((m) => ({ name: m.label, path: investorPath(lang, m.slug) })),
+      dateModified: displayedDataModified(idx.managers, new Date()),
+    }),
+    breadcrumbLd(lang, [{ name: head.heading, path }]),
+  ];
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <SubNav lang={lang} section="investors" active="all" />
       <div className="mb-4">
         <PageHeader eyebrow={head.eyebrow} title={head.heading} intro={head.subtitle} />

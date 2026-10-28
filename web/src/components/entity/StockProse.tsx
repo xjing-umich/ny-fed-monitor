@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import type { ProseParagraph } from "@/lib/stocks/stockProse";
+import { zhJoin } from "@/lib/format";
 
 /**
  * 个股页确定性服务端正文(纯 SSR, 零 client JS)。每段由真实 13F 持有人数据派生、彼此独一无二,
@@ -20,23 +21,27 @@ export function StockProse({
   if (paragraphs.length === 0) return null;
   const body = (
     <div className="max-w-3xl space-y-3">
-      {paragraphs.map((p, i) => (
-        <p key={i} className="text-base leading-relaxed text-[var(--tt-muted)]">
-          {p.map((seg, j) =>
-            typeof seg === "string" ? (
-              <React.Fragment key={j}>{seg}</React.Fragment>
-            ) : (
-              <Link
-                key={j}
-                href={seg.href}
-                className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
-              >
-                {seg.label}
-              </Link>
-            ),
-          )}
-        </p>
-      ))}
+      {paragraphs.map((p, i) => {
+        // 中文:持有人名两侧的模板空格,遇到中文名时去掉("仓位最大的是巴菲特与阿贝尔")。
+        const texts = lang === "zh" ? zhJoin(p.map((seg) => (typeof seg === "string" ? seg : seg.label))) : null;
+        return (
+          <p key={i} className="text-base leading-relaxed text-[var(--tt-muted)]">
+            {p.map((seg, j) =>
+              typeof seg === "string" ? (
+                <React.Fragment key={j}>{texts ? texts[j] : seg}</React.Fragment>
+              ) : (
+                <Link
+                  key={j}
+                  href={seg.href}
+                  className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
+                >
+                  {seg.label}
+                </Link>
+              ),
+            )}
+          </p>
+        );
+      })}
     </div>
   );
   if (bare) return body;

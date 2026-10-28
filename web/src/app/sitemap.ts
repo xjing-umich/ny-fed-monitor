@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { consensusHeld } from "@/lib/aggregations";
-import { ARTICLE_SLUGS } from "@/lib/learn";
+import { ARTICLE_SLUGS, getArticle } from "@/lib/learn";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { localePath } from "@/lib/urls";
 import { listReportPeriods } from "@/lib/reports/read";
 import { reportLastModified, reportSlug } from "@/lib/reports/period";
-import { effectiveMovesPeriod } from "@/lib/freshness/derive";
+import { displayedDataModified } from "@/lib/freshness/derive";
 
 const BASE = "https://thecompounder.fyi";
 
@@ -26,8 +26,9 @@ type ChangeFreq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 // zh version expressed via hreflang alternates (+ x-default → en). This matches
 // the on-page <link rel="alternate"> tags and is the correct way to pair
 // localized URLs in a sitemap — better than emitting duplicate en/zh entries.
-// lastModified: 取真实的 13F 报告期(YYYY-MM-DD) —— 新一季数据进库时该日期自动前移,
-// 是诚实的"内容版本"信号(避免凭空造日期)。无真实日期的纯编辑页(about/learn)不带 lastmod。
+// lastModified: 取内容真正变化的日期 —— 数据页用 13F 的 SEC 提交日(数据就是那天进来的),
+// 文章用其 updated。不用报告期(季末日):Q2 的数据 8 月中才报齐,写 06-30 等于说页面在数据出来前就定稿了。
+// 无真实日期的纯编辑页(about/disclaimer)不带 lastmod,不凭空造日期。
 function entry(
   path: string,
   changeFrequency: ChangeFreq,
@@ -52,39 +53,51 @@ function entry(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [idx, held] = await Promise.all([getManagerIndex(), consensusHeld()]);
 
-  // 全站展示季度(effectiveMovesPeriod,与首页 masthead / buys·sells / 个股页"截至"同一口径)。
-  // 聚合页/榜单/个股页都以此为 lastmod。不取各投资人 period 的最大值:申报季内一两家基金
-  // 提前交了新季时,最大值会把上千个 URL 的 lastmod 一起推到新季,而页面内容仍是上一季。
-  const globalLatest =
-    effectiveMovesPeriod((idx.managers ?? []).map((m) => m.period), new Date()).period ?? undefined;
+  // 聚合页/榜单/个股页的 lastmod:全站展示季度(effectiveMovesPeriod,与首页 masthead / buys·sells /
+  // 个股页"截至"同一口径)里最晚一份 13F 的提交日。不跟最新季:申报季内一两家基金提前交了新季时,
+  // 会把上千个 URL 的 lastmod 一起推前,而页面内容仍是上一季。
+  const dataModified = displayedDataModified(idx.managers ?? [], new Date()) ?? undefined;
+
+  const reports = (await listReportPeriods())
+    .map((r) => ({ slug: reportSlug(r.period), lastModified: reportLastModified(r.generatedAt, r.finalizedAt).slice(0, 10) }))
+    .filter((r) => !ARTICLE_SLUGS.includes(r.slug)); // 手写版优先(Q1)
+  // 一个 URL 对应中英两版,取两版里较晚的 updated。
+  const articleDates = ARTICLE_SLUGS.map((slug) => ({
+    slug,
+    lastModified: [getArticle(slug, "en")?.updated, getArticle(slug, "zh")?.updated].filter(Boolean).sort().at(-1),
+  }));
+  // Learn 首页列出全部文章与季报,随其中最新的一篇变化。
+  const learnModified = [...articleDates, ...reports]
+    .map((a) => a.lastModified)
+    .filter((d): d is string => !!d)
+    .sort()
+    .at(-1);
 
   const urls: MetadataRoute.Sitemap = [
-    entry("", "daily", 1, globalLatest),
-    entry("/investors", "weekly", 0.8, globalLatest),
-    entry("/investors/consensus", "weekly", 0.8, globalLatest),
-    entry("/investors/buys", "weekly", 0.8, globalLatest),
-    entry("/investors/sells", "weekly", 0.8, globalLatest),
-    entry("/stocks", "weekly", 0.8, globalLatest),
-    entry("/stocks/screener", "weekly", 0.7, globalLatest),
-    // 编辑/外部数据页:无诚实的 13F 变更日期 → 不带 lastmod。
+    entry("", "daily", 1, dataModified),
+    entry("/investors", "weekly", 0.8, dataModified),
+    entry("/investors/consensus", "weekly", 0.8, dataModified),
+    entry("/investors/buys", "weekly", 0.8, dataModified),
+    entry("/investors/sells", "weekly", 0.8, dataModified),
+    entry("/stocks", "weekly", 0.8, dataModified),
+    entry("/stocks/screener", "weekly", 0.7, dataModified),
     entry("/about", "monthly", 0.4),
-    entry("/learn", "weekly", 0.6),
+    entry("/disclaimer", "yearly", 0.3),
+    entry("/learn", "weekly", 0.6, learnModified),
   ];
 
-  for (const slug of ARTICLE_SLUGS) {
-    urls.push(entry(`/learn/${slug}`, "monthly", 0.6));
+  for (const a of articleDates) {
+    urls.push(entry(`/learn/${a.slug}`, "monthly", 0.6, a.lastModified));
   }
 
-  for (const r of await listReportPeriods()) {
-    const slug = reportSlug(r.period);
-    if (ARTICLE_SLUGS.includes(slug)) continue; // 手写版优先(Q1)
-    urls.push(entry(`/learn/${slug}`, "weekly", 0.7, reportLastModified(r.generatedAt, r.finalizedAt).slice(0, 10)));
+  for (const r of reports) {
+    urls.push(entry(`/learn/${r.slug}`, "weekly", 0.7, r.lastModified));
   }
 
   for (const m of idx.managers ?? []) {
-    // 每位投资人用其自身最新报告期 —— 停报者 period 更旧 → lastmod 更旧,正确告诉 Google
+    // 每位投资人用其最新一份 13F 的提交日 —— 停报者的日期停在一年多前,正确告诉 Google
     // 该页不必频繁重抓。
-    urls.push(entry(`/investors/${m.slug}`, "weekly", 0.7, m.period || undefined));
+    urls.push(entry(`/investors/${m.slug}`, "weekly", 0.7, m.filedAt?.slice(0, 10) || m.period || undefined));
   }
 
   // mostHeld returns rows whose `cusip` field already holds the canonical ticker
@@ -104,8 +117,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const h of held) {
     if (!h.cusip || !isLikelyTicker(h.cusip) || seenStocks.has(h.cusip)) continue;
     seenStocks.add(h.cusip);
-    // 个股共识快照随整库按季刷新 → 用全局最新报告期作 lastmod。
-    urls.push(entry(`/stocks/${h.cusip}`, "weekly", 0.6, globalLatest));
+    // 个股共识快照随整库按季刷新 → 与聚合页同一日期。
+    urls.push(entry(`/stocks/${h.cusip}`, "weekly", 0.6, dataModified));
   }
 
   return urls;

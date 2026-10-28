@@ -5,9 +5,10 @@ import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap } from "@/lib/managers/securities";
 import { getManagerIndex } from "@/lib/managers/source";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, collectionLd, breadcrumbLd } from "@/lib/seo";
 import { localePath, stockPath } from "@/lib/urls";
-import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
+import { effectiveMovesPeriod, quarterLabel, displayedDataModified } from "@/lib/freshness/derive";
+import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { cleanIssuer } from "@/lib/format";
 import { LinkDirectory } from "@/components/list/LinkDirectory";
@@ -28,6 +29,17 @@ export const revalidate = 259200;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 
+const META = {
+  zh: {
+    title: "个股 · 最多人持有 — Compounder · 复利",
+    description: "统计顶级投资者 13F 持仓中，最多人持有的股票。",
+  },
+  en: {
+    title: "Stocks · Most held — Compounder",
+    description: "Most widely held securities among tracked superinvestors, derived from 13F filings.",
+  },
+} as const;
+
 export async function generateMetadata({
   params,
 }: {
@@ -36,16 +48,7 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const alternates = altFor(lang, "/stocks");
-  const meta =
-    lang === "zh"
-      ? {
-          title: "个股 · 最多人持有 — Compounder · 复利",
-          description: "统计顶级投资者 13F 持仓中，最多人持有的股票。",
-        }
-      : {
-          title: "Stocks · Most held — Compounder",
-          description: "Most widely held securities among tracked superinvestors, derived from 13F filings.",
-        };
+  const meta = META[lang];
   return {
     ...meta,
     alternates,
@@ -106,8 +109,24 @@ export default async function StocksIndexPage({
     return [{ href: stockPath(lang, r.ticker), label: r.ticker, note: cleanIssuer(r.issuer) }];
   });
 
+  // 结构化数据:目录(已按 isLikelyTicker 去重,与表格同序,即按持有人数)的前 50 只;数量是目录总数。
+  const path = localePath(lang, "/stocks");
+  const ld = [
+    collectionLd({
+      lang,
+      name: ui.stocksTitle,
+      description: META[lang].description,
+      path,
+      items: directory.map((d) => ({ name: stockDisplayName(lang, d.label, d.note), path: d.href })),
+      limit: 50,
+      dateModified: displayedDataModified(idx.managers, new Date()),
+    }),
+    breadcrumbLd(lang, [{ name: ui.stocksTitle, path }]),
+  ];
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <SubNav lang={lang} section="stocks" active="held" />
 
       <div className="mb-4">

@@ -5,7 +5,7 @@
 
 import type { ManagerDetail, Holding } from "./types";
 import type { Lang } from "@/lib/nav";
-import { cleanIssuer, cleanFilerName, formatUSD } from "@/lib/format";
+import { cleanIssuer, cleanFilerName, formatUSD, zhSpacing } from "@/lib/format";
 import { managerLabel } from "./displayName";
 
 // 基金名展示化: 仅当名称全大写(EDGAR 原始态, 如 "BERKSHIRE HATHAWAY INC")才标题化, 并把 LLC/LP 等法律形式写回大写;
@@ -100,8 +100,8 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
       p.push(".");
     } else {
       p.push("第一大持仓为 ", stock(name(top[0]), top[0].cusip), `，占组合 ${pct1(top[0].weight)}`);
-      if (top[1]) p.push("，其次是 ", stock(name(top[1]), top[1].cusip), `(${pct1(top[1].weight)})`);
-      if (top[2]) p.push(" 和 ", stock(name(top[2]), top[2].cusip), `(${pct1(top[2].weight)})`);
+      if (top[1]) p.push("，其次是 ", stock(name(top[1]), top[1].cusip), `（${pct1(top[1].weight)}）`);
+      if (top[2]) p.push(" 和 ", stock(name(top[2]), top[2].cusip), `（${pct1(top[2].weight)}）`);
       p.push("。");
     }
     paras.push(p);
@@ -124,7 +124,7 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
       if (exits[0]) p.push(" The largest exit was ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), ".");
     } else {
       p.push(
-        `较上一季度，${managerLabel(lang, manager.slug, manager.person)} 新建 ${news.length} 个持仓，清仓 ${exits.length} 个，加仓 ${incs.length} 个，减仓 ${decs.length} 个。`,
+        zhSpacing(`较上一季度，${managerLabel(lang, manager.slug, manager.person)} 新建 ${news.length} 个持仓，清仓 ${exits.length} 个，加仓 ${incs.length} 个，减仓 ${decs.length} 个。`),
       );
       if (news[0]) p.push("其中最大的新建仓位是 ", stock(cleanIssuer(news[0].issuer), news[0].cusip), "。");
       if (exits[0]) p.push("清仓里金额最大的是 ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), "。");

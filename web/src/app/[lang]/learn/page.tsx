@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getFeatured, getLatest, listRest, listArticles, FEATURED_SLUG, ARTICLE_SLUGS, BRAND } from "@/lib/learn";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, titleBrand, collectionLd, breadcrumbLd } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import PageHeader from "@/components/common/PageHeader";
 import { listReportPeriods, readReportRow } from "@/lib/reports/read";
@@ -45,7 +45,7 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const c = COPY[lang];
-  const title = `${c.title} — Compounder`;
+  const title = `${c.title} — ${titleBrand(lang)}`;
   return {
     title,
     description: c.intro,
@@ -83,8 +83,25 @@ export default async function LearnIndexPage({
     ? listArticles(lang).filter((a) => a.slug !== FEATURED_SLUG)
     : listRest(lang);
 
+  // 结构化数据:页面上的全部文章,按出现顺序(从这里开始 → 最新 → 其余)。
+  const path = localePath(lang, "/learn");
+  const cards = [featured, latestCard, ...rest].filter((a): a is NonNullable<typeof a> => !!a);
+  const listed = cards.filter((a, i) => cards.findIndex((b) => b.slug === a.slug) === i);
+  const ld = [
+    collectionLd({
+      lang,
+      name: c.heading,
+      description: c.intro,
+      path,
+      items: listed.map((a) => ({ name: a.title, path: localePath(lang, `/learn/${a.slug}`) })),
+      dateModified: listed.map((a) => a.updated).filter(Boolean).sort().at(-1),
+    }),
+    breadcrumbLd(lang, [{ name: c.title, path }]),
+  ];
+
   return (
     <article className="max-w-[720px] mx-auto py-8 sm:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <PageHeader eyebrow={c.eyebrow} title={c.heading} intro={c.intro} />
 
       {/* 品牌块:理念常驻凸显,accent 左描边区别于列表 */}
