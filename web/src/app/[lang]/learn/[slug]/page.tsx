@@ -209,7 +209,7 @@ function SnapshotNotice({ lang, period, written, note }: { lang: Lang; period: s
     { path: "/investors/sells", en: "Top sells", zh: "最多卖出" },
   ];
   return (
-    <aside className="mt-6 border-l-2 border-[var(--tt-accent)] pl-4 text-sm leading-relaxed text-[var(--tt-muted)]">
+    <aside className="mt-6 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel-2)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-muted)]">
       <p>
         {lang === "zh"
           ? `季度快照：${q} 的 13F 申报（截至 ${period}），写于 ${written}。文中的家数指当时追踪的投资人。最新一季见：`

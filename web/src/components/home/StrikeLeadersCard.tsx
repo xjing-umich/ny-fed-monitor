@@ -35,7 +35,7 @@ export default function StrikeLeadersCard({
   const c = COPY[lang];
   const asOf = valuationAsOfText(lang, latestIsoDate(leaders.map((l) => l.priceDate)));
   return (
-    <div className="ticks rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
+    <div className="rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel)] p-4 sm:p-5">
       <div className="border-b border-[var(--tt-border-strong)] pb-2">
         <span className="text-sm font-medium text-[var(--tt-text)]">{c.title(total)}</span>
       </div>
@@ -59,19 +59,16 @@ export default function StrikeLeadersCard({
                   {row.ticker}
                 </Link>
               </td>
-              <td className="py-2 pr-3 text-right font-data text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
+              <td className="py-2 pr-3 text-right font-data text-sm tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
                 {fmtValueBand(row.rangeLo, row.rangeHi, fmtPerShareValue)}
               </td>
-              <td className="py-2 pr-3 text-right font-data text-xs tabular-nums text-[var(--tt-text)] whitespace-nowrap">
+              <td className="py-2 pr-3 text-right font-data text-sm tabular-nums text-[var(--tt-text)] whitespace-nowrap">
                 {(() => {
                   const iv = impliedValue(row.price, row.marginPct);
                   return iv == null ? "—" : fmtPerShareValue(iv);
                 })()}
               </td>
-              <td
-                className="py-2 text-right font-data text-xs tabular-nums text-[var(--tt-accent)] whitespace-nowrap"
-                style={{ textShadow: "var(--glow-primary)" }}
-              >
+              <td className="py-2 text-right font-data text-sm tabular-nums text-val-below whitespace-nowrap">
                 {row.marginPct != null && row.marginPct > 0 ? fmtMarginPct(row.marginPct) : "—"}
               </td>
             </tr>

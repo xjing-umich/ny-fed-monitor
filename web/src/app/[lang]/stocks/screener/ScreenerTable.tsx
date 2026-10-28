@@ -31,7 +31,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
       cell: (r) => {
         const top = highlight && deriveFusionSignal({ holderCount: r.holderCount, verdict: r }).isCheapConsensus;
         return (
-          <span className={top ? "block border-l-2 border-[var(--tt-positive)] pl-2 -ml-2" : undefined}>
+          <span className={top ? "font-semibold" : undefined}>
             <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
           </span>
         );

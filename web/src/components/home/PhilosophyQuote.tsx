@@ -39,21 +39,21 @@ export default function PhilosophyQuote({
     <section className="border-t border-[var(--tt-border)] pt-12">
       <p className="tt-eyebrow">{c.eyebrow}</p>
 
-      {/* Hero quote — left rule only; no oversized decorative glyph (collides with the rule). */}
+      {/* Hero quote — no decorative rule or glyph; type carries it. */}
       <figure className="mt-8">
-        <blockquote className="border-l-2 border-[var(--tt-accent)] pl-6 sm:pl-8">
+        <blockquote>
           <p className="text-balance text-3xl font-medium leading-[1.16] tracking-tight text-[var(--tt-text)] sm:text-4xl">
             {c.hero}
           </p>
           <figcaption className="mt-5 flex items-center gap-3 font-data text-xs text-[var(--tt-faint)]">
-            <span className="inline-block h-px w-6 bg-[var(--tt-accent)]" />
+            <span className="inline-block h-px w-6 bg-[var(--tt-border-strong)]" />
             <span>
               {featuredHref ? (
-                <Link href={featuredHref} className="text-[var(--tt-accent)] no-underline hover:underline">
+                <Link href={featuredHref} className="text-[var(--tt-text)] underline decoration-[var(--tt-faint)] underline-offset-2 hover:text-[var(--tt-accent)]">
                   {c.heroWho}
                 </Link>
               ) : (
-                <span className="text-[var(--tt-accent)]">{c.heroWho}</span>
+                <span className="text-[var(--tt-text)]">{c.heroWho}</span>
               )}
               {" · "}
               {c.heroFund}
