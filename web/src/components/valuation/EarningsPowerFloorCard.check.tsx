@@ -5,18 +5,21 @@ import { EarningsPowerFloorCard, cardSummaryMode, compactFloorReason } from "./E
 import { runValuation } from "@/lib/valuation/runValuation";
 import type { PerShareUnavailable, ValuationFloorYear } from "@/lib/valuation/types";
 
-const floor: PerShareUnavailable = { kind: "per_share_unavailable", reason: "每股口径暂不可用(测试)" };
-const text = (part?: "all" | "summary" | "details") =>
-  renderToStaticMarkup(<EarningsPowerFloorCard floor={floor} lang="zh" part={part} />).replace(/<[^>]+>/g, " ");
+// 引擎 reason 是英文审计串,卡片按 lang 渲染自己的文案,不直出 reason(否则中文页整段英文)。
+const floor: PerShareUnavailable = { kind: "per_share_unavailable", reason: "ENGINE_REASON(test)" };
+const text = (part?: "all" | "summary" | "details", lang: "zh" | "en" = "zh") =>
+  renderToStaticMarkup(<EarningsPowerFloorCard floor={floor} lang={lang} part={part} />).replace(/<[^>]+>/g, " ");
 
 const all = text();
-assert.ok(all.includes("每股口径暂不可用(测试)") && all.includes("方法与数字"), "默认 all:两半都在");
+assert.ok(all.includes("多类股票") && all.includes("方法与数字"), "默认 all:两半都在");
+assert.ok(!all.includes("ENGINE_REASON"), "zh 不直出引擎 reason");
+assert.ok(text("all", "en").includes("more than one share class") && !text("all", "en").includes("ENGINE_REASON"), "en 用本地化文案");
 const summary = text("summary");
-assert.ok(summary.includes("每股口径暂不可用(测试)"), "summary 含原因");
+assert.ok(summary.includes("多类股票"), "summary 含原因");
 assert.ok(!summary.includes("方法与数字"), "summary 不含方法折叠");
 const details = text("details");
 assert.ok(details.includes("方法与数字"), "details 含方法折叠");
-assert.ok(!details.includes("每股口径暂不可用(测试)"), "details 不含摘要");
+assert.ok(!details.includes("多类股票"), "details 不含摘要");
 
 // ── 价值脊柱:summary 精简(手机首屏),bandHowToRead 与假设行挪到 details 顶部,每条事实全页恰好一次 ──
 const years: ValuationFloorYear[] = [
