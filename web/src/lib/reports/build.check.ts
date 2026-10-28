@@ -1,5 +1,6 @@
 /** Run: cd web && npx tsx src/lib/reports/build.check.ts */
 import { buildQuarterlyReport } from "./build";
+import { factorLookup } from "../managers/splitAdjust";
 import type { ReportHolding, ReportInput, ReportManagerInput } from "./types";
 
 function assert(c: boolean, m: string) {
@@ -95,5 +96,20 @@ assert(noBargain.strikeZone.items.length === 0 && noBargain.strikeZone.emptyReas
 // 有估值但无交集
 const noHit = buildQuarterlyReport({ ...base, bargains: new Map([["KO", { inStrikeZone: true, marginPct: 0.4 }]]) });
 assert(noHit.strikeZone.emptyReason === "no_qualifying", "无交集 → no_qualifying");
+
+// 拆股:上季股数先换算到报告季口径。e 只是 5 拆 1(股数 ×5)→ 不进共识买入;f 是真加仓 → 进。
+{
+  const input: ReportInput = {
+    ...base,
+    managers: [
+      { ...mgr("e", [h("C_AAPL", 500, 1)], [h("C_AAPL", 100, 1)]), priorPeriod: "2026-06-30" },
+      { ...mgr("f", [h("C_AAPL", 600, 1)], [h("C_AAPL", 100, 1)]), priorPeriod: "2026-06-30" },
+    ],
+    splits: factorLookup([{ cusip: "C_AAPL", fromPeriod: "2026-06-30", toPeriod: "2026-09-30", factor: 5 }]),
+  };
+  const r = buildQuarterlyReport(input);
+  const aapl = r.bought.items.find((x) => x.key === "AAPL");
+  assert(aapl?.managerCount === 1, `拆股后只有 f 算买入,got ${aapl?.managerCount}`);
+}
 
 console.log("build.check OK");

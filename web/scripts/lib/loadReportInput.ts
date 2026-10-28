@@ -8,6 +8,8 @@ import { isExpectedFiler } from "../../src/lib/freshness/derive";
 import { isImplausibleBand } from "../../src/lib/valuation/deriveValuationVerdict";
 import { readAll } from "./computeConsensus";
 import { managerLabel } from "../../src/lib/managers/displayName";
+import { isMissingTableError } from "../../src/lib/managers/db";
+import { factorLookup, NO_SPLITS } from "../../src/lib/managers/splitAdjust";
 import type { ReportHolding, ReportInput, ReportManagerInput } from "../../src/lib/reports/types";
 
 type FilingRow = { id: number; period: string; filed_at: string | null };
@@ -97,6 +99,12 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
       ? ((await readAll(db, "holdings", "cusip,issuer,value,shares,weight,put_call", (q) => q.eq("filing_id", f.id).order("id", { ascending: true }))) as HoldingDbRow[]).map(toHolding)
       : null;
 
+  // 拆股系数(共识步骤已写入;表未迁移 → 不换算)。
+  let splits = NO_SPLITS;
+  const { data: sa, error: saErr } = await db.from("split_adjustments").select("cusip,from_period,to_period,factor").eq("to_period", period);
+  if (saErr && !isMissingTableError(saErr)) throw new Error(`split_adjustments read: ${saErr.message}`);
+  if (sa?.length) splits = factorLookup(sa.map((r: { cusip: string; from_period: string; to_period: string; factor: number | string }) => ({ cusip: r.cusip, fromPeriod: r.from_period, toPeriod: r.to_period, factor: Number(r.factor) })));
+
   const out: ReportManagerInput[] = [];
   for (const r of active) {
     out.push({
@@ -106,6 +114,7 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
       personZh: managerLabel("zh", r.m.slug, r.m.person) === r.m.person ? null : managerLabel("zh", r.m.slug, r.m.person),
       current: await holdingsOf(r.current),
       prior: await holdingsOf(r.prior),
+      priorPeriod: r.prior?.period ?? null,
     });
   }
 
@@ -138,5 +147,5 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
 
   const valuationAvailable = latestReliable.length > 0;
   if (!valuationAsOf && valuationAvailable) valuationAsOf = latestReliable[0].price_date;
-  return { input: { period, managers: out, cusipMap, bargains, featuredSlugs, valuationAvailable, excludedCount: allFilings.length - expected.length }, valuationAsOf };
+  return { input: { period, managers: out, cusipMap, bargains, featuredSlugs, valuationAvailable, excludedCount: allFilings.length - expected.length, splits }, valuationAsOf };
 }

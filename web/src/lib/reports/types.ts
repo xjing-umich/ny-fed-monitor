@@ -1,6 +1,7 @@
 // 季度共识报告的数据形状。payload 只存数据(数字/ticker/issuer/slug/姓名),不存成句文案:
 // 文案由 copy.ts 在渲染时按语言生成,所以中英天然同值。
 // schemaVersion 只增不改:已定稿的旧报告必须永远能被渲染(见 fixtures/v1-final.json)。
+import type { SplitFactorLookup } from "../managers/splitAdjust";
 
 export type ReportLang = "en" | "zh";
 export type MoveKind = "new" | "increased" | "decreased" | "exited";
@@ -82,6 +83,8 @@ export type ReportManagerInput = {
   current: ReportHolding[] | null;
   /** 早于 P 的最近一季持仓(与全站口径一致);null = 库里没有更早申报。 */
   prior: ReportHolding[] | null;
+  /** prior 那一季的 period(拆股换算按季度对查系数);缺省按无拆股处理。 */
+  priorPeriod?: string | null;
 };
 
 export type ReportInput = {
@@ -96,4 +99,6 @@ export type ReportInput = {
   valuationAvailable: boolean;
   /** 名单里上季未申报、不计入分母的人数。 */
   excludedCount: number;
+  /** 拆股换算系数(split_adjustments);缺省 = 不换算。 */
+  splits?: SplitFactorLookup;
 };

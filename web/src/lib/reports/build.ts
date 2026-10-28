@@ -1,9 +1,10 @@
 // 季度报告生成(纯函数,无 I/O)。买卖口径直接复用 computeConsensus,与 buys/sells 页同源;
 // 不同点只有一处:输入锁定在报告季度 P,且没有更早申报的投资人不产生买卖(否则其全部持仓都会被算成“新建仓”)。
 import { computeConsensus, diffHoldings, type ScanInput, type ScanChange } from "../consensus/compute";
+import { NO_SPLITS, rescaleToLatestBasis } from "../managers/splitAdjust";
 import type {
   ConsensusMoveItem, FeaturedEntry, FeaturedMove, MostHeldItem, MoveKind, ReportHolding,
-  ReportInput, ReportPayload, ReportStock, Section, StrikeZoneItem,
+  ReportInput, ReportManagerInput, ReportPayload, ReportStock, Section, StrikeZoneItem,
 } from "./types";
 
 export const CONSENSUS_MIN_HOLDERS_REPORT = 2;
@@ -22,6 +23,12 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
   const knownTickers = new Set([...cusipMap.values()].map((v) => v.ticker).filter((t): t is string => !!t));
   const stock = (key: string, issuer: string): ReportStock => ({ key, ticker: knownTickers.has(key) ? key : null, issuer });
   const keyOf = (cusip: string) => cusipMap.get(cusip)?.ticker ?? cusip;
+  // 拆股:上季股数先换算到报告季口径,买卖口径与全站一致(splitAdjust.ts)。
+  const splits = input.splits ?? NO_SPLITS;
+  const priorOf = (m: ReportManagerInput): ReportHolding[] | null =>
+    m.current && m.prior && m.priorPeriod
+      ? rescaleToLatestBasis([{ period, holdings: m.current }, { period: m.priorPeriod, holdings: m.prior }], splits)[1].holdings
+      : m.prior;
 
   const filers = managers.filter((m) => m.current !== null);
   const coverage = { filed: filers.length, total: managers.length, excluded: input.excludedCount };
@@ -31,7 +38,7 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
   const scan: ScanInput[] = filers.map((m) => ({
     slug: m.slug,
     holdings: m.current!.map((h) => ({ cusip: h.cusip, issuer: h.issuer, value: h.value, putCall: h.putCall ?? undefined })),
-    changes: m.prior ? diffHoldings(toDiffRows(m.current!), toDiffRows(m.prior)) : [],
+    changes: m.prior ? diffHoldings(toDiffRows(m.current!), toDiffRows(priorOf(m)!)) : [],
   }));
   const { holdings, moves } = computeConsensus(scan, cusipMap);
   const toMove = (r: (typeof moves)[number]): ConsensusMoveItem => ({
@@ -72,7 +79,7 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
     const m = bySlug.get(slug);
     if (!m) continue;
     const entry: FeaturedEntry = { slug, person: m.person, personZh: m.personZh, filed: m.current !== null, moves: [] };
-    if (m.current && m.prior) entry.moves = topWeightMoves(m.current, m.prior, keyOf, stock);
+    if (m.current && m.prior) entry.moves = topWeightMoves(m.current, priorOf(m)!, keyOf, stock);
     featured.push(entry);
   }
 
