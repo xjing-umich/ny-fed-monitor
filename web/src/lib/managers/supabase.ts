@@ -116,14 +116,18 @@ export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
 
 /**
  * 每户季度变化信号(cik → ManagerQoQ)。仅 /investors 列表页调用。
- * 读 manager_quarter_summary;表未迁移回退 RPC manager_qoq;出错 → 空 Map(优雅降级)。
+ * 读 manager_quarter_summary;表未迁移、或表已建但还没有行(DDL 之后、首次共识运行之前)→ 回退 RPC manager_qoq
+ * (空表若直接返回空 Map,/investors 的 ISR 会把"—"缓存 3 天);其他出错 → console.error 后返回空 Map(优雅降级)。
  */
 export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
   const db = getDb();
   // 读入库时算好的季度汇总(拆股已换算,与详情页同一函数);表未迁移 → 回退旧 RPC manager_qoq。
   const { data: rows, error: tErr } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,top_moves");
-  if (!tErr && rows) return mapSummaryRows(rows as SummaryRow[]);
-  if (tErr && !isMissingTableError(tErr)) return new Map(); // 与原函数一致:出错优雅降级为空 Map(列表不显 QoQ)
+  if (!tErr && rows?.length) return mapSummaryRows(rows as SummaryRow[]);
+  if (tErr && !isMissingTableError(tErr)) {
+    console.error(`getManagerQoQ manager_quarter_summary query failed: ${tErr.message}`);
+    return new Map(); // 与原函数一致:出错优雅降级为空 Map(列表不显 QoQ)
+  }
   const out = new Map<string, ManagerQoQ>();
   const { data, error } = await db.rpc("manager_qoq");
   if (error || !data) return out;
@@ -161,8 +165,14 @@ export async function getManagerDetail(cikOrSlug: string, opts: { adjustSplits?:
   let splits: SplitFactorLookup = NO_SPLITS;
   if (opts.adjustSplits !== false) {
     const periods = filings.map((f: { period: string }) => f.period);
-    const { data: sa, error: sErr } = await withRetry(() => db.from("split_adjustments").select("cusip,from_period,to_period,factor").in("to_period", periods));
-    if (sErr && !isMissingTableError(sErr)) throw new Error(`getManagerDetail split_adjustments query failed (${m.cik}): ${sErr.message}`);
+    // 分页 + 稳定排序(几百行逼近 1000 行上限时不能静默截断);表缺失不重试(withRetry 会对 42P01 退避 3 次,白等 ~0.5s)。
+    const { data: sa, error: sErr } = await selectAllPages<{ cusip: string; from_period: string; to_period: string; factor: number | string }>(
+      () => db.from("split_adjustments").select("cusip,from_period,to_period,factor").in("to_period", periods).order("cusip").order("from_period").order("to_period"),
+      undefined,
+      (e) => !isMissingTableError(e as { code?: string }),
+    );
+    // selectAllPages 原样透出 PostgREST error(含 code),类型上只声明了 message,故断言。
+    if (sErr && !isMissingTableError(sErr as { code?: string })) throw new Error(`getManagerDetail split_adjustments query failed (${m.cik}): ${sErr.message}`);
     if (sa?.length) splits = factorLookup(sa.map((r: { cusip: string; from_period: string; to_period: string; factor: number | string }) => ({ cusip: r.cusip, fromPeriod: r.from_period, toPeriod: r.to_period, factor: Number(r.factor) })));
   }
   return mapDetailRows({ cik: m.cik, slug: m.slug, name: m.name, person: m.person }, filings, holdings ?? [], splits);
