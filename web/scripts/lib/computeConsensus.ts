@@ -1,5 +1,5 @@
 import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwnership, type ScanInput, type StockHolderScan, type TrendScan, type CusipInfo } from "../../src/lib/consensus/compute";
-import { deriveSplitFactors, factorLookup, NO_SPLITS, rescaleToLatestBasis, type ManagerHistory, type SplitEvent } from "../../src/lib/managers/splitAdjust";
+import { deriveSplitFactorsWithRejections, factorLookup, NO_SPLITS, rescaleToLatestBasis, type ManagerHistory, type SplitEvent } from "../../src/lib/managers/splitAdjust";
 import { summarizeQuarter } from "../../src/lib/managers/quarterSummary";
 import { computeChanges } from "../../src/lib/managers/assemble";
 import { consensusChangesFor, replaceDerivedRows, splitRow, summaryRow, toHolding, type DbHolding } from "./splitStore";
@@ -79,10 +79,13 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const computedAt = new Date().toISOString();
   const splitEvents: SplitEvent[] = (await readAll(db, "stock_splits", "ticker,split_date,ratio", (q) => q.order("ticker", { ascending: true }).order("split_date", { ascending: true })))
     .map((r) => ({ ticker: r.ticker, date: r.split_date, ratio: Number(r.ratio) }));
-  const splitFactors = deriveSplitFactors(histories, (c) => cmap.get(c)?.ticker ?? null, splitEvents);
+  const { factors: splitFactors, rejected } = deriveSplitFactorsWithRejections(histories, (c) => cmap.get(c)?.ticker ?? null, splitEvents);
   const splits = splitFactors.length ? factorLookup(splitFactors) : NO_SPLITS;
-  if ((await replaceDerivedRows(db, "split_adjustments", splitFactors.map((f) => splitRow(f, computedAt)), "cusip,from_period,to_period", computedAt)) === "missing")
-    console.warn("split_adjustments 表不存在 — 跳过写入(先跑 migration);本次共识仍按内存里的系数换算。");
+  // 表里有真拆股却没通过价格校验(又推断不出)的季度对:假买卖会原样保留,至少在日志里留痕,便于人工复核。
+  if (rejected.length) {
+    console.warn(`拆股被价格校验拒绝 ${rejected.length} 条(假买卖未修正,需人工复核):`);
+    for (const x of rejected) console.warn(`  ${x.ticker ?? "?"} ${x.cusip} ${x.fromPeriod}→${x.toPeriod} q=${x.q.toFixed(3)} r=${x.r}`);
+  }
 
   // 新鲜度口径(与 src/lib/aggregations.ts 一致): 最近到期季的截止日过后仍没交的 manager 不计入
   // 当前持有人(countsAsCurrentHolder);非有效变动季者 holdings 计入但 changes 清空。
@@ -125,8 +128,16 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
       const s = summarizeQuarter({ period: r.period, priorPeriod: r.priorPeriod!, latest: latest.holdings, prior: prior.holdings, changes: computeChanges(latest.holdings, prior.holdings) });
       return summaryRow(r.cik, s, computedAt);
     });
-  if ((await replaceDerivedRows(db, "manager_quarter_summary", summaries, "cik", computedAt)) === "missing")
-    console.warn("manager_quarter_summary 表不存在 — 跳过(先跑 migration);列表页继续用 RPC manager_qoq。");
+
+  // 两张派生表在既有共识表写完之后才写,且每个出口都走 finish:派生表写错误(THROW)不能挡住既有共识刷新
+  // (以及工作流随后的站点 revalidate)。内存里的 splits 已经喂给上面的 changesOf,不依赖落库。
+  const finish = async (counts: { holdings: number; moves: number; stockHolders: number; trend: number; coOwnership: number }) => {
+    if ((await replaceDerivedRows(db, "split_adjustments", splitFactors.map((f) => splitRow(f, computedAt)), "cusip,from_period,to_period", computedAt)) === "missing")
+      console.warn("split_adjustments 表不存在 — 跳过写入(先跑 migration);本次共识仍按内存里的系数换算。");
+    if ((await replaceDerivedRows(db, "manager_quarter_summary", summaries, "cik", computedAt)) === "missing")
+      console.warn("manager_quarter_summary 表不存在 — 跳过(先跑 migration);列表页继续用 RPC manager_qoq。");
+    return { ...counts, splitFactors: splitFactors.length, summaries: summaries.length };
+  };
 
   const { holdings, moves } = computeConsensus(scan, cmap);
   const stockHolders = computeStockHolders(holderScan, cmap);
@@ -150,7 +161,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const { error: shDelErr } = await db.from("consensus_stock_holders").delete().neq("ticker", "");
   if (shDelErr && shDelErr.code === "42P01") {
     console.warn("consensus_stock_holders 表不存在 — 跳过(先跑 migration)。");
-    return { holdings: holdings.length, moves: moves.length, stockHolders: 0, trend: 0, coOwnership: 0, splitFactors: splitFactors.length, summaries: summaries.length };
+    return finish({ holdings: holdings.length, moves: moves.length, stockHolders: 0, trend: 0, coOwnership: 0 });
   }
   for (let i = 0; i < stockHolders.length; i += 500) {
     const { error } = await db.from("consensus_stock_holders").upsert(stockHolders.slice(i, i + 500), { onConflict: "ticker,cik" });
@@ -163,7 +174,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const { error: trDelErr } = await db.from("consensus_stock_trend").delete().neq("ticker", "");
   if (trDelErr && trDelErr.code === "42P01") {
     console.warn("consensus_stock_trend 表不存在 — 跳过(先跑 migration)。");
-    return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: 0, coOwnership: 0, splitFactors: splitFactors.length, summaries: summaries.length };
+    return finish({ holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: 0, coOwnership: 0 });
   }
   for (let i = 0; i < trend.length; i += 500) {
     const { error } = await db.from("consensus_stock_trend").upsert(trend.slice(i, i + 500), { onConflict: "ticker,period" });
@@ -174,12 +185,12 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const { error: coDelErr } = await db.from("consensus_coownership").delete().neq("ticker", "");
   if (coDelErr && coDelErr.code === "42P01") {
     console.warn("consensus_coownership 表不存在 — 跳过(先跑 migration)。");
-    return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: 0, splitFactors: splitFactors.length, summaries: summaries.length };
+    return finish({ holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: 0 });
   }
   for (let i = 0; i < coOwnership.length; i += 500) {
     const { error } = await db.from("consensus_coownership").upsert(coOwnership.slice(i, i + 500), { onConflict: "ticker,co_ticker" });
     if (error) console.warn(`consensus_coownership upsert err: ${error.message}`);
   }
 
-  return { holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: coOwnership.length, splitFactors: splitFactors.length, summaries: summaries.length };
+  return finish({ holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: coOwnership.length });
 }

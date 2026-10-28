@@ -1,6 +1,6 @@
 // 运行: cd web && npx tsx src/lib/managers/splitAdjust.check.ts
 import assert from "node:assert/strict";
-import { isRealSplit, dedupeSplitEvents, deriveSplitFactor, deriveSplitFactors, factorLookup, NO_SPLITS, rescaleToLatestBasis } from "./splitAdjust";
+import { isRealSplit, dedupeSplitEvents, deriveSplitFactor, deriveSplitFactors, deriveSplitFactorsWithRejections, factorLookup, NO_SPLITS, rescaleToLatestBasis } from "./splitAdjust";
 import { assembleManagerDetail } from "./assemble";
 import { deriveConviction } from "./conviction";
 import { summarizeQuarter } from "./quarterSummary";
@@ -284,6 +284,30 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 
   assert.equal(g1.shares, 400, "Q2 缺席也不丢累计系数");
   assert.equal(g1.splitFactor, 4);
   assert.deepEqual(q2.holdings.map((h) => h.cusip), ["A"]);
+}
+
+// ── 被价格校验拒掉的真拆股要有记录(只加可见性,阈值不变) ──
+{
+  const h = (cusip: string, shares: number, px: number) => ({ cusip, shares, value: shares * px, putCall: null });
+  const Q1 = "2026-03-31", Q2 = "2026-06-30";
+  const tickerOf = (c: string) => (c === "R" ? "RR" : c === "OK" ? "OKT" : null);
+  // R:表里 4:1(窗口内),但当季股价 +80% → 单价比 q=0.45,q·r=1.8>1.67 被拒;两位持有人股数 ×4 → 推断也要过同一价格校验,同样失败。
+  // OK:同样 4:1、单价比 0.26 → 正常采用,不应出现在 rejected。
+  const histories = [
+    { slug: "a", filings: [{ period: Q1, holdings: [h("R", 100, 100), h("OK", 100, 100)] }, { period: Q2, holdings: [h("R", 400, 45), h("OK", 400, 26)] }] },
+    { slug: "b", filings: [{ period: Q1, holdings: [h("R", 50, 100), h("OK", 50, 100)] }, { period: Q2, holdings: [h("R", 200, 45), h("OK", 200, 26)] }] },
+  ];
+  const events = [{ ticker: "RR", date: "2026-05-15", ratio: 4 }, { ticker: "OKT", date: "2026-05-15", ratio: 4 }];
+  const res = deriveSplitFactorsWithRejections(histories, tickerOf, events);
+  assert.deepEqual(res.factors.map((f) => `${f.cusip}:${f.factor}`), ["OK:4"]);
+  assert.equal(res.rejected.length, 1);
+  const rj = res.rejected[0];
+  assert.equal(rj.cusip, "R"); assert.equal(rj.ticker, "RR"); assert.equal(rj.fromPeriod, Q1); assert.equal(rj.toPeriod, Q2);
+  assert.ok(Math.abs(rj.q - 0.45) < 1e-9); assert.equal(rj.r, 4);
+  assert.deepEqual(deriveSplitFactors(histories, tickerOf, events), res.factors, "deriveSplitFactors 仍返回 factors");
+  // 只有伪拆股(1.067)的表事件不算拒绝;没有表事件的 CUSIP 也不算。
+  const none = deriveSplitFactorsWithRejections(histories, tickerOf, [{ ticker: "RR", date: "2026-05-15", ratio: 1.067 }]);
+  assert.deepEqual(none.rejected, []);
 }
 
 console.log("splitAdjust.check OK");

@@ -53,6 +53,11 @@ export const PLAUSIBLE_MAX = 1.67;
 export const MATCH_TOL = 0.01;
 export const INFER_RATIOS = [1.5, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 40, 50];
 
+/** 季度对窗口 (上季末, 本季末] 内的真拆股表事件(已去重)。deriveSplitFactor 与"被拒"统计共用。 */
+function inWindowRealEvents(events: SplitEvent[], fromPeriod: string, toPeriod: string): SplitEvent[] {
+  return dedupeSplitEvents(events).filter((e) => isRealSplit(e.ratio) && e.date > fromPeriod && e.date <= toPeriod);
+}
+
 /**
  * 单个 CUSIP、单个季度对(上季 → 本季)的拆股系数;不需要调整 → null(= 系数 1)。
  * - 有表事件(真拆股、去重、日期在 (上季末, 本季末]):价格证据成立即采用,一位持有人也行。
@@ -79,7 +84,7 @@ export function deriveSplitFactor(input: {
   const matching = (r: number) => ratios.filter((x) => Math.abs(x / r - 1) <= MATCH_TOL).length;
   const base = { cusip, ticker, fromPeriod, toPeriod };
 
-  const inWindow = dedupeSplitEvents(events).filter((e) => isRealSplit(e.ratio) && e.date > fromPeriod && e.date <= toPeriod);
+  const inWindow = inWindowRealEvents(events, fromPeriod, toPeriod);
   if (inWindow.length) {
     const r = inWindow.reduce((acc, e) => acc * e.ratio, 1);
     if (plausible(r)) {
@@ -127,7 +132,15 @@ function longByCusip(holdings: HistoryHolding[]): Map<string, { shares: number; 
  * 全部经理、全部相邻季度对的拆股系数。季度对按每位经理实际申报的相邻两季(漏报一季时是 (Q1,Q3)),
  * 同一季度对的经理合在一起做交叉验证。季末单价取同一季全部持有人的中位数(同券同日同价,中位数抗个别脏行)。
  */
+/** 表里有窗口内真拆股,却没通过价格校验(推断也失败)的季度对 —— 假买卖会原样保留,所以要让共识步骤能报出来。 */
+export type SplitRejection = { cusip: string; ticker: string | null; fromPeriod: string; toPeriod: string; q: number; r: number };
+
 export function deriveSplitFactors(histories: ManagerHistory[], tickerOf: (cusip: string) => string | null, events: SplitEvent[]): SplitFactor[] {
+  return deriveSplitFactorsWithRejections(histories, tickerOf, events).factors;
+}
+
+/** 同 deriveSplitFactors,另外返回被拒的真拆股(例:4:1 拆股的季度股价又涨 80%,q·r=1.8 超出区间)。判定阈值不变,只是不再静默。 */
+export function deriveSplitFactorsWithRejections(histories: ManagerHistory[], tickerOf: (cusip: string) => string | null, events: SplitEvent[]): { factors: SplitFactor[]; rejected: SplitRejection[] } {
   const prices = new Map<string, number[]>(); // `${cusip}|${period}` → 各持有人季末单价
   const pairs = new Map<string, { fromPeriod: string; toPeriod: string; holders: Map<string, PairHolder[]> }>();
   for (const m of histories) {
@@ -167,16 +180,24 @@ export function deriveSplitFactors(histories: ManagerHistory[], tickerOf: (cusip
   }
 
   const out: SplitFactor[] = [];
+  const rejected: SplitRejection[] = [];
   for (const p of pairs.values()) {
     for (const [cusip, both] of p.holders) {
       const ticker = tickerOf(cusip);
       const q = median(prices.get(`${cusip}|${p.toPeriod}`) ?? []) / median(prices.get(`${cusip}|${p.fromPeriod}`) ?? []);
-      const f = deriveSplitFactor({ cusip, ticker, fromPeriod: p.fromPeriod, toPeriod: p.toPeriod, priceRatio: q, both, events: ticker ? byTicker.get(ticker) ?? [] : [] });
+      const tickerEvents = ticker ? byTicker.get(ticker) ?? [] : [];
+      const f = deriveSplitFactor({ cusip, ticker, fromPeriod: p.fromPeriod, toPeriod: p.toPeriod, priceRatio: q, both, events: tickerEvents });
       if (f) out.push(f);
+      else {
+        const win = inWindowRealEvents(tickerEvents, p.fromPeriod, p.toPeriod);
+        if (win.length) rejected.push({ cusip, ticker, fromPeriod: p.fromPeriod, toPeriod: p.toPeriod, q, r: win.reduce((acc, e) => acc * e.ratio, 1) });
+      }
     }
   }
   // 排序键含 toPeriod 作末位 tiebreak:同券同起点季的两个季度对,输出顺序不依赖经理输入顺序。
-  return out.sort((a, b) => a.cusip.localeCompare(b.cusip) || a.fromPeriod.localeCompare(b.fromPeriod) || a.toPeriod.localeCompare(b.toPeriod));
+  const byKey = (a: { cusip: string; fromPeriod: string; toPeriod: string }, b: { cusip: string; fromPeriod: string; toPeriod: string }) =>
+    a.cusip.localeCompare(b.cusip) || a.fromPeriod.localeCompare(b.fromPeriod) || a.toPeriod.localeCompare(b.toPeriod);
+  return { factors: out.sort(byKey), rejected: rejected.sort(byKey) };
 }
 
 export function factorLookup(rows: { cusip: string; fromPeriod: string; toPeriod: string; factor: number }[]): SplitFactorLookup {
