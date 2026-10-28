@@ -176,6 +176,24 @@ export function effectiveMovesPeriod(
   return { period: maxPeriod, reason: "due_and_covered", maxPeriod, coverage };
 }
 
+/**
+ * 站上展示季度(effectiveMovesPeriod)的数据最后一次变化的日期:该季最晚一份 13F 的 SEC 提交日。
+ * 供 sitemap lastmod 和列表页 dateModified。不用季末日:Q2 的数据 8 月中才报齐。提交日都缺 → 季末日。
+ */
+export function displayedDataModified(
+  managers: Array<{ period: string | null; filedAt: string | null }>,
+  today: Date,
+): string | null {
+  const period = effectiveMovesPeriod(managers.map((m) => m.period), today).period;
+  if (!period) return null;
+  const filed = managers
+    .filter((m) => m.period === period && m.filedAt)
+    .map((m) => m.filedAt!.slice(0, 10))
+    .sort()
+    .at(-1);
+  return filed ?? period;
+}
+
 /** period 落后 globalLatest 的季数(非负)。任一非法 → null。 */
 export function quarterLag(period: string | null, globalLatest: string | null): number | null {
   const p = parseUTC(period);

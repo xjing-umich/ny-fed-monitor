@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
 import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
-import { altFor, ogFor, breadcrumbLd } from "@/lib/seo";
+import { altFor, ogFor, breadcrumbLd, titleBrand } from "@/lib/seo";
 import { quarterLabel } from "@/lib/freshness/derive";
 import ProseDoc from "@/components/legal/ProseDoc";
 import { parseReportSlug, reportLastModified, reportSlug } from "@/lib/reports/period";
@@ -35,7 +35,7 @@ export async function generateMetadata({
   if (reportPeriod) {
     const row = await readReportRow(reportPeriod);
     if (!row) return {};
-    const title = `${reportTitle(row.period, lang)} — Compounder`;
+    const title = `${reportTitle(row.period, lang)} — ${titleBrand(lang)}`;
     const description = reportDescription(row.payload, row.status, lang);
     return {
       title,
@@ -48,7 +48,7 @@ export async function generateMetadata({
   }
   const article = getArticle(slug, lang);
   if (!article) return {};
-  const title = `${article.title} — Compounder`;
+  const title = `${article.title} — ${titleBrand(lang)}`;
   return {
     title,
     description: article.description,
@@ -100,7 +100,7 @@ export default async function ArticlePage({
   const snapshotNotice = article.snapshotPeriod ? (
     <SnapshotNotice lang={lang} period={article.snapshotPeriod} written={article.updated} note={article.snapshotNote} />
   ) : null;
-  const backLabel = lang === "zh" ? "← 返回 学习" : "← Back to Learn";
+  const backLabel = lang === "zh" ? "← 返回学习" : "← Back to Learn";
 
   // Inline entity tokens in article prose — [[investor:slug|Label]] / [[stock:TICKER|Label]] —
   // render as internal links to the investor/stock pages. Passes article authority to those

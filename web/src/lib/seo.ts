@@ -4,6 +4,9 @@ import { SITE_ORIGIN, absoluteUrl, localePath } from "@/lib/urls";
 
 export const SITE_NAME = "Compounder";
 
+/** 标题尾的品牌名:中文页带"复利",与首页、投资人页、个股页一致。 */
+export const titleBrand = (lang: Lang): string => (lang === "zh" ? "Compounder · 复利" : SITE_NAME);
+
 // OpenGraph locale tags per UI language.
 const OG_LOCALE: Record<Lang, string> = { zh: "zh_CN", en: "en_US" };
 
@@ -33,6 +36,15 @@ export function ogFor(opts: {
   const { lang, title, description, path, type = "website", brandImage = true } = opts;
   // 站点品牌卡(根 opengraph-image 路由)。en 裸前缀 → /opengraph-image,zh → /zh/opengraph-image。
   const brandCard = absoluteUrl(localePath(lang, "/opengraph-image"));
+  // 路由自带的 opengraph-image 文件,Next 按真实段 app/[lang] 生成地址:en 页会是 /en/…/opengraph-image,
+  // 而 /en/* 一律 301 到裸路径,爬虫和分享卡每次都要多跳一次。en 页显式给出裸地址(页面里写了 images,
+  // 文件就不再生效);zh 的 /zh 前缀本来就对,继续交给文件路由。
+  const ownCard = !brandImage && lang === "en" ? absoluteUrl(`${path === "/" ? "" : path}/opengraph-image`) : null;
+  const image = brandImage
+    ? { url: brandCard, width: 1200, height: 630, alt: SITE_NAME }
+    : ownCard
+      ? { url: ownCard, width: 1200, height: 630, alt: title, type: "image/png" }
+      : null;
   return {
     openGraph: {
       type,
@@ -42,15 +54,31 @@ export function ogFor(opts: {
       description,
       locale: OG_LOCALE[lang],
       alternateLocale: lang === "en" ? ["zh_CN"] : ["en_US"],
-      ...(brandImage ? { images: [{ url: brandCard, width: 1200, height: 630, alt: SITE_NAME }] } : {}),
+      ...(image ? { images: [image] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(brandImage ? { images: [brandCard] } : {}),
+      ...(image ? { images: [{ url: image.url, alt: image.alt }] } : {}),
     },
   };
+}
+
+// 汉字与全角标点。
+const CJK_CHAR = /[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]/;
+
+/** 搜索结果摘要的显示宽度:汉字和全角标点按 2 计,约等于英文字符数。 */
+export function snippetWidth(s: string): number {
+  let w = 0;
+  for (const ch of s) w += CJK_CHAR.test(ch) ? 2 : 1;
+  return w;
+}
+
+/** 摘要超过约 160 宽度会被搜索结果截断。按从详到简给出几个写法,取第一个放得下的;都放不下取最后一个(最简)。 */
+export const SNIPPET_MAX = 160;
+export function fitSnippet(...candidates: string[]): string {
+  return candidates.find((c) => snippetWidth(c) <= SNIPPET_MAX) ?? candidates[candidates.length - 1];
 }
 
 /** 13F 原始申报属美国政府公开记录;与投资人页 Dataset 同一许可声明。 */
@@ -97,6 +125,44 @@ export function datasetLd(opts: {
     creator: { "@type": "Organization", name: SITE_NAME, url: SITE_ORIGIN },
     sourceOrganization: { "@type": "Organization", name: "U.S. Securities and Exchange Commission", url: "https://www.sec.gov" },
     isBasedOn: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany",
+  };
+}
+
+/**
+ * 列表页(投资人目录、个股榜、Learn 首页)的 CollectionPage JSON-LD。条目按页面顺序给出名称和实体页链接,
+ * 搜索引擎和 AI 能把列表项对到具体的投资人/个股/文章。numberOfItems 是页面上的总数,条目可只列前 limit 个。
+ */
+export function collectionLd(opts: {
+  lang: Lang;
+  name: string;
+  description: string;
+  path: string;
+  items: { name: string; path: string }[];
+  total?: number;
+  limit?: number;
+  /** 列表数据最后一次变化的日期(YYYY-MM-DD)。 */
+  dateModified?: string | null;
+}) {
+  const { lang, name, description, path, items, total = items.length, limit = items.length } = opts;
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name,
+    description,
+    url: absoluteUrl(path),
+    inLanguage: lang === "zh" ? "zh-CN" : "en",
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_ORIGIN },
+    ...(opts.dateModified ? { dateModified: opts.dateModified } : {}),
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: total,
+      itemListElement: items.slice(0, limit).map((it, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: it.name,
+        url: absoluteUrl(it.path),
+      })),
+    },
   };
 }
 

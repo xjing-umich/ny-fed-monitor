@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getAboutDoc } from "@/lib/about";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, titleBrand } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import ProseDoc from "@/components/legal/ProseDoc";
 
@@ -18,7 +18,7 @@ export async function generateMetadata({
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const doc = getAboutDoc(lang);
   const alternates = altFor(lang, "/about");
-  const title = `${doc.title} — Compounder`;
+  const title = `${doc.title} — ${titleBrand(lang)}`;
   return {
     title,
     description: doc.intro,

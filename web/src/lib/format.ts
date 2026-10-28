@@ -208,3 +208,32 @@ export function trendDirection(value: string | undefined | null): "up" | "down" 
 export function fmtValueBand(lo: number, hi: number, fmt: (n: number) => string): string {
   return Math.round(lo) === Math.round(hi) ? fmt(lo) : `${fmt(lo)}–${fmt(hi)}`;
 }
+
+// 两个汉字/全角标点之间的空白。
+const CJK_GAP = /([\u3000-\u303f\u4e00-\u9fff\uff00-\uffef])\s+(?=[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef])/g;
+
+/**
+ * 中文模板把名字当拉丁文处理,前后各留一个空格("持有 ${name}")。名字换成中文名后就成了
+ * "持有 苹果 Apple Inc"、"最大持有人 巴菲特与阿贝尔"。去掉两个汉字/全角标点之间的空白,
+ * 汉字与英文、数字之间的空格保留。
+ */
+export function zhSpacing(s: string): string {
+  return s.replace(CJK_GAP, "$1");
+}
+
+const CJK_CHAR = /[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]/;
+
+/**
+ * 一段中文由文本和链接名拼成(链接名两侧模板留了空格,名字是英文时需要)。逐段处理:名字和相邻
+ * 文本的接缝两边都是汉字时去掉空格("第一大持仓为 苹果" → "第一大持仓为苹果"),是英文时保留。
+ * 传入各段的显示文字,返回同长度数组。
+ */
+export function zhJoin(parts: string[]): string[] {
+  const edge = (s: string | undefined, end: boolean) => (s === undefined ? "" : end ? s.trimEnd().slice(-1) : s.trimStart().charAt(0));
+  return parts.map((t, i) => {
+    let s = zhSpacing(t);
+    if (CJK_CHAR.test(edge(parts[i + 1], false)) && CJK_CHAR.test(edge(s, true))) s = s.trimEnd();
+    if (CJK_CHAR.test(edge(parts[i - 1], true)) && CJK_CHAR.test(edge(s, false))) s = s.trimStart();
+    return s;
+  });
+}

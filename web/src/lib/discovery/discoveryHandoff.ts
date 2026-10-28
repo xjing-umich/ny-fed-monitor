@@ -3,6 +3,7 @@
 import type { Lang } from "@/lib/nav";
 import type { ValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 import { localePath } from "@/lib/urls";
+import { zhSpacing } from "@/lib/format";
 
 export type DiscoveryCta = { eyebrow: string; line: string; href: string; ctaLabel: string };
 
@@ -74,7 +75,7 @@ export function investorHandoffFor(strikeCount: number, person: string, lang: La
       eyebrow,
       href: screenerHref(lang, "strike_zone"),
       line: zh
-        ? `${person} 有 ${strikeCount} 只持仓现价落在击球区${tailZh}。`
+        ? zhSpacing(`${person} 有 ${strikeCount} 只持仓现价落在击球区${tailZh}。`)
         : `${person} holds ${strikeCount} position${strikeCount === 1 ? "" : "s"} now in the strike zone${tailEn}.`,
       ctaLabel: zh ? "看全市场击球区清单" : "See the full strike-zone list",
     };
@@ -84,7 +85,7 @@ export function investorHandoffFor(strikeCount: number, person: string, lang: La
     eyebrow,
     href: screenerHref(lang, "below"),
     line: zh
-      ? `${person} 目前没有已确认的击球区持仓${tailZh}。`
+      ? zhSpacing(`${person} 目前没有已确认的击球区持仓${tailZh}。`)
       : `${person} has no confirmed strike-zone positions right now${tailEn}.`,
     ctaLabel: zh ? "按安全边际浏览低于内在价值的股票" : "Browse stocks below intrinsic value by margin of safety",
   };

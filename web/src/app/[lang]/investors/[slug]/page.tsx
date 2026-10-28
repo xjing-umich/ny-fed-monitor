@@ -17,10 +17,10 @@ import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { filingFreshness, freshness13F, isScopeChange, quarterLag, globalLatestPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import type { Tone } from "@/components/entity/types";
-import { formatUSD, cleanIssuer, fmtMarginPct } from "@/lib/format";
+import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
-import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE } from "@/lib/seo";
+import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE, fitSnippet } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
 import { isLikelyTicker } from "@/lib/externalLinks";
@@ -92,21 +92,37 @@ export async function generateMetadata({
   const globalLatest = globalLatestPeriod((await getManagerIndex()).managers.map((m) => m.period));
   const fresh = d.latest?.period ? freshness13F(d.latest.period, globalLatest) : "current";
   const lag = d.latest?.period ? quarterLag(d.latest.period, globalLatest) ?? 0 : 0;
-  const zhLead = fresh === "inactive"
-    ? `${who}（${fundName}）最后一份 SEC 13F 持仓（${q}），此后未再申报`
-    : `${who}（${fundName}）的 SEC 13F 持仓组合${q ? `，${q}` : ""}${fresh === "stale" ? `（最新公开申报，落后 ${lag} 季）` : ""}`;
-  const enLead = fresh === "inactive"
-    ? `${who}'s last SEC 13F (${fundName}), ${q}; none filed since`
-    : `${who}'s SEC 13F portfolio (${fundName})${q ? `, ${q}` : ""}${fresh === "stale" ? ` (latest public filing, ${lag} quarters behind)` : ""}`;
+  // 描述按从详到简排几种写法,取第一个不超出搜索摘要长度的(fitSnippet):先省来源句,再省申报主体名。
+  const zhLead = (withFund: boolean) => {
+    const fund = withFund ? `（${fundName}）` : "";
+    return fresh === "inactive"
+      ? `${who}${fund}最后一份 SEC 13F 持仓（${q}），此后未再申报`
+      : `${who}${fund}的 SEC 13F 持仓组合${q ? `，${q}` : ""}${fresh === "stale" ? `（最新公开申报，落后 ${lag} 季）` : ""}`;
+  };
+  const enLead = (withFund: boolean) => {
+    const fund = withFund ? ` (${fundName})` : "";
+    return fresh === "inactive"
+      ? `${who}'s last SEC 13F${fund}, ${q}; none filed since`
+      : `${who}'s SEC 13F portfolio${fund}${q ? `, ${q}` : ""}${fresh === "stale" ? ` (latest public filing, ${lag} quarters behind)` : ""}`;
+  };
+  const zhBody = `：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。`;
+  const enBody = `: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}.`;
+  const zhTail = fresh === "inactive" ? "为历史数据，来自 SEC EDGAR。" : "含环比变动，数据来自 SEC EDGAR。";
+  const enTail = fresh === "inactive" ? " Historical holdings from SEC EDGAR." : " Quarter-over-quarter changes, sourced from SEC EDGAR.";
   const meta =
     lang === "zh"
       ? {
-          title: fresh === "inactive"
+          title: zhSpacing(fresh === "inactive"
             ? `${titleName} — 最后一份 13F${qSuffix}（已停报） | Compounder · 复利`
-            : `${titleName} — 13F${qSuffix} | Compounder · 复利`,
-          description: posCount === 0 && d.latest
+            : `${titleName} — 13F${qSuffix} | Compounder · 复利`),
+          description: zhSpacing(posCount === 0 && d.latest
             ? `${who}（${fundName}）${q} 的 SEC 13F 申报持仓为零，未列任何持仓。数据来自 SEC EDGAR。`
-            : `${zhLead}：${posCount} 个持仓，市值 ${totalLabel}${topName ? `，第一大持仓 ${topName}` : ""}。${fresh === "inactive" ? "为历史数据" : "含环比变动"}，数据来自 SEC EDGAR。`,
+            : fitSnippet(
+                zhLead(true) + zhBody + zhTail,
+                zhLead(true) + zhBody + "数据来自 SEC EDGAR。",
+                zhLead(false) + zhBody + "数据来自 SEC EDGAR。",
+                zhLead(false) + zhBody,
+              )),
         }
       : {
           title: fresh === "inactive"
@@ -114,7 +130,12 @@ export async function generateMetadata({
             : `${titleName} — 13F Holdings${qSuffix} | Compounder`,
           description: posCount === 0 && d.latest
             ? `${who}'s SEC 13F (${fundName}) for ${q} reports zero holdings. Sourced from SEC EDGAR.`
-            : `${enLead}: ${posCount} positions worth ${totalLabel}${topName ? `, led by ${topName}` : ""}. ${fresh === "inactive" ? "Historical holdings from SEC EDGAR." : "Quarter-over-quarter changes, sourced from SEC EDGAR."}`,
+            : fitSnippet(
+                enLead(true) + enBody + enTail,
+                enLead(true) + enBody + " Source: SEC EDGAR.",
+                enLead(false) + enBody + " Source: SEC EDGAR.",
+                enLead(false) + enBody,
+              ),
         };
   return {
     ...meta,
@@ -511,7 +532,7 @@ export default async function InvestorSlugPage({
   // 别名只放本人的名字变体(中文名等);接班人、票代、基金名、曾用名不进 Person,见 personNameAliases。
   const dataset = {
     "@type": "Dataset",
-    name: lang === "zh" ? `${who} 的 SEC 13F 持仓` : `${who}'s SEC 13F holdings`,
+    name: lang === "zh" ? zhSpacing(`${who} 的 SEC 13F 持仓`) : `${who}'s SEC 13F holdings`,
     description:
       lang === "zh"
         ? `${fund} 向美国证券交易委员会（SEC）申报的 13F 季度持仓数据，包含个股、持股数量与申报市值。`
