@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata, Viewport } from "next";
 import { Saira } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
@@ -121,8 +121,11 @@ export default async function LangLayout({
   params: Promise<{ lang: string }>;
 }) {
   const { lang: rawLang } = await params;
+  // 裸路径都被 next.config 的 BARE_PATH 改写到 /en,能落到这里的非法 lang 只有被排除的路径
+  // (/api/*、/_next、带文件扩展名的静态路径)。它们没找到就该是 404,而不是 307 到首页
+  // —— 否则调错接口的客户端和缺失的静态资源都会被软重定向成一张 HTML 首页。
   if (rawLang !== "zh" && rawLang !== "en") {
-    redirect("/en");
+    notFound();
   }
   const lang = rawLang as Lang;
   const htmlLang = lang === "zh" ? "zh-CN" : "en";

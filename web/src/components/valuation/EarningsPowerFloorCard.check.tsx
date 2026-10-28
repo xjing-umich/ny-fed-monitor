@@ -57,8 +57,8 @@ const count = (hay: string, needle: string) => hay.split(needle).length - 1;
 
 for (const lang of ["zh", "en"] as const) {
   const fact = lang === "zh"
-    ? { how: "中间是主读数", assume: "零增长下行", asOf: "价格截至", headline: "含增长中枢内在价值", callout: "今年输入偏脆", method: "方法与数字" }
-    : { how: "The middle figure is the main read", assume: "Zero-growth downside", asOf: "Price as of", headline: "growth-anchored intrinsic value", callout: "Inputs look fragile", method: "Method & numbers" };
+    ? { how: "中间是主读数", assume: "营收增", asOf: "价格截至", headline: "含增长中枢内在价值", callout: "今年输入偏脆", method: "方法与数字" }
+    : { how: "The middle figure is the main read", assume: "Revenue growth", asOf: "Price as of", headline: "growth-anchored intrinsic value", callout: "Inputs look fragile", method: "Method & numbers" };
   const s = spine("summary", lang);
   const d = spine("details", lang);
   const a = spine("all", lang);
@@ -86,7 +86,7 @@ for (const lang of ["zh", "en"] as const) {
   const d = renderToStaticMarkup(
     <EarningsPowerFloorCard floor={run.floor} strikeZone={run.strikeZone} oeDcf={run.oeDcf} lang="zh" verdict={null} part="details" />,
   ).replace(/<[^>]+>/g, " ");
-  assert.ok(!d.includes("中间是主读数") && !d.includes("零增长下行"), "verdict=null 时 details 不补脊柱附注");
+  assert.ok(!d.includes("中间是主读数") && !d.includes("营收增"), "verdict=null 时 details 不补脊柱附注");
   assert.ok(d.includes("方法与数字"), "verdict=null 时 details 仍有方法折叠");
 }
 // cardSummaryMode:页面据此判断摘要是否为空(空 → 结论带补未评估原因,左栏不只剩一个价格)。

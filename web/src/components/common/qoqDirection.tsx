@@ -6,7 +6,7 @@ import type { Lang } from "@/lib/nav";
 // 数字一律 font-data tabular-nums（列对齐）。
 
 const MOVE_LABEL: Record<Lang, Record<"new" | "increased" | "decreased", string>> = {
-  zh: { new: "新建", increased: "增持", decreased: "减持" },
+  zh: { new: "新进", increased: "增持", decreased: "减持" },
   en: { new: "New", increased: "Added", decreased: "Trimmed" },
 };
 

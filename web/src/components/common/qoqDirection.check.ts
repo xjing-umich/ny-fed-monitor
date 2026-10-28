@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { moveMarkText, fmtPct1 } from "./qoqDirection";
 
-assert.equal(moveMarkText("new", "zh"), "新建");
+assert.equal(moveMarkText("new", "zh"), "新进");
 assert.equal(moveMarkText("increased", "en"), "Added");
 assert.equal(moveMarkText("decreased", "zh"), "减持");
 assert.equal(moveMarkText(undefined, "zh"), null, "无动作(持平或不同期行)→ 不标");

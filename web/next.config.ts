@@ -55,6 +55,11 @@ const POSTHOG_REWRITES = [
   { source: "/ingest/:path*", destination: "https://us.i.posthog.com/:path*" },
 ];
 
+// 含非 ASCII 字符的详情页 slug(如 /zh/investors/段永平)→ 不走 ISR 的别名页(src/app/[lang]/alias/…)。
+// ISR 会把解码后的动态段写进 x-next-cache-tags 响应头,非 ASCII 头值让 Node 抛 ERR_INVALID_CHAR → 500。
+// 路由层看到的路径可能是百分号编码,也可能已解码,两种都匹配。
+const NON_ASCII_SLUG = "([^/]*(?:%[89a-fA-F][0-9a-fA-F]|[^\\x00-\\x7F])[^/]*)";
+
 const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
   turbopack: {
@@ -102,6 +107,14 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         ...POSTHOG_REWRITES,
+        {
+          source: `/:lang(zh|en)/:section(investors|stocks|learn)/:slug${NON_ASCII_SLUG}`,
+          destination: "/:lang/alias/:section/:slug",
+        },
+        {
+          source: `/:section(investors|stocks|learn)/:slug${NON_ASCII_SLUG}`,
+          destination: "/en/alias/:section/:slug",
+        },
         ...screenerRewrites("/zh/stocks/screener", "/zh/stocks/screener"),
         ...screenerRewrites("/stocks/screener", "/en/stocks/screener"),
       ],

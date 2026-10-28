@@ -90,7 +90,7 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
       role: "primary",
       cell: (r) => (
         <span className="inline-flex items-baseline gap-2">
-          <EntityName issuer={r.issuer} ticker={r.ticker} />
+          <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
           {r.bargain ? <BargainMark bargain={r.bargain} lang={lang} /> : null}
         </span>
       ),
