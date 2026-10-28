@@ -27,6 +27,7 @@ const STOCK_ZH: Record<string, string> = {
   HMC: "本田汽车", SONY: "索尼", HON: "霍尼韦尔", LMT: "洛克希德·马丁", ACN: "埃森哲",
   BABA: "阿里巴巴", PDD: "拼多多", JD: "京东", BIDU: "百度", NTES: "网易", TCOM: "携程", TME: "腾讯音乐",
   BEKE: "贝壳", HTHT: "华住", MELI: "美客多", SE: "冬海集团", HSBC: "汇丰", NOK: "诺基亚", ERIC: "爱立信",
+  WB: "微博", JOYY: "欢聚", FINV: "信也科技", NOAH: "诺亚控股", YUMC: "百胜中国", VIPS: "唯品会", GDS: "万国数据",
 };
 
 export function stockZhName(ticker: string): string | null {

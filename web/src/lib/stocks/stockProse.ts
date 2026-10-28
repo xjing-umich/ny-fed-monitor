@@ -26,7 +26,7 @@ export type StockProseInput = {
   latestPeriod: string;
   /** 已交下一季(latestPeriod 之后)的早申报持有人数与其季度;无 → 不提。 */
   ahead?: { count: number; period: string };
-  /** 本季对本票的动作计数(按持有人计, 每人一次): 新建/加仓/减仓/清仓。 */
+  /** 本季对本票的动作计数(按持有人计, 每人一次): 新进/增持/减持/清仓。 */
   moves: { opened: number; added: number; trimmed: number; exited: number };
 };
 
@@ -89,7 +89,7 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
       );
     } else {
       p.push(
-        `截至 ${latestPeriod} 的这一季，追踪范围内有 ${moves.opened} 位新建 ${ticker} 仓位，${moves.added} 位加仓，${moves.trimmed} 位减仓，${moves.exited} 位清仓。`,
+        `截至 ${latestPeriod} 的这一季，追踪范围内有 ${moves.opened} 位新进 ${ticker}，${moves.added} 位增持，${moves.trimmed} 位减持，${moves.exited} 位清仓。`,
       );
     }
     paras.push(p);

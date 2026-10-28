@@ -34,7 +34,7 @@ export const INVESTOR_ALIASES: Record<string, string> = {
   "fairfax": "沃萨 普雷姆沃萨 加拿大巴菲特 费尔法克斯",
   "oaktree": "马克斯 霍华德马克斯 橡树资本",
   "gates-foundation-trust": "盖茨 比尔盖茨 盖茨基金会",
-  "dorsey-asset": "多西 帕特多西",
+  "dorsey-asset": "多尔西 帕特多尔西 多西 帕特多西",
   "hh-international": "段永平",
   "bridgewater-associates": "达利欧 瑞达利欧 桥水 桥水基金",
 };

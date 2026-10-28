@@ -20,11 +20,13 @@ export function priceVsBandAndIv(input: {
   date?: string;
   lang: Lang;
   fmt: (n: number) => string;
+  /** 现价单独的格式(到美分);缺省同 fmt。 */
+  fmtPrice?: (n: number) => string;
 }): string {
   const { price, rangeLo, rangeHi, iv, date, lang, fmt } = input;
   const pos = bandPosition(price, rangeLo, rangeHi);
   const rel = price < iv ? "below" : price > iv ? "above" : "level";
-  const p = fmt(price);
+  const p = (input.fmtPrice ?? fmt)(price);
   const c = fmt(iv);
   if (lang === "zh") {
     const band = pos === "inside" ? "落在价值带内" : pos === "below" ? "低于价值带" : "高于价值带";

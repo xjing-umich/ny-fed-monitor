@@ -4,7 +4,7 @@ import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, Va
 import { deriveValuationMethods, deriveValuationVerdict, type ValuationVerdict } from "@/lib/valuation";
 import { isNetNetAssetFloor, isNetNetBuy } from "@/lib/valuation/netNet";
 import type { OeDcfAssessment, MethodReconciliation, MoatCapAssessment } from "@/lib/valuation/types";
-import { fmtValueBand } from "@/lib/format";
+import { fmtValueBand, fmtPrice, fmtPerShareValue } from "@/lib/format";
 import { priceVsBand, priceVsBandAndIv } from "@/lib/valuation/bandPosition";
 import { Display } from "@/components/common/Display";
 
@@ -15,10 +15,14 @@ export function perShare(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-// Whole-dollar form for the readable main view (precise cents live in the fold).
+// Readable main view: per-share values whole-dollar (cents under $10), the price always to the cent.
 function usd0(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
-  return `$${Math.round(value).toLocaleString("en-US")}`;
+  return fmtPerShareValue(value);
+}
+function px(value: number | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return fmtPrice(value);
 }
 function range(low: number | undefined, high: number | undefined): string {
   if (low == null || high == null) return "—";
@@ -152,7 +156,7 @@ const COPY = {
     reproductionValue: "重置价值",
     moat: "护城河",
     directional: "（方向性）",
-    oeDcfCompact: (r: string) => `所有者盈利 DCF（巴菲特）：${r} / 股。下限保留零增长终值；上限的永续增长封顶在「10 年期国债」与「3% 名义 GDP」两者的较低值。`,
+    oeDcfCompact: (r: string) => `所有者盈利 DCF（巴菲特）：${r} / 股。下限保留零增长终值；上限的永续增长封顶在「10 年期美债收益率」与「3% 名义 GDP」两者的较低值。`,
     highLeverageWarning: "高杠杆 — 价值区间为降级近似（见方法）。",
     methodSummary: "方法与数字",
     perShareUnavailable: "这家公司有多类股票，我们的数据源拿不到合并后的总股数，所以暂不给出每股估值。",
@@ -192,7 +196,8 @@ function assumptionsLine(
   hasIv: boolean,
 ): string {
   const zh = lang === "zh";
-  const floorPart = zh ? `零增长下行 ${usd0(rangeLo)}` : `Zero-growth downside ${usd0(rangeLo)}`;
+  // 与图例同名(零增长底 = rangeLo):一个数只用一个名字。
+  const floorPart = zh ? `零增长底 ${usd0(rangeLo)}` : `Zero-growth floor ${usd0(rangeLo)}`;
   if (!hasIv || !oeDcf?.assessable) return floorPart;
 
   const g1 = oeDcf.growth_g1;
@@ -328,7 +333,7 @@ function growthSummary(floor: ValuationFloor, lang: Lang): string {
   const roiic = gv.roiic != null ? `ROIIC ≈ ${pct(gv.roiic)}` : zh ? "建模 ROIIC" : "the modeled ROIIC";
   return zh
     ? `增长价值：若护城河在 ${dur} 内维持于 ${roiic}，则 ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / 股（中性 ${perShare(gv.per_share.neutral)}）。保守估计，非预测。`
-    : `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (neutral ${perShare(gv.per_share.neutral)}). Conservative, not a forecast.`;
+    : `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (mid ${perShare(gv.per_share.neutral)}). Conservative, not a forecast.`;
 }
 
 // moat → 竞争优势期（CAP，Phase 2）披露：仅 grade!=="none" 渲染。文案在组件内按 locale 构建
@@ -444,7 +449,7 @@ export function ValueBandGauge({
           className="absolute top-0 -translate-x-1/2"
           style={{ left: `max(4.5rem, min(calc(100% - 4.5rem), ${markerPct}%))` }}
         >
-          <Display as="span" size="xl">{usd0(price)}</Display>
+          <Display as="span" size="xl">{px(price)}</Display>
         </span>
       </div>
       <div className="mt-1.5 flex justify-between font-data text-xs text-[var(--tt-faint)]">
@@ -589,7 +594,7 @@ function ValueSpine({
     bucket === "below" ? t.subBelow(onMethods) : bucket === "within" ? t.subWithin(onMethods) : t.subAbove;
   const who = issuer ? `${issuer}${ticker ? (lang === "zh" ? `（${ticker}）` : ` (${ticker})`) : ""}${lang === "zh" ? "：" : ": "}` : "";
   const valueRange = `${fmtValueBand(rangeLo, rangeHi, usd0)} ${t.perSh}`;
-  const asOf = sz.price?.date ? (lang === "zh" ? `（价格 ${usd0(price)} 截至 ${sz.price.date}）` : ` (price ${usd0(price)} as of ${sz.price.date})`) : "";
+  const asOf = sz.price?.date ? (lang === "zh" ? `（价格 ${px(price)} 截至 ${sz.price.date}）` : ` (price ${px(price)} as of ${sz.price.date})`) : "";
   const posZh =
     bucket === "below" ? "低于" : bucket === "within" ? "落在" : "高于";
   const posEn =
@@ -597,13 +602,13 @@ function ValueSpine({
   // 含增长中枢分支:带位置看 rangeLo/rangeHi,中枢关系看 IV,两件事分开说(bucket 只锚 IV)
   const ivClause =
     hasGrowthBand && hasIv
-      ? priceVsBandAndIv({ price, rangeLo, rangeHi, iv: IV!, date: sz.price?.date, lang, fmt: usd0 })
+      ? priceVsBandAndIv({ price, rangeLo, rangeHi, iv: IV!, date: sz.price?.date, lang, fmt: usd0, fmtPrice: px })
       : "";
   // 两法分支:有 IV 时与含增长分支同一说法;无 IV 时只说带位置(旧文案按 bucket 写“低于二者”,bucket 锚的是 IV)
   const bothClause = bothMethods
     ? hasIv
-      ? priceVsBandAndIv({ price, rangeLo, rangeHi, iv: IV!, date: sz.price?.date, lang, fmt: usd0 })
-      : priceVsBand({ price, rangeLo, rangeHi, date: sz.price?.date, lang, fmt: usd0 })
+      ? priceVsBandAndIv({ price, rangeLo, rangeHi, iv: IV!, date: sz.price?.date, lang, fmt: usd0, fmtPrice: px })
+      : priceVsBand({ price, rangeLo, rangeHi, date: sz.price?.date, lang, fmt: px })
     : "";
   const sentence =
     lang === "zh"
@@ -764,8 +769,10 @@ function MethodDetails({
         {/* precise numbers summary */}
         <p className="font-data text-[var(--tt-text)]">
           {oeDcf?.assessable && oeDcf.per_share_low != null ? `${zh ? "所有者盈利 DCF" : "Owner-earnings DCF"} ${range(oeDcf.per_share_low, oeDcf.per_share_high)}` : null}
-          {epv?.ceilings ? ` · Greenwald ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)} (${zh ? "中性" : "neutral"} ${perShare(epv.ceilings.neutral)})` : epv ? ` · Greenwald ${zh ? "零增长" : "zero-growth"} ${perShare(epv.base)}` : null}
-          {epv ? ` · ${zh ? "零增长基准" : "zero-growth base"} ${perShare(epv.base)}` : null}
+          {/* epv.base = 零增长部分的上沿(增长价值叠在它上面),不是图例里的零增长底;无增长档时只出一次,不重复。 */}
+          {epv?.ceilings
+            ? ` · Greenwald ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)} (${zh ? "中性" : "mid"} ${perShare(epv.ceilings.neutral)}${zh ? "，其中零增长部分" : "; zero-growth part"} ${perShare(epv.base)})`
+            : epv ? ` · Greenwald ${zh ? "零增长" : "zero-growth"} ${perShare(epv.base)}` : null}
           {sz?.assetFloor ? ` · ${zh ? "重置" : "reproduction"} ${perShare(sz.assetFloor.perShare)}` : null}
         </p>
         <p>

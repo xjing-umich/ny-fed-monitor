@@ -79,7 +79,10 @@ export function personNameAliases(slug: string, person: string): string[] {
   if (full) out.add(full);
   for (const t of [...(m?.aliases ?? []), ...zhTokens]) {
     if (t.length < 2 || FIRM_NAMES_ENDING_IN_SURNAME.has(t)) continue;
-    if (t.endsWith(anchor) || anchor.endsWith(t)) out.add(t);
+    // 锚名可能带间隔号("约翰·罗杰斯"),别名不带("约翰罗杰斯"):去掉间隔号再比。
+    const bt = t.replace(/·/g, "");
+    const ba = anchor.replace(/·/g, "");
+    if (bt.endsWith(ba) || ba.endsWith(bt)) out.add(t);
   }
   return [...out];
 }

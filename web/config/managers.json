@@ -179,7 +179,13 @@
   {
     "cik": "0001671657",
     "slug": "dorsey-asset",
-    "person": "Pat Dorsey"
+    "person": "Pat Dorsey",
+    "people": [
+      {
+        "name": "Pat Dorsey",
+        "zh": "帕特·多尔西"
+      }
+    ]
   },
   {
     "cik": "0001759760",
@@ -259,7 +265,7 @@
     "people": [
       {
         "name": "John Rogers",
-        "zh": "罗杰斯"
+        "zh": "约翰·罗杰斯"
       }
     ],
     "aliases": [

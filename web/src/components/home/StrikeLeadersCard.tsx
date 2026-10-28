@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { stockPath } from "@/lib/urls";
-import { fmtMarginPct, fmtValueBand } from "@/lib/format";
+import { fmtMarginPct, fmtPerShareValue, fmtValueBand } from "@/lib/format";
 import { impliedValue } from "@/lib/valuation/impliedValue";
 import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
@@ -60,12 +60,12 @@ export default function StrikeLeadersCard({
                 </Link>
               </td>
               <td className="py-2 pr-3 text-right font-data text-xs tabular-nums text-[var(--tt-muted)] whitespace-nowrap">
-                {fmtValueBand(row.rangeLo, row.rangeHi, (n) => `$${Math.round(n).toLocaleString()}`)}
+                {fmtValueBand(row.rangeLo, row.rangeHi, fmtPerShareValue)}
               </td>
               <td className="py-2 pr-3 text-right font-data text-xs tabular-nums text-[var(--tt-text)] whitespace-nowrap">
                 {(() => {
                   const iv = impliedValue(row.price, row.marginPct);
-                  return iv == null ? "—" : `$${Math.round(iv).toLocaleString()}`;
+                  return iv == null ? "—" : fmtPerShareValue(iv);
                 })()}
               </td>
               <td

@@ -6,8 +6,9 @@ import { localePath } from "@/lib/urls";
 // 2-tile 真数据条(RSC):共识股数 / 10Y 国债。仅承载 Hero 未覆盖的信号(报告期/投资人数已在 Hero 呈现,故此处不重复)。
 // dgs10 带 as-of(CLAUDE.md 硬规)。缺值显 "—"。克制:muted 标签 + mono 数字。
 const COPY = {
-  zh: { consensus: "共识持仓", dgs10: "10 年期国债" },
-  en: { consensus: "Consensus stocks", dgs10: "10Y Treasury" },
+  // 中文单说"国债"默认指中国国债(10 年期 2% 以下),5% 会被当成错数。
+  zh: { consensus: "共识持仓", dgs10: "10 年期美债收益率" },
+  en: { consensus: "Consensus stocks", dgs10: "10-year Treasury yield" },
 } as const;
 
 function Tile({

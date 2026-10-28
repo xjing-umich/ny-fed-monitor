@@ -92,10 +92,10 @@ assert(!/—/.test(valuationNote("2026-10-24", "en", "2026-06-30") + valuationNo
 
 // 名家动作:动作按股数口径说,权重放括号里并注明会受股价影响(避免“减仓但权重上升”的误读)。
 const dy = { key: "AAPL", ticker: "AAPL", issuer: "APPLE INC", kind: "decreased" as const, weightBefore: 0.367, weightAfter: 0.411 };
-assert(featuredMoveText(dy, "zh") === "卖出部分 AAPL（占组合 36.7% → 41.1%）", `zh 股数口径: ${featuredMoveText(dy, "zh")}`);
+assert(featuredMoveText(dy, "zh") === "减持 AAPL（占组合 36.7% → 41.1%）", `zh 股数口径: ${featuredMoveText(dy, "zh")}`);
 assert(featuredMoveText(dy, "en") === "Sold some AAPL (portfolio weight 36.7% → 41.1%)", `en 股数口径: ${featuredMoveText(dy, "en")}`);
-assert(featuredMoveText({ ...dy, kind: "increased" }, "zh").startsWith("加买 "), "zh 加买");
-assert(featuredMoveText({ ...dy, kind: "new", weightBefore: 0, weightAfter: 0.047 }, "zh") === "新买入 AAPL（占组合 0% → 4.7%）", "zh 新买入");
+assert(featuredMoveText({ ...dy, kind: "increased" }, "zh").startsWith("增持 "), "zh 增持");
+assert(featuredMoveText({ ...dy, kind: "new", weightBefore: 0, weightAfter: 0.047 }, "zh") === "新进 AAPL（占组合 0% → 4.7%）", "zh 新进");
 assert(featuredMoveText({ ...dy, kind: "exited", weightAfter: 0 }, "en") === "Exited AAPL (portfolio weight 36.7% → 0%)", "en 清仓");
 assert(featuredMoveText({ ...dy, ticker: null, key: "C_X", issuer: "MYSTERY CORP" }, "en").includes("MYSTERY CORP"), "未解析用 issuer");
 assert(/股数/.test(featuredWeightNote("zh")) && /股价/.test(featuredWeightNote("zh")), "zh 说明提到股数与股价");
