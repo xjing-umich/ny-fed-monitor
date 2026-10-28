@@ -97,3 +97,88 @@ export function deriveSplitFactor(input: {
   if (!best) return null;
   return { ...base, factor: best.r, source: "inferred", evidence: { q, r: best.r, events: [], matching: best.m, bothHolders: ratios.length } };
 }
+
+export type HistoryHolding = { cusip: string; putCall?: string | null; shares: number; value: number };
+export type ManagerHistory = { slug: string; filings: { period: string; holdings: HistoryHolding[] }[] };
+export type SplitFactorLookup = (cusip: string, fromPeriod: string, toPeriod: string) => number;
+export const NO_SPLITS: SplitFactorLookup = () => 1;
+
+const median = (xs: number[]): number => {
+  if (!xs.length) return NaN;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+
+/** 正股按 CUSIP 汇总(13F 同券可多行/子账户);期权行不计入股数与单价证据。 */
+function longByCusip(holdings: HistoryHolding[]): Map<string, { shares: number; value: number }> {
+  const out = new Map<string, { shares: number; value: number }>();
+  for (const h of holdings) {
+    if (h.putCall) continue;
+    const e = out.get(h.cusip) ?? { shares: 0, value: 0 };
+    e.shares += h.shares;
+    e.value += h.value;
+    out.set(h.cusip, e);
+  }
+  return out;
+}
+
+/**
+ * 全部经理、全部相邻季度对的拆股系数。季度对按每位经理实际申报的相邻两季(漏报一季时是 (Q1,Q3)),
+ * 同一季度对的经理合在一起做交叉验证。季末单价取同一季全部持有人的中位数(同券同日同价,中位数抗个别脏行)。
+ */
+export function deriveSplitFactors(histories: ManagerHistory[], tickerOf: (cusip: string) => string | null, events: SplitEvent[]): SplitFactor[] {
+  const prices = new Map<string, number[]>(); // `${cusip}|${period}` → 各持有人季末单价
+  const pairs = new Map<string, { fromPeriod: string; toPeriod: string; holders: Map<string, PairHolder[]> }>();
+  for (const m of histories) {
+    const asc = [...m.filings].sort((a, b) => (a.period < b.period ? -1 : a.period > b.period ? 1 : 0));
+    const agg = asc.map((f) => longByCusip(f.holdings));
+    asc.forEach((f, i) => {
+      for (const [cusip, e] of agg[i]) {
+        if (e.shares <= 0 || e.value <= 0) continue;
+        const k = `${cusip}|${f.period}`;
+        const a = prices.get(k) ?? [];
+        a.push(e.value / e.shares);
+        prices.set(k, a);
+      }
+    });
+    for (let i = 0; i + 1 < asc.length; i++) {
+      const prev = agg[i];
+      const cur = agg[i + 1];
+      if (!prev.size || !cur.size) continue;
+      const pk = `${asc[i].period}|${asc[i + 1].period}`;
+      const p = pairs.get(pk) ?? { fromPeriod: asc[i].period, toPeriod: asc[i + 1].period, holders: new Map<string, PairHolder[]>() };
+      for (const [cusip, c] of cur) {
+        const pv = prev.get(cusip);
+        if (!pv) continue;
+        const a = p.holders.get(cusip) ?? [];
+        a.push({ prevShares: pv.shares, shares: c.shares });
+        p.holders.set(cusip, a);
+      }
+      pairs.set(pk, p);
+    }
+  }
+
+  const byTicker = new Map<string, SplitEvent[]>();
+  for (const e of events) {
+    const a = byTicker.get(e.ticker) ?? [];
+    a.push(e);
+    byTicker.set(e.ticker, a);
+  }
+
+  const out: SplitFactor[] = [];
+  for (const p of pairs.values()) {
+    for (const [cusip, both] of p.holders) {
+      const ticker = tickerOf(cusip);
+      const q = median(prices.get(`${cusip}|${p.toPeriod}`) ?? []) / median(prices.get(`${cusip}|${p.fromPeriod}`) ?? []);
+      const f = deriveSplitFactor({ cusip, ticker, fromPeriod: p.fromPeriod, toPeriod: p.toPeriod, priceRatio: q, both, events: ticker ? byTicker.get(ticker) ?? [] : [] });
+      if (f) out.push(f);
+    }
+  }
+  return out.sort((a, b) => a.cusip.localeCompare(b.cusip) || a.fromPeriod.localeCompare(b.fromPeriod));
+}
+
+export function factorLookup(rows: { cusip: string; fromPeriod: string; toPeriod: string; factor: number }[]): SplitFactorLookup {
+  const m = new Map(rows.map((r) => [`${r.cusip}|${r.fromPeriod}|${r.toPeriod}`, r.factor]));
+  return (cusip, fromPeriod, toPeriod) => m.get(`${cusip}|${fromPeriod}|${toPeriod}`) ?? 1;
+}

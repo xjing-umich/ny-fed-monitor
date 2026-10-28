@@ -1,6 +1,6 @@
 // 运行: cd web && npx tsx src/lib/managers/splitAdjust.check.ts
 import assert from "node:assert/strict";
-import { isRealSplit, dedupeSplitEvents, deriveSplitFactor } from "./splitAdjust";
+import { isRealSplit, dedupeSplitEvents, deriveSplitFactor, deriveSplitFactors, factorLookup, NO_SPLITS } from "./splitAdjust";
 
 // ── 真拆股 vs 价格复权(Yahoo 把分拆上市/股票股息也记成小数"拆股",股数并不变) ──
 for (const r of [2, 3, 4, 5, 10, 25, 1.5, 4 / 3, 0.5, 0.25, 0.1, 0.05, 1 / 12, 0.333333]) assert.ok(isRealSplit(r), `真拆股 ${r}`);
@@ -57,5 +57,26 @@ assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.5, both: H(1, 1, 1.01), 
 assert.equal(deriveSplitFactor({ ...pair, priceRatio: NaN, both: H(2, 2), events: [] }), null);
 // 3:2(1.5)也在推断表里。
 assert.equal(deriveSplitFactor({ ...pair, priceRatio: 0.67, both: H(1.5, 1.497, 1.5), events: [] })?.factor, 1.5);
+
+{
+  // 三位经理持有 C(表里 2 拆 1,发生在 Q2);C 的季末单价 Q1 100、Q2 51。
+  // m3 漏报 Q2:它的季度对是 (Q1, Q3),单独成组,不能套用 (Q1, Q2) 的系数。
+  const h = (cusip: string, shares: number, px: number, putCall?: string) => ({ cusip, shares, value: shares * px, putCall });
+  const Q1 = "2026-03-31", Q2 = "2026-06-30", Q3 = "2026-09-30";
+  const histories = [
+    { slug: "m1", filings: [{ period: Q1, holdings: [h("C", 100, 100), h("D", 10, 50)] }, { period: Q2, holdings: [h("C", 210, 51), h("D", 10, 55), h("C", 5, 51, "Call")] }] },
+    { slug: "m2", filings: [{ period: Q2, holdings: [h("C", 400, 51)] }, { period: Q1, holdings: [h("C", 200, 100)] }] },
+    { slug: "m3", filings: [{ period: Q1, holdings: [h("C", 50, 100)] }, { period: Q3, holdings: [h("C", 50, 100)] }] },
+  ];
+  const fs = deriveSplitFactors(histories, (c) => (c === "C" ? "CC" : null), [{ ticker: "CC", date: "2026-05-15", ratio: 2 }]);
+  assert.deepEqual(fs.map((f) => `${f.cusip}|${f.fromPeriod}|${f.toPeriod}|${f.factor}|${f.source}`), [`C|${Q1}|${Q2}|2|table`], "只有 (Q1,Q2) 的 C;D 未拆、m3 的 (Q1,Q3) 价格未跳变");
+  assert.equal(fs[0].evidence.bothHolders, 2, "期权行不计入持有人证据");
+
+  const look = factorLookup(fs);
+  assert.equal(look("C", Q1, Q2), 2);
+  assert.equal(look("C", Q1, Q3), 1, "断季的季度对查不到 → 1");
+  assert.equal(look("D", Q1, Q2), 1);
+  assert.equal(NO_SPLITS("C", Q1, Q2), 1);
+}
 
 console.log("splitAdjust.check OK");
