@@ -4,6 +4,8 @@ import {
   effectiveMovesPeriod,
   effectiveFilingDeadline,
   quarterLabel,
+  freshness13F,
+  globalLatestPeriod,
   FILING_DEADLINE_DAYS,
   type EffectiveMovesPeriod,
 } from "@/lib/freshness/derive";
@@ -167,6 +169,12 @@ export async function buildLlmsFullTxt(): Promise<string> {
   const managers = [...idx.managers].sort((a, b) =>
     managerLabel("en", a.slug, a.person).localeCompare(managerLabel("en", b.slug, b.person)),
   );
+  // 一年没交新 13F 的标"已停报",免得被当成当前持仓引用(与投资人页的停报警示同一判定)。
+  const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
+  const filingNote = (period: string): string =>
+    freshness13F(period, globalLatest) === "inactive"
+      ? `last 13F for ${quarterLabel(period)}, no longer filing`
+      : `latest 13F for ${quarterLabel(period)}`;
   const lines = [
     ...header(ctx, "Compounder (full text)"),
     "",
@@ -194,7 +202,7 @@ export async function buildLlmsFullTxt(): Promise<string> {
     `### Tracked superinvestors (${managers.length})`,
     "",
     ...managers.map(
-      (m) => `- ${managerLabel("en", m.slug, m.person)} (${displayFundName(m.name)}): latest 13F for ${quarterLabel(m.period)}. ${absoluteUrl(investorPath("en", m.slug))}`,
+      (m) => `- ${managerLabel("en", m.slug, m.person)} (${displayFundName(m.name)}): ${filingNote(m.period)}. ${absoluteUrl(investorPath("en", m.slug))}`,
     ),
     "",
     "## Methodology and data scope",
