@@ -57,8 +57,8 @@ const count = (hay: string, needle: string) => hay.split(needle).length - 1;
 
 for (const lang of ["zh", "en"] as const) {
   const fact = lang === "zh"
-    ? { how: "中间是主读数", assume: "模型假设增速", asOf: "价格截至", headline: "含增长中枢内在价值", callout: "今年输入偏脆", method: "方法与数字" }
-    : { how: "The middle figure is the main read", assume: "Model growth assumption", asOf: "Price as of", headline: "growth-anchored intrinsic value", callout: "Inputs look fragile", method: "Method & numbers" };
+    ? { how: "中间是主读数", assume: "模型假设增速", asOf: "价格来源 test，截至", headline: "含增长中枢内在价值", callout: "今年输入偏脆", method: "方法与数字" }
+    : { how: "The middle figure is the main read", assume: "Model growth assumption", asOf: "Price from test as of", headline: "growth-anchored intrinsic value", callout: "Inputs look fragile", method: "Method & numbers" };
   const s = spine("summary", lang);
   const d = spine("details", lang);
   const a = spine("all", lang);

@@ -80,7 +80,7 @@ export const STOCK_PAGE_COPY = {
       revenueGrowth: (span: string) => `营收年化增速（${span}）`,
       revenueYoy: "最近财年营收同比",
       netMargin: "净利率",
-      fcfMargin: "FCF 利润率",
+      fcfMargin: "自由现金流利润率",
       revenueTrail: (from: string, to: string, span: string) =>
         `营收 ${from} → ${to} · ${span}`,
       incomplete: "基本面数据不完整，仅供参考。",

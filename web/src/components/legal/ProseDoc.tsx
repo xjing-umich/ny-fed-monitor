@@ -43,19 +43,21 @@ export default function ProseDoc({ doc, eyebrow, updated, updatedLabel, renderPa
 
       {notice}
 
-      <p className="mt-6 text-sm leading-relaxed text-[var(--tt-muted)]">
+      {/* 长文正文用 text-base:15px,en 行高 1.7,zh 由 :lang(zh) .text-base 放到 1.8;正文色而非辅助灰。
+          max-w-[65ch] 把一行压到约 65 个拉丁字符(中文约 38 字),容器 720px 时原来一行约 110 字符。 */}
+      <p className="mt-6 max-w-[65ch] text-base text-[var(--tt-text)]">
         {renderParagraph ? renderParagraph(doc.intro) : doc.intro}
       </p>
 
       {doc.sections.map((section, i) => (
         <section key={i} className="mt-7">
-          <h2 className="text-lg font-semibold text-[var(--tt-text)]">
+          <h2 className="text-xl font-semibold text-[var(--tt-text)]">
             {section.heading}
           </h2>
           {section.paragraphs.map((p, j) => (
             <p
               key={j}
-              className="mt-2 text-sm leading-relaxed text-[var(--tt-muted)]"
+              className="mt-2 max-w-[65ch] text-base text-[var(--tt-text)]"
             >
               {renderParagraph ? renderParagraph(p) : p}
             </p>

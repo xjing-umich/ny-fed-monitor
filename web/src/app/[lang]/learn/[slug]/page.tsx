@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
-import { investorPath, stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { investorPath, stockPath, absoluteUrl, localePath, HTML_LANG } from "@/lib/urls";
 import { altFor, ogFor, breadcrumbLd, titleBrand } from "@/lib/seo";
 import { quarterLabel } from "@/lib/freshness/derive";
 import ProseDoc from "@/components/legal/ProseDoc";
@@ -78,7 +78,7 @@ export default async function ArticlePage({
       image: `${url}/opengraph-image`,
       datePublished: row.firstLiveAt,
       dateModified: reportLastModified(row.generatedAt, row.finalizedAt),
-      inLanguage: lang === "zh" ? "zh-CN" : "en",
+      inLanguage: HTML_LANG[lang],
       author: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
       publisher: { "@type": "Organization", name: "Compounder", logo: { "@type": "ImageObject", url: "https://thecompounder.fyi/icon.png" } },
       mainEntityOfPage: url,
@@ -140,7 +140,7 @@ export default async function ArticlePage({
     image: `${absoluteUrl(localePath(lang, `/learn/${slug}`))}/opengraph-image`,
     datePublished: article.updated,
     dateModified: article.updated,
-    inLanguage: lang === "zh" ? "zh-CN" : "en",
+    inLanguage: HTML_LANG[lang],
     author: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
     publisher: {
       "@type": "Organization",

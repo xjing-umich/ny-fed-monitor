@@ -14,7 +14,7 @@ import { cleanIssuer } from "@/lib/format";
 import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath } from "@/lib/urls";
+import { investorPath, stockPath, HTML_LANG } from "@/lib/urls";
 import { managerLabel } from "@/lib/managers/displayName";
 import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
 
@@ -37,8 +37,8 @@ const saira = Saira({
 //
 // SEO is English-first: English is the default locale, served bare at "/"
 // (next.config.ts rewrites "/" and other unprefixed paths to the "/en" segment
-// internally — there is no root redirect), and default metadata is English,
-// English ranks higher in the sitemap. Chinese (/zh) stays fully indexed as
+// internally — there is no root redirect), and default metadata is English.
+// Chinese (/zh) stays fully indexed as
 // the secondary locale — both are crawlable and paired via hreflang on each page.
 const TITLE = "Compounder — Smart-money holdings × valuation";
 const DESCRIPTION =
@@ -57,19 +57,21 @@ export async function generateMetadata({
     title: TITLE,
     description: DESCRIPTION,
     applicationName: "Compounder",
-    keywords: [
-      "13F",
-      "13F filings",
-      "superinvestors",
-      "smart money holdings",
-      "institutional holdings",
-      "value investing",
-      "stock valuation",
-      "intrinsic value",
-      "Warren Buffett portfolio",
-      "SEC EDGAR",
-      "Compounder",
-    ],
+    // Google 不读 keywords,百度仍参考;中文页给中文词。
+    keywords: isEn
+      ? [
+          "13F",
+          "13F filings",
+          "superinvestors",
+          "institutional holdings",
+          "value investing",
+          "stock valuation",
+          "intrinsic value",
+          "Warren Buffett portfolio",
+          "SEC EDGAR",
+          "Compounder",
+        ]
+      : ["13F", "13F 持仓", "超级投资者", "巴菲特持仓", "机构持仓", "价值投资", "内在价值", "个股估值", "SEC", "Compounder", "复利"],
     authors: [{ name: "Compounder" }],
     creator: "Compounder",
     publisher: "Compounder",
@@ -128,7 +130,7 @@ export default async function LangLayout({
     notFound();
   }
   const lang = rawLang as Lang;
-  const htmlLang = lang === "zh" ? "zh-CN" : "en";
+  const htmlLang = HTML_LANG[lang];
 
   // Build search items: investors (+中文别名) + stocks (ticker).
   // 两个轻量读取并行;mostHeld 提供热门个股下拉建议(任意 ticker 仍可经搜索框回车直达)。
