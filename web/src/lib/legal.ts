@@ -7,7 +7,7 @@ import type { Lang } from "@/lib/nav";
 export const LAST_UPDATED: Record<LegalSlug, string> = {
   disclaimer: "2026-06-06",
   terms: "2026-06-06",
-  privacy: "2026-10-19",
+  privacy: "2026-10-28",
 };
 
 export interface LegalSection {
@@ -165,13 +165,13 @@ const CONTENT: Record<LegalSlug, Record<Lang, LegalDoc>> = {
           paragraphs: [
             "邮件订阅：当你订阅更新时，我们收集你提供的邮箱地址，用于发送 newsletter。我们还会记录你订阅时所在页面的语言，以便用该语言给你发信。订阅记录存储于邮件服务商 Resend。",
             "联系表单：当你通过联系表单留言时，我们收集你提供的称呼、邮箱与留言内容，仅用于回复你的咨询。",
-            "使用分析：本站使用 Vercel Analytics 与 Speed Insights 收集匿名、聚合的访问与性能数据，不用于识别个人身份。",
+            "使用分析：本站使用 Vercel Analytics 与 Speed Insights 收集匿名、聚合的访问与性能数据；另用 PostHog 统计页面访问与站内操作（如订阅、分享），并在你的浏览器里存一个随机匿名标识，用来判断是否回访。我们不录制屏幕，不记录你输入的内容，这些数据不用于识别个人身份。",
           ],
         },
         {
           heading: "第三方处理者",
           paragraphs: [
-            "我们依赖以下服务商处理上述数据：Resend（邮件发送与订阅名单）、Vercel（托管与匿名分析）。这些服务商各自的隐私政策约束其数据处理行为。",
+            "我们依赖以下服务商处理上述数据：Resend（邮件发送与订阅名单）、Vercel（托管与匿名分析）、PostHog（匿名使用分析）。这些服务商各自的隐私政策约束其数据处理行为。",
           ],
         },
         {
@@ -198,13 +198,13 @@ const CONTENT: Record<LegalSlug, Record<Lang, LegalDoc>> = {
           paragraphs: [
             "Newsletter: When you subscribe to updates, we collect the email address you provide in order to send the newsletter. We also record the language of the page you subscribed from, so you receive the newsletter in that language. Subscriptions are stored with our email provider, Resend.",
             "Contact form: When you message us via the contact form, we collect the name, email, and message you provide, solely to respond to your inquiry.",
-            "Usage analytics: The Site uses Vercel Analytics and Speed Insights to collect anonymous, aggregated traffic and performance data. This is not used to identify individuals.",
+            "Usage analytics: The Site uses Vercel Analytics and Speed Insights to collect anonymous, aggregated traffic and performance data. We also use PostHog to count page visits and on-site actions (such as subscribing or sharing), and store a random anonymous identifier in your browser to tell whether you have visited before. We do not record your screen or what you type, and none of this is used to identify individuals.",
           ],
         },
         {
           heading: "Third-Party Processors",
           paragraphs: [
-            "We rely on the following providers to process the data above: Resend (email delivery and subscription lists) and Vercel (hosting and anonymous analytics). Each provider's own privacy policy governs its handling of data.",
+            "We rely on the following providers to process the data above: Resend (email delivery and subscription lists), Vercel (hosting and anonymous analytics), and PostHog (anonymous usage analytics). Each provider's own privacy policy governs its handling of data.",
           ],
         },
         {

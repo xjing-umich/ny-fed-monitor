@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/analytics/track";
 
 /**
  * 可打点的内链原语：onClick fire-and-forget track() 后正常导航。

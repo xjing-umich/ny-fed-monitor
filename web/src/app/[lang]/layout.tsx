@@ -6,7 +6,7 @@ import { GeistMono } from "geist/font/mono";
 import "../globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { THEME_COLOR } from "@/lib/themeColor";
-import { Analytics } from "@vercel/analytics/next";
+import { SiteAnalytics } from "@/components/shell/SiteAnalytics";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { mostHeld } from "@/lib/aggregations";
@@ -176,7 +176,7 @@ export default async function LangLayout({
             {children}
           </AppShell>
         </ThemeProvider>
-        <Analytics />
+        <SiteAnalytics />
         <SpeedInsights />
       </body>
     </html>
