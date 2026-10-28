@@ -21,8 +21,9 @@ export const PENDING_WORD: Record<Lang, string> = { zh: "待确认", en: "pendin
 
 // 价值带与内在价值同列时的说明(筛选器脚注、首页击球区卡片共用):IV 可能低于带下沿(WB、AGO)。
 export const BAND_FLOOR_NOTE: Record<Lang, string> = {
-  zh: "价值带下沿是零增长价值；内在价值含增长假设，个别公司会低于下沿。",
-  en: "The band's lower edge is the zero-growth value; intrinsic value includes growth assumptions and can sit below it for some companies.",
+  // #242 起:内在价值低于零增长底 → reliable=false(ivBelowFloor),不进已确认击球区。
+  zh: "价值带下沿是零增长价值；内在价值低于下沿的公司一律标为待确认，不计入击球区。",
+  en: "The band's lower edge is the zero-growth value; where intrinsic value falls below it, the stock is marked pending and not counted in the strike zone.",
 };
 
 const COPY = {
