@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
 import { processCached } from "@/lib/managers/processCache";
+import { tableVersion } from "@/lib/managers/tableVersion";
 
 /** 全表 Map 的进程级缓存时长。取值理由见 processCache.ts。 */
 const FULL_TABLE_TTL_MS = 10 * 60 * 1000;
@@ -19,6 +20,8 @@ export function rowsToCusipMap(rows: CusipMapRow[]): Map<string, CusipInfo> {
 /**
  * 全量 cusip→info Map。无 Supabase env(本地 JSON 开发) → 空 Map(优雅降级)。
  * 两层缓存:processCached 跨请求(同一函数实例内 TTL 复用),cache() 再在单次渲染内去重。
+ * 版本标记 = 行数 + 最新 updated_at(enrichSecurities 每次写入都刷新 updated_at),ingest 一写
+ * 映射，下一次渲染就重拉，不必等 TTL。
  */
 const loadCusipMap = processCached("cusipMap", FULL_TABLE_TTL_MS, async (): Promise<Map<string, CusipInfo>> => {
   if (!hasSupabaseEnv()) return new Map();
@@ -36,7 +39,7 @@ const loadCusipMap = processCached("cusipMap", FULL_TABLE_TTL_MS, async (): Prom
     if (data.length < 1000) break;
   }
   return rowsToCusipMap(rows);
-});
+}, () => tableVersion("security_cusips", "updated_at"));
 
 export const getCusipMap = cache(loadCusipMap);
 

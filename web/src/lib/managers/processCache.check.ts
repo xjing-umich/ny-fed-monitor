@@ -59,6 +59,41 @@ async function main() {
   const b = processCached("kb", 60_000, async () => "B");
   check("不同 key 互不串", (await a()) === "A" && (await b()) === "B");
 
+  // 6) 版本变了 → TTL 内也重拉(ingest 写完映射后立刻 revalidate 的场景)。
+  __clearProcessCache();
+  let ver = "v1";
+  let verCalls = 0;
+  const versioned = processCached("kv", 60_000, async () => { verCalls++; return ver; }, async () => ver);
+  await versioned(); await versioned();
+  check("版本不变 → 复用", verCalls === 1, `实际 load ${verCalls} 次`);
+  ver = "v2";
+  const fresh = await versioned();
+  check("版本变了 → TTL 内也重拉", verCalls === 2 && fresh === "v2", `load ${verCalls} 次, 值 ${fresh}`);
+
+  // 7) 版本读失败 / 返回 null → 退回纯 TTL,不因此每次都重拉。
+  __clearProcessCache();
+  let fallbackCalls = 0;
+  let verFails = false;
+  const fallback = processCached("kf", 60_000, async () => { fallbackCalls++; return "x"; },
+    async () => { if (verFails) throw new Error("版本查询失败"); return "a"; });
+  await fallback();
+  verFails = true;
+  await fallback();
+  const nullVer = processCached("kn", 60_000, async () => { fallbackCalls++; return "y"; }, async () => null);
+  await nullVer(); await nullVer();
+  check("版本读失败 / null → 按 TTL 复用", fallbackCalls === 2, `实际 load ${fallbackCalls} 次`);
+
+  // 8) 并发调用同一版本仍只 load 一次。
+  __clearProcessCache();
+  let vcCalls = 0;
+  const vc = processCached("kvc", 60_000, async () => {
+    vcCalls++;
+    await new Promise((r) => setTimeout(r, 20));
+    return "v";
+  }, async () => "same");
+  await Promise.all([vc(), vc(), vc()]);
+  check("带版本的并发调用共用一次在途请求", vcCalls === 1, `实际 load ${vcCalls} 次`);
+
   if (failed > 0) { console.error(`\n${failed} 项失败`); process.exit(1); }
   console.log("\n全部通过");
 }

@@ -53,10 +53,11 @@ export async function enrichSecurities(db: any, apiKey?: string): Promise<{ tota
 
   // 1b) 人工映射(config/cusip-overrides.json):OpenFIGI 解不出的错号/旧号,每次覆盖写入,
   //     随后在 2) 里被当作已 resolved 跳过。
+  //     显式写 updated_at:表上没有触发器,upsert 冲突时不会自动刷新;getCusipMap 靠它判断缓存是否过期。
   const overrides = loadCusipOverrides();
   if (overrides.length) {
     const { error } = await db.from("security_cusips").upsert(
-      overrides.map((o) => ({ cusip: o.cusip, ticker: o.ticker, issuer: cusipIssuer.get(o.cusip) ?? null, resolved: true, source: "manual" })),
+      overrides.map((o) => ({ cusip: o.cusip, ticker: o.ticker, issuer: cusipIssuer.get(o.cusip) ?? null, resolved: true, source: "manual", updated_at: new Date().toISOString() })),
       { onConflict: "cusip" },
     );
     if (error) console.warn(`cusip overrides upsert err: ${error.message}`);
@@ -105,7 +106,7 @@ export async function enrichSecurities(db: any, apiKey?: string): Promise<{ tota
       if (error) console.warn(`securities upsert err: ${error.message}`);
     }
     // security_cusips upsert(全部行, 含未解析占位以免下次重查)
-    const maps = rows.map((r) => ({ cusip: r.cusip, ticker: r.ticker, issuer: r.name, resolved: r.resolved, source: "openfigi" }));
+    const maps = rows.map((r) => ({ cusip: r.cusip, ticker: r.ticker, issuer: r.name, resolved: r.resolved, source: "openfigi", updated_at: new Date().toISOString() }));
     const { error: mErr } = await db.from("security_cusips").upsert(maps, { onConflict: "cusip" });
     if (mErr) console.warn(`security_cusips upsert err: ${mErr.message}`);
     for (const r of rows) (r.resolved ? resolved++ : unresolved++);
