@@ -107,12 +107,13 @@ export function kindLabel(kind: MoveKind, lang: ReportLang): string {
 }
 
 /**
- * 名家动作:动作按申报股数的增减判断(与 diffHoldings 同口径),所以说“增加股数/减少股数”,
- * 不说“加仓/减仓”;组合权重放括号里——权重还受股价涨跌影响,方向可能与股数相反(如股数减少但权重上升)。
+ * 名家动作:动作按申报股数的增减判断(与 diffHoldings 同口径),所以标签说买卖行为(加买/卖出部分),
+ * 不说"加仓/减仓"那种会被读成权重的词;组合权重放括号里——权重还受股价涨跌影响,方向可能与股数相反
+ * (如股数减少但权重上升)。标签后面直接接股票名,要能连读成一句("Sold some AAPL")。
  */
 export function featuredKindLabel(kind: MoveKind, lang: ReportLang): string {
-  const zh: Record<MoveKind, string> = { new: "新建仓", increased: "增加股数", decreased: "减少股数", exited: "清仓" };
-  const en: Record<MoveKind, string> = { new: "New position", increased: "Shares up", decreased: "Shares down", exited: "Sold out" };
+  const zh: Record<MoveKind, string> = { new: "新买入", increased: "加买", decreased: "卖出部分", exited: "清仓" };
+  const en: Record<MoveKind, string> = { new: "Opened", increased: "Bought more", decreased: "Sold some", exited: "Exited" };
   return (lang === "zh" ? zh : en)[kind];
 }
 /** 括号部分(页面里股票名是链接,所以拆开给)。 */

@@ -23,6 +23,11 @@ const t = (lang: Lang) =>
         sending: "发送中…",
         ok: "已收到,谢谢!我们会通过你填写的邮箱回复。",
         error: "发送失败,请稍后再试。",
+        errors: {
+          invalid_email: "请填写有效的邮箱地址。",
+          too_short: "留言太短了，多写几句吧。",
+          too_long: "内容太长了，请精简后再发。",
+        } as Record<string, string>,
         close: "关闭",
       }
     : {
@@ -36,6 +41,11 @@ const t = (lang: Lang) =>
         sending: "Sending…",
         ok: "Got it, thanks! We'll reply to the email you provided.",
         error: "Failed to send. Please try again later.",
+        errors: {
+          invalid_email: "Please enter a valid email address.",
+          too_short: "Your message is too short. Add a bit more detail.",
+          too_long: "That's too long. Please shorten it and try again.",
+        } as Record<string, string>,
         close: "Close",
       };
 
@@ -89,7 +99,8 @@ export default function ContactModal({ lang }: ContactModalProps) {
         form.reset();
       } else {
         setStatus("error");
-        setErrorMsg(typeof json.error === "string" ? json.error : c.error);
+        // 接口报错是英文;按 code 取本语言文案,不认识的码一律走通用提示。
+        setErrorMsg((typeof json.code === "string" && c.errors[json.code]) || c.error);
       }
     } catch {
       setStatus("error");

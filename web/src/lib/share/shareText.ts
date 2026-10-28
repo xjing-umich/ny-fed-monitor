@@ -1,4 +1,5 @@
 import type { Lang } from "@/lib/nav";
+import { cleanIssuer } from "@/lib/format";
 
 // 分享文案输入：按页面类型区分（discriminated union）。槽位全部来自页面已查询的确定性数据。
 export type ShareInput =
@@ -12,8 +13,10 @@ const VIA = "via @thecompounder";
 /**
  * 拼确定性、双语、零推荐措辞的分享文案。
  * 任一关键槽位缺失 → 退化为 `${fallbackTitle} ${VIA}`，绝不拼数据断言。
+ * 发行人槽位一律在这里过 cleanIssuer，与页面展示同名（调用方传 EDGAR 原名也不会漏成 "APPLE INC"）。
  */
-export function buildShareText(input: ShareInput, lang: Lang, fallbackTitle: string): string {
+export function buildShareText(raw: ShareInput, lang: Lang, fallbackTitle: string): string {
+  const input = cleanNames(raw);
   const fallback = `${fallbackTitle} ${VIA}`;
   switch (input.kind) {
     case "investor": {
@@ -58,6 +61,13 @@ export function buildShareText(input: ShareInput, lang: Lang, fallbackTitle: str
         : `${input.topName} saw the most selling from top investors (${input.count}). ${VIA}`;
     }
   }
+}
+
+function cleanNames(input: ShareInput): ShareInput {
+  const clean = (s: string | null) => (s ? cleanIssuer(s) : s);
+  return input.kind === "investor"
+    ? { ...input, topHolding: clean(input.topHolding), addedName: clean(input.addedName) }
+    : { ...input, topName: clean(input.topName) };
 }
 
 export type ShareLabels = { button: string; copy: string; copied: string; x: string; telegram: string };

@@ -55,9 +55,11 @@ export function screenerMetadata(lang: Lang): Metadata {
 }
 
 const VIEWS: { key: ScreenView; zh: string; en: string }[] = [
-  { key: "conviction", zh: "机构重仓 · 按估值", en: "Most-held · by value" },
+  // "重仓"指仓位重,这档实际是"多位超级投资者共同持有"(≥ CONSENSUS_MIN 位),跟仓位轻重无关。
+  { key: "conviction", zh: "多人持有 · 按估值", en: "Most-held · by value" },
   { key: "strike_zone", zh: "击球区", en: "Strike zone" },
-  { key: "below", zh: "有安全边际", en: "Below intrinsic value" },
+  // 现价低于内在价值不等于有安全边际(击球区才是),与英文同义。
+  { key: "below", zh: "低于内在价值", en: "Below intrinsic value" },
   { key: "all", zh: "全部可估值", en: "All valued" },
 ];
 
@@ -101,7 +103,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
           eyebrow={
             isConviction
               ? isZh
-                ? "13F × 估值 · 机构重仓"
+                ? "13F × 估值 · 多人持有"
                 : "13F × valuation · most held"
               : isZh
                 ? "估值 · 按价值带"

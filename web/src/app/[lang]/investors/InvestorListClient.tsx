@@ -36,7 +36,8 @@ const COPY = {
       period: "报告期",
       move: "本季动作",
     },
-    verdict: { buying: "整体加仓", selling: "整体减仓", mixed: "持仓微调" },
+    verdict: { buying: "整体加仓", selling: "整体减仓", mixed: "有买有卖" },
+    unchanged: "本季未动",
     kind: { new: "新建", exited: "清仓", increased: "加仓", decreased: "减仓" },
     topPrefix: "最大：",
     noResults: "没有匹配的投资者，换个关键词或清空筛选试试。",
@@ -46,7 +47,7 @@ const COPY = {
     filterAll: "全部动向",
     filterBuying: "加仓",
     filterSelling: "减仓",
-    filterMixed: "微调",
+    filterMixed: "买卖相当",
     more: "加载更多",
     prev: "上一页",
     next: "下一页",
@@ -65,7 +66,8 @@ const COPY = {
       period: "Period",
       move: "This quarter",
     },
-    verdict: { buying: "Net buying", selling: "Net selling", mixed: "Mostly held" },
+    verdict: { buying: "Net buying", selling: "Net selling", mixed: "Mixed" },
+    unchanged: "No changes",
     kind: { new: "New", exited: "Exited", increased: "Added", decreased: "Trimmed" },
     topPrefix: "Top: ",
     noResults: "No investors match — try a different spelling or clear the filter.",
@@ -75,7 +77,7 @@ const COPY = {
     filterAll: "Any move",
     filterBuying: "Buying",
     filterSelling: "Selling",
-    filterMixed: "Held",
+    filterMixed: "Even",
     more: "Load more",
     prev: "Prev",
     next: "Next",
@@ -250,7 +252,8 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
         if (!v) return <span className="text-[var(--tt-faint)]">—</span>;
         return (
           <>
-            <Badge tone={VERDICT_TONE[v]}>{t.verdict[v]}</Badge>
+            {/* mixed = 买入笔数等于卖出笔数;0 买 0 卖时没有 topMove,单独说"本季未动" */}
+            <Badge tone={VERDICT_TONE[v]}>{v === "mixed" && !kind ? t.unchanged : t.verdict[v]}</Badge>
             {issuer && kind && (
               <span className="mt-1 hidden text-xs text-[var(--tt-muted)] lg:block">
                 {t.topPrefix}

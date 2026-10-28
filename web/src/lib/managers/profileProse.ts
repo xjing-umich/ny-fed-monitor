@@ -110,7 +110,8 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
   // ── 段 3: 本季动作 — 只在有 prior(可比)时渲染 ─────────────────────────────────
   if (prior) {
     const news = longChanges.filter((c) => c.kind === "new").sort((a, b) => b.value - a.value);
-    const exits = longChanges.filter((c) => c.kind === "exited").sort((a, b) => b.prevShares - a.prevShares);
+    // 清仓行的 value 是上季市值(assemble.ts),按金额排才配得上"最大"。
+    const exits = longChanges.filter((c) => c.kind === "exited").sort((a, b) => b.value - a.value);
     const incs = longChanges.filter((c) => c.kind === "increased");
     const decs = longChanges.filter((c) => c.kind === "decreased");
 
@@ -120,13 +121,13 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
         `Against the prior quarter, ${managerLabel(lang, manager.slug, manager.person)} opened ${news.length} new ${news.length === 1 ? "position" : "positions"}, exited ${exits.length}, added to ${incs.length}, and trimmed ${decs.length}.`,
       );
       if (news[0]) p.push(" The largest new buy was ", stock(cleanIssuer(news[0].issuer), news[0].cusip), ".");
-      if (exits[0]) p.push(" The most notable sale was the full exit from ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), ".");
+      if (exits[0]) p.push(" The largest exit was ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), ".");
     } else {
       p.push(
         `较上一季度，${managerLabel(lang, manager.slug, manager.person)} 新建 ${news.length} 个持仓，清仓 ${exits.length} 个，加仓 ${incs.length} 个，减仓 ${decs.length} 个。`,
       );
       if (news[0]) p.push("其中最大的新建仓位是 ", stock(cleanIssuer(news[0].issuer), news[0].cusip), "。");
-      if (exits[0]) p.push("最受关注的卖出是清仓 ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), "。");
+      if (exits[0]) p.push("清仓里金额最大的是 ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), "。");
     }
     paras.push(p);
   }

@@ -92,11 +92,11 @@ assert(!/—/.test(valuationNote("2026-10-24", "en", "2026-06-30") + valuationNo
 
 // 名家动作:动作按股数口径说,权重放括号里并注明会受股价影响(避免“减仓但权重上升”的误读)。
 const dy = { key: "AAPL", ticker: "AAPL", issuer: "APPLE INC", kind: "decreased" as const, weightBefore: 0.367, weightAfter: 0.411 };
-assert(featuredMoveText(dy, "zh") === "减少股数 AAPL（占组合 36.7% → 41.1%）", `zh 股数口径: ${featuredMoveText(dy, "zh")}`);
-assert(featuredMoveText(dy, "en") === "Shares down AAPL (portfolio weight 36.7% → 41.1%)", `en 股数口径: ${featuredMoveText(dy, "en")}`);
-assert(featuredMoveText({ ...dy, kind: "increased" }, "zh").startsWith("增加股数 "), "zh 增加股数");
-assert(featuredMoveText({ ...dy, kind: "new", weightBefore: 0, weightAfter: 0.047 }, "zh") === "新建仓 AAPL（占组合 0% → 4.7%）", "zh 新建仓");
-assert(featuredMoveText({ ...dy, kind: "exited", weightAfter: 0 }, "en") === "Sold out AAPL (portfolio weight 36.7% → 0%)", "en 清仓");
+assert(featuredMoveText(dy, "zh") === "卖出部分 AAPL（占组合 36.7% → 41.1%）", `zh 股数口径: ${featuredMoveText(dy, "zh")}`);
+assert(featuredMoveText(dy, "en") === "Sold some AAPL (portfolio weight 36.7% → 41.1%)", `en 股数口径: ${featuredMoveText(dy, "en")}`);
+assert(featuredMoveText({ ...dy, kind: "increased" }, "zh").startsWith("加买 "), "zh 加买");
+assert(featuredMoveText({ ...dy, kind: "new", weightBefore: 0, weightAfter: 0.047 }, "zh") === "新买入 AAPL（占组合 0% → 4.7%）", "zh 新买入");
+assert(featuredMoveText({ ...dy, kind: "exited", weightAfter: 0 }, "en") === "Exited AAPL (portfolio weight 36.7% → 0%)", "en 清仓");
 assert(featuredMoveText({ ...dy, ticker: null, key: "C_X", issuer: "MYSTERY CORP" }, "en").includes("MYSTERY CORP"), "未解析用 issuer");
 assert(/股数/.test(featuredWeightNote("zh")) && /股价/.test(featuredWeightNote("zh")), "zh 说明提到股数与股价");
 assert(/shares/.test(featuredWeightNote("en")) && /price/.test(featuredWeightNote("en")), "en 说明提到 shares 与 price");
@@ -113,7 +113,7 @@ assert(
   "zh live 状态条写明未计入人数",
 );
 assert(
-  statusLine({ status: "live", coverageFiled: 2, coverageTotal: 94, finalizedAt: null }, "en", 1).includes("2 of 94 have filed (1 more missed last quarter and isn't counted)"),
+  statusLine({ status: "live", coverageFiled: 2, coverageTotal: 94, finalizedAt: null }, "en", 1).includes("2 of 94 have filed (1 other missed last quarter and isn't counted)"),
   "en live 状态条单数",
 );
 assert(
@@ -135,13 +135,13 @@ assert(
   "zh excluded=3 写明口径与人数",
 );
 assert(
-  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "en").includes("for the 94 of the 97 superinvestors this site tracks that filed for the prior quarter or later (3 more missed last quarter and aren't counted). Where"),
+  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "en").includes("for the 94 of the 97 superinvestors this site tracks that filed for the prior quarter or later (3 others missed last quarter and aren't counted). Where"),
   "en excluded=3",
 );
-assert(methodologyCoverageText({ filed: 2, total: 94, excluded: 1 }, "en").includes("the 94 of the 95 superinvestors this site tracks that filed for the prior quarter or later (1 more missed last quarter and isn't counted)"), "en 单数 + 名单 = total+excluded");
+assert(methodologyCoverageText({ filed: 2, total: 94, excluded: 1 }, "en").includes("the 94 of the 95 superinvestors this site tracks that filed for the prior quarter or later (1 other missed last quarter and isn't counted)"), "en 单数 + 名单 = total+excluded");
 for (const lang of ["zh", "en"] as const) {
   const t0 = methodologyCoverageText({ filed: 2, total: 94, excluded: 0 }, lang);
-  assert(!t0.includes("一年以上") && !t0.includes("silent") && !t0.includes("另有") && !t0.includes("more missed"), `excluded=0 不出人数从句 (${lang})`);
+  assert(!t0.includes("一年以上") && !t0.includes("silent") && !t0.includes("另有") && !t0.includes("missed last quarter"), `excluded=0 不出人数从句 (${lang})`);
   assert(t0.includes(lang === "zh" ? "追踪的 94 位中、上一季及之后有申报的 94 位" : "the 94 of the 94 superinvestors"), `excluded=0 名单 = total (${lang})`);
 }
 

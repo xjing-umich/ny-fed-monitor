@@ -15,6 +15,7 @@ export default async function Image({
   const { lang } = await params;
   const isEn = lang !== "zh";
   return ogCard({
+    lang: isEn ? "en" : "zh",
     eyebrow: "Compounder",
     title: isEn ? "Learn" : "学习",
     subtitle: isEn

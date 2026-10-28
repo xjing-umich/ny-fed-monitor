@@ -68,8 +68,8 @@ assert(fx.text.includes("GOOG · 1 superinvestor ·"), `en 邮件单数: ${fx.te
 assert(renderReportEmail(flat, meta, "zh").text.includes("17 位（较上季持平）"), "zh 邮件持平");
 
 // 名家动作按股数口径并附权重说明(页面与邮件同一套文案)
-assert(zh.text.includes("减少股数 AAPL（占组合 28% → 22%）"), "zh 名家动作股数口径");
-assert(en.text.includes("Shares down AAPL (portfolio weight 28% → 22%)"), "en 名家动作股数口径");
+assert(zh.text.includes("卖出部分 AAPL（占组合 28% → 22%）"), "zh 名家动作股数口径");
+assert(en.text.includes("Sold some AAPL (portfolio weight 28% → 22%)"), "en 名家动作股数口径");
 assert(zh.text.includes("动作按申报股数的增减判断") && en.text.includes("Moves are based on the change in shares reported"), "名家动作说明两版都有");
 
 console.log("email.check OK");

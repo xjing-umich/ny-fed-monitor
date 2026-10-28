@@ -14,6 +14,7 @@ export interface FooterCopy {
   subscribing: string;
   subscribed: string;
   subscribeError: string;
+  invalidEmail: string;
   contact: string;
   about: string;
   rights: string;
@@ -35,6 +36,7 @@ export function footerCopy(lang: Lang): FooterCopy {
         subscribing: "提交中…",
         subscribed: "已订阅,谢谢!",
         subscribeError: "订阅失败,请稍后再试。",
+        invalidEmail: "请填写有效的邮箱地址。",
         contact: "联系我们",
         about: "关于",
         rights: "保留所有权利。",
@@ -53,6 +55,7 @@ export function footerCopy(lang: Lang): FooterCopy {
         subscribing: "Submitting…",
         subscribed: "Subscribed, thanks!",
         subscribeError: "Subscription failed. Please try again.",
+        invalidEmail: "Please enter a valid email address.",
         contact: "Contact Us",
         about: "About",
         rights: "All rights reserved.",

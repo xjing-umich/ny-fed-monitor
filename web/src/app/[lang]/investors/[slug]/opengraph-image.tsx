@@ -1,6 +1,7 @@
 import { ogCard, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/ogCard";
 import { getManagerDetail } from "@/lib/managers/source";
 import { managerLabel } from "@/lib/managers/displayName";
+import { displayFundName } from "@/lib/managers/profileProse";
 
 export const alt = "Superinvestor 13F holdings — Compounder";
 export const size = OG_SIZE;
@@ -19,9 +20,10 @@ export default async function Image({
 
   const d = await getManagerDetail(slug);
   const person = d ? managerLabel(isEn ? "en" : "zh", slug, d.manager.person) : slug;
-  const fund = d?.manager.name ?? "";
+  const fund = d ? displayFundName(d.manager.name) : "";
 
   return ogCard({
+    lang: isEn ? "en" : "zh",
     eyebrow: isEn ? "Superinvestor" : "超级投资者",
     title: isEn ? `${person}'s 13F holdings` : `${person} 的 13F 持仓`,
     subtitle: fund || undefined,

@@ -30,7 +30,8 @@ export default async function Image({
   }
 
   return ogCard({
-    eyebrow: `Stocks · ${ticker}`,
+    lang: isEn ? "en" : "zh",
+    eyebrow: isEn ? `Stocks · ${ticker}` : `个股 · ${ticker}`,
     title: isEn ? `Who's holding ${issuer}?` : `谁在持有 ${issuer}？`,
     subtitle: isEn
       ? "Superinvestor 13F holders & position sizes"
