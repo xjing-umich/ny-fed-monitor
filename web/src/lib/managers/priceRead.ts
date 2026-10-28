@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
+import { isRealSplit } from "@/lib/managers/splitAdjust";
 import { PRICE_MAX_AGE_DAYS, isPriceStale } from "@/lib/valuation/priceAge";
 
 export type LatestPrice = { close: number; date: string; currency: string; source?: string; stale?: boolean };
@@ -39,12 +40,12 @@ export const getPriceHistory = cache(async (ticker: string, days = 365): Promise
   return (data ?? []).map((r: { date: string; close: number }) => ({ date: r.date, close: Number(r.close) }));
 });
 
-/** 某 ticker 最近一次拆股日期(ISO)。无 env / 无表 / 无行 → null。护栏用。 */
+/** 某 ticker 最近一次**真拆股**日期(ISO)。分拆上市/股票股息的价格复权(CMCSA 1.067 等)不算,否则会误触发估值拆股护栏。无 env / 无表 / 无行 → null。 */
 export const getLatestSplit = cache(async (ticker: string): Promise<string | null> => {
   if (!hasSupabaseEnv()) return null;
   const { data, error } = await getDb()
-    .from("stock_splits").select("split_date").eq("ticker", ticker)
-    .order("split_date", { ascending: false }).limit(1);
+    .from("stock_splits").select("split_date,ratio").eq("ticker", ticker)
+    .order("split_date", { ascending: false }).limit(20);
   if (error) { console.error(`getLatestSplit(${ticker}) 失败: ${error.message}`); return null; }
-  return data?.[0]?.split_date ?? null;
+  return (data ?? []).find((r: { ratio: number }) => isRealSplit(Number(r.ratio)))?.split_date ?? null;
 });
