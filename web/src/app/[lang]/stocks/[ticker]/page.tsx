@@ -48,7 +48,7 @@ import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker, knownExchange } from "@/lib/externalLinks";
-import { valuationVerdictChip, valuationSectionTitle } from "@/lib/stocks/valuationVerdictChip";
+import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
@@ -548,11 +548,10 @@ export default async function StockTickerPage({
     handoffVerdict.marginPct != null
   );
 
-  // 估值区块 display 标题直接承载结论 —— 档名取 valuationLabel,与标题徽章同一说法;红旗便宜档带“待确认”。
-  // handoffVerdict 为 null(kind!=floor / 多股权 / 无地板)→ 卡走 CompactFloor 无状态 → 标题回退"估值"。
+  // 结论已在标题徽章与结论带里说过一次;估值区块是"证据",标题说它讲什么,不再重复档名(同一事实只说一次)。
   const page = stockPageCopy(lang);
   const ui = stockUi(lang);
-  const valuationTitle = valuationSectionTitle(handoffVerdict, lang);
+  const valuationTitle = lang === "zh" ? "估值怎么算的" : "How it’s valued";
 
   // 结论带(spec 2026-10-25 §三.1):左栏状态与原估值区块同一优先级。
   const leftState = conclusionLeftState({

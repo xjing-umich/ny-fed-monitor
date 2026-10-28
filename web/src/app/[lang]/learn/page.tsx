@@ -104,8 +104,8 @@ export default async function LearnIndexPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <PageHeader eyebrow={c.eyebrow} title={c.heading} intro={c.intro} />
 
-      {/* 品牌块:理念常驻凸显,accent 左描边区别于列表 */}
-      <section className="mt-8 border-l-2 border-[var(--tt-accent)] pl-4">
+      {/* 品牌块:凹陷底色区别于列表(不用彩色左描边) */}
+      <section className="mt-8 rounded-md bg-[var(--tt-panel-2)] px-4 py-3">
         <p className="text-sm leading-relaxed text-[var(--tt-muted)]">{brand.body}</p>
         <Link
           href={localePath(lang, "/about")}
