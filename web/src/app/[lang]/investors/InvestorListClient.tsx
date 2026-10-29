@@ -173,7 +173,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
     },
     {
       key: "portfolio",
-      header: t.cols.portfolio,
+      header: lang === "zh" ? `${t.cols.portfolio}（美元）` : t.cols.portfolio,
       align: "right",
       width: "w-36",
       sortKey: "value",
@@ -183,7 +183,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
         const scope = isScopeChange(m.qoq?.valueDeltaPct);
         return (
           <span className="font-medium text-[var(--tt-text)]">
-            {formatUSD(m.totalValue)}
+            {formatUSD(m.totalValue, lang, "table")}
             {pd && (
               <span className={`ml-1.5 text-xs ${pd.cls}`} title={scope ? t.scopeNote : undefined}>
                 {pd.text}
@@ -231,7 +231,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
               {justFiled && (
                 <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--tt-accent)]" />
               )}
-              {quarterLabel(m.period)}
+              {quarterLabel(m.period, lang)}
             </span>
             {justFiled && (
               <span className="font-data text-xs text-[var(--tt-muted)]">{t.filedAgo(days)}</span>

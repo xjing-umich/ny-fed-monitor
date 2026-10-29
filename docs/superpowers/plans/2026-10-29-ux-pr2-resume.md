@@ -68,3 +68,7 @@
 独立复核发现首页 MoveTag 尚未使用共享动作词表与字形，且动作数量仍有红绿颜色；已补齐。新增 MoveTag 和 HeroMasthead 渲染回归检查，并接入 check:facts（共 7 项）。动作旧词门禁针对完整短标签，保留历史叙述和正常英文动词。
 
 补齐后的本轮验证：全仓 112 项检查，111 项通过；唯一失败仍为上游已复现的 ownerEarningsDcf anchored。prebuild、TypeScript 和修改文件 ESLint 通过。用户本轮已授权审查符合要求后推送并创建 PR；合并仅作是否可行的判定。
+
+## 整合 #249（2026-10-29）
+
+首次 PR 预览通过后，db-foundation 合入 #249（33785ac），产生 4 个文本冲突。已同时保留 i18n-format/lexicon/facts 门禁、日期与权重本地化、UX 文案/计数/动作字形；独立只读复核确认双方行为未丢失。整合后全仓 115 个检查，114 通过，仍只有上游已知 anchored 失败；prebuild、TypeScript 和冲突相关文件 ESLint 通过。新增筛选器日期回归断言，后续以更新后的 PR 检查与预览为准。

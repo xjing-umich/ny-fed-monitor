@@ -184,3 +184,41 @@ Q3 13F 的截止日是 11 月 14 日（周六），顺延到 11/16。申报季�
 - 买卖榜金额：`compute.ts` 中 new/increased 取期末 value，exited 取上季 value。✔
 - `/sitemap.xml`：1317 条 `<loc>` 中没有 `/zh` 页；中文页通过 3951 条 `xhtml:link` alternate 出现。✔（定为 P2）
 - 语言切换器：`TopNav.tsx` 只用 pathname 拼接。✔
+
+
+## 2026-10-29 续做记录：格式化层与确定性名称清洗
+
+本轮基于 GitHub `db-foundation` 的 `5c351dd`（2026-10-29 查询与拉取），本地分支 `fix/i18n-format-and-names`。以下记录本轮本地实现与验收；后续提交与 PR 状态以 GitHub 为准，尚未验证生产部署。
+
+### B 批：显示格式
+
+- 用户于 2026-10-29 确认 D2：正文金额采用 `1.62亿美元`，表格采用 `1.62亿`，表头和手机卡片标签注明美元；英文采用 `$162M`，统一最多 3 位有效数字，支持 K 档与跨档进位。
+- 新增 `src/lib/i18n/format.ts`：金额、现价、每股估值、股数、变动百分比、组合占比、日期、季度与区间；旧 `formatUSD` / `quarterLabel` 保留兼容入口。显示层 60 处调用显式传语言，英文 llms 保留默认英文；SEC 解析内部同名函数未变。
+- 现价仍到美分；每股估值 ≥10 美元取整、低于 10 美元到美分。区间用不带空格的 en dash，相同显示值合并。
+- 中文季度为 `2026Q2`；正文与来源日期采用年月日，英文采用 `Oct 27, 2026`。密集表格和现价小注允许 ISO；机器用途的 JSON-LD 日期、日期比较、数据快照全部保留原始值。
+- 极小正占比统一 `<0.1%`，覆盖表格、正文与报告；无效数字显示 `—`，无效日期/时间戳保留原串。
+- `check:i18n-format` 扫描 136 个 UI 文件，禁止旧格式入口漏传语言和无 locale 的 `toLocaleString()`；已加入 prebuild。
+
+### C 批：本轮已做与仍未做
+
+- 修正审核中的明确大小写：EOG、CME、NVIDIA、AbbVie、SoFi、ZipRecruiter、GE、McLennan 等，以及 D.R. Horton、ON Semiconductor 的原名格式；不按词长猜缩写、不推断截断名称。
+- 所有 `displayFundName` 输入统一清洗，去美国注册州斜杠尾缀、去完整名称重复，修正 `COOPERMAN LEON G` 展示顺序；保留策展名内部大小写、原始数据、slug、搜索标识和股份类别。
+- 更正旧审核建议：Dexcom 当前官网仍写 `Dexcom`，本轮保留此写法。ON Semiconductor 的法律名称保留，不替换成官网品牌 onsemi。
+- C 批尚未全部完成：中文姓名策展与仅姓氏回退、机构/人物逐项分类、中文排序及截断名补全仍待单独实施。本轮未扩充中文译名。
+
+### 验证证据与限制
+
+- 88 个 `src/**/*.check.ts(x)` 通过 87 个。唯一失败：`ownerEarningsDcf.check.ts:115` 的 `anchored` 断言；已在 `HEAD=5c351dd` 的临时原始源码副本中复现相同失败，本轮不修改估值引擎。
+- 全部源代码检查使用 `tsx --tsconfig scripts/tsconfig.json`（含仓库现有 server-only stub）。因此历史 `supabaseMap.check` 的直接运行问题不再被当作业务失败。
+- TypeScript、prebuild（设计令牌、字阶、ISR、i18n 格式门禁）、ai-check 通过；改动文件 ESLint 无错误/警告。
+- 全仓 lint 仍有 72 个错误、25 个警告；在未修改主干副本上复现相同计数。包括原有 `investors/page.tsx` 的 Date.now purity 等，本轮未清理无关问题。
+- 日期格式检查分别在 America/Los_Angeles 与 Asia/Hong_Kong 时区通过。
+- 浏览器本地验收：中文股票表、选股器与美元手机标签正确；语言切换保留 `view=strike_zone`、内部测试参数和 `#top`；英文日期与两位现价正常。测试使用现有数据库快照，没有新拉行情。
+- 窄屏发现既有 EntityName 长名溢出：375px 客户区的 BRK.A/BRK.B 名称可撑宽至约 414px；涉及未改动的名称布局，记录为后续 UI 修复，不宣称全站窄屏已通过。
+- 开发中热更新曾产生新旧手机标签的 hydration 提示；重启服务后对中文股票列表完整导航，控制台无 error/warn，未再复现。
+- 后续 PR review（2026-10-29）：独立审查无 P1/P2；重新执行 88 个源代码检查，仍为 87 通过、1 个已证实的基线失败。改动文件 ESLint 0 错误/警告；类型检查、prebuild 与 ai-check 通过；完整 `npm run build` 成功，851/851 静态页面生成完成。尚未验证生产部署。
+
+### 本轮参考来源（2026-10-29 核对）
+
+- 品牌显示：[NVIDIA 官方](https://opensource.nvidia.com/llm-info/)、[AbbVie 官网](https://www.abbvie.com/)、[SoFi 投资者关系](https://investors.sofi.com/news/Press-Releases/default.aspx)、[GE Aerospace 官网](https://www.geaerospace.com/)、[EOG 官网](https://www.eogresources.com/)、[D.R. Horton 投资者关系](https://investor.drhorton.com/)、[ZipRecruiter 官网](https://www.ziprecruiter.com/)、[Dexcom 官网](https://www.dexcom.com/)、[onsemi 官网](https://www.onsemi.com/)。仅用于名称大小写，不据此变更历史申报主体。
+- Intl 行为：[MDN NumberFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat)、[MDN DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)；本地 Next.js 16.2.6 随包国际化文档。

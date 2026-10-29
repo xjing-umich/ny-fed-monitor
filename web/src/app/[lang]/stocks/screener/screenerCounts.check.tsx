@@ -47,6 +47,7 @@ async function main() {
       for (const view of ["strike_zone", "below", "all"] as const) {
         const text = renderToStaticMarkup(await ScreenerPage({ lang, view, sort: "margin" })).replace(/<[^>]+>/g, "");
         assert.match(text, lang === "zh" ? /1 只.*击球区.*另 2 只待确认/ : /1 valued stock.*strike zone.*2 more pending review/, `${lang}/${view}: 两数与首页一致`);
+        assert.ok(text.includes(lang === "zh" ? "2026年10月27日" : "Oct 27, 2026"), "计数修复也保留 #249 的日期本地化");
       }
     }
     confirmed = false;

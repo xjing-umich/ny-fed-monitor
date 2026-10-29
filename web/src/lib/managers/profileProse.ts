@@ -1,3 +1,4 @@
+import { date as formatDate, weight } from "@/lib/i18n/format";
 // 纯确定性正文生成器(无 AI / 无 IO): 从已装配的 ManagerDetail 派生投资人页的服务端可见正文。
 // 与模型生成叙述的本质区别: 数字直接从 13F 精确算出(非模型生成), 因此正文里
 // 可以、也应当带真实数字 —— 这正是让每页内容彼此独一无二、不被判"薄模板页"的关键(SEO_INDEXING_PLAN 任务 1)。
@@ -8,10 +9,9 @@ import type { Lang } from "@/lib/nav";
 import { cleanIssuer, cleanFilerName, formatUSD, zhSpacing } from "@/lib/format";
 import { managerLabel } from "./displayName";
 
-// 基金名展示化: 仅当名称全大写(EDGAR 原始态, 如 "BERKSHIRE HATHAWAY INC")才标题化, 并把 LLC/LP 等法律形式写回大写;
-// 已是混合大小写的策展名(如 "Appaloosa LP"、"Fundsmith LLP")原样保留。
+// 所有展示名都经同一入口去注册州后缀、去整名重复；清洗器保留策展名内部大小写。
 export const displayFundName = (name: string): string =>
-  name === name.toUpperCase() ? cleanFilerName(name) : name;
+  cleanFilerName(name);
 
 // 段落以 segment 序列表示: 纯字符串, 或一个指向个股页的内链 token(cusip→ticker 由组件解析)。
 // 让 lib 保持无 JSX、可测; 内链既服务正文阅读, 也稠化站内链接(任务 3)。
@@ -61,7 +61,7 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
   }
   const byValue = merged.sort((a, b) => b.value - a.value);
   const pct0 = (w: number): string => `${Math.round(w * 100)}%`;
-  const pct1 = (w: number): string => `${(w * 100).toFixed(1)}%`;
+  const pct1 = (w: number): string => weight(w);
   const name = (p: Position): string => cleanIssuer(p.issuer);
 
   // ── 段 1: 这位投资人是谁 + 由数据派生的风格(集中度) ────────────────────────────
@@ -82,10 +82,10 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
   paras.push(
     en
       ? [
-          `${fund}'s most recent 13F filing, for the quarter ended ${latest.period}, reports ${n} positions worth ${formatUSD(total)}. The top ${topK} holdings represent ${pct0(topKShare)} of that value, ${conc}.`,
+          `${fund}'s most recent 13F filing, for the quarter ended ${formatDate(latest.period, lang)}, reports ${n} positions worth ${formatUSD(total, lang)}. The top ${topK} holdings represent ${pct0(topKShare)} of that value, ${conc}.`,
         ]
       : [
-          `${fund} 最新一期 13F 申报(截至 ${latest.period})报告 ${n} 个持仓，合计市值 ${formatUSD(total)}。前 ${topK} 大持仓占其中 ${pct0(topKShare)}，${conc}。`,
+          `${fund} 最新一期 13F 申报(截至 ${formatDate(latest.period, lang)})报告 ${n} 个持仓，合计市值 ${formatUSD(total, lang)}。前 ${topK} 大持仓占其中 ${pct0(topKShare)}，${conc}。`,
         ],
   );
 

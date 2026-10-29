@@ -1,3 +1,5 @@
+import { date as formatDate } from "@/lib/i18n/format";
+import { shares as formatShares } from "@/lib/i18n/format";
 import React from "react";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -107,10 +109,10 @@ export async function generateMetadata({
   let description: { zh: string; en: string } | null = null;
   if (held.length > 0 && displayPeriod) {
     const n = held.length;
-    const total = formatUSD(held.reduce((s, r) => s + r.value, 0));
+    const total = formatUSD(held.reduce((s, r) => s + r.value, 0), lang);
     const topRow = [...held].sort((a, b) => b.value - a.value)[0];
     const topFor = (l: Lang) => managerLabel(l, topRow.slug, topRow.person);
-    const q = quarterLabel(displayPeriod);
+    const q = quarterLabel(displayPeriod, lang);
     const mixed = held.some((r) => r.period && r.period !== displayPeriod);
     // 从详到简,取第一个不超出搜索摘要长度的写法:先省来源句,再省最大持有人。
     const zhHead = `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}）`;
@@ -224,15 +226,15 @@ function HoldersTable({
         <span className="inline-flex items-baseline gap-1.5">
           {r.person}
           {offQuarter(r) ? (
-            <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period ?? null)}</span>
+            <span className="font-data text-xs text-[var(--tt-faint)]">{quarterLabel(r.period ?? null, lang)}</span>
           ) : (
             <MoveMark kind={r.kind} lang={lang} />
           )}
         </span>
       ),
     },
-    { key: "value", header: t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value) },
-    { key: "shares", header: t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => r.shares.toLocaleString() },
+    { key: "value", header: lang === "zh" ? `${t.cols.value}（美元）` : t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value, lang, "table") },
+    { key: "shares", header: lang === "zh" ? "持股数（股）" : t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => formatShares(r.shares, lang) },
     { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} lang={lang} /> },
   ];
 
@@ -601,8 +603,8 @@ export default async function StockTickerPage({
           "@type": "Answer",
           text:
             lang === "zh"
-              ? zhSpacing(`根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${asOfPeriod} 季度），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue)}，最大持有人为 ${topHolder.person}。`)
-              : `Per each investor's latest SEC 13F filing (${mixedPeriods ? "most for " : ""}the quarter ended ${asOfPeriod}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue)}, with ${topHolder.person} the largest holder.`,
+              ? zhSpacing(`根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${formatDate(asOfPeriod, lang)} 季度），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue, lang)}，最大持有人为 ${topHolder.person}。`)
+              : `Per each investor's latest SEC 13F filing (${mixedPeriods ? "most for " : ""}the quarter ended ${formatDate(asOfPeriod, lang)}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue, lang)}, with ${topHolder.person} the largest holder.`,
         },
       },
     ],
@@ -770,8 +772,8 @@ export default async function StockTickerPage({
             left={bandLeft}
             marginText={marginShown ? `${page.marginOfSafety} ${fmtMarginPct(handoffVerdict!.marginPct!)}` : null}
             holders={{
-              line: holdersLine(n, formatUSD(totalValue), lang),
-              quarter: quarterLabel(displayPeriod) || "",
+              line: holdersLine(n, formatUSD(totalValue, lang), lang),
+              quarter: quarterLabel(displayPeriod, lang) || "",
               moves,
               exited: exitedHolders.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) })),
               trend: trendSeries,
@@ -936,8 +938,8 @@ export default async function StockTickerPage({
                 <div className="mt-5 flex items-center gap-3">
                   <span className="font-data text-xs text-[var(--tt-muted)]">
                     {page.bq.revenueTrail(
-                      formatUSD(bq.revenueSeries[0]),
-                      formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1]),
+                      formatUSD(bq.revenueSeries[0], lang),
+                      formatUSD(bq.revenueSeries[bq.revenueSeries.length - 1], lang),
                       bq.revenueSpan,
                     )}
                   </span>

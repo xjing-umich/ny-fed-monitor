@@ -1,3 +1,5 @@
+import { date as formatDate } from "@/lib/i18n/format";
+import { shares as formatShares } from "@/lib/i18n/format";
 import React from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
@@ -71,14 +73,14 @@ export async function generateMetadata({
   if (!d) return {};
   const { person, name } = d.manager;
   const fundName = displayFundName(name);
-  const q = d.latest?.period ? quarterLabel(d.latest.period) : "";
+  const q = d.latest?.period ? quarterLabel(d.latest.period, lang) : "";
   const qSuffix = q ? ` ${q}` : "";
   // 确定性 meta description：从已加载的 13F 数据派生，每位投资人各异（不再依赖已退役的 AI judgment_line）。
   // 仅统计长仓（排除 put/call 期权），与可见页面的 key-facts 口径保持一致（Task 12）。
   const longHoldings = (d.latest?.holdings ?? []).filter((h) => !h.putCall);
   const longTotalValue = longHoldings.reduce((s, h) => s + h.value, 0);
   const posCount = longHoldings.length;
-  const totalLabel = d.latest ? formatUSD(longTotalValue) : "";
+  const totalLabel = d.latest ? formatUSD(longTotalValue, lang) : "";
   const top = longHoldings.length > 0 ? [...longHoldings].sort((a, b) => b.value - a.value)[0] : null;
   const topName = top
     ? stockDisplayName(lang, (await getCusipMap()).get(top.cusip)?.ticker ?? "", cleanIssuer(top.issuer))
@@ -202,10 +204,10 @@ function HoldingsTable({
     },
     {
       key: "value",
-      header: t.cols.value,
+      header: lang === "zh" ? `${t.cols.value}（美元）` : t.cols.value,
       align: "right",
       width: "w-32",
-      cell: (h) => formatUSD(h.value),
+      cell: (h) => formatUSD(h.value, lang, "table"),
     },
     {
       key: "valuation",
@@ -234,11 +236,11 @@ function HoldingsTable({
     },
     {
       key: "shares",
-      header: t.cols.shares,
+      header: lang === "zh" ? "持股数（股）" : t.cols.shares,
       align: "right",
       width: "w-32",
       hideOnMobile: true,
-      cell: (h) => h.shares.toLocaleString(),
+      cell: (h) => formatShares(h.shares, lang),
     },
     {
       key: "weight",
@@ -433,7 +435,7 @@ export default async function InvestorSlugPage({
 
   const valueNode = (
     <span className="tnum font-data text-xl font-medium leading-none text-[var(--tt-text)]">
-      {formatUSD(longTotalValue)}
+      {formatUSD(longTotalValue, lang)}
       {valDeltaPct != null && valDeltaPct !== 0 && (
         <span className={`ml-1.5 text-xs ${deltaClass(valDeltaPct)}`}>
           {lang === "zh"
@@ -453,19 +455,19 @@ export default async function InvestorSlugPage({
     <p className="mt-2 text-sm text-[var(--tt-muted)]">
       {lang === "zh" ? (
         <>
-          <strong className="font-medium text-[var(--tt-text)]">{quarterLabel(latest.period)} 申报持仓为零。</strong>
-          {fund}{latest.filedAt ? ` ${latest.filedAt} ` : ""}提交的 13F（
+          <strong className="font-medium text-[var(--tt-text)]">{quarterLabel(latest.period, lang)} 申报持仓为零。</strong>
+          {fund}{latest.filedAt ? ` ${formatDate(latest.filedAt, lang)} ` : ""}提交的 13F（
           <a href={zeroFilingUrl} className="text-[var(--tt-text)]" rel="noopener noreferrer" target="_blank">SEC 原文</a>
           ）只有一行全 0 占位，未列任何持仓。申报没写原因，常见的是清盘、委托转给别家管理人，或管理规模跌破 13F 申报门槛，这里不算作卖出。
-          {prior && priorLong ? `上一季 ${quarterLabel(prior.period)} 申报 ${priorLong.length} 只持仓，合计 ${formatUSD(priorLongTotal)}。` : ""}
+          {prior && priorLong ? `上一季 ${quarterLabel(prior.period, lang)} 申报 ${priorLong.length} 只持仓，合计 ${formatUSD(priorLongTotal, lang)}。` : ""}
         </>
       ) : (
         <>
-          <strong className="font-medium text-[var(--tt-text)]">{quarterLabel(latest.period)} 13F reports zero holdings.</strong>{" "}
-          The filing {fund} submitted{latest.filedAt ? ` on ${latest.filedAt}` : ""} (
+          <strong className="font-medium text-[var(--tt-text)]">{quarterLabel(latest.period, lang)} 13F reports zero holdings.</strong>{" "}
+          The filing {fund} submitted{latest.filedAt ? ` on ${formatDate(latest.filedAt, lang)}` : ""} (
           <a href={zeroFilingUrl} className="text-[var(--tt-text)]" rel="noopener noreferrer" target="_blank">SEC original</a>
           ) has a single all-zero placeholder row and no positions. It gives no reason; the usual ones are a wind-down, discretion moving to another adviser, or assets falling below the 13F threshold. We don&apos;t count it as selling.
-          {prior && priorLong ? ` The prior quarter, ${quarterLabel(prior.period)}, reported ${priorLong.length} positions worth ${formatUSD(priorLongTotal)}.` : ""}
+          {prior && priorLong ? ` The prior quarter, ${quarterLabel(prior.period, lang)}, reported ${priorLong.length} positions worth ${formatUSD(priorLongTotal, lang)}.` : ""}
         </>
       )}
     </p>
@@ -474,8 +476,8 @@ export default async function InvestorSlugPage({
     !zeroReport && prior && isScopeChange(valDeltaPct) ? (
       <p className="mt-2 text-xs text-[var(--tt-muted)]">
         {lang === "zh"
-          ? `持仓市值环比 ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}%（${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}，持仓 ${priorLong!.length} → ${longHoldings.length} 只），数字取自 13F 申报原文。股价一个季度变不了这么多，常见原因是资金赎回、清盘，或部分账户不再计入 13F 申报范围；不等于基金经理主动卖出了这么多。`
-          : `Portfolio value ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}% QoQ (${quarterLabel(prior.period)} ${formatUSD(priorLongTotal)} → ${quarterLabel(latest.period)} ${formatUSD(longTotalValue)}, ${priorLong!.length} → ${longHoldings.length} positions), as reported in the 13F. Prices don't move this much in a quarter: the usual causes are client redemptions, a wind-down, or accounts dropping out of the 13F's reporting scope — not necessarily the manager selling on purpose.`}
+          ? `持仓市值环比 ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}%（${quarterLabel(prior.period, lang)} ${formatUSD(priorLongTotal, lang)} → ${quarterLabel(latest.period, lang)} ${formatUSD(longTotalValue, lang)}，持仓 ${priorLong!.length} → ${longHoldings.length} 只），数字取自 13F 申报原文。股价一个季度变不了这么多，常见原因是资金赎回、清盘，或部分账户不再计入 13F 申报范围；不等于基金经理主动卖出了这么多。`
+          : `Portfolio value ${sign(valDeltaPct!)}${Math.abs(valDeltaPct! * 100).toFixed(0)}% QoQ (${quarterLabel(prior.period, lang)} ${formatUSD(priorLongTotal, lang)} → ${quarterLabel(latest.period, lang)} ${formatUSD(longTotalValue, lang)}, ${priorLong!.length} → ${longHoldings.length} positions), as reported in the 13F. Prices don't move this much in a quarter: the usual causes are client redemptions, a wind-down, or accounts dropping out of the 13F's reporting scope — not necessarily the manager selling on purpose.`}
       </p>
     ) : null;
   const countNode = (
@@ -502,7 +504,7 @@ export default async function InvestorSlugPage({
   // 估值相关数字(低于内在价值计数、估值列、隐含预期句)全部来自估值快照:取其最晚价格日标注。
   const valuationAsOf = latestIsoDate([...verdicts.values()].map((v) => v.priceDate));
   const keyFacts = [
-    { label: lang === "zh" ? "持仓市值" : "Portfolio value", value: formatUSD(longTotalValue), node: valueNode },
+    { label: lang === "zh" ? "持仓市值" : "Portfolio value", value: formatUSD(longTotalValue, lang), node: valueNode },
     { label: lang === "zh" ? "持仓数" : "Holdings", value: String(longHoldings.length), node: countNode },
     { label: lang === "zh" ? "第一大持仓" : "Top holding", value: topHolding },
     // cheap = 击球区 ∪ 低于内在价值(reliable);待确认的不计入,写在估值姿态段落里。
@@ -666,8 +668,8 @@ export default async function InvestorSlugPage({
             return (
               <p className="mb-3 text-sm text-[var(--tt-faint)]">
                 {lang === "zh"
-                  ? `按${valuationAsOf ? ` ${valuationAsOf} ` : "现"}收盘价隐含的预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
-                  : `At the${valuationAsOf ? ` ${valuationAsOf}` : ""} close, the price implies demanding growth for ${demanding} ${demanding === 1 ? "holding" : "holdings"} and modest growth for ${modest}.`}
+                  ? `按${valuationAsOf ? ` ${formatDate(valuationAsOf, lang)} ` : "现"}收盘价隐含的预期：${demanding} 只市场要求苛刻的增速，${modest} 只温和。`
+                  : `At the${valuationAsOf ? ` ${formatDate(valuationAsOf, lang)}` : ""} close, the price implies demanding growth for ${demanding} ${demanding === 1 ? "holding" : "holdings"} and modest growth for ${modest}.`}
               </p>
             );
           })()}
@@ -733,8 +735,8 @@ export default async function InvestorSlugPage({
               />
               <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
                 {lang === "zh"
-                  ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${latest.period}）：`
-                  : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${latest.period}):`}
+                  ? `以下持仓仅被 ≤${LONELY_MAX_HOLDERS} 家超投持有、且各占该组合 ${Math.round(MIN_CONVICTION_WEIGHT * 100)}% 以上（截至 ${formatDate(latest.period, lang)}）：`
+                  : `Held by ≤${LONELY_MAX_HOLDERS} tracked superinvestors, each ≥${Math.round(MIN_CONVICTION_WEIGHT * 100)}% of this portfolio (as of ${formatDate(latest.period, lang)}):`}
               </p>
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {lonely.slice(0, LONELY_LIMIT).map((h) => (

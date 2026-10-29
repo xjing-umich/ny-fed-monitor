@@ -1,3 +1,4 @@
+import { date as formatDate } from "@/lib/i18n/format";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -84,7 +85,7 @@ export default async function StocksIndexPage({
   const bargainAsOf = latestIsoDate([...bargains.values()].map((b) => b.priceDate));
   // 与首页 masthead / 个股页"截至"同一口径:申报季内不跟单只早申报者跳到新季。
   const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period;
-  const asOfLabel = quarterLabel(displayPeriod) || undefined;
+  const asOfLabel = quarterLabel(displayPeriod, lang) || undefined;
 
   // 服务端预塑形为可序列化行,交给 client 组件(DataTable + 分页)。
   const maxHolders = rows[0]?.holderCount ?? 1;
@@ -135,8 +136,8 @@ export default async function StocksIndexPage({
           title={ui.stocksTitle}
           dateline={<DataAsOfBadge lang={lang} asOf={asOfLabel} />}
           intro={isZh
-            ? `按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（价格不高于内在价值扣除安全边际后的值）的以绿色标出${bargainAsOf ? `，估值截至 ${bargainAsOf} 收盘价` : ""}。`
-            : `Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price at or below intrinsic value minus a margin of safety — are marked in green${bargainAsOf ? ` (valuations as of the ${bargainAsOf} close)` : ""}.`}
+            ? `按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（价格不高于内在价值扣除安全边际后的值）的以绿色标出${bargainAsOf ? `，估值截至 ${formatDate(bargainAsOf, lang)} 收盘价` : ""}。`
+            : `Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price at or below intrinsic value minus a margin of safety — are marked in green${bargainAsOf ? ` (valuations as of the ${formatDate(bargainAsOf, lang)} close)` : ""}.`}
         />
       </div>
 

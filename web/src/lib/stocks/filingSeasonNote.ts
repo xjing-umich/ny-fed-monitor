@@ -8,8 +8,8 @@ import { quarterLabel, type EffectiveMovesPeriod } from "@/lib/freshness/derive"
 export function filingSeasonNote(eff: EffectiveMovesPeriod, hasOffQuarterRows: boolean, lang: Lang): string | null {
   if (eff.reason !== "before_deadline" && eff.reason !== "low_coverage") return null;
   if (!eff.maxPeriod || !eff.period || eff.maxPeriod === eff.period) return null;
-  const next = quarterLabel(eff.maxPeriod);
-  const cur = quarterLabel(eff.period);
+  const next = quarterLabel(eff.maxPeriod, lang);
+  const cur = quarterLabel(eff.period, lang);
   const { filed, total } = eff.coverage;
   if (lang === "zh") {
     const head = `${next} 申报中 ${filed}/${total}。`;

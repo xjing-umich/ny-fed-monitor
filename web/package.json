@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run -s check:tokens && npm run -s check:type && npm run -s check:isr && npm run -s check:lexicon && npm run -s check:facts",
+    "prebuild": "npm run -s check:tokens && npm run -s check:type && npm run -s check:isr && npm run -s check:i18n-format && npm run -s check:lexicon && npm run -s check:facts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -33,6 +33,7 @@
     "check:codemod": "tsx scripts/codemods/type-v2.check.ts",
     "check:holder-trend": "tsx scripts/holderTrend.check.ts",
     "check:analytics": "tsx src/lib/analytics/exclusion.check.ts",
+    "check:i18n-format": "tsx scripts/i18n-format.check.ts",
     "sec:ingest": "tsx scripts/sec-ingest-company.ts",
     "sec:ingest:all": "tsx scripts/sec-ingest-all.ts",
     "sec:ingest:holdings": "tsx scripts/sec-ingest-holdings.ts",

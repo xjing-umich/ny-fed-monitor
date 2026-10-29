@@ -1,3 +1,4 @@
+import { date as formatDate, weight } from "@/lib/i18n/format";
 // 季度报告双语文案。页面与邮件都从这里取字,保证同一事实同一说法。
 // 只描述已发生的申报与估值位置,不给买卖建议。
 import { effectiveFilingDeadline, parseUTC, quarterLabel } from "../freshness/derive";
@@ -6,12 +7,12 @@ import { localePath, stockPath, SITE_ORIGIN } from "../urls";
 import { reportSlug } from "./period";
 import type { EmptyReason, FeaturedEntry, FeaturedMove, MoveKind, ReportLang, ReportPayload, ReportStatus, ReportStock } from "./types";
 
-export const pct = (x: number): string => `${Number((x * 100).toFixed(1))}%`;
+export const pct = (x: number): string => weight(x).replace(/\.0%$/, "%");
 const signed = (n: number): string => (n > 0 ? `+${n}` : `${n}`);
 const label = (s: ReportStock): string => s.ticker ?? s.issuer;
 
 export function reportTitle(period: string, lang: ReportLang): string {
-  const q = quarterLabel(period);
+  const q = quarterLabel(period, lang);
   return lang === "zh" ? `${q} 超级投资者共识报告` : `${q} Superinvestor Consensus Report`;
 }
 
@@ -34,7 +35,7 @@ export function holderDeltaCell(d: number, lang: ReportLang): string {
 }
 
 export function reportDescription(p: ReportPayload, status: ReportStatus, lang: ReportLang): string {
-  const q = quarterLabel(p.period);
+  const q = quarterLabel(p.period, lang);
   const parts: string[] = [];
   const b = p.bought.items[0];
   const h = p.mostHeld.items[0];
@@ -69,8 +70,8 @@ export function statusLine(
       : `${row.coverageFiled} of ${row.coverageTotal} have filed${exEn} · updates after each new filing`;
   }
   return lang === "zh"
-    ? `定稿于 ${day} · ${row.coverageTotal} 位中 ${row.coverageFiled} 位已申报${exZh}`
-    : `Final as of ${day} · ${row.coverageFiled} of ${row.coverageTotal} filed${exEn}`;
+    ? `定稿于 ${formatDate(day, lang)} · ${row.coverageTotal} 位中 ${row.coverageFiled} 位已申报${exZh}`
+    : `Final as of ${formatDate(day, lang)} · ${row.coverageFiled} of ${row.coverageTotal} filed${exEn}`;
 }
 
 /** 估值快照晚于该季实际申报截止日这么多天以上时,注明“晚于该季申报季”(spec §3.6,如 Q2 补发)。 */
@@ -82,8 +83,8 @@ export function valuationNote(asOf: string | null, lang: ReportLang, period?: st
   const at = parseUTC(asOf);
   const late = !!deadline && !!at && at.getTime() - deadline.getTime() > LATE_VALUATION_DAYS * 86_400_000;
   return lang === "zh"
-    ? `价值位置按 ${asOf} 收盘价计算${late ? "（晚于该季申报季）" : ""}。`
-    : `Valuation positions use closing prices as of ${asOf}${late ? " (later than that quarter's filing season)" : ""}.`;
+    ? `价值位置按 ${formatDate(asOf, lang)} 收盘价计算${late ? "（晚于该季申报季）" : ""}。`
+    : `Valuation positions use closing prices as of ${formatDate(asOf, lang)}${late ? " (later than that quarter's filing season)" : ""}.`;
 }
 
 export function emptyText(reason: EmptyReason, lang: ReportLang): string {

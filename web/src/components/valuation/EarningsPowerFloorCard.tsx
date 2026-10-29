@@ -7,13 +7,12 @@ import type { OeDcfAssessment, MethodReconciliation, MoatCapAssessment } from "@
 import { fmtValueBand, fmtPrice, fmtPerShareValue } from "@/lib/format";
 import { bandPosition, rangeGaugePercent, priceVsBand, priceVsBandAndIv } from "@/lib/valuation/bandPosition";
 import { Display } from "@/components/common/Display";
+import { money, date as formatDate } from "@/lib/i18n/format";
 
-// USD amounts use a fixed en-US grouping in BOTH locales — financial convention,
-// and "en-US" (not undefined) keeps server/client output deterministic (zh-CN groups
-// identically, so no visible difference). Locale only swaps the surrounding prose.
+// 每股价格保留美元符号及两位小数；大额金额另走带语言的 money。
 export function perShare(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
-  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return fmtPrice(value);
 }
 // Readable main view: per-share values whole-dollar (cents under $10), the price always to the cent.
 function usd0(value: number | undefined): string {
@@ -26,7 +25,7 @@ function px(value: number | undefined): string {
 }
 function range(low: number | undefined, high: number | undefined): string {
   if (low == null || high == null) return "—";
-  return `${perShare(low)} – ${perShare(high)}`;
+  return fmtValueBand(low, high, perShare);
 }
 function pct(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
@@ -36,12 +35,9 @@ function pct1(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `${(value * 100).toFixed(1)}%`;
 }
-function usd(value: number | undefined): string {
+function usd(value: number | undefined, lang: Lang): string {
   if (value == null || !Number.isFinite(value)) return "—";
-  const abs = Math.abs(value);
-  if (abs >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-  if (abs >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  return money(value, lang);
 }
 function finitePositive(n: number | undefined): n is number {
   return n != null && Number.isFinite(n) && n > 0;
@@ -642,7 +638,7 @@ function ValueSpine({
     bucket === "below" ? t.subBelow(onMethods) : bucket === "within" ? t.subWithin(onMethods) : t.subAbove;
   const who = issuer ? `${issuer}${ticker ? (lang === "zh" ? `（${ticker}）` : ` (${ticker})`) : ""}${lang === "zh" ? "：" : ": "}` : "";
   const valueRange = `${fmtValueBand(rangeLo, rangeHi, usd0)} ${t.perSh}`;
-  const asOf = sz.price?.date ? (lang === "zh" ? `（价格 ${px(price)} 截至 ${sz.price.date}）` : ` (price ${px(price)} as of ${sz.price.date})`) : "";
+  const asOf = sz.price?.date ? (lang === "zh" ? `（价格 ${px(price)} 截至 ${formatDate(sz.price.date, lang)}）` : ` (price ${px(price)} as of ${formatDate(sz.price.date, lang)})`) : "";
   const posZh =
     bucket === "below" ? "低于" : bucket === "within" ? "落在" : "高于";
   const posEn =
@@ -722,10 +718,10 @@ function ValueSpine({
       <p className="text-xs leading-relaxed text-[var(--tt-faint)]">
         {t.sourceLine(
           sz.price.source ? priceSourceLabel(sz.price.source, lang) : null,
-          sz.price.date,
+          formatDate(sz.price.date, lang),
           sz.stale,
           oeDcf?.discount?.dgs10_date && oeDcf.discount.dgs10_value != null
-            ? { value: pct1(oeDcf.discount.dgs10_value), date: oeDcf.discount.dgs10_date }
+            ? { value: pct1(oeDcf.discount.dgs10_value), date: formatDate(oeDcf.discount.dgs10_date, lang) }
             : null,
         )}
       </p>
@@ -837,9 +833,9 @@ function MethodDetails({
         <LampMethod lamp={buffett_epv} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
         {asset_floor.assessable && (finitePositive(asset_floor.tangible_net_assets) || finitePositive(asset_floor.capitalized_rd)) ? (
           <p>
-            {zh ? "重置价值 = 有形净资产 " : "Reproduction value = tangible net assets "}{usd(asset_floor.tangible_net_assets)}
+            {zh ? "重置价值 = 有形净资产 " : "Reproduction value = tangible net assets "}{usd(asset_floor.tangible_net_assets, lang)}
             {finitePositive(asset_floor.capitalized_rd)
-              ? `${zh ? " + 资本化研发 " : " + capitalized R&D "}${usd(asset_floor.capitalized_rd)}${asset_floor.rd_years_used?.length ? `（FY ${asset_floor.rd_years_used.join(", ")}）` : ""}`
+              ? `${zh ? " + 资本化研发 " : " + capitalized R&D "}${usd(asset_floor.capitalized_rd, lang)}${asset_floor.rd_years_used?.length ? `（FY ${asset_floor.rd_years_used.join(", ")}）` : ""}`
               : ""}
             {` = ${perShare(asset_floor.per_share)} ${t.perSh}`}. {asset_floor.basis}
           </p>

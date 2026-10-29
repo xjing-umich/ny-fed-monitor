@@ -4,6 +4,7 @@
 // 列表页(首页击球区榜、/stocks 绿标、共识页徽章、投资人页估值列)读快照 + 3–7 天 ISR,
 // 读者看到"低于内在价值"时必须知道那是哪天的价。
 
+import { date as formatDate } from "../i18n/format";
 type Lang = "zh" | "en";
 
 /** YYYY-MM-DD 中最晚的一个;全空 → null。 */
@@ -18,7 +19,8 @@ export function latestIsoDate(dates: Array<string | null | undefined>): string |
 /** "估值截至 2026-10-22 收盘价"。date 为空 → null(调用方不渲染)。 */
 export function valuationAsOfText(lang: Lang, date: string | null): string | null {
   if (!date) return null;
-  return lang === "zh" ? `估值截至 ${date} 收盘价` : `Valuations as of the ${date} close`;
+  const label = formatDate(date, lang);
+  return lang === "zh" ? `估值截至 ${label} 收盘价` : `Valuations as of the ${label} close`;
 }
 
 const PRICE_SOURCE_NAME: Record<string, { zh: string; en: string }> = {

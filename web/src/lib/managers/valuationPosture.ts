@@ -1,3 +1,4 @@
+import { date as formatDate } from "@/lib/i18n/format";
 import type { Lang } from "@/lib/nav";
 import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import type { VerdictBucket } from "@/lib/valuation/deriveValuationVerdict";
@@ -92,11 +93,11 @@ export function postureLeadIn(posture: ValuationPosture, lang: Lang): string {
     const body = cheap > 0
       ? `有 ${cheap} 只现价低于内在价值${strike > 0 ? `（其中 ${strike} 只落在击球区）` : ""}`
       : "没有现价低于内在价值的";
-    return `${head}${body}${pending > 0 ? `；另有 ${pending} 只待确认` : ""}${asOf ? `（估值截至 ${asOf}）` : ""}：`;
+    return `${head}${body}${pending > 0 ? `；另有 ${pending} 只待确认` : ""}${asOf ? `（估值截至 ${formatDate(asOf, lang)}）` : ""}：`;
   }
   const head = `Of ${posture.covered} valued US positions without red flags, `;
   const body = cheap > 0
     ? `${cheap} trade below intrinsic value${strike > 0 ? ` (${strike} in the strike zone)` : ""}`
     : "none trade below intrinsic value";
-  return `${head}${body}${pending > 0 ? `; ${pending} more pending` : ""}${asOf ? ` (as of ${asOf})` : ""}:`;
+  return `${head}${body}${pending > 0 ? `; ${pending} more pending` : ""}${asOf ? ` (as of ${formatDate(asOf, lang)})` : ""}:`;
 }

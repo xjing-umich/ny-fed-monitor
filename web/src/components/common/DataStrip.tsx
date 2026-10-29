@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
 import { localePath } from "@/lib/urls";
+import { date as formatDate } from "@/lib/i18n/format";
 
 // 2-tile 真数据条(RSC):共识股数 / 10Y 国债。仅承载 Hero 未覆盖的信号(报告期/投资人数已在 Hero 呈现,故此处不重复)。
 // dgs10 带 as-of(CLAUDE.md 硬规)。缺值显 "—"。克制:muted 标签 + mono 数字。
@@ -65,7 +66,7 @@ export function DataStrip({
       <Tile
         label={t.dgs10}
         value={dgs10 ? `${dgs10.value.toFixed(2)}%` : "—"}
-        sub={dgs10 ? (lang === "zh" ? `截至 ${dgs10.date}` : `as of ${dgs10.date}`) : undefined}
+        sub={dgs10 ? (lang === "zh" ? `截至 ${formatDate(dgs10.date, lang)}` : `as of ${formatDate(dgs10.date, lang)}`) : undefined}
       />
     </section>
   );

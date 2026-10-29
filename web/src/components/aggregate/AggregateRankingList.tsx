@@ -49,7 +49,7 @@ export function AggregateRankingList({
               )}
               {r.kindLabel && <Badge tone={r.kindTone ?? "neutral"}>{r.kindLabel}</Badge>}
               {r.value != null && (
-                <span className="font-data tabular-nums">{r.valueLabel ? `${r.valueLabel} ` : ""}{formatUSD(r.value)}</span>
+                <span className="font-data tabular-nums">{r.valueLabel ? `${r.valueLabel} ` : ""}{formatUSD(r.value, lang)}</span>
               )}
               {r.valuation && <ValuationBadge verdict={r.valuation} lang={lang} />}
             </div>

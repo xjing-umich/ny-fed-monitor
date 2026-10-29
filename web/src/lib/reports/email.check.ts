@@ -23,12 +23,12 @@ assert(!en.html.includes("/stocks/C_UNRES"), "未解析 ticker 不出链接");
 assert(en.html.includes("https://thecompounder.fyi/learn/q2-2026-superinvestor-consensus"), "en 完整报告链接");
 assert(en.html.includes("https://thecompounder.fyi/zh/learn/q2-2026-superinvestor-consensus"), "en 版顶部有中文版链接");
 assert(/first issue/i.test(en.text), "首期提醒句");
-assert(en.text.includes("2026-10-24"), "价值位置日期");
+assert(en.text.includes("Oct 24, 2026"), "价值位置日期");
 assert(/not investment advice/i.test(en.text), "不构成投资建议");
 assert((en.html.match(/<tr/g) ?? []).length >= 3, "板块有表格行");
 
 const zh = renderReportEmail(p, { ...meta, isFirstIssue: false }, "zh");
-assert(zh.subject.includes("Q2 2026"), "zh subject");
+assert(zh.subject.includes("2026Q2"), "zh subject");
 assert(zh.html.includes("https://thecompounder.fyi/zh/learn/q2-2026-superinvestor-consensus"), "zh 完整报告链接");
 assert(!zh.html.includes("中文版 →"), "zh 版不放中文版链接");
 assert(!/这是第一期/.test(zh.text), "非首期不出现首期句");
@@ -49,8 +49,8 @@ assert(!hx.html.includes('"B&C'), "HTML 中无未转义的引号/&");
 assert(hx.text.includes('A"B&C'), "纯文本版原样");
 
 // —— 估值晚于该季申报季(Q2 补发场景):邮件与页面同一说法
-assert(en.text.includes("2026-10-24 (later than that quarter's filing season)"), "en 估值晚于申报季提示");
-assert(zh.text.includes("2026-10-24 收盘价计算（晚于该季申报季）"), "zh 估值晚于申报季提示");
+assert(en.text.includes("Oct 24, 2026 (later than that quarter's filing season)"), "en 估值晚于申报季提示");
+assert(zh.text.includes("2026年10月24日 收盘价计算（晚于该季申报季）"), "zh 估值晚于申报季提示");
 
 // —— 名家动作邮件最多 3 位(页面不限)
 const many = JSON.parse(JSON.stringify(p)) as ReportPayload;
