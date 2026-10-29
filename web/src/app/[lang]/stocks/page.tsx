@@ -1,12 +1,12 @@
 import { date as formatDate } from "@/lib/i18n/format";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { consensusHeld } from "@/lib/aggregations";
 import { getCusipMap } from "@/lib/managers/securities";
 import { getManagerIndex } from "@/lib/managers/source";
-import { altFor, ogFor, collectionLd, breadcrumbLd } from "@/lib/seo";
+import { altFor, ogFor, collectionLd, breadcrumbLd, listMetadata } from "@/lib/seo";
 import { localePath, stockPath } from "@/lib/urls";
 import { effectiveMovesPeriod, quarterLabel, displayedDataModified } from "@/lib/freshness/derive";
 import { stockDisplayName } from "@/lib/stocks/zhNames";
@@ -30,17 +30,6 @@ export const revalidate = 259200;
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 
-const META = {
-  zh: {
-    title: "个股 · 最多人持有 — Compounder · 复利",
-    description: "统计顶级投资者 13F 持仓中，最多人持有的股票。",
-  },
-  en: {
-    title: "Stocks · Most held — Compounder",
-    description: "Most widely held securities among tracked superinvestors, derived from 13F filings.",
-  },
-} as const;
-
 export async function generateMetadata({
   params,
 }: {
@@ -49,7 +38,8 @@ export async function generateMetadata({
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const alternates = altFor(lang, "/stocks");
-  const meta = META[lang];
+  const { directory, asOfLabel } = await getStocksPageData(lang);
+  const meta = listMetadata(lang, "stocks", directory.length, asOfLabel ?? null);
   return {
     ...meta,
     alternates,
@@ -57,17 +47,8 @@ export async function generateMetadata({
   };
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
-export default async function StocksIndexPage({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
-  const { lang: rawLang } = await params;
-  if (rawLang !== "zh" && rawLang !== "en") notFound();
-  const lang = rawLang as Lang;
-
+// Metadata and page share the same shaped rows and directory within this render.
+const getStocksPageData = cache(async (lang: Lang) => {
   // Full consensus set (held by ≥2 funds) — every stock we submit to search has
   // an internal link from this hub. Single-holder long tail stays out (crawlable
   // but not promoted). Shared source with the sitemap so the two never drift.
@@ -79,8 +60,6 @@ export default async function StocksIndexPage({
     readBargainVerdicts(),
   ]);
 
-  const isZh = lang === "zh";
-  const ui = stockUi(lang);
   // 绿标来自估值快照:标出所用收盘价日期(快照 + ISR 可能比 13F 数据新或旧)。
   const bargainAsOf = latestIsoDate([...bargains.values()].map((b) => b.priceDate));
   // 与首页 masthead / 个股页"截至"同一口径:申报季内不跟单只早申报者跳到新季。
@@ -93,13 +72,14 @@ export default async function StocksIndexPage({
     const info = cusipMap.get(row.cusip);
     // mostHeld 的 cusip 字段实为 ticker(consensusRead/tickerizeRows 已 tickerize)。
     const ticker = info?.ticker ?? row.cusip;
+    const bargain = bargains.get(ticker.toUpperCase());
     return {
       ticker,
       issuer: row.issuer,
       holderCount: row.holderCount,
       totalValue: row.totalValue,
       barWidth: Math.round((row.holderCount / maxHolders) * 32),
-      bargain: bargains.get(ticker.toUpperCase()) ?? null,
+      bargain: bargain ? { inStrikeZone: bargain.inStrikeZone, marginPct: bargain.marginPct } : null,
     };
   });
 
@@ -110,13 +90,32 @@ export default async function StocksIndexPage({
     return [{ href: stockPath(lang, r.ticker), label: r.ticker, note: cleanIssuer(r.issuer) }];
   });
 
+  return { idx, bargainAsOf, asOfLabel, tableRows, directory };
+});
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function StocksIndexPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang: rawLang } = await params;
+  if (rawLang !== "zh" && rawLang !== "en") notFound();
+  const lang = rawLang as Lang;
+
+  const { idx, bargainAsOf, asOfLabel, tableRows, directory } = await getStocksPageData(lang);
+  const isZh = lang === "zh";
+  const ui = stockUi(lang);
+  const meta = listMetadata(lang, "stocks", directory.length, asOfLabel ?? null);
+
   // 结构化数据:目录(已按 isLikelyTicker 去重,与表格同序,即按持有人数)的前 50 只;数量是目录总数。
   const path = localePath(lang, "/stocks");
   const ld = [
     collectionLd({
       lang,
       name: ui.stocksTitle,
-      description: META[lang].description,
+      description: meta.description,
       path,
       items: directory.map((d) => ({ name: stockDisplayName(lang, d.label, d.note), path: d.href })),
       limit: 50,

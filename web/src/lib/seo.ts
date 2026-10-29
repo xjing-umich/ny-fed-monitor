@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { SITE_ORIGIN, absoluteUrl, localePath, HTML_LANG, hreflangs } from "@/lib/urls";
+import { isOperatingSecurity } from "@/lib/securities/openfigi";
 
 export const SITE_NAME = "Compounder";
 
@@ -81,12 +82,47 @@ export function fitSnippet(...candidates: string[]): string {
   return candidates.find((c) => snippetWidth(c) <= SNIPPET_MAX) ?? candidates[candidates.length - 1];
 }
 
+/** Counts and comparison quarter come from the same data as the visible directory. */
+export function listMetadata(lang: Lang, kind: "stocks" | "investors", count: number, quarter: string | null) {
+  const q = quarter ? ` · ${quarter}` : "";
+  if (kind === "investors") {
+    return lang === "zh"
+      ? {
+          title: `超级投资者 13F 持仓${q} — ${titleBrand(lang)}`,
+          description: `查看 ${count} 位超级投资者的 SEC 13F 持仓、仓位大小与季度增减${quarter ? `，以 ${quarter} 为比较季度` : ""}。按组合市值浏览，追溯原始申报。`,
+        }
+      : {
+          title: `Superinvestor 13F Portfolios${q} — ${titleBrand(lang)}`,
+          description: `Explore ${count} superinvestor portfolios from SEC 13F filings. Holdings, position sizes and quarterly changes${quarter ? `; ${quarter} comparison quarter` : ""}.`,
+        };
+  }
+  return lang === "zh"
+    ? {
+        title: `超级投资者最多人持有的股票${q} — ${titleBrand(lang)}`,
+        description: `查看 ${count} 只被至少两位投资人持有的股票，比较持有人数与申报市值。来源：SEC 13F${quarter ? `，以 ${quarter} 为比较季度` : ""}。`,
+      }
+    : {
+        title: `Most-Held Stocks${q} — ${titleBrand(lang)}`,
+        description: `Compare ${count} stocks held by at least two tracked superinvestors. SEC 13F holder counts and position values${quarter ? `; ${quarter} comparison quarter` : ""}.`,
+      };
+}
+
 /** 13F 原始申报属美国政府公开记录;与投资人页 Dataset 同一许可声明。 */
 export const SEC_DATA_LICENSE = "https://creativecommons.org/publicdomain/mark/1.0/";
 
 /** EDGAR 公司申报列表页(按 CIK,只看 13F-HR)。 */
 export function edgarFilingsUrl(cik: string): string {
   return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik.padStart(10, "0")}&type=13F-HR&dateb=&owner=include&count=40`;
+}
+
+/** Classify the security itself; a fund share is not its management company. */
+export function securitySchemaType(securityType: string | null, issuer: string, ticker: string): "InvestmentFund" | "FinancialProduct" | "Corporation" {
+  if (["ETP", "ETF", "Mutual Fund", "Closed-End Fund"].includes(securityType ?? "") || (!securityType && /\bETF\b|exchange.traded fund/i.test(issuer))) {
+    return "InvestmentFund";
+  }
+  return !isOperatingSecurity(securityType) || /^[0-9A-Z]{8}[0-9]$/i.test(ticker)
+    ? "FinancialProduct"
+    : "Corporation";
 }
 
 /** 季末日期(YYYY-MM-DD) → 该季 ISO 8601 区间,如 "2026-04-01/2026-06-30";非季末格式 → 原样返回。 */
@@ -109,6 +145,8 @@ export function datasetLd(opts: {
   dateModified?: string | null;
   /** 表中各列度量的名称。 */
   variableMeasured: string[];
+  /** Actual filings, or identified managers' 13F filing lists when accession is unavailable. */
+  sourceUrls?: string[];
 }) {
   return {
     "@context": "https://schema.org",
@@ -124,7 +162,7 @@ export function datasetLd(opts: {
     variableMeasured: opts.variableMeasured,
     creator: { "@type": "Organization", name: SITE_NAME, url: SITE_ORIGIN },
     sourceOrganization: { "@type": "Organization", name: "U.S. Securities and Exchange Commission", url: "https://www.sec.gov" },
-    isBasedOn: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany",
+    ...(opts.sourceUrls?.length ? { isBasedOn: [...new Set(opts.sourceUrls)] } : {}),
   };
 }
 

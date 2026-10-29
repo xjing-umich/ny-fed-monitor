@@ -18,7 +18,8 @@ export function generateStaticParams() {
 
 const COPY = {
   en: {
-    title: "Learn",
+    title: "Value Investing Guides & 13F Reports",
+    description: "Learn to read SEC 13F filings, estimate intrinsic value and assess business quality. Guides and quarterly reports drawn from superinvestor portfolios.",
     eyebrow: "Learn",
     heading: "Learn to read businesses, not tickers",
     intro: "Plain guides to reading businesses the way serious investors do.",
@@ -27,7 +28,8 @@ const COPY = {
     updated: "Updated",
   },
   zh: {
-    title: "学习",
+    title: "价值投资指南与 13F 季报",
+    description: "从超级投资者的真实持仓出发，学习读懂 SEC 13F 申报、内在价值、跨基金共识与生意质量，并查看季度持仓报告。",
     eyebrow: "学习",
     heading: "读懂生意，而非代码",
     intro: "像严肃投资者那样读懂生意的大白话指南。",
@@ -48,10 +50,10 @@ export async function generateMetadata({
   const title = `${c.title} — ${titleBrand(lang)}`;
   return {
     title,
-    description: c.intro,
+    description: c.description,
     alternates: altFor(lang, "/learn"),
     // 本路由自带 opengraph-image,不带品牌卡图以免盖掉它。
-    ...ogFor({ lang, title, description: c.intro, path: localePath(lang, "/learn"), brandImage: false }),
+    ...ogFor({ lang, title, description: c.description, path: localePath(lang, "/learn"), brandImage: false }),
   };
 }
 
@@ -91,12 +93,12 @@ export default async function LearnIndexPage({
     collectionLd({
       lang,
       name: c.heading,
-      description: c.intro,
+      description: c.description,
       path,
       items: listed.map((a) => ({ name: a.title, path: localePath(lang, `/learn/${a.slug}`) })),
       dateModified: listed.map((a) => a.updated).filter(Boolean).sort().at(-1),
     }),
-    breadcrumbLd(lang, [{ name: c.title, path }]),
+    breadcrumbLd(lang, [{ name: c.eyebrow, path }]),
   ];
 
   return (

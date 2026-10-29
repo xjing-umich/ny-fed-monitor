@@ -544,7 +544,7 @@ export default async function InvestorSlugPage({
     ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
     creator: { "@type": "Organization", name: fund },
     sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
-    isBasedOn: edgarFilingsUrl(manager.cik),
+    isBasedOn: /^\d{10}-\d{2}-\d{6}$/.test(latest.accession) ? zeroFilingUrl : edgarFilingsUrl(manager.cik),
     license: SEC_DATA_LICENSE,
   };
   const pageUrl = absoluteUrl(localePath(lang, `/investors/${manager.slug}`));
