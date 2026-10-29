@@ -40,6 +40,7 @@ const COPY = {
     },
     verdict: { buying: "▲ 净买入", selling: "▼ 净卖出", mixed: "基本持平" },
     unchanged: "无变动",
+    method: "净买卖按季末价估算，只算正股；净额绝对值不足上季组合市值的 2% 时，标为基本持平。",
     kind: { new: `${MOVE_GLYPH.new} ${MOVE_LABEL.zh.new}`, exited: `${MOVE_GLYPH.exited} ${MOVE_LABEL.zh.exited}`, increased: `${MOVE_GLYPH.increased} ${MOVE_LABEL.zh.increased}`, decreased: `${MOVE_GLYPH.decreased} ${MOVE_LABEL.zh.decreased}` },
     topPrefix: "最大：",
     noResults: "没有匹配的投资者，换个关键词或清空筛选试试。",
@@ -70,6 +71,7 @@ const COPY = {
     },
     verdict: { buying: "▲ Net buyer", selling: "▼ Net seller", mixed: "Roughly unchanged" },
     unchanged: "No changes",
+    method: "Net buying and selling are estimated at quarter-end prices, stocks only. Net amounts under 2% of the prior portfolio value are labeled roughly unchanged.",
     kind: { new: `${MOVE_GLYPH.new} ${MOVE_LABEL.en.new}`, exited: `${MOVE_GLYPH.exited} ${MOVE_LABEL.en.exited}`, increased: `${MOVE_GLYPH.increased} ${MOVE_LABEL.en.increased}`, decreased: `${MOVE_GLYPH.decreased} ${MOVE_LABEL.en.decreased}` },
     topPrefix: "Top: ",
     noResults: "No investors match — try a different spelling or clear the filter.",
@@ -289,6 +291,8 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
         onChip={(k) => params.setVf(k as VerdictFilter)}
         clearLabel={t.clear}
       />
+
+      <p className="text-xs text-[var(--tt-muted)]">{t.method}</p>
 
       <div className="hidden md:block">
         <DataTable

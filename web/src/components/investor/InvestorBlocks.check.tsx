@@ -28,7 +28,7 @@ for (const lang of ["zh", "en"] as const) {
   assert.ok(t.includes(lang === "zh" ? "● 新进" : "● New") && t.includes("−16%"), `${lang} 前几笔`);
   if (lang === "zh") assert.ok(t.includes("已按 1 拆 10 调整"), "zh 拆股说明");
   assert.ok(t.includes(lang === "zh" ? "共 ● 新进 3" : "In all: ● 3 new"), `${lang} 计数行`);
-  assert.ok(t.includes("E1 CO") && !t.includes("E4 CO") && t.includes(lang === "zh" ? "等 1 只" : "+1 more"), `${lang} 清仓前 3 + 其余`);
+  assert.ok(t.includes("E1 CO") && !t.includes("E4 CO") && t.includes(lang === "zh" ? "另 1 只" : "+1 more"), `${lang} 清仓前 3 + 其余`);
   assert.ok(t.includes(lang === "zh" ? "2026年6月30日 之后的买卖这里看不到" : "after Jun 30, 2026 aren't visible here"), `${lang} 滞后一句`);
   assert.ok(t.includes(lang === "zh" ? "金额按季末价估算，只算正股" : "estimated at quarter-end prices"), `${lang} 口径注`);
   assert.ok(html.includes('href="/stocks/U"'), `${lang} 链接到个股页`);

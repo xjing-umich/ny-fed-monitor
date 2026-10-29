@@ -15,6 +15,11 @@ const base: QuarterSummary = {
 };
 const big = (s: Partial<QuarterSummary>): QuarterSummary => ({ ...base, ...s });
 
+// 净额不足 2% 仍需说清方向;只有清仓时不能写成买卖相抵。
+const exitOnly = big({ netFlowUsd: -1, priorValue: 1000, verdict: "mixed", counts: { opened: 0, added: 0, trimmed: 0, exited: 1 }, topMoves: [{ cusip: "X", issuer: "XCO", kind: "exited", flowUsd: -1, deltaPct: -1, weightAfter: null }] });
+assert.match(conclusionSentence(exitOnly, "Q2", (m) => m.issuer, "zh"), /净卖出约 1美元/);
+assert.match(conclusionSentence(exitOnly, "Q2", (m) => m.issuer, "en"), /net seller of about \$1/);
+
 // 徽章:按金额,中性色。
 assert.deepEqual(investorVerdictChip(base, "zh"), { label: "▲ 本季净买入", tone: "neutral" });
 assert.equal(investorVerdictChip(big({ verdict: "selling" }), "en")!.label, "▼ Net seller this quarter");
@@ -42,7 +47,7 @@ assert.equal(
 );
 assert.equal(
   conclusionSentence(big({ netFlowUsd: 0.1 * B, priorValue: 30 * B, verdict: "mixed" }), "Q2 2026", name, "zh"),
-  "Q2 2026 买卖大致相抵（净额约 1亿美元，不到组合的 1%）；最大一笔是新进 Uber，约 2美元。",
+  "Q2 2026 净买入约 1亿美元（不到组合的 1%）；最大一笔是新进 Uber，约 2美元。",
 );
 assert.equal(conclusionSentence(big({ priorValue: 0, topMoves: [] }), "Q2", name, "zh"), "Q2 净买入约 3美元。", "上季 0、无前 5 笔:不出括号与后半句");
 

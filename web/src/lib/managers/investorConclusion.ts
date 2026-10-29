@@ -57,14 +57,14 @@ export function conclusionSentence(s: QuarterSummary, quarter: string, nameOf: (
     : lang === "zh" ? `约占组合 ${Math.round(share * 100)}%` : `about ${Math.round(share * 100)}% of the portfolio`;
   const top = s.topMoves[0];
   if (lang === "zh") {
-    const head = s.verdict === "mixed"
-      ? `${quarter} 买卖大致相抵（净额约 ${amt}${shareTxt ? `，${shareTxt}` : ""}）`
-      : `${quarter} ${s.verdict === "buying" ? "净买入" : "净卖出"}约 ${amt}${shareTxt ? `（${shareTxt}）` : ""}`;
+    const head = s.netFlowUsd === 0
+      ? `${quarter} 买卖净额约 ${amt}${shareTxt ? `（${shareTxt}）` : ""}`
+      : `${quarter} ${s.netFlowUsd > 0 ? "净买入" : "净卖出"}约 ${amt}${shareTxt ? `（${shareTxt}）` : ""}`;
     return top ? `${head}；最大一笔是${moveWord(top.kind, "zh")} ${nameOf(top)}，约 ${formatUSD(Math.abs(top.flowUsd), lang)}。` : `${head}。`;
   }
-  const head = s.verdict === "mixed"
-    ? `${quarter}: buys and sells roughly offset (net about ${amt}${shareTxt ? `, ${shareTxt}` : ""})`
-    : `${quarter}: net ${s.verdict === "buying" ? "buyer" : "seller"} of about ${amt}${shareTxt ? ` (${shareTxt})` : ""}`;
+  const head = s.netFlowUsd === 0
+    ? `${quarter}: estimated net flow of about ${amt}${shareTxt ? ` (${shareTxt})` : ""}`
+    : `${quarter}: net ${s.netFlowUsd > 0 ? "buyer" : "seller"} of about ${amt}${shareTxt ? ` (${shareTxt})` : ""}`;
   return top ? `${head}; the biggest move was ${EN_VERB[top.kind]} ${nameOf(top)}, about ${formatUSD(Math.abs(top.flowUsd), lang)}.` : `${head}.`;
 }
 

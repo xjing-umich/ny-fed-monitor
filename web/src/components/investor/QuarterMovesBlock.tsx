@@ -17,7 +17,7 @@ const COPY = {
     approx: (v: string) => `约 ${v}`,
     weight: (w: string) => `现占 ${w}`,
     exited: "清仓：",
-    rest: (n: number) => ` 等 ${n} 只`,
+    rest: (n: number) => `，另 ${n} 只`,
     lag: (p: string) => `13F 只披露季末持仓，${p} 之后的买卖这里看不到。`,
     method: "金额按季末价估算，只算正股。",
     sep: "、",
