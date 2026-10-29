@@ -87,18 +87,8 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
   return mapIndexRows(out, generatedAt);
 }
 
-// manager_qoq RPC 行(snake_case, 与 SQL 函数 returns table 一一对应)。
-type QoQRow = {
-  cik: string;
-  value_delta_pct: number | null;
-  count_delta: number | null;
-  verdict: string | null;
-  top_move_issuer: string | null;
-  top_move_kind: string | null;
-};
-
-export type SummaryRow = { cik: string; latest_value: number | string; prior_value: number | string; latest_count: number; prior_count: number; count_verdict: string; top_moves: { issuer: string; kind: string }[] };
-/** manager_quarter_summary 行 → 列表页 ManagerQoQ。PR A 阶段 verdict 仍用只数口径(count_verdict),与详情页一致。 */
+export type SummaryRow = { cik: string; latest_value: number | string; prior_value: number | string; latest_count: number; prior_count: number; count_verdict?: string; verdict: string; top_moves: { issuer: string; kind: string }[] };
+/** manager_quarter_summary 行 → 列表页 ManagerQoQ。verdict 按金额判定,与详情页同源;净额绝对值不到上季正股市值的 2% 为基本持平。 */
 export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
   const out = new Map<string, ManagerQoQ>();
   for (const r of rows) {
@@ -107,7 +97,7 @@ export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
     out.set(r.cik, {
       valueDeltaPct: prior > 0 ? (Number(r.latest_value) - prior) / prior : null,
       countDelta: r.latest_count - r.prior_count,
-      verdict: (r.count_verdict as ManagerQoQ["verdict"]) ?? null,
+      verdict: (r.verdict as ManagerQoQ["verdict"]) ?? null,
       topMoveIssuer: top?.issuer ?? null,
       topMoveKind: (top?.kind as ManagerQoQ["topMoveKind"]) ?? null,
     });
@@ -115,33 +105,15 @@ export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
   return out;
 }
 
-/**
- * 每户季度变化信号(cik → ManagerQoQ)。仅 /investors 列表页调用。
- * 读 manager_quarter_summary;表未迁移、或表已建但还没有行(DDL 之后、首次共识运行之前)→ 回退 RPC manager_qoq
- * (空表若直接返回空 Map,/investors 的 ISR 会把"—"缓存 3 天);其他出错 → console.error 后返回空 Map(优雅降级)。
- */
+/** 读取按金额计算的季度汇总;缺失时不退回只数判定,避免列表与详情口径不同。 */
 export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
   const db = getDb();
-  // 读入库时算好的季度汇总(拆股已换算,与详情页同一函数);表未迁移 → 回退旧 RPC manager_qoq。
-  const { data: rows, error: tErr } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,top_moves");
-  if (!tErr && rows?.length) return mapSummaryRows(rows as SummaryRow[]);
-  if (tErr && !isMissingTableError(tErr)) {
-    console.error(`getManagerQoQ manager_quarter_summary query failed: ${tErr.message}`);
-    return new Map(); // 与原函数一致:出错优雅降级为空 Map(列表不显 QoQ)
+  const { data: rows, error } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,verdict,top_moves");
+  if (error) {
+    console.error(`getManagerQoQ manager_quarter_summary query failed: ${error.message}`);
+    return new Map();
   }
-  const out = new Map<string, ManagerQoQ>();
-  const { data, error } = await db.rpc("manager_qoq");
-  if (error || !data) return out;
-  for (const r of data as QoQRow[]) {
-    out.set(r.cik, {
-      valueDeltaPct: r.value_delta_pct,
-      countDelta: r.count_delta,
-      verdict: (r.verdict as ManagerQoQ["verdict"]) ?? null,
-      topMoveIssuer: r.top_move_issuer,
-      topMoveKind: (r.top_move_kind as ManagerQoQ["topMoveKind"]) ?? null,
-    });
-  }
-  return out;
+  return mapSummaryRows((rows ?? []) as SummaryRow[]);
 }
 
 export async function getManagerDetail(cikOrSlug: string, opts: { adjustSplits?: boolean } = {}): Promise<ManagerDetail | null> {

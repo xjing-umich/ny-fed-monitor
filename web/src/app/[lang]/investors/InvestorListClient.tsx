@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import type { ManagerSummary, ManagerQoQ } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
 import { investorPath } from "@/lib/urls";
+import { MOVE_GLYPH, MOVE_LABEL } from "@/lib/entity/quarterMovesText";
 import { formatUSD, cleanIssuer } from "@/lib/format";
 import { displayFundName } from "@/lib/managers/profileProse";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -37,18 +38,18 @@ const COPY = {
       // 申报季里"本季"会指错季(10 月底列的是 Q2),写成最新一季。
       move: "最新一季变动",
     },
-    verdict: { buying: "整体增持", selling: "整体减持", mixed: "有买有卖" },
+    verdict: { buying: "▲ 净买入", selling: "▼ 净卖出", mixed: "基本持平" },
     unchanged: "无变动",
-    kind: { new: "新进", exited: "清仓", increased: "增持", decreased: "减持" },
+    kind: { new: `${MOVE_GLYPH.new} ${MOVE_LABEL.zh.new}`, exited: `${MOVE_GLYPH.exited} ${MOVE_LABEL.zh.exited}`, increased: `${MOVE_GLYPH.increased} ${MOVE_LABEL.zh.increased}`, decreased: `${MOVE_GLYPH.decreased} ${MOVE_LABEL.zh.decreased}` },
     topPrefix: "最大：",
     noResults: "没有匹配的投资者，换个关键词或清空筛选试试。",
     count: (m: number, n: number) => (m === n ? `共 ${n} 位` : `匹配 ${m} / 共 ${n} 位`),
     filedAgo: (d: number) => (d === 0 ? "今天提交" : `${d} 天前提交`),
     scopeNote: "13F 申报原文数字。股价一季变不了这么多，多为资金赎回、清盘或申报范围变化，不等于主动卖出/买入。",
     filterAll: "全部动向",
-    filterBuying: "增持",
-    filterSelling: "减持",
-    filterMixed: "买卖相当",
+    filterBuying: "净买入",
+    filterSelling: "净卖出",
+    filterMixed: "基本持平",
     more: "加载更多",
     prev: "上一页",
     next: "下一页",
@@ -67,18 +68,18 @@ const COPY = {
       period: "Period",
       move: "Latest 13F changes",
     },
-    verdict: { buying: "Net buying", selling: "Net selling", mixed: "Mixed" },
+    verdict: { buying: "▲ Net buyer", selling: "▼ Net seller", mixed: "Roughly unchanged" },
     unchanged: "No changes",
-    kind: { new: "New", exited: "Exited", increased: "Added", decreased: "Trimmed" },
+    kind: { new: `${MOVE_GLYPH.new} ${MOVE_LABEL.en.new}`, exited: `${MOVE_GLYPH.exited} ${MOVE_LABEL.en.exited}`, increased: `${MOVE_GLYPH.increased} ${MOVE_LABEL.en.increased}`, decreased: `${MOVE_GLYPH.decreased} ${MOVE_LABEL.en.decreased}` },
     topPrefix: "Top: ",
     noResults: "No investors match — try a different spelling or clear the filter.",
     count: (m: number, n: number) => (m === n ? `${n} investors` : `${m} of ${n}`),
     filedAgo: (d: number) => (d === 0 ? "filed today" : `filed ${d}d ago`),
     scopeNote: "As reported in the 13F. Prices don't move this much in a quarter: usually redemptions, a wind-down, or a change in reporting scope — not necessarily active selling or buying.",
     filterAll: "Any move",
-    filterBuying: "Buying",
-    filterSelling: "Selling",
-    filterMixed: "Even",
+    filterBuying: "Net buyers",
+    filterSelling: "Net sellers",
+    filterMixed: "Roughly unchanged",
     more: "Load more",
     prev: "Prev",
     next: "Next",
@@ -90,31 +91,31 @@ const COPY = {
   },
 } as const;
 
-// 市值环比%: 非空且非 0 才显, 绿涨橙跌。
+// 市值环比:中性色展示,绿色只用于估值。
 function fmtPctDelta(p: number | null | undefined): { text: string; cls: string } | null {
   if (p == null || p === 0) return null;
-  const cls = p > 0 ? "text-[var(--tt-positive)]" : "text-[var(--tt-warn)]";
+  const cls = p > 0 ? "text-[var(--tt-muted)]" : "text-[var(--tt-muted)]";
   return { text: `${p > 0 ? "+" : "−"}${Math.abs(p * 100).toFixed(0)}%`, cls };
 }
 
 // 持仓数Δ: 非空且非 0 才显。
 function fmtCountDelta(n: number | null | undefined): { text: string; cls: string } | null {
   if (n == null || n === 0) return null;
-  const cls = n > 0 ? "text-[var(--tt-positive)]" : "text-[var(--tt-warn)]";
+  const cls = n > 0 ? "text-[var(--tt-muted)]" : "text-[var(--tt-muted)]";
   return { text: `${n > 0 ? "+" : "−"}${Math.abs(n)}`, cls };
 }
 
 const VERDICT_TONE: Record<NonNullable<ManagerQoQ["verdict"]>, BadgeTone> = {
-  buying: "positive",
-  selling: "warn",
+  buying: "neutral",
+  selling: "neutral",
   mixed: "neutral",
 };
 
 const KIND_CLASS: Record<NonNullable<ManagerQoQ["topMoveKind"]>, string> = {
-  new: "text-[var(--tt-positive)]",
-  increased: "text-[var(--tt-positive)]",
-  decreased: "text-[var(--tt-warn)]",
-  exited: "text-[var(--tt-negative)]",
+  new: "text-[var(--tt-muted)]",
+  increased: "text-[var(--tt-muted)]",
+  decreased: "text-[var(--tt-muted)]",
+  exited: "text-[var(--tt-muted)]",
 };
 
 type Props = {
@@ -253,7 +254,7 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
         if (!v) return <span className="text-[var(--tt-faint)]">—</span>;
         return (
           <>
-            {/* mixed = 买入笔数等于卖出笔数;0 买 0 卖时没有 topMove,单独说"本季未动" */}
+            {/* mixed = 估算净额不到上季市值的 2%;没有动作时单独说"无变动" */}
             <Badge tone={VERDICT_TONE[v]}>{v === "mixed" && !kind ? t.unchanged : t.verdict[v]}</Badge>
             {issuer && kind && (
               <span className="mt-1 hidden text-xs text-[var(--tt-muted)] lg:block">
