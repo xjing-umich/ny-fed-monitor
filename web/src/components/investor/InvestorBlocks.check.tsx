@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { QuarterMovesBlock } from "./QuarterMovesBlock";
 import type { QuarterSummary } from "@/lib/managers/quarterSummary";
 
-const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#x27;/g, "'").replace(/\s+/g, " ");
 const s: QuarterSummary = {
   period: "2026-06-30", priorPeriod: "2026-03-31", latestValue: 31e9, priorValue: 30e9, latestCount: 40, priorCount: 41,
   netFlowUsd: 1.2e9, verdict: "buying", countVerdict: "selling",
@@ -36,4 +36,41 @@ for (const lang of ["zh", "en"] as const) {
 }
 // 英文拆股说明(10 拆 1 正向)
 assert.ok(text(renderToStaticMarkup(<QuarterMovesBlock lang="en" {...props} />)).includes("Adjusted for a 10-for-1 split"));
+
+
+import { InvestorHoldingsTable } from "./InvestorHoldingsTable";
+
+{
+  const holdings: import("@/lib/managers/types").Holding[] = Array.from({ length: 105 }, (_, i) => ({ cusip: `C${i}`, issuer: `CO ${i}`, value: 1000 - i, shares: 10, weight: (1000 - i) / 1e5 }));
+  holdings.push({ cusip: "C0", issuer: "CO 0", value: 5, shares: 1, weight: 0, putCall: "Call" });
+  const changeByKey = new Map([
+    ["C0|", { cusip: "C0", issuer: "CO 0", kind: "decreased" as const, prevShares: 100, shares: 10, value: 1000, deltaPct: -0.9, splitFactor: 10 }],
+    ["C1|", { cusip: "C1", issuer: "CO 1", kind: "new" as const, prevShares: 0, shares: 10, value: 999, deltaPct: null }],
+  ]);
+  const rowSignals = new Map([
+    ["C2", { conviction: { label: "连续增持·4季", signal: "accumulating" as const } }],
+    ["C3", { conviction: { label: "重磅新进", signal: "fresh_conviction" as const } }],
+  ]);
+  const html = renderToStaticMarkup(
+    <InvestorHoldingsTable holdings={holdings} lang="zh" cusipToTicker={new Map([["C4", "LONE"]])} verdicts={new Map()} holderCounts={new Map()}
+      rowSignals={rowSignals} changeByKey={changeByKey} hasPrior lonelyTickers={new Set(["LONE"])} filingUrl="https://www.sec.gov/x/" />,
+  );
+  const t = text(html);
+  assert.ok(html.includes('id="holdings"') && html.includes("scroll-mt-32"), "锚点 id");
+  assert.ok(html.includes("<details") && t.includes("展开其余 90 只"), "10 行之外折叠,展开到 100 行(含期权行共 106 行)");
+  assert.ok(t.includes("其余 6 只见 SEC 原文") && html.includes('href="https://www.sec.gov/x/"'), "超出 100 行给原文链接");
+  assert.ok(t.includes("▼ −90%") && html.includes('title="已按 1 拆 10 调整"'), "本季列 + 拆股提示");
+  assert.ok(t.includes("● 新进") && t.includes("未变"), "新进 / 未变");
+  assert.ok(t.includes("连续增持·4季") && !t.includes("重磅新进"), "长期信号保留,重磅新进/增持不再重复");
+  assert.ok(t.includes("独门"), "独门标签");
+  for (const h of ["标的", "本季", "市值", "占比", "估值", "持有人数"]) assert.ok(t.includes(h), `列 ${h}`);
+  assert.ok(!t.includes("持股数") && !t.includes("信号"), "删掉股数列与信号列");
+  const few = renderToStaticMarkup(
+    <InvestorHoldingsTable holdings={holdings.slice(0, 3)} lang="en" cusipToTicker={new Map()} verdicts={new Map()} holderCounts={new Map()}
+      rowSignals={new Map()} changeByKey={new Map()} hasPrior={false} lonelyTickers={new Set()} filingUrl="u" />,
+  );
+  assert.ok(!few.includes("<details") && !text(few).includes("SEC filing"), "少于 10 行:无折叠、无原文链接");
+  assert.ok(text(few).includes("This qtr") && !text(few).includes("Unchanged"), "无上季:本季列写 —");
+}
+
 console.log("InvestorBlocks.check OK");
