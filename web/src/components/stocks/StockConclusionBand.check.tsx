@@ -20,7 +20,7 @@ const html = renderToStaticMarkup(
   />,
 );
 const plain = html.replace(/<[^>]+>/g, " ");
-for (const s of ["价格相对价值带", "谁在持有", "LEFT-SLOT", "安全边际 77%", "27 位持有 · 合计 $76.77B", "Andreas Halvorsen"]) {
+for (const s of ["价格相对价值区间", "谁在持有", "LEFT-SLOT", "安全边际 77%", "27 位持有 · 合计 $76.77B", "Andreas Halvorsen"]) {
   assert.ok(plain.includes(s), `结论带含 ${s}`);
 }
 const noMargin = renderToStaticMarkup(

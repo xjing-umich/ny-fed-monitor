@@ -47,7 +47,7 @@ function BargainMark({ bargain, lang }: { bargain: { inStrikeZone: boolean; marg
           {isZh ? "击球区" : "Strike zone"}
         </span>
       )}
-      <span aria-hidden className="font-data text-xs tabular-nums text-[var(--tt-positive)]">
+      <span aria-hidden className="font-data text-xs tabular-nums text-[var(--val-below)]">
         {pct}
       </span>
     </span>

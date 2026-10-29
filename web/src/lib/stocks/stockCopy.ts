@@ -87,10 +87,10 @@ export const STOCK_PAGE_COPY = {
       learn: "什么样的生意算优质",
     },
     valuation: {
-      eyebrow: "估值 · 价值带",
+      eyebrow: "估值 · 价值区间",
       splitPaused: "该公司近期拆股，每股估值口径待下一份财报对齐后恢复。",
       moatDistorted: "多年回购已把股东权益压成负数，重置价值和护城河没法从资产端算，这里不给出估值判定。",
-      holdcoNotAssessable: "这是一家以投资组合为主体的控股集团。把整体盈利力和资产重置价值放在一起比，对它没有经济含义——一个可交易的证券组合，重置成本就是它当时的市价，持有它本身不构成竞争壁垒。这里不给出价值带和护城河判定，下面的资产底只作参考下限。",
+      holdcoNotAssessable: "这是一家以投资组合为主体的控股集团。把整体盈利力和资产重置价值放在一起比，对它没有经济含义——一个可交易的证券组合，重置成本就是它当时的市价，持有它本身不构成竞争壁垒。这里不给出价值区间和护城河判定，下面的资产底只作参考下限。",
       holdcoSotpTitle: "分部估值",
       holdcoSotpCentral: "每股中枢 · 基础档",
       holdcoSotpIntro:
@@ -150,7 +150,7 @@ export const STOCK_PAGE_COPY = {
       learn: "What makes a business high quality",
     },
     valuation: {
-      eyebrow: "Valuation · value band",
+      eyebrow: "Valuation · value range",
       splitPaused: "Recent stock split — per-share valuation is paused until the next filing restates the share count.",
       moatDistorted: "Years of buybacks have pushed shareholders' equity negative, so reproduction value and the moat can't be assessed from the asset side. No valuation verdict is shown here.",
       holdcoNotAssessable: "This is a holding company whose balance sheet is led by an investment portfolio. Comparing consolidated earnings power against reproduction value says nothing here — a marketable portfolio reproduces at its own market price, so owning it is not a competitive barrier. No value range or moat verdict is shown; the asset floor below is a floor only.",

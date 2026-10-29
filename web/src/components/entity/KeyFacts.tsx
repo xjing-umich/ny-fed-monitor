@@ -19,6 +19,9 @@ const VALUE_TONE_CLASS: Record<Tone, string> = {
   warn:     "text-[var(--tt-warn)]",
   negative: "text-[var(--tt-negative)]",
   neutral:  "text-[var(--tt-text)]",
+  "val-below": "text-[var(--val-below)]",
+  "val-within": "text-[var(--val-within)]",
+  "val-above": "text-[var(--val-above)]",
 };
 
 export function KeyFacts({ facts }: { facts: KeyFact[] }) {

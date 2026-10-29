@@ -1,8 +1,8 @@
 import type { Lang } from "@/lib/nav";
 
 const COPY = {
-  zh: { band: "价值带", floor: "保守下限", fair: "合理区间", optimistic: "乐观上限" },
-  en: { band: "Value band", floor: "Conservative floor", fair: "Fair range", optimistic: "Optimistic ceiling" },
+  zh: { band: "价值区间", floor: "零增长底", fair: "区间内", optimistic: "乐观上沿" },
+  en: { band: "Value range", floor: "Zero-growth floor", fair: "In range", optimistic: "Optimistic top" },
 } as const;
 
 export default function ValueBandCard({ lang }: { lang: Lang }): React.ReactElement {

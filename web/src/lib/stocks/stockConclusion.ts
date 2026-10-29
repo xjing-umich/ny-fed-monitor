@@ -60,6 +60,6 @@ export function holdersLine(n: number, total: string, lang: Lang): string {
 }
 
 export const BAND_COPY: Record<Lang, { left: string; right: string; anchorsAria: string }> = {
-  zh: { left: "价格相对价值带", right: "谁在持有", anchorsAria: "本页目录" },
-  en: { left: "Price vs. value band", right: "Who holds it", anchorsAria: "On this page" },
+  zh: { left: "价格相对价值区间", right: "谁在持有", anchorsAria: "本页目录" },
+  en: { left: "Price vs. value range", right: "Who holds it", anchorsAria: "On this page" },
 };

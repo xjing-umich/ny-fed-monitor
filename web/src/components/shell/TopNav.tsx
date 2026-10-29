@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
-import { TOP_NAV } from "@/lib/nav";
+import { TOP_NAV, isNavActive } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
 import SearchBox, { type SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
@@ -38,17 +38,9 @@ export default function TopNav({ lang, items }: TopNavProps) {
 
   const homeHref = localePath(lang, "");
 
-  // barePath 已去语言前缀,服务端预渲染与客户端 hydrate 后一致(pathname 会因
-  // next.config rewrite 在两端不同,如 "/investors" vs "/en/investors",故不能直接比 pathname)。
-  function isActive(entry: (typeof TOP_NAV)[number]) {
-    if (entry.key === "home") {
-      return barePath === "" || barePath === "/";
-    }
-    return barePath.startsWith(entry.href);
-  }
 
   return (
-    <header className="hidden lg:flex h-15 min-h-[60px] sticky top-0 z-30 w-full items-center gap-6 px-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
+    <header className="hidden lg:flex h-15 min-h-[60px] sticky top-0 z-30 w-full items-center gap-3 px-4 xl:gap-6 xl:px-8 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
       {/* Masthead wordmark — display serif */}
       <Link
         href={homeHref}
@@ -64,13 +56,14 @@ export default function TopNav({ lang, items }: TopNavProps) {
       <span className="w-px h-5 bg-[var(--tt-border)] shrink-0" />
 
       {/* Nav links — 克制的文字链接,激活项下划线 */}
-      <nav className="flex items-center gap-6">
+      <nav className="flex shrink-0 items-center gap-3 whitespace-nowrap xl:gap-6">
         {TOP_NAV.map((entry) => {
-          const active = isActive(entry);
+          const active = isNavActive(entry.key, entry.href, barePath);
           const href = entry.key === "home" ? homeHref : localePath(lang, entry.href);
           return (
             <Link
               key={entry.key}
+              aria-current={active ? "page" : undefined}
               href={href}
               className={[
                 "relative inline-flex items-center min-h-[36px] text-sm transition-colors no-underline",
@@ -90,7 +83,7 @@ export default function TopNav({ lang, items }: TopNavProps) {
       <div className="flex-1" />
 
       {/* Search */}
-      <SearchBox lang={lang} items={items} />
+      <div className="w-40 shrink-0 xl:w-56"><SearchBox lang={lang} items={items} fill /></div>
 
       {/* Language toggle */}
       <div className="flex items-center gap-0.5">

@@ -118,13 +118,13 @@ export default function ReportArticle({ row, lang }: { row: ReportRow; lang: Lan
             methodologyCoverageText(p.coverage, lang),
             "共识买入 / 卖出：统计本季相对上一季新进或增持 / 减持或清仓的投资人数，期权不计；没有更早申报可比的投资人不计入买卖。",
             "持有人数“较上季”：只在本季已申报、且有上一季申报的同一批投资人内比较，避免申报季中有人尚未申报造成虚降。",
-            `击球区与价值带：来自本站估值引擎的保守价值区间，只取数据可靠的结果。${valuationNote(row.valuationAsOf, lang, p.period)}这里只描述价格相对价值区间的位置，不构成买卖建议。`,
+            `击球区与价值区间：来自本站估值引擎的保守价值区间，只取数据可靠的结果。${valuationNote(row.valuationAsOf, lang, p.period)}这里只描述价格相对价值区间的位置，不构成买卖建议。`,
             row.status === "final" ? "本报告定稿后不再随迟到申报或修正申报变化；最新情况见实时共识页。" : "申报季结束、覆盖率达标后，本报告会定稿冻结。",
           ] : [
             methodologyCoverageText(p.coverage, lang),
             "Consensus buys / sells count the funds that opened or added to / trimmed or sold out of a position versus the prior quarter. Options are excluded, and funds with no earlier filing to compare against are left out of buys and sells.",
             "Holder change vs. last quarter compares the same funds only: those that have filed this quarter and also filed the prior one, so funds that have not filed yet do not drag counts down.",
-            `Strike zone and value band come from this site's conservative valuation range, using reliable results only. ${valuationNote(row.valuationAsOf, lang, p.period)} They describe where price sits relative to value and are not a recommendation.`,
+            `Strike zone and value range come from this site's conservative valuation range, using reliable results only. ${valuationNote(row.valuationAsOf, lang, p.period)} They describe where price sits relative to value and are not a recommendation.`,
             row.status === "final" ? "This report is frozen once final; later or amended filings do not change it. See the live consensus page for the current picture." : "Once the filing season closes and coverage is high enough, this report will be finalized and frozen.",
           ]).map((s) => <p key={s.slice(0, 24)}>{s}</p>)}
           <p>

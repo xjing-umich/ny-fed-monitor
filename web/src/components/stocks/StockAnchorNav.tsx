@@ -6,7 +6,7 @@ export function StockAnchorNav({ lang, anchors }: { lang: Lang; anchors: StockAn
   return (
     <nav
       aria-label={BAND_COPY[lang].anchorsAria}
-      className="md:sticky md:top-14 lg:top-[60px] z-20 border-b border-[var(--tt-border)] bg-[var(--tt-bg)]"
+      className="relative md:sticky md:top-14 lg:top-[60px] z-20 border-b border-[var(--tt-border)] bg-[var(--tt-bg)]"
     >
       <ul className="flex list-none gap-1 overflow-x-auto p-0">
         {anchors.map((a) => (
@@ -20,6 +20,7 @@ export function StockAnchorNav({ lang, anchors }: { lang: Lang; anchors: StockAn
           </li>
         ))}
       </ul>
+      <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 flex items-center bg-gradient-to-l from-[var(--tt-bg)] via-[var(--tt-bg)]/80 to-transparent pl-6 pr-1 text-xs text-[var(--tt-muted)] sm:hidden">→</span>
     </nav>
   );
 }

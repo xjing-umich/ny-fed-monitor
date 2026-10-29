@@ -83,7 +83,7 @@ function header(ctx: Ctx, title: string): string[] {
   return [
     `# ${title}`,
     "",
-    `> Compounder (thecompounder.fyi) tracks the SEC Form 13F holdings of ${ctx.managerCount} superinvestors, shows which stocks many of them own at once, and puts a conservative valuation band next to those stocks. Holdings data is currently for ${q}. It is an educational research tool: no stock recommendations, no price targets, no forecasts.`,
+    `> Compounder (thecompounder.fyi) tracks the SEC Form 13F holdings of ${ctx.managerCount} superinvestors, shows which stocks many of them own at once, and puts a conservative valuation range next to those stocks. Holdings data is currently for ${q}. It is an educational research tool: no stock recommendations, no price targets, no forecasts.`,
     "",
     `Latest data: ${baselineSentence(ctx.eff)} 13F filings are due ${FILING_DEADLINE_DAYS} days after quarter-end and show positions on the last day of the quarter, so every holding here describes a past date, not what a fund owns today. Source: SEC EDGAR. Generated ${ctx.generated}.`,
     "",
@@ -95,7 +95,7 @@ const DATA_SCOPE = [
   `Holdings come from each manager's latest Form 13F-HR on SEC EDGAR. Investor and stock pages count long equity positions; put and call options are left out of position counts and values.`,
   `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days, moved to the next Monday when it falls on a weekend) has passed and at least half of the managers expected to file (those that filed the prior quarter or later) have filed for it.`,
   "A manager who has not filed for the most recent quarter past its deadline is not counted as a current holder on consensus and stock pages; the consensus page lists them by name with the quarter their last 13F covers. Before the deadline, the prior quarter's filing still counts.",
-  "Valuation bands are conservative ranges built from reported fundamentals. They show where a price sits against that range; they are not price targets or buy/sell calls.",
+  "Valuation ranges are conservative ranges built from reported fundamentals. They show where a price sits against that range; they are not price targets or buy/sell calls.",
 ];
 
 function articleLine(a: Article): string {
@@ -117,7 +117,7 @@ export async function buildLlmsTxt(): Promise<string> {
     `- [Top sells](${url("/investors/sells")}): Stocks the most superinvestors exited or trimmed in ${q}.`,
     `- [Superinvestors](${url("/investors")}): All ${ctx.managerCount} tracked managers. Each investor page lists the latest 13F portfolio with position sizes and quarter-over-quarter changes.`,
     `- [Stocks](${url("/stocks")}): Stocks owned by tracked superinvestors. Each stock page lists who holds it, position values, and the quarter each holding is from.`,
-    `- [Stocks by value](${url("/stocks/screener")}): Where each stock's price sits against its conservative value band.`,
+    `- [Stocks by value](${url("/stocks/screener")}): Where each stock's price sits against its conservative value range.`,
     "",
     "## Methodology and data scope",
     "",

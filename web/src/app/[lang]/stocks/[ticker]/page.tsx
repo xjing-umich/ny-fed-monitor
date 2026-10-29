@@ -574,7 +574,6 @@ export default async function StockTickerPage({
   const hasValuationDetails = valuationDetailsShown(leftState);
   const anchors = stockAnchors({ valuation: hasValuationDetails, quality: !!bq, coOwned: coOwned.length > 0 }, lang);
 
-  const subtitle = page.subtitle(n);
   const disclaimer = page.disclaimer;
 
   const exchange = (await getTickerExchangeMap()).get(ticker);
@@ -703,7 +702,7 @@ export default async function StockTickerPage({
             <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{fmtPerShare(holdcoSotp.per_share.base)}</span>
             <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
           </div>
-          <ValueBandGauge bucket={handoffVerdict.bucket} rangeLo={handoffVerdict.rangeLo} rangeHi={handoffVerdict.rangeHi} price={handoffVerdict.price} lang={lang} />
+          <ValueBandGauge bucket={handoffVerdict.bucket} rangeLo={handoffVerdict.rangeLo} rangeHi={handoffVerdict.rangeHi} price={handoffVerdict.price} reliable={handoffVerdict.reliable} lang={lang} />
         </>
       ) : (
         unassessedLeft
@@ -736,7 +735,6 @@ export default async function StockTickerPage({
         lang={lang}
         title={displayName}
         titleMeta={ticker}
-        subtitle={subtitle}
         disclaimer={disclaimer}
         topAction={
           <Link

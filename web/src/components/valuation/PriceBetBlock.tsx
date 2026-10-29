@@ -44,7 +44,7 @@ const COPY = {
     capPrefix: "粗略地说，现价要它按历史营收增速再增长约 ",
     capSuffix: () => " 年，才刚好撑得起。",
     lowConfidence:
-      "价值带信心不足时仍可对照：这里只说明市场在赌多快，不把它当成「确认便宜」。",
+      "价值区间信心不足时仍可对照：这里只说明市场在赌多快，不把它当成「确认便宜」。",
   },
   en: {
     label: "What the price is betting",
@@ -63,14 +63,14 @@ const COPY = {
     capPrefix: "Roughly, the price needs its historical revenue growth to run about ",
     capSuffix: (n: number) => (n === 1 ? " more year to hold up." : " more years to hold up."),
     lowConfidence:
-      "Even when the value band is low-confidence: use this to see what the price assumes — not as a cheapness confirmation.",
+      "Even when the value range is low-confidence: use this to see what the price assumes — not as a cheapness confirmation.",
   },
 } as const;
 
 export const PriceBetBlock: FC<{
   expectations: ExpectationsAssessment;
   lang: Lang;
-  /** 价值带 reliable=false 时仍展示本块，但加一句「只读预期、不确认便宜」。 */
+  /** 价值区间 reliable=false 时仍展示本块，但加一句「只读预期、不确认便宜」。 */
   lowConfidence?: boolean;
   /** historicalGrowth 所用财年区间(revenueGrowthStandard),与生意质量头条同一个数、同一区间。 */
   historicalSpan?: { fromYear: number; toYear: number };
