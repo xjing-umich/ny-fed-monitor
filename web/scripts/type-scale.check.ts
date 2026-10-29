@@ -61,8 +61,8 @@ for (const abs of walk(SRC)) {
   lines.forEach((ln, i) => {
     const at = `${rel}:${i + 1}`;
     if (/text-\[\d+(?:\.\d+)?(?:px|rem|em)\]/.test(ln)) failures.push(`${at} 任意值字号: ${ln.trim()}`);
-    // 字阶上限 text-5xl(40px)。Display.tsx 的 2xl/3xl 档待 PR B 删掉四格计数器后一并移除。
-    if (rel !== "components/common/Display.tsx" && /(?<![\w-])text-(?:[6-9]xl)(?![\w-])/.test(ln)) failures.push(`${at} 超出字阶上限(text-5xl): ${ln.trim()}`);
+    // 字阶上限 text-5xl(40px),所有展示组件一并检查。
+    if (/(?<![\w-])text-(?:[6-9]xl)(?![\w-])/.test(ln)) failures.push(`${at} 超出字阶上限(text-5xl): ${ln.trim()}`);
     if (!DEFERRED.has(rel) && /(?<![\w-])font-mono(?![\w-])/.test(ln)) failures.push(`${at} font-mono(用 font-data / font-code): ${ln.trim()}`);
     if (!DEFERRED.has(rel) && /(?:["'`\s:])uppercase(?=["'`\s])/.test(ln)) failures.push(`${at} uppercase: ${ln.trim()}`);
   });

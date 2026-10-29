@@ -15,11 +15,11 @@ async function main() {
    return Response.json({code:phase==='missing'?'PGRST202':'TEST',message:'expected failure'},{status:phase==='missing'?404:500});
   }
   assert.equal(u.pathname,'/rest/v1/manager_quarter_summary');legacyCalls++;
-  return Response.json([{cik:'1',latest_value:100,prior_value:50,latest_count:2,prior_count:1,count_verdict:'buying',top_moves:[]}]);
+  return Response.json([{cik:'1',latest_value:100,prior_value:50,latest_count:2,prior_count:1,count_verdict:'buying',verdict:'selling',top_moves:[]}]);
  };
  try {
   assert.equal((await getManagerQoQ()).size,0);assert.equal(legacyCalls,0,'RPC 合法空结果不能回退旧汇总');
-  phase='missing';assert.equal((await getManagerQoQ()).size,1);assert.equal(legacyCalls,1,'迁移前缺 RPC 时兼容旧表');
+  phase='missing';const legacy=await getManagerQoQ();assert.equal(legacy.size,1);assert.equal(legacy.get('1')?.verdict,'selling','金额判定优先于方向相反的只数判定');assert.equal(legacyCalls,1,'迁移前缺 RPC 时兼容旧表');
   phase='failed';console.error=()=>{};assert.equal((await getManagerQoQ()).size,0);assert.equal(legacyCalls,1,'瞬时失败不能伪装成未迁移并返回旧值');
  } finally {
   globalThis.fetch=oldFetch;console.error=oldError;
