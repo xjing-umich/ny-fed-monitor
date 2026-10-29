@@ -52,11 +52,11 @@ assert.equal(c.line, "X has no confirmed strike-zone positions right now.", `en 
 
 // 9) 文案: 内在价值 / 买入线 口径(见 task 9)
 assert.equal(stockHandoffFor(v({ bucket: "below" }), "AAPL", "en").line, "AAPL's price is below its intrinsic value.");
-assert.equal(stockHandoffFor(v({ inStrikeZone: true }), "PDD", "zh").line, "PDD 现价低于买入线（内在价值扣除安全边际）。");
+assert.equal(stockHandoffFor(v({ inStrikeZone: true }), "PDD", "zh").line, "PDD 现价不高于内在价值扣除安全边际后的值。");
 assert.equal(stockHandoffFor(v({ bucket: "above" }), "AAPL", "zh").line, "AAPL 现价不低于内在价值。");
 assert.equal(
   stockHandoffFor(v({ inStrikeZone: true }), "PDD", "en").line,
-  "PDD's price is below the buy line (intrinsic value minus a margin of safety).",
+  "PDD's price is at or below intrinsic value minus a margin of safety.",
 );
 assert.equal(stockHandoffFor(v({ bucket: "above" }), "AAPL", "en").line, "AAPL's price is not below its intrinsic value.");
 assert.equal(investorHandoffFor(0, "X", "zh").ctaLabel, "按安全边际浏览低于内在价值的股票");

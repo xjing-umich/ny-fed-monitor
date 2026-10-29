@@ -39,6 +39,9 @@ export function StockConclusionBand({
         <p className="text-xs text-[var(--tt-muted)]">{c.right}</p>
         <p className="font-display text-xl font-medium text-[var(--tt-text)]">{holders.line}</p>
         <QuarterMovesLine q={holders.quarter} moves={holders.moves} exited={holders.exited} unit="investor" lang={lang} />
+        <p className="text-xs text-[var(--tt-muted)]">
+          {lang === "zh" ? "动作按股数变化判断；权重也会随价格变化。" : "Actions compare share counts; weights also move with prices."}
+        </p>
         {holders.trend.length >= 2 && <HolderTrend series={holders.trend} lang={lang} variant="inline" />}
       </div>
     </section>

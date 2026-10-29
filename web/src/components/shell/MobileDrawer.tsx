@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon } from "lucide-react";
-import { TOP_NAV } from "@/lib/nav";
+import { TOP_NAV, isNavActive } from "@/lib/nav";
 import type { Lang } from "@/lib/nav";
 import SearchBox, { type SearchItem } from "./SearchBox";
 import { LogoMark } from "@/components/brand/Logo";
@@ -54,14 +54,6 @@ export default function MobileDrawer({ lang, items }: MobileDrawerProps) {
 
   const homeHref = localePath(lang, "");
 
-  // barePath 已去语言前缀,服务端预渲染与客户端 hydrate 后一致(pathname 会因
-  // next.config rewrite 在两端不同,如 "/investors" vs "/en/investors",故不能直接比 pathname)。
-  function isActive(entry: (typeof TOP_NAV)[number]) {
-    if (entry.key === "home") {
-      return barePath === "" || barePath === "/";
-    }
-    return barePath.startsWith(entry.href);
-  }
 
   return (
     <>
@@ -125,12 +117,13 @@ export default function MobileDrawer({ lang, items }: MobileDrawerProps) {
         {/* Nav links */}
         <nav className="flex flex-col gap-1 p-3">
           {TOP_NAV.map((entry) => {
-            const active = isActive(entry);
+            const active = isNavActive(entry.key, entry.href, barePath);
             const href =
               entry.key === "home" ? homeHref : localePath(lang, entry.href);
             return (
               <Link
                 key={entry.key}
+                aria-current={active ? "page" : undefined}
                 href={href}
                 onClick={() => setOpen(false)}
                 className={[

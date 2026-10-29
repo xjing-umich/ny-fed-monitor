@@ -268,15 +268,15 @@ export type ScreenerRow = {
  * 估值 screener 数据(/stocks/screener 用)。两查询 join:
  *   ① valuation_snapshot 按 view 过滤 + margin_pct DESC(NULLS LAST)
  *   ② consensus_holdings 批量补 issuer + holder_count(单查询, 零 per-ticker 扇出)
- * strikeTotal = 全表 in_strike_zone 计数(与 view 无关, 供顶部句)。
+ * strikeTotal / strikePending = 全表击球区已确认 / 待确认计数(与 view 无关, 供顶部句)。
  * 优雅降级:无 env / 表缺(42P01/PGRST205)/ 出错 → 空结果, 绝不抛。
  */
 export const readValuationScreen = cache(
   async (
     view: ScreenView,
     limit: number,
-  ): Promise<{ rows: ScreenerRow[]; strikeTotal: number; computedAt: string | null }> => {
-    const empty = { rows: [] as ScreenerRow[], strikeTotal: 0, computedAt: null as string | null };
+  ): Promise<{ rows: ScreenerRow[]; strikeTotal: number; strikePending: number; computedAt: string | null }> => {
+    const empty = { rows: [] as ScreenerRow[], strikeTotal: 0, strikePending: 0, computedAt: null as string | null };
     if (!hasSupabaseEnv()) return empty;
     const isMissingTable = (e: unknown) => {
       const code = (e as { code?: string }).code;
@@ -297,6 +297,7 @@ export const readValuationScreen = cache(
       const [{ count, error: cErr }, { count: pendingCount }] = await Promise.all([countWhere(true), countWhere(false)]);
       if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
       const strikeTotal = cErr ? 0 : count ?? 0;
+      const strikePending = pendingCount ?? 0;
 
       // ② 主查询(thunk 内重建 builder)。strike_zone/below 视图的信心闸 = reliable=true:
       // 位置可算但带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)的不标便宜。不强求两法夹逼
@@ -316,10 +317,10 @@ export const readValuationScreen = cache(
       const { data, error } = await withRetry(runMain);
       if (error) {
         if (!isMissingTable(error)) console.error(`readValuationScreen 失败: ${(error as Error).message}`);
-        return { ...empty, strikeTotal };
+        return { ...empty, strikeTotal, strikePending };
       }
       const snapRows = (data ?? []) as Row[];
-      if (snapRows.length === 0) return { rows: [], strikeTotal, computedAt: null };
+      if (snapRows.length === 0) return { rows: [], strikeTotal, strikePending, computedAt: null };
 
       // ③ join consensus_holdings 取 issuer + holder_count
       const tickers = snapRows.map((r) => r.ticker.toUpperCase());
@@ -359,7 +360,7 @@ export const readValuationScreen = cache(
         (mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx),
         null,
       );
-      return { rows, strikeTotal, computedAt };
+      return { rows, strikeTotal, strikePending, computedAt };
     } catch (err) {
       console.error(`readValuationScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
       return empty;

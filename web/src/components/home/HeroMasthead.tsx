@@ -80,13 +80,7 @@ function PanelRows({ lang, rows, showValue }: { lang: Lang; rows: MoveRow[]; sho
             </Link>
           </span>
           <span
-            className="shrink-0 font-data text-xs tabular-nums whitespace-nowrap"
-            style={{
-              color:
-                row.dominantKind === "exited" || row.dominantKind === "decreased"
-                  ? "var(--tt-negative)"
-                  : "var(--tt-positive)",
-            }}
+            className="shrink-0 font-data text-xs tabular-nums whitespace-nowrap text-[var(--tt-text)]"
           >
             {lang === "zh" ? `${row.count} 位` : `${row.count}`}
             {showValue && ` · ${formatUSD(row.value, lang)}`}

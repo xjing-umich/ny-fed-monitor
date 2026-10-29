@@ -37,12 +37,12 @@ export function ValuationBadge({
   const cls = l.pending
     ? "border-[var(--tt-border)] text-[var(--tt-muted)]"
     : l.tier === "strike"
-      ? "border-[var(--tt-positive)] text-[var(--tt-positive)] bg-[var(--tt-positive)]/10"
+      ? "border-[var(--val-below)] text-[var(--val-below)] bg-[var(--val-below-soft)]"
       : l.tier === "below"
-        ? "border-[var(--tt-positive)]/50 text-[var(--tt-positive)]"
+        ? "border-[var(--val-below)]/50 text-[var(--val-below)]"
         : l.tier === "within"
-          ? "border-[var(--tt-border)] text-[var(--tt-muted)]"
-          : "border-[var(--tt-warn)]/50 text-[var(--tt-warn)]";
+          ? "border-[var(--val-within)]/50 text-[var(--val-within)]"
+          : "border-[var(--val-above)]/50 text-[var(--val-above)]";
   const marker = l.pending ? (
     <span className="ml-1 text-xs text-[var(--tt-faint)]">· {PENDING_WORD[lang]}</span>
   ) : verdict?.coverage === "single_lamp" ? (
@@ -54,7 +54,7 @@ export function ValuationBadge({
   const badge = (
     <span
       title={title}
-      className={`inline-flex items-center whitespace-nowrap rounded-sm border px-1.5 py-0.5 font-mono text-xs ${cls}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-sm border px-1.5 py-0.5 font-data text-xs ${cls}`}
     >
       {label}
       {marker}
@@ -65,7 +65,7 @@ export function ValuationBadge({
     return (
       <span className="inline-flex flex-col gap-0.5">
         {badge}
-        <span className="font-mono text-xs text-[var(--tt-faint)]">{EXPECT[lang][exTier]}</span>
+        <span className="font-data text-xs text-[var(--tt-faint)]">{EXPECT[lang][exTier]}</span>
       </span>
     );
   }

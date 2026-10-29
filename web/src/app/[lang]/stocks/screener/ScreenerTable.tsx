@@ -56,7 +56,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
       cell: (r) =>
         r.marginPct != null && r.marginPct > 0 ? (
           r.reliable ? (
-            <span className="font-data tabular-nums text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
+            <span className="font-data tabular-nums text-[var(--val-below)]">{fmtMarginPct(r.marginPct)}</span>
           ) : (
             <span
               className="font-data tabular-nums text-[var(--tt-faint)]"
@@ -71,7 +71,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
     },
     {
       key: "band",
-      header: isZh ? "价值带 / sh" : "Value band / sh",
+      header: isZh ? "价值区间 / sh" : "Value range / sh",
       align: "right",
       width: "w-32",
       hideOnMobile: true,
@@ -122,7 +122,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
         showRank
         emptyText={ui.emptyScreener}
       />
-      {/* 价值带 / 内在价值列只在桌面表格出现(hideOnMobile,DataTable 默认 md 断点),脚注同断点隐藏 */}
+      {/* 价值区间 / 内在价值列只在桌面表格出现(hideOnMobile,DataTable 默认 md 断点),脚注同断点隐藏 */}
       <p className="mt-2 hidden text-xs text-[var(--tt-faint)] md:block">
         {isZh
           ? `带 * 的为单法口径，内在价值一列为零增长价值。${BAND_FLOOR_NOTE.zh}`
@@ -144,7 +144,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
                   <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{r.ticker}</span>
                   {r.marginPct != null && r.marginPct > 0 ? (
                     r.reliable ? (
-                      <span className="ml-1.5 font-data text-xs text-[var(--tt-positive)]">{fmtMarginPct(r.marginPct)}</span>
+                      <span className="ml-1.5 font-data text-xs text-[var(--val-below)]">{fmtMarginPct(r.marginPct)}</span>
                     ) : (
                       // 与表头列同一诚实口径:红旗票的安全边际弱化 + ⚠,不冒充分确认便宜。
                       <span

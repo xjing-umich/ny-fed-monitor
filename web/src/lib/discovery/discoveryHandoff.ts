@@ -31,7 +31,7 @@ export function stockHandoffFor(verdict: ValuationVerdict | null, ticker: string
     return {
       eyebrow,
       href: screenerHref(lang, "strike_zone"),
-      line: zh ? `${T} 现价低于买入线（内在价值扣除安全边际）。` : `${T}'s price is below the buy line (intrinsic value minus a margin of safety).`,
+      line: zh ? `${T} 现价不高于内在价值扣除安全边际后的值。` : `${T}'s price is at or below intrinsic value minus a margin of safety.`,
       ctaLabel: zh ? "看全市场击球区" : "See the full strike-zone list",
     };
   }

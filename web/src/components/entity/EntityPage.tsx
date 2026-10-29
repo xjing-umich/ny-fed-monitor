@@ -20,7 +20,7 @@ export type EntityPageProps = {
   eyebrow?: string;
   /** Mono label beside the H1 (e.g. stock ticker) — same baseline, not the display face. */
   titleMeta?: string;
-  subtitle: string;
+  subtitle?: string;
   verdict?: { label: string; tone: Tone };
   /** 可选：紧跟主 verdict 徽章之后并列渲染的第二枚徽章(如反向 DCF 隐含预期档位)。不替换主徽章。 */
   verdictExtra?: { label: string; tone: Tone };
@@ -80,9 +80,11 @@ export function EntityPage({
           {verdictExtra && <VerdictChip label={verdictExtra.label} tone={verdictExtra.tone} />}
           {headerAction && <div className="ml-auto self-center">{headerAction}</div>}
         </div>
-        <p className="max-w-3xl text-base leading-relaxed text-[var(--tt-muted)]">
-          {subtitle}
-        </p>
+        {subtitle && (
+          <p className="max-w-3xl text-base leading-relaxed text-[var(--tt-muted)]">
+            {subtitle}
+          </p>
+        )}
       </header>
 
       {/* 数据陈旧告示(若有) */}

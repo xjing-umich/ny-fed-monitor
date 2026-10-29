@@ -136,8 +136,8 @@ export default async function StocksIndexPage({
           title={ui.stocksTitle}
           dateline={<DataAsOfBadge lang={lang} asOf={asOfLabel} />}
           intro={isZh
-            ? `按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（价格低于买入线：内在价值扣除安全边际）的以绿色标出${bargainAsOf ? `，估值截至 ${formatDate(bargainAsOf, lang)} 收盘价` : ""}。`
-            : `Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price below the buy line: intrinsic value minus a margin of safety — are marked in green${bargainAsOf ? ` (valuations as of the ${formatDate(bargainAsOf, lang)} close)` : ""}.`}
+            ? `按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（价格不高于内在价值扣除安全边际后的值）的以绿色标出${bargainAsOf ? `，估值截至 ${formatDate(bargainAsOf, lang)} 收盘价` : ""}。`
+            : `Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price at or below intrinsic value minus a margin of safety — are marked in green${bargainAsOf ? ` (valuations as of the ${formatDate(bargainAsOf, lang)} close)` : ""}.`}
         />
       </div>
 

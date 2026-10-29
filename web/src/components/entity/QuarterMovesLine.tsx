@@ -22,7 +22,7 @@ export function QuarterMovesLine({
   const restText =
     rest > 0 ? (lang === "zh" ? ` 另 ${rest} ${unit === "investor" ? "位" : "只"}` : ` +${rest} more`) : "";
   return (
-    <p className="font-data text-xs text-[var(--tt-muted)]">
+    <p className="font-data text-xs text-[var(--tt-text)]">
       {quarterMovesCounts(q, moves, lang)}
       {shown.length > 0 && (
         <>

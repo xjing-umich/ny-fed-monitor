@@ -11,14 +11,14 @@ const COPY = {
   zh: {
     title: (n: number) => `${n} 只在击球区`,
     pending: (p: number) => `另 ${p} 只待确认`,
-    cols: { ticker: "代码", band: "价值带", iv: "内在价值", margin: "安全边际" },
-    note: `价格低于买入线（内在价值扣除安全边际）的标的，按安全边际排序。${BAND_FLOOR_NOTE.zh}仅为位置观察，非建议。`,
+    cols: { ticker: "代码", band: "价值区间", iv: "内在价值", margin: "安全边际" },
+    note: `价格不高于内在价值扣除安全边际后的值的标的，按安全边际排序。${BAND_FLOOR_NOTE.zh}仅为位置观察，非建议。`,
   },
   en: {
     title: (n: number) => `${n} in the strike zone`,
     pending: (p: number) => `${p} more pending review`,
-    cols: { ticker: "Ticker", band: "Band", iv: "Intrinsic value", margin: "Margin" },
-    note: `Priced below the buy line (intrinsic value minus a margin of safety), ranked by margin of safety. ${BAND_FLOOR_NOTE.en} An observation, not advice.`,
+    cols: { ticker: "Ticker", band: "Value range", iv: "Intrinsic value", margin: "Margin" },
+    note: `Priced at or below intrinsic value minus a margin of safety, ranked by margin of safety. ${BAND_FLOOR_NOTE.en} An observation, not advice.`,
   },
 } as const;
 

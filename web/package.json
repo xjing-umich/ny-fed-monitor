@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run -s check:tokens && npm run -s check:type && npm run -s check:isr && npm run -s check:i18n-format",
+    "prebuild": "npm run -s check:tokens && npm run -s check:type && npm run -s check:isr && npm run -s check:i18n-format && npm run -s check:lexicon && npm run -s check:facts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -27,6 +27,8 @@
     "check:color": "tsx scripts/color.check.ts",
     "check:tokens": "tsx scripts/design-tokens.check.ts",
     "check:type": "tsx scripts/type-scale.check.ts",
+    "check:lexicon": "tsx scripts/lexicon.check.ts",
+    "check:facts": "tsx scripts/facts.check.ts",
     "check:decor": "tsx scripts/decor.check.ts",
     "check:codemod": "tsx scripts/codemods/type-v2.check.ts",
     "check:holder-trend": "tsx scripts/holderTrend.check.ts",

@@ -12,7 +12,7 @@ const TONE: Record<BadgeTone, string> = {
 
 /**
  * 编辑风格描边徽章(--tt token)。用于表格/卡片里的状态标签(净买入/净卖出等)。
- * 注:买卖动作用 MoveTag(实心绿/红),数据新鲜度用 FreshnessDot — 各有专属语义,未并入此处。
+ * 注:买卖动作用 MoveTag(共享字形与正文色),数据新鲜度用 FreshnessDot — 各有专属语义,未并入此处。
  */
 export function Badge({
   tone = "neutral",

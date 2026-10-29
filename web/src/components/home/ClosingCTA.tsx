@@ -5,12 +5,12 @@ import { localePath } from "@/lib/urls";
 const COPY = {
   zh: {
     line: "从任意一位投资者、任意一只股票开始。",
-    sub: "名单里有我们追踪的每一位投资者，估值页有每一只个股的保守价值带。",
+    sub: "名单里有我们追踪的每一位投资者，估值页有每一只个股的保守价值区间。",
     cta: "打开投资者名单",
   },
   en: {
     line: "Start with any investor, any stock.",
-    sub: "The roster has every investor we track; the screener has each stock's conservative value band.",
+    sub: "The roster has every investor we track; the screener has each stock's conservative value range.",
     cta: "Open the investor list",
   },
 } as const;
