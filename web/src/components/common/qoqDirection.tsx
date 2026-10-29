@@ -1,6 +1,7 @@
 import React from "react";
 import type { HoldingChange } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
+import { weight } from "@/lib/i18n/format";
 
 // QoQ 原语 —— 供投资人页 / 个股页共用。权重只写数字;动作由 MoveMark 按股数标出。
 // 数字一律 font-data tabular-nums（列对齐）。
@@ -12,7 +13,7 @@ const MOVE_LABEL: Record<Lang, Record<"new" | "increased" | "decreased", string>
 
 /** 权重百分比，1 位小数；缺失 → 「—」。 */
 export const fmtPct1 = (w: number | undefined): string =>
-  w != null ? `${(w * 100).toFixed(1)}%` : "—";
+  weight(w);
 
 /** 本季动作(按申报股数判断,与报告页同口径);持平 / 不同期 / 清仓 → null。 */
 export function moveMarkText(kind: HoldingChange["kind"] | undefined, lang: Lang): string | null {

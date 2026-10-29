@@ -114,12 +114,12 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
     },
     {
       key: "value",
-      header: g.totalValue,
+      header: lang === "zh" ? `${g.totalValue}（美元）` : g.totalValue,
       align: "right",
       width: "w-24 sm:w-36",
-      mobileLabel: g.totalValueShort,
+      mobileLabel: lang === "zh" ? `${g.totalValueShort}（美元）` : g.totalValueShort,
       sortKey: "value",
-      cell: (r) => formatUSD(r.totalValue),
+      cell: (r) => formatUSD(r.totalValue, lang, "table"),
     },
   ];
 

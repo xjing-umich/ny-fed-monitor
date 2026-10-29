@@ -1,3 +1,4 @@
+import { date as formatDate } from "@/lib/i18n/format";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
@@ -86,8 +87,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const geo =
     strikeTotal > 0
       ? isZh
-        ? `现在 ${strikeTotal} 只可估值股票落在击球区（价格低于买入线：内在价值扣除安全边际）${asOf ? `，截至 ${asOf}` : ""}。`
-        : `${strikeTotal} valued stocks are in the strike zone (price below the buy line: intrinsic value minus a margin of safety)${asOf ? `, as of ${asOf}` : ""}.`
+        ? `现在 ${strikeTotal} 只可估值股票落在击球区（价格低于买入线：内在价值扣除安全边际）${asOf ? `，截至 ${formatDate(asOf, lang)}` : ""}。`
+        : `${strikeTotal} valued stocks are in the strike zone (price below the buy line: intrinsic value minus a margin of safety)${asOf ? `, as of ${formatDate(asOf, lang)}` : ""}.`
       : isZh
         ? "当前没有可估值股票落在击球区（价格低于买入线：内在价值扣除安全边际；保守引擎常态）。"
         : "No valued stocks are in the strike zone (price below the buy line: intrinsic value minus a margin of safety) right now.";
@@ -117,7 +118,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
           dateline={
             asOf ? (
               <span className="font-data text-xs text-[var(--tt-muted)]">
-                {priceAsOf ? valuationAsOfText(lang, priceAsOf) : isZh ? `估值截至 ${asOf}` : `Valuation as of ${asOf}`}
+                {priceAsOf ? valuationAsOfText(lang, priceAsOf) : isZh ? `估值截至 ${formatDate(asOf, lang)}` : `Valuation as of ${formatDate(asOf, lang)}`}
               </span>
             ) : undefined
           }
@@ -186,8 +187,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh
-          ? `估值${asOf ? `截至 ${asOf}` : "刷新中"} · 方法：保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
-          : `Valuation ${asOf ? `as of ${asOf}` : "refreshing"} · method: conservative Greenwald value band + Owner-Earnings DCF. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
+          ? `估值${asOf ? `截至 ${formatDate(asOf, lang)}` : "刷新中"} · 方法：保守 Greenwald 价值带 + Owner-Earnings DCF 两法夹逼。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
+          : `Valuation ${asOf ? `as of ${formatDate(asOf, lang)}` : "refreshing"} · method: conservative Greenwald value band + Owner-Earnings DCF. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
       </p>
     </>
   );

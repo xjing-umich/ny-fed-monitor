@@ -1,4 +1,5 @@
 import { FreshnessDot } from "./FreshnessDot";
+import { date as formatDate } from "@/lib/i18n/format";
 import type { FreshnessStatus } from "@/lib/freshness/derive";
 
 type Lang = "zh" | "en";
@@ -36,11 +37,11 @@ export function SourceFooter({ lang, sources }: SourceFooterProps) {
             <span className="not-italic font-medium text-[var(--tt-text)]">
               {src.name}
             </span>{" "}
-            {asOfLabel} {src.asOf}
+            {asOfLabel} {formatDate(src.asOf, lang)}
             {src.filed ? (
               <span className="text-[var(--tt-faint)]">
                 {" "}
-                · {lang === "zh" ? `${src.filed} ${filedLabel}` : `${filedLabel} ${src.filed}`}
+                · {lang === "zh" ? `${formatDate(src.filed, lang)} ${filedLabel}` : `${filedLabel} ${formatDate(src.filed, lang)}`}
               </span>
             ) : null}
           </span>

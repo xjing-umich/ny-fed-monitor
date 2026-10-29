@@ -58,7 +58,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   const overdueManagers = idx.managers.filter((m) => !countsAsCurrentHolder(m.period, now));
   const managerCount = idx.managers.length - overdueManagers.length;
   // 「数据截至」与首页 masthead、buys/sells、个股页同一口径(effectiveMovesPeriod)。
-  const asOfLabel = quarterLabel(effectiveMovesPeriod(idx.managers.map((m) => m.period), now).period) || undefined;
+  const asOfLabel = quarterLabel(effectiveMovesPeriod(idx.managers.map((m) => m.period), now).period, lang) || undefined;
   const totalSum = rows.reduce((s, r) => s + r.totalValue, 0) || 1;
 
   const rankRows: RankRow[] = rows.map((r) => ({

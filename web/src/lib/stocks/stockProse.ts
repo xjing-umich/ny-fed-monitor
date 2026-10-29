@@ -1,3 +1,4 @@
+import { date as formatDate, weight } from "@/lib/i18n/format";
 // 纯确定性正文生成器(无 AI / 无 IO): 从个股页已聚合的 13F 持有人数据派生服务端可见正文。
 // 与投资人页正文同思路 —— 数字直接从 13F 精确算出, 每只股票因持有人/权重/本季动向不同而彼此独一无二,
 // 回答个股页相对 Yahoo/MarketBeat 的差异化问题:"哪些超级投资者持有本票、本季怎么动的"(SEO_INDEXING_PLAN 任务 2)。
@@ -30,7 +31,7 @@ export type StockProseInput = {
   moves: { opened: number; added: number; trimmed: number; exited: number };
 };
 
-const pct1 = (w: number | undefined): string | null => (w != null ? `${(w * 100).toFixed(1)}%` : null);
+const pct1 = (w: number | undefined): string | null => (w != null ? weight(w) : null);
 
 /**
  * 生成 2~4 段个股页服务端正文。缺数据的段优雅跳过。holders 为空 → []。
@@ -52,13 +53,13 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
     const p: ProseParagraph = [];
     if (en) {
       p.push(
-        `${issuer} (${ticker}) is held by ${n} of the superinvestors tracked on Compounder, with a combined ${formatUSD(totalValue)} in reported 13F value. The largest position belongs to `,
+        `${issuer} (${ticker}) is held by ${n} of the superinvestors tracked on Compounder, with a combined ${formatUSD(totalValue, lang)} in reported 13F value. The largest position belongs to `,
         link(top),
         topW ? `, where it makes up ${topW} of the portfolio.` : ".",
       );
     } else {
       p.push(
-        `${issuer}（${ticker}）被 Compounder 追踪的 ${n} 位超级投资者持有，合计申报市值 ${formatUSD(totalValue)}。仓位最大的是 `,
+        `${issuer}（${ticker}）被 Compounder 追踪的 ${n} 位超级投资者持有，合计申报市值 ${formatUSD(totalValue, lang)}。仓位最大的是 `,
         link(top),
         topW ? `，占其组合 ${topW}。` : "。",
       );
@@ -85,11 +86,11 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
     const p: ProseParagraph = [];
     if (en) {
       p.push(
-        `In the quarter ended ${latestPeriod}, ${moves.opened} of the tracked filers opened a new position in ${ticker}, ${moves.added} added to existing ones, ${moves.trimmed} trimmed, and ${moves.exited} sold out entirely.`,
+        `In the quarter ended ${formatDate(latestPeriod, lang)}, ${moves.opened} of the tracked filers opened a new position in ${ticker}, ${moves.added} added to existing ones, ${moves.trimmed} trimmed, and ${moves.exited} sold out entirely.`,
       );
     } else {
       p.push(
-        `截至 ${latestPeriod} 的这一季，追踪范围内有 ${moves.opened} 位新进 ${ticker}，${moves.added} 位增持，${moves.trimmed} 位减持，${moves.exited} 位清仓。`,
+        `截至 ${formatDate(latestPeriod, lang)} 的这一季，追踪范围内有 ${moves.opened} 位新进 ${ticker}，${moves.added} 位增持，${moves.trimmed} 位减持，${moves.exited} 位清仓。`,
       );
     }
     paras.push(p);
@@ -99,16 +100,16 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
   paras.push(
     en
       ? [
-          `Holder counts and values reflect the most recent SEC Form 13F filings, through the quarter ended ${latestPeriod}.${
+          `Holder counts and values reflect the most recent SEC Form 13F filings, through the quarter ended ${formatDate(latestPeriod, lang)}.${
             ahead
-              ? ` ${ahead.count} investor${ahead.count === 1 ? " has" : "s have"} already filed for the quarter ended ${ahead.period}. Their positions in the table reflect those newer filings, and the move counts on this page cover only ${latestPeriod} filings.`
+              ? ` ${ahead.count} investor${ahead.count === 1 ? " has" : "s have"} already filed for the quarter ended ${formatDate(ahead.period, lang)}. Their positions in the table reflect those newer filings, and the move counts on this page cover only ${formatDate(latestPeriod, lang)} filings.`
               : ""
           } Source: SEC EDGAR. A 13F shows only long US-listed positions and can lag the real portfolio by up to 45 days, so this is disclosed long ownership, not a complete picture.`,
         ]
       : [
-          `以上持有人数与市值来自最新的 SEC Form 13F 申报，截至 ${latestPeriod} 季度。${
+          `以上持有人数与市值来自最新的 SEC Form 13F 申报，截至 ${formatDate(latestPeriod, lang)} 季度。${
             ahead
-              ? `另有 ${ahead.count} 位投资人已提前提交截至 ${ahead.period} 的申报，表中他们的持仓按这份更新的申报列出；本页的动向统计只计 ${latestPeriod} 季度的申报。`
+              ? `另有 ${ahead.count} 位投资人已提前提交截至 ${formatDate(ahead.period, lang)} 的申报，表中他们的持仓按这份更新的申报列出；本页的动向统计只计 ${formatDate(latestPeriod, lang)} 季度的申报。`
               : ""
           }来源：SEC EDGAR。13F 仅涵盖美股多头持仓，且可能滞后实际组合最多 45 天，因此这是已披露的多头持有情况，并非完整全貌。`,
         ],

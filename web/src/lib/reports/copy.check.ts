@@ -20,7 +20,7 @@ const p: ReportPayload = {
 };
 
 assert(reportTitle("2026-09-30", "en").includes("Q3 2026"), "en 标题含季度");
-assert(reportTitle("2026-09-30", "zh").includes("Q3 2026"), "zh 标题含季度");
+assert(reportTitle("2026-09-30", "zh").includes("2026Q3"), "zh 标题含季度");
 
 const enLive = reportDescription(p, "live", "en");
 assert(enLive.includes("61 of 97"), `live 结论带覆盖率: ${enLive}`);
@@ -37,7 +37,7 @@ const empty = reportDescription({ ...p, bought: { items: [], emptyReason: "no_fi
 assert(empty.length > 0 && !empty.includes("undefined"), `全空也能出一句: ${empty}`);
 
 assert(statusLine({ status: "live", coverageFiled: 61, coverageTotal: 97, finalizedAt: null }, "zh").includes("97 位中已有 61 位申报"), "zh live 状态条");
-assert(statusLine({ status: "final", coverageFiled: 94, coverageTotal: 97, finalizedAt: "2026-11-18T03:00:00Z" }, "en").includes("2026-11-18"), "en final 状态条带日期");
+assert(statusLine({ status: "final", coverageFiled: 94, coverageTotal: 97, finalizedAt: "2026-11-18T03:00:00Z" }, "en").includes("Nov 18, 2026"), "en final 状态条带日期");
 
 assert(stockHref({ key: "C_UNRES", ticker: null, issuer: "MYSTERY" }, "en") === null, "未解析 ticker 不出链接");
 assert(stockHref({ key: "GOOG", ticker: "GOOG", issuer: "A" }, "en") === "/stocks/GOOG", "en 链接无前缀");
@@ -56,7 +56,7 @@ assert(disclaimerText("zh") === "仅供学习，不构成投资建议。" && dis
 
 // —— live 结论保留季度标签
 assert(enLive.startsWith("Q3 2026, so far (61 of 97 filed): "), `en live 前缀带季度: ${enLive}`);
-assert(zh.startsWith("Q3 2026，截至目前（97 位中 61 位已申报）："), `zh live 前缀带季度: ${zh}`);
+assert(zh.startsWith("2026Q3，截至目前（97 位中 61 位已申报）："), `zh live 前缀带季度: ${zh}`);
 assert(enFinal.startsWith("Q3 2026: "), `final 前缀只有季度: ${enFinal}`);
 
 // —— 环比 0 写“持平”,不写 +0 / 0
@@ -81,18 +81,19 @@ assert(enOne.includes("1 superinvestor opened or added to GOOG") && !enOne.inclu
 assert(enOne.includes("(1 holder, +1 vs. last quarter)") && !enOne.includes("1 holders"), `单数 holder: ${enOne}`);
 
 // —— 估值晚于申报季的提示(spec §3.6):asOf 晚于实际截止日 30 天以上才加
-assert(valuationNote("2026-10-24", "zh", "2026-06-30") === "价值位置按 2026-10-24 收盘价计算（晚于该季申报季）。", `zh 晚于申报季: ${valuationNote("2026-10-24", "zh", "2026-06-30")}`);
-assert(valuationNote("2026-10-24", "en", "2026-06-30") === "Valuation positions use closing prices as of 2026-10-24 (later than that quarter's filing season).", `en 晚于申报季: ${valuationNote("2026-10-24", "en", "2026-06-30")}`);
+assert(valuationNote("2026-10-24", "zh", "2026-06-30") === "价值位置按 2026年10月24日 收盘价计算（晚于该季申报季）。", `zh 晚于申报季: ${valuationNote("2026-10-24", "zh", "2026-06-30")}`);
+assert(valuationNote("2026-10-24", "en", "2026-06-30") === "Valuation positions use closing prices as of Oct 24, 2026 (later than that quarter's filing season).", `en 晚于申报季: ${valuationNote("2026-10-24", "en", "2026-06-30")}`);
 // Q3 2026 实际截止 11/16:12/16 = +30 天不加,12/17 加
-assert(valuationNote("2026-12-16", "en", "2026-09-30") === "Valuation positions use closing prices as of 2026-12-16.", "恰好 30 天不加");
+assert(valuationNote("2026-12-16", "en", "2026-09-30") === "Valuation positions use closing prices as of Dec 16, 2026.", "恰好 30 天不加");
 assert(valuationNote("2026-12-17", "en", "2026-09-30").includes("later than that quarter's filing season"), "31 天加");
-assert(valuationNote("2026-11-17", "zh", "2026-09-30") === "价值位置按 2026-11-17 收盘价计算。", "申报季内不加");
-assert(valuationNote("2026-10-24", "en") === "Valuation positions use closing prices as of 2026-10-24.", "不传 period 不加");
+assert(valuationNote("2026-11-17", "zh", "2026-09-30") === "价值位置按 2026年11月17日 收盘价计算。", "申报季内不加");
+assert(valuationNote("2026-10-24", "en") === "Valuation positions use closing prices as of Oct 24, 2026.", "不传 period 不加");
 assert(!/—/.test(valuationNote("2026-10-24", "en", "2026-06-30") + valuationNote(null, "zh", "2026-06-30")), "不出现 —");
 
 // 名家动作:动作按股数口径说,权重放括号里并注明会受股价影响(避免“减仓但权重上升”的误读)。
 const dy = { key: "AAPL", ticker: "AAPL", issuer: "APPLE INC", kind: "decreased" as const, weightBefore: 0.367, weightAfter: 0.411 };
 assert(featuredMoveText(dy, "zh") === "减持 AAPL（占组合 36.7% → 41.1%）", `zh 股数口径: ${featuredMoveText(dy, "zh")}`);
+assert(featuredMoveText({ ...dy, weightBefore: 0.00001, weightAfter: 0.00002 }, "zh").includes("<0.1% → <0.1%"), "极小持仓占比不显示为零");
 assert(featuredMoveText(dy, "en") === "Sold some AAPL (portfolio weight 36.7% → 41.1%)", `en 股数口径: ${featuredMoveText(dy, "en")}`);
 assert(featuredMoveText({ ...dy, kind: "increased" }, "zh").startsWith("增持 "), "zh 增持");
 assert(featuredMoveText({ ...dy, kind: "new", weightBefore: 0, weightAfter: 0.047 }, "zh") === "新进 AAPL（占组合 0% → 4.7%）", "zh 新进");

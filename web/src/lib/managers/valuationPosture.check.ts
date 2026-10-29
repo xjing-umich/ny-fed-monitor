@@ -89,12 +89,12 @@ const pp = (over: Partial<ValuationPosture>): ValuationPosture => ({ covered: 12
 const eq = (got: string, want: string, m: string) => assert(got === want, `${m}\n  got:  ${got}\n  want: ${want}`);
 // cheap>0 + strike>0 + pending + asOf
 const full = pp({ strikeCount: 1, cheap: [ch({ inStrikeZone: true }), ch({})], pending: [ch({})], asOf: "2026-10-22" });
-eq(postureLeadIn(full, "zh"), "该组合的 12 只估值无红旗的美股持仓中，有 2 只现价低于内在价值（其中 1 只落在击球区）；另有 1 只待确认（估值截至 2026-10-22）：", "zh full");
-eq(postureLeadIn(full, "en"), "Of 12 valued US positions without red flags, 2 trade below intrinsic value (1 in the strike zone); 1 more pending (as of 2026-10-22):", "en full");
+eq(postureLeadIn(full, "zh"), "该组合的 12 只估值无红旗的美股持仓中，有 2 只现价低于内在价值（其中 1 只落在击球区）；另有 1 只待确认（估值截至 2026年10月22日）：", "zh full");
+eq(postureLeadIn(full, "en"), "Of 12 valued US positions without red flags, 2 trade below intrinsic value (1 in the strike zone); 1 more pending (as of Oct 22, 2026):", "en full");
 // cheap>0, 无 strike, 无 pending
 const plain = pp({ cheap: [ch({})], asOf: "2026-10-22" });
-eq(postureLeadIn(plain, "zh"), "该组合的 12 只估值无红旗的美股持仓中，有 1 只现价低于内在价值（估值截至 2026-10-22）：", "zh no pending");
-eq(postureLeadIn(plain, "en"), "Of 12 valued US positions without red flags, 1 trade below intrinsic value (as of 2026-10-22):", "en no pending");
+eq(postureLeadIn(plain, "zh"), "该组合的 12 只估值无红旗的美股持仓中，有 1 只现价低于内在价值（估值截至 2026年10月22日）：", "zh no pending");
+eq(postureLeadIn(plain, "en"), "Of 12 valued US positions without red flags, 1 trade below intrinsic value (as of Oct 22, 2026):", "en no pending");
 // cheap=0, 只有待确认, 无 asOf
 const onlyPending = pp({ covered: 5, pending: [ch({}), ch({})] });
 eq(postureLeadIn(onlyPending, "zh"), "该组合的 5 只估值无红旗的美股持仓中，没有现价低于内在价值的；另有 2 只待确认：", "zh only pending");

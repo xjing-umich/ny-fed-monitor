@@ -7,8 +7,8 @@ assert.equal(latestIsoDate([]), null);
 assert.equal(latestIsoDate(["", null]), null);
 assert.equal(latestIsoDate(["2026-10-22T16:57:57+00:00"]), "2026-10-22", "带时间也截到日期");
 
-assert.equal(valuationAsOfText("zh", "2026-10-22"), "估值截至 2026-10-22 收盘价");
-assert.equal(valuationAsOfText("en", "2026-10-22"), "Valuations as of the 2026-10-22 close");
+assert.equal(valuationAsOfText("zh", "2026-10-22"), "估值截至 2026年10月22日 收盘价");
+assert.equal(valuationAsOfText("en", "2026-10-22"), "Valuations as of the Oct 22, 2026 close");
 assert.equal(valuationAsOfText("zh", null), null);
 
 assert.equal(priceSourceName("zh", "yahoo"), "Yahoo Finance");

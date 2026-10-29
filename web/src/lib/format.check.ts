@@ -1,7 +1,7 @@
 import { formatUSD, fmtMarginPct, cleanIssuer, cleanFilerName, zhSpacing, zhJoin } from "./format";
 function assert(c: boolean, m: string){ if(!c){ console.error("FAIL:", m); process.exit(1);} }
-assert(formatUSD(999_999_999) === "$1.00B", `边界滚B, got ${formatUSD(999_999_999)}`);
-assert(formatUSD(1_500_000_000) === "$1.50B", "常规B");
+assert(formatUSD(999_999_999) === "$1B", `边界滚B, got ${formatUSD(999_999_999)}`);
+assert(formatUSD(1_500_000_000) === "$1.5B", "常规B");
 assert(formatUSD(1_500_000) === "$1.5M", "常规M");
 assert(fmtMarginPct(0.002) === "<1%", `微小正margin显示<1%, got ${fmtMarginPct(0.002)}`);
 assert(fmtMarginPct(0.23) === "23%", "常规margin不带符号(标签已是安全边际)");
@@ -27,6 +27,38 @@ const names: [string, string][] = [
   ["SS SPDR S&P 500 ETF TRUST-US", "SPDR S&P 500 ETF Trust"],
   ["MOODY'S CORP", "Moody's Corp"],
   ["BERKSHIRE HATHAWAY INC DEL", "Berkshire Hathaway Inc"],
+  // 第二轮审核中的大小写回归；显式映射，不把所有短词猜成缩写。
+  ["EOG RESOURCES INC", "EOG Resources Inc"],
+  ["CME GROUP INC-CL A", "CME Group Inc Class A"],
+  ["AGCO CORP", "AGCO Corp"],
+  ["AAON INC", "AAON Inc"],
+  ["ADT INC", "ADT Inc"],
+  ["BCE INC", "BCE Inc"],
+  ["MSA SAFETY INC", "MSA Safety Inc"],
+  ["UGI CORP", "UGI Corp"],
+  ["VICI PROPERTIES INC", "VICI Properties Inc"],
+  ["WEX INC", "WEX Inc"],
+  ["XPO INC", "XPO Inc"],
+  ["GXO LOGISTICS INC", "GXO Logistics Inc"],
+  ["QXO INC", "QXO Inc"],
+  ["RLI CORP", "RLI Corp"],
+  ["WSFS FINANCIAL CORP", "WSFS Financial Corp"],
+  ["TXNM ENERGY INC", "TXNM Energy Inc"],
+  ["NOV INC", "NOV Inc"],
+  ["APA CORP", "APA Corp"],
+  ["ABM INDUSTRIES INC", "ABM Industries Inc"],
+  ["NVIDIA CORP", "NVIDIA Corp"],
+  ["ABBVIE INC", "AbbVie Inc"],
+  ["SOFI TECHNOLOGIES INC", "SoFi Technologies Inc"],
+  ["ZIPRECRUITER INC-CL A", "ZipRecruiter Inc Class A"],
+  ["GE AEROSPACE", "GE Aerospace"],
+  ["DR HORTON INC", "D.R. Horton Inc"],
+  ["D.R. HORTON INC", "D.R. Horton Inc"],
+  ["ON SEMICONDUCTOR CORP", "ON Semiconductor Corp"],
+  ["MARSH & MCLENNAN COS INC", "Marsh & McLennan Cos Inc"],
+  ["DEXCOM INC", "Dexcom Inc"],
+  ["NVIDIA CORP-SP ADR", "NVIDIA Corp ADR"],
+  ["FIRST AMERICAN FINANCIAL CORP", "First American Financial Corp"],
 ];
 for (const [raw, want] of names) {
   const got = cleanIssuer(raw);
@@ -42,10 +74,28 @@ const filers: [string, string][] = [
   ["BERKSHIRE HATHAWAY INC", "Berkshire Hathaway Inc"],
   ["VAN DEN BERG MANAGEMENT I, INC", "Van Den Berg Management I, Inc"],
   ["BANK OF AMERICA CORP", "Bank of America Corp"],
+  ["BAUPOST GROUP LLC/MA", "Baupost Group LLC"],
+  ["Baupost Group Llc/Ma", "Baupost Group LLC"],
+  ["  BAUPOST   GROUP LLC /MA  ", "Baupost Group LLC"],
+  ["COOPERMAN LEON G", "Leon G Cooperman"],
+  ["DODGE & COX DODGE & COX", "Dodge & Cox"],
+  ["Dodge & Cox Dodge & Cox", "Dodge & Cox"],
+  ["DODGE & COX DODGE & COX/CA", "Dodge & Cox"],
+  ["THE STATE OF NEW YORK", "The State of New York"],
+  ["NEW YORK STATE COMMON RETIREMENT FUND", "New York State Common Retirement Fund"],
+  ["FOO FOO CAPITAL", "Foo Foo Capital"],
+  ["VALUE PARTNERS/UK", "Value Partners/UK"],
+  ["Appaloosa LP", "Appaloosa LP"],
+  ["Fundsmith LLP", "Fundsmith LLP"],
+  ["eValue Capital LLC/CA", "eValue Capital LLC"],
+  ["iShares Advisors LLC/NY", "iShares Advisors LLC"],
+  ["Baupost Group llc/Ma", "Baupost Group LLC"],
+  ["Baupost Group LLC/CA/NY", "Baupost Group LLC"],
 ];
 for (const [raw, want] of filers) {
   const got = cleanFilerName(raw);
   assert(got === want, `cleanFilerName(${raw}) → ${got}, want ${want}`);
+  assert(cleanFilerName(got) === got, `cleanFilerName 幂等: ${got}`);
 }
 // 中文模板里名字两侧的空格:两边都是汉字/全角标点才去掉,汉字与英文、数字之间保留。
 const spacing: [string, string][] = [

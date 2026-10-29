@@ -1,26 +1,19 @@
-/**
- * Formats a USD dollar amount with T/B/M suffixes.
- * e.g. 1_500_000_000 → "$1.50B"
- */
-export function formatUSD(v: number): string {
-  const abs = Math.abs(v);
-  if (abs >= 9.995e11) return `$${(v / 1e12).toFixed(2)}T`;
-  if (abs >= 9.995e8) return `$${(v / 1e9).toFixed(2)}B`;
-  if (abs >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-  return `$${v.toLocaleString()}`;
-}
+import type { Lang } from "./nav";
+import { money, price, perShareValue, range } from "./i18n/format";
 
-const USD_2DP = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const USD_0DP = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+/** 兼容旧入口；UI 必须显式传语言，英文 llms 等单语输出可用默认值。 */
+export function formatUSD(v: number, lang: Lang = "en", mode: "prose" | "table" = "prose"): string {
+  return money(v, lang, mode);
+}
 
 /** 股价:一律到美分("$2.88"),行情站的底线;取整会让读者复算安全边际对不上。 */
 export function fmtPrice(v: number): string {
-  return `$${USD_2DP.format(v)}`;
+  return price(v);
 }
 
 /** 每股估值:是估计值,≥$10 取整;<$10 时取整误差太大(如 $2.51 → $3),保留到美分。 */
 export function fmtPerShareValue(v: number): string {
-  return Math.abs(v) >= 10 ? `$${USD_0DP.format(v)}` : fmtPrice(v);
+  return perShareValue(v);
 }
 
 /**
@@ -107,6 +100,9 @@ const WORD_CASE: Record<string, string> = {
   Sm: "SM", Sps: "SPS", Td: "TD", Te: "TE", Tjx: "TJX", Ttm: "TTM", Ubs: "UBS", Vf: "VF", Wr: "WR", Ww: "WW",
   Xp: "XP", Ypf: "YPF", Bgc: "BGC", Bwx: "BWX", Bw: "BW", Bbb: "BBB", Bxp: "BXP", Bp: "BP", Acm: "ACM", Ccc: "CCC",
   Dpc: "DPC", Heico: "HEICO", "At&T": "AT&T", Jm: "JM", Na: "NA", "3m": "3M", Macom: "MACOM",
+  Eog: "EOG", Cme: "CME", Agco: "AGCO", Aaon: "AAON", Adt: "ADT", Bce: "BCE", Msa: "MSA", Ugi: "UGI",
+  Vici: "VICI", Wex: "WEX", Xpo: "XPO", Gxo: "GXO", Qxo: "QXO", Rli: "RLI", Wsfs: "WSFS", Txnm: "TXNM",
+  Nov: "NOV", Apa: "APA", Abm: "ABM", Ge: "GE", Nvidia: "NVIDIA",
   // 品牌的混合大小写
   Ishares: "iShares", Jpmorgan: "JPMorgan", Unitedhealth: "UnitedHealth", Paypal: "PayPal", Ebay: "eBay",
   Applovin: "AppLovin", Doordash: "DoorDash", Crowdstrike: "CrowdStrike", Gitlab: "GitLab", Netease: "NetEase",
@@ -117,6 +113,7 @@ const WORD_CASE: Record<string, string> = {
   Anglogold: "AngloGold", Inbev: "InBev", Mccormick: "McCormick", Dupont: "DuPont", Echostar: "EchoStar",
   Natwest: "NatWest", Nvent: "nVent", Blackrock: "BlackRock", Fedex: "FedEx", Servicenow: "ServiceNow",
   Linkedin: "LinkedIn", Youtube: "YouTube", Diamondrock: "DiamondRock", "Equipmentshare.Com": "EquipmentShare.com",
+  Abbvie: "AbbVie", Sofi: "SoFi", Ziprecruiter: "ZipRecruiter", Mclennan: "McLennan",
 };
 // 名称中间的虚词小写("Bank Of America" → "Bank of America")。
 const LOWER_MID = new Set(["Of", "And", "The", "For", "De"]);
@@ -129,24 +126,47 @@ function fixWordCase(w: string, i: number): string {
 }
 
 /**
- * 全大写的申报主体(基金)名转展示名:"VIKING GLOBAL INVESTORS LP" → "Viking Global Investors LP"、
- * "HARRIS ASSOCIATES L P" → "Harris Associates LP"。只修大小写和法律形式写法,不动名称主体。
+ * 申报主体展示名：统一法律形式，去注册州尾缀和完整名称的重复。
+ * 全大写/小写的 EDGAR 原名标题化；策展名保留内部大小写，不改原始数据。
  */
 export function cleanFilerName(raw: string): string {
-  return titleCase(raw)
-    .replace(/\s+/g, " ")
-    .replace(/ L P$/, " LP") // "Harris Associates L P";"L.P." 本来就对,不动
+  let name = raw.trim().replace(/\s+/g, " ");
+  while (FILER_STATE_SUFFIX.test(name)) name = name.replace(FILER_STATE_SUFFIX, "").trim();
+  const words = name.split(" ");
+  // 只折叠完整短语的重复；"Foo Foo Capital" 内部的重复不受影响。
+  for (let size = 2; size <= words.length / 2; size++) {
+    if (words.length % size === 0 && words.every((w, i) => w.toLowerCase() === words[i % size].toLowerCase())) {
+      name = words.slice(0, size).join(" ");
+      break;
+    }
+  }
+  const fixed = FILER_NAME_FIXES[name.toLowerCase()];
+  if (fixed) return fixed;
+  const uniformCase = name === name.toUpperCase() || name === name.toLowerCase();
+  return (uniformCase ? titleCase(name) : name)
+    .replace(/ L P$/i, " LP")
     .split(" ")
     .map((w, i) => {
       const bare = w.replace(/,$/, "");
-      const fixed = /^\d+[a-z]$/.test(bare) ? bare.toUpperCase() : fixWordCase(bare, i); // "7g" → "7G"
+      const fixed = /^\d+[a-z]$/.test(bare) || FILER_LEGAL_FORMS.has(bare.toUpperCase())
+        ? bare.toUpperCase()
+        : bare.split("/").map((part, j) => fixWordCase(part, i + j)).join("/");
       return w.endsWith(",") ? `${fixed},` : fixed;
     })
     .join(" ");
 }
 
+// 只删除斜杠后的美国注册州缩写；名称主体的 New York 等地名保留。
+const FILER_STATE_SUFFIX = /\s*\/\s*(?:AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY)$/i;
+const FILER_LEGAL_FORMS = new Set(["LLC", "LP", "LLP", "PLC", "NV", "SA", "AG", "SE", "ASA", "SAB", "CV", "PBC"]);
+const FILER_NAME_FIXES: Record<string, string> = {
+  "cooperman leon g": "Leon G Cooperman",
+};
+
 // 13F 名被截断到 28 字符、规则补不回来的(多为 ETF),按清洗后的样子写出全名。
 const ISSUER_NAME_FIXES: Record<string, string> = {
+  "Dr Horton Inc": "D.R. Horton Inc",
+  "On Semiconductor Corp": "ON Semiconductor Corp",
   "Interactive Brokers Gro Class A": "Interactive Brokers Group Class A",
   "Space Exploration Techn Class A": "Space Exploration Technologies Class A",
   "LyondellBasell Indu Class A": "LyondellBasell Industries Class A",
@@ -219,7 +239,7 @@ export function trendDirection(value: string | undefined | null): "up" | "down" 
 
 /** 价值带展示：下沿≈上沿(取整相等,如单灯无增长名 valueFloor=rangeHi)时折叠为单值，否则 lo–hi。 */
 export function fmtValueBand(lo: number, hi: number, fmt: (n: number) => string): string {
-  return fmt(lo) === fmt(hi) ? fmt(lo) : `${fmt(lo)}–${fmt(hi)}`;
+  return range(lo, hi, fmt);
 }
 
 // 两个汉字/全角标点之间的空白。

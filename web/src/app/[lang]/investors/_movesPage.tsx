@@ -32,8 +32,8 @@ function movesFootnote(
 ): string {
   // 季度标签统一走 quarterLabel:同页正文与标题已是「Q2 2026」,此处若留裸 ISO
   // (「2026-06-30」)会让同一个季度在一屏里出现两种写法,还容易被读成「某天的过期数据」。
-  const baseline = quarterLabel(effective.period) || "—";
-  const max = quarterLabel(effective.maxPeriod);
+  const baseline = quarterLabel(effective.period, lang) || "—";
+  const max = quarterLabel(effective.maxPeriod, lang);
   const { filed, total } = effective.coverage;
   if (lang === "zh") {
     let s = `统计基准季：${baseline}。`;
@@ -46,7 +46,7 @@ function movesFootnote(
       }
     }
     if (lagged.length > 0) {
-      s += `未计入（最新申报更早）：${lagged.map((m) => `${managerLabel(lang, m.slug, m.person)}（${quarterLabel(m.period)}）`).join("、")}。`;
+      s += `未计入（最新申报更早）：${lagged.map((m) => `${managerLabel(lang, m.slug, m.person)}（${quarterLabel(m.period, lang)}）`).join("、")}。`;
     }
     return s;
   }
@@ -62,7 +62,7 @@ function movesFootnote(
     }
   }
   if (lagged.length > 0) {
-    s += ` Not counted (older latest filing): ${lagged.map((m) => `${managerLabel(lang, m.slug, m.person)} (${quarterLabel(m.period)})`).join(", ")}.`;
+    s += ` Not counted (older latest filing): ${lagged.map((m) => `${managerLabel(lang, m.slug, m.person)} (${quarterLabel(m.period, lang)})`).join(", ")}.`;
   }
   return s;
 }
@@ -79,7 +79,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
   const lagged = idx.managers.filter(
     (m) => baseline != null && m.period < baseline,
   );
-  const qLabel = quarterLabel(baseline) || baseline || "—";
+  const qLabel = quarterLabel(baseline, lang) || baseline || "—";
 
   const rankRows: RankRow[] = data.map((r) => {
     const k = KIND_LABEL[r.dominantKind];
@@ -129,7 +129,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
             eyebrow={isZh ? `13F 动向 · ${qLabel}` : `13F moves · ${qLabel}`}
             title={heading}
             intro={sub}
-            dateline={<DataAsOfBadge lang={lang} asOf={quarterLabel(baseline) || undefined} />}
+            dateline={<DataAsOfBadge lang={lang} asOf={quarterLabel(baseline, lang) || undefined} />}
             action={
               <ShareButton
                 url={shareUrl}
