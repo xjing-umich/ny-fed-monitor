@@ -117,11 +117,20 @@ export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
 
 /**
  * 每户季度变化信号(cik → ManagerQoQ)。仅 /investors 列表页调用。
- * 读 manager_quarter_summary;表未迁移、或表已建但还没有行(DDL 之后、首次共识运行之前)→ 回退 RPC manager_qoq
- * (空表若直接返回空 Map,/investors 的 ISR 会把"—"缓存 3 天);其他出错 → console.error 后返回空 Map(优雅降级)。
+ * 优先读来源校验 RPC;来源失配/尚无完整批次时返回空 Map。
+ * 仅迁移前缺 RPC 时兼容旧表/RPC;其他出错 → console.error 后返回空 Map(优雅降级)。
  */
 export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
   const db = getDb();
+  // 迁移后只读仍匹配最新两季 filing 身份/期末/持仓数的汇总;空结果也不退回未校验旧值。
+  const { data: current, error: currentErr } = await db.rpc("current_manager_quarter_summaries")
+    .select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,top_moves");
+  if (!currentErr) return mapSummaryRows((current ?? []) as SummaryRow[]);
+  if (currentErr.code !== "PGRST202" && !isMissingTableError(currentErr)) {
+    console.error(`getManagerQoQ current summaries query failed: ${currentErr.message}`);
+    return new Map();
+  }
+  // 滚动部署兼容:RPC 尚未迁移时才沿用旧表/RPC 路径。writer 同期会明确失败,不做非原子双写。
   // 读入库时算好的季度汇总(拆股已换算,与详情页同一函数);表未迁移 → 回退旧 RPC manager_qoq。
   const { data: rows, error: tErr } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,top_moves");
   if (!tErr && rows?.length) return mapSummaryRows(rows as SummaryRow[]);

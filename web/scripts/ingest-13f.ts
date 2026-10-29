@@ -21,6 +21,7 @@ import WebSocket from "ws";
 import { upsertManagerDetail } from "./lib/supabaseUpsert.js";
 import { enrichSecurities } from "./lib/enrichSecurities.js";
 import { computeAndStoreConsensus } from "./lib/computeConsensus.js";
+import { storeBeforeDeriving, ManagerWriteError, needsSiteRefresh } from "./lib/ingestStore.js";
 import { padCusip } from "../src/lib/securities/openfigi.js";
 import { hasLongHoldings, isLongHolding, isRealHolding, isZeroHoldingsReport } from "./lib/holdingFilters.js";
 import { holdingKey, resolvePeriodHoldings, type AmendmentType, type FilingVersion } from "./lib/amendments.js";
@@ -541,12 +542,13 @@ async function main() {
   const env = { ...fileEnv, ...process.env } as Record<string, string>;
   const sbUrl = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
   const sbKey = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+  let managersPersisted: number | undefined;
   if (sbUrl && sbKey) {
     const db = createClient(sbUrl, sbKey, {
       auth: { persistSession: false },
       realtime: { transport: WebSocket as unknown as never },
     });
-    // 落库前先比对:本次抓到的 filing 里有没有库里还没有的 accession。workflow 只在有新 filing 时
+    // 落库前先比对新 accession;发布成功后再合并派生内容变化信号。workflow 在内容变化时
     // 才整站 revalidate —— 每周两次无差别刷新 ~2200 页会把 Vercel Hobby 的 ISR Writes 额度用穿。
     const newAccessions = await findNewAccessions(
       db,
@@ -557,30 +559,29 @@ async function main() {
     } else {
       console.log(`New filings this run: ${newAccessions.length}${newAccessions.length ? ` (${newAccessions.slice(0, 10).join(", ")}${newAccessions.length > 10 ? ", …" : ""})` : ""}`);
     }
-    setActionOutput("changed", newAccessions === null || newAccessions.length > 0 ? "true" : "false");
     if (newAccessions !== null) setActionOutput("new_filings", String(newAccessions.length));
 
-    for (const detail of allDetails) {
-      try { await upsertManagerDetail(db, detail, FORMER_NAMES[detail.manager.slug]); console.log(`[${detail.manager.slug}] upserted to Supabase`); }
-      catch (e) { console.warn(`[${detail.manager.slug}] Supabase upsert failed: ${e}`); }
-    }
-    console.log("Supabase upsert done.");
-
     try {
-      const stats = await enrichSecurities(db, env.OPENFIGI_API_KEY);
-      console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
-    } catch (e) {
-      console.warn(`Securities enrich failed (非致命): ${e instanceof Error ? e.message : e}`);
-    }
-    try {
-      const c = await computeAndStoreConsensus(db);
-      console.log(`Consensus: holdings ${c.holdings} 行, moves ${c.moves} 行, 拆股系数 ${c.splitFactors} 条, 季度汇总 ${c.summaries} 户`);
-    } catch (e) {
-      // Consensus is derived from the just-ingested 13F data. A write failure
-      // here (schema drift, missing column, stale cache) must NOT pass as green
-      // — it previously left consensus_moves silently empty. Mark the run failed
-      // while keeping the 13F source data already written above.
-      console.error(`Consensus 计算/写入失败:${e instanceof Error ? e.message : e}。标记本次运行失败。`);
+      const stored = await storeBeforeDeriving(allDetails, async (detail) => {
+        await upsertManagerDetail(db, detail, FORMER_NAMES[detail.manager.slug]);
+        console.log(`[${detail.manager.slug}] upserted to Supabase`);
+      }, async () => {
+        try {
+          const stats = await enrichSecurities(db, env.OPENFIGI_API_KEY);
+          console.log(`Securities enrich: 处理 ${stats.total}, 解析 ${stats.resolved}, 未解析 ${stats.unresolved}, 跳过批次 ${stats.skippedBatches}`);
+        } catch (error) {
+          console.warn(`Securities enrich failed (非致命): ${error instanceof Error ? error.message : error}`);
+        }
+        return computeAndStoreConsensus(db);
+      });
+      managersPersisted = stored.written;
+      const c = stored.result;
+      console.log(`Consensus: holdings ${c.holdings} 行, moves ${c.moves} 行, 拆股系数 ${c.splitFactors} 条, 季度汇总 ${c.summaries} 户, 派生内容变化 ${c.derivedChanged}`);
+      setActionOutput("derived_changed", String(c.derivedChanged));
+      setActionOutput("changed", String(needsSiteRefresh(newAccessions, c.derivedChanged)));
+    } catch (error) {
+      managersPersisted = error instanceof ManagerWriteError ? error.written : allDetails.length;
+      console.error(`入库/派生发布失败:${error instanceof Error ? error.message : error}。不刷新站点或发送报告。`);
       process.exitCode = 1;
     }
   } else {
@@ -591,7 +592,7 @@ async function main() {
   // 但 exit 1 让 GitHub Actions 显示失败,杜绝静默部分失败伪装成功。
   // Partial runs (INGEST_ONLY) gate against the filtered seed subset only.
   const expected = seeds.length;
-  const succeeded = summaries.length;
+  const succeeded = managersPersisted ?? summaries.length;
   setActionOutput("managers_ok", String(succeeded));
   const ratio = expected > 0 ? succeeded / expected : 0;
   if (ratio < MIN_SUCCESS_RATIO) {

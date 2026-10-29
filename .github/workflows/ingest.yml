@@ -2,7 +2,7 @@ name: 13F Ingest (Mon & Thu, twice daily in filing season)
 on:
   schedule:
     # 错开整点::00 是 GitHub 定时任务最拥挤的时刻,2026-08~10 实测 09:00 的任务普遍晚 5–10 小时才启动。
-    - cron: "17 9 * * 1,4"    # 每周一/周四 09:17 UTC; 幂等(无新 filing 不写)。13F 为命脉
+    - cron: "17 9 * * 1,4"    # 每周一/周四 09:17 UTC; 派生内容未变时不整站刷新。13F 为命脉
     # 申报季(2/5/8/11 月 10–20 日)每天两次:03:17 UTC 接住前一晚(美东傍晚)的申报,15:17 UTC 接住
     # 当天上午的。看门狗在申报季要求 30 小时内必须有一次成功(src/lib/health/checks.ts isFilingSeason)。
     - cron: "17 3,15 10-20 2,5,8,11 *"
@@ -31,7 +31,7 @@ jobs:
           OPENFIGI_API_KEY: ${{ secrets.OPENFIGI_API_KEY }}
       # 数据入库 ≠ 页面生效。不刷缓存的话页面只能等各自的 ISR 到期(详情页 7 天),申报季会长时间
       # 半新半旧。失败即红灯(不 continue-on-error):站点继续发旧数据是真故障,不该静默。
-      # 只在本次有新 filing(或手动触发)时刷:整站刷新 = ~2200 页重新生成,无差别每周两次
+      # 只在新 filing/派生内容实质变化(或手动触发)时刷;纯时间戳变化不刷。整站刷新约 2200 页,无差别每周两次
       # 会把 Vercel Hobby 的 ISR Writes 额度用穿。
       - name: Revalidate site cache
         id: revalidate
