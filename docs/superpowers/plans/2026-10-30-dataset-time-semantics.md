@@ -24,4 +24,4 @@
 - [x] 实现共享时间/来源辅助函数；接入个股实际持有人行与投资人 latest filing；在正文呈现同源时间说明。
 - [x] 去除动态数据页 sitemap 与列表 CollectionPage 中用 filedAt/报告期冒充的修改日，保留文章/季报的记录。
 - [x] 跑相关 check、TypeScript、lint 和同源 SSR 页面验证；记录官方定义、当前线上抽样与持久化字段审计。
-- [ ] 独立 code review，修复问题，再推送并创建 PR（不合并）。
+- [x] 独立 code review，无阻塞发现；按授权进入推送/创建 PR 步骤（不合并）。

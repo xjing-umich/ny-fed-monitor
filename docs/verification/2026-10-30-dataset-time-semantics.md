@@ -41,4 +41,10 @@
 - 相关 seo / freshness / stockConclusion / holderTrend checks，TypeScript，设计 token 和字号检查通过。
 - 改动文件 lint：投资人目录已有 `Date.now()` 的 react-hooks/purity 错误（原始 HEAD 相同错误已独立重现），本次未改该行；其余改动文件 lint 通过。
 
-构建与独立 review 的最终结果在 PR 验证部分补充。
+## 构建与独立审查结果
+
+- 新增的三个 regression checks 已接入既有 `check:facts`，以后 prebuild 自动执行；当前全部 11 个 checks 通过。基于 #256 合并后的 `db-foundation@c21217c` 再次验证通过。
+- `npm run build -- --webpack` 的完整 prebuild 检查通过；构建在未修改的 `next/font` Google Saira 字体环节失败，出现 TLS 连接中断和 loader 的 null extension 错误，不能宣称生产构建通过。未为通过构建而改字体或屏蔽错误。
+- 独立只读 review：Critical 0、Important 0，允许创建 PR。审查者独立重跑了时间、真实页面 SSR、sitemap、seo、freshness、趋势检查与 `tsc --noEmit --incremental false`。
+- 暂留 Minor：`sitemap-time.check.ts` 当前只断言任意 learn 文章保留日期，不能单独保护 fixture 季报的精确日期；当前实现正确，后续可补针对季报 URL 的断言。这不阻塞本次修复。
+- 生产数据库修订字段、重算/发布操作与实际搜索收录效果明确留在本次授权和验证范围之外；本次不据结构化数据测试推断收录结果。
