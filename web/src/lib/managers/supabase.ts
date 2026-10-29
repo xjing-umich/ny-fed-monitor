@@ -97,7 +97,7 @@ type QoQRow = {
   top_move_kind: string | null;
 };
 
-export type SummaryRow = { cik: string; latest_value: number | string; prior_value: number | string; latest_count: number; prior_count: number; count_verdict: string; top_moves: { issuer: string; kind: string }[] };
+export type SummaryRow = { cik: string; latest_value: number | string; prior_value: number | string; latest_count: number; prior_count: number; count_verdict: string; verdict?: string; top_moves: { issuer: string; kind: string }[] };
 /** manager_quarter_summary 行 → 列表页 ManagerQoQ。PR A 阶段 verdict 仍用只数口径(count_verdict),与详情页一致。 */
 export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
   const out = new Map<string, ManagerQoQ>();
@@ -124,7 +124,7 @@ export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
   const db = getDb();
   // 迁移后只读仍匹配最新两季 filing 身份/期末/持仓数的汇总;空结果也不退回未校验旧值。
   const { data: current, error: currentErr } = await db.rpc("current_manager_quarter_summaries")
-    .select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,top_moves");
+    .select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,verdict,top_moves");
   if (!currentErr) return mapSummaryRows((current ?? []) as SummaryRow[]);
   if (currentErr.code !== "PGRST202" && !isMissingTableError(currentErr)) {
     console.error(`getManagerQoQ current summaries query failed: ${currentErr.message}`);
@@ -132,7 +132,7 @@ export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
   }
   // 滚动部署兼容:RPC 尚未迁移时才沿用旧表/RPC 路径。writer 同期会明确失败,不做非原子双写。
   // 读入库时算好的季度汇总(拆股已换算,与详情页同一函数);表未迁移 → 回退旧 RPC manager_qoq。
-  const { data: rows, error: tErr } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,top_moves");
+  const { data: rows, error: tErr } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,count_verdict,verdict,top_moves");
   if (!tErr && rows?.length) return mapSummaryRows(rows as SummaryRow[]);
   if (tErr && !isMissingTableError(tErr)) {
     console.error(`getManagerQoQ manager_quarter_summary query failed: ${tErr.message}`);

@@ -10,6 +10,7 @@ async function main() {
  globalThis.fetch=async input=>{
   const u=new URL(input instanceof Request?input.url:String(input));assert.equal(u.origin,'http://127.0.0.1:54321');
   if(u.pathname==='/rest/v1/rpc/current_manager_quarter_summaries') {
+   assert.ok(u.searchParams.get('select')?.split(',').includes('verdict'),'保留 PR B 需要的金额判定字段');
    if(phase==='empty')return Response.json([]);
    return Response.json({code:phase==='missing'?'PGRST202':'TEST',message:'expected failure'},{status:phase==='missing'?404:500});
   }
