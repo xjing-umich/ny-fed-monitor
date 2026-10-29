@@ -76,6 +76,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const rows = screen.rows;
   const computedAt = screen.computedAt;
   const strikeTotal = isConviction ? 0 : (screen as { strikeTotal: number }).strikeTotal;
+  const strikePending = isConviction ? 0 : (screen as { strikePending: number }).strikePending;
   const heldTotal = isConviction ? (screen as { heldTotal: number }).heldTotal : 0;
   const sortedRows = isConviction ? rows : sortScreenerRows(rows, sort);
   // 估值锚定的是收盘价日期;computedAt 是任务跑完的 UTC 日期,美东晚上跑会显示成"明天"。
@@ -83,14 +84,17 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const priceAsOf = latestIsoDate(rows.map((r) => r.priceDate));
   const asOf = priceAsOf ?? (computedAt ? computedAt.slice(0, 10) : "");
 
+  const pendingNote = strikePending > 0
+    ? isZh ? `，另 ${strikePending} 只待确认` : `; ${strikePending} more pending review`
+    : "";
   const geo =
     strikeTotal > 0
       ? isZh
-        ? `现在 ${strikeTotal} 只可估值股票落在击球区（价格低于买入线：内在价值扣除安全边际）${asOf ? `，截至 ${asOf}` : ""}。`
-        : `${strikeTotal} valued stocks are in the strike zone (price below the buy line: intrinsic value minus a margin of safety)${asOf ? `, as of ${asOf}` : ""}.`
+        ? `现在 ${strikeTotal} 只可估值股票已确认落在击球区${pendingNote}（价格低于买入线：内在价值扣除安全边际）${asOf ? `，截至 ${asOf}` : ""}。`
+        : `${strikeTotal} valued stocks are confirmed in the strike zone${pendingNote} (price below the buy line: intrinsic value minus a margin of safety)${asOf ? `, as of ${asOf}` : ""}.`
       : isZh
-        ? "当前没有可估值股票落在击球区（价格低于买入线：内在价值扣除安全边际；保守引擎常态）。"
-        : "No valued stocks are in the strike zone (price below the buy line: intrinsic value minus a margin of safety) right now.";
+        ? `当前没有已确认的击球区股票${pendingNote}（价格低于买入线：内在价值扣除安全边际）。`
+        : `No valued stocks are confirmed in the strike zone right now${pendingNote} (price below the buy line: intrinsic value minus a margin of safety).`;
 
   const convictionIntro = isZh
     ? `${heldTotal} 只被 ${CONSENSUS_MIN}+ 位机构共同持有的股票，按现价相对内在价值的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
