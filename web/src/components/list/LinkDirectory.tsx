@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import { FoldedSection } from "@/components/entity/FoldedSection";
 
 export type DirectoryItem = {
@@ -31,17 +30,15 @@ export function LinkDirectory({
   const sorted = [...items].sort((a, b) => a.label.localeCompare(b.label, "en", { sensitivity: "base" }));
   return (
     <FoldedSection eyebrow={eyebrow} title={title}>
-      <ul className="columns-1 gap-x-8 text-sm sm:columns-2 lg:columns-3">
+      {/* Native anchors keep this complete crawl directory out of the client Link boundary.
+          Shared descendant styles avoid serializing the same class names for every entry. */}
+      <ul className="columns-1 gap-x-8 text-sm sm:columns-2 lg:columns-3 [&>li]:break-inside-avoid [&>li]:py-1 [&_a]:text-[var(--tt-text)] [&_a]:no-underline [&_a:hover]:text-[var(--tt-accent)] max-sm:[&_a]:inline-flex max-sm:[&_a]:min-h-[44px] max-sm:[&_a]:items-center [&_a>span:first-child]:font-medium [&_a>span+span]:ml-1.5 [&_a>span+span]:text-[var(--tt-muted)]">
         {sorted.map((it) => (
-          <li key={it.href} className="break-inside-avoid py-1">
-            <Link
-              href={it.href}
-              prefetch={false}
-              className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)] max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center"
-            >
-              <span className="font-medium">{it.label}</span>
-              {it.note ? <span className="ml-1.5 text-[var(--tt-muted)]">{it.note}</span> : null}
-            </Link>
+          <li key={it.href}>
+            <a href={it.href}>
+              <span>{it.label}</span>
+              {it.note ? <span>{it.note}</span> : null}
+            </a>
           </li>
         ))}
       </ul>

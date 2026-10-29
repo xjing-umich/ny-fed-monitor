@@ -25,7 +25,7 @@ import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
-import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet } from "@/lib/seo";
+import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, securitySchemaType, edgarFilingsUrl } from "@/lib/seo";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -134,7 +134,10 @@ export async function generateMetadata({
   const alternates = altFor(lang, `/stocks/${ticker}`);
   // 未映射到代码的持仓(多为可转债/票据,如 008073AA6)以 CUSIP 作路由键:不叫"股票",也不进索引。
   const isCusipKey = /^[0-9A-Z]{8}[0-9]$/i.test(ticker);
-  const noun = isCusipKey ? { zh: "证券", en: "Security" } : { zh: "股票", en: "Stock" };
+  const { securityType } = await getSecurityMeta(ticker);
+  const schemaType = securitySchemaType(securityType, issuer, ticker);
+  const noun = schemaType === "InvestmentFund" ? { zh: "基金", en: "Fund" }
+    : isCusipKey || schemaType === "FinancialProduct" ? { zh: "证券", en: "Security" } : { zh: "股票", en: "Stock" };
   const meta =
     lang === "zh"
       ? { title: `${zhIssuer}（${ticker}）${noun.zh} — 谁在持有 | Compounder · 复利`,
@@ -615,15 +618,18 @@ export default async function StockTickerPage({
   const stockAliases = [...(await getEntityAliases("stock", ticker)), ...(zhName ? [zhName] : [])].filter(
     (a) => a !== issuer && a !== ticker
   );
-  // 上市公司实体:Corporation + tickerSymbol(schema.org 约定 "交易所 代码",交易所未知时只给代码)。不设 url——
-  // 实体的 url 应是公司官网,本站页面只是关于它的页面,指回本站会让引擎把本站当成公司主页。
+  // 基金份额与上市公司分别标注；tickerSymbol 只适用于 Corporation。
+  // 本站是关于该证券的页面，不把本站地址当成发行人的官网。
   const listedOn = knownExchange(exchange);
-  const corporation = {
+  const schemaType = securitySchemaType(securityType, issuer, ticker);
+  const securityEntity = {
     "@context": "https://schema.org",
-    "@type": "Corporation",
+    "@type": schemaType,
     name: issuer,
     alternateName: [ticker, ...stockAliases],
-    tickerSymbol: listedOn ? `${listedOn} ${ticker}` : ticker,
+    ...(schemaType === "Corporation"
+      ? { tickerSymbol: listedOn ? `${listedOn} ${ticker}` : ticker }
+      : { identifier: { "@type": "PropertyValue", propertyID: "Ticker", value: ticker } }),
   };
 
   // Dataset structured data — the stock's 13F holders table as a factual,
@@ -639,6 +645,11 @@ export default async function StockTickerPage({
         ? `持有 ${issuer}（${ticker}）的超级投资者及其持股数量、市值与组合权重，来自 SEC 13F 季度申报。`
         : `Superinvestors holding ${issuer} (${ticker}) with share counts, market values, and portfolio weights, from quarterly SEC 13F filings.`,
     path: localePath(lang, `/stocks/${ticker}`),
+    // Snapshots lack accession numbers: cite each actual holder's 13F filing list.
+    sourceUrls: holders.flatMap((h) => {
+      const manager = idx.managers.find((m) => m.slug === h.slug);
+      return manager ? [edgarFilingsUrl(manager.cik)] : [];
+    }),
     period: asOfPeriod || null,
     dateModified: asOfFiledAt || null,
     variableMeasured:
@@ -731,7 +742,7 @@ export default async function StockTickerPage({
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(corporation) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(securityEntity) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }} />
       <EntityPage
         lang={lang}
