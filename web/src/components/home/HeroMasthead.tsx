@@ -89,7 +89,7 @@ function PanelRows({ lang, rows, showValue }: { lang: Lang; rows: MoveRow[]; sho
             }}
           >
             {lang === "zh" ? `${row.count} 位` : `${row.count}`}
-            {showValue && ` · ${formatUSD(row.value)}`}
+            {showValue && ` · ${formatUSD(row.value, lang)}`}
           </span>
         </div>
       ))}
@@ -120,7 +120,7 @@ export default function HeroMasthead({
   investorCount?: number;
 }): React.ReactElement {
   const c = COPY[lang];
-  const q = quarterLabel(movesPeriod) || movesPeriod;
+  const q = quarterLabel(movesPeriod, lang) || movesPeriod;
   // 申报季进度:仅当新季已开始收表但尚未过披露门槛(未过截止日 或 覆盖不足)时显示。
   // due_and_covered / empty(非申报季窗口)一个字都不渲染。
   const showFilingProgress =
@@ -129,7 +129,7 @@ export default function HeroMasthead({
     showFilingProgress && filing
       ? filingProgressText(
           lang,
-          quarterLabel(filing.maxPeriod),
+          quarterLabel(filing.maxPeriod, lang),
           filing.coverage,
           // 周末截止顺延到周一(Q3 2026:周六 11/14 → 11/16),与切季、当前持有人判断同一天。
           fmtDeadline(effectiveFilingDeadline(filing.maxPeriod), lang),
@@ -138,7 +138,7 @@ export default function HeroMasthead({
   const panelTitle = lang === "zh" ? `${q} 显著动向` : `Notable moves · ${q}`;
   const headline =
     typeof investorCount === "number" && investorCount > 0
-      ? c.headline(investorCount, quarterLabel(period) || period)
+      ? c.headline(investorCount, quarterLabel(period, lang) || period)
       : c.headlineNoCount(period);
 
   return (
@@ -148,7 +148,7 @@ export default function HeroMasthead({
         <p className="tt-eyebrow">{c.brand}</p>
         <p className="mt-2 flex items-center gap-2 font-data text-xs text-[var(--tt-accent)]">
           <FreshnessDot status={filingFreshness(period || null, new Date())} lang={lang} />
-          {c.asOf(quarterLabel(period) || period)}
+          {c.asOf(quarterLabel(period, lang) || period)}
         </p>
         {progressLine && filing && (
           <p className="mt-1.5 font-data text-xs text-[var(--tt-muted)]">
@@ -161,8 +161,8 @@ export default function HeroMasthead({
                   className="text-[var(--tt-accent)] no-underline hover:underline"
                 >
                   {lang === "zh"
-                    ? `${quarterLabel(filing.maxPeriod)} 报告 →`
-                    : `${quarterLabel(filing.maxPeriod)} report →`}
+                    ? `${quarterLabel(filing.maxPeriod, lang)} 报告 →`
+                    : `${quarterLabel(filing.maxPeriod, lang)} report →`}
                 </Link>
               </>
             )}

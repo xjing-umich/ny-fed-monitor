@@ -1,5 +1,6 @@
 // web/src/components/investor/WeightBar.tsx
 import React from "react";
+import { weight as formatWeight } from "@/lib/i18n/format";
 
 // 组合权重横条(RSC, 纯 CSS): 宽度=权重%, 无装饰、无 JS。真数据即图形。
 // weight 为小数(0.084=8.4%)。缺失/<=0 → 条为空, 百分数显 "—"。
@@ -22,7 +23,7 @@ export function WeightBar({
         <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct}%`, background: color }} />
       </span>
       <span className="font-data text-xs tabular-nums text-[var(--tt-muted)]">
-        {has ? `${pct.toFixed(1)}%` : "—"}
+        {has ? formatWeight(weight) : "—"}
       </span>
     </span>
   );

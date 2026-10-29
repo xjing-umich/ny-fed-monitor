@@ -189,7 +189,7 @@ export default function StepIndex({
                 </span>
               </span>
               <span className="shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)] whitespace-nowrap">
-                {formatUSD(m.totalValue)}
+                {formatUSD(m.totalValue, lang)}
               </span>
             </Link>
           ))}

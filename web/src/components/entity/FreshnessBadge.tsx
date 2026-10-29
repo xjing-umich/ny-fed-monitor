@@ -1,6 +1,7 @@
 import React from "react";
 import type { Lang } from "@/lib/nav";
 import type { Freshness13F } from "@/lib/freshness/derive";
+import { date as formatDate } from "@/lib/i18n/format";
 
 const COPY = {
   zh: {
@@ -42,16 +43,16 @@ export function FreshnessBadge({
   return (
     <div className="space-y-2">
       <p className="font-data text-xs text-[var(--tt-faint)]">
-        {t.provenance(period, filedAt)}
+        {t.provenance(formatDate(period, lang), formatDate(filedAt, lang))}
       </p>
       {status === "stale" && (
         <div className="rounded-md border border-[color-mix(in_srgb,var(--alert)_45%,transparent)] bg-[var(--alert-soft)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
-          {t.stale(period, lagQuarters)}
+          {t.stale(formatDate(period, lang), lagQuarters)}
         </div>
       )}
       {status === "inactive" && (
         <div className="rounded-md border border-[color-mix(in_srgb,var(--alert)_45%,transparent)] bg-[var(--alert-soft)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-text)]">
-          {t.inactive(period)}
+          {t.inactive(formatDate(period, lang))}
         </div>
       )}
     </div>

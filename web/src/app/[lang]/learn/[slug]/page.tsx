@@ -1,3 +1,4 @@
+import { date as formatDate } from "@/lib/i18n/format";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -175,7 +176,7 @@ export default async function ArticlePage({
           {backLabel}
         </Link>
       </div>
-      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={article.updated} updatedLabel={updatedLabel} renderParagraph={renderParagraph} notice={snapshotNotice} />
+      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={formatDate(article.updated, lang)} updatedLabel={updatedLabel} renderParagraph={renderParagraph} notice={snapshotNotice} />
 
       {/* 文中点名实体的内链(SEO 内链: 把文章权重传给对应实体页) */}
       {article.related && article.related.length > 0 && (
@@ -202,7 +203,7 @@ export default async function ArticlePage({
 }
 
 function SnapshotNotice({ lang, period, written, note }: { lang: Lang; period: string; written: string; note?: string }) {
-  const q = quarterLabel(period) || period;
+  const q = quarterLabel(period, lang) || period;
   const links = [
     { path: "/investors/consensus", en: "Consensus", zh: "共识持仓" },
     { path: "/investors/buys", en: "Top buys", zh: "最多买入" },
@@ -212,8 +213,8 @@ function SnapshotNotice({ lang, period, written, note }: { lang: Lang; period: s
     <aside className="mt-6 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel-2)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-muted)]">
       <p>
         {lang === "zh"
-          ? `季度快照：${q} 的 13F 申报（截至 ${period}），写于 ${written}。文中的家数指当时追踪的投资人。最新一季见：`
-          : `Snapshot: ${q} 13F filings (quarter ended ${period}), written ${written}. Counts refer to the investors Compounder tracked at the time. For the latest quarter: `}
+          ? `季度快照：${q} 的 13F 申报（截至 ${formatDate(period, lang)}），写于 ${formatDate(written, lang)}。文中的家数指当时追踪的投资人。最新一季见：`
+          : `Snapshot: ${q} 13F filings (quarter ended ${formatDate(period, lang)}), written ${formatDate(written, lang)}. Counts refer to the investors Compounder tracked at the time. For the latest quarter: `}
         {links.map((l, i) => (
           <span key={l.path}>
             {i > 0 ? " · " : ""}
