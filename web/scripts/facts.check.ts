@@ -15,6 +15,9 @@ const checks = [
   "src/lib/valuation/asOf.check.ts",
   "src/components/shell/MoveTag.check.tsx",
   "src/components/home/HeroMasthead.check.tsx",
+  "src/lib/datasetTime.check.ts",
+  "src/app/dataset-pages.check.tsx",
+  "src/app/sitemap-time.check.ts",
 ];
 for (const check of checks) {
   const result = spawnSync(process.execPath, [path.join(root, "node_modules/tsx/dist/cli.mjs"), "--tsconfig", "scripts/tsconfig.json", check], { cwd: root, stdio: "inherit" });
