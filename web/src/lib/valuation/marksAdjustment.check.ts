@@ -5,7 +5,7 @@
  * 运行: cd web && npx tsx --tsconfig scripts/tsconfig.json src/lib/valuation/marksAdjustment.check.ts
  */
 import type { FundamentalPeriod } from "@/lib/sec/normalize-facts";
-import { deriveMarksAdjustment, fundamentalsToFloorInput, MARKS_MATERIALITY_MIN, MARKS_TAX_RATE, shouldDropTtmForMarks } from "./fundamentalsToFloorInput";
+import { deriveMarksAdjustment, fundamentalsToFloorInput, MARKS_TAX_RATE, shouldDropTtmForMarks } from "./fundamentalsToFloorInput";
 import { computeValuationFloor } from "./epvFloor";
 
 let failed = 0;
@@ -117,6 +117,49 @@ assert(
   `2023-06-30 行用自身字段调整,不被 2023-12-31 行覆盖(实际 ${((yOldest.net_income ?? 0) / B).toFixed(3)}B)`,
 );
 assert(yOld != null, "sanity: 至少一行 fiscal_year=2023 且值匹配自身口径");
+
+// 捕获:FY 材料性低时,真实 TTM 突增的投资收益不能穿透盈利基数。
+console.log("场景 9: FY 未达门槛,TTM 大额投资收益触发一致调整");
+const smallMarksFy = [2025, 2024, 2023].map((year) => mkRow({
+  fiscal_year: year, period_end: `${year}-12-31`, revenue: 500, net_income: 100,
+  investment_fv_gain_loss: 10, shares_diluted: 10,
+}));
+const oldQ = mkRow({ fiscal_year: 2025, fiscal_period: "Q1", form: "10-Q", period_end: "2025-03-31", revenue: 100, net_income: 20, investment_fv_gain_loss: 2 });
+const newQ = mkRow({ fiscal_year: 2026, fiscal_period: "Q1", form: "10-Q", period_end: "2026-03-31", revenue: 120, net_income: 120, investment_fv_gain_loss: 112, shares_diluted: 10 });
+const recent = (quarter = newQ, history = smallMarksFy) => fundamentalsToFloorInput("RECENT", "Recent", history, 1, undefined, [quarter, oldQ]);
+// 手算 TTM:NI = 100+120−20 = 200;gains = 10+112−2 = 120;税后 NI = 105.2。
+const ttmAdjusted = recent();
+assert(ttmAdjusted.marks_adjustment != null, "TTM gains/NI=60% → 启用调整,不受 FY 10% 漏判");
+assert(ttmAdjusted.marks_adjustment?.materiality === 0.6 && ttmAdjusted.marks_adjustment?.trigger_period_end === "2026-03-31", "调整溯源记录真实 TTM 的材料性和期末");
+assert(Math.abs((ttmAdjusted.ttm?.year.net_income ?? NaN) - 105.2) < 1e-9, "TTM 税后剔除收益:200−120×79%=105.2");
+assert(ttmAdjusted.years.every((y) => Math.abs((y.net_income ?? NaN) - 92.1) < 1e-9), "FY 与 TTM 同口径调整,不混用 GAAP/FV 调整盈利");
+assert(smallMarksFy[0].net_income === 100 && newQ.net_income === 120, "原始 FY/季度行不被改写");
+const recentFloor = computeValuationFloor(ttmAdjusted);
+assert(recentFloor?.kind === "floor" && recentFloor.marks_adjustment?.trigger_period_end === "2026-03-31"
+  && (recentFloor.provenance.earnings_basis_note ?? "").includes("investment"), "引擎输出保留 TTM 调整溯源和盈利口径披露");
+
+console.log("场景 10: TTM 门槛边界与负收益对称性");
+const threshold = recent({ ...newQ, investment_fv_gain_loss: 42 }); // gains = 50, NI = 200
+assert(threshold.marks_adjustment != null, "TTM 恰好 25% → 调整");
+const under = recent({ ...newQ, investment_fv_gain_loss: 40 }); // gains = 48, NI = 200
+assert(under.marks_adjustment == null && under.ttm?.year.net_income === 200, "TTM 24% 且 FY 10% → 完全保持原值");
+const loss = recent({ ...newQ, investment_fv_gain_loss: -128 }); // gains = −120
+assert(Math.abs((loss.ttm?.year.net_income ?? NaN) - 294.8) < 1e-9, "重大投资亏损按同式税后剔除:200+120×79%=294.8");
+
+console.log("场景 11: 缺历史、非有限值与降级 TTM 不能伪装成一致口径");
+const gapHistory = smallMarksFy.map((r, i) => i === 2 ? { ...r, investment_fv_gain_loss: null } : r);
+const missingHistory = recent(newQ, gapHistory);
+assert(missingHistory.ttm == null && missingHistory.marks_adjustment == null, "重大 TTM gains 但历史覆盖不全 → 丢 TTM,回退纯 FY");
+const tooShort = recent(newQ, smallMarksFy.slice(0, 2));
+assert(tooShort.ttm == null && tooShort.years.length === 2, "不足 3 年时不放宽既有覆盖闸,也不把污染 TTM 带入");
+const nonfiniteHistory = recent(newQ, smallMarksFy.map((r, i) => i === 2 ? { ...r, investment_fv_gain_loss: NaN } : r));
+assert(nonfiniteHistory.ttm == null && nonfiniteHistory.marks_adjustment == null, "NaN 历史值视为缺数,不能产生 NaN 调整序列");
+const degraded = recent({ ...newQ, investment_fv_gain_loss: null }, smallMarksFy.map((r) => ({ ...r, investment_fv_gain_loss: 30 })));
+assert(degraded.ttm == null && degraded.marks_adjustment != null, "FY 原已调整且 TTM gains 降级 → 仍回退 FY");
+const staleGain = recent({ ...newQ, net_income: -70, investment_fv_gain_loss: null });
+assert(staleGain.marks_adjustment == null && staleGain.ttm?.year.net_income === 10, "降级回填的 FY gains 不得作为真实 TTM 触发调整");
+const zeroNi = recent({ ...newQ, net_income: -80 });
+assert(zeroNi.ttm == null, "TTM 净利为零但有重大投资损益 → 不把未调整 TTM 带入");
 
 if (failed) { console.error(`\n${failed} 个断言失败`); process.exit(1); }
 console.log("\n全部通过");

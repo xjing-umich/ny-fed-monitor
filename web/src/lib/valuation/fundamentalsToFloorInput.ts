@@ -6,25 +6,42 @@ export const MARKS_TAX_RATE = 0.21;
 export const MARKS_MATERIALITY_MIN = 0.25;
 export const MARKS_MIN_ALIGNED_YEARS = 3;
 
+/** 只接受真实、有限的损益;净利为零但损益非零也不能放行未调整的 TTM。 */
+function hasMaterialMarks(row: FundamentalPeriod | undefined): row is FundamentalPeriod & { net_income: number; investment_fv_gain_loss: number } {
+  return row != null && row.net_income != null && Number.isFinite(row.net_income)
+    && row.investment_fv_gain_loss != null && Number.isFinite(row.investment_fv_gain_loss)
+    && row.investment_fv_gain_loss !== 0
+    && Math.abs(row.investment_fv_gain_loss) >= MARKS_MATERIALITY_MIN * Math.abs(row.net_income);
+}
+
 /**
  * 件③三闸(spec §2.2,fail-closed):①整窗覆盖(每个有净利的 FY 都有 gains,防序列内口径混杂)
  * ②对齐年数≥3 ③材料性 |mean(gains)|/mean(|NI|) ≥ 0.25(校准:BRK 53%/MKL 53%/RLI 37%/WTM 34%/
  * RGA 33% vs FAF 20.6%,~8pp 实测间隔)。税率用法定 21% 常量——分年 effective rate 被 marks 本身
  * 污染;21% 有 BRK 股东信 operating earnings 逐年对账背书(FY2022 −22.8→+30.8B)。调整对称:
  * gains 均值为负(RGA)同式抬升,口径一致性优先。
+ * FY 未达材料性门槛时,完整、未降级的 TTM 也可触发同一调整(2026-10 GOOGL/GOOG);
+ * FY 覆盖闸不放宽,且 FY/TTM 必须一起调整,不能把投资收益突增当成经营盈利增长。
  */
-export function deriveMarksAdjustment(fyRows: FundamentalPeriod[]): MarksAdjustment | undefined {
+export function deriveMarksAdjustment(fyRows: FundamentalPeriod[], ttm?: FundamentalPeriod): MarksAdjustment | undefined {
   const niYears = fyRows.filter((r) => r.net_income != null);
   if (niYears.length < MARKS_MIN_ALIGNED_YEARS) return undefined;
-  if (!niYears.every((r) => r.investment_fv_gain_loss != null)) return undefined;
+  if (!niYears.every((r) => Number.isFinite(r.net_income) && r.investment_fv_gain_loss != null && Number.isFinite(r.investment_fv_gain_loss))) return undefined;
   const meanGain = niYears.reduce((s, r) => s + (r.investment_fv_gain_loss as number), 0) / niYears.length;
   const meanAbsNi = niYears.reduce((s, r) => s + Math.abs(r.net_income as number), 0) / niYears.length;
   if (!(meanAbsNi > 0)) return undefined;
-  const materiality = Math.abs(meanGain) / meanAbsNi;
-  if (materiality < MARKS_MATERIALITY_MIN) return undefined;
+  let materiality = Math.abs(meanGain) / meanAbsNi;
+  let triggerPeriodEnd: string | undefined;
+  if (materiality < MARKS_MATERIALITY_MIN) {
+    // 零净利不能产生有限的材料性比率;此时调用方丢弃有重大损益的 TTM,回退 FY。
+    if (!hasMaterialMarks(ttm) || ttm.net_income === 0) return undefined;
+    materiality = Math.abs(ttm.investment_fv_gain_loss) / Math.abs(ttm.net_income);
+    triggerPeriodEnd = ttm.period_end;
+  }
   return {
     tax_rate: MARKS_TAX_RATE,
     materiality,
+    ...(triggerPeriodEnd ? { trigger_period_end: triggerPeriodEnd } : {}),
     per_year: niYears.map((r) => ({
       fiscal_year: r.fiscal_year as number,
       pretax: r.investment_fv_gain_loss as number,
@@ -36,7 +53,8 @@ export function deriveMarksAdjustment(fyRows: FundamentalPeriod[]): MarksAdjustm
 
 /** TTM 与调整后 FY 序列口径不一致(gains 降级回退/缺失)→ 丢 TTM 整体回退纯 FY。 */
 export function shouldDropTtmForMarks(ttmSyn: { degraded_fields: string[]; row: FundamentalPeriod }): boolean {
-  return ttmSyn.degraded_fields.includes("investment_fv_gain_loss") || ttmSyn.row.investment_fv_gain_loss == null;
+  return ttmSyn.degraded_fields.includes("investment_fv_gain_loss")
+    || ttmSyn.row.investment_fv_gain_loss == null || !Number.isFinite(ttmSyn.row.investment_fv_gain_loss);
 }
 
 const u = (v: number | null | undefined): number | undefined => (v == null ? undefined : v);
@@ -92,7 +110,10 @@ export function fundamentalsToFloorInput(
   const fyRows = (rows ?? [])
     .filter((r) => r.fiscal_period === "FY" && r.fiscal_year != null)
     .sort((a, b) => (b.period_end ?? "").localeCompare(a.period_end ?? ""));
-  const marks = deriveMarksAdjustment(fyRows);
+  const ttmSyn = quarterRows?.length ? buildTtm(rows ?? [], quarterRows) : null;
+  // buildTtm 对缺数单项回填 FY 值,该值不能冒充真实 TTM 损益触发调整。
+  const ttmMarksRow = ttmSyn && !shouldDropTtmForMarks(ttmSyn) ? ttmSyn.row : undefined;
+  const marks = deriveMarksAdjustment(fyRows, ttmMarksRow);
   // 逐行用自身字段计算,不经 fiscal_year 做 Map 键——两条 FY 行共享同一 fiscal_year 标签时
   // (period_end 才是真主键,财年标签 off-by-one 真实存在),按标签查表会把较旧行的调整值错套到两行上。
   const applyMarks = (r: FundamentalPeriod): FundamentalPeriod =>
@@ -100,15 +121,13 @@ export function fundamentalsToFloorInput(
       ? { ...r, net_income: r.net_income - r.investment_fv_gain_loss * (1 - MARKS_TAX_RATE) }
       : r;
   const years: ValuationFloorYear[] = fyRows.map((r) => toFloorYear(marks ? applyMarks(r) : r, adsRatio));
-  const ttmSyn = quarterRows?.length ? buildTtm(rows ?? [], quarterRows) : null;
   // 件③口径一致性:调整启用而 TTM 的 gains 不可得 → 丢 TTM(回退纯 FY),防止 GAAP-TTM 顶替经营口径 FY0。
-  const ttmUsable = ttmSyn && !(marks && shouldDropTtmForMarks(ttmSyn));
+  // 已知 TTM 损益重大但历史覆盖闸未过/净利为零 → 同样回退 FY,不能无调整放行污染盈利。
+  const ttmUsable = ttmSyn && !(marks && !ttmMarksRow) && !(!marks && hasMaterialMarks(ttmMarksRow));
   const ttm = ttmUsable
     ? {
         year: toFloorYear(
-          marks
-            ? { ...ttmSyn.row, net_income: (ttmSyn.row.net_income as number) - (ttmSyn.row.investment_fv_gain_loss as number) * (1 - MARKS_TAX_RATE) }
-            : ttmSyn.row,
+          marks ? applyMarks(ttmSyn.row) : ttmSyn.row,
           adsRatio,
         ),
         period_end: ttmSyn.period_end,
