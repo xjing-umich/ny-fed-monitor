@@ -3,8 +3,6 @@ import { cn } from "@/lib/utils";
 
 const SIZES = {
   xl: "text-5xl",
-  "2xl": "text-7xl",
-  "3xl": "text-8xl",
 } as const;
 
 /** 展示级数字/标题 — 全站"重音时刻"的唯一载体。glow 只给数据用。 */

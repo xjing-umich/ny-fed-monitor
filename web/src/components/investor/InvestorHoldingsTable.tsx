@@ -71,7 +71,7 @@ export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts,
                   className={`shrink-0 rounded-sm px-1 py-0.5 font-data text-xs border border-current/40 ${h.putCall === "Put" ? "text-[var(--tt-warn)]" : "text-[var(--tt-muted)]"}`}
                   title={lang === "zh" ? "期权:市值为标的名义价值,非权利金" : "Option: value is notional, not premium"}
                 >
-                  {h.putCall === "Put" ? "PUT" : "CALL"}
+                  {lang === "zh" ? (h.putCall === "Put" ? "看跌期权" : "看涨期权") : h.putCall === "Put" ? "PUT" : "CALL"}
                 </span>
               )}
             </span>
