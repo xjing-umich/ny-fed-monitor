@@ -90,6 +90,8 @@ export type MoatReading = {
 export type MarksAdjustment = {
   tax_rate: number;
   materiality: number;
+  /** FY 材料性不足、由真实 TTM 触发调整时的期末;缺省沿用 FY 判据。 */
+  trigger_period_end?: string;
   per_year: { fiscal_year: number; pretax: number; net_income_reported: number; net_income_adjusted: number }[];
 };
 
