@@ -88,7 +88,7 @@ export async function getManagerIndex(generatedAt: string): Promise<ManagerIndex
 }
 
 export type SummaryRow = { cik: string; latest_value: number | string; prior_value: number | string; latest_count: number; prior_count: number; count_verdict?: string; verdict: string; top_moves: { issuer: string; kind: string }[] };
-/** manager_quarter_summary 行 → 列表页 ManagerQoQ。verdict 按金额判定,与详情页同源;净额绝对值不到上季正股市值的 2% 为基本持平。 */
+/** 季度汇总按金额判定,与投资人详情页同源。 */
 export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
   const out = new Map<string, ManagerQoQ>();
   for (const r of rows) {
@@ -105,10 +105,17 @@ export function mapSummaryRows(rows: SummaryRow[]): Map<string, ManagerQoQ> {
   return out;
 }
 
-/** 读取按金额计算的季度汇总;缺失时不退回只数判定,避免列表与详情口径不同。 */
+/** 来源失配时暂缺;仅迁移前兼容旧汇总表,不回退到只数判定。 */
 export async function getManagerQoQ(): Promise<Map<string, ManagerQoQ>> {
   const db = getDb();
-  const { data: rows, error } = await db.from("manager_quarter_summary").select("cik,latest_value,prior_value,latest_count,prior_count,verdict,top_moves");
+  const columns = "cik,latest_value,prior_value,latest_count,prior_count,count_verdict,verdict,top_moves";
+  const { data: current, error: currentErr } = await db.rpc("current_manager_quarter_summaries").select(columns);
+  if (!currentErr) return mapSummaryRows((current ?? []) as SummaryRow[]);
+  if (currentErr.code !== "PGRST202" && !isMissingTableError(currentErr)) {
+    console.error(`getManagerQoQ current summaries query failed: ${currentErr.message}`);
+    return new Map();
+  }
+  const { data: rows, error } = await db.from("manager_quarter_summary").select(columns);
   if (error) {
     console.error(`getManagerQoQ manager_quarter_summary query failed: ${error.message}`);
     return new Map();

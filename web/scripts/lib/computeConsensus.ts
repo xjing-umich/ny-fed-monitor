@@ -2,7 +2,7 @@ import { computeConsensus, computeStockHolders, computeStockTrend, computeCoOwne
 import { deriveSplitFactorsWithRejections, factorLookup, NO_SPLITS, rescaleToLatestBasis, type ManagerHistory, type SplitEvent } from "../../src/lib/managers/splitAdjust";
 import { summarizeQuarter } from "../../src/lib/managers/quarterSummary";
 import { computeChanges, tickerCanon } from "../../src/lib/managers/assemble";
-import { consensusChangesFor, replaceDerivedRows, splitRow, summaryRow, toHolding, type DbHolding } from "./splitStore";
+import { consensusChangesFor, publishManagerDerived, splitRow, summaryRow, toHolding, type DbHolding } from "./splitStore";
 import { countsAsCurrentHolder, effectiveMovesPeriod } from "../../src/lib/freshness/derive";
 
 export async function readAll(db: any, table: string, cols: string, filter?: (q: any) => any): Promise<any[]> {
@@ -45,13 +45,13 @@ export function latestDistinctPeriodFilings(rows: FilingRow[], n: number): Filin
     .slice(0, n);
 }
 
-export async function computeAndStoreConsensus(db: any): Promise<{ holdings: number; moves: number; stockHolders: number; trend: number; coOwnership: number; splitFactors: number; summaries: number }> {
+export async function computeAndStoreConsensus(db: any): Promise<{ holdings: number; moves: number; stockHolders: number; trend: number; coOwnership: number; splitFactors: number; summaries: number; derivedChanged: boolean }> {
   const cmap = new Map<string, CusipInfo>();
   for (const r of await readAll(db, "security_cusips", "cusip,ticker,issuer", (q) => q.order("cusip", { ascending: true })))
     cmap.set(r.cusip, { ticker: r.ticker, name: r.issuer });
 
   const managers = await readAll(db, "managers", "cik,slug,person", (q) => q.order("cik", { ascending: true }));
-  type Raw = { cik: string; slug: string; person: string; period: string; priorPeriod: string | null; filedAt: string | null; latestH: any[]; priorH: any[] };
+  type Raw = { cik: string; slug: string; person: string; period: string; priorPeriod: string | null; latestId: number; priorId: number | null; filedAt: string | null; latestH: any[]; priorH: any[] };
   const raws: Raw[] = [];
   const trendScan: TrendScan[] = [];
   const histories: ManagerHistory[] = [];
@@ -70,7 +70,7 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
       const cols = i < 2 ? "cusip,issuer,value,shares,weight,put_call" : "cusip,value,shares,put_call";
       hs.push(await readAll(db, "holdings", cols, (q) => q.eq("filing_id", tf[i].id).order("id", { ascending: true })));
     }
-    raws.push({ cik: m.cik, slug: m.slug, person: m.person, period: tf[0].period, priorPeriod: tf[1]?.period ?? null, filedAt: tf[0].filed_at ?? null, latestH: hs[0], priorH: hs[1] ?? [] });
+    raws.push({ cik: m.cik, slug: m.slug, person: m.person, period: tf[0].period, priorPeriod: tf[1]?.period ?? null, latestId: tf[0].id, priorId: tf[1]?.id ?? null, filedAt: tf[0].filed_at ?? null, latestH: hs[0], priorH: hs[1] ?? [] });
     trendScan.push({ slug: m.slug, filings: tf.map((f, i) => ({ period: f.period, cusips: hs[i].filter((h) => !h.put_call).map((h) => h.cusip) })) });
     histories.push({ slug: m.slug, filings: tf.map((f, i) => ({ period: f.period, holdings: hs[i].map((h) => ({ cusip: h.cusip, putCall: h.put_call ?? null, shares: Number(h.shares), value: Number(h.value) })) })) });
   }
@@ -121,24 +121,20 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
 
   // 列表页季度汇总(所有有上季、本季非零持仓的经理;不受"有效变动季"过滤,与详情页口径一致)。
   const summaries = raws
-    .filter((r) => r.priorPeriod && r.latestH.length > 0)
+    .filter((r) => r.priorPeriod && r.latestH.some((h) => !h.put_call))
     .map((r) => {
       const [latest, prior] = rescaleToLatestBasis(
         [{ period: r.period, holdings: r.latestH.map(toHolding) }, { period: r.priorPeriod!, holdings: r.priorH.map(toHolding) }],
         splits,
       );
       const s = summarizeQuarter({ period: r.period, priorPeriod: r.priorPeriod!, latest: latest.holdings, prior: prior.holdings, changes: computeChanges(latest.holdings, prior.holdings, canon) });
-      return summaryRow(r.cik, s, computedAt);
+      return summaryRow(r.cik, s, computedAt, { latestId: r.latestId, priorId: r.priorId! });
     });
 
-  // 两张派生表在既有共识表写完之后才写,且每个出口都走 finish:派生表写错误(THROW)不能挡住既有共识刷新
-  // (以及工作流随后的站点 revalidate)。内存里的 splits 已经喂给上面的 changesOf,不依赖落库。
+  // 所有出口都经 finish:两张派生表在单事务内发布,失败向上传播,不能带着部分结果刷新站点。
   const finish = async (counts: { holdings: number; moves: number; stockHolders: number; trend: number; coOwnership: number }) => {
-    if ((await replaceDerivedRows(db, "split_adjustments", splitFactors.map((f) => splitRow(f, computedAt)), "cusip,from_period,to_period", computedAt)) === "missing")
-      console.warn("split_adjustments 表不存在 — 跳过写入(先跑 migration);本次共识仍按内存里的系数换算。");
-    if ((await replaceDerivedRows(db, "manager_quarter_summary", summaries, "cik", computedAt)) === "missing")
-      console.warn("manager_quarter_summary 表不存在 — 跳过(先跑 migration);列表页继续用 RPC manager_qoq。");
-    return { ...counts, splitFactors: splitFactors.length, summaries: summaries.length };
+    const derivedChanged = await publishManagerDerived(db, splitFactors.map((f) => splitRow(f, computedAt)), summaries, computedAt);
+    return { ...counts, splitFactors: splitFactors.length, summaries: summaries.length, derivedChanged };
   };
 
   const { holdings, moves } = computeConsensus(scan, cmap);
