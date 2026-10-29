@@ -5,6 +5,10 @@ export type MovesCount = { opened: number; added: number; trimmed: number; exite
 
 /** 字形表达动作;正文色承载文字,估值色阶只用于估值。PR B 复用同一映射。 */
 export const MOVE_GLYPH = { new: "●", increased: "▲", decreased: "▼", exited: "○" } as const;
+export const MOVE_LABEL = {
+  zh: { new: "新进", increased: "增持", decreased: "减持", exited: "清仓" },
+  en: { new: "New", increased: "Added", decreased: "Trimmed", exited: "Exited" },
+} as const;
 
 /** "Q2：新进 0 · 增持 4 · 减持 12 · 清仓 1" —— 不含清仓名单。 */
 export function quarterMovesCounts(q: string, m: MovesCount, lang: Lang): string {

@@ -7,6 +7,8 @@ import ts from "typescript";
 
 const root = path.resolve(process.argv[2] ?? path.join(__dirname, "../src"));
 const retired = /价值带|合理价值|\b(?:value|valuation) bands?\b|\b(?:within|above) band\b|\bthe band(?:'s)?\b|\bfair[- ]value\b(?! gains\/losses)|\bCentral IV\b|\bbuy line\b|\bgrowth-anchored\b|中枢 IV/i;
+// 检查动作短标签;不把历史叙述中的英文动词或“加仓”当成界面标签重写。
+const retiredActionLabel = /^(?:NEW|ADD|TRIM|EXIT|加仓|减仓|opened)$/;
 const failures: string[] = [];
 function scan(dir: string) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -18,7 +20,9 @@ function scan(dir: string) {
       if (ts.isStringLiteralLike(node) || ts.isJsxText(node) ||
           node.kind === ts.SyntaxKind.TemplateHead || node.kind === ts.SyntaxKind.TemplateMiddle || node.kind === ts.SyntaxKind.TemplateTail) {
         const text = (node as ts.StringLiteralLike).text;
-        const match = retired.exec(text)?.[0] ?? (text.trim() === "Band" ? "Band" : null);
+        const match = retired.exec(text)?.[0] ??
+          (text.trim() === "Band" ||
+            ((ts.isStringLiteralLike(node) || ts.isJsxText(node)) && retiredActionLabel.test(text.trim())) ? text.trim() : null);
         if (match) {
           const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
           failures.push(`${path.relative(root, file)}:${line + 1}: ${match}`);

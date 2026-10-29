@@ -12,6 +12,8 @@ const checks = [
   "src/lib/valuation/rangeGauge.check.tsx",
   "src/lib/valuation/valuationLabel.check.ts",
   "src/lib/valuation/asOf.check.ts",
+  "src/components/shell/MoveTag.check.tsx",
+  "src/components/home/HeroMasthead.check.tsx",
 ];
 for (const check of checks) {
   const result = spawnSync(process.execPath, [path.join(root, "node_modules/tsx/dist/cli.mjs"), "--tsconfig", "scripts/tsconfig.json", check], { cwd: root, stdio: "inherit" });

@@ -1,15 +1,10 @@
 import React from "react";
 import type { HoldingChange } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
-import { MOVE_GLYPH } from "@/lib/entity/quarterMovesText";
+import { MOVE_GLYPH, MOVE_LABEL } from "@/lib/entity/quarterMovesText";
 
 // QoQ 原语 —— 供投资人页 / 个股页共用。权重只写数字;动作由 MoveMark 按股数标出。
 // 数字一律 font-data tabular-nums（列对齐）。
-
-const MOVE_LABEL: Record<Lang, Record<"new" | "increased" | "decreased", string>> = {
-  zh: { new: "新进", increased: "增持", decreased: "减持" },
-  en: { new: "New", increased: "Added", decreased: "Trimmed" },
-};
 
 /** 权重百分比，1 位小数；缺失 → 「—」。 */
 export const fmtPct1 = (w: number | undefined): string =>
