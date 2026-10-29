@@ -34,7 +34,15 @@ export function dedupeSplitEvents(events: SplitEvent[]): SplitEvent[] {
 
 /** 两季都持有该 CUSIP 的一位经理(正股,按 CUSIP 汇总)。 */
 export type PairHolder = { prevShares: number; shares: number };
-export type SplitEvidence = { q: number; r: number; events: { date: string; ratio: number }[]; matching: number; bothHolders: number };
+export type SplitEvidence = {
+  q: number;
+  r: number;
+  events: { date: string; ratio: number }[];
+  matching: number;
+  bothHolders: number;
+  /** 表事件靠哪条证据采用:price(单价比)/ holders(持有人股数比中位数)。表外推断不写。 */
+  via?: "price" | "holders";
+};
 export type SplitFactor = {
   cusip: string;
   ticker: string | null;
@@ -58,12 +66,22 @@ function inWindowRealEvents(events: SplitEvent[], fromPeriod: string, toPeriod: 
   return dedupeSplitEvents(events).filter((e) => isRealSplit(e.ratio) && e.date > fromPeriod && e.date <= toPeriod);
 }
 
+const median = (xs: number[]): number => {
+  if (!xs.length) return NaN;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+
 /**
  * 单个 CUSIP、单个季度对(上季 → 本季)的拆股系数;不需要调整 → null(= 系数 1)。
- * - 有表事件(真拆股、去重、日期在 (上季末, 本季末]):价格证据成立即采用,一位持有人也行。
+ * - 有表事件(真拆股、去重、日期在 (上季末, 本季末]):价格证据或持有人证据任一成立即采用,一位持有人也行。
+ *   持有人证据 = 两季持有者股数比的中位数离 r 比离 1 更近。表事件已说明“这只票拆了”,只需确认 13F 股数
+ *   确实跳了:KLAC 10:1 当季股价约翻倍,价格证据不过(q·r=2.05),但持有人 ×3.0、×8.4 已说明股数跳了;
+ *   表日期记错时 13F 股数比 ≈1,两条证据都不过,仍拒绝。
  * - 否则表外推断:价格证据成立,且 ≥2 位、超过半数的两季持有者股数按同一比例变化。
  * 价格证据 = 调整后单价比 q·r 落在合理区间,且比不调整更平滑。股价腰斩不会让多数人股数同步翻倍;
- * 单个经理恰好加仓一倍不会让单价减半 —— 两条证据一起用,单靠任一条都会误判。
+ * 单个经理恰好加仓一倍不会让单价减半 —— 表外推断两条证据一起用,单靠任一条都会误判。
  */
 export function deriveSplitFactor(input: {
   cusip: string;
@@ -82,13 +100,18 @@ export function deriveSplitFactor(input: {
   };
   const ratios = both.filter((h) => h.prevShares > 0 && h.shares > 0).map((h) => h.shares / h.prevShares);
   const matching = (r: number) => ratios.filter((x) => Math.abs(x / r - 1) <= MATCH_TOL).length;
+  const holdersSupport = (r: number) => {
+    const m = median(ratios);
+    return Number.isFinite(m) && Math.abs(Math.log(m / r)) < Math.abs(Math.log(m));
+  };
   const base = { cusip, ticker, fromPeriod, toPeriod };
 
   const inWindow = inWindowRealEvents(events, fromPeriod, toPeriod);
   if (inWindow.length) {
     const r = inWindow.reduce((acc, e) => acc * e.ratio, 1);
-    if (plausible(r)) {
-      return { ...base, factor: r, source: "table", evidence: { q, r, events: inWindow.map(({ date, ratio }) => ({ date, ratio })), matching: matching(r), bothHolders: ratios.length } };
+    const via = plausible(r) ? "price" : holdersSupport(r) ? "holders" : null;
+    if (via) {
+      return { ...base, factor: r, source: "table", evidence: { q, r, events: inWindow.map(({ date, ratio }) => ({ date, ratio })), matching: matching(r), bothHolders: ratios.length, via } };
     }
   }
 
@@ -107,13 +130,6 @@ export type HistoryHolding = { cusip: string; putCall?: string | null; shares: n
 export type ManagerHistory = { slug: string; filings: { period: string; holdings: HistoryHolding[] }[] };
 export type SplitFactorLookup = (cusip: string, fromPeriod: string, toPeriod: string) => number;
 export const NO_SPLITS: SplitFactorLookup = () => 1;
-
-const median = (xs: number[]): number => {
-  if (!xs.length) return NaN;
-  const s = [...xs].sort((a, b) => a - b);
-  const m = s.length >> 1;
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-};
 
 /** 正股按 CUSIP 汇总(13F 同券可多行/子账户);期权行不计入股数与单价证据。 */
 function longByCusip(holdings: HistoryHolding[]): Map<string, { shares: number; value: number }> {
