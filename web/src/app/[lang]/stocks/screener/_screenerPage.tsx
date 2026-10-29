@@ -13,8 +13,6 @@ import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { CONSENSUS_MIN } from "@/lib/managers/fusionSignal";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 
-const SCREEN_LIMIT = 200;
-
 /**
  * screener 的视图 × 排序组合。公开 URL 仍是 `/stocks/screener?view=…&sort=…`,
  * 由 next.config.ts 的 rewrites 按 query 内部改写到 `/stocks/screener/[variant]`:
@@ -72,8 +70,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
 
   const isConviction = view === "conviction";
   const screen = isConviction
-    ? await readConvictionScreen(SCREEN_LIMIT)
-    : await readValuationScreen(view, SCREEN_LIMIT);
+    ? await readConvictionScreen()
+    : await readValuationScreen(view);
   const rows = screen.rows;
   const computedAt = screen.computedAt;
   const strikeTotal = isConviction ? 0 : (screen as { strikeTotal: number }).strikeTotal;
