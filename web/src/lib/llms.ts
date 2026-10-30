@@ -48,10 +48,10 @@ function filedOf(c: { filed: number; total: number; excluded: number }): string 
 function baselineSentence(eff: EffectiveMovesPeriod): string {
   const { period, reason, maxPeriod, coverage } = eff;
   if (!period || !maxPeriod) return "No 13F data is loaded yet.";
-  const head = `Site-wide figures (consensus, top buys and sells, the "as of" date on stock pages) are for ${quarterPhrase(period)}.`;
+  const head = `Quarterly-change comparisons use ${quarterPhrase(period)} as their baseline. Holder counts and values use each eligible manager’s latest filing and may span report periods.`;
   const maxQ = quarterLabel(maxPeriod);
   if (reason === "before_deadline") {
-    return `${head} ${filedOf(coverage)} already filed for ${maxQ}, but its filing deadline (${deadlineOf(maxPeriod)}) has not passed yet, so ${maxQ} is not the baseline. Early filers' new holdings show on their own investor pages, labelled with their quarter.`;
+    return `${head} ${filedOf(coverage)} already filed for ${maxQ}, but its filing deadline (${deadlineOf(maxPeriod)}) has not passed yet, so ${maxQ} is not the baseline. Early filers' new holdings show on investor and stock pages, labelled with their actual quarter.`;
   }
   if (reason === "low_coverage") {
     return `${head} ${filedOf(coverage)} filed for ${maxQ}; it becomes the baseline once at least half have.`;
@@ -83,19 +83,19 @@ function header(ctx: Ctx, title: string): string[] {
   return [
     `# ${title}`,
     "",
-    `> Compounder (thecompounder.fyi) tracks the SEC Form 13F holdings of ${ctx.managerCount} superinvestors, shows which stocks many of them own at once, and puts a conservative valuation range next to those stocks. Holdings data is currently for ${q}. It is an educational research tool: no stock recommendations, no price targets, no forecasts.`,
+    `> Compounder (thecompounder.fyi) tracks the SEC Form 13F holdings of ${ctx.managerCount} superinvestors, shows which stocks many of them own at once, and puts a conservative valuation range next to those stocks. The quarterly-change baseline is ${q}; holder tables can include other report periods. It is an educational research tool: no stock recommendations or price targets. Valuation scenarios include explicit growth assumptions.`,
     "",
-    `Latest data: ${baselineSentence(ctx.eff)} 13F filings are due ${FILING_DEADLINE_DAYS} days after quarter-end and show positions on the last day of the quarter, so every holding here describes a past date, not what a fund owns today. Source: SEC EDGAR. Generated ${ctx.generated}.`,
+    `Latest data: ${baselineSentence(ctx.eff)} 13F filings are usually due ${FILING_DEADLINE_DAYS} days after quarter-end (extended for weekends and holidays) and show positions on the last day of the quarter, so every holding here describes a past date, not what a fund owns today. Source: SEC EDGAR. Generated ${ctx.generated}.`,
     "",
     "English pages live at the bare path (https://thecompounder.fyi/...). The same pages in Simplified Chinese live under /zh (https://thecompounder.fyi/zh/...).",
   ];
 }
 
 const DATA_SCOPE = [
-  `Holdings come from each manager's latest Form 13F-HR on SEC EDGAR. Investor and stock pages count long equity positions; put and call options are left out of position counts and values.`,
+  `Holdings come from each manager's latest Form 13F-HR on SEC EDGAR. Holder totals and aggregate values exclude put and call options. Individual investor tables retain labeled option rows. The SEC’s reportable list also includes ETFs, closed-end funds and certain convertible securities and warrants.`,
   `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days, moved to the next Monday when it falls on a weekend) has passed and at least half of the managers expected to file (those that filed the prior quarter or later) have filed for it.`,
   "A manager who has not filed for the most recent quarter past its deadline is not counted as a current holder on consensus and stock pages; the consensus page lists them by name with the quarter their last 13F covers. Before the deadline, the prior quarter's filing still counts.",
-  "Valuation ranges are conservative ranges built from reported fundamentals. They show where a price sits against that range; they are not price targets or buy/sell calls.",
+  "Valuation ranges start with reported fundamentals. A zero-growth floor is shown separately from intrinsic value and an optimistic top that may include conservative growth assumptions. They show where a price sits against that range; they are not price targets or buy/sell calls.",
 ];
 
 function articleLine(a: Article): string {
@@ -215,11 +215,12 @@ export async function buildLlmsFullTxt(): Promise<string> {
     ...listArticles("en").flatMap((a) => [
       `### ${a.title}`,
       "",
-      `${url(`/learn/${a.slug}`)} · Last updated ${a.updated}${a.snapshotPeriod ? ` · Snapshot of ${quarterLabel(a.snapshotPeriod)} data` : ""}`,
+      `${url(`/learn/${a.slug}`)} · Published ${a.published} · Last updated ${a.updated}${a.snapshotPeriod ? ` · Snapshot of ${quarterLabel(a.snapshotPeriod)} data` : ""}`,
       "",
       entityLinksToMarkdown(a.intro),
       "",
       ...a.sections.flatMap((s) => [`#### ${s.heading}`, "", ...s.paragraphs.flatMap((p) => [entityLinksToMarkdown(p), ""])]),
+      ...(a.references ?? []).flatMap((r) => [`Source: [${r.label}](${r.url})`, ""]),
     ]),
   ];
   return lines.join("\n");

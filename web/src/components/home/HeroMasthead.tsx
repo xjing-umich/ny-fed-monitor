@@ -30,11 +30,11 @@ const COPY = {
     // 金额 = 这些买方期末持仓市值合计(aggregations.computeNotableMoves),不是买入金额。
     boughtCols: "人数 · 买方持仓合计",
     soldCols: "人数",
-    asOf: (p: string) => `截至 ${p} · 来源 SEC 13F · 上报延迟 45 天`,
+    asOf: (p: string) => `截至 ${p} · 来源 SEC 13F · 通常季末后 45 天内申报`,
   },
   en: {
     brand: "Compounder",
-    headline: (n: number, q: string) => `${n} investors. ${q}. Every position they just reported.`,
+    headline: (n: number, q: string) => `${n} superinvestors. ${q}. Every position they just reported.`,
     headlineNoCount: (q: string) => `${q}. Every position the smart money just reported.`,
     headlineMuted: "Each holding checked against a first-principles valuation.",
     sub: (n: number) =>
@@ -47,7 +47,7 @@ const COPY = {
     sold: "Most sold",
     boughtCols: "Investors · Buyers' combined stake",
     soldCols: "Investors",
-    asOf: (p: string) => `As of ${p} · Source SEC 13F · 45-day reporting lag`,
+    asOf: (p: string) => `As of ${p} · Source SEC 13F · usually filed within 45 days after quarter-end`,
   },
 };
 

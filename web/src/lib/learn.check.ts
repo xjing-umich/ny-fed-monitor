@@ -27,3 +27,22 @@ for (const lang of ["en", "zh"] as const) {
   }
 }
 console.log("learn.check OK");
+
+// Publication is immutable, later citation/copy revisions have their own dates.
+for (const lang of ['en','zh'] as const) {
+ for (const article of listArticles(lang)) {
+  assert.match(article.published, /^\d{4}-\d{2}-\d{2}$/);
+  assert.ok(article.published <= article.updated);
+  assert.equal(new Set(article.sections.map((s) => s.id)).size, article.sections.length, 'unique stable section IDs');
+  assert.ok(article.sections.every((s) => !!s.id));
+  assert.ok(article.references?.length, `${lang}/${article.slug} needs traceable sources`);
+  for (const reference of article.references ?? []) assert.match(reference.url, /^https:\/\//);
+  const prose = [article.intro, ...article.sections.flatMap((s) => s.paragraphs)].join(' ');
+  assert.ok(!/up to 45 days (?:stale|old)|最多(?:能比真实组合)?滞后 45 天|滞后实际组合最多 45 天/.test(prose));
+ }
+ const q2 = getArticle('q2-2026-superinvestor-consensus', lang)!;
+ assert.equal(q2.published, '2026-10-19');
+ assert.equal(q2.written, '2026-10-19');
+ assert.ok(q2.updated >= '2026-10-23');
+ assert.equal(getArticle('reading-business-quality', lang)!.published, '2026-06-11');
+}

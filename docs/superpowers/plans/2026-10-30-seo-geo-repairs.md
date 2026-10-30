@@ -50,3 +50,7 @@
 - Setup: reused existing isolated seo worktree; clean branch from b6aebf2. Full audit is approved scope; implement inline without another design approval round.
 
 - Task 1: stockLinks and snapshotLabel tests observed RED, then GREEN; InvestorBlocks render checks and tsc passed. Source links now expose actual holdings provenance. Eligibility uses current non-exited snapshot rows and known current long holdings only when no snapshot row exists.
+
+- Task 2: public raw-HTML acceptance failed as expected before changes; URL parser suite, tsc and changed-list lint passed after isolating QueryReader. Production SSR and browser history acceptance remain final gate.
+- Task 3: Learn publication/reference test observed RED→GREEN; immutable published/written dates added, current citations and copy corrections dated 2026-10-30. Financial example source accessions cross-checked against current read-only records and verified SEC directories. Sources distinguish original publications, a translated speech, and reader-collected Q&A.
+- Task 4: ranking metadata regression observed RED→GREEN. Required prebuild gates, route/Dataset fixtures, Learn, SEO and stock-link checks pass. Full production build and browser acceptance running.

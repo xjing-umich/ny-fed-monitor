@@ -106,14 +106,14 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
             ahead
               ? ` ${ahead.count} investor${ahead.count === 1 ? " has" : "s have"} already filed for the quarter ended ${formatDate(ahead.period, lang)}. Their positions in the table reflect those newer filings, and the move counts on this page cover only ${formatDate(latestPeriod, lang)} filings.`
               : ""
-          } Source: SEC EDGAR. A 13F shows only long US-listed positions and can lag the real portfolio by up to 45 days, so this is disclosed long ownership, not a complete picture.`,
+          } Source: SEC EDGAR. 13F reports cover specified long securities, not a complete portfolio. The usual filing deadline is 45 days after quarter-end, extended for weekends and holidays; the reported positions can be months old when read.`,
         ]
       : [
           `以上持有人数与市值来自最新的 SEC Form 13F 申报，${snapshotLabel(lang, holders.map((h) => h.period))}。${
             ahead
               ? `另有 ${ahead.count} 位投资人已提前提交截至 ${formatDate(ahead.period, lang)} 的申报，表中他们的持仓按这份更新的申报列出；本页的动向统计只计 ${formatDate(latestPeriod, lang)} 季度的申报。`
               : ""
-          }来源：SEC EDGAR。13F 仅涵盖美股多头持仓，且可能滞后实际组合最多 45 天，因此这是已披露的多头持有情况，并非完整全貌。`,
+          }来源：SEC EDGAR。13F 仅涵盖指定证券的多头持仓，不是完整组合。通常提交期限为季末后 45 天，遇周末或假日顺延；读到时，其中的仓位可能已过去几个月。`,
         ],
   );
 

@@ -16,8 +16,8 @@ const COPY = {
   zh: {
     valuation: {
       eyebrow: "估值",
-      title: "只为已被证明的盈利和资产付钱",
-      body: "我们用可查的盈利和资产给每一只标的定价，不押注任何你必须相信的成长故事。这是单看持仓榜给不了的第二只眼。",
+      title: "先看盈利和资产，再检查增长假设",
+      body: "个股页分开列出零增长底、内在价值与乐观上沿，并写明增长假设。把持仓和这些条件放在一起读，才看得出价格要求你相信什么。",
       cta: (n: number) => (n > 0 ? `看全部 ${n} 只击球区个股` : "打开价值筛选器"),
     },
     consensus: {
@@ -38,8 +38,8 @@ const COPY = {
   en: {
     valuation: {
       eyebrow: "Valuation",
-      title: "Pay only for earnings and assets already proven",
-      body: "We value every holding on proven earnings and assets — no growth story you have to believe. It's the second eye a holdings tracker alone can't give you.",
+      title: "Start with earnings and assets. Check the growth assumptions.",
+      body: "Stock pages separate a zero-growth floor, intrinsic value and an optimistic top, with the growth assumptions beside them. Read those conditions alongside the holdings to see what a price asks you to believe.",
       cta: (n: number) => (n > 0 ? `See all ${n} in the strike zone` : "Open the value screener"),
     },
     consensus: {

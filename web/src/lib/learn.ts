@@ -1,3 +1,4 @@
+import { articleReferences, ARTICLE_SECTION_IDS, type ArticleReference } from './learnEditorial';
 import type { Lang } from "@/lib/nav";
 import type { LegalSection } from "@/lib/legal";
 
@@ -18,6 +19,10 @@ export interface Article {
   description: string;
   /** ISO date, shown as "Last updated" and used for Article JSON-LD. */
   updated: string;
+  published: string;
+  written?: string;
+  references?: ArticleReference[];
+  seoTitle?: string;
   intro: string;
   sections: LegalSection[];
   /** 可选:文中点名的投资人/个股, 渲染为文末"相关"内链。id = manager slug / ticker。 */
@@ -38,14 +43,15 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "How to Read a 13F",
       description:
         "What a 13F filing is, what it tells you about an investor's portfolio, and what it leaves out. A plain guide to reading one.",
-      updated: "2026-06-07",
+      published: "2026-06-07",
+      updated: "2026-10-30",
       intro:
         "Big institutional investors have to tell the public which U.S. stocks they own. They do it once a quarter, in a filing called a Form 13F, and those filings are where Compounder's superinvestor pages come from. A 13F can tell you a lot about how a serious investor is positioned. It can also mislead you if you take it at face value, so it helps to know what you're actually looking at.",
       sections: [
         {
           heading: "What a 13F is",
           paragraphs: [
-            "Any institutional manager running at least $100 million in U.S. stocks has to file a 13F with the SEC every quarter. The filing lists the firm's U.S.-listed stock positions as of the last day of the quarter: the stock, the share count, and the market value.",
+            "An institutional manager exercising investment discretion over at least $100 million in Section 13(f) securities is generally required to file Form 13F. The SEC’s official list includes many U.S.-listed shares, ETFs and closed-end funds, plus certain convertible securities, options and warrants. Reports show quarter-end positions, share counts and market values.",
             "Line these filings up across a lot of well-known investors and you start to see overlap. The stocks that turn up in many portfolios at once are what we mean by consensus.",
           ],
         },
@@ -60,8 +66,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "What a 13F leaves out",
           paragraphs: [
             "This is where people get tripped up. By the time you read a 13F it's already old news, and it only ever shows part of the picture.",
-            "For one thing, it can be up to 45 days stale. Managers get 45 days after the quarter closes to file, so the positions you're reading may already be weeks or months out of date.",
-            "It also shows only what a fund is long. Short positions never appear, which means a stock that looks like a big bet might actually be hedged against something else. The report is limited to U.S.-listed stocks and some options, so cash, bonds, foreign shares, and private holdings don't show up at all. And it's a single day's photo: the numbers are whatever the fund held on the last day of the quarter, not the average position and not what they own today.",
+            "The usual filing deadline is 45 days after quarter-end, extended for weekends and holidays. That is a filing deadline, not a maximum age for the data: positions remain a past quarter-end snapshot until another report is published.",
+            "It also shows only what a fund is long. Short positions never appear, which means a stock that looks like a big bet might actually be hedged against something else. Cash, most bonds, private investments and shares traded only outside the U.S. are outside its scope. Some U.S.-listed foreign shares and convertible debt are reportable when included on the SEC list. Compounder leaves put/call positions out of its holder totals. And it's a single day's photo: the numbers are whatever the fund held on the last day of the quarter, not the average position and not what they own today.",
           ],
         },
         {
@@ -79,14 +85,15 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "如何读懂 13F",
       description:
         "13F 申报是什么、它能告诉你投资者持仓的哪些信息、又遗漏了什么。一份大白话的阅读指南。",
-      updated: "2026-06-07",
+      published: "2026-06-07",
+      updated: "2026-10-30",
       intro:
         "大型机构投资者必须公开自己持有哪些美股。他们每季度披露一次，文件叫 Form 13F，Compounder 的超级投资者页面就来自这些申报。一份 13F 能告诉你不少东西，让你看到严肃投资者怎么布局；但要是照单全收，它也会把你带偏。所以先搞清楚你看到的到底是什么。",
       sections: [
         {
           heading: "13F 是什么",
           paragraphs: [
-            "任何管理着至少 1 亿美元美股的机构，都得每季度向 SEC 申报一次 13F。文件列出它在季度最后一天持有的美国上市股票仓位：股票、持股数、市值。",
+            "对至少 1 亿美元 Section 13(f) 证券具有投资裁量权的机构管理人，通常须申报 Form 13F。SEC 官方名单包括许多美国上市股票、ETF、封闭式基金，以及部分可转债、期权和权证。文件列出季末持仓、持有数量和市值。",
             "把许多知名投资者的申报摆在一起，你会看到重叠。同时出现在很多组合里的股票，就是我们说的“共识”。",
           ],
         },
@@ -101,8 +108,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "13F 没说的部分",
           paragraphs: [
             "人们最容易在这里栽跟头。等你读到一份 13F，它已经是旧消息，而且永远只展示了一部分。",
-            "首先，它最多能滞后 45 天。机构在季度结束后有 45 天时间申报，所以你看到的仓位，可能已经过去了几周甚至几个月。",
-            "其次，它只显示多头。空头从不出现，也就是说一只看起来是重仓押注的股票，实际上可能是拿来对冲别的东西的。报告又只包含美国上市股票和部分期权，现金、债券、海外股份、私人持仓，统统不在里面。最后，它只是某一天的照片：数字是基金在季度最后一天的持仓，不是平均仓位，也不是它今天的持仓。",
+            "首先，通常申报期限是季末后 45 天，遇周末或假日顺延。这是提交期限，不是数据年龄上限：新申报公布前，看到的仍是过去那个季末的快照。",
+            "其次，它只显示多头。空头从不出现，也就是说一只看起来是重仓押注的股票，实际上可能是拿来对冲别的东西的。现金、大部分债券、私人投资和仅在美国境外交易的股份不在申报范围内；但 SEC 名单上的部分美国上市外国公司股份、可转债等须申报。本站的持有人汇总另外排除了看涨和看跌期权。最后，它只是某一天的照片：数字是基金在季度最后一天的持仓，不是平均仓位，也不是它今天的持仓。",
           ],
         },
         {
@@ -122,7 +129,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "What Is a Superinvestor?",
       description:
         "Where the word comes from, the Graham-to-Buffett tradition behind it, and what these investors share: temperament, patience, and compounding.",
-      updated: "2026-06-07",
+      published: "2026-06-07",
+      updated: "2026-10-30",
       intro:
         "\"Superinvestor\" turns up all over Compounder. The word isn't a pat on the back for whoever topped the charts last year. It points to a particular tradition of value investors, and a particular way of thinking about businesses, prices, and time. Here's what we mean by it.",
       sections: [
@@ -163,7 +171,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "什么是超级投资者？",
       description:
         "这个词从何而来、它背后从格雷厄姆到巴菲特的价值投资传统，以及这些投资者的共同点：性情、耐心，还有复利。",
-      updated: "2026-06-07",
+      published: "2026-06-07",
+      updated: "2026-10-30",
       intro:
         "“超级投资者”这个词在 Compounder 上随处可见，它不是给“去年排第一的人”的恭维。它指向价值投资里一条特定的传统，以及一种看待生意、价格和时间的特定方式。下面说说我们指的是什么。",
       sections: [
@@ -206,7 +215,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "Reading Cross-Fund Consensus",
       description:
         "Which stocks the most superinvestors hold at once: what that overlap tells you, where it misleads, and why it is a starting point, not a buy signal.",
-      updated: "2026-06-08",
+      published: "2026-06-08",
+      updated: "2026-10-30",
       intro:
         "Compounder's stock pages are built around one idea: counting how many superinvestors hold the same company at the same time. We call that cross-fund consensus, and it's the first thing you see when you open the Stocks page. A high number looks like a strong signal. Sometimes it is. More often it's less than it appears, and telling the difference is most of the value.",
       sections: [
@@ -229,7 +239,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "Now the catch. A high holder count can fool you in a few ways, and the data behind it carries the same blind spots every 13F does.",
             "The investors aren't as independent as the count suggests. Many of them read the same letters, sit in the same conferences, and came up through the same handful of firms. When a dozen of them own one stock, you may be seeing a single good idea that spread, not a dozen separate ones.",
-            "The filings are old. A 13F can lag the real portfolio by up to 45 days, so a consensus you read today was assembled from positions held weeks or months ago. Some of those investors may already be out.",
+            "The filings are old. The usual filing deadline is 45 days after quarter-end, but the reported positions can be months old by the time you read them. Some of those investors may already be out.",
             "And a crowd says nothing about price. Each of those investors bought at a different time, at a different cost, for reasons the filing never shows. A stock twenty funds own is not therefore cheap. It might be expensive precisely because it's popular.",
           ],
         },
@@ -248,7 +258,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "读懂跨基金共识",
       description:
         "哪些股票被最多超级投资者同时持有——这种重叠能告诉你什么、又会在哪里骗你，以及怎样把跨基金共识当作研究起点，而不是买入信号。",
-      updated: "2026-06-08",
+      published: "2026-06-08",
+      updated: "2026-10-30",
       intro:
         "Compounder 的个股页面就围着一件事转：数一数有多少位超级投资者在同一时间持有同一家公司。我们管这叫跨基金共识，你一打开「个股」页，最先看到的就是它。数字高，看上去像个强信号。有时候确实是，但更多时候它没看起来那么重，而能不能分清这点，正是它大半的价值。",
       sections: [
@@ -271,7 +282,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "现在说说陷阱。一个高持有人数能从好几个方向骗到你，而它背后的数据，也带着每份 13F 都有的那些盲点。",
             "这些投资者，没有计数显示得那么独立。他们里很多人读同样的信、坐同样的会、出自同样那几家公司。当一打人持有同一只股票，你看到的可能是一个好点子传开了，而不是一打各自独立的点子。",
-            "申报是旧的。13F 最多能比真实组合滞后 45 天，所以你今天读到的共识，是用几周甚至几个月前的仓位拼出来的。其中一些人，可能早就出来了。",
+            "申报是旧的。13F 通常在季末后 45 天内申报；等你读到时，其中的季末仓位可能已过去几个月。其中一些人，可能早就出来了。",
             "而且，扎堆这件事，对价格只字未提。那些投资者每一位都在不同时间、以不同成本、出于你在申报里看不到的理由买入。一只被二十家基金持有的股票，并不因此就便宜。它可能恰恰因为热门而贵。",
           ],
         },
@@ -292,7 +303,9 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "Q1 2026: What the Superinvestors Held, Bought, and Sold",
       description:
         "A read of the Q1 2026 13F filings: the most widely held stocks, the quarter's biggest buys and sells, and why overlap still isn't a signal.",
-      updated: "2026-06-11",
+      published: "2026-06-11",
+      written: "2026-06-11",
+      updated: "2026-10-30",
       snapshotPeriod: "2026-03-31",
       intro:
         "Big institutional investors disclose their U.S. stock positions every quarter, and the Q1 2026 filings are in. They cover the quarter that ended March 31 and were filed through mid-May. Below is what the investors we track were holding, what most of them were buying, and what they were selling. It is one quarter's data, and the last section gets into why the overlap you're about to see proves less than it looks.",
@@ -300,7 +313,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "What we're reading",
           paragraphs: [
-            "These figures come from Form 13F, the quarterly filing any manager running at least $100 million in U.S. stocks has to submit to the SEC. We line up the filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. If you want the mechanics of a single filing, How to Read a 13F covers them.",
+            "These figures come from Form 13F, a quarterly disclosure required of institutional managers meeting the SEC’s $100 million Section 13(f) securities threshold. We line up the filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. If you want the mechanics of a single filing, How to Read a 13F covers them.",
             "Everything below is as of the last day of the quarter, March 31, 2026. Some of these positions have surely changed since, and none of the figures tell you what anyone paid.",
           ],
         },
@@ -335,7 +348,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "Why none of this is a signal",
           paragraphs: [
-            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is long-only, up to 45 days old, and says nothing about why a manager bought or what they paid. A name several investors you respect all own is worth your time. It is still not worth buying just because they did.",
+            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is a past quarter-end snapshot of reportable long positions and says nothing about why a manager bought or what they paid. A name several investors you respect all own is worth your time. It is still not worth buying just because they did.",
             "Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. The investor and stock pages on Compounder track how these positions move from one quarter to the next. None of this is investment advice.",
           ],
         },
@@ -356,7 +369,9 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "2026 Q1：超级投资者持有、买入与卖出了什么",
       description:
         "一份对 2026 Q1 13F 申报的解读：被最多机构持有的股票、本季最大的买入与卖出，以及为什么「重合」依然不是信号。",
-      updated: "2026-06-11",
+      published: "2026-06-11",
+      written: "2026-06-11",
+      updated: "2026-10-30",
       snapshotPeriod: "2026-03-31",
       intro:
         "每个季度，大型机构投资者都必须披露他们持有的美股仓位，2026 年 Q1 的申报如今已经出全。这一季截至 3 月 31 日，各家在 5 月中前报齐。下面是我们追踪的这些投资者当时持有什么、其中最多人在买什么、又在卖什么。这只是一个季度的数据；最后一节会讲清楚，你接下来看到的这些重合，为什么远没有它看上去那么有分量。",
@@ -364,7 +379,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "我们在读什么",
           paragraphs: [
-            "这些数字来自 Form 13F，任何管理至少 1 亿美元美股的机构，每季度都得向 SEC 提交它。我们把 Compounder 超级投资者名单里这些人的申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
+            "这些数字来自 Form 13F，达到 SEC 对 Section 13(f) 证券 1 亿美元门槛等条件的机构管理人，须按规则提交这份季度申报。我们把 Compounder 超级投资者名单里这些人的申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
             "下面所有数字，都是季度最后一天，也就是 2026 年 3 月 31 日的状态。其中一些仓位此后必定已经变了，而且没有一个数字告诉你任何人当初买在什么价位。",
           ],
         },
@@ -399,7 +414,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "为什么这些都不是信号",
           paragraphs: [
-            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 只含多头、最多滞后 45 天，对一位经理为什么买、买在什么价位只字不提。一个被几位你尊重的投资者共同持有的名字，值得你花时间看；但它仍然不值得你因为别人买了就跟着买。",
+            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 是可申报多头的季末快照，对一位经理为什么买、买在什么价位只字不提。一个被几位你尊重的投资者共同持有的名字，值得你花时间看；但它仍然不值得你因为别人买了就跟着买。",
             "《读懂跨基金共识》更深入地讲了共识设下的陷阱。Compounder 的投资者页和个股页，逐季追踪这些仓位怎么变。这一切都不是投资建议。",
           ],
         },
@@ -422,7 +437,9 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "Q2 2026: What the Superinvestors Held, Bought, and Sold",
       description:
         "The Q2 2026 13F filings from the 97 investors Compounder tracks: the most widely held stocks, the biggest buys and sells, and why most selling was trimming.",
-      updated: "2026-10-19",
+      published: "2026-10-19",
+      written: "2026-10-19",
+      updated: "2026-10-30",
       snapshotPeriod: "2026-06-30",
       snapshotNote:
         "At the time, 92 investors counted. Two filings were read correctly only after a later fix (Ackman's 13F-NT notice and Olstein's zero-holdings report), so the live pages now count 94.",
@@ -432,7 +449,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "What we're reading",
           paragraphs: [
-            "These figures come from Form 13F, the quarterly filing any manager running at least $100 million in U.S. stocks has to submit to the SEC. We line up the Q2 filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. How to Read a 13F covers the mechanics of a single filing.",
+            "These figures come from Form 13F, a quarterly disclosure required of institutional managers meeting the SEC’s $100 million Section 13(f) securities threshold. We line up the Q2 filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. How to Read a 13F covers the mechanics of a single filing.",
             "One counting rule shapes every number here: only investors with Q2 holdings on file count. Five of the 97 have nothing newer than an earlier quarter on Compounder ([[investor:pershing-square|Bill Ackman]], Robert Olstein, Tom Bancroft, Brian Bares, and Michael Burry), so the holder, buy, and sell counts below cover the other 92. Alphabet's two share classes, GOOGL and GOOG, are counted separately, so one fund holding both shows up on each line.",
             "Everything below is as of June 30, 2026. Some of these positions have surely changed since, and none of the figures tell you what anyone paid.",
           ],
@@ -470,7 +487,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "Why none of this is a signal",
           paragraphs: [
-            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is long-only, can be up to 45 days old when it lands, and says nothing about why a manager bought or what they paid. By the time you read this, the Q2 positions are more than three months old.",
+            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is a past quarter-end snapshot of reportable long positions and says nothing about why a manager bought or what they paid. By the time you read this, the Q2 positions are more than three months old.",
             "Q3 filings are due November 16, and the live consensus, buy, and sell pages will roll forward as they come in. Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. None of this is investment advice.",
             "Counts above are from Compounder's top-buys and top-sells pages and the holder tables on the linked stock and investor pages, for the quarter ended 2026-06-30, checked on 2026-10-19. Holder counts leave out positions those tables tag with an older quarter. Source: SEC Form 13F filings via SEC EDGAR.",
           ],
@@ -493,16 +510,18 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "2026 Q2：超级投资者持有、买入与卖出了什么",
       description:
         "解读 2026 Q2 的 13F 申报：Compounder 追踪的 97 位投资人最常持有哪些股票、本季买得最广和卖得最广的是谁，以及为什么大部分卖出只是减仓。",
-      updated: "2026-10-19",
+      published: "2026-10-19",
+      written: "2026-10-19",
+      updated: "2026-10-30",
       snapshotPeriod: "2026-06-30",
       snapshotNote: "当时计入 92 位。之后修复了两位投资人的申报读取（Ackman 的 13F-NT 代报、Olstein 的零持仓申报），实时页现为 94 位。",
       intro:
-        "2026 年 Q2 的 13F 申报，覆盖截至 6 月 30 日的那个季度，8 月 14 日前全部报齐。截至 2026-06-30，Compounder 追踪 97 位投资人。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论：三张榜的前排几乎是同一批大市值公司，而卖出一侧大多是减仓，很少有人真的走人。Q3 申报的截止日是 11 月 16 日（第 45 天是周六，顺延到周一），这份快照用不了多久就会被新一季替换。",
+        "2026 年 Q2 的 13F 申报，覆盖截至 6 月 30 日的那个季度，申报截止日为 8 月 14 日。截至 2026-06-30，Compounder 追踪 97 位投资人。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论：三张榜的前排几乎是同一批大市值公司，而卖出一侧大多是减仓，很少有人真的走人。Q3 申报的截止日是 11 月 16 日（第 45 天是周六，顺延到周一），这份快照用不了多久就会被新一季替换。",
       sections: [
         {
           heading: "我们在读什么",
           paragraphs: [
-            "这些数字来自 Form 13F，任何管理至少 1 亿美元美股的机构，每季度都得向 SEC 提交它。我们把 Compounder 超级投资者名单上各位的 Q2 申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
+            "这些数字来自 Form 13F，达到 SEC 对 Section 13(f) 证券 1 亿美元门槛等条件的机构管理人，须按规则提交这份季度申报。我们把 Compounder 超级投资者名单上各位的 Q2 申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
             "下面所有数字只遵循一条计数规则：在 Compounder 上有 Q2 持仓数据的投资人才算。97 位里有 5 位最新数据还停在更早的季度：[[investor:pershing-square|Bill Ackman]]、Robert Olstein、Tom Bancroft、Brian Bares、Michael Burry，所以持有、买入、卖出的家数都只覆盖其余 92 位。Alphabet 的两类股 GOOGL 和 GOOG 分开计，同时持有两类的基金会在两行里各出现一次。",
             "下面所有数字，都是 2026 年 6 月 30 日的状态。其中一些仓位此后必定已经变了，而且没有一个数字告诉你任何人当初买在什么价位。",
           ],
@@ -540,7 +559,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "为什么这些都不是信号",
           paragraphs: [
-            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 只含多头，交上来时最多已滞后 45 天，对一位经理为什么买、买在什么价位只字不提。等你读到这里，这些 Q2 仓位已经是三个多月前的事了。",
+            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 是可申报多头的季末快照，对一位经理为什么买、买在什么价位只字不提。等你读到这里，这些 Q2 仓位已经是三个多月前的事了。",
             "Q3 申报 11 月 16 日截止（第 45 天是周六，顺延到周一），共识持仓、最多买入、最多卖出这几张实时榜单会随申报陆续滚到新一季。《读懂跨基金共识》更深入地讲了共识设下的陷阱。这一切都不是投资建议。",
             "上文家数取自 Compounder 的最多买入、最多卖出页面，以及文中链接的个股页和投资人页上的持有人表，报告期截至 2026-06-30，核对于 2026-10-19。持有家数不含这些表里标注为更早季度的仓位。来源：SEC EDGAR 上的 Form 13F 申报。",
           ],
@@ -565,7 +584,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "What Makes a Business High Quality: Reading the Numbers Behind Superinvestor Holdings",
       description:
         "How to judge a business from a few numbers in its filings (profit margins, free cash flow, returns on capital), worked through stocks superinvestors own.",
-      updated: "2026-10-19",
+      published: "2026-06-11",
+      updated: "2026-10-30",
       intro:
         "Compounder shows you which stocks the superinvestors own and how that ownership shifts each quarter. Knowing who holds a stock is a starting point. The harder and more useful question is whether the underlying business is any good. You can get a long way toward answering that from a handful of numbers in a company's financial statements, and every stock page on the site carries them. This is a guide to reading those numbers, worked through the businesses that turn up most often in superinvestor portfolios. None of it is a verdict on any stock. It is a way to look.",
       sections: [
@@ -580,7 +600,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "Profit margins: the first look at pricing power",
           paragraphs: [
             "Net margin is the share of each dollar of revenue that survives all the way down to profit. It is the quickest read on pricing power. A business that can charge well above what it costs to serve a customer, and keep doing it, posts a high and steady margin. One fighting on price cannot.",
-            "The businesses superinvestors cluster in tend to sit at the high end. Take each company's latest full fiscal year, as reported in its 10-K. [[stock:V|Visa]] kept 50.1% of revenue as net profit in the year ended September 30, 2025, and [[stock:MA|Mastercard]] 45.6% in calendar 2025. [[stock:GOOGL|Alphabet]] ran 32.8%, [[stock:MCO|Moody's]] 31.9%, and [[stock:META|Meta]] 30.1%, also for calendar 2025. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. [[stock:AAPL|Apple]], at 26.9% for the year ended September 27, 2025, and [[stock:AMZN|Amazon]], at 10.8% for calendar 2025, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
+            "The businesses superinvestors cluster in tend to sit at the high end. Use fiscal 2025 as a dated example, as reported in each company’s 10-K. [[stock:V|Visa]] kept 50.1% of revenue as net profit in the year ended September 30, 2025, and [[stock:MA|Mastercard]] 45.6% in calendar 2025. [[stock:GOOGL|Alphabet]] ran 32.8%, [[stock:MCO|Moody's]] 31.9%, and [[stock:META|Meta]] 30.1%, also for calendar 2025. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. [[stock:AAPL|Apple]], at 26.9% for the year ended September 27, 2025, and [[stock:AMZN|Amazon]], at 10.8% for calendar 2025, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
             "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read full years and the trend, not one quarter. In the quarter ended June 30, 2026, Alphabet reported net income equal to 94% of its revenue, because $99.0 billion of its $138.8 billion in pretax income came from gains on investments it holds; operating income that quarter was $40.8 billion. That is why the figures here use full fiscal years. A margin that has slid for several years usually means something the latest figure hides.",
           ],
         },
@@ -610,8 +630,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "What the numbers can't tell you",
           paragraphs: [
             "These figures describe a business as it was on its last filing, up to a few months ago. They say nothing about what comes next. A moat can erode, a new manager can change how capital gets spent, an industry can turn. They also say nothing about price, which is what actually decides your return. A great business is not automatically a great investment. What you pay decides that.",
-            "So treat all of this as a way to ask better questions about the companies superinvestors own, not a scorecard that picks them for you. A 13F tells you who holds a stock. These numbers help you judge the business underneath it. What you do with that judgment, and at what price, is yours alone, and none of this is investment advice. Every figure here lives on the stock pages, refreshed each filing, if you want to run the read yourself.",
-            "Margin and free-cash-flow figures above are from each company's most recent full fiscal year, as reported in its 10-K and shown on Compounder: Visa, fiscal year ended 2025-09-30; Apple, fiscal year ended 2025-09-27; Alphabet, Meta, Mastercard, Moody's, and Amazon, fiscal year ended 2025-12-31. The single Alphabet quarter cited is from its 10-Q for the period ended 2026-06-30. Figures checked on 2026-10-19. Source: SEC filings via SEC EDGAR.",
+            "So treat all of this as a way to ask better questions about the companies superinvestors own, not a scorecard that picks them for you. A 13F tells you who holds a stock. These numbers help you judge the business underneath it. What you do with that judgment, and at what price, is yours alone, and none of this is investment advice. The dated examples above stay tied to their filings; stock pages show the latest available figures, if you want to run the read yourself.",
+            "Margin and free-cash-flow figures above are a fiscal-2025 snapshot, as reported in its 10-K and shown on Compounder: Visa, fiscal year ended 2025-09-30; Apple, fiscal year ended 2025-09-27; Alphabet, Meta, Mastercard, Moody's, and Amazon, fiscal year ended 2025-12-31. The single Alphabet quarter cited is from its 10-Q for the period ended 2026-06-30. Figures checked on 2026-10-19. Source: SEC filings via SEC EDGAR.",
           ],
         },
       ],
@@ -631,7 +651,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "什么样的生意算优质：读懂超级投资者持仓背后的数字",
       description:
         "怎么从申报里的几个数字判断一门生意好不好：利润率、自由现金流、资本回报率，拿超级投资者真实持有的股票逐一做案例。",
-      updated: "2026-10-19",
+      published: "2026-06-11",
+      updated: "2026-10-30",
       intro:
         "Compounder 让你看到超级投资者持有哪些股票、这份持有每季怎么变。知道谁在持有，只是起点。更难也更有用的问题是：底下那门生意到底好不好。这件事，你能从公司财报里的几个数字走出很远，而站上每个个股页都带着这些数字。这篇就讲怎么读它们，拿超级投资者持仓里最常出现的那些生意逐一做案例。它不是对任何一只股票的定论，而是一种看法的方法。",
       sections: [
@@ -699,7 +720,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "What Is a Stock Actually Worth?",
       description:
         "What intrinsic value means, why it can't be pinned to one number, and how Graham, Buffett, Li Lu, and Duan Yongping each sharpened value investing's core idea.",
-      updated: "2026-07-12",
+      published: "2026-07-12",
+      updated: "2026-10-30",
       intro:
         "Everyone wants investing to come down to a number. The stock price is one, and it's the wrong one: it only tells you what the crowd will pay today. Intrinsic value looks like the better number, the real one hiding under the price. But you can't get that number either, not exactly. And that's the whole point. Intrinsic value isn't something you calculate. It's a way of admitting you can't know for sure what a business is worth, plus a few habits that let you invest well anyway. Graham, [[investor:berkshire-hathaway|Buffett]], [[investor:himalaya-capital|Li Lu]], and [[investor:hh-international|Duan Yongping]] all reach the same idea in different words. That idea, and everything it forces on you, is the rest of this piece.",
       sections: [
@@ -723,7 +745,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "'Discounted' is the word most people skip, and it's the one that carries the weight. In that 1999 Sun Valley talk, Buffett stripped investing down to a sentence: laying out money today to get more money back tomorrow. If that's the deal, a dollar the business earns ten years from now can't be worth a full dollar to you today. You'd rather have the dollar now and put it to work in the meantime. So you knock future cash down to reflect the wait, and how far you knock it down is the discount rate.",
             "That rate is anything but a technicality. In the same talk, [[investor:berkshire-hathaway|Buffett]] called interest rates the gravity of finance: 'interest rates act as gravity behaves in the physical world. At all times, in all markets, in all parts of the world, the tiniest change in rates changes the value of every financial asset.' A dollar arriving years from now is worth far less when rates are 13% than when they're 4%. Push rates up and every valuation gets pulled down; let them fall and everything floats higher.",
-            "Where does the rate come from? Duan gives the ground-level answer: it's really your opportunity cost, and the floor under it is the risk-free rate, something close to the yield on U.S. Treasuries. That's why the ten-year Treasury yield turns up under every serious valuation, including the value estimates on this site. It's the gravity the rest of your money gets weighed against.",
+            "Where does the rate come from? Duan gives the ground-level answer: it's really your opportunity cost, and the floor under it is the risk-free rate, something close to the yield on U.S. Treasuries. Compounder uses the ten-year Treasury yield as an anchor when setting its discount assumptions. It's the gravity the rest of your money gets weighed against.",
           ],
         },
         {
@@ -753,7 +775,6 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "This is the frame behind what you see on a stock page here. The value estimate shows up as a band, not a single target, because an honest estimate is a range. The margin-of-safety figure only appears when the price sits genuinely below intrinsic value, since flashing a discount on a fairly priced stock would just be noise. And the ten-year Treasury yield sits under all of it as the discount anchor, because that's the opportunity cost everything gets measured against.",
             "None of this tells you to buy or sell anything. It's the list of questions worth asking before you decide, and the deciding is yours.",
-            "Sources: Benjamin Graham, The Intelligent Investor; Warren Buffett, Berkshire Hathaway shareholder letters and \"Mr. Buffett on the Stock Market\" (Fortune, Nov. 22, 1999); Li Lu, lecture at Peking University (Oct. 23, 2015); Duan Yongping, published investment Q&A.",
           ],
         },
       ],
@@ -768,7 +789,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       title: "一只股票到底值多少钱",
       description:
         "内在价值，是价值投资底下最根本的一个概念。它到底是什么、为什么算不出一个精确的数字，以及格雷厄姆、巴菲特、李录、段永平如何一步步把它讲清楚。",
-      updated: "2026-07-12",
+      published: "2026-07-12",
+      updated: "2026-10-30",
       intro:
         "每个人都想把投资归结成一个数字。股价就是个数字，可它是错的那个：它只告诉你此刻人群愿意出多少。内在价值看着像那个更好的、藏在价格底下的「真」数字。可你同样得不到这个数字，至少得不到准的。而这正是关键。内在价值不是你算出来的。它是一种态度：承认你没法确切知道一门生意值多少；再加上几条规矩，让你照样能投得好。格雷厄姆、[[investor:berkshire-hathaway|巴菲特]]、[[investor:himalaya-capital|李录]]、[[investor:hh-international|段永平]]，说法不同，说的是同一件事。下面讲的就是这件事，和它逼你养成的那些习惯。",
       sections: [
@@ -792,7 +814,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "「折现」这两个字大多数人会跳过，可它才是最要紧的。就在 1999 年太阳谷那场演讲里，巴菲特把投资剥到只剩一句：今天付出钱，是为了明天收回更多的钱。如果是这么个买卖，那么生意十年后赚到的一块钱，今天对你就不可能值满满一块。你宁愿现在就拿到，好让它在这中间去干活。所以你把未来的现金往下打个折，来抵这段等待；打多深，就是折现率。",
             "这个折现率绝不是什么技术细节。还是那场演讲，[[investor:berkshire-hathaway|巴菲特]]把利率叫作金融世界的地心引力：「利率之于金融，如同地心引力之于物质。任何时候、任何市场、世界任何角落，利率哪怕最微小的变动，都会改变每一项金融资产的价值。」同样一块多年后才到手的钱，利率 13% 时远不如 4% 时值钱。利率往上顶，所有估值都被往下拽；利率一落，一切又往上浮。",
-            "折现率从哪儿来？段永平给的答案最实在：它其实就是你的机会成本，而它的底，是无风险回报率，差不多就是美国国债的利率。这就是为什么十年期美国国债收益率会垫在每一个严肃估值的底下，也垫在你在这个站上看到的价值估算底下。它就是你其余的钱用来称重的那股地心引力。",
+            "折现率从哪儿来？段永平给的答案最实在：它其实就是你的机会成本，而它的底，是无风险回报率，差不多就是美国国债的利率。本站用十年期美国国债收益率作为折现假设的一个锚。它就是你其余的钱用来称重的那股地心引力。",
           ],
         },
         {
@@ -822,7 +844,6 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "这就是你在这里个股页上看到的东西背后的框架。价值估算显示成一条带，不是单一目标价，因为诚实的估计本就是个区间。安全边际的数字，只在股价确实低于内在价值时才出现，因为给一只定价合理的股票标个「折扣」，只是噪音。而十年期美国国债收益率垫在这一切底下，作为折现的锚，因为那是一切用来衡量的机会成本。",
             "这里没有一句叫你买或卖什么。它只是你自己下判断前该先问的一组问题。答案，没人能替你给。",
-            "参考来源：格雷厄姆《聪明的投资者》；巴菲特致伯克希尔股东的信，以及《Mr. Buffett on the Stock Market》（Fortune，1999-11-22）；李录北京大学演讲（2015-10-23）；段永平公开投资问答。",
           ],
         },
       ],
@@ -847,11 +868,17 @@ export const ARTICLE_SLUGS: string[] = [
 ];
 
 export function getArticle(slug: string, lang: Lang): Article | undefined {
-  return ARTICLES[slug]?.[lang];
+  const article = ARTICLES[slug]?.[lang];
+  return article ? {
+    ...article,
+    references: articleReferences(slug, lang),
+    sections: article.sections.map((section, i) => ({ ...section, id: ARTICLE_SECTION_IDS[slug]?.[i] })),
+    ...(slug === 'reading-business-quality' && lang === 'en' ? { seoTitle: 'How to Assess Business Quality from Financial Statements' } : {}),
+  } : undefined;
 }
 
 export function listArticles(lang: Lang): Article[] {
-  return ARTICLE_SLUGS.map((slug) => ARTICLES[slug][lang]);
+  return ARTICLE_SLUGS.map((slug) => getArticle(slug, lang)!);
 }
 
 /** 首页手挑的「从这里开始」门面文章。改这一行即可换门面。 */
@@ -888,7 +915,7 @@ export function getFeatured(lang: Lang): Article | null {
 export function getLatest(lang: Lang): Article | null {
   const pool = listArticles(lang).filter((a) => a.slug !== FEATURED_SLUG && a.updated && !a.snapshotPeriod);
   if (pool.length === 0) return null;
-  return pool.reduce((newest, a) => (a.updated > newest.updated ? a : newest));
+  return pool.reduce((newest, a) => (a.updated > newest.updated || (a.updated === newest.updated && a.published > newest.published) ? a : newest));
 }
 
 /** 其余文章:全部指南去掉门面 + 最新两个 slug,原顺序不变。 */

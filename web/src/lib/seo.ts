@@ -1,3 +1,4 @@
+import { quarterLabel } from "./freshness/derive";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { SITE_ORIGIN, absoluteUrl, localePath, HTML_LANG, hreflangs } from "@/lib/urls";
@@ -221,4 +222,23 @@ export function altFor(lang: Lang, path: string) {
     canonical: localePath(lang, path),
     languages: hreflangs(path),
   };
+}
+
+/** Search snippets share the same baseline and leaders as the visible ranking. */
+export function rankingMetadata(lang: Lang, kind: 'buys' | 'sells' | 'consensus', period: string | null, leader: { ticker: string; count: number } | null) {
+  const q = quarterLabel(period, lang);
+  const label = lang === 'zh'
+    ? { buys: '最多人买', sells: '最多人卖', consensus: '共识持仓' }[kind]
+    : { buys: 'Top buys', sells: 'Top sells', consensus: 'Consensus holdings' }[kind];
+  const title = `${label}${q ? ` · ${q}` : ''} — ${titleBrand(lang)}`;
+  const description = lang === 'zh'
+    ? fitSnippet(
+      `${label}：${leader ? `${leader.ticker} 居首，${leader.count} 位超级投资者${kind === 'buys' ? '新进或增持' : kind === 'sells' ? '减持或清仓' : '持有'}。` : '查看超级投资者的申报数据。'}${q ? `季度动作以 ${q} 为比较基准。` : ''}来源：SEC 13F。`,
+      `${label}${q ? ` · ${q}` : ''}。${leader ? `${leader.ticker} 居首，涉及 ${leader.count} 位投资人。` : ''}来源：SEC 13F。`,
+    )
+    : fitSnippet(
+      `${leader ? `${leader.ticker} leads with ${leader.count} superinvestors ${kind === 'buys' ? 'opening or adding' : kind === 'sells' ? 'trimming or exiting' : 'reporting holdings'}. ` : ''}${q ? `${q} change-comparison baseline. ` : ''}${label} from SEC 13F filings.`,
+      `${label}${q ? ` · ${q}` : ''}. ${leader ? `${leader.ticker}: ${leader.count} superinvestors. ` : ''}Source: SEC 13F filings.`,
+    );
+  return { title, description };
 }

@@ -33,7 +33,7 @@ export async function generateMetadata({
   const title =
     l === "zh"
       ? "Compounder · 复利 — 超级投资者持仓 × 个股估值"
-      : "Compounder — Smart-money holdings × valuation";
+      : "Superinvestor 13F Holdings & Valuation — Compounder";
   const description =
     l === "zh"
       ? "追踪巴菲特等顶级投资者的 SEC 13F 季度持仓与跨机构共识，以及个股的保守内在价值区间。数据来源 SEC EDGAR。"

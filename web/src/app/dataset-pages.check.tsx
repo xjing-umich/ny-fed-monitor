@@ -29,6 +29,7 @@ stub('../lib/managers/source', {
 });
 stub('../lib/managers/consensusRead', {
   readStockHolders: async () => fallback ? null : rows,
+  readStockLinkHolders: async () => rows.map((r) => ({ ticker: "TEST", kind: r.kind, period: r.period })),
   readStockTrend: async () => [], readCoOwnership: async () => [], readHolderCounts: async () => new Map(),
 });
 stub('../lib/managers/securities', {
@@ -41,7 +42,8 @@ stub('../lib/managers/treasuryRead', { getLatestDgs10: async () => null });
 const prices = require('../lib/managers/priceRead');
 stub('../lib/managers/priceRead', { ...prices, getLatestPrice: async () => null, getLatestSplit: async () => null });
 stub('../lib/valuation/valuationSnapshot', { readValuationVerdicts: async () => new Map() });
-const StockPage = require('./[lang]/stocks/[ticker]/page').default;
+const stockRoute = require('./[lang]/stocks/[ticker]/page');
+const StockPage = stockRoute.default;
 const InvestorPage = require('./[lang]/investors/[slug]/page').default;
 type JsonObject = Record<string, unknown>;
 function datasets(html: string): JsonObject[] {
@@ -86,6 +88,15 @@ async function main() {
         assert.ok(Array.isArray(missing.isBasedOn));
         assert.ok(!('datePublished' in missing.isBasedOn[0]), 'missing source date stays missing');
       }
+      rows = [row('early', q3)];
+      fallback = false;
+      const meta = await stockRoute.generateMetadata({ params: Promise.resolve({ lang, ticker: 'TEST' }) });
+      assert.ok(meta.description.includes(lang === 'en' ? 'Q3 2026' : '2026Q3'));
+      assert.ok(!meta.description.includes('Q2') && !/most|多数/.test(meta.description));
+      const earlyHtml = renderToStaticMarkup(await StockPage({ params: Promise.resolve({ lang, ticker: 'TEST' }) }));
+      const faqJson = [...earlyHtml.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1])).find((o) => o['@type'] === 'FAQPage');
+      assert.ok(faqJson.mainEntity[0].acceptedAnswer.text.includes(lang === 'en' ? 'Q3 2026' : '2026Q3'));
+      assert.ok(!/most|多数/.test(faqJson.mainEntity[0].acceptedAnswer.text));
       rows = [row('first')];
       const [investor] = datasets(renderToStaticMarkup(await InvestorPage({ params: Promise.resolve({ lang, slug: 'first' }) })));
       assert.equal(investor.temporalCoverage, q2);

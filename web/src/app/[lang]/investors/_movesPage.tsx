@@ -1,4 +1,5 @@
-import React from "react";
+import React, { cache } from "react";
+import { rankingMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import type { Lang } from "@/lib/nav";
 import type { MoveRow, MoveKind } from "@/lib/aggregations";
@@ -69,10 +70,8 @@ function movesFootnote(
 
 export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sell" }) {
   const isZh = lang === "zh";
-  const [{ mostBought, mostSold }, idx] = await Promise.all([notableMoves(30), getManagerIndex()]);
+  const { moves: { mostBought, mostSold }, idx, effective } = await getMovesPageData();
   const data: MoveRow[] = side === "buy" ? mostBought : mostSold;
-  const periods = idx.managers.map((m) => m.period);
-  const effective = effectiveMovesPeriod(periods, new Date());
   const baseline = effective.period;
   // Only managers older than the moves baseline — early maxPeriod filers are
   // covered by the “另有 N 位已交 max” clause, not this “older filing” list.
@@ -152,4 +151,15 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
 
 export function notFoundIfBadLang(rawLang: string): asserts rawLang is Lang {
   if (rawLang !== "zh" && rawLang !== "en") notFound();
+}
+
+const getMovesPageData = cache(async () => {
+  const [moves, idx] = await Promise.all([notableMoves(30), getManagerIndex()]);
+  return { moves, idx, effective: effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()) };
+});
+
+export async function movesMetadata(lang: Lang, side: 'buy' | 'sell') {
+  const { moves, effective } = await getMovesPageData();
+  const first = (side === 'buy' ? moves.mostBought : moves.mostSold)[0];
+  return rankingMetadata(lang, side === 'buy' ? 'buys' : 'sells', effective.period, first ? { ticker: first.cusip, count: first.count } : null);
 }

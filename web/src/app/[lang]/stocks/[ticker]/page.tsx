@@ -1,4 +1,3 @@
-import { date as formatDate } from "@/lib/i18n/format";
 import { shares as formatShares } from "@/lib/i18n/format";
 import React from "react";
 import Link from "next/link";
@@ -25,7 +24,7 @@ import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
-import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, securitySchemaType, edgarFilingsUrl } from "@/lib/seo";
+import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, snippetWidth, securitySchemaType, edgarFilingsUrl } from "@/lib/seo";
 import { snapshotTime, snapshotLabel } from "@/lib/datasetTime";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
@@ -144,6 +143,9 @@ export async function generateMetadata({
           description: description?.zh ?? zhSpacing(`谁在持有 ${zhIssuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。`) }
       : { title: `${issuer} (${ticker}) ${noun.en} — Who's Holding | Compounder`,
           description: description?.en ?? `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
+  if (lang === 'zh' && snippetWidth(meta.title) > 90) {
+    meta.title = `${stockZhName(ticker) ?? issuer}（${ticker}）${noun.zh}持仓 — Compounder · 复利`;
+  }
   return {
     ...meta,
     alternates,
