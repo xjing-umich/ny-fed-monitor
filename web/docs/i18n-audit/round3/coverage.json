@@ -1,0 +1,928 @@
+{
+  "observed_at": "2026-10-30T23:46:45.276909+08:00",
+  "deployment_sha": "b6aebf2c8d51d92907be60ab7ea7f45340bd689c",
+  "http_capture_count": 102,
+  "unique_final_urls_excluding_audit_param": 86,
+  "sitemap_url_count": 2636,
+  "method": "HTTP HTML and metadata capture; browser interaction checks documented separately. Not a crawl of all sitemap entities.",
+  "captures": [
+    {
+      "url": "https://thecompounder.fyi/privacy?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/privacy?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.985359+08:00",
+      "lang": "en",
+      "title": "Privacy Policy — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/privacy?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/privacy?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:07.464261+08:00",
+      "lang": "zh-CN",
+      "title": "隐私政策 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn/reading-cross-fund-consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn/reading-cross-fund-consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:06.724215+08:00",
+      "lang": "zh-CN",
+      "title": "读懂跨基金共识 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn/what-is-a-superinvestor?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn/what-is-a-superinvestor?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:06.737442+08:00",
+      "lang": "zh-CN",
+      "title": "什么是超级投资者？ — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn/what-is-a-superinvestor?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn/what-is-a-superinvestor?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.183583+08:00",
+      "lang": "en",
+      "title": "What Is a Superinvestor? — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn/how-to-read-a-13f?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn/how-to-read-a-13f?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:06.004206+08:00",
+      "lang": "zh-CN",
+      "title": "如何读懂 13F — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:00.540841+08:00",
+      "lang": "en",
+      "title": "Value Investing Guides & 13F Reports — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn/q2-2026-superinvestor-consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn/q2-2026-superinvestor-consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.243286+08:00",
+      "lang": "en",
+      "title": "Q2 2026: What the Superinvestors Held, Bought, and Sold — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn/q1-2026-superinvestor-consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn/q1-2026-superinvestor-consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:06.674257+08:00",
+      "lang": "zh-CN",
+      "title": "2026 Q1：超级投资者持有、买入与卖出了什么 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/terms?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/terms?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:07.456457+08:00",
+      "lang": "zh-CN",
+      "title": "使用条款 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/terms?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/terms?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.929425+08:00",
+      "lang": "en",
+      "title": "Terms of Service — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/disclaimer?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/disclaimer?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.979079+08:00",
+      "lang": "en",
+      "title": "Disclaimer — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn/how-to-read-a-13f?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn/how-to-read-a-13f?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.178751+08:00",
+      "lang": "en",
+      "title": "How to Read a 13F — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:01.304043+08:00",
+      "lang": "zh-CN",
+      "title": "价值投资指南与 13F 季报 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn/what-is-intrinsic-value?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn/what-is-intrinsic-value?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.938179+08:00",
+      "lang": "en",
+      "title": "What Is a Stock Actually Worth? — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn/what-is-intrinsic-value?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn/what-is-intrinsic-value?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:06.800017+08:00",
+      "lang": "zh-CN",
+      "title": "一只股票到底值多少钱 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/about?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/about?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.924174+08:00",
+      "lang": "en",
+      "title": "About Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/disclaimer?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/disclaimer?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:07.477317+08:00",
+      "lang": "zh-CN",
+      "title": "免责声明 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn/reading-business-quality?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn/reading-business-quality?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.192323+08:00",
+      "lang": "en",
+      "title": "What Makes a Business High Quality: Reading the Numbers Behind Superinvestor Holdings — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn/q2-2026-superinvestor-consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn/q2-2026-superinvestor-consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:06.685810+08:00",
+      "lang": "zh-CN",
+      "title": "2026 Q2：超级投资者持有、买入与卖出了什么 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn/reading-business-quality?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn/reading-business-quality?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:06.691448+08:00",
+      "lang": "zh-CN",
+      "title": "什么样的生意算优质：读懂超级投资者持仓背后的数字 — Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn/q1-2026-superinvestor-consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn/q1-2026-superinvestor-consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.214080+08:00",
+      "lang": "en",
+      "title": "Q1 2026: What the Superinvestors Held, Bought, and Sold — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/about?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/about?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:07.428709+08:00",
+      "lang": "zh-CN",
+      "title": "关于 Compounder · 复利",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn/reading-cross-fund-consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn/reading-cross-fund-consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.175613+08:00",
+      "lang": "en",
+      "title": "Reading Cross-Fund Consensus — Compounder",
+      "area": "learn"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:01.002631+08:00",
+      "lang": "zh-CN",
+      "title": "Compounder · 复利 — 超级投资者持仓 × 个股估值",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/investors?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:02.729425+08:00",
+      "lang": "en",
+      "title": "Superinvestor 13F Portfolios · Q2 2026 — Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/privacy?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/privacy?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:04.652641+08:00",
+      "lang": "en",
+      "title": "Privacy Policy — Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/privacy?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/privacy?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.015194+08:00",
+      "lang": "zh-CN",
+      "title": "隐私政策 — Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:03.038011+08:00",
+      "lang": "zh-CN",
+      "title": "超级投资者 13F 持仓 · 2026Q2 — Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/this-route-does-not-exist?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/this-route-does-not-exist?tc_internal=1",
+      "status": 404,
+      "fetched_at": "2026-10-30T23:42:07.251531+08:00",
+      "lang": "",
+      "title": "Compounder — Smart-money holdings × valuation",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/learn?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/learn?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:03.099665+08:00",
+      "lang": "en",
+      "title": "Value Investing Guides & 13F Reports — Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/terms?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/terms?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:04.592688+08:00",
+      "lang": "zh-CN",
+      "title": "使用条款 — Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:02.107501+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/terms?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/terms?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:04.245431+08:00",
+      "lang": "en",
+      "title": "Terms of Service — Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:01.358672+08:00",
+      "lang": "en",
+      "title": "Most-Held Stocks · Q2 2026 — Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:01.782427+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/disclaimer?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/disclaimer?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.338310+08:00",
+      "lang": "en",
+      "title": "Disclaimer — Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/this-route-does-not-exist?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/this-route-does-not-exist?tc_internal=1",
+      "status": 404,
+      "fetched_at": "2026-10-30T23:42:07.165316+08:00",
+      "lang": "",
+      "title": "Compounder — Smart-money holdings × valuation",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/learn?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/learn?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:03.483607+08:00",
+      "lang": "zh-CN",
+      "title": "价值投资指南与 13F 季报 — Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/about?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/about?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:03.834133+08:00",
+      "lang": "en",
+      "title": "About Compounder",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/disclaimer?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/disclaimer?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:05.401131+08:00",
+      "lang": "zh-CN",
+      "title": "免责声明 — Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:01.012494+08:00",
+      "lang": "en",
+      "title": "Compounder — Smart-money holdings × valuation",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:02.341640+08:00",
+      "lang": "zh-CN",
+      "title": "超级投资者最多人持有的股票 · 2026Q2 — Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/about?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/about?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:03.852377+08:00",
+      "lang": "zh-CN",
+      "title": "关于 Compounder · 复利",
+      "area": "shell"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AAPL?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/AAPL?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:44.240890+08:00",
+      "lang": "en",
+      "title": "Apple Inc (AAPL) Stock — Who's Holding | Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks?sort=holders&dir=asc&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks?sort=holders&dir=asc&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:16.347889+08:00",
+      "lang": "zh-CN",
+      "title": "超级投资者最多人持有的股票 · 2026Q2 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/JPM?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/JPM?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:45.302299+08:00",
+      "lang": "en",
+      "title": "JPMorgan Chase & Co (JPM) Stock — Who's Holding | Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?view=conviction&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?view=conviction&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:41.337457+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?view=below&sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?view=below&sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.105198+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks?q=AAPL&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks?q=AAPL&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:13.407981+08:00",
+      "lang": "en",
+      "title": "Most-Held Stocks · Q2 2026 — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AAPL?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/AAPL?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:45.895597+08:00",
+      "lang": "zh-CN",
+      "title": "苹果 Apple Inc（AAPL）股票 — 谁在持有 | Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/DECK?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/DECK?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:45.943848+08:00",
+      "lang": "zh-CN",
+      "title": "Deckers Outdoor Corp（DECK）股票 — 谁在持有 | Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?view=below&sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?view=below&sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.841610+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks?sort=holders&dir=asc&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks?sort=holders&dir=asc&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:14.152343+08:00",
+      "lang": "en",
+      "title": "Most-Held Stocks · Q2 2026 — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/PDD?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/PDD?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:44.786038+08:00",
+      "lang": "en",
+      "title": "PDD Holdings Inc (PDD) Stock — Who's Holding | Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/DECK?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/DECK?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:44.994827+08:00",
+      "lang": "en",
+      "title": "Deckers Outdoor Corp (DECK) Stock — Who's Holding | Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/CMCSA?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/CMCSA?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:49.253200+08:00",
+      "lang": "zh-CN",
+      "title": "康卡斯特 Comcast Corp Class A（CMCSA）股票 — 谁在持有 | Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?view=conviction&sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?view=conviction&sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.081737+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?view=strike_zone&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?view=strike_zone&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:43.198491+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/PDD?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/PDD?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:47.211528+08:00",
+      "lang": "zh-CN",
+      "title": "拼多多 PDD Holdings Inc（PDD）股票 — 谁在持有 | Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.096356+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?view=strike_zone&sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?view=strike_zone&sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.828222+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/BRK.B?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/BRK.B?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:45.553350+08:00",
+      "lang": "en",
+      "title": "Berkshire Hathaway Inc Class B (BRK.B) Stock — Who's Holding | Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?view=below&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?view=below&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:42.842491+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?view=below&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?view=below&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:42.972312+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks?sort=value&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks?sort=value&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:13.728743+08:00",
+      "lang": "en",
+      "title": "Most-Held Stocks · Q2 2026 — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks?q=AAPL&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks?q=AAPL&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:14.547013+08:00",
+      "lang": "zh-CN",
+      "title": "超级投资者最多人持有的股票 · 2026Q2 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks?sort=value&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks?sort=value&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:14.169478+08:00",
+      "lang": "zh-CN",
+      "title": "超级投资者最多人持有的股票 · 2026Q2 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/JPM?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/JPM?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:47.124425+08:00",
+      "lang": "zh-CN",
+      "title": "摩根大通 JPMorgan Chase & Co（JPM）股票 — 谁在持有 | Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?view=conviction&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?view=conviction&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:42.624202+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.090714+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/CMCSA?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/CMCSA?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:45.186759+08:00",
+      "lang": "en",
+      "title": "Comcast Corp Class A (CMCSA) Stock — Who's Holding | Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:42.972279+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:41.873463+08:00",
+      "lang": "en",
+      "title": "Most-Held Stocks · Q2 2026 — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:41.509793+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/screener?view=conviction&sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/screener?view=conviction&sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.853429+08:00",
+      "lang": "zh-CN",
+      "title": "个股 · 内在价值区间 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?view=strike_zone&sort=holders&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?view=strike_zone&sort=holders&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:42:12.099582+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/screener?view=strike_zone&tc_internal=1",
+      "final_url": "https://thecompounder.fyi/stocks/screener?view=strike_zone&tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:41.347652+08:00",
+      "lang": "en",
+      "title": "Stocks · Intrinsic value range — Compounder",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:42.088132+08:00",
+      "lang": "zh-CN",
+      "title": "超级投资者最多人持有的股票 · 2026Q2 — Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/BRK.B?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/stocks/BRK.B?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:49.534953+08:00",
+      "lang": "zh-CN",
+      "title": "伯克希尔·哈撒韦 Berkshire Hathaway Inc Class B（BRK.B）股票 — 谁在持有 | Compounder · 复利",
+      "area": "stocks"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/berkshire-hathaway?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/berkshire-hathaway?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:50.469612+08:00",
+      "lang": "en",
+      "title": "Berkshire Hathaway (Buffett & Abel) Portfolio — 13F Holdings Q2 2026 | Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:50.572879+08:00",
+      "lang": "en",
+      "title": "Consensus holdings · Superinvestors — Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/buys?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/buys?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:46.938911+08:00",
+      "lang": "zh-CN",
+      "title": "最多人买 · 超级投资者 — Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/hh-international?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/hh-international?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:50.584788+08:00",
+      "lang": "zh-CN",
+      "title": "段永平（Duan Yongping）持仓组合 — 13F 2026Q2 | Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:49.154435+08:00",
+      "lang": "zh-CN",
+      "title": "超级投资者 13F 持仓 · 2026Q2 — Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/bridgewater-associates?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/bridgewater-associates?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:49.510086+08:00",
+      "lang": "zh-CN",
+      "title": "达利欧（Ray Dalio）持仓组合 — 13F 2026Q2 | Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/sells?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/sells?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:46.209399+08:00",
+      "lang": "zh-CN",
+      "title": "最多人卖 · 超级投资者 — Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/baupost-group?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/baupost-group?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:50.847308+08:00",
+      "lang": "en",
+      "title": "Seth Klarman Portfolio — 13F Holdings Q2 2026 | Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/daily-journal?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/daily-journal?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:51.347043+08:00",
+      "lang": "en",
+      "title": "Daily Journal (Charlie Munger's former portfolio) — 13F Holdings Q2 2026 | Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/olstein-capital?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/olstein-capital?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:43:02.270677+08:00",
+      "lang": "en",
+      "title": "Robert Olstein Portfolio — 13F Holdings Q2 2026 | Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/consensus?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/consensus?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:46.208659+08:00",
+      "lang": "zh-CN",
+      "title": "共识持仓 · 超级投资者 — Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/scion-asset-management?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/scion-asset-management?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:51.049120+08:00",
+      "lang": "en",
+      "title": "Michael Burry Portfolio — Last 13F Holdings Q3 2025 (No Longer Filing) | Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/hh-international?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/hh-international?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:51.229373+08:00",
+      "lang": "en",
+      "title": "Duan Yongping Portfolio — 13F Holdings Q2 2026 | Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/berkshire-hathaway?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/berkshire-hathaway?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:46.760327+08:00",
+      "lang": "zh-CN",
+      "title": "伯克希尔（巴菲特与阿贝尔）持仓组合 — 13F 2026Q2 | Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/buys?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/buys?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:49.851076+08:00",
+      "lang": "en",
+      "title": "Top buys · Superinvestors — Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/olstein-capital?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/olstein-capital?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:43:00.948482+08:00",
+      "lang": "zh-CN",
+      "title": "Robert Olstein 持仓组合 — 13F 2026Q2 | Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/scion-asset-management?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/scion-asset-management?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:48.705720+08:00",
+      "lang": "zh-CN",
+      "title": "迈克尔·伯里（Michael Burry）持仓组合 — 最后一份 13F 2025Q3（已停报） | Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/sells?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/sells?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:49.521083+08:00",
+      "lang": "en",
+      "title": "Top sells · Superinvestors — Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/baupost-group?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/baupost-group?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:46.931358+08:00",
+      "lang": "zh-CN",
+      "title": "塞斯·卡拉曼（Seth Klarman）持仓组合 — 13F 2026Q2 | Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/investors/daily-journal?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/zh/investors/daily-journal?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:48.471196+08:00",
+      "lang": "zh-CN",
+      "title": "Daily Journal（芒格生前的组合） — 13F 2026Q2 | Compounder · 复利",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:49.736514+08:00",
+      "lang": "en",
+      "title": "Superinvestor 13F Portfolios · Q2 2026 — Compounder",
+      "area": "investors"
+    },
+    {
+      "url": "https://thecompounder.fyi/en/investors/bridgewater-associates?tc_internal=1",
+      "final_url": "https://thecompounder.fyi/investors/bridgewater-associates?tc_internal=1",
+      "status": 200,
+      "fetched_at": "2026-10-30T23:41:51.716221+08:00",
+      "lang": "en",
+      "title": "Ray Dalio Portfolio — 13F Holdings Q2 2026 | Compounder",
+      "area": "investors"
+    }
+  ]
+}
