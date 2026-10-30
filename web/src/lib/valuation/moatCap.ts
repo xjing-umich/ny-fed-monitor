@@ -270,8 +270,8 @@ export const SUSTAINABLE_MIN_YEARS = 3;
 /**
  * 可持续增长率 g = ROIC × 净再投资率(Damodaran 增长内生化)。用作 g_used 的基本面上限。
  * ROIC = 成熟段 NOPAT/投入资本(复用有效性过滤:investedCapital 负/零权益→undefined;剔非有限);
- * 净再投资率 = mean((capex − d_and_a + ΔWC) / NOPAT);ΔWC 缺失年按 0。负再投资率 clamp 到 0。
- * 上限用途,偏低不偏高;有效年 <SUSTAINABLE_MIN_YEARS 或分母不成立 → undefined。
+ * 净再投资率 = mean((capex − d_and_a + ΔWC) / NOPAT);ΔWC 使用剔除现金/短期投资后的经营营运资本，两个年度端点都必须有效。负再投资率 clamp 到 0。
+ * 上限用途;完整年度变化少于 SUSTAINABLE_MIN_YEARS，或 CapEx/D&A/经营资本/分母缺失 → undefined。
  */
 export function sustainableGrowth(input: {
   fyYears: ValuationFloorYear[];

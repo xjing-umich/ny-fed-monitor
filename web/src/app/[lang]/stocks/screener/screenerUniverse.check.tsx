@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ScreenerPage } from "./_screenerPage";
 import { readConvictionScreen } from "@/lib/valuation/valuationSnapshot";
 
+import { VALUATION_MODEL_VERSION } from "@/lib/valuation/modelVersion";
+
 const expectations = { assessable: false as const, reason: "fixture" };
 
 const snapshots = Array.from({ length: 1205 }, (_, i) => ({
@@ -13,12 +15,13 @@ const snapshots = Array.from({ length: 1205 }, (_, i) => ({
   range_lo: 80, range_hi: 150, price: 100, price_date: "2026-10-28",
   margin_pct: i === 1204 ? 0.5 : -i / 2000, coverage: "full", reliable: true,
   computed_at: "2026-10-29T12:00:00Z",
-  payload: i === 1204 ? { expectations } : null,
+  payload: { model_version: VALUATION_MODEL_VERSION, ...(i === 1204 ? { expectations } : {}) },
 }));
+const legacy = { ...snapshots[0], ticker: "LEGACY", payload: { model_version: "old" } };
 const solo = { ...snapshots[0], ticker: "SOLO" };
 const corrupt = { ...snapshots[0], ticker: "BAD", margin_pct: 0.99 };
 const zeroPrice = { ...snapshots[0], ticker: "ZEROP", price: 0 };
-const holdings = [...snapshots, solo, corrupt, zeroPrice].map((r) => ({
+const holdings = [...snapshots, solo, corrupt, zeroPrice, legacy].map((r) => ({
   ticker: r.ticker, issuer: `Issuer ${r.ticker}`,
   holder_count: r.ticker === "CROWD" ? 99 : r.ticker === "CHEAP" ? 5 : r.ticker === "SOLO" ? 1 : 10,
 }));
@@ -38,11 +41,11 @@ async function main() {
     requests.push(url);
     const table = url.pathname.split("/").at(-1);
     assert.ok(table === "valuation_snapshot" || table === "consensus_holdings");
-    let rows: Record<string, unknown>[] = table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice] : [...holdings];
+    let rows: Record<string, unknown>[] = table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy] : [...holdings];
     const tickerFilter = url.searchParams.get("ticker");
     const tickerKeys = tickerFilter?.startsWith("in.(") ? tickerFilter.slice(4, -1).split(",") : null;
     for (const [field, filter] of url.searchParams) {
-      if (filter.startsWith("eq.")) rows = rows.filter((r) => String(r[field]) === filter.slice(3));
+      if (filter.startsWith("eq.")) rows = rows.filter((r) => String(field === "payload->>model_version" ? (r.payload as { model_version?: string } | null)?.model_version : r[field]) === filter.slice(3));
       if (filter.startsWith("gte.")) rows = rows.filter((r) => Number(r[field]) >= Number(filter.slice(4)));
     }
     if (tickerKeys) rows = rows.filter((r) => tickerKeys.includes(String(r.ticker)));
@@ -78,6 +81,7 @@ async function main() {
     const all = await page("all");
     for (const r of [...snapshots, solo]) assert.ok(all.includes(r.ticker), `全部可估值不得漏掉 ${r.ticker}`);
     assert.ok(!all.includes("BAD") && !all.includes("ZEROP"), "异常估值剔除后不截掉后续合法行");
+    assert.ok(!all.includes("LEGACY"), "old-model rows are excluded before pagination and counts");
     assert.ok(!all.includes("NOQ"), "没有估值的持仓不伪造快照");
 
     const byHolders = await page("all", "holders");

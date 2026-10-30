@@ -377,8 +377,8 @@ function growthSummary(floor: ValuationFloor, lang: Lang): string {
   const dur = gv.duration_years != null ? (zh ? `${gv.duration_years} 年` : `${gv.duration_years} yr`) : zh ? "建模窗口期" : "the modeled window";
   const roiic = gv.roiic != null ? `ROIIC ≈ ${pct(gv.roiic)}` : zh ? "建模 ROIIC" : "the modeled ROIIC";
   return zh
-    ? `增长价值：若护城河在 ${dur} 内维持于 ${roiic}，则 ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / 股（中性 ${perShare(gv.per_share.neutral)}）。保守估计，非预测。`
-    : `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (mid ${perShare(gv.per_share.neutral)}). Conservative, not a forecast.`;
+    ? `增长价值：若护城河在 ${dur} 内维持于 ${roiic}，则 ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / 股（中性 ${perShare(gv.per_share.neutral)}）。模型情景，非预测。`
+    : `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (mid ${perShare(gv.per_share.neutral)}). A model scenario, not a forecast.`;
 }
 
 // moat → 竞争优势期（CAP，Phase 2）披露：仅 grade!=="none" 渲染。文案在组件内按 locale 构建
@@ -388,12 +388,12 @@ function capDisclosure(moatCap: MoatCapAssessment | undefined, lang: Lang): stri
   const y = moatCap.capYears;
   if (moatCap.grade === "strong") {
     return lang === "zh"
-      ? `假设宽护城河 · 竞争优势期约 ${y} 年（盈利未衰退、ROIC 历史稳定）。`
-      : `Assumes a wide moat · model forecast horizon ≤ ${y} years (earnings intact, ROIC stable over history).`;
+      ? `历史财务信号较强；增长测算期上限 ${y} 年，为模型假设。`
+      : `Strong historical financial signals; forecast horizon capped at ${y} years as a model assumption.`;
   }
   return lang === "zh"
-    ? `假设一般护城河 · 竞争优势期约 ${y} 年。`
-    : `Assumes a narrow moat · model forecast horizon ≤ ${y} years.`;
+    ? `历史财务信号一般；增长测算期上限 ${y} 年，为模型假设。`
+    : `Moderate historical financial signals; forecast horizon capped at ${y} years as a model assumption.`;
 }
 
 // 标尺只表达相对价值区间的位置;不使用引擎的相对内在价值 bucket 定位。

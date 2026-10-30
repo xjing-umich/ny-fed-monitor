@@ -2,7 +2,7 @@ import { XMLParser } from "fast-xml-parser";
 import type { CompanyFacts, SecFactUnit } from "./company-facts";
 import type { NormalizedFiling } from "./company-submissions";
 import { FUNDAMENTAL_TAGS } from "./fundamental-tags";
-import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
+import { filingUrl, filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
 
 /**
  * companyfacts 漏收的 10-Q/10-K → 读原始申报的 XBRL instance 回填。
@@ -261,7 +261,20 @@ export async function backfillMissingFilings(facts: CompanyFacts, filings: Norma
 /** Field-level annual fallback: core revenue may be present while custom CapEx is omitted. */
 export function findMissingCapitalExpenditureFilings(facts: CompanyFacts, filings: NormalizedFiling[]): NormalizedFiling[] {
   const covered = FUNDAMENTAL_TAGS.capex.flatMap(tag => facts.facts?.["us-gaap"]?.[tag]?.units.USD ?? []);
-  return filings.filter(f => ["10-K", "20-F"].includes(f.form) && f.report_date && f.primary_document)
+  const historical: NormalizedFiling[] = [];
+  const template = filings[0];
+  if (template) for (const tag of CORE_TAGS) for (const u of facts.facts?.["us-gaap"]?.[tag]?.units.USD ?? []) {
+    // Original annual accessions can fall outside recent24. A comparative in a
+    // much later filing must not be relabelled as that year's original report.
+    if (!u.start || !u.end || !u.filed || !u.accn || !["10-K", "20-F"].includes(u.form ?? "")) continue;
+    const duration = dayNum(u.end)-dayNum(u.start), delay = dayNum(u.filed)-dayNum(u.end);
+    if (duration<350 || duration>380 || delay<0 || delay>240) continue;
+    historical.push({ ...template, form:u.form!, accession_number:u.accn, report_date:u.end,
+      filing_date:u.filed, fiscal_year:Number(u.end.slice(0,4)), fiscal_period:"FY", primary_document:null,
+      filing_url:filingUrl(template.cik,u.accn), sec_index_url:filingIndexUrl(template.cik,u.accn) });
+  }
+  const candidates = [...new Map([...historical,...filings].map(f=>[f.accession_number,f])).values()];
+  return candidates.filter(f => ["10-K", "20-F"].includes(f.form) && f.report_date)
     .filter(f => !covered.some(u => u.start && u.end && Number.isFinite(u.val) && isOwnPeriod(u.end,f.report_date!) && dayNum(u.end)-dayNum(u.start)>=350 && dayNum(u.end)-dayNum(u.start)<=380))
     .sort((a,b)=>b.report_date!.localeCompare(a.report_date!)).slice(0,6);
 }

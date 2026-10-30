@@ -152,7 +152,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
       not_assessable_reason: oeDcf.growth_coverage_gap ? "Current comparable financial evidence is incomplete." : "Recent comparable earnings declined.",
       scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 } };
   }
-  const strikeZone = deriveStrikeZone(floor, price);
+  const strikeZone = deriveStrikeZone(floor, price, input.asOf ? new Date(input.asOf) : new Date());
   const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
   const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
   const fundamentalsCorrupt = guards.fundamentalsCorrupt ?? fundamentalsIntegrityViolated(floorInput.years);
@@ -186,6 +186,6 @@ export function runValuation(input: RunValuationInput): ValuationRun {
     verdict,
     expectations,
     methods,
-    suppressedReason: !verdict && oeDcf.growth_coverage_gap ? "growth_evidence_incomplete" : suppressedReason({ verdict, strikeZone, guards: { ...guards, fundamentalsCorrupt }, floor, price }),
+    suppressedReason: suppressedReason({ verdict, strikeZone, guards: { ...guards, fundamentalsCorrupt }, floor, price }) ?? (!verdict && oeDcf.growth_coverage_gap ? "growth_evidence_incomplete" : undefined),
   };
 }

@@ -354,7 +354,7 @@ export function deriveOeDcf(
   // so this leg and the Greenwald growth-value leg can no longer disagree on grade (BUG2 fix).
   // 防御性兜底（理论上真实 ValuationFloor 恒有 moat_cap）：缺失 → 视作非-franchise，CAP 不延长。
   const moatCap: MoatCapAssessment = floor.moat_cap ?? { grade: "none", capYears: 0, durablePassed: false, basis: "" };
-  // CAP→显式期翻译：commodity/moderate(0/10) 一律保持基线 10 年（值不变）；strong(20) 才抬上沿。
+  // Financial-history classifications never extend the explicit forecast beyond ten years.
   const neutralCap = PROJECTION_YEARS; // Financial proxy grades do not extend the forecast horizon.
 
   const pessimistic: OeDcfTier = {
@@ -362,8 +362,8 @@ export function deriveOeDcf(
     discount_rate: discount.r_high,
     ...tierValues(oe0, g1 / 2, discount.r_high, shares, 0), // 悲观档保留零增长底，不接 CAP，值逐位不变
   };
-  // 基线 cap=10（今天的行为）：quick-check 诊断锚点，与 CAP 抬升解耦，保证 reliable 逐位不变。
-  // 展示用：moat-CAP 允许把中枢/乐观档投影抬到 20 年（strong 档）。
+  // Displayed forecast and diagnostic use the same ten-year horizon.
+  // Use the bounded common horizon for central and optimistic scenarios.
   const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal, neutralCap);
   const neutral: OeDcfTier = {
     growth_stage1: g1,
@@ -382,8 +382,7 @@ export function deriveOeDcf(
 
   // diagnostics
   const oePerShare = oe0 / shares;
-  // quick-check 基线：与基线 cap=10 的 neutral 档（非展示用 neutralRun）比较同增长假设的
-  // H-model 闭式解 —— 诊断口径与今天逐字一致，quick_check_flag/reliable 与 CAP 抬升完全解耦。
+  // Compare the displayed neutral value against the H-model under the same assumptions.
   const quickPerShare = hModelValue(oe0, g1, gTerminal, discount.midpoint) / shares;
   const quickDev = Math.abs(neutralRun.perShare - quickPerShare) / quickPerShare;
   const rMinusG = discount.midpoint - g1;

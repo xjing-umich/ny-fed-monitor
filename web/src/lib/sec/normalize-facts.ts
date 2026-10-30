@@ -586,7 +586,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
   return {
     ticker,
     cik,
-    form: matchedFiling?.form ?? (draft.isAnnual ? "10-K" : "10-Q"),
+    form: matchedFiling?.form ?? draft.picks.net_income?.form ?? draft.picks.revenue?.form ?? (draft.isAnnual ? "10-K" : "10-Q"),
     fiscal_year: draft.fiscal_year,
     fiscal_period: draft.fiscal_period,
     period_end: draft.period_end,

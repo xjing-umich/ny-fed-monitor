@@ -825,7 +825,7 @@ export default async function StockTickerPage({
                 eyebrow={page.valuation.eyebrow}
                 title={valuationTitle}
               />
-              {leftState === "card" ? (
+              {leftState === "card" || leftState === "growthEvidenceMissing" ? (
                 <>
                   <div className="mt-3">
                     <EarningsPowerFloorCard
