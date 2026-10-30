@@ -3,6 +3,8 @@ import type { Lang } from "@/lib/nav";
 import { SITE_ORIGIN, absoluteUrl, localePath, HTML_LANG, hreflangs } from "@/lib/urls";
 import { isOperatingSecurity } from "@/lib/securities/openfigi";
 
+import { snapshotTime, filingSourceLd, type FilingSource } from "./datasetTime";
+
 export const SITE_NAME = "Compounder";
 
 /** 标题尾的品牌名:中文页带"复利",与首页、投资人页、个股页一致。 */
@@ -125,44 +127,34 @@ export function securitySchemaType(securityType: string | null, issuer: string, 
     : "Corporation";
 }
 
-/** 季末日期(YYYY-MM-DD) → 该季 ISO 8601 区间,如 "2026-04-01/2026-06-30";非季末格式 → 原样返回。 */
-export function quarterInterval(periodEnd: string): string {
-  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(periodEnd);
-  if (!m) return periodEnd;
-  const startMonth = Math.floor((parseInt(m[2], 10) - 1) / 3) * 3 + 1;
-  return `${m[1]}-${String(startMonth).padStart(2, "0")}-01/${periodEnd}`;
-}
-
 /** Dataset JSON-LD for a factual table (e.g. a stock's 13F holders) — GEO-friendly. */
 export function datasetLd(opts: {
   lang: Lang;
   name: string;
   description: string;
   path: string;
-  /** 数据所属报告期(季末 YYYY-MM-DD) → temporalCoverage。 */
-  period?: string | null;
-  /** 该季最晚一份来源 13F 的提交日(YYYY-MM-DD) → dateModified。 */
-  dateModified?: string | null;
+  /** Actual displayed rows; never the site's comparison quarter. */
+  snapshotPeriods?: readonly (string | null | undefined)[];
+  comparisonPeriod?: string | null;
   /** 表中各列度量的名称。 */
   variableMeasured: string[];
-  /** Actual filings, or identified managers' 13F filing lists when accession is unavailable. */
-  sourceUrls?: string[];
+  sources?: FilingSource[];
 }) {
+  const time = snapshotTime(opts.lang, opts.snapshotPeriods ?? [], opts.comparisonPeriod);
   return {
     "@context": "https://schema.org",
     "@type": "Dataset",
     name: opts.name,
-    description: opts.description,
+    description: `${opts.description} ${time.note}`,
     url: absoluteUrl(opts.path),
     inLanguage: HTML_LANG[opts.lang],
     isAccessibleForFree: true,
     license: SEC_DATA_LICENSE,
-    ...(opts.period ? { temporalCoverage: quarterInterval(opts.period) } : {}),
-    ...(opts.dateModified ? { dateModified: opts.dateModified } : {}),
+    ...(time.temporalCoverage ? { temporalCoverage: time.temporalCoverage } : {}),
     variableMeasured: opts.variableMeasured,
     creator: { "@type": "Organization", name: SITE_NAME, url: SITE_ORIGIN },
     sourceOrganization: { "@type": "Organization", name: "U.S. Securities and Exchange Commission", url: "https://www.sec.gov" },
-    ...(opts.sourceUrls?.length ? { isBasedOn: [...new Set(opts.sourceUrls)] } : {}),
+    ...(opts.sources?.length ? { isBasedOn: [...new Map(opts.sources.map((s) => [JSON.stringify(s), filingSourceLd(s)])).values()] } : {}),
   };
 }
 

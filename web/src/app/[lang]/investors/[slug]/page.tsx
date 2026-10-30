@@ -24,6 +24,7 @@ import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { latestIsoDate } from "@/lib/valuation/asOf";
 import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE, fitSnippet } from "@/lib/seo";
+import { snapshotTime, filingSourceLd } from "@/lib/datasetTime";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { getCusipMap } from "@/lib/managers/securities";
 import { deriveRowSignals } from "@/lib/managers/rowSignals";
@@ -340,19 +341,20 @@ export default async function InvestorSlugPage({
   // 实体结构化数据:一般是 Person(投资人)+ 其申报主体;库里"人名"本身是机构名、或掌管人已变的
   // (伯克希尔、Daily Journal)改用 Organization,不把新一季持仓挂在一个不再做决定的人名下。
   // 别名只放本人的名字变体(中文名等);接班人、票代、基金名、曾用名不进 Person,见 personNameAliases。
+  const datasetTime = snapshotTime(lang, [latest.period]);
   const dataset = {
     "@type": "Dataset",
     name: lang === "zh" ? zhSpacing(`${who} 的 SEC 13F 持仓`) : `${who}'s SEC 13F holdings`,
     description:
       lang === "zh"
-        ? `${fund} 向美国证券交易委员会（SEC）申报的 13F 季度持仓数据，包含个股、持股数量与申报市值。`
-        : `Quarterly 13F holdings disclosed by ${fund} to the U.S. Securities and Exchange Commission (SEC), including positions, share counts, and reported market values.`,
+        ? `${fund} 向美国证券交易委员会（SEC）申报的 13F 季度持仓数据，包含个股、持股数量与申报市值。${datasetTime.note}`
+        : `Quarterly 13F holdings disclosed by ${fund} to the U.S. Securities and Exchange Commission (SEC), including positions, share counts, and reported market values. ${datasetTime.note}`,
     inLanguage: HTML_LANG[lang],
     isAccessibleForFree: true,
-    ...(latest.filedAt ? { dateModified: latest.filedAt } : {}),
+    ...(datasetTime.temporalCoverage ? { temporalCoverage: datasetTime.temporalCoverage } : {}),
     creator: { "@type": "Organization", name: fund },
     sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
-    isBasedOn: /^\d{10}-\d{2}-\d{6}$/.test(latest.accession) ? filingUrl : edgarFilingsUrl(manager.cik),
+    isBasedOn: filingSourceLd({ name: `${fund} SEC 13F filing`, url: /^\d{10}-\d{2}-\d{6}$/.test(latest.accession) ? filingUrl : edgarFilingsUrl(manager.cik), period: latest.period, filedAt: latest.filedAt }),
     license: SEC_DATA_LICENSE,
   };
   const pageUrl = absoluteUrl(localePath(lang, `/investors/${manager.slug}`));

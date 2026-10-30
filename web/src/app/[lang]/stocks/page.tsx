@@ -8,7 +8,7 @@ import { getCusipMap } from "@/lib/managers/securities";
 import { getManagerIndex } from "@/lib/managers/source";
 import { altFor, ogFor, collectionLd, breadcrumbLd, listMetadata } from "@/lib/seo";
 import { localePath, stockPath } from "@/lib/urls";
-import { effectiveMovesPeriod, quarterLabel, displayedDataModified } from "@/lib/freshness/derive";
+import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { cleanIssuer } from "@/lib/format";
@@ -104,7 +104,7 @@ export default async function StocksIndexPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  const { idx, bargainAsOf, asOfLabel, tableRows, directory } = await getStocksPageData(lang);
+  const { bargainAsOf, asOfLabel, tableRows, directory } = await getStocksPageData(lang);
   const isZh = lang === "zh";
   const ui = stockUi(lang);
   const meta = listMetadata(lang, "stocks", directory.length, asOfLabel ?? null);
@@ -119,7 +119,6 @@ export default async function StocksIndexPage({
       path,
       items: directory.map((d) => ({ name: stockDisplayName(lang, d.label, d.note), path: d.href })),
       limit: 50,
-      dateModified: displayedDataModified(idx.managers, new Date()),
     }),
     breadcrumbLd(lang, [{ name: ui.stocksTitle, path }]),
   ];

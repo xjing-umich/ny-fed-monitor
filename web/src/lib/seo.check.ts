@@ -18,8 +18,8 @@ assert(fitSnippet(long, "short", "s") === "short", "取第一个放得下的");
 assert(fitSnippet(long, long + "y") === long + "y", "都放不下取最后一个");
 
 // A dataset must cite its actual sources, never a generic EDGAR search.
-const dataset = datasetLd({ lang: "en", name: "Holders", description: "13F holders", path: "/stocks/AAPL", variableMeasured: ["Shares"], sourceUrls: ["https://www.sec.gov/Archives/edgar/data/1/filing/", "https://www.sec.gov/Archives/edgar/data/1/filing/"] });
-assert(JSON.stringify(dataset.isBasedOn) === JSON.stringify(["https://www.sec.gov/Archives/edgar/data/1/filing/"]), "Dataset must preserve and deduplicate actual source URLs");
+const dataset = datasetLd({ lang: "en", name: "Holders", description: "13F holders", path: "/stocks/AAPL", variableMeasured: ["Shares"], sources: [{ name: "13F", url: "https://www.sec.gov/Archives/edgar/data/1/filing/" }, { name: "13F", url: "https://www.sec.gov/Archives/edgar/data/1/filing/" }] });
+assert(JSON.stringify(dataset.isBasedOn) === JSON.stringify([{ "@type": "CreativeWork", name: "13F", url: "https://www.sec.gov/Archives/edgar/data/1/filing/" }]), "Dataset must preserve and deduplicate actual source URLs");
 const noSources = datasetLd({ lang: "en", name: "Holders", description: "13F holders", path: "/stocks/AAPL", variableMeasured: ["Shares"] });
 assert(!("isBasedOn" in noSources), "missing provenance must not invent a source");
 for (const [type, name, ticker, expected] of [

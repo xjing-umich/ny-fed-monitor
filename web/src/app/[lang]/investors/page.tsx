@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
 import type { Lang } from "@/lib/nav";
 import { altFor, ogFor, collectionLd, breadcrumbLd, listMetadata } from "@/lib/seo";
-import { effectiveMovesPeriod, quarterLabel, displayedDataModified } from "@/lib/freshness/derive";
+import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
 import { investorPath, localePath } from "@/lib/urls";
 import { displayFundName } from "@/lib/managers/profileProse";
 import { InvestorListClient } from "./InvestorListClient";
@@ -91,7 +91,6 @@ export default async function InvestorsPage({
       description: meta.description,
       path,
       items: managers.map((m) => ({ name: m.label, path: investorPath(lang, m.slug) })),
-      dateModified: displayedDataModified(idx.managers, new Date()),
     }),
     breadcrumbLd(lang, [{ name: head.heading, path }]),
   ];

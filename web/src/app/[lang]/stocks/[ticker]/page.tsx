@@ -26,6 +26,7 @@ import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
 import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, securitySchemaType, edgarFilingsUrl } from "@/lib/seo";
+import { snapshotTime } from "@/lib/datasetTime";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -201,8 +202,10 @@ function HoldersTable({
   lang,
   asOfPeriod,
   seasonNote,
+  snapshotNote,
 }: {
   holders: HolderRow[];
+  snapshotNote: string;
   lang: Lang;
   /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
   asOfPeriod: string;
@@ -248,6 +251,7 @@ function HoldersTable({
         eyebrow={page.holders.eyebrow}
         title={t.title}
       />
+      <p className="mt-3 text-xs text-[var(--tt-muted)]">{snapshotNote}</p>
       {/* 持有人数/合计/本季动向/趋势已上移到首屏结论带;此处只留申报季说明。 */}
       {(() => {
         const note = seasonNote(hasNewQuarterRows(sorted.map((r) => r.period), refPeriod ?? ""));
@@ -646,12 +650,13 @@ export default async function StockTickerPage({
         : `Superinvestors holding ${issuer} (${ticker}) with share counts, market values, and portfolio weights, from quarterly SEC 13F filings.`,
     path: localePath(lang, `/stocks/${ticker}`),
     // Snapshots lack accession numbers: cite each actual holder's 13F filing list.
-    sourceUrls: holders.flatMap((h) => {
+    sources: holders.flatMap((h) => {
       const manager = idx.managers.find((m) => m.slug === h.slug);
-      return manager ? [edgarFilingsUrl(manager.cik)] : [];
+      const filing = filings.find((f) => f.slug === h.slug && f.period === h.period);
+      return manager ? [{ url: edgarFilingsUrl(manager.cik), name: `${manager.person} SEC 13F filing`, period: h.period, filedAt: filing?.filedAt }] : [];
     }),
-    period: asOfPeriod || null,
-    dateModified: asOfFiledAt || null,
+    snapshotPeriods: holders.map((h) => h.period),
+    comparisonPeriod: asOfPeriod || null,
     variableMeasured:
       lang === "zh"
         ? ["持有人", "持仓市值（美元）", "持股数", "组合权重", "季度变动"]
@@ -798,6 +803,7 @@ export default async function StockTickerPage({
               holders={holders}
               lang={lang}
               asOfPeriod={asOfPeriod}
+              snapshotNote={snapshotTime(lang, holders.map((h) => h.period), asOfPeriod).note}
               seasonNote={(has) => filingSeasonNote(movesEff, has, lang)}
             />
             <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>

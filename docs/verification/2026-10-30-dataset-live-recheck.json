@@ -1,0 +1,2057 @@
+{
+  "checked_at_hk": "2026-10-30T00:27:45.632305+08:00",
+  "scope": "Recheck of historical 256 affected URLs only; not a fresh full-universe audit",
+  "checked": 256,
+  "with_off_quarter_rows": 256,
+  "errors": 0,
+  "rows": [
+    {
+      "url": "https://thecompounder.fyi/stocks/MSFT",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MSFT",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/GOOGL",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/GOOGL",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AMZN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AMZN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/GOOG",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/GOOG",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/META",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/META",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/V",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/V",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AAPL",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AAPL",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/BRK.B",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/BRK.B",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MA",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MA",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/DIS",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/DIS",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/BAC",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/BAC",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MCO",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MCO",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-17"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/COF",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/COF",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/NVDA",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/NVDA",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/JPM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/JPM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/SPGI",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/SPGI",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/WFC",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/WFC",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AXP",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AXP",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/CMCSA",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/CMCSA",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/UBER",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/UBER",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/TMO",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/TMO",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/CVS",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/CVS",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AVGO",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AVGO",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/JNJ",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/JNJ",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AMAT",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AMAT",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/DHR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/DHR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/XOM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/XOM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/SCHW",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/SCHW",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/TXN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/TXN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MRK",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MRK",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/UNP",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/UNP",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/FERG",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/FERG",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/PEP",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/PEP",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/GM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/GM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/BNY",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/BNY",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/PG",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/PG",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/PYPL",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/PYPL",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/TEL",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/TEL",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ICE",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ICE",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/DVN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/DVN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ACN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ACN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IBKR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IBKR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/QCOM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/QCOM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/USB",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/USB",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/LLY",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/LLY",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VMC",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VMC",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MDT",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MDT",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/APH",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/APH",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/WMT",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/WMT",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MCD",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MCD",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ABT",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ABT",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/GS",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/GS",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VOO",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VOO",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/COST",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/COST",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/PNC",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/PNC",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ABBV",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ABBV",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/LEN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/LEN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/BAX",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/BAX",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/TSN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/TSN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/BDX",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/BDX",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/LIN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/LIN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AVTR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AVTR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/CRH",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/CRH",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MS",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MS",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ARW",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ARW",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ICLR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ICLR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/HD",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/HD",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/STZ",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/STZ",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/DHI",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/DHI",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/GNRC",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/GNRC",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/OSK",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/OSK",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/SLB",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/SLB",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/TGT",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/TGT",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IWD",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IWD",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IQV",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IQV",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MDLN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MDLN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AEP",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AEP",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/LEA",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/LEA",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/NOV",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/NOV",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/TOL",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/TOL",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AVT",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AVT",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/NUE",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/NUE",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/SBUX",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/SBUX",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/LOW",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-13"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/LOW",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-13"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/G",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/G",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MTB",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MTB",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ADP",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ADP",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VST",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VST",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/NEE",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/NEE",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VWO",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VWO",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MPC",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MPC",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/GLD",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/GLD",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-18"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/LEN.B",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/LEN.B",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VEA",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VEA",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AMGN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AMGN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AFL",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AFL",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/A",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/A",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/RSP",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/RSP",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/EFA",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/EFA",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VUG",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VUG",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IVV",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IVV",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/PHM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/PHM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/AWI",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/AWI",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/EMBJ",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/EMBJ",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/LAMR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-13"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/LAMR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-13"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/DNOW",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-13"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/DNOW",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-13"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IEMG",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IEMG",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/EMXC",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/EMXC",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MTH",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MTH",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VTV",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VTV",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/BBWI",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/BBWI",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VTI",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VTI",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/XLK",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/XLK",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IWF",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IWF",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VBIL",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VBIL",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VYM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VYM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IWN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IWN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IJR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IJR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/PLTR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/PLTR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IWR",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IWR",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/ETN",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/ETN",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/IWM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/IWM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VIG",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VIG",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/QQQ",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/QQQ",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/VB",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/VB",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/SCHD",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/SCHD",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/MAVF",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": null
+    },
+    {
+      "url": "https://thecompounder.fyi/stocks/QQQM",
+      "off_quarter_labels": [
+        "Q3 2026"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/MAVF",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": null
+    },
+    {
+      "url": "https://thecompounder.fyi/zh/stocks/QQQM",
+      "off_quarter_labels": [
+        "2026Q3"
+      ],
+      "coverage": "2026-04-01/2026-06-30",
+      "dateModified": "2026-08-14"
+    }
+  ]
+}
