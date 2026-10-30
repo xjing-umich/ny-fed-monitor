@@ -50,12 +50,14 @@ import { stockHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { LearnLink } from "@/components/common/LearnLink";
 import { isLikelyTicker, knownExchange } from "@/lib/externalLinks";
-import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
-import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
+import { PriceBetBlock } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
-import { conclusionLeftState, stockAnchors, holdersLine, valuationDetailsShown, verdictGaugeReady } from "@/lib/stocks/stockConclusion";
+import { conclusionLeftState, stockAnchors, valuationDetailsShown, verdictGaugeReady } from "@/lib/stocks/stockConclusion";
 import { StockConclusionBand } from "@/components/stocks/StockConclusionBand";
+import { StockValuationSummary } from "@/components/stocks/StockValuationSummary";
+import { stockValueSummary, stockFallbackHeading } from "@/lib/stocks/stockFirstScreen";
+import { HolderTrend } from "@/components/entity/HolderTrend";
 import { StockAnchorNav } from "@/components/stocks/StockAnchorNav";
 import { valuationLabel } from "@/lib/valuation/valuationLabel";
 import { Sparkline } from "@/components/common/Sparkline";
@@ -203,10 +205,10 @@ function HoldersTable({
   lang,
   asOfPeriod,
   seasonNote,
-  snapshotNote,
+  trend,
 }: {
   holders: HolderRow[];
-  snapshotNote: string;
+  trend: readonly number[];
   lang: Lang;
   /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
   asOfPeriod: string;
@@ -252,8 +254,7 @@ function HoldersTable({
         eyebrow={page.holders.eyebrow}
         title={t.title}
       />
-      <p className="mt-3 text-xs text-[var(--tt-muted)]">{snapshotNote}</p>
-      {/* 持有人数/合计/本季动向/趋势已上移到首屏结论带;此处只留申报季说明。 */}
+      {/* 实际快照日期在首屏摘要;申报季进度与完整历史留在证据区。 */}
       {(() => {
         const note = seasonNote(hasNewQuarterRows(sorted.map((r) => r.period), refPeriod ?? ""));
         return note ? <p className="mt-3 text-xs text-[var(--tt-muted)]">{note}</p> : null;
@@ -284,6 +285,10 @@ function HoldersTable({
           />
         </details>
       )}
+      {trend.length >= 2 && <details className="mt-3 text-[var(--tt-muted)]">
+        <summary className="flex min-h-11 cursor-pointer items-center text-sm">{lang === "zh" ? "持有人趋势" : "Holder history"} ＋</summary>
+        <div className="pb-3"><HolderTrend series={trend} lang={lang} bare /></div>
+      </details>}
     </section>
   );
 }
@@ -559,7 +564,7 @@ export default async function StockTickerPage({
     handoffVerdict.marginPct != null
   );
 
-  // 结论已在标题徽章与结论带里说过一次;估值区块是"证据",标题说它讲什么,不再重复档名(同一事实只说一次)。
+  // 结论集中在首屏;估值区块提供推导证据。
   const page = stockPageCopy(lang);
   const ui = stockUi(lang);
   const valuationTitle = lang === "zh" ? "估值怎么算的" : "How it’s valued";
@@ -747,6 +752,20 @@ export default async function StockTickerPage({
       ? messageLeft(page.valuation.methodsConflict(fmtPerShare(methodsConflict.iv), fmtPerShare(methodsConflict.floor), fmtPerShare(methodsConflict.price)))
     : unassessedLeft;
 
+  // 只有既有闸门允许的可比、可信结论才能进入新概览;其余保留原有解释和明细。
+  const summaryEligible = (leftState === "card" && cardSummaryMode(strikeZone, handoffVerdict) === "spine") || leftState === "holdcoSotp";
+  const summaryModel = summaryEligible ? stockValueSummary({
+    verdict: handoffVerdict,
+    quote: latestPrice,
+    kind: leftState === "holdcoSotp" ? "sotp" : handoffVerdict?.methods.oeDcf || handoffVerdict?.methods.greenwaldGrowthCeilings ? "earnings" : "zero-growth",
+    reference: leftState === "holdcoSotp" ? holdcoSotp?.per_share.base : oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined,
+  }, lang) : null;
+  const marginText = marginShown ? `${page.marginOfSafety} ${fmtMarginPct(handoffVerdict!.marginPct!)}` : null;
+  const firstScreen = summaryModel ? <StockValuationSummary model={summaryModel} lang={lang} marginText={marginText} /> : <>
+    <h2 className="text-balance font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-5xl">{stockFallbackHeading(leftState, handoffVerdict?.reliable, lang)}</h2>
+    {bandLeft}
+  </>;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
@@ -766,14 +785,6 @@ export default async function StockTickerPage({
             {ui.backToStocks}
           </Link>
         }
-        verdict={valuationVerdictChip(handoffVerdict, lang) ?? undefined}
-        // 红旗档：正文 PriceBetBlock 仍可对照预期并标 lowConfidence；masthead 微徽章只在
-        // reliable 时挂出，避免无 caveats 的「预期 · 苛刻」与未确认便宜信号抢视线。
-        verdictExtra={
-          handoffVerdict?.reliable
-            ? expectationsBadge(expectations, lang) ?? undefined
-            : undefined
-        }
         // 现价、安全边际、持有人数、合计市值都移进首屏结论带,不在这里重复。
         keyFacts={[]}
         sources={[
@@ -789,14 +800,16 @@ export default async function StockTickerPage({
         <>
           <StockConclusionBand
             lang={lang}
-            left={bandLeft}
-            marginText={marginShown ? `${page.marginOfSafety} ${fmtMarginPct(handoffVerdict!.marginPct!)}` : null}
+            left={firstScreen}
+            marginText={summaryModel ? null : marginText}
             holders={{
-              line: holdersLine(n, formatUSD(totalValue, lang), lang),
+              count: n,
+              total: formatUSD(totalValue, lang),
+              leaders: [...holders].sort((a, b) => b.value - a.value).slice(0, 2).map((h) => ({ name: h.person, href: investorPath(lang, h.slug) })),
+              snapshotNote: snapshotTime(lang, holders.map((h) => h.period)).note,
               quarter: quarterLabel(displayPeriod, lang) || "",
               moves,
               exited: exitedHolders.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) })),
-              trend: trendSeries,
             }}
           />
           <StockAnchorNav lang={lang} anchors={anchors} />
@@ -807,7 +820,7 @@ export default async function StockTickerPage({
               holders={holders}
               lang={lang}
               asOfPeriod={asOfPeriod}
-              snapshotNote={snapshotTime(lang, holders.map((h) => h.period), asOfPeriod).note}
+              trend={trendSeries}
               seasonNote={(has) => filingSeasonNote(movesEff, has, lang)}
             />
             <FoldedSection eyebrow={page.foldedEyebrow} title={page.folded}>

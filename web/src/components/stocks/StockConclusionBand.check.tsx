@@ -11,24 +11,37 @@ const html = renderToStaticMarkup(
     left={<p>LEFT-SLOT</p>}
     marginText="安全边际 77%"
     holders={{
-      line: "27 位持有 · 合计 $76.77B",
+      count: 27, total: "$76.77B",
+      leaders: [{ name: "巴菲特与阿贝尔", href: "/zh/investors/berkshire-hathaway" }, { name: "段永平", href: "/zh/investors/hh-international" }],
+      snapshotNote: "持仓为2026-06-30、2026-09-30混合快照",
       quarter: "Q2 2026",
       moves: { opened: 0, added: 4, trimmed: 12, exited: 1 },
       exited: [{ name: "Andreas Halvorsen", href: "/zh/investors/viking" }],
-      trend: [26, 27, 27],
+
     }}
   />,
 );
 const plain = html.replace(/<[^>]+>/g, " ");
-for (const s of ["价格相对价值区间", "谁在持有", "LEFT-SLOT", "安全边际 77%", "27 位持有 · 合计 $76.77B", "Andreas Halvorsen"]) {
+for (const s of ["LEFT-SLOT", "安全边际 77%", "27 位超级投资者持有", "$76.77B", "巴菲特与阿贝尔", "段永平", "Andreas Halvorsen"]) {
   assert.ok(plain.includes(s), `结论带含 ${s}`);
 }
 const noMargin = renderToStaticMarkup(
   <StockConclusionBand lang="en" left={null} marginText={null}
-    holders={{ line: "1 holder · $5.0M combined", quarter: "Q2 2026", moves: { opened: 1, added: 0, trimmed: 0, exited: 0 }, exited: [], trend: [1] }} />,
+    holders={{ count: 1, total: "$5M", leaders: [], snapshotNote: "Snapshot as of 2026-06-30", quarter: "Q2 2026", moves: { opened: 1, added: 0, trimmed: 0, exited: 0 }, exited: [] }} />,
 ).replace(/<[^>]+>/g, " ");
 assert.ok(!noMargin.includes("Margin"), "无安全边际时不渲染");
 
+assert.ok(html.indexOf("混合快照") < html.indexOf("Q2 2026"), "快照口径紧邻摘要,动作季度另组");
+assert.ok(!html.includes("md:grid-cols-[3fr_2fr]"), "不再左右分栏");
+assert.ok(!noMargin.includes("Largest:"), "无姓名不造身份行");
+for (const count of [0, 1]) {
+  const name = "SyntheticExtremelyLongUnbrokenInvestorNameForOverflowVerification";
+  const edge = renderToStaticMarkup(<StockConclusionBand lang="en" left={null} marginText={null}
+    holders={{ count, total: count ? "$5M" : "$0", leaders: count ? [{ name, href: "/en/investors/fixture" }] : [], snapshotNote: "Unknown report period", quarter: "Q2 2026", moves: { opened: 0, added: 0, trimmed: 0, exited: 0 }, exited: [] }} />);
+  assert.ok(edge.includes(count ? "1 superinvestor holds it" : "0 superinvestors hold it"));
+  assert.equal(edge.includes(name), count === 1, "长名字完整保留,零持有人不虚构身份");
+  assert.ok(edge.includes("Unknown report period"), "未知报告期仍然明确标注");
+}
 const nav = renderToStaticMarkup(<StockAnchorNav lang="zh" anchors={stockAnchors({ valuation: true, quality: false, coOwned: false }, "zh")} />);
 assert.ok(nav.includes('href="#holders"') && nav.includes('href="#valuation"') && nav.includes('href="#sources"'), "锚点链接");
 assert.ok(!nav.includes('href="#quality"'), "没有的区块不出现");

@@ -1,6 +1,6 @@
 # SEO / GEO repairs verification
 
-Scope: the actionable presentation, crawlability and editorial findings from the 2026-10-30 audit across landing, stocks, stock, investors, investor and Learn, in English and Chinese. Base: `b6aebf2` on `db-foundation`.
+Scope: the actionable presentation, crawlability and editorial findings from the 2026-10-30 audit across landing, stocks, stock, investors, investor and Learn, in English and Chinese. Original base: `b6aebf2` on `db-foundation`; integrated the subsequently merged stock first-screen PR #259 at `169d9a6`.
 
 ## Changes and evidence
 
@@ -19,7 +19,7 @@ Source URLs were verified on 2026-10-30; dated historical financial examples rem
 ## Validation
 
 - Full `npm run build`: all prebuild gates, TypeScript and 851 static outputs.
-- Facts gate: 16 checks, including route/Dataset, link eligibility, source footer, SEO and Learn fixtures.
+- Facts gate: 19 checks after integrating #259 (16 before integration), including route/Dataset, link eligibility, source footer, SEO and Learn fixtures.
 - `npm run test:list-query`: URL parsing, search, sorting, pagination and defaults.
 - `LIST_SSR_ORIGIN=http://localhost:3110 npx tsx scripts/tests/list-ssr.ts`: four language/list routes.
 - Production acceptance: 147 distinct affected/core URLs, including 52 old dead-link source pages, 56 quarter-copy URLs and all 14 Learn language pages. Old invalid target links retained by a source were re-fetched and required to resolve.
@@ -34,4 +34,6 @@ Local audit/acceptance evidence is retained outside Git under `TheCompounder/rep
 
 F17 remains a data-layer dependency: `effectiveFilingDeadline` handles weekends but not federal holidays. The known 2026Q4 case should be 2027-02-16. This branch does not change quarter-switching logic. F02 Dataset coverage and F05 sitemap dates from the already merged fix are preserved.
 
-These checks establish page correctness and readability. Search Console indexing, live crawler access logs, AI citation rates and reliable Core Web Vitals measurements remain unmeasured. No merge or production deployment is part of this verification.
+These checks establish page correctness and readability. Search Console indexing, live crawler access logs, AI citation rates and reliable Core Web Vitals measurements remain unmeasured. No PR merge or production promotion was performed.
+
+Integration note: the only conflict with #259 was the Dataset route test for snapshot notes moved from the holdings table to the first screen. Retained the new first-screen assertions and this branch’s footer-period assertions together. The stock route auto-merge was inspected against both parents; the new summary UI and the SEO source/metadata fixes are both retained.

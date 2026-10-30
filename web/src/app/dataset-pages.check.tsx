@@ -78,10 +78,13 @@ async function main() {
         assert.ok(ds.isBasedOn.some((s: JsonObject) => s.temporalCoverage === q3 && s.datePublished === '2026-10-20'));
         assert.ok(typeof ds.description === 'string');
         assert.ok(ds.description.includes(q2) && ds.description.includes(q3));
-        const table = html.slice(html.indexOf('id="holders"'), html.indexOf('</section>', html.indexOf('id="holders"')));
-        assert.ok(table.includes(q2) && table.includes(q3), 'visible snapshot note matches Dataset');
         const mixedFooter = html.slice(html.indexOf('id="sources"')).split('</div></div>')[0];
         assert.ok(mixedFooter.includes(lang === 'en' ? 'Q2 2026 / Q3 2026' : '2026Q2 / 2026Q3'), 'source footer preserves mixed periods');
+        const firstScreen = html.slice(0, html.indexOf('id="holders"')).replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+        assert.ok(firstScreen.includes(q2) && firstScreen.includes(q3), 'visible first-screen snapshot note matches Dataset');
+        assert.ok(firstScreen.includes('Manager first') && firstScreen.includes('Manager early'), 'actual major holders accompany snapshot dates');
+        assert.ok(!firstScreen.includes('Manager exit'), 'exited investor is outside current holder identities');
+        assert.ok(!firstScreen.includes('data-value-axis="linear"'), 'missing quote cannot produce a comparison plot');
         assert.match(ds.description, lang === 'en' ? /comparison baseline: 2026-06-30/ : /比较基准：2026-06-30/);
         rows = [row('first'), row('exit', q3, 'exited')];
         const [single] = datasets(renderToStaticMarkup(await StockPage({ params: Promise.resolve({ lang, ticker: 'TEST' }) })));
