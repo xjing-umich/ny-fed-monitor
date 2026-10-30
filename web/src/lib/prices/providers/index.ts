@@ -1,3 +1,4 @@
+import { isIdentityQuarantined } from "../../securities/securityIdentity";
 import type { DailyClose, PriceProvider } from "./types";
 import { YahooChartProvider } from "./yahoo";
 import { EastmoneyProvider } from "./eastmoney";
@@ -19,6 +20,7 @@ export async function resolveDaily(
   ticker: string,
   providers: PriceProvider[],
 ): Promise<DailyClose | null> {
+  if (isIdentityQuarantined(ticker)) return null;
   let best: DailyClose | null = null;
   for (const p of providers) {
     const d = await p.fetchDaily(ticker).catch(() => null);
@@ -34,6 +36,7 @@ export async function resolveRecent(
   ticker: string,
   providers: PriceProvider[],
 ): Promise<DailyClose[]> {
+  if (isIdentityQuarantined(ticker)) return [];
   let best: DailyClose[] = [];
   for (const p of providers) {
     const rows = p.fetchRecent
@@ -52,6 +55,7 @@ export async function resolveHistory(
   sinceYears: number,
   providers: PriceProvider[],
 ): Promise<DailyClose[]> {
+  if (isIdentityQuarantined(ticker)) return [];
   for (const p of providers) {
     const rows = await p.fetchHistory(ticker, sinceYears).catch(() => []);
     if (rows.length) return rows;

@@ -56,7 +56,7 @@ export async function updatePrices(
         splitRows.map((s) => ({ ticker: s.ticker, split_date: s.split_date, ratio: s.ratio })),
         { onConflict: "ticker,split_date" },
       );
-      if (error) console.warn(`stock_splits upsert err: ${error.message}`);
+      if (error) throw new Error(`stock_splits upsert failed: ${error.message}`);
     }
 
     if (runId) await db.from("price_ingest_runs").update({
@@ -75,5 +75,5 @@ export async function updatePrices(
 
 async function flush(db: any, rows: PriceRow[]): Promise<void> {
   const { error } = await db.from("prices").upsert(rows, { onConflict: "ticker,date" });
-  if (error) console.warn(`prices upsert err: ${error.message}`);
+  if (error) throw new Error(`prices upsert failed: ${error.message}`);
 }

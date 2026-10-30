@@ -245,7 +245,7 @@ const jun = normalizeCompanyFacts("JUNX", "0000000003", mkFacts({
 }), [], "0630");
 assert(row(jun.quarterly, "2026-06-30", "Q4")?.revenue === 90, "6 月财年 Q4 = 330 − 240(同一财年),不是 330 − 200");
 assert(row(jun.quarterly, "2025-06-30", "Q4")?.revenue === 80, "上一财年 Q4 = 280 − 200");
-assert(row(jun.annual, "2026-06-30", "FY")?.fiscal_year === 2025, "年报 fiscal_year 仍按期中年(沿用旧口径)");
+assert(row(jun.annual, "2026-06-30", "FY")?.fiscal_year === 2026, "6 月年报应标 FY2026,与同财年的季度一致");
 
 // 3) submissions.fiscalYearEnd 标错(SUI 实为 12 月财年却标 "0513"):年报全被 ±1 月闸丢、季度标错季。
 const sui = normalizeCompanyFacts("SUIX", "0000000004", mkFacts({
@@ -303,3 +303,12 @@ assert(
 );
 
 console.log("normalize-facts.check OK");
+
+assert(row(jun.quarterly, "2026-06-30", "Q4")?.fiscal_year === 2026, "Q4 and FY use the same fiscal-year identity");
+
+// Reported FY focus wins over heuristics: two January/February retailers use
+// different labels for comparable calendar ends, and later comparatives cannot relabel them.
+const focusedFacts=fyeDriftFacts();
+for(const concept of Object.values(focusedFacts.facts["us-gaap"]))for(const units of Object.values(concept.units))for(const u of units)if(u.end==="2025-02-02")u.fy=2025;
+const focused=normalizeCompanyFacts("RETAIL", "0000000009", focusedFacts, fyeDriftFilings(), "0128");
+assert(focused.annual.find(r=>r.period_end==="2025-02-02")?.fiscal_year===2025,"own reported fiscal focus must override fallback retail naming");

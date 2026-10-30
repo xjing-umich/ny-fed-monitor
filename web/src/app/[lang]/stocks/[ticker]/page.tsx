@@ -1,3 +1,4 @@
+import { IDENTITY_QUARANTINES, isIdentityQuarantined } from "@/lib/securities/securityIdentity";
 import { date as formatDate } from "@/lib/i18n/format";
 import { shares as formatShares } from "@/lib/i18n/format";
 import React from "react";
@@ -547,7 +548,7 @@ export default async function StockTickerPage({
     .sort()
     .pop();
   const secTooOld = newestSecPeriod != null && isFundamentalsStale(newestSecPeriod, new Date().toISOString());
-  const bq = secTooOld ? null : deriveBusinessQuality({ latest: sec.latest, annual: sec.annual });
+  const bq = secTooOld ? null : deriveBusinessQuality({ latest: sec.latest, annual: sec.annual, filings: sec.filings });
 
   // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于内在价值)。
   const marginShown = !!(
@@ -632,7 +633,7 @@ export default async function StockTickerPage({
     "@type": schemaType,
     name: issuer,
     alternateName: [ticker, ...stockAliases],
-    ...(schemaType === "Corporation"
+    ...(isIdentityQuarantined(ticker) ? { identifier: { "@type": "PropertyValue", propertyID: "Historical CUSIP", value: IDENTITY_QUARANTINES[ticker].cusip } } : schemaType === "Corporation"
       ? { tickerSymbol: listedOn ? `${listedOn} ${ticker}` : ticker }
       : { identifier: { "@type": "PropertyValue", propertyID: "Ticker", value: ticker } }),
   };
@@ -785,6 +786,7 @@ export default async function StockTickerPage({
         footerCta={<NewsletterCTA lang={lang} source="stock" />}
       >
         <>
+          {isIdentityQuarantined(ticker) && <p className="text-sm text-[var(--tt-muted)]">{lang === "zh" ? "该代码现已属于另一发行人，价格、财报与估值暂不展示。以下持仓仍为原证券的历史 13F 披露。" : "This ticker now identifies a different issuer. Price, financials and valuation are withheld; holdings below remain historical 13F disclosures for the original security."}</p>}
           <StockConclusionBand
             lang={lang}
             left={bandLeft}
@@ -919,12 +921,12 @@ export default async function StockTickerPage({
           {bq && (
             <section id="quality" aria-label={page.bq.aria} className="scroll-mt-32">
               <SectionHeading
-                eyebrow={page.bq.eyebrow}
+                eyebrow={bq.annualForm ? `SEC ${bq.annualForm} · ${lang === "zh" ? "全年基本面" : "full-year fundamentals"}` : page.bq.eyebrow}
                 title={page.bq.title}
                 trailing={
                   bq.asOf ? (
                     <span className="font-data text-xs text-[var(--tt-faint)]">
-                      {page.bq.asOf(bq.asOf)}
+                      {bq.annualForm ? page.bq.asOf(bq.asOf) : `${lang === "zh" ? "报告期截至" : "Period ended"} ${bq.asOf}`}
                     </span>
                   ) : undefined
                 }
@@ -934,6 +936,7 @@ export default async function StockTickerPage({
                   {page.valuation.ttmBasis(floorInput.ttm.period_end)}
                 </p>
               )}
+              {bq.latestDisclosure && <p className="mt-2 text-xs text-[var(--tt-muted)]">{lang === "zh" ? `最新披露：${bq.latestDisclosure.form ?? "财报"}，报告期截至 ${bq.latestDisclosure.periodEnd}${bq.latestDisclosure.filedAt ? `（${bq.latestDisclosure.filedAt} 提交）` : ""}。${bq.annualForm ? "以下比率为完整财年口径。" : "以下比率为已取得的报告期口径。"}` : `Latest disclosure: ${bq.latestDisclosure.form ?? "financial report"}, period ended ${bq.latestDisclosure.periodEnd}${bq.latestDisclosure.filedAt ? ` (filed ${bq.latestDisclosure.filedAt})` : ""}. ${bq.annualForm ? "Ratios below use the full fiscal year." : "Ratios below use the available reporting period."}`}</p>}
               <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
                   revenueGrowth

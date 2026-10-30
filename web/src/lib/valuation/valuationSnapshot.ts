@@ -1,3 +1,4 @@
+import { QUARANTINED_TICKERS_SQL } from "../securities/securityIdentity";
 import { VALUATION_MODEL_VERSION } from "./modelVersion";
 import "server-only";
 import { cache } from "react";
@@ -59,7 +60,7 @@ export const readValuationVerdicts = cache(
     if (keys.length === 0 || !hasSupabaseEnv()) return out;
     try {
       const { data, error } = await withRetry(() =>
-        getDb().from("valuation_snapshot").select("*").eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").in("ticker", keys),
+        getDb().from("valuation_snapshot").select("*").eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL).in("ticker", keys),
       );
       if (error) {
         // 42P01 = 原生 postgres "undefined table"；PGRST205 = PostgREST 在 schema cache 找不到表。
@@ -122,7 +123,7 @@ export const readBargainVerdicts = cache(
         getDb()
           .from("valuation_snapshot")
           .select("ticker,range_lo,range_hi,price,margin_pct,in_strike_zone,verdict_bucket,price_date")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid")
+            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
           .eq("reliable", true)
           .or("in_strike_zone.eq.true,verdict_bucket.eq.below")
           .limit(500),
@@ -195,7 +196,7 @@ export const readStrikeZoneLeaders = cache(
           getDb()
             .from("valuation_snapshot")
             .select("ticker", { count: "exact", head: true })
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid")
+            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
             .eq("in_strike_zone", true)
             .eq("reliable", reliable),
         );
@@ -212,7 +213,7 @@ export const readStrikeZoneLeaders = cache(
         getDb()
           .from("valuation_snapshot")
           .select("ticker,range_lo,range_hi,price,margin_pct,computed_at,price_date")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid")
+            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
           .eq("in_strike_zone", true)
           .eq("reliable", true)
           .order("margin_pct", { ascending: false })
@@ -314,7 +315,7 @@ export const readValuationScreen = cache(
           getDb()
             .from("valuation_snapshot")
             .select("ticker", { count: "exact", head: true })
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid")
+            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
             .eq("in_strike_zone", true)
             .eq("reliable", reliable),
         );
@@ -331,7 +332,7 @@ export const readValuationScreen = cache(
         let q = getDb()
           .from("valuation_snapshot")
           .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid")
+            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
           .order("margin_pct", { ascending: false, nullsFirst: false })
           .order("ticker", { ascending: true });
         // "便宜"视图(strike_zone/below)只要求 reliable=true:带红旗的不据此标便宜。
@@ -434,7 +435,7 @@ export const readConvictionScreen = cache(
           .from("valuation_snapshot")
           // 只投影所需的预期字段,不把整份估值 payload 随全量候选一起读回。
           .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at,expectations:payload->expectations")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid")
+            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
           .in("ticker", batch);
         // PostgREST 把 JSON 投影推导为 Json;业务形状与既有 payload.expectations 相同。
         return { data: data as ScreenSnapshot[] | null, error };

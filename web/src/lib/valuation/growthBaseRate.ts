@@ -27,7 +27,7 @@ export type RevenueGrowth = { rate: number; fromYear: number; toYear: number; po
 export function revenueGrowthStandard(years: ValuationFloorYear[]): RevenueGrowth | undefined {
   const pts = years
     .filter((y) => y.revenue != null && Number.isFinite(y.revenue) && (y.revenue as number) > 0)
-    .map((y) => ({ x: y.fiscal_year, y: Math.log(y.revenue as number) }));
+    .map((y) => ({ x: y.fiscal_year, displayYear: y.period_end ? Number(y.period_end.slice(0, 4)) : y.fiscal_year, y: Math.log(y.revenue as number) }));
   if (pts.length < MIN_BASE_RATE_YEARS) return undefined;
   const n = pts.length;
   const sx = pts.reduce((s, p) => s + p.x, 0);
@@ -39,6 +39,6 @@ export function revenueGrowthStandard(years: ValuationFloorYear[]): RevenueGrowt
   const slope = (n * sxy - sx * sy) / denom; // ln(revenue) 对 fiscal_year 的斜率
   const g = Math.exp(slope) - 1;             // 年化增长
   if (!Number.isFinite(g)) return undefined;
-  const xs = pts.map((p) => p.x);
+  const xs = pts.map((p) => p.displayYear);
   return { rate: g, fromYear: Math.min(...xs), toYear: Math.max(...xs), points: n };
 }

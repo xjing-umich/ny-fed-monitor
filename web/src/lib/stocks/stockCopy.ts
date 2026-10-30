@@ -73,9 +73,9 @@ export const STOCK_PAGE_COPY = {
     marginOfSafety: "安全边际",
     bq: {
       aria: "生意质量",
-      eyebrow: "SEC 10-K · 基本面",
+      eyebrow: "SEC · 基本面",
       title: "生意质量",
-      asOf: (d: string) => `截至 ${d}`,
+      asOf: (d: string) => `全年指标截至 ${d}`,
       // 全站唯一的历史营收增速口径(revenueGrowthStandard),带年份区间;无则退回最近财年同比并写明。
       revenueGrowth: (span: string) => `营收年化增速（${span}）`,
       revenueYoy: "最近财年营收同比",
@@ -138,9 +138,9 @@ export const STOCK_PAGE_COPY = {
     marginOfSafety: "Margin of safety",
     bq: {
       aria: "Business quality",
-      eyebrow: "SEC 10-K · fundamentals",
+      eyebrow: "SEC · fundamentals",
       title: "Business quality",
-      asOf: (d: string) => `As of ${d}`,
+      asOf: (d: string) => `Full-year figures to ${d}`,
       revenueGrowth: (span: string) => `Revenue growth, annualized (${span})`,
       revenueYoy: "Revenue, latest FY vs prior",
       netMargin: "Net margin",
