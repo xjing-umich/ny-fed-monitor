@@ -113,9 +113,18 @@ export function listMetadata(lang: Lang, kind: "stocks" | "investors", count: nu
 /** 13F 原始申报属美国政府公开记录;与投资人页 Dataset 同一许可声明。 */
 export const SEC_DATA_LICENSE = "https://creativecommons.org/publicdomain/mark/1.0/";
 
-/** EDGAR 公司申报列表页(按 CIK,只看 13F-HR)。 */
+/** Include notices as well as reports: a manager may delegate its holdings filing. */
 export function edgarFilingsUrl(cik: string): string {
-  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik.padStart(10, "0")}&type=13F-HR&dateb=&owner=include&count=40`;
+  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik.padStart(10, "0")}&type=13F&dateb=&owner=include&count=40`;
+}
+
+/** Manager and filing-agent CIKs do not prove the actual reporting filer.
+ * SEC accession search locates the original filing even for delegated 13F-NT reports.
+ * Verified 2026-10-31 against Pershing Square's 0001172661-26-003790. */
+export function edgar13fSourceUrl(cik: string, accession?: string | null): string {
+  return /^\d{10}-\d{2}-\d{6}$/.test(accession ?? '')
+    ? `https://www.sec.gov/edgar/search/#/q=${accession}&dateRange=all`
+    : edgarFilingsUrl(cik);
 }
 
 /** Classify the security itself; a fund share is not its management company. */

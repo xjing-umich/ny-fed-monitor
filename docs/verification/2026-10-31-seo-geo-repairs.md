@@ -1,6 +1,6 @@
 # SEO / GEO repairs verification
 
-Scope: the actionable presentation, crawlability and editorial findings from the 2026-10-30 audit across landing, stocks, stock, investors, investor and Learn, in English and Chinese. Original base: `b6aebf2` on `db-foundation`; integrated the subsequently merged stock first-screen PR #259 at `169d9a6`.
+Scope: the actionable presentation, crawlability and editorial findings from the 2026-10-30 audit across landing, stocks, stock, investors, investor and Learn, in English and Chinese. Original base: `b6aebf2` on `db-foundation`; integrated the subsequently merged stock first-screen PR #259 at `169d9a6`, then the latest data/publication base through #262 at `6a57b6f`.
 
 ## Changes and evidence
 
@@ -37,3 +37,18 @@ F17 remains a data-layer dependency: `effectiveFilingDeadline` handles weekends 
 These checks establish page correctness and readability. Search Console indexing, live crawler access logs, AI citation rates and reliable Core Web Vitals measurements remain unmeasured. No PR merge or production promotion was performed.
 
 Integration note: the only conflict with #259 was the Dataset route test for snapshot notes moved from the holdings table to the first screen. Retained the new first-screen assertions and this branch’s footer-period assertions together. The stock route auto-merge was inspected against both parents; the new summary UI and the SEO source/metadata fixes are both retained.
+
+## Final code review cleanup (2026-10-31)
+
+A fresh full-diff independent review identified four additional P2 gaps. All were corrected together:
+
+1. Delegated filings: manager CIK and accession prefix are not used to guess the reporting filer. Valid accessions link to SEC's accession search. Verified in the SEC UI that `0001172661-26-003790` returns the Pershing Square Inc. report, reporting CIK `2026053`, filed 2026-08-14 for 2026-06-30. Stock provenance obtains accessions from a paged batch of filing metadata, matched to the actual holder period and submission date. Ambiguous/missing identities use the manager's 13F list including notices. No SEC network fetch was added to page rendering.
+2. Lookup failures: eligibility returns `null` on failure and `[]` only for proven absence. Actual-route fixtures cover a current long holding against an exited-only snapshot: a failed lookup cannot enable the 404 link; a known-empty snapshot still permits a proven fallback destination.
+3. Last-holder exits: homepage move cards and buy/sell rankings use the shared availability guard. Labels/counts stay visible; unavailable ItemList URLs are omitted. Actual component/route fixtures cover both languages and valid destinations.
+4. Investor prose: the remaining equities-only claim was replaced with SEC Section 13(f) scope, site option filtering and the usual quarter-end filing deadline.
+
+Fix review confirmed the four runtime issues resolved and the stock route merge compatible with the new identity safeguards. It identified one additional time-dependent test gate; the move fixture now freezes/restores its clock. The actual gate passes when launched under 2026-11-17, after the next filing deadline.
+
+Final local verification: 22 facts checks, 13 data-pipeline behavior checks, remaining prebuild gates, TypeScript and the full 851-output production build passed. Changed-code lint, list-query checks, four raw-main-HTML checks and expanded 149-URL production acceptance passed (zero reported issues). Browser checks verified the corrected Pershing source and prose, the matching source on UBER, and no console errors. The SEC lookup source is [the original reporting filer index](https://www.sec.gov/Archives/edgar/data/2026053/000117266126003790/0001172661-26-003790-index.htm), verified 2026-10-31.
+
+No unresolved blocking code-review finding remains in the reviewed SEO/GEO scope. F17 and the operational measurement limits above remain explicitly outside that verdict. Remote checks are reported separately for the final pushed commit.

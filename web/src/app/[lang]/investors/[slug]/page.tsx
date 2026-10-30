@@ -26,7 +26,7 @@ import { FreshnessBadge } from "@/components/entity/FreshnessBadge";
 import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { latestIsoDate } from "@/lib/valuation/asOf";
-import { altFor, ogFor, breadcrumbLd, edgarFilingsUrl, SEC_DATA_LICENSE, fitSnippet } from "@/lib/seo";
+import { altFor, ogFor, breadcrumbLd, edgar13fSourceUrl, SEC_DATA_LICENSE, fitSnippet } from "@/lib/seo";
 import { snapshotTime, filingSourceLd } from "@/lib/datasetTime";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { getCusipMap } from "@/lib/managers/securities";
@@ -209,10 +209,10 @@ export default async function InvestorSlugPage({
   ].map((cusip) => cusipToTicker.get(cusip) ?? cusip))];
   const linkNow = new Date();
   const linkRows = await readStockLinkHolders(stockKeys);
-  const availableStocks = currentStockKeys(linkRows, linkNow);
-  const snapshotKeys = new Set(linkRows.map((r) => r.ticker));
-  // A current long holding also proves the fallback detail route can render it.
-  for (const key of currentStockKeys(longHoldings.map((h) => ({ ticker: cusipToTicker.get(h.cusip) ?? h.cusip, kind: null, period: latest.period })), linkNow)) if (!snapshotKeys.has(key)) availableStocks.add(key);
+  const availableStocks = currentStockKeys(linkRows ?? [], linkNow);
+  const snapshotKeys = new Set((linkRows ?? []).map((r) => r.ticker));
+  // Only a successful empty lookup proves the detail route takes its long-holding fallback.
+  if (linkRows !== null) for (const key of currentStockKeys(longHoldings.map((h) => ({ ticker: cusipToTicker.get(h.cusip) ?? h.cusip, kind: null, period: latest.period })), linkNow)) if (!snapshotKeys.has(key)) availableStocks.add(key);
   const stockHref = (cusip: string) => availableStockHref(lang, cusipToTicker.get(cusip) ?? cusip, availableStocks);
 
   // 三档新鲜度(全局最新季基准, spec freshness-guard §B/C1): 常显来源+截止日, stale/inactive 加警示。
@@ -263,7 +263,7 @@ export default async function InvestorSlugPage({
   // 零持仓申报(如 Olstein 2026Q2):明说"本季申报持仓为零",不让读者以为数据缺失,也不展示旧季持仓。
   // 申报不写原因,故不把它说成卖出(changes 已在 assembleManagerDetail 置空)。
   const zeroReport = latest.holdings.length === 0;
-  const filingUrl = /^\d{10}-\d{2}-\d{6}$/.test(latest.accession) ? `https://www.sec.gov/Archives/edgar/data/${manager.cik.replace(/^0+/, "")}/${latest.accession.replace(/-/g, "")}/` : edgarFilingsUrl(manager.cik);
+  const filingUrl = edgar13fSourceUrl(manager.cik, latest.accession);
   const zeroNote = zeroReport ? (
     <p className="mt-2 text-sm text-[var(--tt-muted)]">
       {lang === "zh" ? (
@@ -368,7 +368,7 @@ export default async function InvestorSlugPage({
     ...(datasetTime.temporalCoverage ? { temporalCoverage: datasetTime.temporalCoverage } : {}),
     creator: { "@type": "Organization", name: fund },
     sourceOrganization: { "@type": "Organization", name: "SEC EDGAR" },
-    isBasedOn: filingSourceLd({ name: `${fund} SEC 13F filing`, url: /^\d{10}-\d{2}-\d{6}$/.test(latest.accession) ? filingUrl : edgarFilingsUrl(manager.cik), period: latest.period, filedAt: latest.filedAt }),
+    isBasedOn: filingSourceLd({ name: `${fund} SEC 13F filing`, url: filingUrl, period: latest.period, filedAt: latest.filedAt }),
     license: SEC_DATA_LICENSE,
   };
   const pageUrl = absoluteUrl(localePath(lang, `/investors/${manager.slug}`));

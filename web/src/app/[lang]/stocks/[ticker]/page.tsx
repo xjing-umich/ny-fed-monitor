@@ -6,7 +6,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { HoldingChange } from "@/lib/managers/types";
-import { readStockHolders, readStockTrend, readCoOwnership } from "@/lib/managers/consensusRead";
+import { readStockHolders, readStockTrend, readCoOwnership, read13fSourceFilings } from "@/lib/managers/consensusRead";
 import {
   getCusipMap,
   tickerToCusips,
@@ -25,7 +25,7 @@ import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
-import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, snippetWidth, securitySchemaType, edgarFilingsUrl } from "@/lib/seo";
+import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, snippetWidth, securitySchemaType, edgar13fSourceUrl } from "@/lib/seo";
 import { snapshotTime, snapshotLabel } from "@/lib/datasetTime";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
@@ -647,6 +647,7 @@ export default async function StockTickerPage({
 
   // Dataset structured data — the stock's 13F holders table as a factual,
   // SEC-sourced dataset (GEO-friendly; mirrors the investor page's Dataset).
+  const sourceFilings = await read13fSourceFilings(idx.managers.filter((m) => holders.some((h) => h.slug === m.slug)).map((m) => m.cik));
   const dataset = datasetLd({
     lang,
     name:
@@ -658,11 +659,14 @@ export default async function StockTickerPage({
         ? `持有 ${issuer}（${ticker}）的超级投资者及其持股数量、市值与组合权重，来自 SEC 13F 季度申报。`
         : `Superinvestors holding ${issuer} (${ticker}) with share counts, market values, and portfolio weights, from quarterly SEC 13F filings.`,
     path: localePath(lang, `/stocks/${ticker}`),
-    // Snapshots lack accession numbers: cite each actual holder's 13F filing list.
+    // Match the actual holder period/submission; ambiguous or absent identity stays a filing list.
     sources: holders.flatMap((h) => {
       const manager = idx.managers.find((m) => m.slug === h.slug);
       const filing = filings.find((f) => f.slug === h.slug && f.period === h.period);
-      return manager ? [{ url: edgarFilingsUrl(manager.cik), name: `${manager.person} SEC 13F filing`, period: h.period, filedAt: filing?.filedAt }] : [];
+      if (!manager) return [];
+      const matching = sourceFilings.filter((f) => f.cik === manager.cik && f.period === h.period && (!filing?.filedAt || f.filed_at === filing.filedAt));
+      const accession = matching.length === 1 ? matching[0].accession : undefined;
+      return [{ url: edgar13fSourceUrl(manager.cik, accession), name: `${manager.person} SEC 13F ${accession ? 'filing' : 'filings and notices'}`, period: h.period, filedAt: filing?.filedAt }];
     }),
     snapshotPeriods: holders.map((h) => h.period),
     comparisonPeriod: asOfPeriod || null,

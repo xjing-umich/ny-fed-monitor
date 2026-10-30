@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { OptionalLink } from '@/components/common/OptionalLink';
+import { availableStockHref } from '@/lib/stocks/stockLinks';
 import type { Lang } from "@/lib/nav";
 import type { NotableMoves, MoveRow } from "@/lib/aggregations";
 import { formatUSD } from "@/lib/format";
@@ -6,7 +8,7 @@ import { EntityName } from "@/components/common/EntityName";
 import MoveTag from "@/components/shell/MoveTag";
 import { FreshnessDot } from "@/components/entity/FreshnessDot";
 import { filingFreshness, quarterLabel, effectiveFilingDeadline, type EffectiveMovesPeriod } from "@/lib/freshness/derive";
-import { stockPath, localePath } from "@/lib/urls";
+import { localePath } from "@/lib/urls";
 import RevealStagger from "@/components/home/RevealStagger";
 import { filingProgressText } from "@/components/home/filingProgressText";
 import { reportSlug } from "@/lib/reports/period";
@@ -62,7 +64,7 @@ function fmtDeadline(d: Date | null, lang: Lang): string {
 }
 
 // 卖方金额混了两种口径(减持按剩余持仓、清仓按上季持仓),不展示;买方金额是期末持仓合计。
-function PanelRows({ lang, rows, showValue }: { lang: Lang; rows: MoveRow[]; showValue: boolean }) {
+function PanelRows({ lang, rows, showValue, availableStocks }: { lang: Lang; rows: MoveRow[]; showValue: boolean; availableStocks: ReadonlySet<string> }) {
   return (
     <RevealStagger className="mt-1.5" stepMs={70} delayMs={200}>
       {rows.map((row) => (
@@ -72,12 +74,12 @@ function PanelRows({ lang, rows, showValue }: { lang: Lang; rows: MoveRow[]; sho
         >
           <span className="flex min-w-0 items-center gap-2">
             <MoveTag kind={row.dominantKind} lang={lang} />
-            <Link
-              href={stockPath(lang, row.cusip)}
+            <OptionalLink
+              href={availableStockHref(lang, row.cusip, availableStocks)}
               className="truncate font-medium text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
             >
               <EntityName issuer={row.issuer} ticker={row.cusip} lang={lang} />
-            </Link>
+            </OptionalLink>
           </span>
           <span
             className="shrink-0 font-data text-xs tabular-nums whitespace-nowrap text-[var(--tt-text)]"
@@ -99,6 +101,7 @@ export default function HeroMasthead({
   filingReportExists = false,
   moves,
   investorCount,
+  availableStocks,
 }: {
   lang: Lang;
   period: string;
@@ -107,6 +110,7 @@ export default function HeroMasthead({
   /** 申报季对应季度的报告行是否已存在(过了公开门槛)。false → 不渲染报告链接,避免 404。 */
   filingReportExists?: boolean;
   moves: NotableMoves;
+  availableStocks: ReadonlySet<string>;
   /**
    * 计入本季统计的投资人数 = 申报进度行的分母(effectiveMovesPeriod.coverage.total,剔除上季未申报者),
    * 与「94 位中 3 位已交」同一个数;不再用追踪总数(97)。差额只在进度行的括号里解释一次。
@@ -217,7 +221,7 @@ export default function HeroMasthead({
                 <span>{c.bought}</span>
                 <span>{c.boughtCols}</span>
               </p>
-              <PanelRows lang={lang} rows={moves.mostBought.slice(0, 4)} showValue />
+              <PanelRows lang={lang} rows={moves.mostBought.slice(0, 4)} showValue availableStocks={availableStocks} />
             </div>
           )}
           {moves.mostSold.length > 0 && (
@@ -226,7 +230,7 @@ export default function HeroMasthead({
                 <span>{c.sold}</span>
                 <span>{c.soldCols}</span>
               </p>
-              <PanelRows lang={lang} rows={moves.mostSold.slice(0, 3)} showValue={false} />
+              <PanelRows lang={lang} rows={moves.mostSold.slice(0, 3)} showValue={false} availableStocks={availableStocks} />
             </div>
           )}
         </aside>

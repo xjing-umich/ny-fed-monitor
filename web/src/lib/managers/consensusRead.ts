@@ -202,8 +202,9 @@ export const readCoOwnership = cache(async (ticker: string, limit = 6): Promise<
 });
 
 /** Batch link eligibility; small columns, bounded query URLs, no per-security fan-out. */
-export const readStockLinkHolders = cache(async (keys: string[]): Promise<import('@/lib/stocks/stockLinks').LinkHolder[]> => {
-  if (!hasSupabaseEnv() || keys.length === 0) return [];
+export const readStockLinkHolders = cache(async (keys: string[]): Promise<import('@/lib/stocks/stockLinks').LinkHolder[] | null> => {
+  if (keys.length === 0) return [];
+  if (!hasSupabaseEnv()) return null;
   const unique = [...new Set(keys)];
   const out: import('@/lib/stocks/stockLinks').LinkHolder[] = [];
   for (let i = 0; i < unique.length; i += 200) {
@@ -211,8 +212,19 @@ export const readStockLinkHolders = cache(async (keys: string[]): Promise<import
     const { data, error } = await selectAllPages<import('@/lib/stocks/stockLinks').LinkHolder>(() =>
       getDb().from('consensus_stock_holders').select('ticker,kind,period').in('ticker', batch)
         .order('ticker').order('cik').order('kind'));
-    if (error) { console.error(`readStockLinkHolders failed: ${error.message}`); return []; }
+    if (error) { console.error(`readStockLinkHolders failed: ${error.message}`); return null; }
     out.push(...data);
   }
   return out;
+});
+
+export type SourceFiling = { cik: string; period: string; filed_at: string; accession: string };
+/** Snapshots omit accessions. Resolve provenance in one paged batch, never per holder. */
+export const read13fSourceFilings = cache(async (ciks: string[]): Promise<SourceFiling[]> => {
+  if (!ciks.length || !hasSupabaseEnv()) return [];
+  const { data, error } = await selectAllPages<SourceFiling>(() => getDb().from('filings')
+    .select('cik,period,filed_at,accession').in('cik', [...new Set(ciks)])
+    .order('cik').order('period').order('accession'));
+  if (error) { console.error(`read13fSourceFilings failed: ${error.message}`); return []; }
+  return data;
 });

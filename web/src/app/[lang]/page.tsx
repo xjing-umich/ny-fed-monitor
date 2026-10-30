@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { readStockLinkHolders } from '@/lib/managers/consensusRead';
+import { currentStockKeys } from '@/lib/stocks/stockLinks';
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { notableMoves, consensusHeldTop, consensusCount } from "@/lib/aggregations";
@@ -73,6 +75,8 @@ export default async function HomePage({
   ]);
 
   const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
+  const moveKeys = [...moves.mostBought, ...moves.mostSold].map((r) => r.cusip);
+  const availableMoves = currentStockKeys((await readStockLinkHolders(moveKeys)) ?? [], new Date());
   const movesEffective = effectiveMovesPeriod(
     topManagers.map((m) => m.period),
     new Date(),
@@ -126,6 +130,7 @@ export default async function HomePage({
         filing={movesEffective}
         filingReportExists={filingReportExists}
         moves={moves}
+        availableStocks={availableMoves}
         investorCount={movesEffective.coverage.total > 0 ? movesEffective.coverage.total : topManagers.length}
       />
 

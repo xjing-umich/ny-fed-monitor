@@ -1,10 +1,12 @@
 import React, { cache } from "react";
 import { rankingMetadata } from "@/lib/seo";
+import { readStockLinkHolders } from '@/lib/managers/consensusRead';
+import { currentStockKeys, availableStockHref } from '@/lib/stocks/stockLinks';
 import { notFound } from "next/navigation";
 import type { Lang } from "@/lib/nav";
 import type { MoveRow, MoveKind } from "@/lib/aggregations";
 import { notableMoves } from "@/lib/aggregations";
-import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { absoluteUrl, localePath } from "@/lib/urls";
 import { cleanIssuer } from "@/lib/format";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { ShareButton } from "@/components/share/ShareButton";
@@ -70,7 +72,7 @@ function movesFootnote(
 
 export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sell" }) {
   const isZh = lang === "zh";
-  const { moves: { mostBought, mostSold }, idx, effective } = await getMovesPageData();
+  const { moves: { mostBought, mostSold }, idx, effective, availableStocks } = await getMovesPageData();
   const data: MoveRow[] = side === "buy" ? mostBought : mostSold;
   const baseline = effective.period;
   // Only managers older than the moves baseline — early maxPeriod filers are
@@ -87,7 +89,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
       // 金额是买方期末持仓市值合计,只在买入榜带标签展示;卖出榜的金额混了两种口径(减持按剩余、清仓按上季),不展示。
       ...(side === "buy" ? { value: r.value, valueLabel: isZh ? "买方持仓合计" : "Buyers' combined stake" } : {}),
       kindLabel: isZh ? k.zh : k.en, kindTone: k.tone,
-      href: stockPath(lang, r.cusip),
+      href: availableStockHref(lang, r.cusip, availableStocks),
     };
   });
   const blurbRows: BlurbRow[] = rankRows.map((r) => ({ ticker: r.ticker, issuer: r.issuer, primary: r.primary }));
@@ -117,7 +119,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
           // 条目带清洗后的名称和个股页链接,AI/搜索引擎能把榜单项对到具体实体。
           itemListElement: rankRows.slice(0, 20).map((r, i) => ({
             "@type": "ListItem", position: i + 1, name: cleanIssuer(r.issuer),
-            ...(isLikelyTicker(r.ticker) ? { url: absoluteUrl(stockPath(lang, r.ticker)) } : {}),
+            ...(r.href && isLikelyTicker(r.ticker) ? { url: absoluteUrl(r.href) } : {}),
           })),
         }) }}
       />
@@ -155,7 +157,9 @@ export function notFoundIfBadLang(rawLang: string): asserts rawLang is Lang {
 
 const getMovesPageData = cache(async () => {
   const [moves, idx] = await Promise.all([notableMoves(30), getManagerIndex()]);
-  return { moves, idx, effective: effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()) };
+  const now = new Date();
+  const availableStocks = currentStockKeys((await readStockLinkHolders([...moves.mostBought, ...moves.mostSold].map((r) => r.cusip))) ?? [], now);
+  return { moves, idx, availableStocks, effective: effectiveMovesPeriod(idx.managers.map((m) => m.period), now) };
 });
 
 export async function movesMetadata(lang: Lang, side: 'buy' | 'sell') {

@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ManagerDetail } from '../lib/managers/types';
 import type { StockHolderApp } from '../lib/managers/consensusRead';
+import type { LinkHolder } from '../lib/stocks/stockLinks';
 const require = createRequire(import.meta.url);
 function stub(path: string, exports: unknown) {
   const id = require.resolve(path);
@@ -17,10 +18,12 @@ const row = (slug: string, period = q2, kind: StockHolderApp['kind'] = null): St
 });
 let rows = [row('first'), row('early', q3)];
 let fallback = false;
+let linkRows: LinkHolder[] | null | undefined;
+let stockRows: StockHolderApp[] | undefined;
 function detail(slug: string): ManagerDetail {
   const r = rows.find((r) => r.slug === slug)!;
   const holding = { cusip: 'FIXTURE', issuer: r.issuer, value: r.value, shares: r.shares, weight: r.weight };
-  const latest = { period: r.period!, filedAt: r.filedAt ?? '', accession: '0000000001-26-000001', totalValue: r.value, holdings: r.kind === 'exited' ? [] : [holding] };
+  const latest = { period: r.period!, filedAt: r.filedAt ?? '', accession: '0001172661-26-003790', totalValue: r.value, holdings: r.kind === 'exited' ? [] : [holding] };
   return { manager: { ...r, name: `Fund ${slug}` }, latest, filings: [latest], changes: r.kind ? [{ ...holding, kind: r.kind, prevShares: 100, deltaPct: 0 }] : [] };
 }
 stub('../lib/managers/source', {
@@ -28,8 +31,9 @@ stub('../lib/managers/source', {
   getManagerDetail: async (slug: string) => detail(slug),
 });
 stub('../lib/managers/consensusRead', {
-  readStockHolders: async () => fallback ? null : rows,
-  readStockLinkHolders: async () => rows.map((r) => ({ ticker: "TEST", kind: r.kind, period: r.period })),
+  readStockHolders: async () => fallback ? null : stockRows ?? rows,
+  readStockLinkHolders: async () => linkRows === undefined ? rows.map((r) => ({ ticker: "TEST", kind: r.kind, period: r.period })) : linkRows,
+  read13fSourceFilings: async () => rows.map((r) => ({ cik: r.cik, period: r.period, filed_at: r.filedAt, accession: '0001172661-26-003790' })),
   readStockTrend: async () => [], readCoOwnership: async () => [], readHolderCounts: async () => new Map(),
 });
 stub('../lib/managers/securities', {
@@ -111,6 +115,23 @@ async function main() {
       assert.equal(investor.temporalCoverage, q2);
       assert.equal((investor.isBasedOn as JsonObject).datePublished, '2026-08-14');
       assert.ok(!('dateModified' in investor));
+      const accessionUrl = 'https://www.sec.gov/edgar/search/#/q=0001172661-26-003790&amp;dateRange=all';
+      const investorHtml = renderToStaticMarkup(await InvestorPage({ params: Promise.resolve({ lang, slug: 'first' }) }));
+      assert.ok(investorHtml.includes(accessionUrl), 'reporter CIK cannot be inferred from manager CIK or filing-agent accession prefix');
+      const [sourcedStock] = datasets(renderToStaticMarkup(await StockPage({ params: Promise.resolve({ lang, ticker: 'TEST' }) })));
+      assert.ok((sourcedStock.isBasedOn as {url: string}[])[0].url.includes('#/q=0001172661-26-003790'), 'holder provenance resolves the actual accession rather than a subsidiary HR-only list');
+      linkRows = null;
+      stockRows = [row('first', q2, 'exited')];
+      const unavailable = renderToStaticMarkup(await InvestorPage({ params: Promise.resolve({ lang, slug: 'first' }) }));
+      assert.ok(!unavailable.includes(`href="${lang === 'zh' ? '/zh' : ''}/stocks/TEST"`), 'lookup failure cannot re-enable an unverified detail');
+      await assert.rejects(() => StockPage({ params: Promise.resolve({ lang, ticker: 'TEST' }) }), /404/);
+      linkRows = [];
+      stockRows = [];
+      const confirmedFallback = renderToStaticMarkup(await InvestorPage({ params: Promise.resolve({ lang, slug: 'first' }) }));
+      assert.ok(confirmedFallback.includes(`href="${lang === 'zh' ? '/zh' : ''}/stocks/TEST"`), 'known-empty snapshot preserves proven current long links');
+      assert.ok(renderToStaticMarkup(await StockPage({ params: Promise.resolve({ lang, ticker: 'TEST' }) })).includes('Fixture Issuer'), 'the proven fallback destination renders');
+      linkRows = undefined;
+      stockRows = undefined;
     }
   } finally { globalThis.fetch = savedFetch; globalThis.Date = RealDate; }
   console.log('dataset-pages.check OK (en/zh, snapshot/fallback, single/mixed, exits, missing dates, investor)');
