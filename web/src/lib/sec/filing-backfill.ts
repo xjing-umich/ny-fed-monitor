@@ -2,7 +2,7 @@ import { XMLParser } from "fast-xml-parser";
 import type { CompanyFacts, SecFactUnit } from "./company-facts";
 import type { NormalizedFiling } from "./company-submissions";
 import { FUNDAMENTAL_TAGS } from "./fundamental-tags";
-import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
+import { filingUrl, filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
 
 /**
  * companyfacts 漏收的 10-Q/10-K → 读原始申报的 XBRL instance 回填。
@@ -27,7 +27,12 @@ import { filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client"
 export type UnitKind = "USD" | "shares" | "USD/shares";
 
 /** instance 里的一条无维度 us-gaap 事实(已应用 sign/scale)。 */
-export type GaapFact = { tag: string; unit: UnitKind; value: number; start?: string; end?: string; instant?: string };
+export type GaapFact = { sourceTag?: string; tag: string; unit: UnitKind; value: number; start?: string; end?: string; instant?: string };
+
+export const CAPITAL_EXPENDITURE_EXTENSIONS = new Set([
+  "PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets",
+  "PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets",
+]);
 
 const FORMS = new Set(["10-Q", "10-K"]);
 /** 每家最多回填的申报份数:正常只差 1 份,多于 3 份说明另有问题,不靠这里补。 */
@@ -113,22 +118,24 @@ export function extractGaapFacts(xml: string): GaapFact[] {
   const out: GaapFact[] = [];
   const seen = new Set<string>();
   for (const [k, v] of Object.entries(root)) {
-    if (prefixOf(k) !== "us-gaap") continue;
     const tag = localName(k);
+    // Exact semantic aliases only: arbitrary custom tags and investments stay excluded.
+    const capexExtension = CAPITAL_EXPENDITURE_EXTENSIONS.has(tag);
+    if (prefixOf(k) !== "us-gaap" && !capexExtension) continue;
     for (const f of asArray(v as AnyObj | AnyObj[])) {
       if (typeof f !== "object" || f === null) continue;
       const fact = f as AnyObj;
       const unit = units.get(String(fact["@_unitRef"]));
       const ctx = contexts.get(String(fact["@_contextRef"]));
       const raw = fact["#text"];
-      if (!unit || !ctx || typeof raw !== "string") continue;
+      if (!unit || !ctx || typeof raw !== "string" || (capexExtension && unit !== "USD")) continue;
       const n = Number(raw);
       const scale = typeof fact["@_scale"] === "string" ? Number(fact["@_scale"]) : 0;
       if (!Number.isFinite(n) || !Number.isFinite(scale)) continue;
       const key = `${tag}|${unit}|${ctx.start ?? ""}|${ctx.end ?? ""}|${ctx.instant ?? ""}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      out.push({ tag, unit, value: (fact["@_sign"] === "-" ? -1 : 1) * n * Math.pow(10, scale), ...ctx });
+      out.push({ tag, ...(prefixOf(k) !== "us-gaap" ? { sourceTag: k } : {}), unit, value: (fact["@_sign"] === "-" ? -1 : 1) * n * Math.pow(10, scale), ...ctx });
     }
   }
   return out;
@@ -199,6 +206,7 @@ export function injectFilingFacts(facts: CompanyFacts, filing: NormalizedFiling,
       accn: filing.accession_number,
       form: filing.form,
       filed: filing.filing_date ?? undefined,
+      ...(g.sourceTag ? { source_tag: g.sourceTag } : {}),
     };
     list.push(unit);
     n++;
@@ -246,6 +254,44 @@ export async function backfillMissingFilings(facts: CompanyFacts, filings: Norma
     } catch {
       result.failed.push(label);
     }
+  }
+  return result;
+}
+
+/** Field-level annual fallback: core revenue may be present while custom CapEx is omitted. */
+export function findMissingCapitalExpenditureFilings(facts: CompanyFacts, filings: NormalizedFiling[]): NormalizedFiling[] {
+  const covered = FUNDAMENTAL_TAGS.capex.flatMap(tag => facts.facts?.["us-gaap"]?.[tag]?.units.USD ?? []);
+  const historical: NormalizedFiling[] = [];
+  const template = filings[0];
+  if (template) for (const tag of CORE_TAGS) for (const u of facts.facts?.["us-gaap"]?.[tag]?.units.USD ?? []) {
+    // Original annual accessions can fall outside recent24. A comparative in a
+    // much later filing must not be relabelled as that year's original report.
+    if (!u.start || !u.end || !u.filed || !u.accn || !["10-K", "20-F"].includes(u.form ?? "")) continue;
+    const duration = dayNum(u.end)-dayNum(u.start), delay = dayNum(u.filed)-dayNum(u.end);
+    if (duration<350 || duration>380 || delay<0 || delay>240) continue;
+    historical.push({ ...template, form:u.form!, accession_number:u.accn, report_date:u.end,
+      filing_date:u.filed, fiscal_year:Number(u.end.slice(0,4)), fiscal_period:"FY", primary_document:null,
+      filing_url:filingUrl(template.cik,u.accn), sec_index_url:filingIndexUrl(template.cik,u.accn) });
+  }
+  const candidates = [...new Map([...historical,...filings].map(f=>[f.accession_number,f])).values()];
+  const annual = candidates.filter(f => ["10-K", "20-F"].includes(f.form) && f.report_date)
+    .sort((a,b)=>b.report_date!.localeCompare(a.report_date!));
+  const retainedPeriods = new Set([...new Set(annual.map(f => f.report_date!))].slice(0,6));
+  return annual.filter(f => retainedPeriods.has(f.report_date!))
+    .filter(f => !covered.some(u => u.start && u.end && Number.isFinite(u.val) && isOwnPeriod(u.end,f.report_date!) && dayNum(u.end)-dayNum(u.start)>=350 && dayNum(u.end)-dayNum(u.start)<=380))
+    .sort((a,b)=>b.report_date!.localeCompare(a.report_date!)).slice(0,6);
+}
+
+export async function backfillCapitalExpenditures(facts: CompanyFacts, filings: NormalizedFiling[]): Promise<BackfillResult> {
+  const result: BackfillResult = {filled:[], failed:[]};
+  for (const filing of findMissingCapitalExpenditureFilings(facts,filings)) {
+    const label = `CapEx ${filing.form} ${filing.report_date} ${filing.accession_number}`;
+    try {
+      const xml=await fetchInstance(filing);
+      await sleep(150);
+      const selected=xml ? extractGaapFacts(xml).filter(f => f.unit === "USD" && FUNDAMENTAL_TAGS.capex.includes(f.tag) && f.start && f.end && dayNum(f.end)-dayNum(f.start)>=350 && dayNum(f.end)-dayNum(f.start)<=380) : [];
+      if (injectFilingFacts(facts,filing,selected)>0) result.filled.push(label); else result.failed.push(label);
+    } catch { result.failed.push(label); }
   }
   return result;
 }

@@ -1,3 +1,4 @@
+import { assessGrowthCoverage, type GrowthEvidence } from "./growthEvidence";
 import type {
   ValuationFloor,
   ValuationFloorYear,
@@ -266,48 +267,29 @@ export function deriveOeDcf(
   // 纯 FY 审计序列(锁定 decision #2):gRaw 增长回归恒吃纯 FY,不吃 TTM 头。缺省 → years
   // (无 TTM 的调用方 years 本就是纯 FY,零变化);生产 runValuation 显式传 floorInput.years。
   fyYears: ValuationFloorYear[] = years,
+  evidenceOptions?: { evidence?: GrowthEvidence; asOf: string },
 ): OeDcfAssessment {
   const lamp = floor.buffett_epv;
-  if (
-    !lamp.assessable ||
-    lamp.normalized_earnings == null ||
-    !(lamp.normalized_earnings > 0) ||
-    lamp.equity_value_low == null ||
-    lamp.per_share_low == null ||
-    !(lamp.per_share_low > 0)
-  ) {
-    return {
-      assessable: false,
-      not_assessable_reason:
-        lamp.not_assessable_reason ??
-        "Owner earnings are not assessable (non-positive or missing), so the owner-earnings DCF is not shown.",
-      no_bridge_note: NO_BRIDGE_NOTE,
-    };
-  }
-
-  const oe0 = lamp.normalized_earnings;
-  const shares = lamp.equity_value_low / lamp.per_share_low;
-
   // Measure growth over the SAME fiscal years that back oe0 (the lamp's window),
   // not the full input history — otherwise an anomalous oldest year outside the
   // window can inflate g1 to the cap and compound into the terminal value.
   const windowYears = years.filter((y) => lamp.method.years_used.includes(y.fiscal_year));
   const { cagr, window } = netIncomeCagr(windowYears.length >= 2 ? windowYears : years); // 保留:declined + cagr_raw 披露
-  const declined = cagr != null && cagr < 0;
+  const evidence = evidenceOptions?.evidence;
+  let coverageGap = evidence && evidenceOptions ? assessGrowthCoverage(evidence, evidenceOptions.asOf) : undefined;
+  const declined = (cagr != null && cagr < 0) || (evidence?.earnings_growth != null && evidence.earnings_growth < 0) || evidence?.current_earnings_nonpositive === true;
 
   // 证据驱动增长:历史营收 log 回归(抗端点)与基本面上限(ROIC×再投资)取小,再受 franchise 分档量级封顶。
   const gRaw = historicalGrowthBaseRate(fyYears);               // 全历史纯 FY 营收 log 回归(decision #2,不吃 TTM 头)
-  const gFund = floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
+  const gFund = floor.is_financial ? floor.financial_sgr : floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
   // cap 四分档(Task 4,收紧假增长):strong franchise 20% > 金融股(银行/保险)SGR 封顶 > moderate 7% > 非金融无护城河 5%。
   // 金融股走 SGR(ROE×留存率)而非扁平 7% —— 原扁平 cap 把无护城河的区域银行/保险统一抬高含增长估值。
   const grade = floor.moat_cap?.grade;
   const cap =
-    grade === "strong"
+    floor.is_financial
+      ? Math.min(Math.max(floor.financial_sgr ?? 0, 0), GROWTH_CAP_MODERATE)
+      : grade === "strong"
       ? GROWTH_CAP_FRANCHISE
-      : floor.is_financial
-      ? floor.financial_sgr != null && floor.financial_sgr > 0
-        ? Math.min(floor.financial_sgr, GROWTH_CAP_MODERATE)
-        : GROWTH_CAP_NONE
       : grade === "moderate"
       ? GROWTH_CAP_MODERATE
       : GROWTH_CAP_NONE;
@@ -322,24 +304,47 @@ export function deriveOeDcf(
     floor.is_financial !== true &&
     floor.structural_confidence != null &&
     floor.structural_confidence >= S_STRUCTURAL_GROWTH;
-  const fundamentalCeilings = structuralFranchise ? [gRaw, cagrFallback] : [gRaw, gFund, cagrFallback];
-  const candidates = fundamentalCeilings.filter(
-    (n): n is number => n != null && Number.isFinite(n) && n >= 0,
-  );
-  // gRaw/gFund 皆缺 → candidates 仅剩 cagrFallback(退回今天行为,但用新 cap);全缺 → 0。
-  const g1 = declined ? 0 : candidates.length ? clamp(Math.min(...candidates), 0, cap) : 0;
-  const minCandidate = candidates.length ? Math.min(...candidates) : undefined;
-  const g1LimitedBy: OeDcfAssessment["growth_g1_limited_by"] = declined
-    ? "declined"
-    : minCandidate == null
-    ? "none"
-    : minCandidate > cap
-    ? "moat_cap"
-    : minCandidate === gRaw
-    ? "history"
-    : minCandidate === cagrFallback
-    ? "net_income"
-    : "fundamentals";
+  if (evidence && !structuralFranchise && gFund == null && !coverageGap) coverageGap = "missing_reinvestment";
+  const candidates: { value: number; source: NonNullable<OeDcfAssessment["growth_g1_limited_by"]> }[] = [];
+  const add = (value: number | undefined, source: typeof candidates[number]["source"]) => {
+    if (value != null && Number.isFinite(value)) candidates.push({ value, source });
+  };
+  add(gRaw, "history");
+  add(cagrFallback, "net_income");
+  if (!structuralFranchise) add(gFund ?? (evidence ? 0 : undefined), "fundamentals");
+  add(evidence?.revenue_growth, "recent_revenue");
+  add(evidence?.earnings_growth, "recent_earnings");
+  if (coverageGap) add(0, "coverage");
+  const minimum = candidates.sort((a,b) => a.value-b.value)[0];
+  const g1 = declined ? 0 : minimum ? clamp(minimum.value, 0, cap) : 0;
+  const g1LimitedBy: OeDcfAssessment["growth_g1_limited_by"] = coverageGap ? "coverage" : declined ? "declined"
+    : !minimum ? "none" : minimum.value > cap ? "moat_cap" : minimum.source;
+
+  if (
+    !lamp.assessable ||
+    lamp.normalized_earnings == null ||
+    !(lamp.normalized_earnings > 0) ||
+    lamp.equity_value_low == null ||
+    lamp.per_share_low == null ||
+    !(lamp.per_share_low > 0)
+  ) {
+    return {
+      assessable: false,
+      growth_evidence: evidence,
+      growth_coverage_gap: coverageGap,
+      declined,
+      growth_g1: g1,
+      growth_g1_limited_by: g1LimitedBy,
+      not_assessable_reason:
+        lamp.not_assessable_reason ??
+        "Owner earnings are not assessable (non-positive or missing), so the owner-earnings DCF is not shown.",
+      no_bridge_note: NO_BRIDGE_NOTE,
+    };
+  }
+
+  const oe0 = lamp.normalized_earnings;
+  const shares = lamp.equity_value_low / lamp.per_share_low;
+
 
   // owner earnings 是股权流,读 floor.leverage_premium(epvFloor 已发布,单一真相源)——不本地重算。
   const discount = discountBand(dgs10, floor.leverage_premium ?? 0);
@@ -355,17 +360,16 @@ export function deriveOeDcf(
   // so this leg and the Greenwald growth-value leg can no longer disagree on grade (BUG2 fix).
   // 防御性兜底（理论上真实 ValuationFloor 恒有 moat_cap）：缺失 → 视作非-franchise，CAP 不延长。
   const moatCap: MoatCapAssessment = floor.moat_cap ?? { grade: "none", capYears: 0, durablePassed: false, basis: "" };
-  // CAP→显式期翻译：commodity/moderate(0/10) 一律保持基线 10 年（值不变）；strong(20) 才抬上沿。
-  const neutralCap = Math.max(PROJECTION_YEARS, moatCap.capYears);
+  // Financial-history classifications never extend the explicit forecast beyond ten years.
+  const neutralCap = PROJECTION_YEARS; // Financial proxy grades do not extend the forecast horizon.
 
   const pessimistic: OeDcfTier = {
     growth_stage1: g1 / 2,
     discount_rate: discount.r_high,
     ...tierValues(oe0, g1 / 2, discount.r_high, shares, 0), // 悲观档保留零增长底，不接 CAP，值逐位不变
   };
-  // 基线 cap=10（今天的行为）：quick-check 诊断锚点，与 CAP 抬升解耦，保证 reliable 逐位不变。
-  const neutralBaselineRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal);
-  // 展示用：moat-CAP 允许把中枢/乐观档投影抬到 20 年（strong 档）。
+  // Displayed forecast and diagnostic use the same ten-year horizon.
+  // Use the bounded common horizon for central and optimistic scenarios.
   const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal, neutralCap);
   const neutral: OeDcfTier = {
     growth_stage1: g1,
@@ -384,10 +388,9 @@ export function deriveOeDcf(
 
   // diagnostics
   const oePerShare = oe0 / shares;
-  // quick-check 基线：与基线 cap=10 的 neutral 档（非展示用 neutralRun）比较同增长假设的
-  // H-model 闭式解 —— 诊断口径与今天逐字一致，quick_check_flag/reliable 与 CAP 抬升完全解耦。
+  // Compare the displayed neutral value against the H-model under the same assumptions.
   const quickPerShare = hModelValue(oe0, g1, gTerminal, discount.midpoint) / shares;
-  const quickDev = Math.abs(neutralBaselineRun.perShare - quickPerShare) / quickPerShare;
+  const quickDev = Math.abs(neutralRun.perShare - quickPerShare) / quickPerShare;
   const rMinusG = discount.midpoint - g1;
   let oeYield: number | undefined;
   let oeYieldBps: number | undefined;
@@ -407,6 +410,8 @@ export function deriveOeDcf(
     cagr_raw: cagr,
     cagr_window: window,
     growth_g1: g1,
+    growth_evidence: evidence,
+    growth_coverage_gap: coverageGap,
     growth_g1_limited_by: g1LimitedBy,
     declined,
     discount,

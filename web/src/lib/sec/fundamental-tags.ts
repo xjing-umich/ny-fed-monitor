@@ -71,7 +71,7 @@ export const FUNDAMENTAL_TAGS: Record<FundamentalField, string[]> = {
     "NetCashProvidedByUsedInOperatingActivities",
     "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"
   ],
-  capex: ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"],
+  capex: ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets", "PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets", "PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets"],
   d_and_a: [
     "DepreciationDepletionAndAmortization",
     "DepreciationAmortizationAndAccretionNet",

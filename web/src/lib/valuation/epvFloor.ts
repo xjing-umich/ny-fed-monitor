@@ -543,13 +543,14 @@ function buildBuffettLamp(
   const rHigh = DISCOUNT_RATE_HIGH + lev.premium;
 
   const simplifications: string[] = [];
+  if (normNi.basisLift != null) simplifications.push(`Weighted normalized net income: multi-year mean ${avg(niSeries).toFixed(0)} blended ${(normNi.basisLift * 100).toFixed(1)}% toward a trend-capped recent level; normalized base ${normNi.value.toFixed(0)}.`);
   if (normNi.capped) simplifications.push("Net income is below its multi-year average (cyclical/declining): normalized owner earnings anchored to the latest year — no peak-earnings capitalization (audit #2).");
   if (canCorrect) {
     simplifications.push(`Owner earnings = net income + D&A − maintenance capex (${mc.confidence}); the working-capital change is excluded (maintenance ΔNWC ≈ 0; growth ΔNWC is carried in growth value, not double-counted).`);
     // AI-hog / divergence / method notes from maintenanceCapex (scheme C: floored then D&A-capped; OE may look optimistic).
     for (const n of mc.notes) simplifications.push(n);
   } else {
-    simplifications.push("Maintenance capex or D&A unavailable → degraded to normalized net income (= average net income over the years shown).");
+    simplifications.push("Maintenance capex or D&A unavailable → uses normalized net income; the normalization rule is disclosed separately.");
   }
   simplifications.push("One-time items are not separately normalized (multi-year averaging smooths them partially).");
   simplifications.push("Share-based compensation is left as a real expense (not added back); see the SBC/OE disclosure.");
@@ -562,7 +563,8 @@ function buildBuffettLamp(
   );
 
   const method = {
-    earnings_basis: "Owner earnings = average net income + average D&A − maintenance capex (zero-growth floor; no ΔNWC).",
+    earnings_basis: `Owner earnings = ${normNi.basisLift != null ? "weighted normalized" : normNi.capped ? "latest-year" : "average"} net income${canCorrect ? " + average D&A − maintenance capex" : ""} (zero-growth reference; no maintenance ΔNWC).`,
+    ...(normNi.basisLift != null && lift?.target != null ? { normalization: { mean: avg(niSeries), target: lift.target, weight: normNi.basisLift, value: normNi.value } } : {}),
     leverage_treatment: "Levered (starts from net income, already after interest — an equity-holder stream).",
     denominator: lev.premium > 0
       ? `Capitalized at the ${(rLow * 100).toFixed(1)}–${(rHigh * 100).toFixed(1)}% band (9–11% base + ${(lev.premium * 100).toFixed(1)}pp leverage premium).`

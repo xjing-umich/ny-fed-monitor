@@ -4,7 +4,7 @@ import type { Lang } from "@/lib/nav";
 
 export type ConclusionLeftState =
   | "card" | "holdcoSotp" | "unassessed" | "splitPaused"
-  | "holdcoNotAssessable" | "moatDistorted" | "fundamentalsSuspect" | "methodsConflict";
+  | "holdcoNotAssessable" | "moatDistorted" | "fundamentalsSuspect" | "methodsConflict" | "growthEvidenceMissing";
 
 /** 结论带左栏显示什么。优先级与原估值区块的分支顺序一致。 */
 export function conclusionLeftState(input: {
@@ -16,19 +16,21 @@ export function conclusionLeftState(input: {
   fundamentalsCorrupt: boolean;
   /** 中枢 IV 低于零增长底、现价夹在中间 → 引擎不出判定,写明两法数字(ivBelowFloorConflict)。 */
   methodsConflict?: boolean;
+  growthEvidenceMissing?: boolean;
 }): ConclusionLeftState {
   if (!input.hasFloor) return "unassessed";
   if (input.splitCoverageStale) return "splitPaused";
   if (input.holdcoNotAssessable) return input.hasHoldcoSotp ? "holdcoSotp" : "holdcoNotAssessable";
   if (input.capitalStructureDistorted) return "moatDistorted";
   if (input.fundamentalsCorrupt) return "fundamentalsSuspect";
+  if (input.growthEvidenceMissing) return "growthEvidenceMissing";
   if (input.methodsConflict) return "methodsConflict";
   return "card";
 }
 
 /** #valuation(及其锚点)是否出现:只有估值卡明细与控股集团 SOTP 表要放。其余状态的话已在结论带里说完。 */
 export function valuationDetailsShown(state: ConclusionLeftState): boolean {
-  return state === "card" || state === "holdcoSotp";
+  return state === "card" || state === "holdcoSotp" || state === "growthEvidenceMissing";
 }
 
 /** 刻度盘(及 SOTP 每股中枢)只在权威判定存在、区间与现价都有限时画。 */

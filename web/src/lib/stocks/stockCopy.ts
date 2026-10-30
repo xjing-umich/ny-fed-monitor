@@ -108,6 +108,7 @@ export const STOCK_PAGE_COPY = {
       assetFloorLabel: "资产底（每股）",
       methodsConflict: (iv: string, floor: string, price: string) =>
         `两种方法在这里给出相反答案：所有者盈利折现的中枢约 ${iv}，反而低于零增长底 ${floor}；现价 ${price} 夹在两者之间，按前者不便宜、按后者低于底。是否便宜没有可信答案，这里不给出估值判定。`,
+      growthEvidenceMissing: "近期可比财报或经营再投资资料不足，暂不判断贵便宜。下方保留零增长盈利能力及所用报告期，待资料完整后恢复增长估值。",
       fundamentalsSuspect: "这家公司的财报数据存在口径问题（如营业利润高于营收），数值不可靠，暂不给出估值判定，待数据修正后恢复。",
       learn: "内在价值怎么读",
       ttmBasis: (d: string) => `估值口径：截至 ${d} 的滚动十二个月（最新 10-K 叠加未审计 10-Q）。`,
@@ -171,6 +172,7 @@ export const STOCK_PAGE_COPY = {
       assetFloorLabel: "Asset floor (per share)",
       methodsConflict: (iv: string, floor: string, price: string) =>
         `The two methods disagree here: the owner-earnings DCF central value is about ${iv}, below the zero-growth floor of ${floor}. At ${price} the price sits between them — not cheap by the first, below the floor by the second. With no trustworthy answer on cheapness, no valuation verdict is shown.`,
+      growthEvidenceMissing: "Current comparable financials or operating reinvestment data are incomplete, so no valuation verdict is shown. The zero-growth earnings reference and its reporting period remain below.",
       fundamentalsSuspect: "This company's reported figures contain an impossible value (e.g., operating income above revenue), so the data can't be trusted and no valuation verdict is shown until it's corrected.",
       learn: "How to read intrinsic value",
       ttmBasis: (d: string) => `Valuation basis: trailing twelve months to ${d} — latest 10-K plus unaudited 10-Q filings.`,

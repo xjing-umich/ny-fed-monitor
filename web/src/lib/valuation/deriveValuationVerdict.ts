@@ -95,7 +95,7 @@ export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcf
   // 非顺周期脉冲)推翻否决。NVDA 型 s≈0.5<0.8 仍被挡在聚合面(个股页 IV 已按 s 半抬,互不冲突)。
   if (floor?.ai_capex_distortion_warning && !(floor?.structural_confidence != null && floor.structural_confidence >= S_RELIABLE))
     return false;
-  if (oeDcf?.declined) return false;
+  if (oeDcf?.declined || oeDcf?.growth_coverage_gap) return false;
   if (oeDcf?.diagnostics?.quick_check_flag) return false;
   const oeY = oeDcf?.diagnostics?.oe_yield;
   if (oeY != null && oeY > EXTREME_OE_YIELD) return false;
@@ -222,6 +222,7 @@ export function deriveValuationVerdict(input: {
     };
   }
   // 件④:投资主导型控股集团,合并层面测试不适用 → 上面 SOTP 不可得时已 return null(fail-closed 兜底)
+  if (oeDcf?.growth_coverage_gap) return null; // Missing evidence cannot establish cheapness or expensiveness.
   const epv = strikeZone?.epv;
   if (!epv) return null; // 无价格 / 货币不匹配 / 无可比地板 → 无判定
   const price = strikeZone!.price.close;

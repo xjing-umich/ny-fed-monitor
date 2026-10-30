@@ -17,6 +17,7 @@ export type CompanyFacts = {
 };
 
 export type SecFactUnit = {
+  source_tag?: string;
   start?: string;
   end?: string;
   val: number;

@@ -19,6 +19,9 @@ import {
 import { CAP_STRONG, MOAT_STRONG_RATIO, deriveMoatCap } from "./moatCap";
 import type { OeDcfAssessment } from "./types";
 
+// Calendar-independent baseline; stale-rate cases below explicitly advance this clock.
+Date.now = () => Date.parse("2026-06-20T12:00:00Z");
+
 // ── fixtures ────────────────────────────────────────────────────────────────
 function lamp(oe: number, shares: number, yearsUsed: number[]) {
   return {
@@ -438,8 +441,8 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   assert.strictEqual(rStrong.expectations_inputs?.capYears, CAP_STRONG, "strong moat (ROIC stable) → CAP raised to 20 years");
 
   // 只抬上沿：strong 的 neutral/optimistic 严格高于同输入下的 commodity 基线
-  assert.ok(rStrong.tiers!.neutral.per_share > rCommodity.tiers!.neutral.per_share, "strong neutral > baseline neutral");
-  assert.ok(rStrong.per_share_high! > rCommodity.per_share_high!, "strong optimistic > baseline optimistic");
+  assert.strictEqual(rStrong.tiers!.neutral.per_share, rCommodity.tiers!.neutral.per_share, "same growth evidence uses the same ten-year horizon");
+  assert.strictEqual(rStrong.per_share_high!, rCommodity.per_share_high!, "optimistic does not inherit an unsupported longer horizon");
 
   // 悲观档逐位不变：CAP 完全不影响 pessimistic(容差比较:见上方注释,none-grade cap=0.05 与本
   // fixture 5% CAGR 的浮点值几乎重合,commodity 侧被 clamp 到字面 0.05、strong 侧未被 clamp,
@@ -548,7 +551,7 @@ function oeStub(low: number, high: number): OeDcfAssessment {
     moat_cap: { grade: "none", capYears: 0, durablePassed: false, basis: "test fixture" },
   } as unknown as ValuationFloor;
   const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
-  assert.ok(Math.abs(r.growth_g1! - GROWTH_CAP_NONE) < 1e-6, `T2: 金融股 SGR 缺失退 0.05, got ${r.growth_g1}`);
+  assert.strictEqual(r.growth_g1, 0, "missing or zero financial SGR cannot fall back to positive growth");
 }
 
 // T3) 金融股 SGR 非正(≤0)→ 同样退 GROWTH_CAP_NONE 0.05(不给负/零留存的金融股任何增长空间)
@@ -562,7 +565,7 @@ function oeStub(low: number, high: number): OeDcfAssessment {
     moat_cap: { grade: "none", capYears: 0, durablePassed: false, basis: "test fixture" },
   } as unknown as ValuationFloor;
   const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
-  assert.ok(Math.abs(r.growth_g1! - GROWTH_CAP_NONE) < 1e-6, `T3: 金融股 SGR≤0 退 0.05, got ${r.growth_g1}`);
+  assert.strictEqual(r.growth_g1, 0, "missing or zero financial SGR cannot fall back to positive growth");
 }
 
 // T4) 金融股 SGR 高于 moderate(SGR=15%)→ cap=min(0.15,GROWTH_CAP_MODERATE=0.07)=0.07,历史 25% 被 0.07 封顶
@@ -762,8 +765,8 @@ function oeStub(low: number, high: number): OeDcfAssessment {
     const r = deriveOeDcf(floor, years, dgs10, price(120));
     assert.ok(r.assessable, "U3: assessable");
     assert.ok(
-      Math.abs(r.growth_g1! - 0.03) < 1e-6,
-      `U3: 金融 franchise 未被本改动影响,gFund 仍参与 min → g1≈0.03, got ${r.growth_g1}`,
+      Math.abs(r.growth_g1! - 0.06) < 1e-6,
+      `U3: financial growth uses SGR=0.06 rather than industrial reinvestment, got ${r.growth_g1}`,
     );
   }
 }

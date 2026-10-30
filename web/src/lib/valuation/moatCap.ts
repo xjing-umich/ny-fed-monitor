@@ -1,6 +1,6 @@
 import type { MoatReading, MoatCapAssessment, ValuationFloorYear } from "./types";
 
-export const CAP_STRONG = 20;
+export const CAP_STRONG = 10; // Financial history alone cannot establish twenty future years.
 export const CAP_MODERATE = 10;
 export const CAP_NONE = 0;
 export const MOAT_STRONG_RATIO = 2.0; // EPV/AV 强档阈值·单一来源(growthValue.MOAT_STRONG_MULTIPLE 复用本值)
@@ -52,12 +52,12 @@ export function deriveMoatCap(input: {
     const durablePassed = franchiseCore && roicLongTermStrong === true && profitStreakOk;
     if (durablePassed) {
       return { grade: "strong", capYears: CAP_STRONG, durablePassed: true, roicStable: true,
-        basis: `强护城河（AV 不可评估，但 ROIC 长期极高且稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
+        basis: `强护城河（AV 不可评估，但 ROIC 长期极高且稳定）→ 增长测算期上限 ${CAP_STRONG} 年（模型假设）。` };
     }
     const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : roicStable !== true ? "ROIC 稳定性不足" : roicLongTermStrong !== true ? "ROIC 未达长期强档" : "持续盈利年数不足";
     return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
       ...(roicStable != null ? { roicStable } : {}),
-      basis: `${reason}（AV 不可评估，凭 ROIC 兜底）→ 竞争优势期约 ${CAP_MODERATE} 年。` };
+      basis: `${reason}（AV 不可评估，凭 ROIC 兜底）→ 增长测算期上限 ${CAP_MODERATE} 年（模型假设）。` };
   }
   if (viaGrowth) {
     // 成长型 franchise:当期 EPV/AV 看不出护城河,凭已证实营业利润持续增长定档。
@@ -65,11 +65,11 @@ export function deriveMoatCap(input: {
     const core = !declined && !suppressedFlags;
     if (core && growthFranchiseStrong === true) {
       return { grade: "strong", capYears: CAP_STRONG, durablePassed: true,
-        basis: `强护城河（当期 EPV 呈商品化,但营业利润长期持续复利增长）→ 竞争优势期约 ${CAP_STRONG} 年。` };
+        basis: `强护城河（当期 EPV 呈商品化,但营业利润长期持续复利增长）→ 增长测算期上限 ${CAP_STRONG} 年（模型假设）。` };
     }
     const reason = declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : "利润增速未达强档";
     return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
-      basis: `${reason}（凭已证实利润增长的成长型护城河）→ 竞争优势期约 ${CAP_MODERATE} 年。` };
+      basis: `${reason}（凭已证实利润增长的成长型护城河）→ 增长测算期上限 ${CAP_MODERATE} 年（模型假设）。` };
   }
   const ratioForMoat = epvAvRatioOperating ?? epvAvRatio;
   if (ratioForMoat == null || !Number.isFinite(ratioForMoat)) {
@@ -80,19 +80,19 @@ export function deriveMoatCap(input: {
   const durablePassed = franchiseCore && (strongRatio || roicLongTermStrong === true) && profitStreakOk;
   if (durablePassed) {
     return { grade: "strong", capYears: CAP_STRONG, durablePassed: true, roicStable: true,
-      basis: `强护城河（EPV/AV ${ratioForMoat.toFixed(1)}×、双资产测试通过、ROIC 历史稳定）→ 竞争优势期约 ${CAP_STRONG} 年。` };
+      basis: `强护城河（EPV/AV ${ratioForMoat.toFixed(1)}×、双资产测试通过、ROIC 历史稳定）→ 增长测算期上限 ${CAP_STRONG} 年（模型假设）。` };
   }
   // franchise 但未达强档或耐久性未过 → 中档
   // 注:!strongRatio 分支覆盖 pathA(比率)与 pathB(roicLongTermStrong)均未通过的情形，文案对两条路径都成立。
   const reason = (!strongRatio && roicLongTermStrong !== true) ? "护城河存在但未达强档" : declined ? "盈利下滑" : suppressedFlags ? "资本开支红旗" : roicStable !== true ? "ROIC 稳定性不足" : "持续盈利年数不足强档门槛";
   return { grade: "moderate", capYears: CAP_MODERATE, durablePassed: false,
     ...(roicStable != null ? { roicStable } : {}),
-    basis: `${reason} → 竞争优势期约 ${CAP_MODERATE} 年。` };
+    basis: `${reason} → 增长测算期上限 ${CAP_MODERATE} 年（模型假设）。` };
 }
 
 /**
  * 持续盈利轨迹(件①):按 fiscal_year 降序,从最新年起数连续 net_income>0 的 FY 年数。
- * strong 分档前置闸——"刚转盈"的名字(ABNB:最早年巨亏、连续盈利仅 4 年)不该拿 20 年 CAP。
+ * strong 分档前置闸——"刚转盈"的名字(ABNB:最早年巨亏、连续盈利仅 4 年)不该仅凭短期盈利得到 strong 分档。
  * 只吃 FY 行(调用方已过滤);最新年亏损/缺失 → 0。fyYears 不假设已排序。
  */
 export function sustainedProfitStreak(fyYears: ValuationFloorYear[]): number {
@@ -270,8 +270,8 @@ export const SUSTAINABLE_MIN_YEARS = 3;
 /**
  * 可持续增长率 g = ROIC × 净再投资率(Damodaran 增长内生化)。用作 g_used 的基本面上限。
  * ROIC = 成熟段 NOPAT/投入资本(复用有效性过滤:investedCapital 负/零权益→undefined;剔非有限);
- * 净再投资率 = mean((capex − d_and_a + ΔWC) / NOPAT);ΔWC 缺失年按 0。负再投资率 clamp 到 0。
- * 上限用途,偏低不偏高;有效年 <SUSTAINABLE_MIN_YEARS 或分母不成立 → undefined。
+ * 净再投资率 = mean((capex − d_and_a + ΔWC) / NOPAT);ΔWC 使用剔除现金/短期投资后的经营营运资本，两个年度端点都必须有效。负再投资率 clamp 到 0。
+ * 上限用途;完整年度变化少于 SUSTAINABLE_MIN_YEARS，或 CapEx/D&A/经营资本/分母缺失 → undefined。
  */
 export function sustainableGrowth(input: {
   fyYears: ValuationFloorYear[];
@@ -282,21 +282,16 @@ export function sustainableGrowth(input: {
   const sorted = [...fyYears].sort((a, b) => a.fiscal_year - b.fiscal_year); // 升序,供 ΔWC
   const roics: number[] = [];
   const reinvest: number[] = [];
-  for (let i = 0; i < sorted.length; i++) {
-    const y = sorted[i];
-    const nopat = nopatOf(y);
-    const ic = investedCapitalOf(y);
-    if (nopat == null || ic == null || !(ic > 0) || !Number.isFinite(nopat)) continue;
-    const roic = nopat / ic;
-    if (!Number.isFinite(roic) || Math.abs(roic) > ROIC_SANITY) continue;
-    if (!(nopat > 0)) continue; // 净再投资率分母须正
+  for (let i = 1; i < sorted.length; i++) {
+    const y = sorted[i], previous = sorted[i - 1];
+    const nopat = nopatOf(y), ic = investedCapitalOf(y);
+    const fields = [nopat, ic, y.capex, y.d_and_a, y.operating_working_capital, previous.operating_working_capital];
+    if (!fields.every(v => v != null && Number.isFinite(v)) || !(nopat! > 0) || !(ic! > 0)) return undefined;
+    const roic = nopat! / ic!;
+    if (Math.abs(roic) > ROIC_SANITY) return undefined;
     roics.push(roic);
-    const capex = y.capex ?? 0;
-    const da = y.d_and_a ?? 0;
-    const prevWc = i > 0 ? sorted[i - 1].working_capital : undefined;
-    const dWc = y.working_capital != null && prevWc != null ? y.working_capital - prevWc : 0;
-    const rate = (capex - da + dWc) / nopat;
-    reinvest.push(Math.max(0, rate)); // 负再投资率(净收缩)→ 0
+    const dWc = y.operating_working_capital! - previous.operating_working_capital!;
+    reinvest.push(Math.max(0, (y.capex! - y.d_and_a! + dWc) / nopat!));
   }
   if (roics.length < SUSTAINABLE_MIN_YEARS) return undefined;
   const meanRoic = roics.reduce((s, v) => s + v, 0) / roics.length;

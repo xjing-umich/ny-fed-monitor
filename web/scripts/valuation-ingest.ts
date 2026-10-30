@@ -1,3 +1,6 @@
+import { prepareSnapshotPublication, readSnapshotPublicationState } from "./lib/valuationPublication";
+import { invalidateValuationSnapshots } from "./lib/invalidateValuationSnapshots";
+import { VALUATION_MODEL_VERSION } from "../src/lib/valuation/modelVersion";
 /**
  * valuation-ingest.ts — 物化每 ticker 的估值位置档判定到 valuation_snapshot。
  * 用法: cd web && npm run valuation:ingest(本地读仓库根 .env.local;CI 用 env)。
@@ -94,7 +97,8 @@ async function deleteOrphanSnapshots(db: any, universe: Set<string>): Promise<nu
   }
   let n = 0;
   for (let i = 0; i < orphans.length; i += 500) {
-    const { error, count } = await db.from("valuation_snapshot").delete({ count: "exact" }).in("ticker", orphans.slice(i, i + 500));
+    const { error, count } = await db.from("valuation_snapshot").delete({ count: "exact" }).in("ticker", orphans.slice(i, i + 500))
+      .or("payload->>revalidation_pending.is.null,payload->>revalidation_pending.neq.true");
     if (error) throw new Error(`valuation_snapshot 孤儿行删除失败: ${error.message}`);
     n += count ?? 0;
   }
@@ -109,6 +113,14 @@ async function main() {
   const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
   const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
+
+  const output = (name: string, value: number) => {
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
+  };
+  output("cache_refresh_required", 0);
+  const priorSnapshots = await readSnapshotPublicationState(db);
+  if ([...priorSnapshots.values()].some(row => row.payload.revalidation_pending === true))
+    output("cache_refresh_required", 1);
 
   const universe = await collectUniverse();
   console.log(`Universe: ${universe.length} tickers(持仓并集)`);
@@ -150,9 +162,11 @@ async function main() {
   // 引擎有意抑制(该删旧行)vs 瞬时异常(保留历史行)。catch / 抓取失败不进此集。
   const intentionallyUnvaluable = new Set<string>();
   const rows: Record<string, unknown>[] = [];
+  const confirmedInvalid = new Set<string>();
   for (const ticker of universe) {
     // 非经营性证券:不进盈利法估值。旧快照行应删(有意抑制,非瞬时故障)。
     if (!isOperatingSecurity(secTypeMap.get(ticker))) {
+      confirmedInvalid.add(ticker);
       excludedNonOperating++;
       intentionallyUnvaluable.add(ticker);
       continue;
@@ -160,6 +174,7 @@ async function main() {
     // ADR/ADS 归一化:ADR 且比例已策展 → 用每 ADS 口径;ADR 但比例缺 → 抑制(不出估值)。
     const ads = resolveAds(secTypeMap.get(ticker), adsRatioMap.get(ticker));
     if (ads.suppressed) {
+      confirmedInvalid.add(ticker);
       adrSuppressed++;
       intentionallyUnvaluable.add(ticker);
       continue;
@@ -179,7 +194,7 @@ async function main() {
       const sicRaw = (sec.company as { sic?: unknown } | null)?.sic;
       const sicNum = sicRaw == null ? undefined : Number(sicRaw);
       const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly);
+      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings);
       // 件⑤:控股集团分部 SOTP。与个股页同一入口(口径不得分裂);reader 自带件④触发集窄闸,
       // 其余票直接返回 undefined、floorInput 一个字段都不动,故对全 universe 零漂移、零额外查询。
       const holdcoSotp = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });
@@ -223,18 +238,21 @@ async function main() {
         suppressExpectations: false,
       });
       if (!run.verdict) {
+        // Unknown transport failures preserve last-good rows; confirmed engine
+        // suppressions invalidate their old judgment without deleting any row.
+        if (run.oeDcf?.growth_coverage_gap || (run.floor && fetchedPrice) || (fundamentalsStale && fundamentalsAsOf)) confirmedInvalid.add(ticker);
         skipped++;
         // 数据缺口(缺价/陈旧价/陈旧基本面)计入熔断分子:全 universe 无价时熔断会拦下清理,
         // 防止价格 cron 断更把整张表删空。但「是否真删」统一交给熔断裁决 —— 零星死票
         // (退市/停报/长期无价)仍须能被清理,否则旧 price/verdict 会无限期挂在榜单上,
         // 而读取侧不按 computed_at 过滤陈旧行。故此处始终加入候选集,不做豁免。
-        const dataGap = priceStale || !fetchedPrice || fundamentalsStale;
+        const dataGap = priceStale || !fetchedPrice || fundamentalsStale || !!run.oeDcf?.growth_coverage_gap;
         if (dataGap) suppressedByDataGap++;
         intentionallyUnvaluable.add(ticker);
         continue;
       }
       const v = run.verdict;
-      rows.push({
+      rows.push(prepareSnapshotPublication({
         ticker,
         verdict_bucket: v.bucket,
         in_strike_zone: v.inStrikeZone,
@@ -247,6 +265,9 @@ async function main() {
         reliable: v.reliable,
         computed_at: computedAt,
         payload: {
+          model_version: VALUATION_MODEL_VERSION,
+          assessment_status: "valid",
+          growth_evidence: run.oeDcf?.growth_evidence,
           ...v,
           expectations: run.expectations,
           methods: run.methods,
@@ -256,7 +277,7 @@ async function main() {
           ...(run.oeDcf?.assessable && run.oeDcf.moatCap ? { moatCap: run.oeDcf.moatCap } : {}),
         },
         updated_at: computedAt,
-      });
+      }, priorSnapshots.get(ticker)));
       valued++;
       if (floorInput.ttm) ttmBasis++;
     } catch (err) {
@@ -266,10 +287,21 @@ async function main() {
     }
   }
 
+  const publishInvalidationCount = (count: number) => {
+    output("invalidated_snapshots", count);
+    if (count > 0) output("cache_refresh_required", 1);
+  };
+  publishInvalidationCount(0);
+  const invalidated = await invalidateValuationSnapshots(db, [...confirmedInvalid], computedAt, publishInvalidationCount);
+  console.log(`Confirmed snapshot invalidations: ${invalidated}`);
+
   // 批量 upsert(分批避免单请求过大)。
   const BATCH = 500;
   for (let i = 0; i < rows.length; i += BATCH) {
-    const { error } = await db.from("valuation_snapshot").upsert(rows.slice(i, i + BATCH), { onConflict: "ticker" });
+    const batch = rows.slice(i, i + BATCH);
+    if (batch.some(row => (row.payload as Record<string, unknown>).revalidation_pending === true))
+      output("cache_refresh_required", 1); // Also refresh after an ambiguous/partially committed batch failure.
+    const { error } = await db.from("valuation_snapshot").upsert(batch, { onConflict: "ticker" });
     if (error) throw new Error(`valuation_snapshot upsert 失败: ${error.message}`);
   }
 
@@ -307,7 +339,8 @@ async function main() {
       const { error, count } = await db
         .from("valuation_snapshot")
         .delete({ count: "exact" })
-        .in("ticker", stale.slice(i, i + BATCH));
+        .in("ticker", stale.slice(i, i + BATCH))
+        .or("payload->>revalidation_pending.is.null,payload->>revalidation_pending.neq.true");
       if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
       deleted += count ?? 0;
     }

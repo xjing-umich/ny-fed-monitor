@@ -233,7 +233,7 @@ function toPicked(unit: SecFactUnit, tag: string): PickedFact {
     end: unit.end!,
     filed: unit.filed ?? "9999-99-99",
     accn: unit.accn ?? null,
-    tag,
+    tag: unit.source_tag ?? tag,
     days: dayCount(unit.start, unit.end),
     form: unit.form
   };
@@ -586,7 +586,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
   return {
     ticker,
     cik,
-    form: matchedFiling?.form ?? (draft.isAnnual ? "10-K" : "10-Q"),
+    form: matchedFiling?.form ?? draft.picks.net_income?.form ?? draft.picks.revenue?.form ?? (draft.isAnnual ? "10-K" : "10-Q"),
     fiscal_year: draft.fiscal_year,
     fiscal_period: draft.fiscal_period,
     period_end: draft.period_end,

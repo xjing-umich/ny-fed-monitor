@@ -98,11 +98,11 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   const sorted = [...years].sort((a, b) => b.fiscal_year - a.fiscal_year);
   const window = sorted.slice(0, GV_WINDOW);
 
-  // Guard: need at least 3 years before touching window[0] / window[N-1].
-  if (window.length < 3) {
+  // One matured capital increment needs the response lag plus both annual endpoints.
+  if (window.length < ROIIC_ENDPOINT_LAG + 2) {
     return {
       assessable: false,
-      not_assessable_reason: "Insufficient operating-income history (fewer than 3 years in window), so ROIIC / growth value cannot be computed.",
+      not_assessable_reason: "Insufficient annual history for a complete capital increment after the two-year maturity lag, so ROIIC / growth value cannot be computed.",
       gated_to_zero: false, wacc_band: waccBand, scenarios: { ...ZERO }, per_share: { ...ZERO },
       notes: ["Insufficient operating-income history for a growth read."],
     };
@@ -122,39 +122,21 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
     };
   }
 
-  // Per-year growth reinvestment = max(0, capex − maint) + ΔNWC.
-  // maint = maintenanceCapex(window.slice(i)) — same estimator as EPV/OE; D&A fallback.
-  // ΔNWC = WC_y − WC_{y+1} (older).
-  function growthReinvest(idx: number): number | undefined {
-    const y = window[idx];
-    if (y.capex == null) return undefined;
-    const slice = window.slice(idx); // latest = that year
-    const mc = maintenanceCapex(slice);
-    const maint = mc.assessable && mc.value != null ? mc.value : (y.d_and_a ?? 0);
-    const growthCapex = Math.max(0, y.capex - maint);
-    let deltaNwc = 0;
-    const older = window[idx + 1];
-    if (y.working_capital != null && older?.working_capital != null) {
-      deltaNwc = y.working_capital - older.working_capital; // increase = investment
-    }
-    return growthCapex + deltaNwc;
-  }
-
-  // Endpoint alignment (audit fix #4): cumulative denominator over the MATURED years only —
-  // skip the most recent ROIIC_ENDPOINT_LAG years' investment (not yet earning).
-  let lag = ROIIC_ENDPOINT_LAG;
+  // Each capital-change observation needs both annual endpoints. With an L-year
+  // response lag, NOPAT and capital increments cover the same number of years.
+  const lag = ROIIC_ENDPOINT_LAG;
   const reinvestSeries: number[] = [];
-  for (let i = lag; i < window.length; i++) {
-    const r = growthReinvest(i);
-    if (r != null) reinvestSeries.push(r);
-  }
-  if (reinvestSeries.length === 0 && window.length >= 2) {
-    lag = 1; // relax endpoint lag if the window is short
-    for (let i = lag; i < window.length; i++) {
-      const r = growthReinvest(i);
-      if (r != null) reinvestSeries.push(r);
+  for (let i = lag; i < window.length - 1; i++) {
+    const y = window[i], older = window[i + 1];
+    const values = [y.capex, y.d_and_a, y.operating_working_capital, older.operating_working_capital];
+    if (!values.every(v => v != null && Number.isFinite(v))) {
+      return { assessable: false, gated_to_zero: false, wacc_band: waccBand,
+        not_assessable_reason: "Operating reinvestment history is incomplete; missing capital cannot be treated as zero.",
+        scenarios: { ...ZERO }, per_share: { ...ZERO }, notes: [...notes, "A complete operating-capital denominator is required."] };
     }
-    if (reinvestSeries.length > 0) notes.push("Endpoint lag relaxed to 1 year (short window).");
+    const mc = maintenanceCapex(window.slice(i));
+    const maint = mc.assessable && mc.value != null ? mc.value : y.d_and_a!;
+    reinvestSeries.push(Math.max(0, y.capex! - maint) + y.operating_working_capital! - older.operating_working_capital!);
   }
   const cumulativeReinvest = reinvestSeries.reduce((s, v) => s + v, 0);
   if (cumulativeReinvest <= 0) {
@@ -167,7 +149,13 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   }
 
   // Cumulative ROIIC = N-year NOPAT increment / Σ growth reinvestment (matured).
-  const roiic = (nopatLatest - nopatOldest) / cumulativeReinvest;
+  const baselineNopat = nopat(window[window.length - 1 - lag]);
+  if (baselineNopat == null || !Number.isFinite(baselineNopat)) {
+    return { assessable: false, gated_to_zero: false, wacc_band: waccBand,
+      not_assessable_reason: "Lag-aligned operating income is unavailable.",
+      scenarios: { ...ZERO }, per_share: { ...ZERO }, notes };
+  }
+  const roiic = (nopatLatest - baselineNopat) / cumulativeReinvest;
 
   // Representative annual growth reinvestment (average over the matured series).
   const annualReinvest = cumulativeReinvest / reinvestSeries.length;
@@ -185,7 +173,7 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   // computed once in epvFloor.computeValuationFloor and passed in as moatGrade; no local
   // recomputation of declined/roicStable here, so this leg can no longer disagree with the
   // owner-earnings DCF leg on grade (BUG2 fix)).
-  const extendedDuration = moatGrade === "strong" ? DURATION_STRONG : DURATION_MODERATE; // 20 / 10
+  const extendedDuration = moatGrade === "strong" ? DURATION_STRONG : DURATION_MODERATE; // both bounded at 10 years
 
   // GV = annual growth reinvestment × (ROIIC − r)/r × annuityFactor(r, N). Floor at 0 per scenario.
   function gv(roiicScenario: number, r: number, n: number): number {

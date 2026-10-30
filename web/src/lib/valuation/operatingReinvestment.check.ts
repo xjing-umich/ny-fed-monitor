@@ -1,0 +1,110 @@
+import assert from "node:assert/strict";
+import { fundamentalsToFloorInput } from "./fundamentalsToFloorInput";
+import { sustainableGrowth, CAP_STRONG } from "./moatCap";
+import { computeGrowthValue } from "./growthValue";
+import { deriveOeDcf } from "./ownerEarningsDcf";
+import type { FundamentalPeriod } from "../sec/normalize-facts";
+import type { ValuationFloor } from "./types";
+const raw = [2025, 2024, 2023, 2022, 2021].map(
+  (fy, i) =>
+    ({
+      fiscal_year: fy,
+      fiscal_period: "FY",
+      period_end: `${fy}-12-31`,
+      revenue: 1000,
+      net_income: 100,
+      operating_income: 100,
+      capex: -10,
+      d_and_a: 10,
+      cash_and_equivalents: 100 * (5 - i),
+      short_term_investments: 50 * (5 - i),
+      working_capital: 10 + 150 * (5 - i),
+    }) as FundamentalPeriod,
+);
+const input = fundamentalsToFloorInput("ANY", "Any", raw);
+assert.equal(
+  input.years[0].working_capital,
+  760,
+  "book working capital retains original meaning",
+);
+assert.equal(
+  input.years[0].operating_working_capital,
+  10,
+  "exclude financial assets from operating investment",
+);
+const helper = { nopatOf: () => 100, investedCapitalOf: () => 500 };
+assert.equal(
+  sustainableGrowth({ fyYears: input.years, ...helper }),
+  0,
+  "cash and short investments accumulating are not operating reinvestment",
+);
+assert.equal(
+  sustainableGrowth({
+    fyYears: input.years.map((y) => ({ ...y, capex: undefined })),
+    ...helper,
+  }),
+  undefined,
+  "missing capex is not zero capex",
+);
+assert.ok(
+  CAP_STRONG <= 10,
+  "historical financial signals cannot automatically assert a 20-year future",
+);
+const grower = input.years.map((y, i) => ({
+  ...y,
+  revenue: 1000 * 1.1 ** (4 - i),
+  operating_income: 100 * 1.3 ** (4 - i),
+  capex: 30,
+  d_and_a: 10,
+  operating_working_capital: 10 * (5 - i),
+}));
+const gvArgs = {
+  years: grower,
+  shares: 100,
+  taxRate: 0.2,
+  moatSignal: "franchise" as const,
+  moatGrade: "strong" as const,
+  epvPerShare: 100,
+  avPerShare: 20,
+};
+assert.equal(
+  computeGrowthValue(gvArgs).assessable,
+  true,
+  "complete real operating investment remains assessable",
+);
+const gap = grower.map((y, i) =>
+  i === 2 ? { ...y, operating_working_capital: undefined } : y,
+);
+assert.equal(
+  computeGrowthValue({ ...gvArgs, years: gap }).assessable,
+  false,
+  "one missing matured year cannot shrink the denominator and inflate ROIIC",
+);
+const fixture = {
+  kind: "floor",
+  buffett_epv: {
+    assessable: true,
+    normalized_earnings: 100,
+    equity_value_low: 1000,
+    per_share_low: 10,
+    method: { years_used: [2025, 2024, 2023, 2022, 2021] },
+  },
+  sustainable_growth: 0.2,
+  moat_cap: { grade: "strong", capYears: 20 },
+} as unknown as ValuationFloor;
+assert.equal(
+  deriveOeDcf(fixture, grower, null, null).expectations_inputs?.capYears,
+  10,
+  "even externally supplied old CAP20 is clamped",
+);
+console.log("operating reinvestment and bounded duration checks passed");
+
+const tooShort = computeGrowthValue({
+  years: [2025, 2024, 2023].map((fiscal_year, i) => ({ fiscal_year,
+    revenue: 2000-i*200, operating_income: 500-i*100, capex: 100, d_and_a: 20,
+    operating_working_capital: 30-i*10 })),
+  shares: 100, taxRate: 0.21, moatSignal: "franchise", moatGrade: "moderate",
+  epvPerShare: 50, avPerShare: 20,
+});
+assert.equal(tooShort.assessable, false, "short history cannot reduce the two-year investment maturity lag");
+assert.equal(tooShort.per_share.neutral, 0);

@@ -28,7 +28,8 @@ export type SuppressedReason =
   | "split_coverage_stale"
   | "capital_structure_distorted"
   | "fundamentals_corrupt"
-  | "holdco_not_assessable";
+  | "holdco_not_assessable"
+  | "growth_evidence_incomplete";
 
 export type RunValuationInput = {
   floorInput: ValuationFloorInput;
@@ -42,6 +43,7 @@ export type RunValuationInput = {
     fundamentalsCorrupt?: boolean;
   };
   suppressExpectations?: boolean;
+  asOf?: string;
 };
 
 export type ValuationRun = {
@@ -139,11 +141,18 @@ export function runValuation(input: RunValuationInput): ValuationRun {
     };
   }
 
-  const strikeZone = deriveStrikeZone(floor, price);
   // 增长窗(oe0 窗口/cagr/declined)须与 oe0 吃同一批年份(spec §5):TTM 生效时序列头是 TTM
   // (标签 FY0+1),用纯 floorInput.years 与 workYears 标签集取交集会丢 FY0 又不含 TTM。
   // gRaw 增长回归则恒吃纯 floorInput.years(锁定 decision #2)—— 两口径分别传入。
-  const oeDcf = deriveOeDcf(floor, workingYears(floorInput), dgs10, price, floorInput.years);
+  const oeDcf = deriveOeDcf(floor, workingYears(floorInput), dgs10, price, floorInput.years,
+    { evidence: floorInput.growth_evidence, asOf: input.asOf ?? new Date().toISOString() });
+  // All valuation legs share the same current-evidence brake.
+  if (oeDcf.growth_coverage_gap || oeDcf.declined || oeDcf.growth_g1 === 0) {
+    floor.growth_value = { ...floor.growth_value, assessable: false, gated_to_zero: false,
+      not_assessable_reason: oeDcf.growth_coverage_gap ? "Current comparable financial evidence is incomplete." : oeDcf.declined ? "Recent comparable earnings declined." : "The growth evidence does not support positive growth.",
+      scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 } };
+  }
+  const strikeZone = deriveStrikeZone(floor, price, input.asOf ? new Date(input.asOf) : new Date());
   const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
   const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
   const fundamentalsCorrupt = guards.fundamentalsCorrupt ?? fundamentalsIntegrityViolated(floorInput.years);
@@ -166,7 +175,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
           ...oeDcf.expectations_inputs,
           price: verdict.price,
           historicalGrowth: historicalGrowthBaseRate(floorInput.years),
-          suppressed: suppressExpectations,
+          suppressed: suppressExpectations || !!oeDcf.growth_coverage_gap || !!oeDcf.declined,
         });
 
   return {
@@ -177,6 +186,6 @@ export function runValuation(input: RunValuationInput): ValuationRun {
     verdict,
     expectations,
     methods,
-    suppressedReason: suppressedReason({ verdict, strikeZone, guards: { ...guards, fundamentalsCorrupt }, floor, price }),
+    suppressedReason: suppressedReason({ verdict, strikeZone, guards: { ...guards, fundamentalsCorrupt }, floor, price }) ?? (!verdict && oeDcf.growth_coverage_gap ? "growth_evidence_incomplete" : undefined),
   };
 }

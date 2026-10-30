@@ -448,7 +448,7 @@ export default async function StockTickerPage({
   const sicRaw = sec.company?.sic;
   const sicNum = sicRaw == null ? undefined : Number(sicRaw);
   const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly);
+  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings);
   // 件⑤:投资主导型控股集团的分部 SOTP。reader 自带件④触发集的窄闸 —— 其余票直接返回
   // undefined,floorInput 一个字段都不动(零漂移);读库失败同样返回 undefined,退回件④抑制。
   // 与 scripts/valuation-ingest.ts 走同一个入口,页面与 screener/首页榜口径不分裂。
@@ -571,6 +571,7 @@ export default async function StockTickerPage({
     capitalStructureDistorted,
     fundamentalsCorrupt,
     methodsConflict: !!methodsConflict,
+    growthEvidenceMissing: !!oeDcf?.growth_coverage_gap,
   });
   const assetFloorShown =
     holdcoNotAssessable &&
@@ -738,6 +739,7 @@ export default async function StockTickerPage({
       </>
     )
     : leftState === "moatDistorted" ? messageLeft(page.valuation.moatDistorted)
+    : leftState === "growthEvidenceMissing" ? messageLeft(page.valuation.growthEvidenceMissing)
     : leftState === "fundamentalsSuspect" ? messageLeft(page.valuation.fundamentalsSuspect)
     : leftState === "methodsConflict" && methodsConflict
       ? messageLeft(page.valuation.methodsConflict(fmtPerShare(methodsConflict.iv), fmtPerShare(methodsConflict.floor), fmtPerShare(methodsConflict.price)))
@@ -823,7 +825,7 @@ export default async function StockTickerPage({
                 eyebrow={page.valuation.eyebrow}
                 title={valuationTitle}
               />
-              {leftState === "card" ? (
+              {leftState === "card" || leftState === "growthEvidenceMissing" ? (
                 <>
                   <div className="mt-3">
                     <EarningsPowerFloorCard

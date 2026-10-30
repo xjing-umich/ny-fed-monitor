@@ -1,3 +1,4 @@
+import { buildGrowthEvidence, type GrowthFiling } from "./growthEvidence";
 import type { FundamentalPeriod } from "@/lib/sec/normalize-facts";
 import type { MarksAdjustment, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { buildTtm } from "./ttmBasis";
@@ -59,6 +60,12 @@ export function shouldDropTtmForMarks(ttmSyn: { degraded_fields: string[]; row: 
 
 const u = (v: number | null | undefined): number | undefined => (v == null ? undefined : v);
 
+function operatingWorkingCapital(r: FundamentalPeriod | undefined): number | undefined {
+  if (!r || r.working_capital == null || !Number.isFinite(r.working_capital) || r.cash_and_equivalents == null || !Number.isFinite(r.cash_and_equivalents)) return undefined;
+  const investments = r.short_term_investments ?? 0;
+  return Number.isFinite(investments) ? r.working_capital - r.cash_and_equivalents - investments : undefined;
+}
+
 function toFloorYear(r: FundamentalPeriod, adsRatio: number): ValuationFloorYear {
   return {
     fiscal_year: r.fiscal_year as number,
@@ -87,6 +94,7 @@ function toFloorYear(r: FundamentalPeriod, adsRatio: number): ValuationFloorYear
     sga_expense: u(r.sga_expense),
     stock_based_comp: u(r.stock_based_comp),
     working_capital: u(r.working_capital),
+    operating_working_capital: operatingWorkingCapital(r),
     ppe_net: u(r.ppe_net),
     operating_cash_flow: u(r.operating_cash_flow),
     share_repurchases: u(r.share_repurchases),
@@ -106,6 +114,7 @@ export function fundamentalsToFloorInput(
   adsRatio: number = 1,
   sic?: number | null,
   quarterRows?: FundamentalPeriod[],
+  filings?: GrowthFiling[],
 ): ValuationFloorInput {
   const fyRows = (rows ?? [])
     .filter((r) => r.fiscal_period === "FY" && r.fiscal_year != null)
@@ -126,14 +135,19 @@ export function fundamentalsToFloorInput(
   const ttmUsable = ttmSyn && !(marks && !ttmMarksRow) && !(!marks && hasMaterialMarks(ttmMarksRow));
   const ttm = ttmUsable
     ? {
-        year: toFloorYear(
+        year: { ...toFloorYear(
           marks ? applyMarks(ttmSyn.row) : ttmSyn.row,
           adsRatio,
-        ),
+        ), operating_working_capital: operatingWorkingCapital(quarterRows?.find(r => r.period_end === ttmSyn.period_end && r.form === "10-Q" && r.is_derived !== true)) },
         period_end: ttmSyn.period_end,
         quarters_used: ttmSyn.quarters_used,
         shares_from_fy: ttmSyn.shares_from_fy,
       }
     : undefined;
-  return { ticker, company_name: companyName ?? undefined, years, sic: sic ?? undefined, ...(ttm ? { ttm } : {}), ...(marks ? { marks_adjustment: marks } : {}) };
+  const adjustedFy = marks ? fyRows.map(applyMarks) : fyRows;
+  // Do not compare raw quarterly marks with adjusted annual operating earnings.
+  const adjustedQs = marks ? (quarterRows ?? []).map(r => r.investment_fv_gain_loss != null && Number.isFinite(r.investment_fv_gain_loss)
+    ? applyMarks(r) : { ...r, net_income: null }) : (quarterRows ?? []);
+  const growth_evidence = buildGrowthEvidence(adjustedFy, adjustedQs, filings);
+  return { growth_evidence, ticker, company_name: companyName ?? undefined, years, sic: sic ?? undefined, ...(ttm ? { ttm } : {}), ...(marks ? { marks_adjustment: marks } : {}) };
 }
