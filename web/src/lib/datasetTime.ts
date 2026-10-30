@@ -1,4 +1,5 @@
 import type { Lang } from './nav';
+import { quarterLabel } from './freshness/derive';
 
 /** These are observation dates, never publication or site modification dates. */
 function calendarDate(value: string | null | undefined): string | undefined {
@@ -55,4 +56,13 @@ export function filingSourceLd(source: FilingSource) {
     ...(period ? { temporalCoverage: period } : {}),
     ...(filedAt ? { datePublished: filedAt } : {}),
   };
+}
+
+/** Short search/FAQ label for the observations, independent of the comparison baseline. */
+export function snapshotLabel(lang: Lang, periods: readonly (string | null | undefined)[]): string {
+  const valid = periods.map(quarterEnd);
+  const dates = [...new Set(valid.filter((d): d is string => !!d))].sort();
+  const labels = dates.map((d) => quarterLabel(d, lang));
+  if (!periods.length || valid.some((d) => !d)) labels.push(lang === 'zh' ? '部分报告期未知' : 'unknown report period');
+  return lang === 'zh' ? `${labels.join(' / ')}季末快照` : `${labels.join(' / ')} snapshot${dates.length > 1 ? 's' : ''}`;
 }

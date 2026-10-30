@@ -1,0 +1,52 @@
+# SEO / GEO audit repairs implementation plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Repair the actionable SEO/GEO findings in the 2026-10-30 full-site audit without changing valuation or ingestion semantics.
+**Architecture:** Reuse current holder data to guard links and describe snapshot periods. Keep list pages statically cacheable while rendering default numeric rows, then enhance URL state in the browser. Add readable provenance and explicit editorial metadata.
+**Tech Stack:** Next.js 16.2.6, React 19, TypeScript, existing tsx check scripts.
+**Spec:** `/Users/junlinzhu/Desktop/TheCompounder/reports/seo-geo-audit-2026-10-30/README.md`, user authorized execution after reviewing results.
+
+## Global constraints
+- Preserve comparison-quarter behavior, Dataset fix #257, honest sitemap lastmod omission, existing list interaction and full link directories.
+- No production DDL, ingestion, publishing, or merge. Automatically create PR after review passes per user authorization.
+- Copy follows web/docs/copy-voice.md. Sources must directly support claims and be checked today.
+- F17 (holiday deadline) stays a documented data dependency; do not duplicate data-session work.
+
+## Review focus
+- Historical/option-only/no-current-holder securities retain plain text without broken links.
+- Single Q3, equal/mixed quarters, missing dates never claim a false majority or invent a period.
+- URL search/sort/page/back navigation still works after static default rows hydrate.
+- Provenance links match the actual filing/holder, funds do not get a company 10-K link.
+- Publication date and snapshot writing date survive later content corrections.
+
+### Task 1: Correct detail links, time descriptions and provenance (F01/F13/F04)
+- [ ] Add and run failing behavioral checks for link eligibility and actual-period description.
+- [ ] Guard all investor stock links with shared current-holder eligibility, including prose, moves and table.
+- [ ] Use actual snapshot periods in metadata/FAQ; retain comparison baseline only for moves.
+- [ ] Extend SourceFooter with optional href and provide actual investor filings / stock holder filing lists.
+- [ ] Run detail checks, tsc and commit.
+
+### Task 2: Render default list numbers and constrain mobile width (F03/F09)
+- [ ] Verify useSearchParams static behavior against bundled Next documentation.
+- [ ] Preserve default static render and progressively read actual URL state without a whole-list Suspense bailout.
+- [ ] Check search, filters, pagination and history; confirm numeric rows in raw production HTML.
+- [ ] Constrain mobile primary link content to available width; verify 375px zh BRK names.
+- [ ] Run list tests, render/interaction checks and commit.
+
+### Task 3: Editorial evidence, dates and accurate scope (F07/F12/F14/F15/F16)
+- [ ] Verify primary sources for all seven articles; add readable references and stable section IDs.
+- [ ] Separate published/updated/written dates; derive original dates from git history and record actual corrections.
+- [ ] Correct 13F scope and disclosure deadline wording, model assumptions copy and llms summaries.
+- [ ] Run meaningful article metadata/reference checks, inspect en/zh and commit.
+
+### Task 4: Metadata and final acceptance (F06/F08/F10/F11)
+- [ ] Derive ranking metadata from actual shared quarter/results and shorten specific long titles.
+- [ ] Add truthful screener collection/breadcrumb schemas, including empty views and canonical aliases.
+- [ ] Run required gates and production build; inspect six templates in both languages and no-JS/list interaction.
+- [ ] Fresh independent whole-branch review, address important findings, push branch and open PR.
+
+## Execution ledger
+- Setup: reused existing isolated seo worktree; clean branch from b6aebf2. Full audit is approved scope; implement inline without another design approval round.
+
+- Task 1: stockLinks and snapshotLabel tests observed RED, then GREEN; InvestorBlocks render checks and tsc passed. Source links now expose actual holdings provenance. Eligibility uses current non-exited snapshot rows and known current long holdings only when no snapshot row exists.

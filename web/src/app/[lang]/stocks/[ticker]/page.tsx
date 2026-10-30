@@ -26,7 +26,7 @@ import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
 import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, securitySchemaType, edgarFilingsUrl } from "@/lib/seo";
-import { snapshotTime } from "@/lib/datasetTime";
+import { snapshotTime, snapshotLabel } from "@/lib/datasetTime";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -113,11 +113,10 @@ export async function generateMetadata({
     const total = formatUSD(held.reduce((s, r) => s + r.value, 0), lang);
     const topRow = [...held].sort((a, b) => b.value - a.value)[0];
     const topFor = (l: Lang) => managerLabel(l, topRow.slug, topRow.person);
-    const q = quarterLabel(displayPeriod, lang);
-    const mixed = held.some((r) => r.period && r.period !== displayPeriod);
+    const q = snapshotLabel(lang, held.map((r) => r.period));
     // 从详到简,取第一个不超出搜索摘要长度的写法:先省来源句,再省最大持有人。
-    const zhHead = `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}）`;
-    const enHead = `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined as of ${q}${mixed ? " (most filings)" : ""}`;
+    const zhHead = `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${q}）`;
+    const enHead = `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined (${q})`;
     description = {
       zh: zhSpacing(fitSnippet(
         `${zhHead}，最大持有人 ${topFor("zh")}。各家仓位与季度增减，来自 SEC 13F 申报。`,
@@ -428,7 +427,6 @@ export default async function StockTickerPage({
     ? { count: aheadBySlug.size, period: globalLatestPeriod([...aheadBySlug.values()])! }
     : undefined;
   // 持有人表是否混期(含落后的旧申报):FAQ 措辞据此区分。
-  const mixedPeriods = holders.some((h) => h.period && h.period !== asOfPeriod);
 
   // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
   const stockProse = buildStockProse(
@@ -493,9 +491,15 @@ export default async function StockTickerPage({
     ? sec.quarterly?.find((q) => q.period_end === floorInput.ttm!.period_end && !q.is_derived)?.filing_date ?? undefined
     : sec.annual?.[0]?.filing_date ?? undefined;
   const annualForm = sec.annual?.[0]?.form ?? "10-K";
+  const fundamentalsFiling = floorInput.ttm
+    ? sec.quarterly?.find((q) => q.period_end === floorInput.ttm!.period_end && !q.is_derived)
+    : sec.annual?.[0];
+  const fundamentalsHref = fundamentalsFiling?.cik && /^\d{10}-\d{2}-\d{6}$/.test(fundamentalsFiling.accession_number ?? '')
+    ? `https://www.sec.gov/Archives/edgar/data/${Number(fundamentalsFiling.cik)}/${fundamentalsFiling.accession_number.replace(/-/g, '')}/` : undefined;
   const fundamentalsSource = fundamentalsAsOf
     ? {
         name: floorInput.ttm ? `SEC ${annualForm} + 10-Q (XBRL)` : `SEC ${annualForm} (XBRL)`,
+        href: fundamentalsHref,
         asOf: fundamentalsAsOf,
         filed: fundamentalsFiled,
         status: fundamentalsStale ? ("stale" as const) : ("fresh" as const),
@@ -611,8 +615,8 @@ export default async function StockTickerPage({
           "@type": "Answer",
           text:
             lang === "zh"
-              ? zhSpacing(`根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${formatDate(asOfPeriod, lang)} 季度），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue, lang)}，最大持有人为 ${topHolder.person}。`)
-              : `Per each investor's latest SEC 13F filing (${mixedPeriods ? "most for " : ""}the quarter ended ${formatDate(asOfPeriod, lang)}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue, lang)}, with ${topHolder.person} the largest holder.`,
+              ? zhSpacing(`根据各位投资人最新一份 SEC 13F 披露（${snapshotLabel(lang, holders.map((h) => h.period))}），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue, lang)}，最大持有人为 ${topHolder.person}。`)
+              : `Per each investor's latest SEC 13F filing (${snapshotLabel(lang, holders.map((h) => h.period))}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue, lang)}, with ${topHolder.person} the largest holder.`,
         },
       },
     ],
@@ -775,7 +779,7 @@ export default async function StockTickerPage({
         // 现价、安全边际、持有人数、合计市值都移进首屏结论带,不在这里重复。
         keyFacts={[]}
         sources={[
-          { name: "SEC EDGAR 13F", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) },
+          { name: "SEC EDGAR 13F", href: "#filing-sources", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) },
           ...(latestPrice
             ? [{ name: priceSourceName(lang, latestPrice.source), asOf: latestPrice.date, status: latestPrice.stale ? ("stale" as const) : ("fresh" as const) }]
             : []),
@@ -1006,6 +1010,13 @@ export default async function StockTickerPage({
             </section>
           )}
 
+          <details id="filing-sources" className="border-t border-[var(--tt-border)] pt-3">
+            <summary className="cursor-pointer text-sm text-[var(--tt-text)]">{lang === 'zh' ? '持有人原始 13F 申报来源' : 'Original 13F sources for these holders'}</summary>
+            <ul className="mt-3 space-y-2 text-sm text-[var(--tt-text)]">
+              {dataset.isBasedOn?.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{source.name}</a>{source.temporalCoverage ? ` · ${source.temporalCoverage}` : ''}{source.datePublished ? ` · ${lang === 'zh' ? '提交' : 'filed'} ${source.datePublished}` : ''}</li>)}
+            </ul>
+          </details>
+
           <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
 
           {/* 外链沉到正文末、Sources 前：不抢质量/估值/持有人主线；detail=图标无框 */}
@@ -1017,7 +1028,7 @@ export default async function StockTickerPage({
               <span className="font-data text-xs text-[var(--tt-faint)]">
                 {ui.alsoOn}
               </span>
-              <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="detail" lang={lang} />
+              <ExternalFinanceLinks ticker={ticker} exchange={exchange} includeSec={schemaType === "Corporation"} variant="detail" lang={lang} />
             </section>
           )}
         </>

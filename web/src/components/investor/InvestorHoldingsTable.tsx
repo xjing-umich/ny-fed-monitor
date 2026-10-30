@@ -11,7 +11,7 @@ import type { RowSignal } from "@/lib/managers/rowSignals";
 import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 import { holdingsSplit, quarterCell } from "@/lib/managers/investorConclusion";
-import { stockPath } from "@/lib/urls";
+import { availableStockHref } from "@/lib/stocks/stockLinks";
 import { formatUSD } from "@/lib/format";
 
 const HOLD_COPY = {
@@ -31,7 +31,7 @@ const HOLD_COPY = {
   },
 } as const;
 
-export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts, holderCounts, rowSignals, changeByKey, hasPrior, lonelyTickers, filingUrl }: {
+export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts, holderCounts, rowSignals, changeByKey, hasPrior, lonelyTickers, filingUrl, availableStocks }: {
   holdings: Holding[];
   lang: Lang;
   cusipToTicker: Map<string, string>;
@@ -42,6 +42,7 @@ export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts,
   hasPrior: boolean;
   lonelyTickers: Set<string>;
   filingUrl: string;
+  availableStocks: ReadonlySet<string>;
 }): React.ReactElement {
   const t = HOLD_COPY[lang];
   // 估值列读的是估值快照:标出它用的是哪天的收盘价(快照 + ISR 可能落后页面其余数据几天)。
@@ -138,8 +139,7 @@ export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts,
       getKey={(h) => holdingKey(h)}
       rowHref={(h) => {
         const tk = cusipToTicker.get(h.cusip);
-        if (tk) return stockPath(lang, tk);
-        return h.cusip ? stockPath(lang, h.cusip) : "";
+        return availableStockHref(lang, tk ?? h.cusip, availableStocks);
       }}
       breakpoint="lg"
     />

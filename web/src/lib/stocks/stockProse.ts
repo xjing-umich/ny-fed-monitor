@@ -4,6 +4,7 @@ import { date as formatDate, weight } from "@/lib/i18n/format";
 // 回答个股页相对 Yahoo/MarketBeat 的差异化问题:"哪些超级投资者持有本票、本季怎么动的"(SEO_INDEXING_PLAN 任务 2)。
 // 纯教育/数据描述, 无买卖建议/目标价/估值判断。
 
+import { snapshotLabel } from "@/lib/datasetTime";
 import { investorPath } from "@/lib/urls";
 import { formatUSD } from "@/lib/format";
 import type { Lang } from "@/lib/nav";
@@ -17,6 +18,7 @@ export type StockProseHolder = {
   slug: string;
   value: number;
   weight: number | undefined;
+  period?: string;
 };
 
 export type StockProseInput = {
@@ -100,14 +102,14 @@ export function buildStockProse(d: StockProseInput, lang: Lang): ProseParagraph[
   paras.push(
     en
       ? [
-          `Holder counts and values reflect the most recent SEC Form 13F filings, through the quarter ended ${formatDate(latestPeriod, lang)}.${
+          `Holder counts and values reflect the most recent SEC Form 13F filings, ${snapshotLabel(lang, holders.map((h) => h.period))}.${
             ahead
               ? ` ${ahead.count} investor${ahead.count === 1 ? " has" : "s have"} already filed for the quarter ended ${formatDate(ahead.period, lang)}. Their positions in the table reflect those newer filings, and the move counts on this page cover only ${formatDate(latestPeriod, lang)} filings.`
               : ""
           } Source: SEC EDGAR. A 13F shows only long US-listed positions and can lag the real portfolio by up to 45 days, so this is disclosed long ownership, not a complete picture.`,
         ]
       : [
-          `以上持有人数与市值来自最新的 SEC Form 13F 申报，截至 ${formatDate(latestPeriod, lang)} 季度。${
+          `以上持有人数与市值来自最新的 SEC Form 13F 申报，${snapshotLabel(lang, holders.map((h) => h.period))}。${
             ahead
               ? `另有 ${ahead.count} 位投资人已提前提交截至 ${formatDate(ahead.period, lang)} 的申报，表中他们的持仓按这份更新的申报列出；本页的动向统计只计 ${formatDate(latestPeriod, lang)} 季度的申报。`
               : ""

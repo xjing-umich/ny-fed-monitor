@@ -1,3 +1,6 @@
+import { OptionalLink } from "@/components/common/OptionalLink";
+import { currentStockKeys, availableStockHref } from '@/lib/stocks/stockLinks';
+import { readStockLinkHolders } from '@/lib/managers/consensusRead';
 import { summaryForDetail, investorVerdictChip, valueChangeSplit, valueSplitNote, investorAnchors, top5Share } from "@/lib/managers/investorConclusion";
 import { QuarterMovesBlock } from "@/components/investor/QuarterMovesBlock";
 import { InvestorHoldingsTable } from "@/components/investor/InvestorHoldingsTable";
@@ -10,7 +13,7 @@ import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { holdingKey } from "@/lib/managers/assemble";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, absoluteUrl, localePath, HTML_LANG } from "@/lib/urls";
+import { investorPath, absoluteUrl, localePath, HTML_LANG } from "@/lib/urls";
 import { resolveEntity } from "@/lib/aliases/resolve";
 import { personNameAliases } from "@/lib/aliases/config";
 import { managerLabel, managerTitleName, managerSubtitle, managerIsOrganization, managerStewardPeople } from "@/lib/managers/displayName";
@@ -200,6 +203,17 @@ export default async function InvestorSlugPage({
   // 确定性服务端正文(SEO 支柱)：复用同一份已装配的 13F 数据派生 3~5 段唯一正文，零新增 IO。
   // 取代了原先读缓存的「AI Read」叙述(时有时无、刻意无数字、带 AI 免责声明) —— 本正文每页必出、含真实数字、零幻觉。
   const prose = buildInvestorProse(d, lang);
+  const stockKeys = [...new Set([
+    ...latest.holdings.map((h) => h.cusip), ...changes.map((h) => h.cusip),
+    ...prose.flatMap((p) => p.flatMap((s) => typeof s === 'string' ? [] : [s.cusip])),
+  ].map((cusip) => cusipToTicker.get(cusip) ?? cusip))];
+  const linkNow = new Date();
+  const linkRows = await readStockLinkHolders(stockKeys);
+  const availableStocks = currentStockKeys(linkRows, linkNow);
+  const snapshotKeys = new Set(linkRows.map((r) => r.ticker));
+  // A current long holding also proves the fallback detail route can render it.
+  for (const key of currentStockKeys(longHoldings.map((h) => ({ ticker: cusipToTicker.get(h.cusip) ?? h.cusip, kind: null, period: latest.period })), linkNow)) if (!snapshotKeys.has(key)) availableStocks.add(key);
+  const stockHref = (cusip: string) => availableStockHref(lang, cusipToTicker.get(cusip) ?? cusip, availableStocks);
 
   // 三档新鲜度(全局最新季基准, spec freshness-guard §B/C1): 常显来源+截止日, stale/inactive 加警示。
   const globalLatest = globalLatestPeriod(idx.managers.map((m) => m.period));
@@ -249,7 +263,7 @@ export default async function InvestorSlugPage({
   // 零持仓申报(如 Olstein 2026Q2):明说"本季申报持仓为零",不让读者以为数据缺失,也不展示旧季持仓。
   // 申报不写原因,故不把它说成卖出(changes 已在 assembleManagerDetail 置空)。
   const zeroReport = latest.holdings.length === 0;
-  const filingUrl = `https://www.sec.gov/Archives/edgar/data/${manager.cik.replace(/^0+/, "")}/${latest.accession.replace(/-/g, "")}/`;
+  const filingUrl = /^\d{10}-\d{2}-\d{6}$/.test(latest.accession) ? `https://www.sec.gov/Archives/edgar/data/${manager.cik.replace(/^0+/, "")}/${latest.accession.replace(/-/g, "")}/` : edgarFilingsUrl(manager.cik);
   const zeroNote = zeroReport ? (
     <p className="mt-2 text-sm text-[var(--tt-muted)]">
       {lang === "zh" ? (
@@ -439,7 +453,7 @@ export default async function InvestorSlugPage({
           </>
         }
         sources={[
-          { name: "SEC EDGAR 13F", asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) },
+          { name: "SEC EDGAR 13F", href: filingUrl, asOf: latest.period, filed: latest.filedAt, status: filingFreshness(latest.period || null, new Date()) },
           // 估值列 / 低于内在价值 / 隐含预期:估值快照 = SEC 10-K/10-Q 财报 × 收盘价,日期取快照价格日。
           ...(valuationAsOf
             ? [{ name: lang === "zh" ? "估值(SEC 财报 × 收盘价)" : "Valuations (SEC filings × closing prices)", asOf: valuationAsOf }]
@@ -452,12 +466,12 @@ export default async function InvestorSlugPage({
           <PageAnchorNav ariaLabel={BAND_COPY[lang].anchorsAria} anchors={anchors} />
           {summary && (
             <QuarterMovesBlock lang={lang} summary={summary} quarter={quarterLabel(latest.period, lang)} nameOf={stockName}
-              hrefOf={(cusip) => stockPath(lang, cusipToTicker.get(cusip) ?? cusip)} />
+              hrefOf={stockHref} />
           )}
           {!zeroReport && (
             <InvestorHoldingsTable holdings={latest.holdings} lang={lang} cusipToTicker={cusipToTicker} verdicts={verdicts}
               holderCounts={holderCounts} rowSignals={rowSignals} changeByKey={changeByKey} hasPrior={!!prior}
-              lonelyTickers={lonelyTickers} filingUrl={filingUrl} />
+              lonelyTickers={lonelyTickers} filingUrl={filingUrl} availableStocks={availableStocks} />
           )}
           {hasPosture && (
             <section id="valuation" aria-label={lang === "zh" ? "估值姿态" : "Valuation posture"} className="scroll-mt-32">
@@ -471,13 +485,13 @@ export default async function InvestorSlugPage({
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
                   <li key={h.ticker} className="flex items-baseline gap-2 text-sm">
-                    <Link
-                      href={stockPath(lang, h.ticker)}
+                    <OptionalLink
+                      href={availableStockHref(lang, h.ticker, availableStocks)}
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
                       {stockDisplayName(lang, h.ticker, cleanIssuer(h.issuer))}
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
-                    </Link>
+                    </OptionalLink>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-muted)]">
                       {h.marginPct != null ? fmtMarginPct(h.marginPct) : ""}
                       {h.marginPct != null ? " · " : ""}
@@ -491,13 +505,13 @@ export default async function InvestorSlugPage({
                   const vl = valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: false }, lang);
                   return (
                   <li key={`pending-${h.ticker}`} title={vl.title ?? undefined} className="flex items-baseline gap-2 text-sm">
-                    <Link
-                      href={stockPath(lang, h.ticker)}
+                    <OptionalLink
+                      href={availableStockHref(lang, h.ticker, availableStocks)}
                       className="min-w-0 truncate text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
                     >
                       {stockDisplayName(lang, h.ticker, cleanIssuer(h.issuer))}
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
-                    </Link>
+                    </OptionalLink>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)]">
                       {vl.label}
                       {` · ${PENDING_WORD[lang]}`}
@@ -510,7 +524,7 @@ export default async function InvestorSlugPage({
           )}
           <div id="about" className="scroll-mt-32">
             <FoldedSection title={lang === "zh" ? "关于这位投资者" : "About this investor"}>
-              <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} />
+              <InvestorProfileProse paragraphs={prose} lang={lang} cusipToTicker={cusipToTicker} availableStocks={availableStocks} />
             </FoldedSection>
             <LearnLink lang={lang} slug="what-is-a-superinvestor" label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"} />
           </div>

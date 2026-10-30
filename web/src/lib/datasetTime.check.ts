@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { snapshotTime, filingSourceLd } from './datasetTime';
+import { snapshotTime, filingSourceLd, snapshotLabel } from './datasetTime';
 import { datasetLd } from './seo';
 import { effectiveMovesPeriod } from './freshness/derive';
 
@@ -47,3 +47,18 @@ assert.notDeepEqual(amended.isBasedOn, original.isBasedOn, 'amendment submission
 assert.deepEqual(build(source.filedAt), original, 'unchanged rerun produces unchanged metadata');
 assert.ok(original.description.includes(q2) && original.description.includes(q3));
 console.log('datasetTime.check OK');
+
+// Search answers must describe actual observations, including equal mixtures.
+for (const lang of ['en', 'zh'] as const) {
+ const label = snapshotLabel(lang, [q3]);
+ assert.ok(label.includes(lang === 'en' ? 'Q3 2026' : '2026Q3'));
+ assert.ok(!label.includes('Q2') && !label.includes('多数') && !label.includes('most'));
+ for (const periods of [[q2,q3], [q2,q3,q3], [q2,q2,q3]]) {
+  const mixed = snapshotLabel(lang, periods);
+  assert.ok(mixed.includes(lang === 'en' ? 'Q2 2026' : '2026Q2'));
+  assert.ok(mixed.includes(lang === 'en' ? 'Q3 2026' : '2026Q3'));
+  assert.ok(!/most|多数/.test(mixed));
+ }
+ assert.match(snapshotLabel(lang, [q2, null]), lang === 'en' ? /unknown/ : /未知/);
+ assert.match(snapshotLabel(lang, []), lang === 'en' ? /unknown/ : /未知/);
+}

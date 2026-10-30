@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { hasSupabaseEnv, getDb, selectPagesUpTo } from "@/lib/managers/db";
+import { hasSupabaseEnv, getDb, selectPagesUpTo, selectAllPages } from "@/lib/managers/db";
 import type { HeldRow, MoveRow, MoveKind, NotableMoves } from "@/lib/aggregations";
 import { CONSENSUS_MIN_HOLDERS } from "@/lib/aggregations";
 import { mapHolderCountRows, type HolderCountDbRow } from "@/lib/managers/holderCounts";
@@ -199,4 +199,20 @@ export const readCoOwnership = cache(async (ticker: string, limit = 6): Promise<
       sharedHolders: Number(r.shared_holders) || 0,
       coTotalValue: Number(r.co_total_value) || 0,
     }));
+});
+
+/** Batch link eligibility; small columns, bounded query URLs, no per-security fan-out. */
+export const readStockLinkHolders = cache(async (keys: string[]): Promise<import('@/lib/stocks/stockLinks').LinkHolder[]> => {
+  if (!hasSupabaseEnv() || keys.length === 0) return [];
+  const unique = [...new Set(keys)];
+  const out: import('@/lib/stocks/stockLinks').LinkHolder[] = [];
+  for (let i = 0; i < unique.length; i += 200) {
+    const batch = unique.slice(i, i + 200);
+    const { data, error } = await selectAllPages<import('@/lib/stocks/stockLinks').LinkHolder>(() =>
+      getDb().from('consensus_stock_holders').select('ticker,kind,period').in('ticker', batch)
+        .order('ticker').order('cik').order('kind'));
+    if (error) { console.error(`readStockLinkHolders failed: ${error.message}`); return []; }
+    out.push(...data);
+  }
+  return out;
 });
