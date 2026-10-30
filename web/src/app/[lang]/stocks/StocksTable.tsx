@@ -9,6 +9,7 @@ import { EntityName } from "@/components/common/EntityName";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
+import { ListQuerySync } from "@/components/list/ListQuerySync";
 import { useListState } from "@/components/list/useListState";
 import { LIST_PAGE_SIZE, clampPage } from "@/components/list/listQuery";
 import {
@@ -89,7 +90,7 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
       header: g.security,
       role: "primary",
       cell: (r) => (
-        <span className="inline-flex items-baseline gap-2">
+        <span className="flex min-w-0 max-w-full items-baseline gap-2">
           <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
           {r.bargain ? <BargainMark bargain={r.bargain} lang={lang} /> : null}
         </span>
@@ -124,7 +125,8 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
+      <ListQuerySync onChange={params.syncQuery} />
       <ListToolbar
         searchLabel={ui.search}
         searchPlaceholder={ui.search}
