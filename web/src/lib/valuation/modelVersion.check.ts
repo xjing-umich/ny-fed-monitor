@@ -14,7 +14,7 @@ globalThis.fetch = async (input, init) => {
   );
   seen.push(u);
   if (u.pathname.endsWith("/valuation_snapshot")) {
-    if (!u.searchParams.has("payload->>model_version")) unfiltered.push(u);
+    if (!u.searchParams.has("payload->>model_version") || u.searchParams.get("payload->>assessment_status") !== "eq.valid") unfiltered.push(u);
     return new Response(init?.method === "HEAD" ? null : "[]", {
       status: 200,
       headers: { "content-type": "application/json", "content-range": "*/0" },

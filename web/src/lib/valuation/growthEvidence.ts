@@ -83,7 +83,12 @@ export function buildGrowthEvidence(
     revenue_growth: yoy(latest?.revenue, prior?.revenue),
     earnings_growth: yoy(latest?.net_income, prior?.net_income),
     pairs: 0,
-    missing_comparables: false,
+    missing_comparables: ![
+      latest?.revenue,
+      latest?.net_income,
+      prior?.revenue,
+      prior?.net_income,
+    ].every(finite),
     current_earnings_nonpositive:
       finite(latest?.net_income) && latest.net_income <= 0,
   };
@@ -121,6 +126,7 @@ export function buildGrowthEvidence(
   return {
     ...result,
     basis: "interim",
+    missing_comparables: false,
     period_end: latestPeriod,
     pairs: recent.length,
     revenue_growth: yoy(sum(recent, "revenue"), sum(matches, "revenue")),

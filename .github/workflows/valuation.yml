@@ -14,7 +14,8 @@ jobs:
         with: { node-version: "20" }
       - run: npm ci
         working-directory: web
-      - run: npm run valuation:ingest
+      - id: valuation
+        run: npm run valuation:ingest
         working-directory: web
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -22,13 +23,14 @@ jobs:
       # 同 ingest.yml:快照重算完必须刷缓存,否则个股页/screener 继续发旧估值。
       # 但只在每周六(当周 SEC fundamentals 已于周六 07:00 入库)或手动触发时整站刷新:
       # 每日整站刷新 = 每天 ~2200 页重新生成,是 Vercel Hobby ISR Writes 超额的主因。
-      # 其余日子的快照照常入库,页面在下一次周六刷新或 ISR 到期时生效。
+      # 其余日子无已确认失效时照常跳过;发现旧判定失效则立即刷缓存,即使后续批次失败也不保留可靠旧信号。
       - name: Revalidate site cache
+        if: ${{ success() || (steps.valuation.outputs.invalidated_snapshots != '' && steps.valuation.outputs.invalidated_snapshots != '0') }}
         run: |
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "$(date -u +%u)" != "6" ]; then
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "$(date -u +%u)" != "6" ] && [ "${{ steps.valuation.outputs.invalidated_snapshots }}" = "0" ]; then
             echo "Skip: weekly site refresh runs on Saturdays (UTC)."
             exit 0
           fi
-          curl -fsS -X POST "https://thecompounder.fyi/api/revalidate?source=valuation" \
+          curl -fsS --retry 3 --retry-all-errors --retry-delay 2 -X POST "https://thecompounder.fyi/api/revalidate?source=valuation" \
             -H "Authorization: Bearer ${{ secrets.INGEST_SECRET }}"
           echo

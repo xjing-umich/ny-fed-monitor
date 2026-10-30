@@ -15,7 +15,7 @@ const snapshots = Array.from({ length: 1205 }, (_, i) => ({
   range_lo: 80, range_hi: 150, price: 100, price_date: "2026-10-28",
   margin_pct: i === 1204 ? 0.5 : -i / 2000, coverage: "full", reliable: true,
   computed_at: "2026-10-29T12:00:00Z",
-  payload: { model_version: VALUATION_MODEL_VERSION, ...(i === 1204 ? { expectations } : {}) },
+  payload: { model_version: VALUATION_MODEL_VERSION, assessment_status: "valid", ...(i === 1204 ? { expectations } : {}) },
 }));
 const legacy = { ...snapshots[0], ticker: "LEGACY", payload: { model_version: "old" } };
 const solo = { ...snapshots[0], ticker: "SOLO" };
@@ -45,7 +45,7 @@ async function main() {
     const tickerFilter = url.searchParams.get("ticker");
     const tickerKeys = tickerFilter?.startsWith("in.(") ? tickerFilter.slice(4, -1).split(",") : null;
     for (const [field, filter] of url.searchParams) {
-      if (filter.startsWith("eq.")) rows = rows.filter((r) => String(field === "payload->>model_version" ? (r.payload as { model_version?: string } | null)?.model_version : r[field]) === filter.slice(3));
+      if (filter.startsWith("eq.")) rows = rows.filter((r) => String(field.startsWith("payload->>") ? (r.payload as Record<string, unknown> | null)?.[field.slice(10)] : r[field]) === filter.slice(3));
       if (filter.startsWith("gte.")) rows = rows.filter((r) => Number(r[field]) >= Number(filter.slice(4)));
     }
     if (tickerKeys) rows = rows.filter((r) => tickerKeys.includes(String(r.ticker)));

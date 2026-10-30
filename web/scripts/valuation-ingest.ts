@@ -1,3 +1,4 @@
+import { invalidateValuationSnapshots } from "./lib/invalidateValuationSnapshots";
 import { VALUATION_MODEL_VERSION } from "../src/lib/valuation/modelVersion";
 /**
  * valuation-ingest.ts — 物化每 ticker 的估值位置档判定到 valuation_snapshot。
@@ -151,9 +152,11 @@ async function main() {
   // 引擎有意抑制(该删旧行)vs 瞬时异常(保留历史行)。catch / 抓取失败不进此集。
   const intentionallyUnvaluable = new Set<string>();
   const rows: Record<string, unknown>[] = [];
+  const confirmedInvalid = new Set<string>();
   for (const ticker of universe) {
     // 非经营性证券:不进盈利法估值。旧快照行应删(有意抑制,非瞬时故障)。
     if (!isOperatingSecurity(secTypeMap.get(ticker))) {
+      confirmedInvalid.add(ticker);
       excludedNonOperating++;
       intentionallyUnvaluable.add(ticker);
       continue;
@@ -161,6 +164,7 @@ async function main() {
     // ADR/ADS 归一化:ADR 且比例已策展 → 用每 ADS 口径;ADR 但比例缺 → 抑制(不出估值)。
     const ads = resolveAds(secTypeMap.get(ticker), adsRatioMap.get(ticker));
     if (ads.suppressed) {
+      confirmedInvalid.add(ticker);
       adrSuppressed++;
       intentionallyUnvaluable.add(ticker);
       continue;
@@ -224,6 +228,9 @@ async function main() {
         suppressExpectations: false,
       });
       if (!run.verdict) {
+        // Unknown transport failures preserve last-good rows; confirmed engine
+        // suppressions invalidate their old judgment without deleting any row.
+        if (run.oeDcf?.growth_coverage_gap || (run.floor && fetchedPrice) || (fundamentalsStale && fundamentalsAsOf)) confirmedInvalid.add(ticker);
         skipped++;
         // 数据缺口(缺价/陈旧价/陈旧基本面)计入熔断分子:全 universe 无价时熔断会拦下清理,
         // 防止价格 cron 断更把整张表删空。但「是否真删」统一交给熔断裁决 —— 零星死票
@@ -249,6 +256,7 @@ async function main() {
         computed_at: computedAt,
         payload: {
           model_version: VALUATION_MODEL_VERSION,
+          assessment_status: "valid",
           growth_evidence: run.oeDcf?.growth_evidence,
           ...v,
           expectations: run.expectations,
@@ -268,6 +276,13 @@ async function main() {
       console.error(`  ${ticker} 跳过: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
+
+  const publishInvalidationCount = (count: number) => {
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `invalidated_snapshots=${count}\n`);
+  };
+  publishInvalidationCount(0);
+  const invalidated = await invalidateValuationSnapshots(db, [...confirmedInvalid], computedAt, publishInvalidationCount);
+  console.log(`Confirmed snapshot invalidations: ${invalidated}`);
 
   // 批量 upsert(分批避免单请求过大)。
   const BATCH = 500;

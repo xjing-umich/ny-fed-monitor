@@ -147,7 +147,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
   const oeDcf = deriveOeDcf(floor, workingYears(floorInput), dgs10, price, floorInput.years,
     { evidence: floorInput.growth_evidence, asOf: input.asOf ?? new Date().toISOString() });
   // All valuation legs share the same current-evidence brake.
-  if (oeDcf.assessable && (oeDcf.growth_g1 === 0 || oeDcf.growth_coverage_gap || oeDcf.declined)) {
+  if (oeDcf.growth_coverage_gap || oeDcf.declined || (oeDcf.assessable && oeDcf.growth_g1 === 0)) {
     floor.growth_value = { ...floor.growth_value, assessable: false, gated_to_zero: false,
       not_assessable_reason: oeDcf.growth_coverage_gap ? "Current comparable financial evidence is incomplete." : "Recent comparable earnings declined.",
       scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 } };

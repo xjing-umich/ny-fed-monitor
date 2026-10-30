@@ -19,10 +19,13 @@ import { VALUATION_MODEL_VERSION } from "../src/lib/valuation/modelVersion";
 
 type Row = Record<string, any>;
 export function validateCapture(
-  manifest: { source_rows: Record<string, number> },
+  manifest: { source_rows: Record<string, number>; server_counts?: Record<string, number> },
   tables: Record<string, Row[]>,
 ): void {
   for (const [name, count] of Object.entries(manifest.source_rows)) {
+    if (manifest.server_counts && manifest.server_counts[name] !== count) {
+      throw new Error(`Server count mismatch: ${name}`);
+    }
     if (!tables[name] || tables[name].length !== count)
       throw new Error(
         `Incomplete capture: ${name}; expected ${count}, received ${tables[name]?.length ?? "missing"}`,

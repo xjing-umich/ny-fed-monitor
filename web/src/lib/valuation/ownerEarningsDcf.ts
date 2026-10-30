@@ -270,6 +270,15 @@ export function deriveOeDcf(
   evidenceOptions?: { evidence?: GrowthEvidence; asOf: string },
 ): OeDcfAssessment {
   const lamp = floor.buffett_epv;
+  // Measure growth over the SAME fiscal years that back oe0 (the lamp's window),
+  // not the full input history — otherwise an anomalous oldest year outside the
+  // window can inflate g1 to the cap and compound into the terminal value.
+  const windowYears = years.filter((y) => lamp.method.years_used.includes(y.fiscal_year));
+  const { cagr, window } = netIncomeCagr(windowYears.length >= 2 ? windowYears : years); // 保留:declined + cagr_raw 披露
+  const evidence = evidenceOptions?.evidence;
+  let coverageGap = evidence && evidenceOptions ? assessGrowthCoverage(evidence, evidenceOptions.asOf) : undefined;
+  const declined = (cagr != null && cagr < 0) || (evidence?.earnings_growth != null && evidence.earnings_growth < 0) || evidence?.current_earnings_nonpositive === true;
+
   if (
     !lamp.assessable ||
     lamp.normalized_earnings == null ||
@@ -280,6 +289,9 @@ export function deriveOeDcf(
   ) {
     return {
       assessable: false,
+      growth_evidence: evidence,
+      growth_coverage_gap: coverageGap,
+      declined,
       not_assessable_reason:
         lamp.not_assessable_reason ??
         "Owner earnings are not assessable (non-positive or missing), so the owner-earnings DCF is not shown.",
@@ -290,14 +302,6 @@ export function deriveOeDcf(
   const oe0 = lamp.normalized_earnings;
   const shares = lamp.equity_value_low / lamp.per_share_low;
 
-  // Measure growth over the SAME fiscal years that back oe0 (the lamp's window),
-  // not the full input history — otherwise an anomalous oldest year outside the
-  // window can inflate g1 to the cap and compound into the terminal value.
-  const windowYears = years.filter((y) => lamp.method.years_used.includes(y.fiscal_year));
-  const { cagr, window } = netIncomeCagr(windowYears.length >= 2 ? windowYears : years); // 保留:declined + cagr_raw 披露
-  const evidence = evidenceOptions?.evidence;
-  let coverageGap = evidence && evidenceOptions ? assessGrowthCoverage(evidence, evidenceOptions.asOf) : undefined;
-  const declined = (cagr != null && cagr < 0) || (evidence?.earnings_growth != null && evidence.earnings_growth < 0) || evidence?.current_earnings_nonpositive === true;
 
   // 证据驱动增长:历史营收 log 回归(抗端点)与基本面上限(ROIC×再投资)取小,再受 franchise 分档量级封顶。
   const gRaw = historicalGrowthBaseRate(fyYears);               // 全历史纯 FY 营收 log 回归(decision #2,不吃 TTM 头)
