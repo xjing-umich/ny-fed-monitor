@@ -68,7 +68,7 @@ npx tsx --tsconfig scripts/tsconfig.json scripts/valuation-evidence-audit.ts \
   --input-dir /tmp/compounder-valuation-fix-20261030/inputs \
   --baseline-dir /tmp/compounder-valuation-fix-20261030/baseline \
   --output-dir /tmp/compounder-valuation-fix-20261030/results \
-  --as-of 2026-10-30T01:20:31Z
+  --as-of 2026-10-30T11:40:00Z
 ```
 
 ## 上线顺序
@@ -85,3 +85,5 @@ PR合并后：运行全持仓fundamentals，确认缺口/失败摘要；再运�
 3. 已确认失效的同版本快照写非破坏性invalidated状态并摘掉可靠/击球区标记；全部SQL先筛version及assessment_status=valid再count/order/limit。这个发布动作在删除熔断之外执行，保留35%/15%删除保护。失效批次进度通过GitHub输出发布，即使后续写入失败，workflow也会重试清缓存；已经失效的行不会每天重复触发刷新。
 
 审计期间价格表发生正常新增，重新获取后用独立HEAD count=exact核对全部11张表，财务期间主键无重复；capture保存每表SHA256。新旧引擎始终使用同一份最终capture，未以行数变化当作模型影响。最终价格数11084，实际价格日逐行见CSV。
+
+最终独立复审（代码HEAD `40a9f23`）：**PASS**，以上3项全部解决，修复范围内未发现新增P0/P1/P2。复审另跑跨方法、年度缺可比、中期恢复及两轮快照失效独立探针。完整review与回放明细保存于本机 `reports/valuation-evidence-fix-2026-10-30/`。
