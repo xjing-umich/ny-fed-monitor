@@ -295,6 +295,7 @@ export type ValuationFloorInput = {
   /** 件⑤:由调用方从 company_holdco_investments + company_segment_periods 组装后传入。
    *  引擎不自己读库,保持纯函数可测。 */
   holdcoSotp?: import("./holdcoSotp").HoldcoSotp | { assessable: false };
+  growth_evidence?: import("./growthEvidence").GrowthEvidence;
 };
 
 // ── Maintenance capex (spec §1.1) ────────────────────────────────────────────
@@ -368,7 +369,9 @@ export type OeDcfAssessment = {
    *  net_income=净利润 CAGR 更低;moat_cap=护城河分档上限;declined=净利润下滑,强制为 0;none=无可用增长证据(0)。
    * history 以外都意味着「模型假设低于历史营收增速」。
    */
-  growth_g1_limited_by?: "history" | "fundamentals" | "net_income" | "moat_cap" | "declined" | "none";
+  growth_g1_limited_by?: "history" | "fundamentals" | "net_income" | "moat_cap" | "declined" | "none" | "recent_revenue" | "recent_earnings" | "coverage";
+  growth_evidence?: import("./growthEvidence").GrowthEvidence;
+  growth_coverage_gap?: import("./growthEvidence").GrowthCoverageGap;
   discount?: DiscountBandProvenance;
   tiers?: { pessimistic: OeDcfTier; neutral: OeDcfTier; optimistic: OeDcfTier };
   per_share_low?: number;    // = tiers.pessimistic.per_share

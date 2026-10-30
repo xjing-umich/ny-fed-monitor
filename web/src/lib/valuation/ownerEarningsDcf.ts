@@ -1,3 +1,4 @@
+import { assessGrowthCoverage, type GrowthEvidence } from "./growthEvidence";
 import type {
   ValuationFloor,
   ValuationFloorYear,
@@ -266,6 +267,7 @@ export function deriveOeDcf(
   // 纯 FY 审计序列(锁定 decision #2):gRaw 增长回归恒吃纯 FY,不吃 TTM 头。缺省 → years
   // (无 TTM 的调用方 years 本就是纯 FY,零变化);生产 runValuation 显式传 floorInput.years。
   fyYears: ValuationFloorYear[] = years,
+  evidenceOptions?: { evidence?: GrowthEvidence; asOf: string },
 ): OeDcfAssessment {
   const lamp = floor.buffett_epv;
   if (
@@ -293,21 +295,21 @@ export function deriveOeDcf(
   // window can inflate g1 to the cap and compound into the terminal value.
   const windowYears = years.filter((y) => lamp.method.years_used.includes(y.fiscal_year));
   const { cagr, window } = netIncomeCagr(windowYears.length >= 2 ? windowYears : years); // 保留:declined + cagr_raw 披露
-  const declined = cagr != null && cagr < 0;
+  const evidence = evidenceOptions?.evidence;
+  let coverageGap = evidence && evidenceOptions ? assessGrowthCoverage(evidence, evidenceOptions.asOf) : undefined;
+  const declined = (cagr != null && cagr < 0) || (evidence?.earnings_growth != null && evidence.earnings_growth < 0) || evidence?.current_earnings_nonpositive === true;
 
   // 证据驱动增长:历史营收 log 回归(抗端点)与基本面上限(ROIC×再投资)取小,再受 franchise 分档量级封顶。
   const gRaw = historicalGrowthBaseRate(fyYears);               // 全历史纯 FY 营收 log 回归(decision #2,不吃 TTM 头)
-  const gFund = floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
+  const gFund = floor.is_financial ? floor.financial_sgr : floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
   // cap 四分档(Task 4,收紧假增长):strong franchise 20% > 金融股(银行/保险)SGR 封顶 > moderate 7% > 非金融无护城河 5%。
   // 金融股走 SGR(ROE×留存率)而非扁平 7% —— 原扁平 cap 把无护城河的区域银行/保险统一抬高含增长估值。
   const grade = floor.moat_cap?.grade;
   const cap =
-    grade === "strong"
+    floor.is_financial
+      ? Math.min(Math.max(floor.financial_sgr ?? 0, 0), GROWTH_CAP_MODERATE)
+      : grade === "strong"
       ? GROWTH_CAP_FRANCHISE
-      : floor.is_financial
-      ? floor.financial_sgr != null && floor.financial_sgr > 0
-        ? Math.min(floor.financial_sgr, GROWTH_CAP_MODERATE)
-        : GROWTH_CAP_NONE
       : grade === "moderate"
       ? GROWTH_CAP_MODERATE
       : GROWTH_CAP_NONE;
@@ -322,24 +324,21 @@ export function deriveOeDcf(
     floor.is_financial !== true &&
     floor.structural_confidence != null &&
     floor.structural_confidence >= S_STRUCTURAL_GROWTH;
-  const fundamentalCeilings = structuralFranchise ? [gRaw, cagrFallback] : [gRaw, gFund, cagrFallback];
-  const candidates = fundamentalCeilings.filter(
-    (n): n is number => n != null && Number.isFinite(n) && n >= 0,
-  );
-  // gRaw/gFund 皆缺 → candidates 仅剩 cagrFallback(退回今天行为,但用新 cap);全缺 → 0。
-  const g1 = declined ? 0 : candidates.length ? clamp(Math.min(...candidates), 0, cap) : 0;
-  const minCandidate = candidates.length ? Math.min(...candidates) : undefined;
-  const g1LimitedBy: OeDcfAssessment["growth_g1_limited_by"] = declined
-    ? "declined"
-    : minCandidate == null
-    ? "none"
-    : minCandidate > cap
-    ? "moat_cap"
-    : minCandidate === gRaw
-    ? "history"
-    : minCandidate === cagrFallback
-    ? "net_income"
-    : "fundamentals";
+  if (evidence && !structuralFranchise && gFund == null && !coverageGap) coverageGap = "missing_reinvestment";
+  const candidates: { value: number; source: NonNullable<OeDcfAssessment["growth_g1_limited_by"]> }[] = [];
+  const add = (value: number | undefined, source: typeof candidates[number]["source"]) => {
+    if (value != null && Number.isFinite(value)) candidates.push({ value, source });
+  };
+  add(gRaw, "history");
+  add(cagrFallback, "net_income");
+  if (!structuralFranchise) add(gFund ?? (evidence ? 0 : undefined), "fundamentals");
+  add(evidence?.revenue_growth, "recent_revenue");
+  add(evidence?.earnings_growth, "recent_earnings");
+  if (coverageGap) add(0, "coverage");
+  const minimum = candidates.sort((a,b) => a.value-b.value)[0];
+  const g1 = declined ? 0 : minimum ? clamp(minimum.value, 0, cap) : 0;
+  const g1LimitedBy: OeDcfAssessment["growth_g1_limited_by"] = coverageGap ? "coverage" : declined ? "declined"
+    : !minimum ? "none" : minimum.value > cap ? "moat_cap" : minimum.source;
 
   // owner earnings 是股权流,读 floor.leverage_premium(epvFloor 已发布,单一真相源)——不本地重算。
   const discount = discountBand(dgs10, floor.leverage_premium ?? 0);
@@ -407,6 +406,8 @@ export function deriveOeDcf(
     cagr_raw: cagr,
     cagr_window: window,
     growth_g1: g1,
+    growth_evidence: evidence,
+    growth_coverage_gap: coverageGap,
     growth_g1_limited_by: g1LimitedBy,
     declined,
     discount,

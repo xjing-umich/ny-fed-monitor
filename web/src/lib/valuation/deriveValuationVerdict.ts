@@ -95,7 +95,7 @@ export function assessReliability(input: { floor?: ValuationFloor; oeDcf?: OeDcf
   // 非顺周期脉冲)推翻否决。NVDA 型 s≈0.5<0.8 仍被挡在聚合面(个股页 IV 已按 s 半抬,互不冲突)。
   if (floor?.ai_capex_distortion_warning && !(floor?.structural_confidence != null && floor.structural_confidence >= S_RELIABLE))
     return false;
-  if (oeDcf?.declined) return false;
+  if (oeDcf?.declined || oeDcf?.growth_coverage_gap) return false;
   if (oeDcf?.diagnostics?.quick_check_flag) return false;
   const oeY = oeDcf?.diagnostics?.oe_yield;
   if (oeY != null && oeY > EXTREME_OE_YIELD) return false;
