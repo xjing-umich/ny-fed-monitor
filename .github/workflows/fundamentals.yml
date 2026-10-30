@@ -15,7 +15,7 @@ jobs:
   fundamentals:
     runs-on: ubuntu-latest
     outputs:
-      changed_tickers: ${{ steps.ingest.outputs.changed_tickers }}
+      changed_tickers: ${{ steps.publish.outputs.changed_tickers }}
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +33,8 @@ jobs:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || 'Compounder Research junlinzhu@jobright.ai' }}
 
       - name: Publish changed financial pages
-        if: ${{ always() && steps.ingest.outputs.changed_tickers != '' && steps.ingest.outputs.changed_tickers != '[]' }}
+        id: publish
+        if: ${{ always() && !cancelled() }}
         run: npx tsx --tsconfig scripts/tsconfig.json scripts/revalidate-fundamentals.ts
         working-directory: web
         env:
@@ -43,7 +44,7 @@ jobs:
 
   valuation:
     needs: fundamentals
-    if: ${{ needs.fundamentals.result == 'success' && needs.fundamentals.outputs.changed_tickers != '' && needs.fundamentals.outputs.changed_tickers != '[]' }}
+    if: ${{ always() && !cancelled() && needs.fundamentals.outputs.changed_tickers != '' && needs.fundamentals.outputs.changed_tickers != '[]' }}
     runs-on: ubuntu-latest
     concurrency:
       group: valuation-publication

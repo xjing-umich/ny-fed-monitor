@@ -7,8 +7,7 @@
 //   SEC_USER_AGENT="Name email@example.com" npx tsx scripts/sec-ingest-holdings.ts --dry
 //   SEC_USER_AGENT="Name email@example.com" npx tsx scripts/sec-ingest-holdings.ts [limit]
 import fs from "node:fs";
-import { randomUUID } from "node:crypto";
-import { readFundamentalQueue, prepareFundamentalQueue } from "./lib/fundamentalPublication";
+import { readFundamentalQueue } from "../src/lib/sec/fundamentalPublication";
 import { isIdentityQuarantined } from "../src/lib/securities/securityIdentity";
 
 function loadEnvLocal() {
@@ -67,9 +66,7 @@ async function main() {
   if (dry) return;
 
   const db = getDb();
-  const before = await readFundamentalQueue(db);
-  const successful: string[] = [];
-  const stamps: Array<{ticker:string; content_fingerprint:string}> = [];
+  await readFundamentalQueue(db); // Fail before SEC writes if queue migration is absent.
   const summary = { total: run.length, success: 0, foreign: 0, unresolved: 0, failed: 0 } as Record<string, number>;
   const failures: string[] = [];
   let i = 0;
@@ -77,11 +74,7 @@ async function main() {
     i++;
     try {
       const res = await ingestCompany(ticker);
-      if (res.status === "success") {
-        if (!res.publication_fingerprint) throw new Error("Missing financial publication fingerprint");
-        summary.success++; successful.push(ticker);
-        stamps.push({ticker, content_fingerprint:res.publication_fingerprint});
-      }
+      if (res.status === "success") summary.success++;
       else if (res.status === "unresolved") summary.unresolved++;
       else summary.failed++;
       if (res.foreign_issuer) summary.foreign++;
@@ -100,11 +93,6 @@ async function main() {
   console.log("\n=== DONE ===");
   console.log(JSON.stringify(summary, null, 2));
   if (failures.length) console.log("non-success:", failures.join(", "));
-  const queue = prepareFundamentalQueue(before, stamps, successful, randomUUID(), process.env.GITHUB_EVENT_NAME === "workflow_dispatch");
-  for(let from=0;from<queue.length;from+=100){
-    const {error}=await db.from('fundamental_publications').upsert(queue.slice(from,from+100),{onConflict:'ticker'});
-    if(error)throw new Error(`Fundamental refresh intent write failed: ${error.message}`);
-  }
   const pending=(await readFundamentalQueue(db)).filter(r=>r.pending).map(r=>r.ticker);
   if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `changed_tickers=${JSON.stringify(pending)}\n`);
   console.log(`Financial page refresh candidates: ${pending.length}`);

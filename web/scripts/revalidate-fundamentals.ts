@@ -1,9 +1,15 @@
+import fs from "node:fs";
 import { getDb } from "../src/lib/managers/db";
-import { refreshFundamentalQueue } from "./lib/fundamentalPublication";
+import { refreshFundamentalQueue } from "../src/lib/sec/fundamentalPublication";
 async function main() {
   const secret = process.env.INGEST_SECRET;
   if (!secret) throw new Error("Missing ingest credentials");
   const count = await refreshFundamentalQueue(getDb(), async (tickers) => {
+    if (process.env.GITHUB_OUTPUT)
+      fs.appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `changed_tickers=${JSON.stringify(tickers)}\n`,
+      );
     for (let from = 0; from < tickers.length; from += 100) {
       const r = await fetch(
         "https://thecompounder.fyi/api/revalidate?source=fundamentals",

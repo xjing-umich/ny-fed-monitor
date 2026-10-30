@@ -10,7 +10,9 @@ const checks = [
   "src/lib/stocks/financialDates.check.ts",
   "src/lib/revalidate/targets.check.ts",
   "scripts/lib/fundamentalQueue.check.ts",
+  "scripts/lib/reportValuationBoundary.check.ts",
   "src/lib/sec/publicationFingerprint.check.ts",
+  "src/lib/sec/ingest-publication.check.ts",
   "scripts/lib/valuationPublication.check.ts",
   "src/lib/valuation/modelVersion.check.ts",
 ];

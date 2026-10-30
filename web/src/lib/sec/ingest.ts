@@ -1,3 +1,4 @@
+import { readCompanyPublication, queueCompanyPublication } from "./fundamentalPublication";
 import { financialPublicationFingerprint } from "./publicationFingerprint";
 import { assertSecurityIdentity } from "../securities/securityIdentity";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -191,6 +192,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
 
   try {
     assertSecurityIdentity(ticker);
+    const priorPublication = await readCompanyPublication(supabase, ticker);
     const match = await resolveTickerCik(ticker);
     if (!match) {
       const result: IngestCompanyResult = {
@@ -270,6 +272,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       },
       quality_status: qualityStatus
     };
+    await queueCompanyPublication(supabase, ticker, result.publication_fingerprint!, priorPublication);
     await finishRun(supabase, runId, "success", result);
     return result;
   } catch (error) {

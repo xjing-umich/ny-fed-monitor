@@ -1,3 +1,5 @@
+import { VALUATION_MODEL_VERSION } from "../../src/lib/valuation/modelVersion";
+import { QUARANTINED_TICKERS_SQL } from "../../src/lib/securities/securityIdentity";
 // 按报告季度 P 取数。与 computeAndStoreConsensus 同一套表、同一套分页与去重规则,
 // 区别只是 period 锁定在 P,而不是“每户最新两季”。
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -121,6 +123,9 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
   const { data: vrows, error: verr } = await db
     .from("valuation_snapshot")
     .select("ticker,range_lo,range_hi,price,price_date,margin_pct,in_strike_zone,verdict_bucket")
+    .eq("payload->>model_version", VALUATION_MODEL_VERSION)
+    .eq("payload->>assessment_status", "valid")
+    .not("ticker", "in", QUARANTINED_TICKERS_SQL)
     .eq("reliable", true)
     .or("in_strike_zone.eq.true,verdict_bucket.eq.below")
     .limit(500);
@@ -130,6 +135,9 @@ export async function loadReportInput(db: SupabaseClient, period: string): Promi
   const { data: latestRel, error: lerr } = await db
     .from("valuation_snapshot")
     .select("price_date")
+    .eq("payload->>model_version", VALUATION_MODEL_VERSION)
+    .eq("payload->>assessment_status", "valid")
+    .not("ticker", "in", QUARANTINED_TICKERS_SQL)
     .eq("reliable", true)
     .order("price_date", { ascending: false, nullsFirst: false })
     .limit(1);

@@ -53,14 +53,19 @@
 - [x] GREEN + revalidation and workflow-related behavior checks.
 
 ### 6. Review and PR
-- [ ] Run prebuild, app/scripts type checks, lint changed files, relevant SEC/valuation checks and isolated PostgreSQL checks. Replay captured data to quantify intentional changes.
+- [x] Run prebuild, app/scripts type checks, lint changed files, relevant SEC/valuation checks and isolated PostgreSQL checks. Replay captured data to quantify intentional changes.
 - [ ] Independent review against base b6aebf2; address important findings with failing regressions first.
 - [ ] Push and create PR against db-foundation; attach PR; report CI/deployment and rollout steps. Operational new-model recomputation follows merge, not removal of the model-version guard.
 
 ## Verification notes (2026-10-31 HK)
 
-- Full prebuild passes, including 11 pipeline behavior checks and 1,205-row rendered screener fixtures.
-- 50 SEC/valuation check files pass; provider and revalidation-path checks pass. Existing ownerEarningsDcf check has a June clock-dependent fixture and is handled separately, without changing runtime financial freshness guards.
+- Full prebuild passes, including 13 pipeline behavior checks and 1,205-row rendered screener fixtures.
+- 51 SEC/valuation check files pass, including ownerEarningsDcf with its existing pinned fixture clock; provider and revalidation-path checks pass.
 - Isolated PostgreSQL checks cover queue permissions and generation CAS alongside existing derived publication checks.
 - Financial fingerprints detect same-period revisions and fiscal label repairs, exclude raw provenance, and are order-stable. Pending intent survives HTTP failures; older refreshes cannot acknowledge a newer generation.
 - Production rollout requires queue migration before the holdings workflow, deployment, then full fundamentals and valuation publication. No production data mutation performed in this branch.
+
+- Independent review found and repaired three missed boundaries: report snapshot guards, shared cron/API ingestion publication, and valuation after partial ingestion failure. Queue intent is now persisted per company in ingestCompany, before the next company can fail; server routes drain the same queue directly.
+- Replayed 19 SEC CompanyFacts captures retrieved 2026-10-30 (308 normalized rows): only fiscal labels changed (MSFT 9, PDD 1), with every other normalized field byte-identical. These are dated regression inputs, not fresh investment observations.
+- Next production compile mode passes. Full build passed compilation/type checks but cannot prerender without Supabase credentials in the isolated checkout. No production credentials were added or production data written. Changed-file lint has zero new findings; 10 pre-existing no-explicit-any errors remain in the two legacy consensus/price writer files.
+- Parsed the actual workflow YAML and evaluated its valuation condition: successful or partial-failed ingestion with changed tickers continues; empty/no-change/cancelled runs do not.

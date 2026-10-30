@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   prepareFundamentalQueue,
   refreshFundamentalQueue,
-} from "./fundamentalPublication";
+} from "../../src/lib/sec/fundamentalPublication";
 
 async function main() {
   const state = [{ ticker: "MSFT", content_fingerprint: "financial-a" }];

@@ -1,5 +1,6 @@
+import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { selectAllPages } from "../../src/lib/managers/db";
+import { selectAllPages } from "../managers/db";
 export type FundamentalStamp = { ticker: string; content_fingerprint: string };
 export type FundamentalPublication = {
   ticker: string;
@@ -74,4 +75,42 @@ export async function refreshFundamentalQueue(
       acknowledged += count ?? 0;
     }
   return acknowledged;
+}
+
+/** Checked before any financial mutation so a missing migration cannot lose refresh intent. */
+export async function readCompanyPublication(
+  db: SupabaseClient,
+  ticker: string,
+): Promise<FundamentalPublication | null> {
+  const { data, error } = await db
+    .from("fundamental_publications")
+    .select("ticker,fingerprint,pending,generation")
+    .eq("ticker", ticker)
+    .maybeSingle();
+  if (error)
+    throw new Error(
+      `Financial publication state read failed: ${error.message}`,
+    );
+  return data;
+}
+export async function queueCompanyPublication(
+  db: SupabaseClient,
+  ticker: string,
+  fingerprint: string,
+  prior: FundamentalPublication | null,
+): Promise<void> {
+  const rows = prepareFundamentalQueue(
+    prior ? [prior] : [],
+    [{ ticker, content_fingerprint: fingerprint }],
+    [ticker],
+    randomUUID(),
+  );
+  if (!rows.length) return;
+  const { error } = await db
+    .from("fundamental_publications")
+    .upsert(rows, { onConflict: "ticker" });
+  if (error)
+    throw new Error(
+      `Financial publication intent write failed: ${error.message}`,
+    );
 }
