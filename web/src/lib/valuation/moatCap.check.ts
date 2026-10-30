@@ -193,7 +193,7 @@ const ic100 = () => 100;
 
 // G) 稳健:ROIC 20% × 净再投资率 40% → g ≈ 8%
 { const years = [2020,2021,2022,2023].map((fy,i)=>({ fiscal_year: fy,
-    operating_income: 20, income_tax_expense: 0, capex: 12, d_and_a: 4, working_capital: 0,
+    operating_income: 20, income_tax_expense: 0, capex: 12, d_and_a: 4, working_capital: 0, operating_working_capital: 0,
   })) as ValuationFloorYear[];
   const r = sustainableGrowth({ fyYears: years,
     nopatOf: () => 20, investedCapitalOf: () => 100 });
@@ -203,7 +203,7 @@ const ic100 = () => 100;
   const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => 100 });
   assert(r === undefined, `<${SUSTAINABLE_MIN_YEARS} 有效年 → undefined`); }
 // I) 再投资率为负(D&A>capex,净收缩)→ clamp 到 0(不给负增长,交给 declined 处理)
-{ const years = [2020,2021,2022,2023].map((fy)=>({ fiscal_year: fy, capex: 2, d_and_a: 8, working_capital: 0 })) as ValuationFloorYear[];
+{ const years = [2020,2021,2022,2023].map((fy)=>({ fiscal_year: fy, capex: 2, d_and_a: 8, working_capital: 0, operating_working_capital: 0 })) as ValuationFloorYear[];
   const r = sustainableGrowth({ fyYears: years, nopatOf: () => 20, investedCapitalOf: () => 100 });
   assert(r === 0, "净再投资率<0 → g clamp 到 0"); }
 // J) investedCapital 全 undefined(负权益)→ undefined

@@ -25,11 +25,11 @@ function annuityFactor(r: number, n: number): number {
 
 // A franchise grower: rising operating income, capex > D&A (real growth reinvestment), rising NWC.
 const grower: ValuationFloorYear[] = [
-  { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000 },
-  { fiscal_year: 2024, revenue: 17_000, operating_income: 4_000, capex: 2_600, d_and_a: 900, working_capital: 2_600 },
-  { fiscal_year: 2023, revenue: 15_000, operating_income: 3_200, capex: 2_300, d_and_a: 850, working_capital: 2_300 },
-  { fiscal_year: 2022, revenue: 13_000, operating_income: 2_600, capex: 2_000, d_and_a: 800, working_capital: 2_000 },
-  { fiscal_year: 2021, revenue: 11_000, operating_income: 2_000, capex: 1_800, d_and_a: 750, working_capital: 1_800 },
+  { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000, operating_working_capital: 3_000 },
+  { fiscal_year: 2024, revenue: 17_000, operating_income: 4_000, capex: 2_600, d_and_a: 900, working_capital: 2_600, operating_working_capital: 2_600 },
+  { fiscal_year: 2023, revenue: 15_000, operating_income: 3_200, capex: 2_300, d_and_a: 850, working_capital: 2_300, operating_working_capital: 2_300 },
+  { fiscal_year: 2022, revenue: 13_000, operating_income: 2_600, capex: 2_000, d_and_a: 800, working_capital: 2_000, operating_working_capital: 2_000 },
+  { fiscal_year: 2021, revenue: 11_000, operating_income: 2_000, capex: 1_800, d_and_a: 750, working_capital: 1_800, operating_working_capital: 1_800 },
 ];
 
 // Franchise gate: non-franchise → GV forced to 0 (gated_to_zero true, NOT "missing data").
@@ -73,11 +73,11 @@ assert.strictEqual(aiGate.assessable, true, "AI gate is a real reading (assessab
 // nopat = operating_income × (1 − 0.21); ROIC = nopat / shareholders_equity, all years > 10%.
 // net_income rises latest→oldest reversed (i.e. grows over time) so `declined` = false.
 const growerFull: ValuationFloorYear[] = [
-  { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000, shareholders_equity: 20_000, net_income: 3_950 },
-  { fiscal_year: 2024, revenue: 17_000, operating_income: 4_000, capex: 2_600, d_and_a: 900, working_capital: 2_600, shareholders_equity: 18_000, net_income: 3_160 },
-  { fiscal_year: 2023, revenue: 15_000, operating_income: 3_200, capex: 2_300, d_and_a: 850, working_capital: 2_300, shareholders_equity: 16_500, net_income: 2_528 },
-  { fiscal_year: 2022, revenue: 13_000, operating_income: 2_600, capex: 2_000, d_and_a: 800, working_capital: 2_000, shareholders_equity: 15_000, net_income: 2_054 },
-  { fiscal_year: 2021, revenue: 11_000, operating_income: 2_000, capex: 1_800, d_and_a: 750, working_capital: 1_800, shareholders_equity: 14_000, net_income: 1_580 },
+  { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000, operating_working_capital: 3_000, shareholders_equity: 20_000, net_income: 3_950 },
+  { fiscal_year: 2024, revenue: 17_000, operating_income: 4_000, capex: 2_600, d_and_a: 900, working_capital: 2_600, operating_working_capital: 2_600, shareholders_equity: 18_000, net_income: 3_160 },
+  { fiscal_year: 2023, revenue: 15_000, operating_income: 3_200, capex: 2_300, d_and_a: 850, working_capital: 2_300, operating_working_capital: 2_300, shareholders_equity: 16_500, net_income: 2_528 },
+  { fiscal_year: 2022, revenue: 13_000, operating_income: 2_600, capex: 2_000, d_and_a: 800, working_capital: 2_000, operating_working_capital: 2_000, shareholders_equity: 15_000, net_income: 2_054 },
+  { fiscal_year: 2021, revenue: 11_000, operating_income: 2_000, capex: 1_800, d_and_a: 750, working_capital: 1_800, operating_working_capital: 1_800, shareholders_equity: 14_000, net_income: 1_580 },
 ];
 
 // Strong franchise (moatGrade passed in from floor.moat_cap, single source of truth) uses the
@@ -86,15 +86,15 @@ const strong = computeGrowthValue({ years: growerFull, shares: 1_000, taxRate: 0
 const moderate = computeGrowthValue({ years: growerFull, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 50, avPerShare: 40, moatGrade: "moderate" });
 assert.strictEqual(strong.duration_years, DURATION_STRONG, "strong franchise → duration = CAP_STRONG (20)");
 assert.strictEqual(moderate.duration_years, DURATION_MODERATE, "sub-2.0-ratio franchise → duration = CAP_MODERATE (10)");
-assert.ok((strong.duration_years ?? 0) > (moderate.duration_years ?? 0), "strong franchise → longer duration");
+assert.strictEqual(strong.duration_years, moderate.duration_years, "historical strong signals do not extend the forecast horizon");
 
 // ROIIC ≤ WACC → GV = 0 even for a franchise (growth that doesn't out-earn capital creates no value).
 const lowReturn: ValuationFloorYear[] = [
-  { fiscal_year: 2025, revenue: 20_000, operating_income: 2_050, capex: 5_000, d_and_a: 1_000, working_capital: 3_000 },
-  { fiscal_year: 2024, revenue: 18_000, operating_income: 2_040, capex: 4_500, d_and_a: 950, working_capital: 2_800 },
-  { fiscal_year: 2023, revenue: 16_000, operating_income: 2_030, capex: 4_000, d_and_a: 900, working_capital: 2_600 },
-  { fiscal_year: 2022, revenue: 14_000, operating_income: 2_020, capex: 3_500, d_and_a: 850, working_capital: 2_400 },
-  { fiscal_year: 2021, revenue: 12_000, operating_income: 2_010, capex: 3_000, d_and_a: 800, working_capital: 2_200 },
+  { fiscal_year: 2025, revenue: 20_000, operating_income: 2_050, capex: 5_000, d_and_a: 1_000, working_capital: 3_000, operating_working_capital: 3_000 },
+  { fiscal_year: 2024, revenue: 18_000, operating_income: 2_040, capex: 4_500, d_and_a: 950, working_capital: 2_800, operating_working_capital: 2_800 },
+  { fiscal_year: 2023, revenue: 16_000, operating_income: 2_030, capex: 4_000, d_and_a: 900, working_capital: 2_600, operating_working_capital: 2_600 },
+  { fiscal_year: 2022, revenue: 14_000, operating_income: 2_020, capex: 3_500, d_and_a: 850, working_capital: 2_400, operating_working_capital: 2_400 },
+  { fiscal_year: 2021, revenue: 12_000, operating_income: 2_010, capex: 3_000, d_and_a: 800, working_capital: 2_200, operating_working_capital: 2_200 },
 ];
 const lr = computeGrowthValue({ years: lowReturn, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "strong" });
 assert.strictEqual(lr.scenarios.neutral, 0, "ROIIC ≤ WACC → neutral GV = 0");
@@ -115,7 +115,7 @@ assert.strictEqual(empty.scenarios.neutral, 0, "empty years → GV 0");
 
 // Single-year window → not assessable, no crash.
 const oneYear: ValuationFloorYear[] = [
-  { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000 },
+  { fiscal_year: 2025, revenue: 20_000, operating_income: 5_000, capex: 3_000, d_and_a: 1_000, working_capital: 3_000, operating_working_capital: 3_000 },
 ];
 const single = computeGrowthValue({ years: oneYear, shares: 1_000, taxRate: 0.21, moatSignal: "franchise", epvPerShare: 80, avPerShare: 40, moatGrade: "moderate" });
 assert.strictEqual(single.assessable, false, "single year → not assessable, no crash");
@@ -124,18 +124,18 @@ assert.strictEqual(single.scenarios.neutral, 0, "single year → GV 0");
 // Growth reinvestment uses shared maintenanceCapex() (not pure D&A proxy).
 // Fixture: ppe/sales methods pull maint median above D&A → growthCapex smaller than capex−D&A.
 const maintDivergent: ValuationFloorYear[] = [
-  { fiscal_year: 2025, revenue: 12_000, operating_income: 4_000, capex: 2_500, d_and_a: 800, ppe_net: 12_000, working_capital: 2_000 },
-  { fiscal_year: 2024, revenue: 11_000, operating_income: 3_500, capex: 2_200, d_and_a: 750, ppe_net: 11_000, working_capital: 1_800 },
-  { fiscal_year: 2023, revenue: 10_000, operating_income: 3_000, capex: 2_000, d_and_a: 700, ppe_net: 10_000, working_capital: 1_600 },
-  { fiscal_year: 2022, revenue: 9_000, operating_income: 2_500, capex: 1_800, d_and_a: 650, ppe_net: 9_000, working_capital: 1_400 },
-  { fiscal_year: 2021, revenue: 8_000, operating_income: 2_000, capex: 1_600, d_and_a: 600, ppe_net: 8_000, working_capital: 1_200 },
+  { fiscal_year: 2025, revenue: 12_000, operating_income: 4_000, capex: 2_500, d_and_a: 800, ppe_net: 12_000, working_capital: 2_000, operating_working_capital: 2_000 },
+  { fiscal_year: 2024, revenue: 11_000, operating_income: 3_500, capex: 2_200, d_and_a: 750, ppe_net: 11_000, working_capital: 1_800, operating_working_capital: 1_800 },
+  { fiscal_year: 2023, revenue: 10_000, operating_income: 3_000, capex: 2_000, d_and_a: 700, ppe_net: 10_000, working_capital: 1_600, operating_working_capital: 1_600 },
+  { fiscal_year: 2022, revenue: 9_000, operating_income: 2_500, capex: 1_800, d_and_a: 650, ppe_net: 9_000, working_capital: 1_400, operating_working_capital: 1_400 },
+  { fiscal_year: 2021, revenue: 8_000, operating_income: 2_000, capex: 1_600, d_and_a: 600, ppe_net: 8_000, working_capital: 1_200, operating_working_capital: 1_200 },
 ];
 {
   const window = [...maintDivergent].sort((a, b) => b.fiscal_year - a.fiscal_year).slice(0, GV_WINDOW);
   let daBased = 0;
   let maintBased = 0;
   let n = 0;
-  for (let i = ROIIC_ENDPOINT_LAG; i < window.length; i++) {
+  for (let i = ROIIC_ENDPOINT_LAG; i < window.length - 1; i++) {
     const y = window[i];
     const older = window[i + 1];
     const deltaNwc =
@@ -209,8 +209,8 @@ const maintDivergent: ValuationFloorYear[] = [
   // moderate-grade optimistic (extendedDuration=10, same as the pre-Phase-2 baseDuration for a ≥2.0 ratio).
   assert.strictEqual(moderateGraded.duration_years, DURATION_MODERATE, "moatGrade=moderate → duration (10)");
   assert.strictEqual(strongGraded.duration_years, DURATION_STRONG, "moatGrade=strong → duration (20)");
-  assert.ok(strongGraded.scenarios.optimistic > moderateGraded.scenarios.optimistic, "strong-grade optimistic > moderate-grade optimistic (only the ceiling was raised)");
-  assert.ok(strongGraded.scenarios.neutral > moderateGraded.scenarios.neutral, "strong-grade neutral > moderate-grade neutral (extended duration raises neutral too)");
+  assert.strictEqual(strongGraded.scenarios.optimistic, moderateGraded.scenarios.optimistic, "financial proxies share the same bounded ten-year horizon");
+  assert.strictEqual(strongGraded.scenarios.neutral, moderateGraded.scenarios.neutral, "strong historical grade does not extend the forecast");
 }
 
 // §G.5 Non-franchise still gates to zero regardless of moatGrade (a "strong" grade alone can't

@@ -265,6 +265,8 @@ export type ValuationFloorYear = {
   sga_expense?: number;
   stock_based_comp?: number;
   working_capital?: number;
+  /** Current assets less current liabilities, cash and reported short-term investments. */
+  operating_working_capital?: number;
   ppe_net?: number;
   operating_cash_flow?: number;
   share_repurchases?: number;

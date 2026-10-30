@@ -23,7 +23,7 @@ function floorOf(r: ReturnType<typeof computeValuationFloor>): ValuationFloor {
 }
 
 function yr(fy: number, o: Partial<ValuationFloorYear>): ValuationFloorYear {
-  return { fiscal_year: fy, ...o };
+  return { fiscal_year: fy, operating_working_capital: o.working_capital, ...o };
 }
 
 const DGS10 = { value: 0.0425, date: "2026-07-10" };

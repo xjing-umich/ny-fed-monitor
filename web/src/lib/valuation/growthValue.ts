@@ -122,39 +122,21 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
     };
   }
 
-  // Per-year growth reinvestment = max(0, capex − maint) + ΔNWC.
-  // maint = maintenanceCapex(window.slice(i)) — same estimator as EPV/OE; D&A fallback.
-  // ΔNWC = WC_y − WC_{y+1} (older).
-  function growthReinvest(idx: number): number | undefined {
-    const y = window[idx];
-    if (y.capex == null) return undefined;
-    const slice = window.slice(idx); // latest = that year
-    const mc = maintenanceCapex(slice);
-    const maint = mc.assessable && mc.value != null ? mc.value : (y.d_and_a ?? 0);
-    const growthCapex = Math.max(0, y.capex - maint);
-    let deltaNwc = 0;
-    const older = window[idx + 1];
-    if (y.working_capital != null && older?.working_capital != null) {
-      deltaNwc = y.working_capital - older.working_capital; // increase = investment
-    }
-    return growthCapex + deltaNwc;
-  }
-
-  // Endpoint alignment (audit fix #4): cumulative denominator over the MATURED years only —
-  // skip the most recent ROIIC_ENDPOINT_LAG years' investment (not yet earning).
-  let lag = ROIIC_ENDPOINT_LAG;
+  // Each capital-change observation needs both annual endpoints. With an L-year
+  // response lag, NOPAT and capital increments cover the same number of years.
+  const lag = window.length <= ROIIC_ENDPOINT_LAG + 1 ? 1 : ROIIC_ENDPOINT_LAG;
   const reinvestSeries: number[] = [];
-  for (let i = lag; i < window.length; i++) {
-    const r = growthReinvest(i);
-    if (r != null) reinvestSeries.push(r);
-  }
-  if (reinvestSeries.length === 0 && window.length >= 2) {
-    lag = 1; // relax endpoint lag if the window is short
-    for (let i = lag; i < window.length; i++) {
-      const r = growthReinvest(i);
-      if (r != null) reinvestSeries.push(r);
+  for (let i = lag; i < window.length - 1; i++) {
+    const y = window[i], older = window[i + 1];
+    const values = [y.capex, y.d_and_a, y.operating_working_capital, older.operating_working_capital];
+    if (!values.every(v => v != null && Number.isFinite(v))) {
+      return { assessable: false, gated_to_zero: false, wacc_band: waccBand,
+        not_assessable_reason: "Operating reinvestment history is incomplete; missing capital cannot be treated as zero.",
+        scenarios: { ...ZERO }, per_share: { ...ZERO }, notes: [...notes, "A complete operating-capital denominator is required."] };
     }
-    if (reinvestSeries.length > 0) notes.push("Endpoint lag relaxed to 1 year (short window).");
+    const mc = maintenanceCapex(window.slice(i));
+    const maint = mc.assessable && mc.value != null ? mc.value : y.d_and_a!;
+    reinvestSeries.push(Math.max(0, y.capex! - maint) + y.operating_working_capital! - older.operating_working_capital!);
   }
   const cumulativeReinvest = reinvestSeries.reduce((s, v) => s + v, 0);
   if (cumulativeReinvest <= 0) {
@@ -167,7 +149,13 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   }
 
   // Cumulative ROIIC = N-year NOPAT increment / Σ growth reinvestment (matured).
-  const roiic = (nopatLatest - nopatOldest) / cumulativeReinvest;
+  const baselineNopat = nopat(window[window.length - 1 - lag]);
+  if (baselineNopat == null || !Number.isFinite(baselineNopat)) {
+    return { assessable: false, gated_to_zero: false, wacc_band: waccBand,
+      not_assessable_reason: "Lag-aligned operating income is unavailable.",
+      scenarios: { ...ZERO }, per_share: { ...ZERO }, notes };
+  }
+  const roiic = (nopatLatest - baselineNopat) / cumulativeReinvest;
 
   // Representative annual growth reinvestment (average over the matured series).
   const annualReinvest = cumulativeReinvest / reinvestSeries.length;

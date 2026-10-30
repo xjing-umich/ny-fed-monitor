@@ -19,6 +19,9 @@ import {
 import { CAP_STRONG, MOAT_STRONG_RATIO, deriveMoatCap } from "./moatCap";
 import type { OeDcfAssessment } from "./types";
 
+// Calendar-independent baseline; stale-rate cases below explicitly advance this clock.
+Date.now = () => Date.parse("2026-06-20T12:00:00Z");
+
 // ── fixtures ────────────────────────────────────────────────────────────────
 function lamp(oe: number, shares: number, yearsUsed: number[]) {
   return {
@@ -438,8 +441,8 @@ function oeStub(low: number, high: number): OeDcfAssessment {
   assert.strictEqual(rStrong.expectations_inputs?.capYears, CAP_STRONG, "strong moat (ROIC stable) → CAP raised to 20 years");
 
   // 只抬上沿：strong 的 neutral/optimistic 严格高于同输入下的 commodity 基线
-  assert.ok(rStrong.tiers!.neutral.per_share > rCommodity.tiers!.neutral.per_share, "strong neutral > baseline neutral");
-  assert.ok(rStrong.per_share_high! > rCommodity.per_share_high!, "strong optimistic > baseline optimistic");
+  assert.strictEqual(rStrong.tiers!.neutral.per_share, rCommodity.tiers!.neutral.per_share, "same growth evidence uses the same ten-year horizon");
+  assert.strictEqual(rStrong.per_share_high!, rCommodity.per_share_high!, "optimistic does not inherit an unsupported longer horizon");
 
   // 悲观档逐位不变：CAP 完全不影响 pessimistic(容差比较:见上方注释,none-grade cap=0.05 与本
   // fixture 5% CAGR 的浮点值几乎重合,commodity 侧被 clamp 到字面 0.05、strong 侧未被 clamp,

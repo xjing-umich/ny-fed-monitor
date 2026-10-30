@@ -355,7 +355,7 @@ export function deriveOeDcf(
   // 防御性兜底（理论上真实 ValuationFloor 恒有 moat_cap）：缺失 → 视作非-franchise，CAP 不延长。
   const moatCap: MoatCapAssessment = floor.moat_cap ?? { grade: "none", capYears: 0, durablePassed: false, basis: "" };
   // CAP→显式期翻译：commodity/moderate(0/10) 一律保持基线 10 年（值不变）；strong(20) 才抬上沿。
-  const neutralCap = Math.max(PROJECTION_YEARS, moatCap.capYears);
+  const neutralCap = PROJECTION_YEARS; // Financial proxy grades do not extend the forecast horizon.
 
   const pessimistic: OeDcfTier = {
     growth_stage1: g1 / 2,
@@ -363,7 +363,6 @@ export function deriveOeDcf(
     ...tierValues(oe0, g1 / 2, discount.r_high, shares, 0), // 悲观档保留零增长底，不接 CAP，值逐位不变
   };
   // 基线 cap=10（今天的行为）：quick-check 诊断锚点，与 CAP 抬升解耦，保证 reliable 逐位不变。
-  const neutralBaselineRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal);
   // 展示用：moat-CAP 允许把中枢/乐观档投影抬到 20 年（strong 档）。
   const neutralRun = dcfTier(oe0, g1, discount.midpoint, shares, gTerminal, neutralCap);
   const neutral: OeDcfTier = {
@@ -386,7 +385,7 @@ export function deriveOeDcf(
   // quick-check 基线：与基线 cap=10 的 neutral 档（非展示用 neutralRun）比较同增长假设的
   // H-model 闭式解 —— 诊断口径与今天逐字一致，quick_check_flag/reliable 与 CAP 抬升完全解耦。
   const quickPerShare = hModelValue(oe0, g1, gTerminal, discount.midpoint) / shares;
-  const quickDev = Math.abs(neutralBaselineRun.perShare - quickPerShare) / quickPerShare;
+  const quickDev = Math.abs(neutralRun.perShare - quickPerShare) / quickPerShare;
   const rMinusG = discount.midpoint - g1;
   let oeYield: number | undefined;
   let oeYieldBps: number | undefined;

@@ -60,6 +60,12 @@ export function shouldDropTtmForMarks(ttmSyn: { degraded_fields: string[]; row: 
 
 const u = (v: number | null | undefined): number | undefined => (v == null ? undefined : v);
 
+function operatingWorkingCapital(r: FundamentalPeriod | undefined): number | undefined {
+  if (!r || r.working_capital == null || !Number.isFinite(r.working_capital) || r.cash_and_equivalents == null || !Number.isFinite(r.cash_and_equivalents)) return undefined;
+  const investments = r.short_term_investments ?? 0;
+  return Number.isFinite(investments) ? r.working_capital - r.cash_and_equivalents - investments : undefined;
+}
+
 function toFloorYear(r: FundamentalPeriod, adsRatio: number): ValuationFloorYear {
   return {
     fiscal_year: r.fiscal_year as number,
@@ -88,6 +94,7 @@ function toFloorYear(r: FundamentalPeriod, adsRatio: number): ValuationFloorYear
     sga_expense: u(r.sga_expense),
     stock_based_comp: u(r.stock_based_comp),
     working_capital: u(r.working_capital),
+    operating_working_capital: operatingWorkingCapital(r),
     ppe_net: u(r.ppe_net),
     operating_cash_flow: u(r.operating_cash_flow),
     share_repurchases: u(r.share_repurchases),
@@ -128,10 +135,10 @@ export function fundamentalsToFloorInput(
   const ttmUsable = ttmSyn && !(marks && !ttmMarksRow) && !(!marks && hasMaterialMarks(ttmMarksRow));
   const ttm = ttmUsable
     ? {
-        year: toFloorYear(
+        year: { ...toFloorYear(
           marks ? applyMarks(ttmSyn.row) : ttmSyn.row,
           adsRatio,
-        ),
+        ), operating_working_capital: operatingWorkingCapital(quarterRows?.find(r => r.period_end === ttmSyn.period_end && r.form === "10-Q" && r.is_derived !== true)) },
         period_end: ttmSyn.period_end,
         quarters_used: ttmSyn.quarters_used,
         shares_from_fy: ttmSyn.shares_from_fy,

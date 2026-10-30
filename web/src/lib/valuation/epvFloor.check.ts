@@ -126,7 +126,7 @@ assert.strictEqual(floor.high_leverage_warning, false, "net-cash compounder no w
   const mk = (fy: number, oi: number, eq: number): ValuationFloorYear => ({
     fiscal_year: fy, revenue: oi / 0.4, operating_margin: 0.4, operating_income: oi, net_income: oi * 0.75,
     effective_tax_rate: 0.15, shareholders_equity: eq, goodwill: 200, intangibles: 100, cash: 0, total_debt: 0,
-    net_debt: 0, shares_diluted: 1_000, rd_expense: oi * 0.25, d_and_a: 800, capex: 1_500, ppe_net: 5_000, working_capital: 1_000,
+    net_debt: 0, shares_diluted: 1_000, rd_expense: oi * 0.25, d_and_a: 800, capex: 1_500, ppe_net: 5_000, working_capital: 1_000, operating_working_capital: 1_000,
   });
   const strongYears: ValuationFloorYear[] = [
     mk(2025, 3_600, 10_200), mk(2024, 3_200, 9_100), mk(2023, 2_850, 8_100),
@@ -288,9 +288,9 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   // is auditing ΔNWC exclusion (#3) and SBC non-add-back (#6), not the earnings-lift path, so
   // it deliberately does not need a rising net-income series.
   const years = [
-    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 500, total_debt: 0, shares_diluted: 1_000, capex: 1_500, d_and_a: 1_000, ppe_net: 9_000, stock_based_comp: 200, working_capital: 1_000 },
-    { fiscal_year: 2024, revenue: 9_500, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_800, cash: 450, total_debt: 0, shares_diluted: 1_000, capex: 1_400, d_and_a: 950, ppe_net: 8_500, stock_based_comp: 180, working_capital: 800 },
-    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 400, total_debt: 0, shares_diluted: 1_000, capex: 1_300, d_and_a: 900, ppe_net: 8_000, stock_based_comp: 160, working_capital: 600 },
+    { fiscal_year: 2025, revenue: 10_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 5_000, cash: 500, total_debt: 0, shares_diluted: 1_000, capex: 1_500, d_and_a: 1_000, ppe_net: 9_000, stock_based_comp: 200, working_capital: 1_000, operating_working_capital: 1_000 },
+    { fiscal_year: 2024, revenue: 9_500, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_800, cash: 450, total_debt: 0, shares_diluted: 1_000, capex: 1_400, d_and_a: 950, ppe_net: 8_500, stock_based_comp: 180, working_capital: 800, operating_working_capital: 800 },
+    { fiscal_year: 2023, revenue: 9_000, operating_margin: 0.30, net_income: 1_800, effective_tax_rate: 0.20, shareholders_equity: 4_600, cash: 400, total_debt: 0, shares_diluted: 1_000, capex: 1_300, d_and_a: 900, ppe_net: 8_000, stock_based_comp: 160, working_capital: 600, operating_working_capital: 600 },
   ];
   const floor = computeValuationFloor({ ticker: "OE", years });
   assert.ok(floor && "kind" in floor && floor.kind === "floor");
@@ -338,11 +338,11 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
 {
   // Same R&D franchise grower as the moat test but with a rising operating-income series.
   const years = [
-    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 1_800, ppe_net: 6_000, working_capital: 2_000 },
-    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 1_600, ppe_net: 5_500, working_capital: 1_700 },
-    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 1_400, ppe_net: 5_000, working_capital: 1_400 },
-    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 650, capex: 1_200, ppe_net: 4_500, working_capital: 1_200 },
-    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 600, capex: 1_000, ppe_net: 4_000, working_capital: 1_000 },
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 1_800, ppe_net: 6_000, working_capital: 2_000, operating_working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 1_600, ppe_net: 5_500, working_capital: 1_700, operating_working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 1_400, ppe_net: 5_000, working_capital: 1_400, operating_working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 650, capex: 1_200, ppe_net: 4_500, working_capital: 1_200, operating_working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 600, capex: 1_000, ppe_net: 4_000, working_capital: 1_000, operating_working_capital: 1_000 },
   ];
   const floor = computeValuationFloor({ ticker: "GROW", years });
   assert.ok(floor && "kind" in floor && floor.kind === "floor");
@@ -356,9 +356,9 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
 
   // A commodity (low margin, EPV ≈ AV) → GV gated to zero.
   const commodityYears = [
-    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.05, operating_income: 1_000, net_income: 700, effective_tax_rate: 0.21, shareholders_equity: 9_000, cash: 200, total_debt: 0, shares_diluted: 1_000, d_and_a: 800, capex: 1_200, ppe_net: 9_000, working_capital: 2_000 },
-    { fiscal_year: 2024, revenue: 18_000, operating_margin: 0.05, operating_income: 900, net_income: 650, effective_tax_rate: 0.21, shareholders_equity: 8_500, cash: 180, total_debt: 0, shares_diluted: 1_000, d_and_a: 750, capex: 1_100, ppe_net: 8_500, working_capital: 1_800 },
-    { fiscal_year: 2023, revenue: 16_000, operating_margin: 0.05, operating_income: 800, net_income: 600, effective_tax_rate: 0.21, shareholders_equity: 8_000, cash: 160, total_debt: 0, shares_diluted: 1_000, d_and_a: 700, capex: 1_000, ppe_net: 8_000, working_capital: 1_600 },
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.05, operating_income: 1_000, net_income: 700, effective_tax_rate: 0.21, shareholders_equity: 9_000, cash: 200, total_debt: 0, shares_diluted: 1_000, d_and_a: 800, capex: 1_200, ppe_net: 9_000, working_capital: 2_000, operating_working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 18_000, operating_margin: 0.05, operating_income: 900, net_income: 650, effective_tax_rate: 0.21, shareholders_equity: 8_500, cash: 180, total_debt: 0, shares_diluted: 1_000, d_and_a: 750, capex: 1_100, ppe_net: 8_500, working_capital: 1_800, operating_working_capital: 1_800 },
+    { fiscal_year: 2023, revenue: 16_000, operating_margin: 0.05, operating_income: 800, net_income: 600, effective_tax_rate: 0.21, shareholders_equity: 8_000, cash: 160, total_debt: 0, shares_diluted: 1_000, d_and_a: 700, capex: 1_000, ppe_net: 8_000, working_capital: 1_600, operating_working_capital: 1_600 },
   ];
   const cFloor = computeValuationFloor({ ticker: "COMM", years: commodityYears });
   assert.ok(cFloor && "kind" in cFloor && cFloor.kind === "floor");
@@ -465,11 +465,11 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   // High-margin franchise with capex doubling (8000/3500 ≥ 2) → AI warning lifts to floor;
   // growth value forced gated_to_zero despite franchise moat.
   const aiYears: ValuationFloorYear[] = [
-    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 2_000, capex: 8_000, ppe_net: 18_000, working_capital: 2_000 },
-    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 1_900, capex: 5_000, ppe_net: 12_000, working_capital: 1_700 },
-    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 1_800, capex: 3_500, ppe_net: 8_000, working_capital: 1_400 },
-    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 1_650, capex: 3_200, ppe_net: 6_500, working_capital: 1_200 },
-    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 1_500, capex: 3_000, ppe_net: 5_500, working_capital: 1_000 },
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 2_000, capex: 8_000, ppe_net: 18_000, working_capital: 2_000, operating_working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 1_900, capex: 5_000, ppe_net: 12_000, working_capital: 1_700, operating_working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 1_800, capex: 3_500, ppe_net: 8_000, working_capital: 1_400, operating_working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 1_650, capex: 3_200, ppe_net: 6_500, working_capital: 1_200, operating_working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 1_500, capex: 3_000, ppe_net: 5_500, working_capital: 1_000, operating_working_capital: 1_000 },
   ];
   assert.strictEqual(maintenanceCapex(aiYears).ai_capex_distortion_warning, true, "fixture triggers AI-hog");
   const aiFloor = floorOf(computeValuationFloor({ ticker: "AIHOG", years: aiYears }));
@@ -500,11 +500,11 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   // capex-only trigger fires regardless of financial/revenue scaling); duplicated here
   // (rather than reused across the block boundary) so this block is self-contained.
   const aiYears: ValuationFloorYear[] = [
-    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 2_000, capex: 8_000, ppe_net: 18_000, working_capital: 2_000 },
-    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 1_900, capex: 5_000, ppe_net: 12_000, working_capital: 1_700 },
-    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 1_800, capex: 3_500, ppe_net: 8_000, working_capital: 1_400 },
-    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 1_650, capex: 3_200, ppe_net: 6_500, working_capital: 1_200 },
-    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 1_500, capex: 3_000, ppe_net: 5_500, working_capital: 1_000 },
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 2_000, capex: 8_000, ppe_net: 18_000, working_capital: 2_000, operating_working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 1_900, capex: 5_000, ppe_net: 12_000, working_capital: 1_700, operating_working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 1_800, capex: 3_500, ppe_net: 8_000, working_capital: 1_400, operating_working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 1_650, capex: 3_200, ppe_net: 6_500, working_capital: 1_200, operating_working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 1_500, capex: 3_000, ppe_net: 5_500, working_capital: 1_000, operating_working_capital: 1_000 },
   ];
   // Variant A — financial SIC + capex 相对营收不重要(revenue ×3,capex/D&A/PP&E 不变):
   // mean(capex)=4540,mean(revenue)=45000 → ratio≈10.1%,低于 20% 阈值,留有余量。
@@ -577,11 +577,11 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
 // have flipped the CAGR-based `declined` read used only for the OE-DCF-side grade recomputation.
 {
   const growYears: ValuationFloorYear[] = [
-    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 1_800, ppe_net: 6_000, working_capital: 2_000 },
-    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 1_600, ppe_net: 5_500, working_capital: 1_700 },
-    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 1_400, ppe_net: 5_000, working_capital: 1_400 },
-    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 650, capex: 1_200, ppe_net: 4_500, working_capital: 1_200 },
-    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 600, capex: 1_000, ppe_net: 4_000, working_capital: 1_000 },
+    { fiscal_year: 2025, revenue: 20_000, operating_margin: 0.40, operating_income: 8_000, net_income: 6_000, effective_tax_rate: 0.15, shareholders_equity: 10_000, goodwill: 1_000, intangibles: 500, cash: 3_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 2_000, d_and_a: 800, capex: 1_800, ppe_net: 6_000, working_capital: 2_000, operating_working_capital: 2_000 },
+    { fiscal_year: 2024, revenue: 17_000, operating_margin: 0.40, operating_income: 6_800, net_income: 5_100, effective_tax_rate: 0.15, shareholders_equity: 9_000, goodwill: 1_000, intangibles: 500, cash: 2_500, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_800, d_and_a: 750, capex: 1_600, ppe_net: 5_500, working_capital: 1_700, operating_working_capital: 1_700 },
+    { fiscal_year: 2023, revenue: 14_500, operating_margin: 0.40, operating_income: 5_800, net_income: 4_350, effective_tax_rate: 0.15, shareholders_equity: 8_000, goodwill: 1_000, intangibles: 500, cash: 2_000, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_600, d_and_a: 700, capex: 1_400, ppe_net: 5_000, working_capital: 1_400, operating_working_capital: 1_400 },
+    { fiscal_year: 2022, revenue: 12_500, operating_margin: 0.40, operating_income: 5_000, net_income: 3_750, effective_tax_rate: 0.15, shareholders_equity: 7_000, goodwill: 1_000, intangibles: 500, cash: 1_800, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_400, d_and_a: 650, capex: 1_200, ppe_net: 4_500, working_capital: 1_200, operating_working_capital: 1_200 },
+    { fiscal_year: 2021, revenue: 11_000, operating_margin: 0.40, operating_income: 4_400, net_income: 3_300, effective_tax_rate: 0.15, shareholders_equity: 6_000, goodwill: 1_000, intangibles: 500, cash: 1_600, total_debt: 0, shares_diluted: 1_000, rd_expense: 1_200, d_and_a: 600, capex: 1_000, ppe_net: 4_000, working_capital: 1_000, operating_working_capital: 1_000 },
   ];
   const gFloor = floorOf(computeValuationFloor({ ticker: "BUG2", years: growYears }));
   assert.strictEqual(gFloor.moat_reading.signal, "franchise", "BUG2 fixture reads franchise (reused GROW fixture)");
@@ -626,7 +626,7 @@ assert.strictEqual(computeValuationFloor({ ticker: "THIN2", years: financial.yea
   const mk = (fy: number, oi: number, eq: number, capex: number): ValuationFloorYear => ({
     fiscal_year: fy, revenue: oi / 0.4, operating_margin: 0.4, operating_income: oi, net_income: oi * 0.75,
     effective_tax_rate: 0.15, shareholders_equity: eq, goodwill: 200, intangibles: 100, cash: 0, total_debt: 0,
-    net_debt: 0, shares_diluted: 1_000, rd_expense: oi * 0.25, d_and_a: 800, capex, ppe_net: 5_000, working_capital: 1_000,
+    net_debt: 0, shares_diluted: 1_000, rd_expense: oi * 0.25, d_and_a: 800, capex, ppe_net: 5_000, working_capital: 1_000, operating_working_capital: 1_000,
   });
   // ROIC = 0.85*oi/eq;设成稳定 ~0.30。capex 平(1500 上下,无翻倍)。
   const baseYears: ValuationFloorYear[] = [
