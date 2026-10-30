@@ -66,6 +66,8 @@
 - Production rollout requires queue migration before the holdings workflow, deployment, then full fundamentals and valuation publication. No production data mutation performed in this branch.
 
 - Independent review found and repaired three missed boundaries: report snapshot guards, shared cron/API ingestion publication, and valuation after partial ingestion failure. Queue intent is now persisted per company in ingestCompany, before the next company can fail; server routes drain the same queue directly.
-- Replayed 19 SEC CompanyFacts captures retrieved 2026-10-30 (308 normalized rows): only fiscal labels changed (MSFT 9, PDD 1), with every other normalized field byte-identical. These are dated regression inputs, not fresh investment observations.
+- Replayed 19 SEC CompanyFacts captures retrieved 2026-10-30 (308 normalized rows): only MSFT fiscal labels changed (9 rows), with every other normalized field byte-identical. These are dated regression inputs, not fresh investment observations.
 - Next production compile mode passes. Full build passed compilation/type checks but cannot prerender without Supabase credentials in the isolated checkout. No production credentials were added or production data written. Changed-file lint has zero new findings; 10 pre-existing no-explicit-any errors remain in the two legacy consensus/price writer files.
 - Parsed the actual workflow YAML and evaluated its valuation condition: successful or partial-failed ingestion with changed tickers continues; empty/no-change/cancelled runs do not.
+
+- Replay caught stale FY metadata on PDD’s original 2021 20-F. Reported focus is trusted only for 10-K; foreign annual labels retain the period-end convention. Added a failing regression before the correction; PDD normalized values/labels remain unchanged.

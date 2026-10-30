@@ -701,9 +701,10 @@ export function normalizeCompanyFacts(
   }
 
   // Labels are presentation identities, never calendar bucket keys. Prefer the
-  // original annual filing's own FY focus; later comparative facts carry newer FYs.
+  // original 10-K filing's own FY focus; later comparative facts carry newer FYs.
+  // 20-F FY metadata is unreliable even on original filings (PDD 2021 reports fy=2020).
   const ownFiscalYears = FLOW_FIELDS.flatMap(field => FUNDAMENTAL_TAGS[field].flatMap(tag => getUnits(facts, tag)))
-    .filter(u => u.start && u.end && Number.isInteger(u.fy) && u.filed && /^(10-K|20-F)/.test(u.form ?? "")
+    .filter(u => u.start && u.end && Number.isInteger(u.fy) && u.filed && /^10-K/.test(u.form ?? "")
       && dayCount(u.start, u.end)! >= 350 && dayCount(u.start, u.end)! <= 380
       && toDay(u.filed) >= toDay(u.end) && toDay(u.filed) - toDay(u.end) <= 180)
     .sort((a,b) => a.filed!.localeCompare(b.filed!));

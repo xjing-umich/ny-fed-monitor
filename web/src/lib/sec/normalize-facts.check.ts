@@ -312,3 +312,9 @@ const focusedFacts=fyeDriftFacts();
 for(const concept of Object.values(focusedFacts.facts["us-gaap"]))for(const units of Object.values(concept.units))for(const u of units)if(u.end==="2025-02-02")u.fy=2025;
 const focused=normalizeCompanyFacts("RETAIL", "0000000009", focusedFacts, fyeDriftFilings(), "0128");
 assert(focused.annual.find(r=>r.period_end==="2025-02-02")?.fiscal_year===2025,"own reported fiscal focus must override fallback retail naming");
+
+// Real SEC 20-F metadata can carry a stale FY focus even for the original filing.
+const foreignFocus=mkFacts({Revenues:[["2021-01-01","2021-12-31",100,"2022-04-25","20-F"]]});
+for(const concept of Object.values(foreignFocus.facts["us-gaap"]))for(const units of Object.values(concept.units))for(const u of units)u.fy=2020;
+const foreignResult=normalizeCompanyFacts("FOREIGN","0000000008",foreignFocus,[],"1231");
+assert(foreignResult.annual[0]?.fiscal_year===2021,"stale 20-F fiscal focus cannot relabel the actual 2021 reporting period as 2020");
