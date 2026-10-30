@@ -551,7 +551,7 @@ function oeStub(low: number, high: number): OeDcfAssessment {
     moat_cap: { grade: "none", capYears: 0, durablePassed: false, basis: "test fixture" },
   } as unknown as ValuationFloor;
   const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
-  assert.ok(Math.abs(r.growth_g1! - GROWTH_CAP_NONE) < 1e-6, `T2: 金融股 SGR 缺失退 0.05, got ${r.growth_g1}`);
+  assert.strictEqual(r.growth_g1, 0, "missing or zero financial SGR cannot fall back to positive growth");
 }
 
 // T3) 金融股 SGR 非正(≤0)→ 同样退 GROWTH_CAP_NONE 0.05(不给负/零留存的金融股任何增长空间)
@@ -565,7 +565,7 @@ function oeStub(low: number, high: number): OeDcfAssessment {
     moat_cap: { grade: "none", capYears: 0, durablePassed: false, basis: "test fixture" },
   } as unknown as ValuationFloor;
   const r = deriveOeDcf(floor, years, { value: 4.25, date: "d" }, null);
-  assert.ok(Math.abs(r.growth_g1! - GROWTH_CAP_NONE) < 1e-6, `T3: 金融股 SGR≤0 退 0.05, got ${r.growth_g1}`);
+  assert.strictEqual(r.growth_g1, 0, "missing or zero financial SGR cannot fall back to positive growth");
 }
 
 // T4) 金融股 SGR 高于 moderate(SGR=15%)→ cap=min(0.15,GROWTH_CAP_MODERATE=0.07)=0.07,历史 25% 被 0.07 封顶
@@ -765,8 +765,8 @@ function oeStub(low: number, high: number): OeDcfAssessment {
     const r = deriveOeDcf(floor, years, dgs10, price(120));
     assert.ok(r.assessable, "U3: assessable");
     assert.ok(
-      Math.abs(r.growth_g1! - 0.03) < 1e-6,
-      `U3: 金融 franchise 未被本改动影响,gFund 仍参与 min → g1≈0.03, got ${r.growth_g1}`,
+      Math.abs(r.growth_g1! - 0.06) < 1e-6,
+      `U3: financial growth uses SGR=0.06 rather than industrial reinvestment, got ${r.growth_g1}`,
     );
   }
 }
