@@ -16,11 +16,11 @@ export function LinearValueAxis({ axis, low, high, price, lang }: {
     : `One US-dollar scale: model ${point ? "estimate" : "range"} ${fmtPerShareValue(low)}${point ? "" : ` to ${fmtPerShareValue(high)}`}; price ${fmtPrice(price)}.`;
   return (
     <div className="mt-6 max-w-4xl" role="img" aria-label={description} data-value-axis="linear" data-point-range={point}>
-      <div className={`relative text-xs ${close ? "h-12" : "h-6"}`}>
+      <div className={`relative text-xs ${close ? "h-16" : "h-6"}`}>
         <span className="absolute top-0 w-20 text-center text-[var(--val-within)]" style={label(middle)}>
           {lang === "zh" ? point ? "模型参考" : "模型区间" : point ? "Model estimate" : "Model range"}
         </span>
-        <span className={`absolute w-20 text-center text-[var(--tt-text)] ${close ? "top-6" : "top-0"}`} style={label(axis.price)}>
+        <span className={`absolute w-20 text-center text-[var(--tt-text)] ${close ? "top-10" : "top-0"}`} style={label(axis.price)}>
           {lang === "zh" ? "现价 ↓" : "Price ↓"}
         </span>
       </div>
