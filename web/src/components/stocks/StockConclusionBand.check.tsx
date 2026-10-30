@@ -33,7 +33,15 @@ assert.ok(!noMargin.includes("Margin"), "无安全边际时不渲染");
 
 assert.ok(html.indexOf("混合快照") < html.indexOf("Q2 2026"), "快照口径紧邻摘要,动作季度另组");
 assert.ok(!html.includes("md:grid-cols-[3fr_2fr]"), "不再左右分栏");
-assert.ok(!noMargin.includes("Major holders"), "无姓名不造身份行");
+assert.ok(!noMargin.includes("Largest:"), "无姓名不造身份行");
+for (const count of [0, 1]) {
+  const name = "SyntheticExtremelyLongUnbrokenInvestorNameForOverflowVerification";
+  const edge = renderToStaticMarkup(<StockConclusionBand lang="en" left={null} marginText={null}
+    holders={{ count, total: count ? "$5M" : "$0", leaders: count ? [{ name, href: "/en/investors/fixture" }] : [], snapshotNote: "Unknown report period", quarter: "Q2 2026", moves: { opened: 0, added: 0, trimmed: 0, exited: 0 }, exited: [] }} />);
+  assert.ok(edge.includes(count ? "1 superinvestor holds it" : "0 superinvestors hold it"));
+  assert.equal(edge.includes(name), count === 1, "长名字完整保留,零持有人不虚构身份");
+  assert.ok(edge.includes("Unknown report period"), "未知报告期仍然明确标注");
+}
 const nav = renderToStaticMarkup(<StockAnchorNav lang="zh" anchors={stockAnchors({ valuation: true, quality: false, coOwned: false }, "zh")} />);
 assert.ok(nav.includes('href="#holders"') && nav.includes('href="#valuation"') && nav.includes('href="#sources"'), "锚点链接");
 assert.ok(!nav.includes('href="#quality"'), "没有的区块不出现");

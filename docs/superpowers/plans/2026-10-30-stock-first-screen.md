@@ -1,6 +1,6 @@
 # 个股首屏正式实现 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 把用户确认的 AAPL 首屏原型落实到所有个股页，十秒内可辨价格位置、主要持有人和日期。
 
@@ -35,10 +35,10 @@
 
 **Interfaces:** Consumes `ValuationVerdict`, type-only `LatestPrice`, `bandPosition`, i18n per-share/price/date helpers. Produces `linearValueAxis(lo:number,hi:number,price:number): { max:number; low:number; high:number; price:number; ticks:number[] } | null` (positions为0–100比例)；`stockValueSummary({verdict,quote,reference?,kind},lang): StockValueSummary|null`；`stockFallbackHeading(state,reliable,lang):string`。kind为earnings/zero-growth/sotp。
 
-- [ ] Step1 写失败检查：轴(90,180,360)终点400、坐标22.5/45/90；p=lo/hi为within；单点、0.01级、1e12级数有限；NaN/负/倒置返回null。bucket below而p150处在90..180时标题为区间内。reliable=false、stale、非USD、缺价/无verdict返回null；缺中枢不显示reference，SOTP标签不是OE-DCF。
-- [ ] Step2 Run `cd web && node_modules/.bin/tsx --tsconfig scripts/tsconfig.json src/lib/stocks/stockFirstScreen.check.ts`，Expected失败（模块不存在）。
-- [ ] Step3 实现以上签名。轴从0开始，padding8%，目标4个间隔，采用1/2/2.5/5/10的十进制友好步长向上取整；处理乘法溢出回退、禁止NaN。结论使用区间位置，位置差值只在有限时展示。
-- [ ] Step4 重跑检查，Expected OK；commit。
+- [x] Step1 写失败检查：轴(90,180,360)终点400、坐标22.5/45/90；p=lo/hi为within；单点、0.01级、1e12级数有限；NaN/负/倒置返回null。bucket below而p150处在90..180时标题为区间内。reliable=false、stale、非USD、缺价/无verdict返回null；缺中枢不显示reference，SOTP标签不是OE-DCF。
+- [x] Step2 Run `cd web && node_modules/.bin/tsx --tsconfig scripts/tsconfig.json src/lib/stocks/stockFirstScreen.check.ts`，Expected失败（模块不存在）。
+- [x] Step3 实现以上签名。轴从0开始，padding8%，目标4个间隔，采用1/2/2.5/5/10的十进制友好步长向上取整；处理乘法溢出回退、禁止NaN。结论使用区间位置，位置差值只在有限时展示。
+- [x] Step4 重跑检查，Expected OK；commit。
 
 ### Task 2: 价格与价值概览组件
 
@@ -46,21 +46,21 @@
 
 **Interfaces:** LinearValueAxis consumes Task1 axis和原始lo/hi/price/lang，输出RSC SVG/HTML。StockValuationSummary consumes Task1 `StockValueSummary`、lang、可选marginText，输出醒目H2、收盘价、模型区间/单点、可选中枢、同轴图、原生口径details。
 
-- [ ] Step1 写失败渲染检查：双语标题/收盘价/来源/价格日/参考名称；轴aria完整含数值；相同值区间折成单点；只有一个可见价格数字、参考只一次；details含模型属性与取整说明；没有客户端指令。单一零增长估计不写含增长上沿。
-- [ ] Step2 Run `cd web && node_modules/.bin/tsx --tsconfig scripts/tsconfig.json src/components/stocks/StockFirstScreen.check.tsx`，Expected模块不存在。
-- [ ] Step3 实现组件，字体用现有字阶；SVG文字首尾按anchor处理，少量刻度且间隔合理；颜色来自position，范围不来自bucket。手机至少44px说明热区。
-- [ ] Step4 重跑检查，Expected OK；commit。
+- [x] Step1 写失败渲染检查：双语标题/收盘价/来源/价格日/参考名称；轴aria完整含数值；相同值区间折成单点；只有一个可见价格数字、参考只一次；details含模型属性与取整说明；没有客户端指令。单一零增长估计不写含增长上沿。
+- [x] Step2 Run `cd web && node_modules/.bin/tsx --tsconfig scripts/tsconfig.json src/components/stocks/StockFirstScreen.check.tsx`，Expected模块不存在。
+- [x] Step3 实现组件，字体用现有字阶；SVG文字首尾按anchor处理，少量刻度且间隔合理；颜色来自position，范围不来自bucket。手机至少44px说明热区。
+- [x] Step4 重跑检查，Expected OK；commit。
 
 ### Task 3: 纵向结论带与持仓摘要
 
 **Files:** Modify `web/src/components/stocks/StockConclusionBand.tsx`, `.check.tsx`.
 
-**Interfaces:** 保留lang/left/marginText；holders新增 `leaders:{name:string;href:string}[]`、`snapshotNote:string`，移除首屏trend；保留line/quarter/moves/exited。父页面负责排序取两位、用snapshotTime生成口径。
+**Interfaces:** 保留lang/left/marginText；holders新增 `leaders:{name:string;href:string}[]`、`snapshotNote:string`，移除首屏trend；以count/total替代line，保留quarter/moves/exited。父页面负责排序取两位、用snapshotTime生成口径。
 
-- [ ] Step1 更新渲染断言，验证左右分栏类消失、leader链接按传入顺序、snapshotNote位于动作分组前，动作季度独立；0 leaders不画身份行，1位没有空分隔符、长名可换行。既有清仓列表和nav检查保留。
-- [ ] Step2 运行 StockConclusionBand.check，Expected因未渲染新字段失败。
-- [ ] Step3 实现纵向布局：left先；摘要含计数/市值、主要名字、snapshotNote、动作+股数口径；折叠前留关键日期。沿用共享QuarterMovesLine，不另写动作计数或清仓名单。
-- [ ] Step4 重跑检查，Expected OK；commit。
+- [x] Step1 更新渲染断言，验证左右分栏类消失、leader链接按传入顺序、snapshotNote位于动作分组前，动作季度独立；0 leaders不画身份行，1位没有空分隔符、长名可换行。既有清仓列表和nav检查保留。
+- [x] Step2 运行 StockConclusionBand.check，Expected因未渲染新字段失败。
+- [x] Step3 实现纵向布局：left先；摘要含计数/市值、主要名字、snapshotNote、动作+股数口径；折叠前留关键日期。沿用共享QuarterMovesLine，不另写动作计数或清仓名单。
+- [x] Step4 重跑检查，Expected OK；commit。
 
 ### Task 4: 页面装配与状态保全
 
@@ -68,10 +68,10 @@
 
 **Interfaces:** new model使用同一次run.verdict、latestPrice、有效OE中性值或SOTP中枢。仅可信card/spine或可信SOTP使用新概览，其余沿用bandLeft且加Task1的中性醒目标题。已有方法卡提供全部原风险解释。
 
-- [ ] Step1 补组件/装配检查，锁定全部fallback不出现新比较图；SOTP/单灯名称；缺失价格/增长证据原因仍可读。先运行，Expected缺装配或闸门断言失败。
-- [ ] Step2 组装新摘要；删除重复masthead估值和预期徽章；PriceBetBlock正文保留。leaders取现有holders按市值降序前2，snapshotTime使用实际periods，不用动作季度冒充。
-- [ ] Step3 trendSeries传入HoldersTable，新增原生details保留HolderTrend与回填提示；原snapshotNote搬首屏不重复，原申报季说明保留。其余证据、行数与链接不变。
-- [ ] Step4 Run各feature checks、`tsc --noEmit`、改动文件ESLint、prebuild；Expected无新增失败。commit。
+- [x] Step1 补组件/装配检查，锁定全部fallback不出现新比较图；SOTP/单灯名称；缺失价格/增长证据原因仍可读。先运行，Expected缺装配或闸门断言失败。
+- [x] Step2 组装新摘要；删除重复masthead估值和预期徽章；PriceBetBlock正文保留。leaders取现有holders按市值降序前2，snapshotTime使用实际periods，不用动作季度冒充。
+- [x] Step3 trendSeries传入HoldersTable，新增原生details保留HolderTrend与回填提示；原snapshotNote搬首屏不重复，原申报季说明保留。其余证据、行数与链接不变。
+- [x] Step4 Run各feature checks、`tsc --noEmit`、改动文件ESLint、prebuild；Expected无新增失败。commit。
 
 ### Task 5: 整体验证、独立review与PR
 

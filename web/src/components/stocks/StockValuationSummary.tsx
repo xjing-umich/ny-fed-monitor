@@ -13,6 +13,11 @@ const POSITION_COLOR = {
 /** 已通过权威闸门的价格概览。方法/明细仍由原估值卡渲染。 */
 export function StockValuationSummary({ model, lang, marginText }: { model: StockValueSummary; lang: Lang; marginText?: string | null }) {
   const zh = lang === "zh";
+  const priceText = fmtPrice(model.price);
+  const rangeText = fmtValueBand(model.rangeLo, model.rangeHi, fmtPerShareValue);
+  // Preserve complete amounts without squeezing a long price into half a phone screen.
+  const wideAmounts = priceText.length > 8 || rangeText.length > 13;
+  const priceSize = priceText.length > 14 ? "text-2xl sm:text-3xl" : "text-4xl sm:text-5xl";
   const explanation = model.kind === "sotp"
     ? zh ? "分部估值按各项业务与资产的现有假设汇总，推导表保留在下方估值方法中。" : "The sum-of-the-parts estimate combines the existing assumptions for each business and asset. The derivation is retained in the valuation section."
     : model.kind === "zero-growth"
@@ -23,15 +28,15 @@ export function StockValuationSummary({ model, lang, marginText }: { model: Stoc
       <h2 className="text-balance font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-5xl">{model.heading}</h2>
       {model.gap && <p className={`mt-2 text-base ${POSITION_COLOR[model.position]}`}><span aria-hidden>● </span>{model.gap}</p>}
       {marginText && <p className="mt-2 font-data text-sm font-medium text-[var(--val-below)]">{marginText}</p>}
-      <dl className="mt-6 grid max-w-3xl grid-cols-2 gap-x-5 sm:gap-x-14">
+      <dl className={`mt-6 grid max-w-3xl gap-x-5 gap-y-4 sm:gap-x-14 ${wideAmounts ? "grid-cols-1" : "grid-cols-2"}`}>
         <div className="min-w-0">
           <dt className="text-sm text-[var(--tt-muted)]">{zh ? "最近收盘价" : "Latest closing price"}</dt>
-          <dd className="mt-1 whitespace-nowrap font-data text-4xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-5xl">{fmtPrice(model.price)}</dd>
+          <dd className={`mt-1 font-data font-medium leading-tight tracking-tight text-[var(--tt-text)] [overflow-wrap:anywhere] ${priceSize}`}>{priceText}</dd>
           <dd className="mt-2 text-xs text-[var(--tt-muted)]"><time dateTime={model.date}>{formatDate(model.date, lang, "table")}</time><span> · {model.source}</span></dd>
         </div>
         <div className="min-w-0">
           <dt className="text-sm text-[var(--tt-muted)]">{model.rangeLabel}</dt>
-          <dd className="mt-2 font-data text-2xl font-medium leading-tight text-[var(--tt-text)] sm:text-3xl">{fmtValueBand(model.rangeLo, model.rangeHi, fmtPerShareValue)}</dd>
+          <dd className="mt-2 font-data text-2xl font-medium leading-tight text-[var(--tt-text)] [overflow-wrap:anywhere] sm:text-3xl">{rangeText}</dd>
           {model.reference != null && <dd className="mt-2 text-xs text-[var(--tt-muted)]">{model.referenceLabel} <strong className="font-medium text-[var(--tt-text)]">{fmtPerShareValue(model.reference)}</strong></dd>}
         </div>
       </dl>

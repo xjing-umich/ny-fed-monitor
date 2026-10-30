@@ -38,15 +38,15 @@ export function StockConclusionBand({
       </div>
       <div className="min-w-0 space-y-2 border-t border-[var(--tt-border)] pt-4">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 className="font-display text-xl font-medium text-[var(--tt-text)]">{lang === "zh" ? `${holders.count} 位超级投资者持有` : `${holders.count} tracked investor${holders.count === 1 ? " holds" : "s hold"} this stock`}</h2>
+          <h2 className="font-display text-xl font-medium text-[var(--tt-text)]">{lang === "zh" ? `${holders.count} 位超级投资者持有` : `${holders.count} superinvestor${holders.count === 1 ? " holds" : "s hold"} it`}</h2>
           <Link href="#holders" className="inline-flex min-h-11 items-center text-xs text-[var(--tt-muted)] hover:text-[var(--tt-accent)]">{lang === "zh" ? "查看持仓" : "View holdings"} →</Link>
         </div>
         <p className="font-data text-sm text-[var(--tt-muted)]">{lang === "zh" ? "申报持仓合计 " : "Reported holdings total "}{holders.total}</p>
         {holders.leaders.length > 0 && <p className="text-sm leading-relaxed text-[var(--tt-text)]">
-          <span className="text-[var(--tt-muted)]">{lang === "zh" ? "主要持有人：" : "Major holders: "}</span>
+          <span className="text-[var(--tt-muted)]">{lang === "zh" ? "主要持有人：" : "Largest: "}</span>
           {holders.leaders.map((leader, i) => <React.Fragment key={leader.href}>
             {i > 0 && <span aria-hidden="true"> · </span>}
-            <Link href={leader.href} className="inline-block min-h-11 content-center break-words hover:text-[var(--tt-accent)]">{leader.name}</Link>
+            <Link href={leader.href} className="inline-block min-h-11 max-w-full content-center [overflow-wrap:anywhere] hover:text-[var(--tt-accent)]">{leader.name}</Link>
           </React.Fragment>)}
         </p>}
         <p className="text-xs leading-relaxed text-[var(--tt-muted)]">{holders.snapshotNote}</p>
