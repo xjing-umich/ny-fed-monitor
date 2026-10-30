@@ -141,8 +141,10 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
   const stockHolders = computeStockHolders(holderScan, cmap);
   const coOwnership = computeCoOwnership(holderScan, cmap);
 
-  await db.from("consensus_holdings").delete().neq("ticker", "");
-  await db.from("consensus_moves").delete().neq("ticker", "");
+  for (const table of ["consensus_holdings", "consensus_moves"]) {
+    const { error } = await db.from(table).delete().neq("ticker", "");
+    if (error) throw new Error(`${table} delete failed: ${error.message}`);
+  }
   // Write failures must throw, not warn: a swallowed moves-upsert error (e.g. a
   // missing column / stale PostgREST cache) previously left consensus_moves
   // silently empty while the run still reported success.
@@ -161,9 +163,10 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     console.warn("consensus_stock_holders 表不存在 — 跳过(先跑 migration)。");
     return finish({ holdings: holdings.length, moves: moves.length, stockHolders: 0, trend: 0, coOwnership: 0 });
   }
+  if (shDelErr) throw new Error(`consensus_stock_holders delete failed: ${shDelErr.message}`);
   for (let i = 0; i < stockHolders.length; i += 500) {
     const { error } = await db.from("consensus_stock_holders").upsert(stockHolders.slice(i, i + 500), { onConflict: "ticker,cik" });
-    if (error) console.warn(`consensus_stock_holders upsert err: ${error.message}`);
+    if (error) throw new Error(`consensus_stock_holders upsert failed: ${error.message}`);
   }
 
   // 持有人数趋势:trendScan 已在上面的合并循环里构造(最近 8 季、全部经理、不做 inactive 过滤)。
@@ -174,9 +177,10 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     console.warn("consensus_stock_trend 表不存在 — 跳过(先跑 migration)。");
     return finish({ holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: 0, coOwnership: 0 });
   }
+  if (trDelErr) throw new Error(`consensus_stock_trend delete failed: ${trDelErr.message}`);
   for (let i = 0; i < trend.length; i += 500) {
     const { error } = await db.from("consensus_stock_trend").upsert(trend.slice(i, i + 500), { onConflict: "ticker,period" });
-    if (error) console.warn(`consensus_stock_trend upsert err: ${error.message}`);
+    if (error) throw new Error(`consensus_stock_trend upsert failed: ${error.message}`);
   }
 
   // consensus_coownership: 表缺失 → warn 跳过(与 stock_holders/trend 一致的优雅降级)。
@@ -185,9 +189,10 @@ export async function computeAndStoreConsensus(db: any): Promise<{ holdings: num
     console.warn("consensus_coownership 表不存在 — 跳过(先跑 migration)。");
     return finish({ holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: 0 });
   }
+  if (coDelErr) throw new Error(`consensus_coownership delete failed: ${coDelErr.message}`);
   for (let i = 0; i < coOwnership.length; i += 500) {
     const { error } = await db.from("consensus_coownership").upsert(coOwnership.slice(i, i + 500), { onConflict: "ticker,co_ticker" });
-    if (error) console.warn(`consensus_coownership upsert err: ${error.message}`);
+    if (error) throw new Error(`consensus_coownership upsert failed: ${error.message}`);
   }
 
   return finish({ holdings: holdings.length, moves: moves.length, stockHolders: stockHolders.length, trend: trend.length, coOwnership: coOwnership.length });

@@ -1,3 +1,5 @@
+import { selectPagesUpTo } from "@/lib/managers/db";
+import { QUARANTINED_TICKERS_SQL } from "@/lib/securities/securityIdentity";
 import { NextResponse } from "next/server";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
 
@@ -10,14 +12,14 @@ const LATEST_LIMIT = 10000;
 export async function GET() {
   const supabase = createServiceSupabaseClient();
   // 公开无鉴权端点,原本无 limit 直拉整表 —— 每次请求一次全表 egress。上闸 + 交给 CDN。
-  const { data, error } = await supabase
+  const { data, error } = await selectPagesUpTo(() => supabase
     .from("company_fundamentals_latest")
     .select("*")
-    .order("ticker", { ascending: true })
-    .limit(LATEST_LIMIT);
+    .not("ticker", "in", QUARANTINED_TICKERS_SQL)
+    .order("ticker", { ascending: true }), LATEST_LIMIT);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data: data ?? [] }, {
-    headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=86400" },
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=300" },
   });
 }

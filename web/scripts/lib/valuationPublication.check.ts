@@ -44,6 +44,11 @@ async function checks() {
     "leaving the confirmed cheap region also refreshes cached signals");
   assert.notEqual(prepareSnapshotPublication(current("A"), old).payload.revalidation_pending, true,
     "unchanged safety state does not trigger daily whole-site refresh");
+  const priorBasis = current("D", { payload: { model_version: VALUATION_MODEL_VERSION, assessment_status: "valid", fundamental_basis: { kind: "ttm", as_of: "2026-06-30" } } });
+  const freshBasis = current("D", { payload: { model_version: VALUATION_MODEL_VERSION, assessment_status: "valid", fundamental_basis: { kind: "ttm", as_of: "2026-09-30" } } });
+  assert.equal(prepareSnapshotPublication(freshBasis, priorBasis).payload.revalidation_pending, true, "new financial reporting basis must refresh even if valuation bucket and reliability are unchanged");
+  const revisedBasis = current("D", { payload: { ...freshBasis.payload, fundamental_basis: { kind: "ttm", as_of: "2026-09-30", input_hash: "revised-capex" } } });
+  assert.equal(prepareSnapshotPublication(revisedBasis, freshBasis).payload.revalidation_pending, true, "same-period financial revisions also refresh");
   rows[0] = downgraded;
   rows[1] = { ...rows[1], payload: { ...rows[1].payload, revalidation_pending: true } };
   const beforeFailure = JSON.stringify(rows);

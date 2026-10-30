@@ -23,5 +23,7 @@ psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 \
   -f "$script_root/supabase/migrations/20261028_split_adjustments_and_quarter_summary.sql" \
   -f "$script_root/supabase/migrations/20261029_atomic_derived_publication.sql" \
   -f "$script_root/supabase/migrations/20261030_derived_safe_delete.sql" \
-  -f "$script_root/supabase/checks/derived_publication.sql"
+  -f "$script_root/supabase/migrations/20261030_fundamental_publication.sql" \
+  -f "$script_root/supabase/checks/derived_publication.sql" \
+  -f "$script_root/supabase/checks/fundamental_publication.sql"
 echo 'derived-publication PostgreSQL checks OK'

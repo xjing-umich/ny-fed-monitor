@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run -s check:tokens && npm run -s check:type && npm run -s check:isr && npm run -s check:i18n-format && npm run -s check:lexicon && npm run -s check:facts && npm run -s check:derived",
+    "prebuild": "npm run -s check:tokens && npm run -s check:type && npm run -s check:isr && npm run -s check:i18n-format && npm run -s check:lexicon && npm run -s check:facts && npm run -s check:derived && npm run -s check:data-pipeline",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -43,7 +43,8 @@
     "audit:data": "tsx --tsconfig scripts/tsconfig.json scripts/audit/run.ts",
     "check:derived": "tsx --tsconfig scripts/tsconfig.json scripts/lib/ingestStore.check.ts && tsx --tsconfig scripts/tsconfig.json scripts/lib/splitStore.check.ts && tsx --tsconfig scripts/tsconfig.json scripts/lib/computeConsensus.check.ts && tsx --tsconfig scripts/tsconfig.json src/lib/managers/currentSummary.check.ts",
     "check:derived:pg": "bash scripts/tests/derived-publication-pg.sh",
-    "valuation:revalidate": "tsx --tsconfig scripts/tsconfig.json scripts/valuation-revalidate.ts"
+    "valuation:revalidate": "tsx --tsconfig scripts/tsconfig.json scripts/valuation-revalidate.ts",
+    "check:data-pipeline": "tsx scripts/data-pipeline.check.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

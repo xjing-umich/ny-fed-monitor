@@ -439,10 +439,8 @@ function deriveFlowSeries(byKey: Map<string, PickedFact>, starts: number[]) {
   return { quarters, annual };
 }
 
-// 输出标签沿用旧口径(只换了内部财年身份,不改已有行的 fiscal_year):
-//   年报 / Q4 = 期中年(期末 − 182 天的年份,HD 2025-02-02 → FY2024);
-//   Q1–Q3 = 财年结束所在的日历年(NVDA 2025-10-26 那季 → FY2026)。
-const annualLabel = (end: string) => utcYear(toDay(end) - 182);
+// Without an original annual FY focus, infer the ending year for isolated quarters.
+// Annual-backed periods share the source-aware labelYear map below.
 const quarterLabel = (fyStart: number) => utcYear(fyStart + 350);
 
 // Collect the as-reported instant value per period_end for one field.
@@ -702,6 +700,27 @@ export function normalizeCompanyFacts(
     for (const [fy, p] of annual) if (!annualEnd.has(fy)) annualEnd.set(fy, p.end);
   }
 
+  // Labels are presentation identities, never calendar bucket keys. Prefer the
+  // original 10-K filing's own FY focus; later comparative facts carry newer FYs.
+  // 20-F FY metadata is unreliable even on original filings (PDD 2021 reports fy=2020).
+  const ownFiscalYears = FLOW_FIELDS.flatMap(field => FUNDAMENTAL_TAGS[field].flatMap(tag => getUnits(facts, tag)))
+    .filter(u => u.start && u.end && Number.isInteger(u.fy) && u.filed && /^10-K/.test(u.form ?? "")
+      && dayCount(u.start, u.end)! >= 350 && dayCount(u.start, u.end)! <= 380
+      && toDay(u.filed) >= toDay(u.end) && toDay(u.filed) - toDay(u.end) <= 180)
+    .sort((a,b) => a.filed!.localeCompare(b.filed!));
+  const yearLabels = new Map<number, number>();
+  for (const [start, end] of annualEnd) {
+    const own = ownFiscalYears.find(u => Math.abs(toDay(u.start!) - Number(start)) <= 7 && Math.abs(toDay(u.end!) - toDay(end)) <= 7);
+    // Without reported FY focus retain the established early-year retail convention;
+    // other year-ends (including MSFT June) are named for their ending year.
+    yearLabels.set(Number(start), own?.fy ?? (Number(end.slice(5,7)) <= 2 ? utcYear(toDay(end)-182) : Number(end.slice(0,4))));
+  }
+  const labelYear = (start: number): number => {
+    if (yearLabels.has(start)) return yearLabels.get(start)!;
+    const previous = [...yearLabels.keys()].filter(s => s < start).sort((a,b) => b-a)[0];
+    return previous == null ? quarterLabel(start) : yearLabels.get(previous)! + Math.round((start-previous)/365.25);
+  };
+
   // 4. Build quarterly + annual drafts; attach balance-sheet values by end date.
   const drafts: RowDraft[] = [];
   const attachInstant = (draft: RowDraft) => {
@@ -716,11 +735,10 @@ export function normalizeCompanyFacts(
 
   for (const [key, end] of quarterEnd) {
     const [fyStart, q] = key.split("|").map(Number);
-    const annualOfYear = annualEnd.get(String(fyStart));
     const draft: RowDraft = {
       period_end: end,
       isAnnual: false,
-      fiscal_year: q < 4 ? quarterLabel(fyStart) : annualOfYear ? annualLabel(annualOfYear) : utcYear(fyStart + 182),
+      fiscal_year: labelYear(fyStart),
       fiscal_period: `Q${q}`,
       is_derived: q === 4, // Q4 has no standalone filing; income-stmt Q2/Q3 are direct
       values: emptyValues(),
@@ -741,7 +759,7 @@ export function normalizeCompanyFacts(
     const draft: RowDraft = {
       period_end: end,
       isAnnual: true,
-      fiscal_year: annualLabel(end),
+      fiscal_year: labelYear(Number(fy)),
       fiscal_period: "FY",
       is_derived: false,
       values: emptyValues(),

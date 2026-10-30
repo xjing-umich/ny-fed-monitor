@@ -33,20 +33,21 @@ export function prepareSnapshotPublication<T extends { payload: Record<string, u
   const isCheap = row.in_strike_zone || row.verdict_bucket === "below";
   const downgrade = prior?.payload.assessment_status === "valid" && prior.reliable &&
     (!row.reliable || (wasCheap && !isCheap));
+  const basisChanged = JSON.stringify(prior?.payload.fundamental_basis ?? null) !== JSON.stringify(row.payload.fundamental_basis ?? null);
   return { ...row, payload: { ...row.payload,
     revalidation_pending: prior?.payload.revalidation_pending === true ||
-      prior?.payload.assessment_status !== "valid" || !!downgrade,
+      prior?.payload.assessment_status !== "valid" || !!downgrade || basisChanged,
   } };
 }
 
 /** Acknowledge only the generations observed before the successful refresh, never concurrent writes. */
 export async function refreshSnapshotPublication(
   db: SupabaseClient,
-  refresh: () => Promise<void>,
+  refresh: (tickers: string[]) => Promise<void>,
 ): Promise<{ pending: number; acknowledged: number }> {
   const pending = [...(await readSnapshotPublicationState(db)).values()]
     .filter(row => row.payload.revalidation_pending === true);
-  await refresh(); // Failure leaves every pending marker durable for the next workflow run.
+  await refresh(pending.map(row => row.ticker)); // Failure leaves every pending marker durable for the next workflow run.
   let acknowledged = 0;
   for (let from = 0; from < pending.length; from += 5) {
     const counts = await Promise.all(pending.slice(from, from + 5).map(async row => {

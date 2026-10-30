@@ -69,6 +69,7 @@ function operatingWorkingCapital(r: FundamentalPeriod | undefined): number | und
 function toFloorYear(r: FundamentalPeriod, adsRatio: number): ValuationFloorYear {
   return {
     fiscal_year: r.fiscal_year as number,
+    period_end: r.period_end,
     revenue: u(r.revenue),
     gross_profit: u(r.gross_profit),
     operating_income: u(r.operating_income),

@@ -17,11 +17,12 @@ const snapshots = Array.from({ length: 1205 }, (_, i) => ({
   computed_at: "2026-10-29T12:00:00Z",
   payload: { model_version: VALUATION_MODEL_VERSION, assessment_status: "valid", ...(i === 1204 ? { expectations } : {}) },
 }));
+const quarantined = { ...snapshots[0], ticker: "SATS", margin_pct: 0.5 };
 const legacy = { ...snapshots[0], ticker: "LEGACY", payload: { model_version: "old" } };
 const solo = { ...snapshots[0], ticker: "SOLO" };
 const corrupt = { ...snapshots[0], ticker: "BAD", margin_pct: 0.99 };
 const zeroPrice = { ...snapshots[0], ticker: "ZEROP", price: 0 };
-const holdings = [...snapshots, solo, corrupt, zeroPrice, legacy].map((r) => ({
+const holdings = [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined].map((r) => ({
   ticker: r.ticker, issuer: `Issuer ${r.ticker}`,
   holder_count: r.ticker === "CROWD" ? 99 : r.ticker === "CHEAP" ? 5 : r.ticker === "SOLO" ? 1 : 10,
 }));
@@ -41,11 +42,12 @@ async function main() {
     requests.push(url);
     const table = url.pathname.split("/").at(-1);
     assert.ok(table === "valuation_snapshot" || table === "consensus_holdings");
-    let rows: Record<string, unknown>[] = table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy] : [...holdings];
-    const tickerFilter = url.searchParams.get("ticker");
+    let rows: Record<string, unknown>[] = table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined] : [...holdings];
+    const tickerFilter = url.searchParams.getAll("ticker").find(f=>f.startsWith("in.("));
     const tickerKeys = tickerFilter?.startsWith("in.(") ? tickerFilter.slice(4, -1).split(",") : null;
     for (const [field, filter] of url.searchParams) {
       if (filter.startsWith("eq.")) rows = rows.filter((r) => String(field.startsWith("payload->>") ? (r.payload as Record<string, unknown> | null)?.[field.slice(10)] : r[field]) === filter.slice(3));
+      if (filter.startsWith("not.in.(")) rows = rows.filter(r=>!filter.slice(8,-1).split(",").includes(String(r[field])));
       if (filter.startsWith("gte.")) rows = rows.filter((r) => Number(r[field]) >= Number(filter.slice(4)));
     }
     if (tickerKeys) rows = rows.filter((r) => tickerKeys.includes(String(r.ticker)));
@@ -81,6 +83,7 @@ async function main() {
     const all = await page("all");
     for (const r of [...snapshots, solo]) assert.ok(all.includes(r.ticker), `全部可估值不得漏掉 ${r.ticker}`);
     assert.ok(!all.includes("BAD") && !all.includes("ZEROP"), "异常估值剔除后不截掉后续合法行");
+    assert.ok(!all.includes("SATS"), "quarantined identities are excluded before pagination and counts");
     assert.ok(!all.includes("LEGACY"), "old-model rows are excluded before pagination and counts");
     assert.ok(!all.includes("NOQ"), "没有估值的持仓不伪造快照");
 

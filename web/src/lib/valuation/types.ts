@@ -242,6 +242,8 @@ export type StrikeZoneAssessment = {
 // ── Input contract (mapped from stored FundamentalPeriod rows) ───────────────
 export type ValuationFloorYear = {
   fiscal_year: number;
+  /** Actual period end for display spans, including legacy stored FY labels. */
+  period_end?: string;
   revenue?: number;
   gross_profit?: number;
   operating_income?: number;

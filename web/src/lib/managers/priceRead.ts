@@ -1,3 +1,4 @@
+import { isIdentityQuarantined } from "../securities/securityIdentity";
 import "server-only";
 import { cache } from "react";
 import { hasSupabaseEnv, getDb } from "@/lib/managers/db";
@@ -18,7 +19,7 @@ export function fmtPriceFact(p: LatestPrice | null): string {
 
 /** 某 ticker 最新一条价格。无 env / 无数据 → null。 */
 export const getLatestPrice = cache(async (ticker: string): Promise<LatestPrice | null> => {
-  if (!hasSupabaseEnv()) return null;
+  if (isIdentityQuarantined(ticker) || !hasSupabaseEnv()) return null;
   const { data, error } = await getDb()
     .from("prices").select("close,date,currency,source").eq("ticker", ticker)
     .order("date", { ascending: false }).limit(1);
@@ -31,7 +32,7 @@ export const getLatestPrice = cache(async (ticker: string): Promise<LatestPrice 
 
 /** 某 ticker 近 N 天价格历史(升序), 供走势图/历史估值带。无 env/数据→[]。 */
 export const getPriceHistory = cache(async (ticker: string, days = 365): Promise<PricePoint[]> => {
-  if (!hasSupabaseEnv()) return [];
+  if (isIdentityQuarantined(ticker) || !hasSupabaseEnv()) return [];
   const cutoff = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await getDb()
     .from("prices").select("date,close").eq("ticker", ticker)
@@ -42,7 +43,7 @@ export const getPriceHistory = cache(async (ticker: string, days = 365): Promise
 
 /** 某 ticker 最近一次**真拆股**日期(ISO)。分拆上市/股票股息的价格复权(CMCSA 1.067 等)不算,否则会误触发估值拆股护栏。无 env / 无表 / 无行 → null。 */
 export const getLatestSplit = cache(async (ticker: string): Promise<string | null> => {
-  if (!hasSupabaseEnv()) return null;
+  if (isIdentityQuarantined(ticker) || !hasSupabaseEnv()) return null;
   const { data, error } = await getDb()
     .from("stock_splits").select("split_date,ratio").eq("ticker", ticker)
     .order("split_date", { ascending: false }).limit(20);

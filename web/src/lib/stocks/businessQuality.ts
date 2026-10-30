@@ -6,6 +6,8 @@ export type BusinessQuality = {
   roe: number | null;
   fcfMargin: number | null;
   asOf: string;              // 基本面 as-of; 无则 ""
+  annualForm?: string;
+  latestDisclosure?: { periodEnd: string; form?: string; filedAt?: string };
   reliable: boolean;         // quality_status ∉ {low, unresolved, missing, null}
   revenueSeries: number[];   // 营收, 升序(最早→最新)
   revenueSpan: string;       // revenueSeries 首末财年,如 "2020–2025";单点为该年;无则 ""
@@ -16,6 +18,7 @@ const LOW_QUALITY = new Set(["low", "unresolved", "missing"]);
 
 /** 一条年报期(FY)行 —— 头条指标与趋势折线都从这里派生。 */
 type AnnualRow = {
+  form?: string;
   revenue: number | null;
   net_income: number | null;
   period_end: string | null;
@@ -39,6 +42,7 @@ type AnnualRow = {
 export function deriveBusinessQuality(input: {
   latest: SecLatestSummary | null;
   annual: AnnualRow[];
+  filings?: { form: string; report_date?: string | null; filing_date?: string | null }[];
 }): BusinessQuality | null {
   const { latest, annual } = input;
   if (latest == null) return null;
@@ -77,5 +81,11 @@ export function deriveBusinessQuality(input: {
 
   const revenueSpan =
     revenueYears.length === 0 ? "" : revenueYears.length === 1 ? revenueYears[0] : `${revenueYears[0]}–${revenueYears[revenueYears.length - 1]}`;
-  return { revenueYoy, netMargin, roe, fcfMargin, asOf, reliable, revenueSeries, revenueSpan, marginSeries };
+  const disclosure = (input.filings ?? []).filter(f => ["10-K", "10-Q", "20-F", "40-F"].includes(f.form) && f.report_date)
+    .sort((a,b) => b.report_date!.localeCompare(a.report_date!) || (b.filing_date ?? "").localeCompare(a.filing_date ?? ""))[0];
+  const latestEnd = [latest.latest_10q_period_end, latest.latest_10k_period_end].filter((d): d is string => !!d).sort().at(-1);
+  const latestDisclosure = disclosure
+    ? { periodEnd: disclosure.report_date!, form: disclosure.form, filedAt: disclosure.filing_date ?? undefined }
+    : latestEnd ? { periodEnd: latestEnd } : undefined;
+  return { annualForm: latestFy?.form, latestDisclosure, revenueYoy, netMargin, roe, fcfMargin, asOf, reliable, revenueSeries, revenueSpan, marginSeries };
 }

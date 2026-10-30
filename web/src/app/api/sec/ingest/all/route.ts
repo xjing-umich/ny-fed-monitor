@@ -1,3 +1,5 @@
+import { publishFinancialPages } from "@/lib/sec/publishPages";
+import { getDb } from "@/lib/managers/db";
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
 import { ingestAllCompanies } from "@/lib/sec/ingest";
@@ -10,5 +12,6 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const limit = typeof body.limit === "number" ? body.limit : undefined;
   const summary = await ingestAllCompanies(limit);
+  await publishFinancialPages(getDb());
   return NextResponse.json(summary);
 }
