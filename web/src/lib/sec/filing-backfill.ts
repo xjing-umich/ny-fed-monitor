@@ -128,7 +128,7 @@ export function extractGaapFacts(xml: string): GaapFact[] {
       const unit = units.get(String(fact["@_unitRef"]));
       const ctx = contexts.get(String(fact["@_contextRef"]));
       const raw = fact["#text"];
-      if (!unit || !ctx || typeof raw !== "string") continue;
+      if (!unit || !ctx || typeof raw !== "string" || (capexExtension && unit !== "USD")) continue;
       const n = Number(raw);
       const scale = typeof fact["@_scale"] === "string" ? Number(fact["@_scale"]) : 0;
       if (!Number.isFinite(n) || !Number.isFinite(scale)) continue;
@@ -274,7 +274,10 @@ export function findMissingCapitalExpenditureFilings(facts: CompanyFacts, filing
       filing_url:filingUrl(template.cik,u.accn), sec_index_url:filingIndexUrl(template.cik,u.accn) });
   }
   const candidates = [...new Map([...historical,...filings].map(f=>[f.accession_number,f])).values()];
-  return candidates.filter(f => ["10-K", "20-F"].includes(f.form) && f.report_date)
+  const annual = candidates.filter(f => ["10-K", "20-F"].includes(f.form) && f.report_date)
+    .sort((a,b)=>b.report_date!.localeCompare(a.report_date!));
+  const retainedPeriods = new Set([...new Set(annual.map(f => f.report_date!))].slice(0,6));
+  return annual.filter(f => retainedPeriods.has(f.report_date!))
     .filter(f => !covered.some(u => u.start && u.end && Number.isFinite(u.val) && isOwnPeriod(u.end,f.report_date!) && dayNum(u.end)-dayNum(u.start)>=350 && dayNum(u.end)-dayNum(u.start)<=380))
     .sort((a,b)=>b.report_date!.localeCompare(a.report_date!)).slice(0,6);
 }

@@ -40,11 +40,11 @@ export function summarizeAudit(rows: Row[]) {
     issuers: new Set(rows.map((r) => r.cik ?? r.ticker)).size,
     status,
     snapshotCount: rows.filter((r) => r.snapshot).length,
-    dcf: rows.filter((r) => r.g1 != null).length,
+    dcf: rows.filter((r) => r.dcfAssessable === true).length,
     negativeHistoryPositiveGrowth: rows.filter((r) => r.gRaw < 0 && r.g1 > 0)
       .length,
     aboveTenYearHorizon: rows.filter((r) => r.cap > 10).length,
-    positiveGrowth: rows.filter((r) => r.g1 > 0).length,
+    positiveGrowth: rows.filter((r) => r.dcfAssessable === true && r.g1 > 0).length,
     coverageGaps: rows.filter((r) => r.coverageGap).length,
     gapReasons: rows
       .filter((r) => r.coverageGap)
@@ -245,6 +245,7 @@ export async function auditCapture(
         gRaw: historicalGrowthBaseRate(input.years),
         oldG1: before.oeDcf?.growth_g1,
         g1: after.oeDcf?.growth_g1,
+        dcfAssessable: after.oeDcf?.assessable === true,
         oldCap: before.oeDcf?.expectations_inputs?.capYears,
         cap: after.oeDcf?.expectations_inputs?.capYears,
         oldIv: before.oeDcf?.tiers?.neutral.per_share,

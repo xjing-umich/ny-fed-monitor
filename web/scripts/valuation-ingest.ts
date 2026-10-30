@@ -1,3 +1,4 @@
+import { prepareSnapshotPublication, readSnapshotPublicationState } from "./lib/valuationPublication";
 import { invalidateValuationSnapshots } from "./lib/invalidateValuationSnapshots";
 import { VALUATION_MODEL_VERSION } from "../src/lib/valuation/modelVersion";
 /**
@@ -96,7 +97,8 @@ async function deleteOrphanSnapshots(db: any, universe: Set<string>): Promise<nu
   }
   let n = 0;
   for (let i = 0; i < orphans.length; i += 500) {
-    const { error, count } = await db.from("valuation_snapshot").delete({ count: "exact" }).in("ticker", orphans.slice(i, i + 500));
+    const { error, count } = await db.from("valuation_snapshot").delete({ count: "exact" }).in("ticker", orphans.slice(i, i + 500))
+      .or("payload->>revalidation_pending.is.null,payload->>revalidation_pending.neq.true");
     if (error) throw new Error(`valuation_snapshot 孤儿行删除失败: ${error.message}`);
     n += count ?? 0;
   }
@@ -111,6 +113,14 @@ async function main() {
   const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
   const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
+
+  const output = (name: string, value: number) => {
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
+  };
+  output("cache_refresh_required", 0);
+  const priorSnapshots = await readSnapshotPublicationState(db);
+  if ([...priorSnapshots.values()].some(row => row.payload.revalidation_pending === true))
+    output("cache_refresh_required", 1);
 
   const universe = await collectUniverse();
   console.log(`Universe: ${universe.length} tickers(持仓并集)`);
@@ -242,7 +252,7 @@ async function main() {
         continue;
       }
       const v = run.verdict;
-      rows.push({
+      rows.push(prepareSnapshotPublication({
         ticker,
         verdict_bucket: v.bucket,
         in_strike_zone: v.inStrikeZone,
@@ -267,7 +277,7 @@ async function main() {
           ...(run.oeDcf?.assessable && run.oeDcf.moatCap ? { moatCap: run.oeDcf.moatCap } : {}),
         },
         updated_at: computedAt,
-      });
+      }, priorSnapshots.get(ticker)));
       valued++;
       if (floorInput.ttm) ttmBasis++;
     } catch (err) {
@@ -278,7 +288,8 @@ async function main() {
   }
 
   const publishInvalidationCount = (count: number) => {
-    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `invalidated_snapshots=${count}\n`);
+    output("invalidated_snapshots", count);
+    if (count > 0) output("cache_refresh_required", 1);
   };
   publishInvalidationCount(0);
   const invalidated = await invalidateValuationSnapshots(db, [...confirmedInvalid], computedAt, publishInvalidationCount);
@@ -287,7 +298,10 @@ async function main() {
   // 批量 upsert(分批避免单请求过大)。
   const BATCH = 500;
   for (let i = 0; i < rows.length; i += BATCH) {
-    const { error } = await db.from("valuation_snapshot").upsert(rows.slice(i, i + BATCH), { onConflict: "ticker" });
+    const batch = rows.slice(i, i + BATCH);
+    if (batch.some(row => (row.payload as Record<string, unknown>).revalidation_pending === true))
+      output("cache_refresh_required", 1); // Also refresh after an ambiguous/partially committed batch failure.
+    const { error } = await db.from("valuation_snapshot").upsert(batch, { onConflict: "ticker" });
     if (error) throw new Error(`valuation_snapshot upsert 失败: ${error.message}`);
   }
 
@@ -325,7 +339,8 @@ async function main() {
       const { error, count } = await db
         .from("valuation_snapshot")
         .delete({ count: "exact" })
-        .in("ticker", stale.slice(i, i + BATCH));
+        .in("ticker", stale.slice(i, i + BATCH))
+        .or("payload->>revalidation_pending.is.null,payload->>revalidation_pending.neq.true");
       if (error) throw new Error(`valuation_snapshot 陈旧行删除失败: ${error.message}`);
       deleted += count ?? 0;
     }

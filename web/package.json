@@ -42,7 +42,8 @@
     "sec:runs:prune": "tsx scripts/sec-runs-prune.ts",
     "audit:data": "tsx --tsconfig scripts/tsconfig.json scripts/audit/run.ts",
     "check:derived": "tsx --tsconfig scripts/tsconfig.json scripts/lib/ingestStore.check.ts && tsx --tsconfig scripts/tsconfig.json scripts/lib/splitStore.check.ts && tsx --tsconfig scripts/tsconfig.json scripts/lib/computeConsensus.check.ts && tsx --tsconfig scripts/tsconfig.json src/lib/managers/currentSummary.check.ts",
-    "check:derived:pg": "bash scripts/tests/derived-publication-pg.sh"
+    "check:derived:pg": "bash scripts/tests/derived-publication-pg.sh",
+    "valuation:revalidate": "tsx --tsconfig scripts/tsconfig.json scripts/valuation-revalidate.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

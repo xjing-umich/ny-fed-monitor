@@ -98,11 +98,11 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   const sorted = [...years].sort((a, b) => b.fiscal_year - a.fiscal_year);
   const window = sorted.slice(0, GV_WINDOW);
 
-  // Guard: need at least 3 years before touching window[0] / window[N-1].
-  if (window.length < 3) {
+  // One matured capital increment needs the response lag plus both annual endpoints.
+  if (window.length < ROIIC_ENDPOINT_LAG + 2) {
     return {
       assessable: false,
-      not_assessable_reason: "Insufficient operating-income history (fewer than 3 years in window), so ROIIC / growth value cannot be computed.",
+      not_assessable_reason: "Insufficient annual history for a complete capital increment after the two-year maturity lag, so ROIIC / growth value cannot be computed.",
       gated_to_zero: false, wacc_band: waccBand, scenarios: { ...ZERO }, per_share: { ...ZERO },
       notes: ["Insufficient operating-income history for a growth read."],
     };
@@ -124,7 +124,7 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
 
   // Each capital-change observation needs both annual endpoints. With an L-year
   // response lag, NOPAT and capital increments cover the same number of years.
-  const lag = window.length <= ROIIC_ENDPOINT_LAG + 1 ? 1 : ROIIC_ENDPOINT_LAG;
+  const lag = ROIIC_ENDPOINT_LAG;
   const reinvestSeries: number[] = [];
   for (let i = lag; i < window.length - 1; i++) {
     const y = window[i], older = window[i + 1];
@@ -173,7 +173,7 @@ export function computeGrowthValue(args: GrowthValueArgs): GrowthValue {
   // computed once in epvFloor.computeValuationFloor and passed in as moatGrade; no local
   // recomputation of declined/roicStable here, so this leg can no longer disagree with the
   // owner-earnings DCF leg on grade (BUG2 fix)).
-  const extendedDuration = moatGrade === "strong" ? DURATION_STRONG : DURATION_MODERATE; // 20 / 10
+  const extendedDuration = moatGrade === "strong" ? DURATION_STRONG : DURATION_MODERATE; // both bounded at 10 years
 
   // GV = annual growth reinvestment × (ROIIC − r)/r × annuityFactor(r, N). Floor at 0 per scenario.
   function gv(roiicScenario: number, r: number, n: number): number {

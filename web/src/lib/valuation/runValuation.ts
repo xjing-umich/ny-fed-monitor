@@ -147,9 +147,9 @@ export function runValuation(input: RunValuationInput): ValuationRun {
   const oeDcf = deriveOeDcf(floor, workingYears(floorInput), dgs10, price, floorInput.years,
     { evidence: floorInput.growth_evidence, asOf: input.asOf ?? new Date().toISOString() });
   // All valuation legs share the same current-evidence brake.
-  if (oeDcf.growth_coverage_gap || oeDcf.declined || (oeDcf.assessable && oeDcf.growth_g1 === 0)) {
+  if (oeDcf.growth_coverage_gap || oeDcf.declined || oeDcf.growth_g1 === 0) {
     floor.growth_value = { ...floor.growth_value, assessable: false, gated_to_zero: false,
-      not_assessable_reason: oeDcf.growth_coverage_gap ? "Current comparable financial evidence is incomplete." : "Recent comparable earnings declined.",
+      not_assessable_reason: oeDcf.growth_coverage_gap ? "Current comparable financial evidence is incomplete." : oeDcf.declined ? "Recent comparable earnings declined." : "The growth evidence does not support positive growth.",
       scenarios: { pessimistic: 0, neutral: 0, optimistic: 0 }, per_share: { pessimistic: 0, neutral: 0, optimistic: 0 } };
   }
   const strikeZone = deriveStrikeZone(floor, price, input.asOf ? new Date(input.asOf) : new Date());

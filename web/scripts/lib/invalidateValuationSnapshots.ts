@@ -20,6 +20,7 @@ export async function invalidateValuationSnapshots(
           payload: {
             model_version: VALUATION_MODEL_VERSION,
             assessment_status: "invalidated",
+            revalidation_pending: true,
             suppressed_reason: "valuation_suppressed",
             invalidated_at: computedAt,
           },

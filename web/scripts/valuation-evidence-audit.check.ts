@@ -43,3 +43,7 @@ assert.equal(summary.status.no_SEC_data, 1);
 assert.equal(summary.snapshotCount, 2);
 assert.equal(summary.negativeHistoryPositiveGrowth, 0);
 console.log("valuation evidence audit denominator checks passed");
+
+const policyOnly = summarizeAudit([{ ticker: "NO_OE", g1: 0.05, dcfAssessable: false, status: "verdict" }]);
+assert.equal(policyOnly.dcf, 0, "growth policy metadata does not imply an assessable owner-earnings valuation");
+assert.equal(policyOnly.positiveGrowth, 0, "positive DCF growth count excludes an unavailable DCF");

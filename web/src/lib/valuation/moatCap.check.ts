@@ -11,7 +11,7 @@ const strongMoat = { signal: "franchise", epv_per_share_compared: 30, asset_per_
 
 // 强档：强franchise + 未下滑 + 无红旗 + ROIC 稳定 → CAP_STRONG
 { const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0, declined: false, suppressedFlags: false, roicStable: true });
-  assert(r.grade==="strong" && r.capYears===CAP_STRONG && r.durablePassed, "强franchise+稳定 → CAP 20"); }
+  assert(r.grade==="strong" && r.capYears===CAP_STRONG && r.durablePassed, "强franchise+稳定 → CAP 10"); }
 
 // 强比率但盈利下滑 → 降中档
 { const r = deriveMoatCap({ moat: strongMoat, epvAvRatio: 3.0, declined: true, suppressedFlags: false, roicStable: true });
@@ -431,7 +431,7 @@ const yr = (fiscal_year: number, operating_income: number): ValuationFloorYear =
 const growthMoat = { signal: "franchise", moat_via_growth: true } as any;
 // strong:growthFranchiseStrong=true → CAP_STRONG
 { const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: true });
-  assert(r.grade === "strong" && r.capYears === CAP_STRONG, "via_growth + strong → CAP 20"); }
+  assert(r.grade === "strong" && r.capYears === CAP_STRONG, "via_growth + strong → CAP 10"); }
 // moderate:growthFranchiseStrong=false → CAP_MODERATE
 { const r = deriveMoatCap({ moat: growthMoat, epvAvRatio: undefined, declined: false, suppressedFlags: false, roicStable: undefined, growthFranchiseStrong: false });
   assert(r.grade === "moderate" && r.capYears === CAP_MODERATE, "via_growth 非 strong → CAP 10"); }

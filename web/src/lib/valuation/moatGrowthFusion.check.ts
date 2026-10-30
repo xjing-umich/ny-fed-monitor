@@ -130,7 +130,7 @@ function runChain(input: ValuationFloorInput, priceClose: number) {
   assert.strictEqual(floor.moat_reading.signal, "franchise", "融合1: 现金牛读 franchise 信号(dual AV 双测过)");
   assert.strictEqual(floor.moat_reading.dual_test_passed, true, "融合1: dual_test_passed=true(strongRatio 门槛之一)");
   assert.strictEqual(floor.moat_cap.grade, "strong", "融合1: pathA(经营资产 EPV/AV≥2)触发 → moat grade=strong(真实 GOOGL/META 机制)");
-  assert.strictEqual(floor.moat_cap.capYears, CAP_STRONG, "融合1: strong → capYears=20");
+  assert.strictEqual(floor.moat_cap.capYears, CAP_STRONG, "融合1: strong → capYears=10");
   assert.ok(!isFinancialSic(input.sic), "融合1: sic=7370 非金融");
   assert.strictEqual(floor.is_financial, false, "融合1: floor.is_financial=false");
 

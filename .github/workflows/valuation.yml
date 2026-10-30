@@ -1,10 +1,13 @@
 name: Valuation Snapshot (daily)
 on:
   schedule:
-    # 每日 12:00 UTC：晚于 prices(工作日 22:00 UTC EOD 入库)与 SEC fundamentals(周更)，
+    # 每日 12:00 UTC：晚于 prices(工作日 22:00 UTC EOD 入库)与 SEC fundamentals(周一至周六更新)，
     # 确保读到最新在库价格+基本面。幂等：逐 ticker upsert(onConflict=ticker)，重跑只覆盖。
     - cron: "0 12 * * *"
   workflow_dispatch: {}
+concurrency:
+  group: valuation-publication
+  cancel-in-progress: false
 jobs:
   valuation:
     runs-on: ubuntu-latest
@@ -23,14 +26,17 @@ jobs:
       # 同 ingest.yml:快照重算完必须刷缓存,否则个股页/screener 继续发旧估值。
       # 但只在每周六(当周 SEC fundamentals 已于周六 07:00 入库)或手动触发时整站刷新:
       # 每日整站刷新 = 每天 ~2200 页重新生成,是 Vercel Hobby ISR Writes 超额的主因。
-      # 其余日子无已确认失效时照常跳过;发现旧判定失效则立即刷缓存,即使后续批次失败也不保留可靠旧信号。
+      # 新判定可见、旧判定失效/降级或待刷新重试时立即刷新。成功后才确认相同快照代次;失败保留待刷新标记。
       - name: Revalidate site cache
-        if: ${{ success() || (steps.valuation.outputs.invalidated_snapshots != '' && steps.valuation.outputs.invalidated_snapshots != '0') }}
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}
+        if: ${{ success() || (steps.valuation.outputs.cache_refresh_required != '' && steps.valuation.outputs.cache_refresh_required != '0') }}
         run: |
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "$(date -u +%u)" != "6" ] && [ "${{ steps.valuation.outputs.invalidated_snapshots }}" = "0" ]; then
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "$(date -u +%u)" != "6" ] && [ "${{ steps.valuation.outputs.cache_refresh_required }}" = "0" ]; then
             echo "Skip: weekly site refresh runs on Saturdays (UTC)."
             exit 0
           fi
-          curl -fsS --retry 3 --retry-all-errors --retry-delay 2 -X POST "https://thecompounder.fyi/api/revalidate?source=valuation" \
-            -H "Authorization: Bearer ${{ secrets.INGEST_SECRET }}"
-          echo
+          npm run valuation:revalidate

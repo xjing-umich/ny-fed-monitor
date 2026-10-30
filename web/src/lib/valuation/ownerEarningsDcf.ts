@@ -279,30 +279,6 @@ export function deriveOeDcf(
   let coverageGap = evidence && evidenceOptions ? assessGrowthCoverage(evidence, evidenceOptions.asOf) : undefined;
   const declined = (cagr != null && cagr < 0) || (evidence?.earnings_growth != null && evidence.earnings_growth < 0) || evidence?.current_earnings_nonpositive === true;
 
-  if (
-    !lamp.assessable ||
-    lamp.normalized_earnings == null ||
-    !(lamp.normalized_earnings > 0) ||
-    lamp.equity_value_low == null ||
-    lamp.per_share_low == null ||
-    !(lamp.per_share_low > 0)
-  ) {
-    return {
-      assessable: false,
-      growth_evidence: evidence,
-      growth_coverage_gap: coverageGap,
-      declined,
-      not_assessable_reason:
-        lamp.not_assessable_reason ??
-        "Owner earnings are not assessable (non-positive or missing), so the owner-earnings DCF is not shown.",
-      no_bridge_note: NO_BRIDGE_NOTE,
-    };
-  }
-
-  const oe0 = lamp.normalized_earnings;
-  const shares = lamp.equity_value_low / lamp.per_share_low;
-
-
   // 证据驱动增长:历史营收 log 回归(抗端点)与基本面上限(ROIC×再投资)取小,再受 franchise 分档量级封顶。
   const gRaw = historicalGrowthBaseRate(fyYears);               // 全历史纯 FY 营收 log 回归(decision #2,不吃 TTM 头)
   const gFund = floor.is_financial ? floor.financial_sgr : floor.sustainable_growth;                        // Task 1: ROIC × 净再投资率
@@ -343,6 +319,32 @@ export function deriveOeDcf(
   const g1 = declined ? 0 : minimum ? clamp(minimum.value, 0, cap) : 0;
   const g1LimitedBy: OeDcfAssessment["growth_g1_limited_by"] = coverageGap ? "coverage" : declined ? "declined"
     : !minimum ? "none" : minimum.value > cap ? "moat_cap" : minimum.source;
+
+  if (
+    !lamp.assessable ||
+    lamp.normalized_earnings == null ||
+    !(lamp.normalized_earnings > 0) ||
+    lamp.equity_value_low == null ||
+    lamp.per_share_low == null ||
+    !(lamp.per_share_low > 0)
+  ) {
+    return {
+      assessable: false,
+      growth_evidence: evidence,
+      growth_coverage_gap: coverageGap,
+      declined,
+      growth_g1: g1,
+      growth_g1_limited_by: g1LimitedBy,
+      not_assessable_reason:
+        lamp.not_assessable_reason ??
+        "Owner earnings are not assessable (non-positive or missing), so the owner-earnings DCF is not shown.",
+      no_bridge_note: NO_BRIDGE_NOTE,
+    };
+  }
+
+  const oe0 = lamp.normalized_earnings;
+  const shares = lamp.equity_value_low / lamp.per_share_low;
+
 
   // owner earnings 是股权流,读 floor.leverage_premium(epvFloor 已发布,单一真相源)——不本地重算。
   const discount = discountBand(dgs10, floor.leverage_premium ?? 0);

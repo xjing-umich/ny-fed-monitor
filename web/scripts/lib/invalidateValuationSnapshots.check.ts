@@ -77,6 +77,8 @@ async function checks() {
   assert.equal(count, 1);
   assert.equal(deletes, 0);
   assert.equal(row.reliable, false);
+  assert.equal((row.payload as Record<string, unknown>).revalidation_pending, true,
+    "cache refresh intent persists until a successful publication acknowledgement");
   assert.equal(row.in_strike_zone, false);
   assert.equal((await readers.readValuationVerdicts(["A"])).size, 0);
   assert.equal((await readers.readBargainVerdicts()).size, 0);

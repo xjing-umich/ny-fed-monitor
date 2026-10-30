@@ -98,3 +98,13 @@ assert.equal(
   "even externally supplied old CAP20 is clamped",
 );
 console.log("operating reinvestment and bounded duration checks passed");
+
+const tooShort = computeGrowthValue({
+  years: [2025, 2024, 2023].map((fiscal_year, i) => ({ fiscal_year,
+    revenue: 2000-i*200, operating_income: 500-i*100, capex: 100, d_and_a: 20,
+    operating_working_capital: 30-i*10 })),
+  shares: 100, taxRate: 0.21, moatSignal: "franchise", moatGrade: "moderate",
+  epvPerShare: 50, avPerShare: 20,
+});
+assert.equal(tooShort.assessable, false, "short history cannot reduce the two-year investment maturity lag");
+assert.equal(tooShort.per_share.neutral, 0);

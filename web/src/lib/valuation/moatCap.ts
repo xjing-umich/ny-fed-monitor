@@ -92,7 +92,7 @@ export function deriveMoatCap(input: {
 
 /**
  * 持续盈利轨迹(件①):按 fiscal_year 降序,从最新年起数连续 net_income>0 的 FY 年数。
- * strong 分档前置闸——"刚转盈"的名字(ABNB:最早年巨亏、连续盈利仅 4 年)不该拿 20 年 CAP。
+ * strong 分档前置闸——"刚转盈"的名字(ABNB:最早年巨亏、连续盈利仅 4 年)不该仅凭短期盈利得到 strong 分档。
  * 只吃 FY 行(调用方已过滤);最新年亏损/缺失 → 0。fyYears 不假设已排序。
  */
 export function sustainedProfitStreak(fyYears: ValuationFloorYear[]): number {
