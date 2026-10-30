@@ -89,9 +89,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const noValuationEvidence = rows.length === 0 && !computedAt && strikeTotal === 0 && strikePending === 0;
   const geo =
     noValuationEvidence
-      ? isZh
-        ? "暂未取得可展示的估值结果，暂不据此判断击球区。"
-        : "No valuation results are available in this view. This does not establish whether any stocks are in the strike zone."
+      ? ""
       : strikeTotal > 0
       ? isZh
         ? `现在 ${strikeTotal} 只可估值股票已确认落在击球区${pendingNote}（价格不高于内在价值扣除安全边际后的值）${asOf ? `，截至 ${formatDate(asOf, lang)}` : ""}。`
@@ -102,8 +100,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
 
   const convictionIntro = rows.length === 0 && heldTotal === 0
     ? isZh
-      ? "暂未取得可展示的多人共持估值结果。可切换筛选条件，或按机构持仓浏览个股。"
-      : "No most-held valuation results are available in this view. Change the filter or browse stocks by institutional holdings."
+      ? `查看至少被 ${CONSENSUS_MIN} 位机构共同持有的股票及其估值。`
+      : `Compare valuations of stocks held by at least ${CONSENSUS_MIN} managers.`
     : isZh
     ? `${heldTotal} 只被 ${CONSENSUS_MIN}+ 位机构共同持有的股票，按现价相对内在价值的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
     : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers, ordered by where price sits against intrinsic value — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
