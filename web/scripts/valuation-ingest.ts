@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { prepareSnapshotPublication, readSnapshotPublicationState } from "./lib/valuationPublication";
 import { invalidateValuationSnapshots } from "./lib/invalidateValuationSnapshots";
 import { VALUATION_MODEL_VERSION } from "../src/lib/valuation/modelVersion";
@@ -272,8 +273,8 @@ async function main() {
           expectations: run.expectations,
           methods: run.methods,
           fundamental_basis: floorInput.ttm
-            ? { kind: "ttm", as_of: floorInput.ttm.period_end, quarters_used: floorInput.ttm.quarters_used }
-            : { kind: "fy", as_of: sec.annual?.[0]?.period_end ?? null },
+            ? { input_hash: createHash("sha256").update(JSON.stringify(floorInput)).digest("hex"), kind: "ttm", as_of: floorInput.ttm.period_end, quarters_used: floorInput.ttm.quarters_used }
+            : { input_hash: createHash("sha256").update(JSON.stringify(floorInput)).digest("hex"), kind: "fy", as_of: sec.annual?.[0]?.period_end ?? null },
           ...(run.oeDcf?.assessable && run.oeDcf.moatCap ? { moatCap: run.oeDcf.moatCap } : {}),
         },
         updated_at: computedAt,

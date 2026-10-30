@@ -1,3 +1,5 @@
+import { publishFinancialPages } from "@/lib/sec/publishPages";
+import { getDb } from "@/lib/managers/db";
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
 import { ingestCompany } from "@/lib/sec/ingest";
@@ -15,5 +17,6 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await ingestCompany(ticker);
+  await publishFinancialPages(getDb());
   return NextResponse.json(result, { status: result.status === "failed" ? 500 : 200 });
 }

@@ -1,3 +1,4 @@
+import { parseTickers, targetedPaths } from "@/lib/revalidate/targets";
 import { revalidatePath } from "next/cache";
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
 import { DATA_DRIVEN_PATHS, DATA_DRIVEN_ROUTE_HANDLERS, REPORT_PATHS } from "@/lib/revalidate/paths";
@@ -18,6 +19,17 @@ export async function POST(request: Request): Promise<Response> {
   if (!isAuthorizedIngestRequest(request)) return unauthorizedResponse();
 
   const source = new URL(request.url).searchParams.get("source") ?? "manual";
+  if (request.headers.get("content-type")?.includes("application/json")) {
+    let tickers: string[];
+    try { tickers = parseTickers((await request.json()).tickers); }
+    catch { return Response.json({ error: "Invalid ticker list" }, { status: 400 }); }
+    const paths = targetedPaths(tickers, source === "valuation");
+    for (const path of paths) {
+      if (path.includes("[lang]")) revalidatePath(path, "page");
+      else revalidatePath(path);
+    }
+    return Response.json({ ok: true, source, revalidated: paths, at: new Date().toISOString() });
+  }
   const paths: readonly string[] = source === "report" ? REPORT_PATHS : DATA_DRIVEN_PATHS;
   for (const path of paths) {
     revalidatePath(path, "page");

@@ -1,0 +1,5 @@
+import assert from 'node:assert/strict';
+process.env.SUPABASE_URL='https://latest-api-fixture.invalid';process.env.SUPABASE_SERVICE_KEY='fixture-key';
+const records=Array.from({length:1205},(_,i)=>({ticker:'T'+String(i).padStart(4,'0')}));
+globalThis.fetch=async(input,init)=>{const u=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);const h=new Headers(init?.headers);const from=Number(u.searchParams.get('offset')??h.get('range')?.split('-')[0]??0);const limit=Math.min(1000,Number(u.searchParams.get('limit')??1000));return new Response(JSON.stringify(records.slice(from,from+limit)),{headers:{'content-type':'application/json'}});};
+async function main(){const {GET}=await import('./route');const r=await GET();const b=await r.json();assert.equal(r.status,200);assert.equal(b.data.length,1205,'public API must paginate past PostgREST max-rows');assert.equal(b.data.at(-1).ticker,'T1204');console.log('latest fundamentals API pagination checks OK');}main().catch(e=>{console.error(e);process.exitCode=1;});

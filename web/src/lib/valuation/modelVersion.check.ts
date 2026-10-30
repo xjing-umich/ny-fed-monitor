@@ -4,6 +4,7 @@ process.env.SUPABASE_URL = "https://valuation-evidence.invalid";
 process.env.SUPABASE_SERVICE_KEY = "fixture-service-key";
 const seen: URL[] = [];
 const unfiltered: URL[] = [];
+const identityUnfiltered: URL[] = [];
 globalThis.fetch = async (input, init) => {
   const u = new URL(
     typeof input === "string"
@@ -13,6 +14,7 @@ globalThis.fetch = async (input, init) => {
         : input.url,
   );
   seen.push(u);
+  if(u.pathname.endsWith("/valuation_snapshot") && !(u.searchParams.get("ticker") || "").includes("not.in.(SATS)")) identityUnfiltered.push(u);
   if (u.pathname.endsWith("/valuation_snapshot")) {
     if (!u.searchParams.has("payload->>model_version") || u.searchParams.get("payload->>assessment_status") !== "eq.valid") unfiltered.push(u);
     return new Response(init?.method === "HEAD" ? null : "[]", {
@@ -46,6 +48,7 @@ async function checks() {
     seen.filter((u) => u.pathname.endsWith("/valuation_snapshot")).length >= 5,
     "batch, count, leader and screener paths are exercised",
   );
-  console.log("snapshot SQL version filtering checks passed");
+  assert.equal(identityUnfiltered.length,0,"all snapshot surfaces must exclude quarantined identities in SQL before count/order/limit");
+  console.log("snapshot SQL version and identity filtering checks passed");
 }
 checks();

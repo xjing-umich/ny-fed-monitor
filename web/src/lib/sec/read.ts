@@ -1,4 +1,5 @@
-import { getDb } from "@/lib/managers/db";
+import { isIdentityQuarantined } from "../securities/securityIdentity";
+import { getDb, withRetry } from "@/lib/managers/db";
 import { CFP_SELECT } from "./columns";
 
 export type SecLatestSummary = {
@@ -22,6 +23,7 @@ export type SecLatestSummary = {
 };
 
 export async function getSecCompanyData(ticker: string) {
+  if (isIdentityQuarantined(ticker)) return { company: null, filings: [], annual: [], quarterly: [], latest: null };
   let db;
   try {
     db = getDb();
@@ -35,21 +37,27 @@ export async function getSecCompanyData(ticker: string) {
     };
   }
   const upper = ticker.toUpperCase();
-  const [{ data: company }, { data: filings }, { data: periods }, { data: latest }] =
-    await Promise.all([
-      db.from("sec_companies").select("*").eq("ticker", upper).maybeSingle(),
-      db.from("sec_filings").select("*").eq("ticker", upper).order("filing_date", { ascending: false }).limit(24),
-      db.from("company_fundamentals_periods").select(CFP_SELECT).eq("ticker", upper).order("period_end", { ascending: false }).limit(32),
-      db.from("company_fundamentals_latest").select("*").eq("ticker", upper).maybeSingle(),
-    ]);
-
-  const rows = periods ?? [];
+  const [companyResult, periodsResult, latestResult] = await Promise.all([
+    withRetry(() => db.from("sec_companies").select("*").eq("ticker", upper).maybeSingle()),
+    withRetry(() => db.from("company_fundamentals_periods").select(CFP_SELECT).eq("ticker", upper).order("period_end", { ascending: false }).limit(32)),
+    withRetry(() => db.from("company_fundamentals_latest").select("*").eq("ticker", upper).maybeSingle()),
+  ]);
+  for (const result of [companyResult, periodsResult, latestResult]) {
+    if (result.error) throw new Error(`SEC company read failed (${upper}): ${result.error.message}`);
+  }
+  const company = companyResult.data;
+  // An accession belongs to the issuer, not to one share-class ticker.
+  const filingResult = company?.cik
+    ? await withRetry(() => db.from("sec_filings").select("*").eq("cik", company.cik)
+        .order("filing_date", { ascending: false }).order("accession_number", { ascending: false }).limit(24))
+    : { data: [], error: null };
+  if (filingResult.error) throw new Error(`SEC filings read failed (${upper}): ${filingResult.error.message}`);
+  const rows = periodsResult.data ?? [];
   return {
     company,
-    filings: filings ?? [],
-    annual: rows.filter((row: any) => row.fiscal_period === "FY"),
-    // TTM 增量法最坏 3 新 + 3 配对 + 跨年缓冲(spec §4.2)。
-    quarterly: rows.filter((row: any) => row.fiscal_period !== "FY").slice(0, 12),
-    latest,
+    filings: filingResult.data ?? [],
+    annual: rows.filter((row) => row.fiscal_period === "FY"),
+    quarterly: rows.filter((row) => row.fiscal_period !== "FY").slice(0, 12),
+    latest: latestResult.data,
   };
 }

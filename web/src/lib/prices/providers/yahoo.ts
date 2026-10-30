@@ -1,3 +1,4 @@
+import { isIdentityQuarantined } from "../../securities/securityIdentity";
 import type { DailyClose, PriceProvider, SplitEvent } from "./types";
 import { toYahooSymbol } from "./symbol";
 
@@ -97,6 +98,7 @@ export class YahooChartProvider implements PriceProvider {
   constructor(private fetchImpl: typeof fetch = fetch) {}
 
   private async fetchRange(ticker: string, range: string): Promise<DailyClose[]> {
+    if (isIdentityQuarantined(ticker)) return [];
     const sym = toYahooSymbol(ticker);
     const url = `${CHART_URL}${encodeURIComponent(sym)}?interval=1d&range=${range}`;
     const res = await this.fetchImpl(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
@@ -111,6 +113,7 @@ export class YahooChartProvider implements PriceProvider {
 
   /** 近 5 个交易日(含 meta 补出的当日收盘)。日更任务整段 upsert,漏掉的日子下一轮自动补齐。 */
   async fetchRecent(ticker: string): Promise<DailyClose[]> {
+    if (isIdentityQuarantined(ticker)) return [];
     const sym = toYahooSymbol(ticker);
     const url = `${CHART_URL}${encodeURIComponent(sym)}?interval=1d&range=5d`;
     const res = await this.fetchImpl(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
@@ -124,6 +127,7 @@ export class YahooChartProvider implements PriceProvider {
   }
 
   async fetchSplits(ticker: string, sinceYears = 2): Promise<SplitEvent[]> {
+    if (isIdentityQuarantined(ticker)) return [];
     const sym = toYahooSymbol(ticker);
     const range = `${Math.max(1, Math.ceil(sinceYears))}y`;
     const url = `${CHART_URL}${encodeURIComponent(sym)}?interval=1d&range=${range}&events=splits`;

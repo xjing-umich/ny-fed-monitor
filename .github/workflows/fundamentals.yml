@@ -14,6 +14,8 @@ concurrency:
 jobs:
   fundamentals:
     runs-on: ubuntu-latest
+    outputs:
+      changed_tickers: ${{ steps.publish.outputs.changed_tickers }}
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -21,10 +23,49 @@ jobs:
         with: { node-version: "20" }
       - run: npm ci
         working-directory: web
-      - run: npm run sec:ingest:holdings
+      - id: ingest
+        run: npm run sec:ingest:holdings
         working-directory: web
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           # SEC requires a contact User-Agent. Uses the repo secret if set, else a default contact.
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || 'Compounder Research junlinzhu@jobright.ai' }}
+
+      - name: Publish changed financial pages
+        id: publish
+        if: ${{ always() && !cancelled() }}
+        run: npx tsx --tsconfig scripts/tsconfig.json scripts/revalidate-fundamentals.ts
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}
+
+  valuation:
+    needs: fundamentals
+    if: ${{ always() && !cancelled() && (github.event_name == 'workflow_dispatch' || (needs.fundamentals.outputs.changed_tickers != '' && needs.fundamentals.outputs.changed_tickers != '[]')) }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: valuation-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: web
+      - id: valuation
+        run: npm run valuation:ingest
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      - name: Publish valuation pages
+        if: ${{ success() || (steps.valuation.outputs.cache_refresh_required != '' && steps.valuation.outputs.cache_refresh_required != '0') }}
+        run: npm run valuation:revalidate
+        working-directory: web
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}

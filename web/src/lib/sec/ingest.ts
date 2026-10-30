@@ -1,3 +1,6 @@
+import { readCompanyPublication, queueCompanyPublication } from "./fundamentalPublication";
+import { financialPublicationFingerprint } from "./publicationFingerprint";
+import { assertSecurityIdentity } from "../securities/securityIdentity";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceSupabaseClient } from "../supabase/server";
 import { COMPANY_UNIVERSE, KNOWN_FOREIGN_ISSUERS, normalizeTicker } from "./company-universe";
@@ -36,6 +39,7 @@ export type IngestCompanyResult = {
   cik: string | null;
   status: "success" | "failed" | "unresolved";
   foreign_issuer?: boolean;
+  publication_fingerprint?: string;
   saved: SavedSummary;
   quality_status: string;
   error?: string;
@@ -148,6 +152,7 @@ async function upsertLatest(
  * 不碰数据库,ingestCompany 与本地 dry-run(scripts/sec-ingest-company.ts --dry-run)共用。
  */
 export async function prepareCompanyFundamentals(ticker: string, match: TickerCikMatch) {
+  assertSecurityIdentity(ticker);
   const [submission, facts] = await Promise.all([fetchCompanySubmissions(match.cik), fetchCompanyFacts(match.cik)]);
   const ownFilings = normalizeRecentFilings(ticker, submission);
   // 控股重组 / 再注册:新 CIK 的 companyfacts 只有重组后的申报,历史在前身 CIK 下(2026-10:XOM)。
@@ -186,6 +191,8 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
   const emptySaved = { company: false, filings: 0, annual_periods: 0, quarterly_periods: 0, latest: false };
 
   try {
+    assertSecurityIdentity(ticker);
+    const priorPublication = await readCompanyPublication(supabase, ticker);
     const match = await resolveTickerCik(ticker);
     if (!match) {
       const result: IngestCompanyResult = {
@@ -252,6 +259,9 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       ticker,
       cik: match.cik,
       status: "success",
+      publication_fingerprint: financialPublicationFingerprint(match.cik,
+        [...normalized.annual, ...normalized.quarterly],
+        filings.map(f => ({ accession_number: f.accession_number, form: f.form, report_date: f.report_date, filing_date: f.filing_date }))),
       foreign_issuer: isForeignIssuer,
       saved: {
         company: true,
@@ -262,6 +272,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       },
       quality_status: qualityStatus
     };
+    await queueCompanyPublication(supabase, ticker, result.publication_fingerprint!, priorPublication);
     await finishRun(supabase, runId, "success", result);
     return result;
   } catch (error) {
