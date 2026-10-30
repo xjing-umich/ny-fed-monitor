@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerQoQ } from "@/lib/managers/source";
@@ -11,11 +10,9 @@ import { InvestorListClient } from "./InvestorListClient";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { LinkDirectory } from "@/components/list/LinkDirectory";
-import { ListFallback } from "@/components/list/ListFallback";
 import { managerLabel } from "@/lib/managers/displayName";
 
-// 页头在服务端渲染(而非放进客户端列表组件):列表组件读 useSearchParams,预渲染时整块
-// 落到 Suspense fallback,页头放在里面 → 服务端 HTML 没有 H1。
+// 页头与默认第一页均在服务器输出；只有叶子 URL 读取器使用 Suspense。
 const HEAD = {
   zh: {
     eyebrow: "SEC 13F · 季度披露",
@@ -102,9 +99,7 @@ export default async function InvestorsPage({
       <div className="mb-4">
         <PageHeader eyebrow={head.eyebrow} title={head.heading} intro={head.subtitle} />
       </div>
-      <Suspense fallback={<ListFallback />}>
-        <InvestorListClient lang={lang} managers={managers} nowMs={Date.now()} />
-      </Suspense>
+      <InvestorListClient lang={lang} managers={managers} nowMs={Date.now()} />
       <LinkDirectory
         eyebrow={head.dirEyebrow}
         title={head.dirTitle(managers.length)}

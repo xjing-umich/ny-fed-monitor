@@ -12,7 +12,7 @@ import {
   getTickerExchangeMap,
   getSecurityMeta,
 } from "@/lib/managers/securities";
-import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
+import { countsAsCurrentHolder, effectiveMovesPeriod, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, localePath, HTML_LANG } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -417,18 +417,14 @@ export default async function StockTickerPage({
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
 
-  // "截至":展示季度;无全站口径时回退到本票持有人的最新期。提交日取该季内最晚一份。
+  // Comparison baseline only; actual source periods are labeled separately below.
   const asOfPeriod = displayPeriod || (globalLatestPeriod(filings.map((f) => f.period)) ?? "");
-  const asOfFiledAt = filings
-    .filter((f) => f.period === asOfPeriod)
-    .reduce((max, f) => (f.filedAt > max ? f.filedAt : max), "");
   // 已交下一季的早申报者(含在新季清仓、因而不在表里的):正文里点明,避免混期让读者误读口径。
   const aheadBySlug = new Map<string, string>();
   for (const f of filings) if (asOfPeriod && f.period > asOfPeriod) aheadBySlug.set(f.slug, f.period);
   const ahead = aheadBySlug.size
     ? { count: aheadBySlug.size, period: globalLatestPeriod([...aheadBySlug.values()])! }
     : undefined;
-  // 持有人表是否混期(含落后的旧申报):FAQ 措辞据此区分。
 
   // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
   const stockProse = buildStockProse(
@@ -781,7 +777,7 @@ export default async function StockTickerPage({
         // 现价、安全边际、持有人数、合计市值都移进首屏结论带,不在这里重复。
         keyFacts={[]}
         sources={[
-          { name: "SEC EDGAR 13F", href: "#filing-sources", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) },
+          { name: "SEC EDGAR 13F", href: "#filing-sources", asOf: "", periodLabel: snapshotLabel(lang, holders.map((h) => h.period)) },
           ...(latestPrice
             ? [{ name: priceSourceName(lang, latestPrice.source), asOf: latestPrice.date, status: latestPrice.stale ? ("stale" as const) : ("fresh" as const) }]
             : []),

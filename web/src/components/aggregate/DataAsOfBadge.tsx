@@ -2,7 +2,7 @@ import React from "react";
 import type { Lang } from "@/lib/nav";
 import { date as formatDate } from "@/lib/i18n/format";
 
-/** 数据截至 + 13F 45 天滞后徽标。asOf 省略时只显示滞后说明。 */
+/** 数据截至 + 13F 季末快照徽标。asOf 省略时只显示快照说明。 */
 export function DataAsOfBadge({ lang, asOf }: { lang: Lang; asOf?: string }) {
   const isZh = lang === "zh";
   const datePart = asOf ? (isZh ? `数据截至 ${formatDate(asOf, lang)} · ` : `As of ${formatDate(asOf, lang)} · `) : "";

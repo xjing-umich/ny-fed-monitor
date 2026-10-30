@@ -69,6 +69,7 @@ async function main() {
       for (fallback of [false, true]) {
         rows = [row('first'), row('early', q3), row('exit', q3, 'exited')];
         const html = renderToStaticMarkup(await StockPage({ params: Promise.resolve({ lang, ticker: 'TEST' }) }));
+        assert.ok(!/can lag up to 45 days|可能滞后最多 45 天/.test(html), 'disclaimer must distinguish filing deadline from snapshot age');
         const [ds] = datasets(html);
         assert.equal(ds.temporalCoverage, `${q2}/${q3}`, 'actual mixed holder rows drive coverage on both read paths');
         assert.ok(!('dateModified' in ds));
@@ -79,6 +80,8 @@ async function main() {
         assert.ok(ds.description.includes(q2) && ds.description.includes(q3));
         const table = html.slice(html.indexOf('id="holders"'), html.indexOf('</section>', html.indexOf('id="holders"')));
         assert.ok(table.includes(q2) && table.includes(q3), 'visible snapshot note matches Dataset');
+        const mixedFooter = html.slice(html.indexOf('id="sources"')).split('</div></div>')[0];
+        assert.ok(mixedFooter.includes(lang === 'en' ? 'Q2 2026 / Q3 2026' : '2026Q2 / 2026Q3'), 'source footer preserves mixed periods');
         assert.match(ds.description, lang === 'en' ? /comparison baseline: 2026-06-30/ : /比较基准：2026-06-30/);
         rows = [row('first'), row('exit', q3, 'exited')];
         const [single] = datasets(renderToStaticMarkup(await StockPage({ params: Promise.resolve({ lang, ticker: 'TEST' }) })));
@@ -97,6 +100,9 @@ async function main() {
       const faqJson = [...earlyHtml.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1])).find((o) => o['@type'] === 'FAQPage');
       assert.ok(faqJson.mainEntity[0].acceptedAnswer.text.includes(lang === 'en' ? 'Q3 2026' : '2026Q3'));
       assert.ok(!/most|多数/.test(faqJson.mainEntity[0].acceptedAnswer.text));
+      const sourceFooter = earlyHtml.slice(earlyHtml.indexOf('id="sources"')).split('</div></div>')[0];
+      assert.ok(sourceFooter.includes(lang === 'en' ? 'Q3 2026' : '2026Q3'), 'source footer describes actual single-Q3 holdings');
+      assert.ok(!sourceFooter.includes('Jun 30') && !sourceFooter.includes('2026年6月30'), 'source footer cannot inherit comparison quarter');
       rows = [row('first')];
       const [investor] = datasets(renderToStaticMarkup(await InvestorPage({ params: Promise.resolve({ lang, slug: 'first' }) })));
       assert.equal(investor.temporalCoverage, q2);

@@ -21,30 +21,30 @@
 - Publication date and snapshot writing date survive later content corrections.
 
 ### Task 1: Correct detail links, time descriptions and provenance (F01/F13/F04)
-- [ ] Add and run failing behavioral checks for link eligibility and actual-period description.
-- [ ] Guard all investor stock links with shared current-holder eligibility, including prose, moves and table.
-- [ ] Use actual snapshot periods in metadata/FAQ; retain comparison baseline only for moves.
-- [ ] Extend SourceFooter with optional href and provide actual investor filings / stock holder filing lists.
-- [ ] Run detail checks, tsc and commit.
+- [x] Add and run failing behavioral checks for link eligibility and actual-period description.
+- [x] Guard all investor stock links with shared current-holder eligibility, including prose, moves and table.
+- [x] Use actual snapshot periods in metadata/FAQ; retain comparison baseline only for moves.
+- [x] Extend SourceFooter with optional href and provide actual investor filings / stock holder filing lists.
+- [x] Run detail checks, tsc and commit.
 
 ### Task 2: Render default list numbers and constrain mobile width (F03/F09)
-- [ ] Verify useSearchParams static behavior against bundled Next documentation.
-- [ ] Preserve default static render and progressively read actual URL state without a whole-list Suspense bailout.
-- [ ] Check search, filters, pagination and history; confirm numeric rows in raw production HTML.
-- [ ] Constrain mobile primary link content to available width; verify 375px zh BRK names.
-- [ ] Run list tests, render/interaction checks and commit.
+- [x] Verify useSearchParams static behavior against bundled Next documentation.
+- [x] Preserve default static render and progressively read actual URL state without a whole-list Suspense bailout.
+- [x] Check search, filters, pagination and history; confirm numeric rows in raw production HTML.
+- [x] Constrain mobile primary link content to available width; verify 375px zh BRK names.
+- [x] Run list tests, render/interaction checks and commit.
 
 ### Task 3: Editorial evidence, dates and accurate scope (F07/F12/F14/F15/F16)
-- [ ] Verify primary sources for all seven articles; add readable references and stable section IDs.
-- [ ] Separate published/updated/written dates; derive original dates from git history and record actual corrections.
-- [ ] Correct 13F scope and disclosure deadline wording, model assumptions copy and llms summaries.
-- [ ] Run meaningful article metadata/reference checks, inspect en/zh and commit.
+- [x] Verify primary sources for all seven articles; add readable references and stable section IDs.
+- [x] Separate published/updated/written dates; derive original dates from git history and record actual corrections.
+- [x] Correct 13F scope and disclosure deadline wording, model assumptions copy and llms summaries.
+- [x] Run meaningful article metadata/reference checks, inspect en/zh and commit.
 
 ### Task 4: Metadata and final acceptance (F06/F08/F10/F11)
-- [ ] Derive ranking metadata from actual shared quarter/results and shorten specific long titles.
-- [ ] Add truthful screener collection/breadcrumb schemas, including empty views and canonical aliases.
-- [ ] Run required gates and production build; inspect six templates in both languages and no-JS/list interaction.
-- [ ] Fresh independent whole-branch review, address important findings, push branch and open PR.
+- [x] Derive ranking metadata from actual shared quarter/results and shorten specific long titles.
+- [x] Add truthful screener collection/breadcrumb schemas, including empty views and canonical aliases.
+- [x] Run required gates and production build; inspect six templates in both languages and no-JS/list interaction.
+- [x] Fresh independent whole-branch review and address important findings. Push branch and open PR after final acceptance (standing user authorization).
 
 ## Execution ledger
 - Setup: reused existing isolated seo worktree; clean branch from b6aebf2. Full audit is approved scope; implement inline without another design approval round.
@@ -54,3 +54,8 @@
 - Task 2: public raw-HTML acceptance failed as expected before changes; URL parser suite, tsc and changed-list lint passed after isolating QueryReader. Production SSR and browser history acceptance remain final gate.
 - Task 3: Learn publication/reference test observed RED→GREEN; immutable published/written dates added, current citations and copy corrections dated 2026-10-30. Financial example source accessions cross-checked against current read-only records and verified SEC directories. Sources distinguish original publications, a translated speech, and reader-collected Q&A.
 - Task 4: ranking metadata regression observed RED→GREEN. Required prebuild gates, route/Dataset fixtures, Learn, SEO and stock-link checks pass. Full production build and browser acceptance running.
+
+- Final review: one Important/P2 source-footer period finding. Actual-route single-Q3 footer test observed RED, then GREEN after actual snapshot labels replaced baseline/date aggregation; mixed and unknown footer tests pass. No other blocking finding.
+- Final acceptance found default rows were streamed into a hidden outer Suspense segment, rather than main HTML. Removed the obsolete whole-list boundary; URL reader retains its own boundary. Existing browser checks passed sort, pagination, search, direct query, history, investor filter; zh/stocks width is 375px at 375px viewport. Rebuilding to verify no-JS main content.
+
+- Final verification (2026-10-31 HK): full build passed with all prebuild gates, TypeScript and 851 static outputs; four raw-main-HTML list checks passed. Fresh fetch-cache validation reads AAPL price source 2026-10-29. Stock disclaimer deadline regression observed RED→GREEN; list-query suite and final changed-file lint passed. Browser acceptance covers all six templates in both languages, with no inspected console errors. Full evidence and remaining F17 data dependency are recorded in docs/verification/2026-10-31-seo-geo-repairs.md.
