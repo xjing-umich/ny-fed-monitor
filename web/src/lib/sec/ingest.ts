@@ -4,7 +4,7 @@ import { COMPANY_UNIVERSE, KNOWN_FOREIGN_ISSUERS, normalizeTicker } from "./comp
 import { fetchCompanyFacts } from "./company-facts";
 import { fetchCompanySubmissions, normalizeRecentFilings } from "./company-submissions";
 import { FundamentalPeriod, normalizeCompanyFacts } from "./normalize-facts";
-import { backfillMissingFilings } from "./filing-backfill";
+import { backfillMissingFilings, backfillCapitalExpenditures } from "./filing-backfill";
 import { synthesizeBankRevenue } from "./bank-revenue";
 import { attachPredecessorHistory } from "./predecessor";
 import { needsClassSharesFallback, applyClassSharesFallback } from "./class-shares-fallback";
@@ -165,6 +165,9 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
   const backfill = await backfillMissingFilings(facts, filings);
   if (backfill.filled.length) console.log(`  ${ticker}: companyfacts 漏收,已从原始申报回填 ${backfill.filled.join("; ")}`);
   if (backfill.failed.length) console.warn(`  ${ticker}: 漏收申报回填失败 ${backfill.failed.join("; ")}`);
+  const capitalBackfill = await backfillCapitalExpenditures(facts, filings);
+  if (capitalBackfill.filled.length) console.log(`  ${ticker}: ${capitalBackfill.filled.join("; ")}`);
+  if (capitalBackfill.failed.length) console.warn(`  ${ticker}: capital expenditure remains unavailable for ${capitalBackfill.failed.length} annual filing(s)`);
   // 银行总营收 = NII + 非利息收入(回填之后合成,回填进来的新季度也覆盖到)。
   synthesizeBankRevenue(facts);
   const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);

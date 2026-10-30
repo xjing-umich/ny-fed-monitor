@@ -233,7 +233,7 @@ function toPicked(unit: SecFactUnit, tag: string): PickedFact {
     end: unit.end!,
     filed: unit.filed ?? "9999-99-99",
     accn: unit.accn ?? null,
-    tag,
+    tag: unit.source_tag ?? tag,
     days: dayCount(unit.start, unit.end),
     form: unit.form
   };

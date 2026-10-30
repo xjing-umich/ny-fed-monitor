@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';
+import {extractGaapFacts} from './filing-backfill';
+const xml=`<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:issuer="https://example.test/issuer" xmlns:us-gaap="http://fasb.org/us-gaap/2026"><xbrli:context id="fy"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier></xbrli:entity><xbrli:period><xbrli:startDate>2025-01-01</xbrli:startDate><xbrli:endDate>2025-12-31</xbrli:endDate></xbrli:period></xbrli:context><xbrli:unit id="usd"><xbrli:measure>iso4217:USD</xbrli:measure></xbrli:unit><xbrli:unit id="cny"><xbrli:measure>iso4217:CNY</xbrli:measure></xbrli:unit><issuer:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets contextRef="fy" unitRef="usd">163744000</issuer:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets><issuer:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets contextRef="fy" unitRef="cny">1145077000</issuer:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets><issuer:PaymentsToAcquireInvestments contextRef="fy" unitRef="usd">999999</issuer:PaymentsToAcquireInvestments></xbrli:xbrl>`;
+const capex=extractGaapFacts(xml).filter(f=>f.tag==='PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets');
+assert.equal(capex.length,1,'only exactly identified USD capital expenditure is eligible');
+assert.equal(capex[0].value,163744000);assert.equal(capex[0].sourceTag,'issuer:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets');
+assert.ok(!extractGaapFacts(xml).some(f=>f.value===999999),'financial investments are never mapped to operating capex');
+console.log('capital expenditure extension checks passed');
