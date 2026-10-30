@@ -55,7 +55,7 @@ import { valuationVerdictChip } from "@/lib/stocks/valuationVerdictChip";
 import { PriceBetBlock, expectationsBadge } from "@/components/valuation/PriceBetBlock";
 import { deriveBusinessQuality } from "@/lib/stocks/businessQuality";
 import { stockPageCopy, stockUi } from "@/lib/stocks/stockCopy";
-import { conclusionLeftState, stockAnchors, holdersLine, valuationDetailsShown, verdictGaugeReady } from "@/lib/stocks/stockConclusion";
+import { conclusionLeftState, stockAnchors, valuationDetailsShown, verdictGaugeReady } from "@/lib/stocks/stockConclusion";
 import { StockConclusionBand } from "@/components/stocks/StockConclusionBand";
 import { StockAnchorNav } from "@/components/stocks/StockAnchorNav";
 import { valuationLabel } from "@/lib/valuation/valuationLabel";
@@ -790,11 +790,13 @@ export default async function StockTickerPage({
             left={bandLeft}
             marginText={marginShown ? `${page.marginOfSafety} ${fmtMarginPct(handoffVerdict!.marginPct!)}` : null}
             holders={{
-              line: holdersLine(n, formatUSD(totalValue, lang), lang),
+              count: n,
+              total: formatUSD(totalValue, lang),
+              leaders: [...holders].sort((a, b) => b.value - a.value).slice(0, 2).map((h) => ({ name: h.person, href: investorPath(lang, h.slug) })),
+              snapshotNote: snapshotTime(lang, holders.map((h) => h.period)).note,
               quarter: quarterLabel(displayPeriod, lang) || "",
               moves,
               exited: exitedHolders.map((e) => ({ name: e.person, href: investorPath(lang, e.slug) })),
-              trend: trendSeries,
             }}
           />
           <StockAnchorNav lang={lang} anchors={anchors} />
