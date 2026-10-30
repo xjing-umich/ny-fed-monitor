@@ -30,7 +30,7 @@ export function buildGrowthEvidence(
   const latest = fy[0];
   const prior = latest && fy.slice(1).find(r => day(latest.period_end)-day(r.period_end)>=350 && day(latest.period_end)-day(r.period_end)<=380);
   // FY/derived Q4 and 6-K submission dates are not evidence of a real quarterly period.
-  const real = quarterly.filter(r => ['10-Q','6-K'].includes(r.form) && r.is_derived !== true && /^Q[1-4]$/.test(r.fiscal_period) && r.period_end);
+  const real = quarterly.filter(r => ['10-Q','6-K'].includes(r.form) && r.is_derived !== true && /^Q[1-4]$/.test(r.fiscal_period ?? "") && r.period_end);
   const dedup = [...new Map(real.sort((a,b)=>(a.filing_date??'').localeCompare(b.filing_date??'')).map(r=>[r.period_end,r])).values()];
   const recent = latest ? dedup.filter(r => r.period_end>latest.period_end).sort((a,b)=>a.period_end.localeCompare(b.period_end)) : [];
   const latestPeriod = recent.at(-1)?.period_end ?? latest?.period_end;

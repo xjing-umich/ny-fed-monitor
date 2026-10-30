@@ -28,7 +28,8 @@ export type SuppressedReason =
   | "split_coverage_stale"
   | "capital_structure_distorted"
   | "fundamentals_corrupt"
-  | "holdco_not_assessable";
+  | "holdco_not_assessable"
+  | "growth_evidence_incomplete";
 
 export type RunValuationInput = {
   floorInput: ValuationFloorInput;
@@ -185,6 +186,6 @@ export function runValuation(input: RunValuationInput): ValuationRun {
     verdict,
     expectations,
     methods,
-    suppressedReason: suppressedReason({ verdict, strikeZone, guards: { ...guards, fundamentalsCorrupt }, floor, price }),
+    suppressedReason: !verdict && oeDcf.growth_coverage_gap ? "growth_evidence_incomplete" : suppressedReason({ verdict, strikeZone, guards: { ...guards, fundamentalsCorrupt }, floor, price }),
   };
 }

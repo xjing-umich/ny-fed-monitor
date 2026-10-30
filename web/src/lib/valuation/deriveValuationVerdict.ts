@@ -222,6 +222,7 @@ export function deriveValuationVerdict(input: {
     };
   }
   // 件④:投资主导型控股集团,合并层面测试不适用 → 上面 SOTP 不可得时已 return null(fail-closed 兜底)
+  if (oeDcf?.growth_coverage_gap) return null; // Missing evidence cannot establish cheapness or expensiveness.
   const epv = strikeZone?.epv;
   if (!epv) return null; // 无价格 / 货币不匹配 / 无可比地板 → 无判定
   const price = strikeZone!.price.close;

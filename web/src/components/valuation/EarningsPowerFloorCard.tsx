@@ -100,13 +100,13 @@ const COPY = {
     modelSensitiveShort: "Different staging assumptions can move the DCF estimate.",
     highLeverageShort: "High financial leverage: the equity value here is a degraded approximation.",
     lowConfidenceFallback: "Inputs look fragile this year — we won't mark this as confirmed cheap.",
-    bandHowToRead: "The middle figure is the main read. The right end is the optimistic case under the same conservative caps — not an absolute ceiling.",
+    bandHowToRead: "The middle figure is the main read. The right end is the optimistic case under the displayed model assumptions — not an absolute ceiling.",
     legendFloor: "Zero-growth floor",
     legendIv: "Intrinsic value",
     legendHi: "Optimistic top",
     assetBelow: (ps: string) => `Price is at or below the reproducible tangible asset base (${ps} / sh) — a rarer, harder floor.`,
     modelCautions: "Model cautions",
-    methodDisclaimer: "A conservative intrinsic-value range (zero-growth floor to growth-capped DCF) plus a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
+    methodDisclaimer: "A model-based intrinsic-value range (zero-growth floor to growth-capped DCF) plus a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
     priceUnavailable: "No usable market price is available, so this page does not place price on the value gauge.",
     earningsValueUnavailable: "Earnings in the filings don't support a positive per-share value (typically a company still losing money), so this page does not place price on the value gauge.",
     currencyMismatch: (cur: string) => `The price is quoted in ${cur} while per-share values come from USD filings, so the two aren't comparable and this page does not place price on the value gauge.`,
@@ -155,13 +155,13 @@ const COPY = {
     modelSensitiveShort: "DCF 对分档假设敏感 — 当作区间读，不要当成一个点。",
     highLeverageShort: "金融股高杠杆：这里的股权价值是降级近似。",
     lowConfidenceFallback: "今年输入偏脆，不把便宜当成确认信号。",
-    bandHowToRead: "中间是主读数；右侧上沿是同一套保守假设下的乐观档，不是绝对上限。",
+    bandHowToRead: "中间是主读数；右侧上沿是所示模型假设下的乐观档，不是绝对上限。",
     legendFloor: "零增长底",
     legendIv: "内在价值",
     legendHi: "乐观上沿",
     assetBelow: (ps: string) => `现价已等于或低于可重置的有形资产基础（${ps} / 股）— 一道更罕见、更硬的地板。`,
     modelCautions: "模型警示",
-    methodDisclaimer: "保守内在价值区间（零增长底到增速封顶的 DCF）加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
+    methodDisclaimer: "模型内在价值区间（零增长底到增速封顶的 DCF）加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
     priceUnavailable: "缺少可用市场价格，因此不把现价放进价值区间位置条。",
     earningsValueUnavailable: "按现有财报，盈利撑不出一个为正的每股价值（常见于仍在亏损的公司），因此不把现价放进价值区间位置条。",
     currencyMismatch: (cur: string) => `现价以 ${cur} 计价，每股价值按美元财报算，两者不可比，因此不把现价放进价值区间位置条。`,
@@ -223,6 +223,9 @@ function assumptionsLine(
   const why = oeDcf.declined ? "declined" : oeDcf.growth_g1_limited_by;
   const reason = {
     zh: {
+      recent_revenue: "受最近可比营收增速约束",
+      recent_earnings: "受最近可比盈利增速约束",
+      coverage: "增长证据不足，仅列零增长参考",
       history: "取历史营收增速，未封顶",
       fundamentals: "已封顶：再投资能力撑不起更快的增长",
       net_income: "已封顶：净利润增速更低",
@@ -231,6 +234,9 @@ function assumptionsLine(
       none: "缺少增长证据，按零增长算",
     },
     en: {
+      recent_revenue: "limited by recent comparable revenue growth",
+      recent_earnings: "limited by recent comparable earnings growth",
+      coverage: "growth evidence incomplete; zero-growth reference only",
       history: "historical revenue trend, not capped",
       fundamentals: "capped: reinvestment can't fund faster growth",
       net_income: "capped: net income grew more slowly",
@@ -246,7 +252,7 @@ function assumptionsLine(
         : `Model growth assumption ${pct(oeDcf.declined ? 0 : g1)}${why ? ` (${reason[why]})` : ""}`
       : null;
   const moatPart =
-    oeDcf.moatCap?.capYears != null ? (zh ? `护城河 ${oeDcf.moatCap.capYears} 年` : `moat ${oeDcf.moatCap.capYears} yr`) : null;
+    oeDcf.moatCap?.capYears != null ? (zh ? `预测 ${oeDcf.expectations_inputs?.capYears ?? 10} 年（模型假设）` : `forecast ${oeDcf.expectations_inputs?.capYears ?? 10} yr (model assumption)`) : null;
   const discountPart =
     oeDcf.discount?.midpoint != null
       ? zh
@@ -264,14 +270,14 @@ const CAUTION = {
     oeYield: "Owner-earnings yield diverges sharply from the 10-year Treasury (over 300 bps).",
     quickCheck: "The DCF result diverges sharply from a matched-growth benchmark (over 50%) — the model is sensitive to its staging.",
     divergence: "The two methods’ midpoints differ materially — growth assumptions warrant review (over 20%).",
-    rMinusG: "Growth nearly matches the discount rate — the estimate is sensitive to assumptions.",
+    rMinusG: "Initial growth is high relative to the discount rate, making the finite forecast sensitive to assumptions.",
   },
   zh: {
     terminal: "估计高度依赖遥远的未来（终值占现值 70% 以上）。",
     oeYield: "所有者盈利收益率与 10 年期美债大幅背离（超过 300 个基点）。",
     quickCheck: "DCF 结果与同增长基准显著背离（超过 50%）— 模型对分档假设敏感。",
     divergence: "两种方法的中值差异显著 — 增长假设值得复核（超过 20%）。",
-    rMinusG: "增长率几乎等于贴现率 — 估计对假设高度敏感。",
+    rMinusG: "初始增速相对折现率较高，有限预测期的估值对假设敏感。",
   },
 } as const;
 
@@ -304,6 +310,7 @@ function valuationCautions(
   floor?: ValuationFloor,
 ): string[] {
   const cautions: string[] = [];
+  if (oeDcf?.growth_coverage_gap) cautions.push(lang === "zh" ? "增长证据不足：近期可比财报或经营再投资资料不完整；仅列零增长参考，不据此判断贵便宜。" : "Growth evidence is incomplete: current comparable financials or operating reinvestment data are missing. Only a zero-growth reference is shown; no valuation verdict is assigned.");
   if (floor?.ai_capex_distortion_warning) cautions.push(COPY[lang].capexRamp);
   if (oeDcf?.terminal_dependency_flag) cautions.push(CAUTION[lang].terminal);
   if (oeDcf?.diagnostics?.oe_yield_flag) cautions.push(CAUTION[lang].oeYield);
@@ -333,6 +340,9 @@ function LampMethod({ lamp, lang, ttmPeriodEnd }: { lamp: EpvLamp; lang: Lang; t
       <p>
         {lamp.method.earnings_basis} {lamp.method.leverage_treatment} {lamp.method.denominator} {lamp.method.bridge}
       </p>
+      {lamp.method.normalization ? <p>{lang === "zh"
+        ? `盈利正常化：多年均值 ${usd(lamp.method.normalization.mean, lang)}，以 ${pct1(lamp.method.normalization.weight)} 权重向受趋势约束的近期水平调整，采用 ${usd(lamp.method.normalization.value, lang)}。`
+        : `Earnings normalization: mean ${usd(lamp.method.normalization.mean, lang)}, blended ${pct1(lamp.method.normalization.weight)} toward a trend-capped recent level, giving ${usd(lamp.method.normalization.value, lang)}.`}</p> : null}
       <p>{lang === "zh" ? "年份：" : "Years: "}{yearsUsedText(lamp.method.years_used, ttmPeriodEnd)}</p>
       {lamp.method.simplifications.length > 0 ? <p>{lang === "zh" ? "v1 简化：" : "v1 simplifications: "}{lamp.method.simplifications.join(" ")}</p> : null}
     </div>
@@ -379,11 +389,11 @@ function capDisclosure(moatCap: MoatCapAssessment | undefined, lang: Lang): stri
   if (moatCap.grade === "strong") {
     return lang === "zh"
       ? `假设宽护城河 · 竞争优势期约 ${y} 年（盈利未衰退、ROIC 历史稳定）。`
-      : `Assumes a wide moat · competitive-advantage period ≈ ${y} years (earnings intact, ROIC stable over history).`;
+      : `Assumes a wide moat · model forecast horizon ≤ ${y} years (earnings intact, ROIC stable over history).`;
   }
   return lang === "zh"
     ? `假设一般护城河 · 竞争优势期约 ${y} 年。`
-    : `Assumes a narrow moat · competitive-advantage period ≈ ${y} years.`;
+    : `Assumes a narrow moat · model forecast horizon ≤ ${y} years.`;
 }
 
 // 标尺只表达相对价值区间的位置;不使用引擎的相对内在价值 bucket 定位。
@@ -657,15 +667,15 @@ function ValueSpine({
   const sentence =
     lang === "zh"
       ? bothMethods
-        ? `${who}两种方法为该业务估值 — 一为保守的所有者盈利 DCF，一为计入增长的 Greenwald 估计，${valueRange}。${bothClause}`
+        ? `${who}两种方法为该业务估值 — 一为基于所示假设的所有者盈利 DCF，一为计入增长的 Greenwald 估计，${valueRange}。${bothClause}`
         : hasGrowthBand && hasIv
-          ? `${who}保守价值区间 ${valueRange}（零增长底到增速封顶的乐观上沿）。${ivClause}`
-          : `${who}一项保守的盈利能力估计，${valueRange}；今日价格${posZh}${bucket === "within" ? "其中" : "它"}${asOf}。`
+          ? `${who}模型价值区间 ${valueRange}（零增长底到增速封顶的乐观上沿）。${ivClause}`
+          : `${who}一项零增长盈利能力估计，${valueRange}；今日价格${posZh}${bucket === "within" ? "其中" : "它"}${asOf}。`
       : bothMethods
-        ? `${who}Two methods value the business — a conservative owner-earnings DCF and a growth-credited Greenwald estimate, ${valueRange}. ${bothClause}`
+        ? `${who}Two methods value the business — an owner-earnings DCF under explicit assumptions and a growth-credited Greenwald estimate, ${valueRange}. ${bothClause}`
         : hasGrowthBand && hasIv
-          ? `${who}A conservative value range ${valueRange} (zero-growth floor to growth-capped optimistic top). ${ivClause}`
-          : `${who}A conservative earnings-power estimate, ${valueRange}; today’s price sits ${posEn} it${asOf}.`;
+          ? `${who}A model value range ${valueRange} (zero-growth floor to growth-capped optimistic top). ${ivClause}`
+          : `${who}A zero-growth earnings-power estimate, ${valueRange}; today’s price sits ${posEn} it${asOf}.`;
 
   const callouts = !verdict.reliable ? confidenceCallouts(floor, oeDcf, lang) : [];
 
@@ -858,6 +868,7 @@ function MethodDetails({
           <p>
             {zh ? "所有者盈利 DCF：增长 g₁ " : "Owner-earnings DCF: growth g₁ "}{pct(oeDcf.growth_g1)}
             {oeDcf.declined ? (zh ? "（历史下滑 → 封顶为 0）" : " (history declining → capped at 0)") : ""}{zh ? " · OE FY " : " · OE FY "}{yearsUsedText(oeDcf.oe_fiscal_years ?? [], ttmPeriodEnd)} ·{" "}
+            {zh ? `前 5 年采用初始增速，此后衰减至第 ${oeDcf.expectations_inputs?.capYears ?? 10} 年的零增速；终值增长 ${pct1(oeDcf.terminal_growth)}。` : `Initial growth for 5 years, then fading to zero by year ${oeDcf.expectations_inputs?.capYears ?? 10}; terminal growth ${pct1(oeDcf.terminal_growth)}.`}
             {oeDcf.discount?.note} {oeDcf.no_bridge_note}
             {reconciliation?.comparable && reconciliation.divergence_pct != null
               ? (zh ? ` 两法中值差 ${pct(reconciliation.divergence_pct)}。` : ` Two-method midpoint gap ${pct(reconciliation.divergence_pct)}.`)

@@ -15,6 +15,7 @@ export type EpvLampMethod = {
   discount_rate_high: number;
   years_used: number[];
   simplifications: string[];
+  normalization?: { mean: number; target: number; weight: number; value: number };
 };
 
 export type EpvLamp = {

@@ -1,3 +1,4 @@
+import { VALUATION_MODEL_VERSION } from "../src/lib/valuation/modelVersion";
 /**
  * valuation-ingest.ts — 物化每 ticker 的估值位置档判定到 valuation_snapshot。
  * 用法: cd web && npm run valuation:ingest(本地读仓库根 .env.local;CI 用 env)。
@@ -179,7 +180,7 @@ async function main() {
       const sicRaw = (sec.company as { sic?: unknown } | null)?.sic;
       const sicNum = sicRaw == null ? undefined : Number(sicRaw);
       const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly);
+      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings);
       // 件⑤:控股集团分部 SOTP。与个股页同一入口(口径不得分裂);reader 自带件④触发集窄闸,
       // 其余票直接返回 undefined、floorInput 一个字段都不动,故对全 universe 零漂移、零额外查询。
       const holdcoSotp = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });
@@ -228,7 +229,7 @@ async function main() {
         // 防止价格 cron 断更把整张表删空。但「是否真删」统一交给熔断裁决 —— 零星死票
         // (退市/停报/长期无价)仍须能被清理,否则旧 price/verdict 会无限期挂在榜单上,
         // 而读取侧不按 computed_at 过滤陈旧行。故此处始终加入候选集,不做豁免。
-        const dataGap = priceStale || !fetchedPrice || fundamentalsStale;
+        const dataGap = priceStale || !fetchedPrice || fundamentalsStale || !!run.oeDcf?.growth_coverage_gap;
         if (dataGap) suppressedByDataGap++;
         intentionallyUnvaluable.add(ticker);
         continue;
@@ -247,6 +248,8 @@ async function main() {
         reliable: v.reliable,
         computed_at: computedAt,
         payload: {
+          model_version: VALUATION_MODEL_VERSION,
+          growth_evidence: run.oeDcf?.growth_evidence,
           ...v,
           expectations: run.expectations,
           methods: run.methods,
