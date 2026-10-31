@@ -25,6 +25,8 @@ export type SnapshotVerdict = {
   expectations?: ExpectationsAssessment;
   moatCap?: MoatCapAssessment;
   methods?: ValuationMethods;
+  /** Persisted evidence basis; absent legacy metadata does not imply freshness. */
+  fundamentalsDate?: string | null;
 };
 
 type Row = {
@@ -47,6 +49,7 @@ type Row = {
     expectations?: ExpectationsAssessment;
     moatCap?: MoatCapAssessment;
     methods?: ValuationMethods;
+    fundamental_basis?: { as_of?: string | null };
     referenceOnly?: "missing_reinvestment";
   } | null;
 };
@@ -91,6 +94,7 @@ export const readValuationVerdicts = cache(
           expectations: r.payload?.expectations,
           moatCap: r.payload?.moatCap,
           methods: r.payload?.methods,
+          fundamentalsDate: r.payload?.fundamental_basis?.as_of ?? null,
         };
         // 读层防御:坏数据行(价值带与现价严重脱节 / >80% 假安全边际)不发徽章 → 该行降级 "—"
         // (覆盖诚实),与 screener 各视图统一过 isImplausibleBand 同口径(即便快照尚有旧脏行)。
