@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
-import type { SearchItem } from "@/components/shell/SearchBox";
+import type { SearchIndex } from "@/lib/home/searchIndex";
 import type { CompanyExample } from "@/lib/home/companyExample";
 import { localePath } from "@/lib/urls";
 import {
@@ -105,12 +105,12 @@ function ResearchMap({ lang }: { lang: Lang }) {
 }
 export default function LandingPage({
   lang,
-  items,
+  index,
   examples,
   filing,
 }: {
   lang: Lang;
-  items: SearchItem[];
+  index: SearchIndex;
   examples: CompanyExample[];
   filing: EffectiveMovesPeriod;
 }) {
@@ -206,7 +206,7 @@ export default function LandingPage({
                 ? "从公开证据出发，形成自己的判断。"
                 : "Start with public evidence. Form your own view."}
             </p>
-            <LandingSearch lang={lang} items={items} />
+            <LandingSearch lang={lang} index={index} />
             <div className={s.queryExamples}>
               <span>{zh ? "试着查" : "Try"}</span>
               {examples

@@ -5,7 +5,7 @@ import { localePath, HTML_LANG } from "@/lib/urls";
 import { altFor, ogFor } from "@/lib/seo";
 import { effectiveMovesPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
-import { getSearchIndex } from "@/lib/home/searchIndex";
+import { readSearchIndex } from "@/lib/home/searchIndex";
 import { readCompanyExamples } from "@/lib/home/readCompanyExamples";
 import LandingPage from "@/components/home/landing/LandingPage";
 
@@ -52,9 +52,9 @@ export default async function HomePage({
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
 
-  const [idx, items, examples] = await Promise.all([
-    getManagerIndex(),
-    getSearchIndex(lang),
+  const [idx, index, examples] = await Promise.all([
+    getManagerIndex().catch(() => ({ managers: [] })),
+    readSearchIndex(lang),
     readCompanyExamples(lang),
   ]);
   const filing = effectiveMovesPeriod(
@@ -97,7 +97,7 @@ export default async function HomePage({
       />
       <LandingPage
         lang={lang}
-        items={items}
+        index={index}
         examples={examples}
         filing={filing}
       />

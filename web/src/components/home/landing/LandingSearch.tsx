@@ -4,18 +4,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ArrowUpRight } from "lucide-react";
 import type { Lang } from "@/lib/nav";
-import type { SearchItem } from "@/components/shell/SearchBox";
+import type { SearchIndex } from "@/lib/home/searchIndex";
 import { landingMatches, type LandingMatch } from "@/lib/home/search";
 import { track } from "@/lib/analytics/track";
 import { localePath } from "@/lib/urls";
 import s from "./landing.module.css";
 export default function LandingSearch({
   lang,
-  items,
+  index,
 }: {
   lang: Lang;
-  items: SearchItem[];
+  index: SearchIndex;
 }) {
+  const { items, stockAvailable, investorAvailable } = index;
   const zh = lang === "zh";
   const router = useRouter();
   const id = useId();
@@ -115,6 +116,29 @@ export default function LandingSearch({
       </div>
       {visible && (
         <div className={s.searchPopover}>
+          {(!stockAvailable || !investorAvailable) && (
+            <p className={s.searchFootnote} role="status">
+              {!stockAvailable
+                ? zh
+                  ? "个股搜索暂不可用。"
+                  : "Stock search is temporarily unavailable."
+                : ""}{" "}
+              {!investorAvailable
+                ? zh
+                  ? "投资人搜索暂不可用。"
+                  : "Investor search is temporarily unavailable."
+                : ""}{" "}
+              {zh
+                ? "可使用下方列表入口继续。"
+                : "Continue from the list links below."}
+              <Link href={localePath(lang, "/stocks")}>
+                {zh ? "个股列表 →" : "Stock list →"}
+              </Link>
+              <Link href={localePath(lang, "/investors")}>
+                {zh ? "投资人列表 →" : "Investor list →"}
+              </Link>
+            </p>
+          )}
           <div
             id={id}
             role="listbox"
@@ -155,13 +179,13 @@ export default function LandingSearch({
           </div>
           {!matches.length && (
             <p className={s.noResults}>
-              {items.length
+              {stockAvailable && investorAvailable
                 ? zh
                   ? "没有找到已收录的公司或投资人。可换用名称或股票代码。"
                   : "No indexed company or investor matches. Try a name or ticker."
                 : zh
-                  ? "搜索索引暂不可用，请从个股或投资人列表继续。"
-                  : "The search index is unavailable. Continue from the stock or investor list."}
+                  ? "当前可用的索引中没有匹配结果，请从列表继续。"
+                  : "No match in the currently available index. Continue from the lists."}
               <Link href={localePath(lang, "/stocks")}>
                 {zh ? "浏览个股 →" : "Browse stocks →"}
               </Link>

@@ -239,6 +239,12 @@ export default function CompanyExamples({
               · SEC EDGAR
             </p>
           )}
+          {model && row.valuationDate && (
+            <p className={s.sourceNote}>
+              {zh ? "估值快照计算日" : "Valuation snapshot computed"}{" "}
+              {row.valuationDate}
+            </p>
+          )}
           <Link
             className={s.textLink}
             href={

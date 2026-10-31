@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { getManagerIndex } from "@/lib/managers/source";
-import { mostHeld } from "@/lib/aggregations";
+import { readConsensusHeld } from "@/lib/managers/consensusRead";
 import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import { managerLabel } from "@/lib/managers/displayName";
 import { cleanIssuer } from "@/lib/format";
@@ -9,19 +9,31 @@ import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
 import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
 import type { SearchItem } from "@/components/shell/SearchBox";
-
-export const getSearchIndex = cache(
-  async (lang: Lang): Promise<SearchItem[]> => {
-    const [idx, held] = await Promise.all([getManagerIndex(), mostHeld(5000)]);
-    const managers = idx.managers.map((m) => ({
-      label: managerLabel(lang, m.slug, m.person),
-      href: investorPath(lang, m.slug),
-      keywords: [INVESTOR_ALIASES[m.slug], m.person, m.name]
-        .filter(Boolean)
-        .join(" "),
-    }));
+export type SearchIndex = {
+  items: SearchItem[];
+  stockAvailable: boolean;
+  investorAvailable: boolean;
+};
+export const readSearchIndex = cache(
+  async (lang: Lang): Promise<SearchIndex> => {
+    const [idx, held] = await Promise.allSettled([
+      getManagerIndex(),
+      readConsensusHeld(4000),
+    ]);
+    const managers =
+      idx.status === "fulfilled"
+        ? idx.value.managers.map((m) => ({
+            label: managerLabel(lang, m.slug, m.person),
+            href: investorPath(lang, m.slug),
+            keywords: [INVESTOR_ALIASES[m.slug], m.person, m.name]
+              .filter(Boolean)
+              .join(" "),
+          }))
+        : [];
     const seen = new Set<string>();
-    const stocks = held.flatMap((row) => {
+    const stocks = (
+      held.status === "fulfilled" ? (held.value ?? []) : []
+    ).flatMap((row) => {
       if (seen.has(row.cusip)) return [];
       seen.add(row.cusip);
       return [
@@ -34,6 +46,13 @@ export const getSearchIndex = cache(
         },
       ];
     });
-    return [...managers, ...stocks];
+    return {
+      items: [...managers, ...stocks],
+      stockAvailable: held.status === "fulfilled" && held.value !== null,
+      investorAvailable: idx.status === "fulfilled",
+    };
   },
+);
+export const getSearchIndex = cache(
+  async (lang: Lang) => (await readSearchIndex(lang)).items,
 );

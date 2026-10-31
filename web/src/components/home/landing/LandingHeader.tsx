@@ -76,6 +76,7 @@ export default function LandingHeader({ lang }: { lang: Lang }) {
       <dialog
         ref={menu}
         id="landing-menu"
+        aria-label={zh ? "导航菜单" : "Navigation menu"}
         className={s.menu}
         onClick={(e) => {
           if (e.target === menu.current) {

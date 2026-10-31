@@ -1,7 +1,7 @@
 import type { Lang } from "@/lib/nav";
 import type { StockHolderApp } from "@/lib/managers/consensusRead";
 import type { LatestPrice } from "@/lib/managers/priceRead";
-import type { ValuationRun } from "@/lib/valuation/runValuation";
+import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { countsAsCurrentHolder } from "@/lib/freshness/derive";
 import { cleanIssuer } from "@/lib/format";
 import { managerLabel } from "@/lib/managers/displayName";
@@ -9,8 +9,10 @@ import { stockDisplayName } from "@/lib/stocks/zhNames";
 import {
   stockValueSummary,
   type StockValueSummary,
+  type StockSummaryKind,
 } from "@/lib/stocks/stockFirstScreen";
-import { conclusionLeftState } from "@/lib/stocks/stockConclusion";
+import { isFundamentalsStale } from "@/lib/valuation/fundamentalsStale";
+import { isSplitCoverageStale } from "@/lib/valuation/splitCoverage";
 import { snapshotTime } from "@/lib/datasetTime";
 
 export type CompanyExample = {
@@ -25,101 +27,82 @@ export type CompanyExample = {
   summary: StockValueSummary | null;
   unavailable: string;
   fundamentalsDate: string | null;
+  valuationDate: string | null;
 };
+
+function summaryKind(
+  ticker: string,
+  v: SnapshotVerdict,
+): StockSummaryKind | null {
+  const m = v.methods;
+  if (!m) return null;
+  if (m.oeDcf || m.greenwaldGrowthCeilings) return "earnings";
+  if (m.zeroGrowthEpv) return "zero-growth";
+  // Current-version deriveValuationVerdict only publishes a no-operating-method
+  // verdict through its SOTP branch. Restrict that contract to the curated BRK
+  // example and single-lamp coverage; unknown method identities stay unavailable.
+  return ticker === "BRK.B" &&
+    v.ticker === ticker &&
+    v.coverage === "single_lamp"
+    ? "sotp"
+    : null;
+}
 export function deriveCompanyExample(
   input: {
     ticker: string;
     holders: StockHolderApp[] | null;
-    run: ValuationRun | null;
+    snapshot: SnapshotVerdict | null;
     quote: LatestPrice | null;
-    fundamentalsDate: string | null;
+    latestSplitDate: string | null;
     now: Date;
-    splitCoverageStale?: boolean;
-    fundamentalsCorrupt?: boolean;
   },
   lang: Lang,
 ): CompanyExample {
-  const { ticker, run, quote } = input;
+  const { ticker, snapshot: v, quote, now } = input;
   const rows =
     input.holders?.filter(
-      (r) => r.kind !== "exited" && countsAsCurrentHolder(r.period, input.now),
+      (r) => r.kind !== "exited" && countsAsCurrentHolder(r.period, now),
     ) ?? [];
-  const floor = run?.floor?.kind === "floor" ? run.floor : undefined;
-  const sotp = floor?.holdco_sotp;
-  const state = conclusionLeftState({
-    hasFloor: !!run?.floor,
-    splitCoverageStale: !!input.splitCoverageStale,
-    holdcoNotAssessable: !!floor?.holdco_not_assessable,
-    hasHoldcoSotp: !!sotp,
-    capitalStructureDistorted:
-      !!floor?.moat_reading?.capital_structure_distorted,
-    fundamentalsCorrupt: !!input.fundamentalsCorrupt,
-    growthEvidenceMissing: !!run?.oeDcf?.growth_coverage_gap,
+  const fundamentalsDate = v?.fundamentalsDate ?? null;
+  const validDate =
+    !!fundamentalsDate &&
+    /^\d{4}-\d{2}-\d{2}$/.test(fundamentalsDate) &&
+    Number.isFinite(Date.parse(fundamentalsDate)) &&
+    Date.parse(fundamentalsDate) <= now.getTime();
+  const fresh =
+    validDate && !isFundamentalsStale(fundamentalsDate, now.toISOString());
+  const splitStale = isSplitCoverageStale({
+    fundamentalsAsOf: fundamentalsDate,
+    latestSplitDate: input.latestSplitDate,
   });
-  const eligible =
-    state === "holdcoSotp" ||
-    (state === "card" &&
-      !!run?.strikeZone?.epv &&
-      !run.strikeZone.currencyMismatch);
-  const kind =
-    state === "holdcoSotp"
-      ? "sotp"
-      : run?.methods.oeDcf || run?.methods.greenwaldGrowthCeilings
-        ? "earnings"
-        : "zero-growth";
-  const summary = eligible
-    ? stockValueSummary(
-        {
-          verdict: run?.verdict,
-          quote,
-          kind,
-          reference:
-            kind === "sotp"
-              ? sotp?.per_share.base
-              : run?.oeDcf?.assessable
-                ? run.oeDcf.tiers?.neutral.per_share
-                : undefined,
-        },
-        lang,
-      )
-    : null;
-  const reasons: Record<string, [string, string]> = {
-    no_price: [
-      "缺少可用报价，暂不比较价格与价值。",
-      "A usable quote is unavailable, so price and value are not compared.",
-    ],
-    price_stale: [
-      "报价已过期，暂不比较价格与价值。",
-      "The quote is out of date, so price and value are not compared.",
-    ],
-    fundamentals_stale: [
-      "财报数据已过期，估值暂不可用。",
-      "Financial data is out of date; valuation is unavailable.",
-    ],
-    growth_evidence_incomplete: [
-      "增长证据不足，估值待确认。",
-      "Growth evidence is incomplete; valuation is pending.",
-    ],
-    split_coverage_stale: [
-      "拆股口径尚待核对，估值暂停。",
-      "Split coverage needs verification; valuation is paused.",
-    ],
-    currency_mismatch: [
-      "币种口径不同，暂不比较价格与价值。",
-      "Currencies differ, so price and value are not compared.",
-    ],
-    fundamentals_corrupt: [
-      "财报数据待核实，估值暂不可用。",
-      "Financial data needs verification; valuation is unavailable.",
-    ],
-  };
-  const reason = run?.suppressedReason;
+  const kind = v ? summaryKind(ticker, v) : null;
+  const summary =
+    v && v.ticker === ticker && v.methods && kind && fresh && !splitStale
+      ? stockValueSummary(
+          { verdict: { ...v, methods: v.methods }, quote, kind },
+          lang,
+        )
+      : null;
   const unavailable =
-    reason && reasons[reason]
-      ? reasons[reason][lang === "zh" ? 0 : 1]
-      : lang === "zh"
-        ? "当前证据尚不足以展示确定估值。打开完整资料查看原因与方法。"
-        : "Current evidence does not support a confirmed valuation. Open the full profile for reasons and methods.";
+    lang === "zh"
+      ? !quote
+        ? "缺少可用报价，暂不比较价格与价值。"
+        : quote.stale
+          ? "报价已过期，暂不比较价格与价值。"
+          : splitStale
+            ? "拆股口径尚待核对，估值暂停。"
+            : v && !fresh
+              ? "估值快照的财报日期缺失或过期，暂不展示确认区间。"
+              : "当前估值快照尚未确认，或与最新报价不能对齐。打开完整资料查看当前证据与方法。"
+      : !quote
+        ? "A usable quote is unavailable, so price and value are not compared."
+        : quote.stale
+          ? "The quote is out of date, so price and value are not compared."
+          : splitStale
+            ? "Split coverage needs verification; valuation is paused."
+            : v && !fresh
+              ? "The valuation snapshot’s financial date is missing or out of date. A confirmed range is unavailable."
+              : "The valuation snapshot is unconfirmed or does not align with the latest quote. Open the full profile for current evidence and methods.";
   return {
     ticker,
     name: stockDisplayName(
@@ -147,6 +130,7 @@ export function deriveCompanyExample(
       })),
     summary: rows.length ? summary : null,
     unavailable,
-    fundamentalsDate: input.fundamentalsDate,
+    fundamentalsDate: validDate ? fundamentalsDate : null,
+    valuationDate: v?.computedAt?.slice(0, 10) ?? null,
   };
 }

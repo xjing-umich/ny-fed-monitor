@@ -16,6 +16,13 @@ export function landingMatches(
         ? ("investor" as const)
         : ("company" as const),
     }))
-    .sort((a, b) => a.kind.localeCompare(b.kind))
-    .slice(0, 8);
+    .sort((a, b) => score(b, q) - score(a, q))
+    .slice(0, 8)
+    .sort((a, b) => a.kind.localeCompare(b.kind));
+}
+function score(item: SearchItem, q: string): number {
+  if (decodeURIComponent(item.href.split("/").at(-1) ?? "").toLowerCase() === q)
+    return 3;
+  if (item.label.toLowerCase() === q) return 2;
+  return item.label.toLowerCase().startsWith(q) ? 1 : 0;
 }
