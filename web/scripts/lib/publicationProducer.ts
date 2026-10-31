@@ -3,7 +3,7 @@ import { readAllSnapshots } from '../../src/lib/valuation/valuationSnapshot';
 import { readPublicValuationSummaries } from '../../src/lib/valuation/publishedRead';
 import { readPublicationWriteState, writeValuationPublication } from '../../src/lib/valuation/publishedAdapter';
 import { readPublicationSelections, type PublicationSelections } from '../../src/lib/valuation/publicationSelections';
-import { projectStrike, projectScreen, projectStockRows, initialStockRows, projectionDigest, screenerPath, selectedValuations, investorRenderedValues, snapshot } from '../../src/lib/valuation/publicationProjection';
+import { projectHome, screenProjectionDigest, projectScreen, projectStockRows, initialStockRows, projectionDigest, screenerPath, selectedValuations, investorRenderedValues, snapshot } from '../../src/lib/valuation/publicationProjection';
 import type { SnapshotVerdict, ScreenView } from '../../src/lib/valuation/valuationSnapshot';
 import type { TrackingRecord } from '../../src/lib/valuation/trackingContract';
 import { selectAllPages } from '../../src/lib/managers/db';
@@ -28,7 +28,8 @@ function routes(values: SnapshotVerdict[], selection: PublicationSelections, rec
     const add = (path: string, language: 'en' | 'zh', sourceDigest: string, rows: SnapshotVerdict[]) => out.push({ path, language, sourceDigest, members: rows.map(v => ({ identityKey: v.publication.identityKey, revisionId: v.publication.revisionId })) });
     for (const language of ['en', 'zh'] as const) {
         const prefix = language === 'zh' ? '/zh' : '';
-        add(prefix || '/', language, projectionDigest('home', values, { limit: 6 }), projectStrike(values, 6).leaders);
+        const home=projectHome(values,selection.homeEvidence,language);
+        add(prefix || '/', language,home.sourceDigest,home.members);
         const stocks = projectStockRows(selection.stocks, selection.cusipToTicker, values);
         const initial = initialStockRows(stocks);
         const initialKeys = new Set(initial.flatMap(r => r.bargain ? [r.bargain.publication.identityKey] : []));
@@ -43,7 +44,9 @@ function routes(values: SnapshotVerdict[], selection: PublicationSelections, rec
                         holderCount: number;
                     }
                 ] => !!entry[1]));
-                add(screenerPath(language, view, sort), language, projectionDigest('screener', values, { holdings: [...holdings].sort(([a], [b]) => a.localeCompare(b)), view, sort }), projectScreen(values, holdings, view, sort));
+                const rows=projectScreen(values,holdings,view,sort);
+                const availableStocks=new Set(rows.filter(row=>selection.screenAvailableStocks.has(row.ticker)).map(row=>row.ticker));
+                add(screenerPath(language, view, sort), language, screenProjectionDigest(values,holdings,view,sort,availableStocks),rows);
             }
         const consensus = selectedValuations(values, selection.consensus.map(r => r.cusip));
         add(prefix + '/investors/consensus', language, projectionDigest('consensus', consensus, { rows: selection.consensus }), consensus);

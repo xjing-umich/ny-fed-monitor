@@ -12,7 +12,7 @@ async function main(){
   if(conflict&&body.p_identity.ticker==='FIA'){res.statusCode=409;res.end('{"code":"40001","message":"fixture CAS conflict"}');return;}res.end(String(body.p_expected_generation+1));
  });await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
  const backend=`http://127.0.0.1:${(server.address() as {port:number}).port}`;const origin='http://localhost:31486';const db=createPublicationClient(backend,'fixture-only',{origin,supabaseUrl:backend});
- const selection={stocks:[],cusipToTicker:new Map(),consensus:[],screenHoldings:new Map(),investors:[],moves:{mostBought:[],mostSold:[]}};
+ const selection={homeEvidence:[],screenAvailableStocks:new Set<string>(),stocks:[],cusipToTicker:new Map(),consensus:[],screenHoldings:new Map(),investors:[],moves:{mostBought:[],mostSold:[]}};
  const run=()=>publishValuationCandidates(db,{candidates,state:new Map(candidates.map(c=>[c.record.identity.ticker,{identity:c.record.identity,generation:1}])),publication:{origin,seeds:new Set(candidates.map(c=>c.record.identity.key)),capture:{before,selection,outstanding:[]},current:before}});
  try{
   failPrepare=true;await assert.rejects(run(),/intent failed/);assert.deepEqual(events,['prepare'],'prepare failure stops all candidate writes');

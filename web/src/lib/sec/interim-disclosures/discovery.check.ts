@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {discoverInterimDisclosures}from'./discovery';
+import{interimDisclosureData,readInterimDisclosureRows,saveInterimDisclosures}from'./store';
+import type {NormalizedFiling}from'../company-submissions';
+const doc=fs.readFileSync(path.join(__dirname,'fixtures/pdd-2026-q2.html'),'utf8');
+const filing=(n:number):NormalizedFiling=>({ticker:'PDD',cik:'0001737806',accession_number:`0001104659-26-${String(100534+n).padStart(6,'0')}`,form:'6-K',filing_date:`2026-08-${String(25-Math.floor(n/8)).padStart(2,'0')}`,report_date:'2026-08-25',fiscal_year:2026,fiscal_period:null,primary_document:'cover.htm',filing_url:'',sec_index_url:''});
+async function main(){
+ const result=await discoverInterimDisclosures('PDD',[filing(0)],[],'2026-10-31',{json:async()=>({directory:{item:[{name:'tm2623874d1_ex99-1.htm'}]}}),text:async()=>doc});
+ assert.equal(result.rows[0].status,'supported');assert.equal(result.rows[0].report_period_end,'2026-06-30','filingdate neverbecomes financialdate');assert.equal(result.rows[0].payload?.currency,'CNY');
+ const late=Array.from({length:30},(_,i)=>filing(i));let requests=0;
+ const walked=await discoverInterimDisclosures('PDD',late,[],'2026-10-31',{json:async()=>({directory:{item:[]}}),text:async url=>{requests++;return url.includes('100563')?doc:'Director announcement. See consolidated financial statements in prior annual report.';}});
+ assert.ok(walked.rows.some(r=>r.status==='supported'),'ordinary6Ks beyondrecent24cannot hide the financialreport');assert.ok(requests>24&&requests<=40);
+ const indexFailure=await discoverInterimDisclosures('PDD',[filing(0)],[],'2026-10-31',{json:async()=>{throw Error('index transport failed');},text:async()=>'<p>Financial exhibits attached.</p>'});
+ assert.ok(indexFailure.issues.length>0&&indexFailure.rows.some(r=>r.status==='error'),'an unavailable directory plus empty cover is not evidence of no financial report');
+ const cached=await discoverInterimDisclosures('PDD',[filing(0)],result.rows,'2026-10-31',{json:async()=>{throw Error('mustnotfetchimmutablecachedsource');},text:async()=>{throw Error('mustnotfetch');}});
+ assert.equal(cached.rows.length,0);
+ assert.equal(interimDisclosureData(result.rows).incomplete,false);
+ const unsupported={...result.rows[0],accession_number:'0001104659-26-120000',source_filed_at:'2026-10-30',status:'unsupported' as const,payload:null,report_period_end:null,error:'New financial layout unsupported'};
+ assert.equal(interimDisclosureData([...result.rows,unsupported]).incomplete,true,'new unknown financialreports cannot be skipped in favor of oldpositive data');
+ const sameDay={...unsupported,source_filed_at:result.rows[0].source_filed_at};
+ assert.equal(interimDisclosureData([...result.rows,sameDay]).incomplete,true,'an unresolved distinct same-day financial filing cannot be ignored');
+ const altered=await discoverInterimDisclosures('PDD',[filing(0)],[],'2026-10-31',{json:async()=>({directory:{item:[]}}),text:async()=>doc.replaceAll('CONDENSED CONSOLIDATED STATEMENTS OF INCOME','CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS')});
+ assert.equal(altered.rows[0].status,'unsupported','a genuine changed financial layout is not a no-report announcement');
+ const preRevenue=await discoverInterimDisclosures('PDD',[filing(0)],[],'2026-10-31',{json:async()=>({directory:{item:[]}}),text:async()=>'<h2>CONSOLIDATED STATEMENTS OF OPERATIONS</h2><p>Research and development 12 13 14 15 Operating expenses 20 30 40 50 Net loss (42) (43) (44) (45)</p>'});
+ assert.equal(preRevenue.rows[0].status,'unsupported','pre-revenue financial statements still count as unresolved financial evidence');
+ const capped=await discoverInterimDisclosures('PDD',Array.from({length:45},(_,i)=>filing(i)),[], '2026-10-31',{json:async()=>({directory:{item:[]}}),text:async()=>'<p>Director announcement.</p>'});
+ assert.ok(capped.rows.some(r=>r.status==='error'&&r.error?.includes('scan incomplete')),'discovery limit is durable and visible to readers');
+ assert.equal(interimDisclosureData(capped.rows).incomplete,true);
+ const missing={from:()=>({select:()=>({eq:()=>({order:()=>({order:()=>({limit:async()=>({data:null,error:{code:'PGRST205',message:'missingtable'}})})})})})})}as never;
+ assert.equal(await readInterimDisclosureRows(missing,'PDD'),null);await assert.rejects(readInterimDisclosureRows(missing,'PDD',true),/missingtable/);
+ await assert.rejects(saveInterimDisclosures({from:()=>({upsert:async()=>({error:{message:'writefailed'}})})}as never,result.rows),/writefailed/);
+ console.log('interim discovery, provenance, cache and write boundary checks OK');
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});

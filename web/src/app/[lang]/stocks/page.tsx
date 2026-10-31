@@ -80,7 +80,7 @@ const getStocksPageData = cache(async (lang: Lang) => {
   const directory = tableRows.flatMap((r) => {
     if (!isLikelyTicker(r.ticker) || seen.has(r.ticker)) return [];
     seen.add(r.ticker);
-    return [{ href: stockPath(lang, r.ticker), label: r.ticker, note: cleanIssuer(r.issuer) }];
+    return [{ href: stockPath(lang, r.ticker), label: r.ticker, note: stockDisplayName(lang, r.ticker, cleanIssuer(r.issuer)) }];
   });
 
   return { idx, bargainAsOf, asOfLabel, tableRows, directory, source, unavailable:valuationAvailability.unavailable };
@@ -110,7 +110,7 @@ export default async function StocksIndexPage({
       name: ui.stocksTitle,
       description: meta.description,
       path,
-      items: directory.map((d) => ({ name: stockDisplayName(lang, d.label, d.note), path: d.href })),
+      items: directory.map((d) => ({ name: d.note ?? d.label, path: d.href })),
       limit: 50,
     }),
     breadcrumbLd(lang, [{ name: ui.stocksTitle, path }]),

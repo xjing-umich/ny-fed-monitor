@@ -15,7 +15,7 @@ export type TrackingRecord = {
   reasons: string[]; fundamentalAsOf: string | null; filedAt: string | null;
   computedAt: string; publishedAt: string | null;
   inputHashes: { fundamentals: string | null; assumptions: string | null; shareBasis: string | null };
-  sources: { url: string; asOf: string | null }[];
+  sources: { url: string; asOf: string | null; periodEnd?: string | null; currency?: string | null; evidenceKind?: "native_interim_ratios" }[];
 };
 
 /** Supply complete, same-run inputs (including evidence, external-rate dates and ADS/split treatment).
@@ -45,6 +45,9 @@ function nullableDate(value: unknown): boolean { return value === null || date(v
 function finite(value: unknown): value is number { return typeof value === "number" && Number.isFinite(value); }
 function source(value: unknown): boolean {
   if (!object(value) || !text(value.url) || !nullableDate(value.asOf)) return false;
+  if (value.periodEnd !== undefined && !nullableDate(value.periodEnd)) return false;
+  if (value.currency !== undefined && value.currency !== null && !(typeof value.currency === "string" && /^[A-Z]{3}$/.test(value.currency))) return false;
+  if (value.evidenceKind !== undefined && value.evidenceKind !== "native_interim_ratios") return false;
   try { return ["https:", "http:"].includes(new URL(value.url).protocol); } catch { return false; }
 }
 
@@ -88,13 +91,16 @@ export function buildTrackingRecord(run: ValuationRun, context: TrackingContext)
   const verdict = run.verdict;
   const quote = run.strikeZone?.price;
   const currencyMismatch = run.currency !== context.currency || !!run.strikeZone?.currencyMismatch || !!quote && quote.currency !== run.currency;
+  const referenceOnly = verdict?.referenceOnly === "missing_reinvestment";
   const invalidNumbers = !!verdict && (
-    NUMBERS.some((key) => key !== "intrinsicValue" && key !== "marginPct" && !finite(verdict[key])) ||
+    NUMBERS.some((key) => key !== "intrinsicValue" && key !== "marginPct" && !(referenceOnly && (key === "requiredMargin" || key === "strikePrice") && verdict[key] === null) && !finite(verdict[key])) ||
     verdict.intrinsicValue !== null && !finite(verdict.intrinsicValue) ||
     verdict.marginPct !== null && !finite(verdict.marginPct) ||
     !(verdict.referenceValue > 0) || !(verdict.price > 0) || !(verdict.rangeLo > 0) || verdict.rangeHi < verdict.rangeLo ||
-    verdict.requiredMargin < 0 || verdict.requiredMargin >= 1 || !(verdict.strikePrice > 0) || !KINDS.includes(verdict.referenceKind)
+    (!referenceOnly && (verdict.requiredMargin == null || verdict.requiredMargin < 0 || verdict.requiredMargin >= 1 || verdict.strikePrice == null || !(verdict.strikePrice > 0))) ||
+    (referenceOnly && (verdict.intrinsicValue !== null || verdict.marginPct !== null || verdict.requiredMargin !== null || verdict.strikePrice !== null || verdict.inStrikeZone || verdict.reliable || verdict.referenceKind !== "zero_growth_floor")) || !KINDS.includes(verdict.referenceKind)
   );
+  if (referenceOnly) reasons.push("missing_reinvestment");
   if (run.suppressedReason) reasons.push(run.suppressedReason);
   else if (!verdict) reasons.push("no_valuation_verdict");
   if (currencyMismatch) reasons.push("currency_mismatch");

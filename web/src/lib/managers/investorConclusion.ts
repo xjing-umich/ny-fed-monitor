@@ -1,5 +1,6 @@
 // investorConclusion.ts — 投资人页"先结论后证据"的展示决策(纯函数,无 I/O)。
 // 数字全部来自 summarizeQuarter(与入库写 manager_quarter_summary 的是同一个函数),这里只决定怎么说。
+import { quarter } from "@/lib/i18n/format";
 import type { Lang } from "@/lib/nav";
 import type { HoldingChange, ManagerDetail } from "@/lib/managers/types";
 import { summarizeQuarter, type QuarterMove, type QuarterSummary } from "@/lib/managers/quarterSummary";
@@ -17,13 +18,14 @@ export function summaryForDetail(d: ManagerDetail): QuarterSummary | null {
   return summarizeQuarter({ period: d.latest.period, priorPeriod: d.prior.period, latest: d.latest.holdings, prior: d.prior.holdings, changes: d.changes });
 }
 
-const CHIP: Record<Lang, Record<QuarterSummary["verdict"], string>> = {
-  zh: { buying: "▲ 本季净买入", selling: "▼ 本季净卖出", mixed: "基本持平" },
-  en: { buying: "▲ Net buyer this quarter", selling: "▼ Net seller this quarter", mixed: "Roughly unchanged" },
-};
-/** 标题徽章:按金额判定,中性色(绿色只给估值)。 */
-export function investorVerdictChip(s: QuarterSummary | null, lang: Lang): { label: string; tone: "neutral" } | undefined {
-  return s ? { label: CHIP[lang][s.verdict], tone: "neutral" } : undefined;
+/** A filing quarter is a data period, never the calendar-current quarter. */
+export function investorVerdictChip(s: QuarterSummary | null, lang: Lang, historical = false): { label: string; tone: "neutral" } | undefined {
+  if (!s) return undefined;
+  const q = quarter(s.period, lang);
+  const label = lang === "zh"
+    ? `${s.verdict === "buying" ? "▲ " : s.verdict === "selling" ? "▼ " : ""}${q} ${s.verdict === "buying" ? "净买入" : s.verdict === "selling" ? "净卖出" : "基本持平"}${historical ? "（历史申报）" : ""}`
+    : `${s.verdict === "buying" ? "▲ Net buyer" : s.verdict === "selling" ? "▼ Net seller" : "Roughly unchanged"} in ${q}${historical ? " (historical filing)" : ""}`;
+  return { label, tone: "neutral" };
 }
 
 export type ValueSplit = { totalPct: number; tradePct: number; pricePct: number };
@@ -53,8 +55,8 @@ export function conclusionSentence(s: QuarterSummary, quarter: string, nameOf: (
   const amt = formatUSD(Math.abs(s.netFlowUsd), lang);
   const share = s.priorValue > 0 ? Math.abs(s.netFlowUsd) / s.priorValue : null;
   const shareTxt = share == null ? null
-    : share < 0.01 ? (lang === "zh" ? "不到组合的 1%" : "under 1% of the portfolio")
-    : lang === "zh" ? `约占组合 ${Math.round(share * 100)}%` : `about ${Math.round(share * 100)}% of the portfolio`;
+    : share < 0.01 ? (lang === "zh" ? "不到上季非期权组合市值的 1%" : "under 1% of prior-quarter non-option portfolio value")
+    : lang === "zh" ? `约占上季非期权组合市值 ${Math.round(share * 100)}%` : `about ${Math.round(share * 100)}% of prior-quarter non-option portfolio value`;
   const top = s.topMoves[0];
   if (lang === "zh") {
     const head = s.netFlowUsd === 0
@@ -96,15 +98,15 @@ export function splitNote(factor: number, lang: Lang): string {
 /** 持仓表"本季"列。hasPrior=false(无上季可比)→ "—",不说"未变"。 */
 export function quarterCell(change: HoldingChange | undefined, hasPrior: boolean, lang: Lang): { text: string; title?: string } {
   if (!hasPrior) return { text: "—" };
-  if (!change) return { text: lang === "zh" ? "未变" : "Unchanged" };
+  if (!change) return { text: lang === "zh" ? "持仓数量未变" : "Share/unit count unchanged" };
   const text = change.kind === "new" ? moveLabel("new", lang) : `${MOVE_GLYPH[change.kind]} ${moveDeltaText(change, lang)}`;
   return change.splitFactor ? { text, title: splitNote(change.splitFactor, lang) } : { text };
 }
 
 export type InvestorAnchor = { id: "moves" | "holdings" | "valuation" | "about"; label: string };
 const ANCHOR_LABEL: Record<Lang, Record<InvestorAnchor["id"], string>> = {
-  zh: { moves: "本季动作", holdings: "持仓", valuation: "估值", about: "关于" },
-  en: { moves: "This quarter", holdings: "Holdings", valuation: "Valuation", about: "About" },
+  zh: { moves: "申报季变动", holdings: "持仓", valuation: "估值", about: "关于" },
+  en: { moves: "Filing changes", holdings: "Holdings", valuation: "Valuation", about: "About" },
 };
 export function investorAnchors(has: { moves: boolean; holdings: boolean; valuation: boolean }, lang: Lang): InvestorAnchor[] {
   const ids: InvestorAnchor["id"][] = [];
@@ -127,4 +129,10 @@ export function top5Share(values: number[]): number | null {
   const total = values.reduce((s, v) => s + v, 0);
   if (!(total > 0)) return null;
   return [...values].sort((a, b) => b - a).slice(0, 5).reduce((s, v) => s + v, 0) / total;
+}
+
+/** Keep the concentration label aligned with the available non-option rows. */
+export function topHoldingsLabel(count: number, share: number | null, lang: Lang): string | undefined {
+  if (share == null || count === 0) return undefined;
+  return lang === "zh" ? `前 ${Math.min(5, count)} 大占 ${Math.round(share * 100)}%` : `Top ${Math.min(5, count)}: ${Math.round(share * 100)}%`;
 }

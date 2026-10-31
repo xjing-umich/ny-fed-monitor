@@ -78,7 +78,7 @@ export function renderReportEmail(p: ReportPayload, meta: EmailMeta, lang: Repor
       ? notFiledText(lang)
       : f.moves.length
         ? f.moves.map((m) => featuredMoveText(m, lang)).join(zh ? "；" : "; ")
-        : noComparableMovesText(lang);
+        : noComparableMovesText(lang, f.comparison);
     return { cells: [esc(name), esc(what)], textCells: [name, what] };
   });
 

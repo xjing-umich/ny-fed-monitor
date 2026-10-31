@@ -31,8 +31,10 @@ export type ValuationVerdict = {
   intrinsicValue: number | null;
   referenceValue: number;
   referenceKind: ReferenceKind;
-  requiredMargin: number;
-  strikePrice: number;
+  requiredMargin: number | null;
+  strikePrice: number | null;
+  /** Fresh comparable financials, but no supported reinvestment estimate: zero-growth EPV reference only. */
+  referenceOnly?: "missing_reinvestment";
   /** 现价相对保守价值带的位置：below=有安全边际 / within=带内 / above=高于。有中枢 IV 时锚 IV；单灯退回零增长底(valueFloor)。 */
   bucket: VerdictBucket;
   /** below 的深折扣子集：有中枢 IV 时 = 现价 ≤ IV×(1−MOS)，MOS 随 growthReliance 在 1/3~45% 间浮动；单灯退回 epv.position === "in_strike_zone"（零增长底 ×2/3，今天行为不变）。引擎权威标志。 */
@@ -187,6 +189,8 @@ export function deriveValuationVerdict(input: {
   /** 基本面口径损坏(opInc>revenue / gross>revenue,物理不可能)→ 每股口径不可信,整条抑制。
    *  语义同 splitCoverageStale/capitalStructureDistorted,由调用方经 fundamentalsIntegrityViolated 算出后传入。 */
   fundamentalsCorrupt?: boolean;
+  /** Caller freshness guard, in addition to the price timestamp checked by strikeZone. */
+  priceStale?: boolean;
 }): ValuationVerdict | null {
   const { floor, strikeZone, oeDcf, reconciliation, methods, splitCoverageStale, capitalStructureDistorted, fundamentalsCorrupt } = input;
   if (splitCoverageStale) return null; // 拆股口径错配 → 无可信判定(每股带被放大 ~拆股比例倍)
@@ -234,7 +238,25 @@ export function deriveValuationVerdict(input: {
     };
   }
   // 件④:投资主导型控股集团,合并层面测试不适用 → 上面 SOTP 不可得时已 return null(fail-closed 兜底)
-  if (oeDcf?.growth_coverage_gap) return null; // Missing evidence cannot establish cheapness or expensiveness.
+  if (oeDcf?.growth_coverage_gap === "missing_reinvestment") {
+    const epv = strikeZone?.epv;
+    if (!epv || strikeZone.stale || input.priceStale || strikeZone.currencyMismatch || strikeZone.price.currency !== "USD") return null;
+    // A reference includes the two zero-growth earnings lamps only. Asset value,
+    // growth ceilings and DCF tiers cannot supply or enlarge either endpoint.
+    const rangeLo = epv.floorConservative, rangeHi = epv.ceiling, price = strikeZone.price.close;
+    if (!finitePositive(rangeLo) || !finitePositive(rangeHi) || !finitePositive(price)) return null;
+    if (isImplausibleBand({ rangeLo, rangeHi, price, marginPct: (rangeLo - price) / rangeLo })) return null;
+    return {
+      referenceOnly: "missing_reinvestment",
+      intrinsicValue: null, referenceValue: rangeLo, referenceKind: "zero_growth_floor",
+      requiredMargin: null, strikePrice: null,
+      bucket: price < rangeLo ? "below" : price <= rangeHi ? "within" : "above",
+      rangeLo, rangeHi, price, priceDate: strikeZone.price.date,
+      reliable: false, inStrikeZone: false, marginPct: null, coverage: "single_lamp",
+      methods: { zeroGrowthEpv: true, oeDcf: false, greenwaldGrowthCeilings: false },
+    };
+  }
+  if (oeDcf?.growth_coverage_gap) return null;
   const epv = strikeZone?.epv;
   if (!epv) return null; // 无价格 / 货币不匹配 / 无可比地板 → 无判定
   const price = strikeZone!.price.close;
@@ -271,7 +293,7 @@ export function deriveValuationVerdict(input: {
   let bucket: VerdictBucket;
   let inStrikeZone: boolean;
   let marginPct: number | null;
-  let requiredMargin: number;
+  let requiredMargin: number | null;
   if (IV != null) {
     const growthReliance = IV > F ? clamp01((IV - F) / IV) : 0;
     const mos = MOS_BASE + (MOS_MAX - MOS_BASE) * growthReliance;

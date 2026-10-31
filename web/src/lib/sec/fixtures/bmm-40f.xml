@@ -1,0 +1,257 @@
+<!-- SEC source-derived fixture; retrieved 2026-10-31. See README.md for provenance. -->
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:ifrs-full="https://xbrl.ifrs.org/taxonomy/2025-03-27/ifrs-full" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xmlns:bmm="http://bluemoonmetals.com/20251231" xmlns:country="http://xbrl.sec.gov/country/2025" xmlns:currency="http://xbrl.sec.gov/currency/2025" xmlns:dei="http://xbrl.sec.gov/dei/2025" xmlns:iso4217="http://www.xbrl.org/2003/iso4217" xmlns:link="http://www.xbrl.org/2003/linkbase" xmlns:srt="http://fasb.org/srt/2025" xmlns:utr="http://www.xbrl.org/2009/utr" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><context id="D20241231_3">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="I20251231">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="I20241231">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="I20231231">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="I20231231_IssuedCapitalMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:IssuedCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="I20231231_AdditionalPaidinCapitalMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:AdditionalPaidinCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="I20231231_RetainedEarningsMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="I20241231_IssuedCapitalMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:IssuedCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="I20251231_IssuedCapitalMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:IssuedCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="I20241231_AdditionalPaidinCapitalMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:AdditionalPaidinCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="I20251231_AdditionalPaidinCapitalMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:AdditionalPaidinCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="I20251231_AccumulatedOtherComprehensiveIncomeMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:AccumulatedOtherComprehensiveIncomeMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="I20241231_RetainedEarningsMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="D20251231_RetainedEarningsMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="I20251231_RetainedEarningsMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="D20251231_NoncontrollingInterestsMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:NoncontrollingInterestsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="I20251231_NoncontrollingInterestsMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:NoncontrollingInterestsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="D20251231_3">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001732379</identifier>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <unit id="Shares">
+        <measure>shares</measure>
+    </unit>
+    <unit id="CAD">
+        <measure>iso4217:CAD</measure>
+    </unit>
+    <unit id="CADPerShare">
+        <divide>
+            <unitNumerator>
+                <measure>iso4217:CAD</measure>
+            </unitNumerator>
+            <unitDenominator>
+                <measure>shares</measure>
+            </unitDenominator>
+        </divide>
+    </unit>
+    <ifrs-full:CashAndCashEquivalents contextRef="I20251231" decimals="0" id="Tag327" unitRef="CAD">92811289</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:CashAndCashEquivalents contextRef="I20241231" decimals="0" id="Tag350" unitRef="CAD">3001720</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:Assets contextRef="I20251231" decimals="0" id="Tag333" unitRef="CAD">254098193</ifrs-full:Assets>
+    <ifrs-full:Assets contextRef="I20241231" decimals="0" id="Tag356" unitRef="CAD">32372944</ifrs-full:Assets>
+    <ifrs-full:Liabilities contextRef="I20251231" decimals="0" id="Tag342" unitRef="CAD">29090425</ifrs-full:Liabilities>
+    <ifrs-full:Liabilities contextRef="I20241231" decimals="0" id="Tag363" unitRef="CAD">27916158</ifrs-full:Liabilities>
+    <ifrs-full:Equity contextRef="I20251231" decimals="0" id="Tag348" unitRef="CAD">225007768</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20241231" decimals="0" id="Tag367" unitRef="CAD">4456786</ifrs-full:Equity>
+    <ifrs-full:ProfitLoss contextRef="D20251231_3" decimals="0" id="Tag70" unitRef="CAD">-38772860</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="D20241231_3" decimals="0" id="Tag69" unitRef="CAD">-495756</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLossAttributableToOwnersOfParent contextRef="D20251231_3" decimals="0" id="Tag68" unitRef="CAD">-37204621</ifrs-full:ProfitLossAttributableToOwnersOfParent>
+    <ifrs-full:ProfitLossAttributableToOwnersOfParent contextRef="D20241231_3" decimals="0" id="Tag67" unitRef="CAD">-495756</ifrs-full:ProfitLossAttributableToOwnersOfParent>
+    <ifrs-full:ProfitLoss contextRef="D20251231_3" decimals="0" id="Tag65" unitRef="CAD">-38772860</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="D20241231_3" decimals="0" id="Tag64" unitRef="CAD">-495756</ifrs-full:ProfitLoss>
+    <ifrs-full:DilutedEarningsLossPerShare contextRef="D20251231_3" decimals="2" id="Tag6" unitRef="CADPerShare">-0.72</ifrs-full:DilutedEarningsLossPerShare>
+    <ifrs-full:BasicEarningsLossPerShare contextRef="D20251231_3" decimals="2" id="Tag85" unitRef="CADPerShare">-0.72</ifrs-full:BasicEarningsLossPerShare>
+    <ifrs-full:DilutedEarningsLossPerShare contextRef="D20241231_3" decimals="2" id="Tag7" unitRef="CADPerShare">-0.14</ifrs-full:DilutedEarningsLossPerShare>
+    <ifrs-full:BasicEarningsLossPerShare contextRef="D20241231_3" decimals="2" id="Tag86" unitRef="CADPerShare">-0.14</ifrs-full:BasicEarningsLossPerShare>
+    <ifrs-full:AdjustedWeightedAverageShares contextRef="D20251231_3" decimals="0" id="Tag2" unitRef="Shares">51778782</ifrs-full:AdjustedWeightedAverageShares>
+    <ifrs-full:AdjustedWeightedAverageShares contextRef="D20241231_3" decimals="0" id="Tag1" unitRef="Shares">3575832</ifrs-full:AdjustedWeightedAverageShares>
+    <ifrs-full:ProfitLoss contextRef="D20251231_3" decimals="0" id="Tag89" unitRef="CAD">-38772860</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="D20241231_3" decimals="0" id="Tag102" unitRef="CAD">-495756</ifrs-full:ProfitLoss>
+    <ifrs-full:CashFlowsFromUsedInOperatingActivities contextRef="D20251231_3" decimals="0" id="Tag93" unitRef="CAD">-29569179</ifrs-full:CashFlowsFromUsedInOperatingActivities>
+    <ifrs-full:CashFlowsFromUsedInOperatingActivities contextRef="D20241231_3" decimals="0" id="Tag104" unitRef="CAD">-619822</ifrs-full:CashFlowsFromUsedInOperatingActivities>
+    <ifrs-full:Equity contextRef="I20231231_IssuedCapitalMember" decimals="0" id="Tag252" unitRef="CAD">12525301</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20231231_AdditionalPaidinCapitalMember" decimals="0" id="Tag253" unitRef="CAD">1574516</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20231231_RetainedEarningsMember" decimals="0" id="Tag254" unitRef="CAD">-13218348</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20231231" decimals="0" id="Tag255" unitRef="CAD">881469</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20241231_IssuedCapitalMember" decimals="0" id="Tag258" unitRef="CAD">16455925</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20241231_AdditionalPaidinCapitalMember" decimals="0" id="Tag266" unitRef="CAD">1714965</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20241231_RetainedEarningsMember" decimals="0" id="Tag272" unitRef="CAD">-13714104</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20241231" decimals="0" id="Tag280" unitRef="CAD">4456786</ifrs-full:Equity>
+    <ifrs-full:ProfitLoss contextRef="D20251231_RetainedEarningsMember" decimals="0" id="Tag273" unitRef="CAD">-37204621</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="D20251231_NoncontrollingInterestsMember" decimals="0" id="Tag302" unitRef="CAD">-1568239</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="D20251231_3" decimals="0" id="Tag285" unitRef="CAD">-38772860</ifrs-full:ProfitLoss>
+    <ifrs-full:Equity contextRef="I20251231_IssuedCapitalMember" decimals="0" id="Tag263" unitRef="CAD">260949716</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20251231_AdditionalPaidinCapitalMember" decimals="0" id="Tag268" unitRef="CAD">3253707</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20251231_AccumulatedOtherComprehensiveIncomeMember" decimals="0" id="Tag270" unitRef="CAD">7375860</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20251231_RetainedEarningsMember" decimals="0" id="Tag274" unitRef="CAD">-50918725</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20251231_NoncontrollingInterestsMember" decimals="0" id="Tag275" unitRef="CAD">4347210</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="I20251231" decimals="0" id="Tag287" unitRef="CAD">225007768</ifrs-full:Equity>
+
+<ifrs-full:WeightedAverageShares
+      contextRef="D20251231_3"
+      decimals="0"
+      id="Tag84"
+      unitRef="Shares">51778782</ifrs-full:WeightedAverageShares>
+<ifrs-full:WeightedAverageShares
+      contextRef="D20241231_3"
+      decimals="0"
+      id="Tag60"
+      unitRef="Shares">3575832</ifrs-full:WeightedAverageShares>
+</xbrl>

@@ -1,3 +1,4 @@
+import { financialIngestHttpStatus } from "@/lib/sec/ingestOutcome";
 import { publishFinancialPages } from "@/lib/sec/publishPages";
 import { getDb } from "@/lib/managers/db";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,5 +19,5 @@ export async function POST(request: NextRequest) {
 
   const result = await ingestCompany(ticker);
   await publishFinancialPages(getDb());
-  return NextResponse.json(result, { status: result.status === "failed" ? 500 : 200 });
+  return NextResponse.json(result, { status: financialIngestHttpStatus(result) });
 }

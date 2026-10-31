@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import type { ManagerSummary, ManagerQoQ } from "@/lib/managers/types";
 import type { Lang } from "@/lib/nav";
+import { pctDelta } from "@/lib/i18n/format";
 import { investorPath } from "@/lib/urls";
 import { MOVE_GLYPH, MOVE_LABEL } from "@/lib/entity/quarterMovesText";
 import { formatUSD, cleanIssuer } from "@/lib/format";
@@ -98,7 +99,7 @@ const COPY = {
 function fmtPctDelta(p: number | null | undefined): { text: string; cls: string } | null {
   if (p == null || p === 0) return null;
   const cls = p > 0 ? "text-[var(--tt-muted)]" : "text-[var(--tt-muted)]";
-  return { text: `${p > 0 ? "+" : "−"}${Math.abs(p * 100).toFixed(0)}%`, cls };
+  return { text: pctDelta(p), cls };
 }
 
 // 持仓数Δ: 非空且非 0 才显。

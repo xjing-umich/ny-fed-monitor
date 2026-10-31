@@ -1,3 +1,4 @@
+import { assessReinvestmentEvidence } from "./reinvestmentEvidence";
 import type { EpvLamp, MarksAdjustment, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
@@ -113,7 +114,7 @@ function selectEarningsYears(years: ValuationFloorYear[]): ValuationFloorYear[] 
 }
 
 /** Multi-year average effective tax rate, clamped to [0, statutory 21%]; flat 21% fallback when no rate data. */
-export function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; basis: string } {
+export function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; basis: string; source: "effective_average" | "statutory_fallback"; yearCount: number } {
   const rates: number[] = [];
   for (const y of years) {
     let r = y.effective_tax_rate;
@@ -121,10 +122,10 @@ export function normalizedTaxRate(years: ValuationFloorYear[]): { rate: number; 
     if (r != null && Number.isFinite(r)) rates.push(r);
   }
   if (rates.length === 0) {
-    return { rate: MAX_TAX_RATE, basis: "No effective-rate data available; fell back to the statutory 21%." };
+    return { source: "statutory_fallback", yearCount: 0, rate: MAX_TAX_RATE, basis: "No effective-rate data available; fell back to the statutory 21%." };
   }
   const clamped = Math.min(MAX_TAX_RATE, Math.max(0, avg(rates)));
-  return { rate: clamped, basis: `Average effective tax rate over ${rates.length} year(s), capped at the statutory 21%.` };
+  return { source: "effective_average", yearCount: rates.length, rate: clamped, basis: `Average effective tax rate over ${rates.length} year(s), capped at the statutory 21%.` };
 }
 
 /**
@@ -267,7 +268,12 @@ function assembleFloor(
   const { nopatOf, investedCapitalOf } = roicHelpers(roicTax);
   const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
   const roicDeclining = roicTrend({ fyYears: years, investedCapitalOf, nopatOf }) === "declining";
-  const sustainableGrowthRate = sustainableGrowth({ fyYears: years, nopatOf, investedCapitalOf });
+  // Annual reinvestment requires annual flows and two annual capital endpoints.
+  // The TTM earnings head must not replace the latest annual balance here.
+  const annualMarginYears = selectYears(allYears);
+  const reinvestmentYears = annualMarginYears.length >= MIN_YEARS ? annualMarginYears : selectEarningsYears(allYears);
+  const reinvestmentEvidence = assessReinvestmentEvidence({ fyYears: reinvestmentYears, nopatOf, investedCapitalOf });
+  const sustainableGrowthRate = reinvestmentEvidence.status === "unaligned_periods" ? undefined : sustainableGrowth({ fyYears: reinvestmentYears, nopatOf, investedCapitalOf });
   // 金融股(银行/保险,Task 4):非经营性口径(operating_income 不适用)→ 用 SGR = ROE × 留存率
   // 封顶 g_used,取代对无护城河名字系统性放水的扁平 7% cap。sector 不可得 → is_financial=false(退 none 5%)。
   const financialSgr = isFinancial ? sustainableGrowthRateFinancial(years) : undefined;
@@ -404,6 +410,7 @@ function assembleFloor(
     ai_capex_distortion_warning: aiCapexDistortion || undefined,
     moat_cap: moatCap,
     sustainable_growth: sustainableGrowthRate,
+    sustainable_growth_evidence: reinvestmentEvidence,
     is_financial: isFinancial,
     financial_sgr: financialSgr,
     structural_confidence: structuralConfidenceScore,
@@ -420,6 +427,9 @@ function assembleFloor(
       discount_rate_band: [DISCOUNT_RATE_LOW, DISCOUNT_RATE_HIGH],
       normalized_tax_rate: tax.rate,
       normalized_tax_rate_basis: tax.basis,
+      tax_source: tax.source,
+      tax_year_count: tax.yearCount,
+      operating_income_unavailable: grahamEpv.not_assessable_code === "operating_income_unavailable",
       maintenance_capex_rule: MAINT_CAPEX_RULE,
       share_count_basis: "diluted",
       earnings_basis_note: earningsBasisNote,
@@ -468,12 +478,20 @@ function buildGrahamLamp(
   // 周期保守:margin 下滑时压到当前 margin,不用繁荣期均值(audit #2)。
   const normMargin = conservativeNormalized(margins, margins[0]);
   if (normMargin.capped) simplifications.push("Operating margin is below its multi-year average (cyclical/declining): normalized margin capped at the latest year — no peak-margin capitalization (audit #2).");
+  Object.assign(method, { display: {
+    cashflow_adjusted: canCorrect,
+    maintenance_confidence: mc.confidence,
+    maintenance_method_count: Object.values(mc.methods).filter(v => v != null && Number.isFinite(v) && v > 0).length,
+    maintenance_divergence: mc.divergence_pct,
+    normalization_capped: normMargin.capped,
+  } });
   const nopat = normMargin.value * latestRevenue * (1 - taxRate);
   const ownerStream = nopat - capexDrag; // = NOPAT + D&A − maintCapex when canCorrect, else NOPAT
   if (ownerStream <= 0) {
     return {
       label: "Graham earnings-power value (normalized NOPAT)",
       assessable: false,
+      not_assessable_code: "non_positive_earnings",
       not_assessable_reason: "Normalized operating earnings net of maintenance capex are non-positive over the years shown; earnings power cannot be capitalized.",
       normalized_earnings: ownerStream,
       method,
@@ -498,6 +516,7 @@ function grahamNotApplicableLamp(yearsUsed: number[]): EpvLamp {
   return {
     label: "Graham earnings-power value (normalized NOPAT)",
     assessable: false,
+    not_assessable_code: "operating_income_unavailable",
     not_assessable_reason: SINGLE_LAMP_BASIS_NOTE,
     method: {
       earnings_basis: "Normalized NOPAT from operating margin — not applicable when operating income is not reported separately.",
@@ -564,6 +583,13 @@ function buildBuffettLamp(
 
   const method = {
     earnings_basis: `Owner earnings = ${normNi.basisLift != null ? "weighted normalized" : normNi.capped ? "latest-year" : "average"} net income${canCorrect ? " + average D&A − maintenance capex" : ""} (zero-growth reference; no maintenance ΔNWC).`,
+    display: {
+      cashflow_adjusted: canCorrect,
+      maintenance_confidence: mc.confidence,
+      maintenance_method_count: Object.values(mc.methods).filter(v => v != null && Number.isFinite(v) && v > 0).length,
+      maintenance_divergence: mc.divergence_pct,
+      normalization_capped: normNi.capped,
+    },
     ...(normNi.basisLift != null && lift?.target != null ? { normalization: { mean: avg(niSeries), target: lift.target, weight: normNi.basisLift, value: normNi.value } } : {}),
     leverage_treatment: "Levered (starts from net income, already after interest — an equity-holder stream).",
     denominator: lev.premium > 0
@@ -589,6 +615,7 @@ function buildBuffettLamp(
     return {
       label: "Buffett owner-earnings value",
       assessable: false,
+      not_assessable_code: "non_positive_earnings",
       not_assessable_reason: "Normalized owner earnings are non-positive over the years shown; earnings power cannot be capitalized.",
       normalized_earnings: ownerEarnings,
       sbc_to_oe_pct: sbcToOe,

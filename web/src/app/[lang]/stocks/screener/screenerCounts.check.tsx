@@ -29,6 +29,8 @@ async function main() {
   globalThis.fetch = async (input, init) => {
     const url = new URL(input instanceof Request ? input.url : String(input));
     assert.equal(url.origin, "http://127.0.0.1:54321", "检查不得访问外部服务");
+    if (url.pathname === "/rest/v1/securities") return Response.json(snapshot.map(r => ({ ticker: r.ticker, security_type: "Common Stock" })));
+    if (url.pathname === "/rest/v1/consensus_stock_holders") return Response.json([]);
     if (url.pathname === "/rest/v1/consensus_holdings") return Response.json([]);
     assert.equal(url.pathname, "/rest/v1/tracking_securities");
     const rows = snapshot.filter((r) => {

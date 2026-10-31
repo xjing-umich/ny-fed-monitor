@@ -16,6 +16,12 @@ for (const row of [[NaN, 100, 100], [100, 90, 100], [0, 100, 100], [100, 200, -1
 const verdict = { rangeLo: 90, rangeHi: 180, price: 150, priceDate: "2026-10-29", reliable: true, bucket: "below" } as ValuationVerdict;
 const quote = { close: 150, date: "2026-10-29", currency: "USD", source: "yahoo" };
 const input = { verdict, quote, reference: 160, kind: "earnings" as const };
+for (const lang of ["zh", "en"] as const) {
+  const adr = stockValueSummary({ ...input, securityUnit: "ADS" as const }, lang)!;
+  assert.match(adr.rangeLabel, /ADS/, "reliable first-screen summary preserves the traded ADS unit");
+  assert.equal(adr.rangeLo, verdict.rangeLo);
+  assert.equal(adr.rangeHi, verdict.rangeHi);
+}
 const zh = stockValueSummary(input, "zh")!;
 assert.equal(zh.position, "within"); assert.equal(zh.heading, "现价处于价值区间");
 assert.equal(zh.reference, 160); assert.equal(zh.referenceLabel, "内在价值参考");
@@ -36,3 +42,13 @@ assert.match(stockFallbackHeading("growthEvidenceMissing", true, "zh"), /增长�
 assert.equal(stockFallbackHeading("card", false, "zh"), "估值待确认");
 assert.equal(stockFallbackHeading("unassessed", undefined, "en"), "Valuation unavailable");
 console.log("stockFirstScreen.check OK");
+
+const referenceVerdict={...verdict,reliable:false,referenceOnly:"missing_reinvestment" as const};
+for(const lang of ["zh","en"] as const){const pending=stockValueSummary({...input,verdict:referenceVerdict},lang)!;assert.ok(pending);assert.equal(pending.kind,"zero-growth");assert.equal(pending.pending,true);assert.equal(pending.reference,null);assert.equal(pending.gap,null);assert.match(pending.heading,lang==="zh"?/零增长参考.*待确认/:/Zero-growth reference.*pending/);}
+
+for (const lang of ["zh", "en"] as const) {
+  const pendingAds = stockValueSummary({ ...input, verdict: referenceVerdict, securityUnit: "ADS" }, lang)!;
+  assert.match(pendingAds.rangeLabel, /ADS/, "pending zero-growth reference retains the traded ADS unit");
+  assert.equal(pendingAds.gap, null);
+  assert.equal(pendingAds.reference, null);
+}

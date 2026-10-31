@@ -92,4 +92,16 @@ assert.equal(blankSource.status, "pending", "blank quote provenance must not yie
 assert.equal(blankSource.priceSource, null);
 assert(blankSource.reasons.includes("missing_price_source"));
 
+const pendingReference = buildTrackingRecord({ ...run, verdict: { ...run.verdict!,
+  referenceOnly: "missing_reinvestment", reliable: false, inStrikeZone: false,
+  intrinsicValue: null, referenceValue: 60, referenceKind: "zero_growth_floor",
+  marginPct: null, requiredMargin: null, strikePrice: null,
+} }, context);
+assert.equal(pendingReference.status, "pending", "missing reinvestment must retain a readable reference");
+assert.equal(pendingReference.referenceValue, 60);
+assert.equal(pendingReference.rangeLo, 60);
+assert.equal(pendingReference.strikePrice, null);
+assert.equal(pendingReference.inStrikeZone, null);
+assert.ok(pendingReference.reasons.includes("missing_reinvestment"));
+assert.deepEqual(parseTrackingRecord(pendingReference), pendingReference);
 console.log("trackingContract.check.ts OK");

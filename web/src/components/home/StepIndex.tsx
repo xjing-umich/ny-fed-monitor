@@ -17,21 +17,21 @@ const COPY = {
     valuation: {
       eyebrow: "估值",
       title: "先看盈利和资产，再检查增长假设",
-      body: "个股页分开列出零增长底、内在价值与乐观上沿，并写明增长假设。把持仓和这些条件放在一起读，才看得出价格要求你相信什么。",
+      body: "财报资料足够时，我们用盈利能力、资产和现金流估算价值区间，并列明假设与缺失数据。把这些条件与持仓一起读，看价格要求你相信什么。",
       cta: (n: number) => (n > 0 ? `查看所示数据中 ${n} 只击球区个股` : "打开价值筛选器"),
     },
     consensus: {
       eyebrow: "跨基金共识",
-      title: "多少只重仓落在同一张桌子上",
-      body: "同一只票被越多独立经理人重仓，越值得先看一眼。按持有基金数排序。",
+      title: "哪些股票被多位投资人共同持有",
+      body: "按本站追踪的持有人数排序，作为进一步研究的起点。",
       cta: "查看共识持仓",
-      holders: "持有基金",
+      holders: "持有人数",
       seeAll: "全部",
     },
     investors: {
       eyebrow: "超级投资者",
       title: "读他们的持仓，不读他们的推文",
-      body: "每季度末，13F 逼这些经理公开手里的每一股。我们逐季存档，让你看长期的仓位，而不是当天的噪音。",
+      body: "13F 记录的是季末时点、纳入申报范围的证券持仓。我们逐季存档，方便比较持仓数量的变化。",
       cta: "浏览全部投资者",
     },
   },
@@ -39,21 +39,21 @@ const COPY = {
     valuation: {
       eyebrow: "Valuation",
       title: "Start with earnings and assets. Check the growth assumptions.",
-      body: "Stock pages separate a zero-growth floor, intrinsic value and an optimistic top, with the growth assumptions beside them. Read those conditions alongside the holdings to see what a price asks you to believe.",
+      body: "Where the filings support an estimate, we show a value range based on earnings, assets, and cash flow, alongside assumptions and missing data. Read those conditions alongside the holdings to see what a price asks you to believe.",
       cta: (n: number) => (n > 0 ? `See ${n} in the strike zone at shown prices` : "Open the value screener"),
     },
     consensus: {
       eyebrow: "Cross-fund consensus",
-      title: "How many managers sit at the same table",
-      body: "The more independent managers that hold the same name, the more it's worth a first look. Ranked by funds holding.",
+      title: "Which stocks are widely held?",
+      body: "Ranked by the number of tracked investors holding each stock, as a starting point for further research.",
       cta: "See consensus holdings",
-      holders: "Funds holding",
+      holders: "Holders",
       seeAll: "All",
     },
     investors: {
       eyebrow: "Super investors",
       title: "Read their holdings, not their tweets",
-      body: "Every quarter-end, a 13F forces these managers to disclose each share they own. We archive it quarter by quarter, so you watch the long position instead of the day's noise.",
+      body: "13F filings show reportable securities held at quarter-end. We archive each filing so you can compare reported holdings over time.",
       cta: "Browse all investors",
     },
   },
@@ -82,7 +82,7 @@ function Row({
         <h2 className="mt-3 text-balance text-2xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-3xl">
           {title}
         </h2>
-        {body ? <p className="mt-4 max-w-[44ch] text-sm leading-relaxed text-[var(--tt-muted)]">{body}</p> : null}
+        {body ? <p className="mt-4 max-w-[44ch] text-sm leading-relaxed text-[var(--ink-2)]">{body}</p> : null}
         <Link
           href={href}
           className="mt-5 inline-flex min-h-11 items-center text-sm text-[var(--tt-text)] underline decoration-[var(--tt-faint)] underline-offset-4 transition-colors hover:text-[var(--tt-accent)]"
@@ -175,24 +175,27 @@ export default function StepIndex({
         ctaLabel={c.investors.cta}
         href={localePath(lang, "/investors")}
       >
-        <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
-          {investors.map((m) => (
-            <Link
-              key={m.cik}
-              href={investorPath(lang, m.slug)}
-              className="group flex min-h-11 items-center justify-between gap-3 border-b border-[var(--tt-border)] py-2 no-underline"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <FreshnessDot status={filingFreshness(m.period || null, now)} lang={lang} />
-                <span className="truncate text-sm text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
-                  {managerLabel(lang, m.slug, m.person)}
+        <div>
+          <p className="mb-2 text-xs text-[var(--tt-muted)]">{lang === "zh" ? "13F持仓市值（美元）" : "13F portfolio value (USD)"}</p>
+          <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
+            {investors.map((m) => (
+              <Link
+                key={m.cik}
+                href={investorPath(lang, m.slug)}
+                className="group flex min-h-11 items-center justify-between gap-3 border-b border-[var(--tt-border)] py-2 no-underline"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <FreshnessDot status={filingFreshness(m.period || null, now)} lang={lang} />
+                  <span className="truncate text-sm text-[var(--tt-text)] transition-colors group-hover:text-[var(--tt-accent)]">
+                    {managerLabel(lang, m.slug, m.person)}
+                  </span>
                 </span>
-              </span>
-              <span className="shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)] whitespace-nowrap">
-                {formatUSD(m.totalValue, lang)}
-              </span>
-            </Link>
-          ))}
+                <span className="shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)] whitespace-nowrap">
+                  {formatUSD(m.totalValue, lang)}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </Row>
     </div>

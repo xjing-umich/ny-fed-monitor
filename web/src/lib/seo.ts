@@ -38,12 +38,12 @@ export function ogFor(opts: {
   brandImage?: boolean;
 }): Pick<Metadata, "openGraph" | "twitter"> {
   const { lang, title, description, path, type = "website", brandImage = true } = opts;
-  // 站点品牌卡(根 opengraph-image 路由)。en 裸前缀 → /opengraph-image,zh → /zh/opengraph-image。
-  const brandCard = absoluteUrl(localePath(lang, "/opengraph-image"));
+  // generateImageMetadata 的稳定 id 为 default；所有手写卡图 URL 必须包含该段。
+  const brandCard = absoluteUrl(localePath(lang, "/opengraph-image/default"));
   // 路由自带的 opengraph-image 文件,Next 按真实段 app/[lang] 生成地址:en 页会是 /en/…/opengraph-image,
   // 而 /en/* 一律 301 到裸路径,爬虫和分享卡每次都要多跳一次。en 页显式给出裸地址(页面里写了 images,
   // 文件就不再生效);zh 的 /zh 前缀本来就对,继续交给文件路由。
-  const ownCard = !brandImage && lang === "en" ? absoluteUrl(`${path === "/" ? "" : path}/opengraph-image`) : null;
+  const ownCard = !brandImage && lang === "en" ? absoluteUrl(`${path === "/" ? "" : path}/opengraph-image/default`) : null;
   const image = brandImage
     ? { url: brandCard, width: 1200, height: 630, alt: SITE_NAME }
     : ownCard
@@ -177,7 +177,7 @@ export function collectionLd(opts: {
   name: string;
   description: string;
   path: string;
-  items: { name: string; path: string }[];
+  items: { name: string; path?: string }[];
   total?: number;
   limit?: number;
   /** 列表数据最后一次变化的日期(YYYY-MM-DD)。 */
@@ -200,7 +200,7 @@ export function collectionLd(opts: {
         "@type": "ListItem",
         position: i + 1,
         name: it.name,
-        url: absoluteUrl(it.path),
+        ...(it.path ? { url: absoluteUrl(it.path) } : {}),
       })),
     },
   };

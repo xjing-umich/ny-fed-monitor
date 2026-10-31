@@ -3,7 +3,10 @@ import { getCusipMap, tickerToCusips } from "@/lib/managers/securities";
 import { cleanIssuer } from "@/lib/format";
 import { stockDisplayName } from "@/lib/stocks/zhNames";
 
-export const alt = "Who's holding — Compounder";
+export function generateImageMetadata({ params }: { params: { lang: string; ticker: string } }) {
+  const alt = params.lang === "zh" ? `谁在持有 ${params.ticker}？— Compounder · 复利` : `Who's holding ${params.ticker}? — Compounder`;
+  return [{ id: "default", alt, size: OG_SIZE, contentType: OG_CONTENT_TYPE }];
+}
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 // 静态缓存:否则 [lang] 段下的 OG 图每次被抓取都在函数里重绘 PNG(计入 Vercel Fluid Active CPU)。

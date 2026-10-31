@@ -10,6 +10,12 @@ import type { TrackingRecord } from "./trackingContract";
 
 export type SnapshotVerdict = {
   ticker: string;
+  referenceOnly?: "missing_reinvestment";
+  fundamentalsDate: string | null;
+  securityUnit: "share" | "ADS" | "unknown";
+  requiredMargin: number | null;
+  strikePrice: number | null;
+  priceSource: string | null;
   publication: PublicationStamp;
   intrinsicValue: number | null;
   referenceValue: number | null;
@@ -60,10 +66,12 @@ async function holders(tickers:string[]):Promise<Map<string,{issuer:string;holde
   }
   return out;
 }
+export type ScreenAvailability = "available" | "unpublished" | "unavailable";
+
 export const readScreenInputs = cache(async () => {const values=await readAllSnapshots();return {values,holdings:await holders(values.map(v=>v.ticker))};});
 function newest(rows:SnapshotVerdict[]):string|null {return rows.reduce<string|null>((date,row)=>!date || row.computedAt>date ? row.computedAt : date,null);}
 export const readValuationScreen = cache(async (view:ScreenView) => {
  const {values,holdings}=await readScreenInputs();const counts=projectStrike(values,0);const rows=projectScreen(values,holdings,view);
- return {rows,strikeTotal:counts.total,strikePending:counts.pending,computedAt:newest(rows)};
+ return {rows,strikeTotal:counts.total,strikePending:counts.pending,computedAt:newest(rows),availability:(values.length ? "available" : "unpublished") as ScreenAvailability};
 });
-export const readConvictionScreen = cache(async () => {const screen=await readValuationScreen("conviction");return {rows:screen.rows,heldTotal:screen.rows.length,computedAt:screen.computedAt};});
+export const readConvictionScreen = cache(async () => {const screen=await readValuationScreen("conviction");return {rows:screen.rows,heldTotal:screen.rows.length,computedAt:screen.computedAt,availability:screen.availability};});

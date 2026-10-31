@@ -97,6 +97,10 @@ function publicValue(row: DirectoryRow): PublishedValuation | null {
   if (record.status === "valid" && (!verdict.reliable || verdict.inStrikeZone !== record.inStrikeZone)) return null;
   return {record,presentation:run};
 }
+function publicPendingReason(reason: string, verdict: ValuationRun["verdict"]): boolean {
+  return ["unreliable_valuation", "valuation_pending"].includes(reason) ||
+    verdict?.referenceOnly === "missing_reinvestment" && ["missing_reinvestment", "missing_margin"].includes(reason);
+}
 export async function readPublicValuations(tickers: string[]): Promise<Map<string,PublishedValuation>> {
   const keys = [...new Set(tickers.map(ticker => ticker.toUpperCase()).filter(Boolean))];
   if (!keys.length) return new Map();
@@ -110,7 +114,7 @@ function publicMap(rows: DirectoryRow[]): Map<string,PublishedValuation> {
     const reasons=[...storedSafety(row),...recordReasons(value.record,row,now)];
     // Preserve the existing explicitly pending presentation (never a confirmed opportunity).
     // Only the current paired unreliable result may be shown; stale/invalid old results stay closed.
-    if (reasons.some(reason=>!["unreliable_valuation","valuation_pending"].includes(reason))) continue;
+    if (reasons.some(reason=>!publicPendingReason(reason, value.presentation.verdict) )) continue;
     out.set(row.ticker,value);
   }
   return out;
@@ -126,7 +130,7 @@ function summaryMap(rows:DirectoryRow[]):Map<string,PublishedValuationSummary> {
     if (!record || !verdict || p.public_suppression || p.public_currency !== record.currency || !p.public_expectations || !p.public_methods || identityReasons(row).length) continue;
     if ((["intrinsicValue","referenceValue","referenceKind","rangeLo","rangeHi","price","priceDate","marginPct","requiredMargin","strikePrice"] as const).some(key=>verdict[key] !== record[key])) continue;
     if (record.status === "valid" && (!verdict.reliable || verdict.inStrikeZone !== record.inStrikeZone)) continue;
-    if ([...storedSafety(row),...recordReasons(record,row,now)].some(reason=>!["unreliable_valuation","valuation_pending"].includes(reason))) continue;
+    if ([...storedSafety(row),...recordReasons(record,row,now)].some(reason=>!publicPendingReason(reason, verdict))) continue;
     out.set(row.ticker,{record,verdict,expectations:p.public_expectations,methods:p.public_methods,moatCap:p.public_moat_cap});
   }
   return out;

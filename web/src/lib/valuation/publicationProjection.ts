@@ -1,4 +1,7 @@
 import 'server-only';
+import { deriveCompanyExample } from '../home/companyExample';
+import type { readHomeEvidence } from '../home/readCompanyExamples';
+
 import { holdingsSplit } from '../managers/investorConclusion';
 import { deriveValuationPosture, POSTURE_LIMIT } from '../managers/valuationPosture';
 import type { PublishedValuation, PublishedValuationSummary } from './publishedRead';
@@ -17,7 +20,9 @@ export function publicationStamp(value:PublishedValuation|PublishedValuationSumm
 export function snapshot(value:PublishedValuation|PublishedValuationSummary):SnapshotVerdict {
  const r=value.record;const p='presentation' in value ? value.presentation:value;
  const moatCap='presentation' in value ? value.presentation.oeDcf?.moatCap:value.moatCap;
- return {ticker:r.identity.ticker,bucket:p.verdict!.bucket,inStrikeZone:p.verdict!.inStrikeZone,
+ return {ticker:r.identity.ticker,referenceOnly:p.verdict!.referenceOnly,
+  fundamentalsDate:r.fundamentalAsOf,requiredMargin:r.requiredMargin,strikePrice:r.strikePrice,priceSource:r.priceSource,
+  securityUnit:r.identity.securityType === "ADR" ? "ADS" : ["Common Stock","Ordinary Shares","Common Shares"].includes(r.identity.securityType) ? "share" : "unknown",bucket:p.verdict!.bucket,inStrikeZone:p.verdict!.inStrikeZone,
   rangeLo:r.rangeLo!,rangeHi:r.rangeHi!,price:r.price!,priceDate:r.priceDate!,marginPct:r.marginPct,
   intrinsicValue:r.intrinsicValue,referenceValue:r.referenceValue,referenceKind:r.referenceKind,
   coverage:p.verdict!.coverage,reliable:r.status==='valid',computedAt:r.computedAt,
@@ -69,4 +74,16 @@ export function investorRenderedValues(selection:ReturnType<typeof investorSelec
  const posture=deriveValuationPosture({holdings:selection.holdings,cusipToTicker,verdicts});
  const tickers=[...[...shown,...folded].map(h=>cusipToTicker.get(h.cusip)).filter((t):t is string=>!!t),...posture.cheap.slice(0,POSTURE_LIMIT).map(h=>h.ticker),...posture.pending.map(h=>h.ticker)];
  return selectedValuations(values,tickers);
+}
+
+/** A5 serializes all three examples but initially paints only the first tab. */
+export function projectHome(values:SnapshotVerdict[], evidence:Awaited<ReturnType<typeof readHomeEvidence>>, lang:'en'|'zh', now = new Date()) {
+ const byTicker = new Map(values.map(value=>[value.ticker,value]));
+ const examples = evidence.map(row=>deriveCompanyExample({...row,snapshot:row.splitsAvailable ? byTicker.get(row.ticker) ?? null : null,now},lang));
+ const visibleKey = examples[0]?.publication?.identityKey;
+ return {examples,sourceDigest:projectionDigest('home',examples,{lang}),
+  members:values.filter(value=>value.publication.identityKey === visibleKey)};
+}
+export function screenProjectionDigest(values:SnapshotVerdict[],holdings:Map<string,{issuer:string;holderCount:number}>,view:ScreenView,sort:ScreenSort,availableStocks:Iterable<string>) {
+ return projectionDigest('screener',values,{holdings:[...holdings].sort(([a],[b])=>a.localeCompare(b)),view,sort,availableStocks:[...availableStocks].sort()});
 }

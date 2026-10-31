@@ -1,6 +1,8 @@
 import { ogCard, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/ogCard";
 
-export const alt = "Compounder — Learn";
+export function generateImageMetadata({ params }: { params: { lang: string } }) {
+  return [{ id: "default", alt: params.lang === "zh" ? "Compounder：价值投资学习指南" : "Compounder: value investing guides", size: OG_SIZE, contentType: OG_CONTENT_TYPE }];
+}
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 // 静态缓存:否则 [lang] 段下的 OG 图每次被抓取都在函数里重绘 PNG(计入 Vercel Fluid Active CPU)。

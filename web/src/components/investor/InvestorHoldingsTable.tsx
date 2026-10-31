@@ -17,14 +17,14 @@ import { formatUSD } from "@/lib/format";
 const HOLD_COPY = {
   zh: {
     title: "持仓明细",
-    cols: { issuer: "标的", quarter: "本季", value: "市值", weight: "占比", valuation: "估值", consensus: "持有人数" },
+    cols: { issuer: "标的", quarter: "持仓数量变动", value: "持仓市值", weight: "占比", valuation: "估值", consensus: "持有人数" },
     lonely: "独门",
     more: (n: number) => `展开其余 ${n} 只`,
     overflow: (n: number) => `其余 ${n} 只见 SEC 原文`,
   },
   en: {
     title: "Holdings",
-    cols: { issuer: "Security", quarter: "This qtr", value: "Value", weight: "Weight", valuation: "Valuation", consensus: "Holders" },
+    cols: { issuer: "Security", quarter: "Position-size change", value: "Holding value", weight: "Weight", valuation: "Valuation", consensus: "Holders" },
     lonely: "Rarely held",
     more: (n: number) => `Show ${n} more`,
     overflow: (n: number) => `${n} more in the SEC filing`,
@@ -96,7 +96,10 @@ export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts,
       header: lang === "zh" ? `${t.cols.value}(美元)` : t.cols.value,
       align: "right",
       width: "w-32",
-      cell: (h) => formatUSD(h.value, lang, "table"),
+      cell: (h) => <span className="inline-flex flex-col items-end">
+        <span>{formatUSD(h.value, lang, "table")}</span>
+        {h.putCall && <span className="text-xs text-[var(--tt-muted)]">{lang === "zh" ? "名义价值" : "Notional value"}</span>}
+      </span>,
     },
     {
       key: "weight",
@@ -149,10 +152,16 @@ export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts,
   return (
     <section id="holdings" aria-label={t.title} className="scroll-mt-32">
       <SectionHeading
-        eyebrow={lang === "zh" ? "SEC 13F · 最新持仓" : "SEC 13F · latest filing"}
+        eyebrow={lang === "zh" ? "SEC 13F · 申报持仓" : "SEC 13F · filing holdings"}
         title={t.title}
         trailing={valuationAsOf ? <span className="font-data text-xs text-[var(--tt-faint)]">{valuationAsOf}</span> : undefined}
       />
+      <p className="mt-3 text-sm text-[var(--tt-text)]">
+        {lang === "zh" ? "持仓数量变动为较上季申报股数或份额的变化，已知拆股已调整。" : "Position-size change compares reported shares or units with the prior filing, adjusted for known splits."}
+      </p>
+      {holdings.some((h) => h.putCall) && <p className="mt-2 text-sm text-[var(--tt-text)]">
+        {lang === "zh" ? "期权列示标的名义价值，不是权利金，也不计入组合市值及持仓数。" : "Options show underlying notional value, not premium, and are excluded from portfolio value and position count."}
+      </p>}
       <div className="mt-3">{table(shown)}</div>
       {folded.length > 0 && (
         <details className="mt-2">

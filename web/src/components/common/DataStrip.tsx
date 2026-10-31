@@ -60,13 +60,14 @@ export function DataStrip({
     <section className="mt-12 grid grid-cols-2 divide-x divide-[var(--tt-border)] border-y border-[var(--tt-border)] py-2">
       <Tile
         label={t.consensus}
-        value={consensusCount > 0 ? String(consensusCount) : "—"}
+        value={consensusCount > 0 ? new Intl.NumberFormat(lang === "zh" ? "zh-CN" : "en-US").format(consensusCount) : "—"}
+        sub={lang === "zh" ? "至少2位投资人共同持有（只）" : "Stocks held by 2+ investors"}
         href={localePath(lang, "/investors/consensus")}
       />
       <Tile
         label={t.dgs10}
         value={dgs10 ? `${dgs10.value.toFixed(2)}%` : "—"}
-        sub={dgs10 ? (lang === "zh" ? `截至 ${formatDate(dgs10.date, lang)}` : `as of ${formatDate(dgs10.date, lang)}`) : undefined}
+        sub={dgs10 ? (lang === "zh" ? `FRED · 截至 ${formatDate(dgs10.date, lang)}` : `FRED · as of ${formatDate(dgs10.date, lang)}`) : undefined}
       />
     </section>
   );

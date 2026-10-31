@@ -13,6 +13,7 @@ async function main() {
   }
 
   const records = [
+    { id: "pending", ticker: "PDF_PENDING", status: "source_pending", started_at: "2026-10-30T18:00:00Z", run_type: "company" },
     { id: "a2", ticker: "FAILED", status: "failed", started_at: "2026-10-30T18:00:00Z", run_type: "company" },
     { id: "a1", ticker: "FAILED", status: "success", started_at: "2026-10-30T17:30:00Z", run_type: "company" },
     { id: "b1", ticker: "RUNNING", status: "running", started_at: "2026-10-30T18:00:00Z", run_type: "company" },
@@ -55,6 +56,7 @@ async function main() {
   const done = await readCompletedFundamentals(db, "2026-10-30T17:04:06.000Z");
   assert.equal(done.size, 1003, "read completed tickers beyond the first PostgREST page");
   assert.ok(done.has("S1002"));
+  assert.equal(done.has("PDF_PENDING"), false, "pending official sources are never successful resume coverage");
   assert.equal(done.has("MIXED"), false, "case-normalized tickers still use their latest attempt");
   assert.deepEqual(remainingFundamentals(["FAILED", "RUNNING", "OLD", "OTHER", "MISSING", "S0000", "s1002"], done), ["FAILED", "RUNNING", "OLD", "OTHER", "MISSING"]);
   failLaterPage = true;

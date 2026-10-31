@@ -1,3 +1,4 @@
+import { adsRatioDisclosure, assetDisplay, discountDisplay, lampDisplay, perSecurityUnit, taxDisplay, valuationPeriods, type SecurityUnit } from "@/lib/valuation/displayFacts";
 import type { FC } from "react";
 import type { Lang } from "@/lib/nav";
 import type { EpvLamp, MoatSignal, PerShareUnavailable, StrikeZoneAssessment, ValuationFloor } from "@/lib/valuation";
@@ -9,10 +10,10 @@ import { bandPosition, rangeGaugePercent, priceVsBand, priceVsBandAndIv } from "
 import { Display } from "@/components/common/Display";
 import { money, date as formatDate } from "@/lib/i18n/format";
 
-// 每股价格保留美元符号及两位小数；大额金额另走带语言的 money。
+// 每份证券估值复用统一精度；市场价格另走 px，始终保留美分。
 export function perShare(value: number | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
-  return fmtPrice(value);
+  return fmtPerShareValue(value);
 }
 // Readable main view: per-share values whole-dollar (cents under $10), the price always to the cent.
 function usd0(value: number | undefined): string {
@@ -38,9 +39,6 @@ function pct1(value: number | undefined): string {
 function usd(value: number | undefined, lang: Lang): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return money(value, lang);
-}
-function finitePositive(n: number | undefined): n is number {
-  return n != null && Number.isFinite(n) && n > 0;
 }
 
 // ── Localized copy ────────────────────────────────────────────────────────────
@@ -104,31 +102,25 @@ const COPY = {
     legendFloor: "Zero-growth floor",
     legendIv: "Intrinsic value",
     legendHi: "Optimistic top",
-    assetBelow: (ps: string) => `Price is at or below the reproducible tangible asset base (${ps} / sh) — a rarer, harder floor.`,
     modelCautions: "Model cautions",
-    methodDisclaimer: "A model-based intrinsic-value range (zero-growth floor to growth-capped DCF) plus a tangible asset floor — not investment advice, not a buy/sell signal, and not a price target.",
+    methodDisclaimer: "These estimates use model assumptions about earnings, cash flow and assets. They are not investment advice, trading signals or price targets.",
     priceUnavailable: "No usable market price is available, so this page does not place price on the value gauge.",
     earningsValueUnavailable: "Earnings in the filings don't support a positive per-share value (typically a company still losing money), so this page does not place price on the value gauge.",
     currencyMismatch: (cur: string) => `The price is quoted in ${cur} while per-share values come from USD filings, so the two aren't comparable and this page does not place price on the value gauge.`,
     priceAsOf: "Price as of",
     mayBeStale: "may be stale",
-    sourceLine: (src: string | null, date: string, stale: boolean, dgs10: { value: string; date: string } | null) =>
+    sourceLine: (src: string | null, date: string, stale: boolean, dgs10: { value: string; date: string; stale?: boolean } | null) =>
       `Price${src ? ` from ${src}` : ""} as of ${date}${stale ? " (may be stale)" : ""}` +
-      `${dgs10 ? `; discount rate anchored to the 10-year Treasury yield, ${dgs10.value} (${dgs10.date})` : ""}.`,
+      `${dgs10 ? `; discount rate based on ${dgs10.stale ? "a stale observation of " : ""}the 10-year Treasury yield, ${dgs10.value} (${dgs10.date})` : ""}.`,
     reproductionValue: "Reproduction value",
     moat: "Moat",
     directional: "(directional)",
-    oeDcfCompact: (r: string) => `Owner-earnings DCF (Buffett): ${r} / sh. Floor keeps a zero-growth terminal; the upper end caps perpetual growth at min(10-year treasury, 3% nominal GDP).`,
     highLeverageWarning: "High leverage — ranges are a degraded approximation (see method).",
     methodSummary: "Method & numbers",
     perShareUnavailable: "This company has more than one share class, and our data source doesn't give a combined share count, so we don't compute a per-share value.",
     perSh: "/ sh",
     ivHeadline: "intrinsic value",
     zeroGrowthHeadline: "zero-growth intrinsic value",
-    netNet: (ps: string) =>
-      `⚑ Price is below net current asset value (${ps}/share) — a Graham "net-net". Historically rare and usually a sign of business distress; beware the value trap.`,
-    netNetBuy: (ps: string) =>
-      `⚑ Price is at or below two-thirds of net current asset value (${ps}/share) — Graham's classic net-net threshold with a full margin of safety. Historically rare and usually a sign of business distress; beware the value trap.`,
     buybackOffsetsSbc: "Buybacks over the years shown roughly only offset stock-based-compensation dilution — read them as maintaining the share count, not a net return of capital.",
   },
   zh: {
@@ -159,29 +151,23 @@ const COPY = {
     legendFloor: "零增长底",
     legendIv: "内在价值",
     legendHi: "乐观上沿",
-    assetBelow: (ps: string) => `现价已等于或低于可重置的有形资产基础（${ps} / 股）— 一道更罕见、更硬的地板。`,
     modelCautions: "模型警示",
-    methodDisclaimer: "模型内在价值区间（零增长底到增速封顶的 DCF）加一道有形资产地板 — 非投资建议、非买卖信号、亦非目标价。",
+    methodDisclaimer: "本区展示基于盈利能力、现金流和资产的模型估算及其假设，仅供研究参考，不构成投资建议、买卖信号或目标价。",
     priceUnavailable: "缺少可用市场价格，因此不把现价放进价值区间位置条。",
     earningsValueUnavailable: "按现有财报，盈利撑不出一个为正的每股价值（常见于仍在亏损的公司），因此不把现价放进价值区间位置条。",
     currencyMismatch: (cur: string) => `现价以 ${cur} 计价，每股价值按美元财报算，两者不可比，因此不把现价放进价值区间位置条。`,
     priceAsOf: "价格截至",
     mayBeStale: "可能已过时",
-    sourceLine: (src: string | null, date: string, stale: boolean, dgs10: { value: string; date: string } | null) =>
+    sourceLine: (src: string | null, date: string, stale: boolean, dgs10: { value: string; date: string; stale?: boolean } | null) =>
       `${src ? `价格来源 ${src}，截至` : "价格截至"} ${date}${stale ? "（可能已过时）" : ""}` +
-      `${dgs10 ? `；折现率参照 10 年期美债收益率 ${dgs10.value}（${dgs10.date}）` : ""}。`,
+      `${dgs10 ? `；折现率参照${dgs10.stale ? "已过时的" : ""} 10 年期美债收益率 ${dgs10.value}（${dgs10.date}）` : ""}。`,
     reproductionValue: "重置价值",
     moat: "护城河",
     directional: "（方向性）",
-    oeDcfCompact: (r: string) => `所有者盈利 DCF（巴菲特）：${r} / 股。下限保留零增长终值；上限的永续增长封顶在「10 年期美债收益率」与「3% 名义 GDP」两者的较低值。`,
     highLeverageWarning: "高杠杆 — 价值区间为降级近似（见方法）。",
     methodSummary: "方法与数字",
     perShareUnavailable: "这家公司有多类股票，我们的数据源拿不到合并后的总股数，所以暂不给出每股估值。",
     perSh: "/ 股",
-    netNet: (ps: string) =>
-      `⚑ 现价低于每股净流动资产（${ps}）。格雷厄姆式深度价值信号，历史极罕见——常伴随经营困境，须警惕价值陷阱。`,
-    netNetBuy: (ps: string) =>
-      `⚑ 现价已跌至每股净流动资产的三分之二以下（${ps}）— 格雷厄姆经典买入线，安全边际充分。历史极罕见，常伴随经营困境，须警惕价值陷阱。`,
     buybackOffsetsSbc: "所示年度的回购大体只抵消了股权激励（SBC）造成的稀释 — 应视为维持股本、而非净额回馈股东。",
     ivHeadline: "内在价值",
     zeroGrowthHeadline: "零增长内在价值",
@@ -320,65 +306,46 @@ function valuationCautions(
   return cautions;
 }
 
-// years_used 的头部元素是 TTM 年(FY0+1);TTM 生效时该年既未申报 FY 又跳空,渲染成 "TTM {期末}"
-// 而非假 FY 标签。其余年份维持裸数字。ttmPeriodEnd 缺省 → 全部裸数字,零变化。
-function yearsUsedText(years: number[], ttmPeriodEnd: string | undefined): string {
-  if (!ttmPeriodEnd || years.length === 0) return years.join(", ");
-  return [`TTM ${ttmPeriodEnd}`, ...years.slice(1)].join(", ");
-}
-
-// Full method note for one lamp — rendered only inside the collapsible details.
-function LampMethod({ lamp, lang, ttmPeriodEnd }: { lamp: EpvLamp; lang: Lang; ttmPeriodEnd?: string }) {
-  const t = COPY[lang];
-  return (
-    <div>
-      <p className="font-medium text-[var(--tt-faint)]">
-        {lamp.label}
-        {lamp.assessable ? <span className="ml-1 font-data text-[var(--tt-muted)]">{range(lamp.per_share_low, lamp.per_share_high)} {t.perSh}</span> : null}
-      </p>
-      {!lamp.assessable && lamp.not_assessable_reason ? <p>{lamp.not_assessable_reason}</p> : null}
-      <p>
-        {lamp.method.earnings_basis} {lamp.method.leverage_treatment} {lamp.method.denominator} {lamp.method.bridge}
-      </p>
-      {lamp.method.normalization ? <p>{lang === "zh"
-        ? `盈利正常化：多年均值 ${usd(lamp.method.normalization.mean, lang)}，以 ${pct1(lamp.method.normalization.weight)} 权重向受趋势约束的近期水平调整，采用 ${usd(lamp.method.normalization.value, lang)}。`
-        : `Earnings normalization: mean ${usd(lamp.method.normalization.mean, lang)}, blended ${pct1(lamp.method.normalization.weight)} toward a trend-capped recent level, giving ${usd(lamp.method.normalization.value, lang)}.`}</p> : null}
-      <p>{lang === "zh" ? "年份：" : "Years: "}{yearsUsedText(lamp.method.years_used, ttmPeriodEnd)}</p>
-      {lamp.method.simplifications.length > 0 ? <p>{lang === "zh" ? "v1 简化：" : "v1 simplifications: "}{lamp.method.simplifications.join(" ")}</p> : null}
-    </div>
-  );
+// Full method notes consume structured facts; engine prose stays out of both locales.
+function LampMethod({ lamp, role, lang, ttm, unit }: { lamp: EpvLamp; role: "operating" | "owner"; lang: Lang; ttm?: { year: number; periodEnd: string }; unit: string }) {
+  const display = lampDisplay(lamp, role, lang);
+  return <div>
+    <p className="font-medium text-[var(--tt-faint)]">{display.label}{lamp.assessable ? <span className="ml-1 font-data text-[var(--tt-muted)]">{range(lamp.per_share_low, lamp.per_share_high)} {unit}</span> : null}</p>
+    {display.reason ? <p>{display.reason}</p> : null}
+    {display.notes.map((note, i) => <p key={i}>{note}</p>)}
+    {lamp.method.normalization ? <p>{lang === "zh" ? `盈利正常化：多年均值 ${usd(lamp.method.normalization.mean, lang)}，以 ${pct1(lamp.method.normalization.weight)} 权重向受趋势约束的近期水平调整，采用 ${usd(lamp.method.normalization.value, lang)}。` : `Earnings normalization: mean ${usd(lamp.method.normalization.mean, lang)}, blended ${pct1(lamp.method.normalization.weight)} toward a trend-capped recent level, giving ${usd(lamp.method.normalization.value, lang)}.`}</p> : null}
+    <p>{lang === "zh" ? "所用期间：" : "Periods used: "}{valuationPeriods(lamp.method.years_used, lang, ttm)}</p>
+  </div>;
 }
 
 // Compact growth-value provenance for the folded method section (assumptions externalized).
 // gated_to_zero 按结构化原因本地化（AI-hog / moat_via_growth / 无护城河），禁止写死错因。
-function growthSummary(floor: ValuationFloor, lang: Lang): string {
+function growthSummary(floor: ValuationFloor, lang: Lang, unit: string): string {
   const gv = floor.growth_value;
   const zh = lang === "zh";
   if (!gv.assessable) {
-    return zh
-      ? `增长价值无法评估${gv.not_assessable_reason ? ` — ${gv.not_assessable_reason}` : "。"}`
-      : `Growth value not assessable${gv.not_assessable_reason ? ` — ${gv.not_assessable_reason}` : "."}`;
+    return zh ? "无法按现有模型评估增长价值。" : "Growth value cannot be assessed with the available model inputs.";
   }
   if (gv.gated_to_zero) {
     if (floor.ai_capex_distortion_warning) {
       return zh
-        ? "增长价值被闸至零 — 资本开支两年翻倍（AI-hog），成长只留在所有者盈利 DCF，避免双重计入。"
-        : "Growth value gated to zero — capex doubled within two years (AI-hog); growth credit stays in the owner-earnings DCF only.";
+        ? "增长价值按零计 — 资本开支两年翻倍，成长只留在所有者盈利 DCF，避免双重计入。"
+        : "Growth value is set to zero — capex doubled within two years; growth credit stays in the owner-earnings DCF only.";
     }
     if (floor.moat_reading.moat_via_growth) {
       return zh
-        ? "增长价值被闸至零 — 护城河来自盈利增长旁路，成长只留在所有者盈利 DCF。"
-        : "Growth value gated to zero — franchise via earnings-growth bypass; growth credit stays in the owner-earnings DCF only.";
+        ? "增长价值按零计 — 护城河信号来自已证明的盈利增长，成长只留在所有者盈利 DCF。"
+        : "Growth value is set to zero — the moat signal comes from demonstrated earnings growth; growth credit stays in the owner-earnings DCF only.";
     }
     return zh
-      ? "增长价值被闸至零 — 无护城河或 ROIIC ≤ WACC，故不计入增长价值。"
-      : "Growth value gated to zero — no moat or ROIIC ≤ WACC, so no growth value is credited.";
+      ? "增长价值按零计 — 无护城河或 ROIIC ≤ WACC，故不计入增长价值。"
+      : "Growth value is set to zero — no moat or ROIIC ≤ WACC, so no growth value is credited.";
   }
   const dur = gv.duration_years != null ? (zh ? `${gv.duration_years} 年` : `${gv.duration_years} yr`) : zh ? "建模窗口期" : "the modeled window";
   const roiic = gv.roiic != null ? `ROIIC ≈ ${pct(gv.roiic)}` : zh ? "建模 ROIIC" : "the modeled ROIIC";
   return zh
-    ? `增长价值：若护城河在 ${dur} 内维持于 ${roiic}，则 ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / 股（中性 ${perShare(gv.per_share.neutral)}）。模型情景，非预测。`
-    : `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} / sh (mid ${perShare(gv.per_share.neutral)}). A model scenario, not a forecast.`;
+    ? `增长价值：若护城河在 ${dur} 内维持于 ${roiic}，则 ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} ${unit}（中性 ${perShare(gv.per_share.neutral)}）。模型情景，非预测。`
+    : `Growth value: if the moat holds for ${dur} at ${roiic}, ${perShare(gv.per_share.pessimistic)}–${perShare(gv.per_share.optimistic)} ${unit} (mid ${perShare(gv.per_share.neutral)}). A model scenario, not a forecast.`;
 }
 
 // moat → 竞争优势期（CAP，Phase 2）披露：仅 grade!=="none" 渲染。文案在组件内按 locale 构建
@@ -482,7 +449,7 @@ export function ValueBandGauge({
             boxShadow: reliable ? "var(--glow-primary)" : "none",
             transition: "left var(--tt-dur) var(--tt-ease)",
           }}
-          title={`${t.priceAsOf} ${perShare(price)}`}
+          title={`${t.priceNow} ${px(price)}`}
         />
         {/* 价格读数:Display xl 刻度盘读数窗,跟随游标;max/min 钳制防贴边溢出(含"现价"标签,半宽约 7rem)。 */}
         <span
@@ -607,6 +574,7 @@ function ValueSpine({
   showStatus = true,
   verdict: suppliedVerdict,
   compact = false,
+  securityUnit = "share",
 }: SpineInput & {
   issuer?: string;
   ticker?: string;
@@ -616,8 +584,10 @@ function ValueSpine({
   showStatus?: boolean;
   /** 个股页结论带(part="summary"):不渲染 bandHowToRead 与假设行(它们由 SpineNotes 放进明细)。 */
   compact?: boolean;
+  securityUnit?: SecurityUnit;
 }) {
   const t = COPY[lang];
+  const unit = perSecurityUnit(securityUnit, lang);
   const resolved = resolveSpine({ floor, sz, oeDcf, reconciliation, verdict: suppliedVerdict });
   if (!resolved) return null;
   const { verdict, hasIv, IV } = resolved;
@@ -647,7 +617,7 @@ function ValueSpine({
   const sub =
     bucket === "below" ? t.subBelow(onMethods) : bucket === "within" ? t.subWithin(onMethods) : t.subAbove;
   const who = issuer ? `${issuer}${ticker ? (lang === "zh" ? `（${ticker}）` : ` (${ticker})`) : ""}${lang === "zh" ? "：" : ": "}` : "";
-  const valueRange = `${fmtValueBand(rangeLo, rangeHi, usd0)} ${t.perSh}`;
+  const valueRange = `${fmtValueBand(rangeLo, rangeHi, usd0)} ${unit}`;
   const asOf = sz.price?.date ? (lang === "zh" ? `（价格 ${px(price)} 截至 ${formatDate(sz.price.date, lang)}）` : ` (price ${px(price)} as of ${formatDate(sz.price.date, lang)})`) : "";
   const posZh =
     bucket === "below" ? "低于" : bucket === "within" ? "落在" : "高于";
@@ -685,7 +655,7 @@ function ValueSpine({
           otherwise the zero-growth floor F (single-lamp fallback, today's number). */}
       <div className="flex items-baseline gap-2">
         <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{usd0(headline)}</span>
-        <span className="text-xs text-[var(--tt-muted)]">{t.perSh} · {hasIv ? t.ivHeadline : t.zeroGrowthHeadline}</span>
+        <span className="text-xs text-[var(--tt-muted)]">{unit} · {hasIv ? t.ivHeadline : t.zeroGrowthHeadline}</span>
       </div>
 
       {/* status — 个股页把结论上提到区块标题时(showStatus=false)不再在卡内重复 */}
@@ -731,7 +701,7 @@ function ValueSpine({
           formatDate(sz.price.date, lang),
           sz.stale,
           oeDcf?.discount?.dgs10_date && oeDcf.discount.dgs10_value != null
-            ? { value: pct1(oeDcf.discount.dgs10_value), date: formatDate(oeDcf.discount.dgs10_date, lang) }
+            ? { value: pct1(oeDcf.discount.dgs10_value), date: formatDate(oeDcf.discount.dgs10_date, lang), stale: !oeDcf.discount.anchored }
             : null,
         )}
       </p>
@@ -772,6 +742,9 @@ function MethodDetails({
   reconciliation,
   lang,
   ttmPeriodEnd,
+  ttmFiscalYear,
+  securityUnit = "share",
+  adsRatio,
 }: {
   floor: ValuationFloor;
   sz?: StrikeZoneAssessment;
@@ -779,11 +752,18 @@ function MethodDetails({
   reconciliation?: MethodReconciliation;
   lang: Lang;
   ttmPeriodEnd?: string;
+  ttmFiscalYear?: number;
+  securityUnit?: SecurityUnit;
+  adsRatio?: number;
 }) {
   const t = COPY[lang];
   const zh = lang === "zh";
   const { graham_epv, buffett_epv, asset_floor, moat_reading, provenance } = floor;
   const epv = sz?.epv;
+  const unit = perSecurityUnit(securityUnit, lang);
+  const asset = assetDisplay(floor, lang, securityUnit);
+  const ttm = ttmPeriodEnd && ttmFiscalYear != null ? { year: ttmFiscalYear, periodEnd: ttmPeriodEnd } : undefined;
+  const ratioNote = adsRatioDisclosure(securityUnit, adsRatio, lang);
   const netNetAssetFloor = sz?.price ? isNetNetAssetFloor(floor.net_net, sz.price.close) : false;
   const netNetBuy = sz?.price ? isNetNetBuy(floor.net_net, sz.price.close) : false;
   const cautions = valuationCautions(oeDcf, reconciliation, lang, floor);
@@ -799,15 +779,13 @@ function MethodDetails({
         {floor.high_leverage_warning && floor.is_financial ? (
           <p className="text-[var(--tt-warn)]">{t.highLeverageWarning}</p>
         ) : null}
-        {provenance.earnings_basis_note ? (
-          <p>{provenance.earnings_basis_note}</p>
-        ) : null}
-        {sz?.assetFloor?.priceBelow ? <p>{t.assetBelow(usd0(sz.assetFloor.perShare))}</p> : null}
-        {floor.net_net.assessable && netNetBuy ? (
-          <p>{t.netNetBuy(perShare(floor.net_net.per_share))}</p>
-        ) : floor.net_net.assessable && netNetAssetFloor ? (
-          <p>{t.netNet(perShare(floor.net_net.per_share))}</p>
-        ) : null}
+        {ratioNote ? <p>{ratioNote}</p> : null}
+        {provenance.operating_income_unavailable ? <p>{zh ? "营业利润未单独披露，仅使用所有者盈利方法。" : "Operating income is not reported separately, so only the owner-earnings method is used."}</p> : null}
+        {floor.marks_adjustment ? <p>{zh ? `盈利基数已剔除投资及衍生品的公允价值损益，按 ${(floor.marks_adjustment.tax_rate * 100).toFixed(0)}% 税率调整为税后影响；这些账面重估不代表经营盈利能力。` : `The earnings base excludes investment and derivative remeasurement gains and losses, after tax at ${(floor.marks_adjustment.tax_rate * 100).toFixed(0)}%; these marks do not represent operating earnings power.`}</p> : null}
+        {sz?.assetFloor?.priceBelow ? <p>{zh ? `现价不高于${asset.label} ${usd0(sz.assetFloor.perShare)} ${unit}。` : `Price is at or below ${asset.label.toLowerCase()}: ${usd0(sz.assetFloor.perShare)} ${unit}.`}</p> : null}
+        {floor.net_net.assessable && (netNetBuy || netNetAssetFloor) ? <p>{zh
+          ? `⚑ 现价${netNetBuy ? "不高于净流动资产价值的三分之二" : "低于净流动资产价值"}（${perShare(floor.net_net.per_share)} ${unit}）。净流动资产价值 = 流动资产减全部负债及已披露的优先股账面值，再除以摊薄证券数量。此类深度价值状态常伴随经营困境，须警惕价值陷阱。`
+          : `⚑ Price is ${netNetBuy ? "at or below two-thirds of" : "below"} net current asset value (${perShare(floor.net_net.per_share)} ${unit}). NCAV = current assets less all liabilities and reported preferred equity, divided by diluted security count. This deep-value condition often accompanies business distress; beware the value trap.`}</p> : null}
         {buffett_epv.buyback_offsets_sbc ? <p>{t.buybackOffsetsSbc}</p> : null}
         {cautions.length > 0 ? (
           <div className="rounded-md border border-[var(--tt-border)] bg-[color-mix(in_srgb,var(--tt-warn)_6%,transparent)] px-3 py-2">
@@ -832,50 +810,40 @@ function MethodDetails({
           {epv?.ceilings
             ? ` · Greenwald ${range(epv.ceilings.pessimistic, epv.ceilings.optimistic)} (${zh ? "中性" : "mid"} ${perShare(epv.ceilings.neutral)}${zh ? "，其中零增长部分" : "; zero-growth part"} ${perShare(epv.base)})`
             : epv ? ` · Greenwald ${zh ? "零增长" : "zero-growth"} ${perShare(epv.base)}` : null}
-          {sz?.assetFloor ? ` · ${zh ? "重置" : "reproduction"} ${perShare(sz.assetFloor.perShare)}` : null}
+          {sz?.assetFloor ? ` · ${asset.label} ${perShare(sz.assetFloor.perShare)}` : null}
         </p>
         <p>
           {t.moat} {moat_reading.signal === "franchise" && moat_reading.moat_via_growth === true ? MOAT_VIA_GROWTH[lang] : MOAT_SHORT[lang][moat_reading.signal]}
           {oeDcf?.assessable && oeDcf.terminal_share_pct != null ? ` · ${zh ? "终值占现值" : "terminal value"} ${pct(oeDcf.terminal_share_pct)}${zh ? "" : " of present value"}${oeDcf.terminal_dependency_flag ? (zh ? "（>70% — 依赖遥远未来）" : " (>70% — leans on the distant future)") : ""}` : ""}
-          {oeDcf?.diagnostics?.oe_yield != null ? ` · ${zh ? "所有者盈利收益率" : "owner-earnings yield"} ${pct(oeDcf.diagnostics.oe_yield)}${oeDcf.discount?.dgs10_value != null ? ` ${zh ? "对 10Y" : "vs 10Y"} ${pct1(oeDcf.discount.dgs10_value)}` : ""}` : ""}.
+          {oeDcf?.diagnostics?.oe_yield != null ? ` · ${zh ? "所有者盈利收益率" : "owner-earnings yield"} ${pct(oeDcf.diagnostics.oe_yield)}${oeDcf.discount?.dgs10_value != null ? ` ${zh ? "对 10Y" : "vs 10Y"} ${pct1(oeDcf.discount.dgs10_value)}` : ""}` : ""}{zh ? "。" : "."}
         </p>
-        <LampMethod lamp={graham_epv} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
-        <LampMethod lamp={buffett_epv} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
-        {asset_floor.assessable && (finitePositive(asset_floor.tangible_net_assets) || finitePositive(asset_floor.capitalized_rd)) ? (
-          <p>
-            {zh ? "重置价值 = 有形净资产 " : "Reproduction value = tangible net assets "}{usd(asset_floor.tangible_net_assets, lang)}
-            {finitePositive(asset_floor.capitalized_rd)
-              ? `${zh ? " + 资本化研发 " : " + capitalized R&D "}${usd(asset_floor.capitalized_rd, lang)}${asset_floor.rd_years_used?.length ? `（FY ${asset_floor.rd_years_used.join(", ")}）` : ""}`
-              : ""}
-            {` = ${perShare(asset_floor.per_share)} ${t.perSh}`}. {asset_floor.basis}
-          </p>
-        ) : (
-          <p>{zh ? "资产地板：" : "Asset floor: "}{asset_floor.basis}</p>
-        )}
-        <p>{zh ? "护城河读数：" : "Moat reading: "}{moat_reading.basis_note}</p>
+        <LampMethod lamp={graham_epv} role="operating" lang={lang} ttm={ttm} unit={unit} />
+        <LampMethod lamp={buffett_epv} role="owner" lang={lang} ttm={ttm} unit={unit} />
+        <p>{asset.label}{zh ? "：" : ": "}{perShare(asset_floor.per_share)} {unit}{zh ? "。" : ". "}{asset.basis}
+          {asset_floor.capitalized_rd != null ? ` ${zh ? "资本化研发：" : "Capitalized R&D: "}${usd(asset_floor.capitalized_rd, lang)}${asset_floor.rd_years_used?.length ? `${zh ? "（" : " ("}${valuationPeriods(asset_floor.rd_years_used, lang, ttm)}${zh ? "）" : ")"}` : ""}${zh ? "。" : "."}` : ""}
+        </p>
+        <p>{zh ? "护城河读数：" : "Moat reading: "}{asset.moat}</p>
         {capNote ? <p>{capNote}</p> : null}
-        <p>{growthSummary(floor, lang)}</p>
-        <p>
-          {ttmPeriodEnd
-            ? <>{zh ? "窗口 TTM " : "Window TTM "}{ttmPeriodEnd}{provenance.years_used.length > 1 ? `, FY ${provenance.years_used.slice(1).join(", ")}` : ""}</>
-            : <>{zh ? "窗口 FY " : "Window FY "}{provenance.years_used.join(", ")}</>}
-          {zh ? " · 贴现带 " : " · discount band "}{pct(provenance.discount_rate_band[0])}–
-          {pct(provenance.discount_rate_band[1])}{zh ? " · 正常化税率 " : " · normalized tax "}{pct(provenance.normalized_tax_rate)} (
-          {provenance.normalized_tax_rate_basis}){zh ? " · 股数 " : " · "}{provenance.share_count_basis}{zh ? "" : " shares"}.
+        <p>{growthSummary(floor, lang, unit)}</p>
+        <p>{zh ? "所用期间：" : "Periods used: "}{valuationPeriods(provenance.years_used, lang, ttm)}
+          {zh ? " · 正常化税率 " : " · Normalized tax "}{pct(provenance.normalized_tax_rate)}{zh ? "。" : ". "}{taxDisplay(floor, lang)}
+          {securityUnit === "ADS" ? (zh ? " 股数口径：普通股摊薄股数按比例换算为 ADS 数量。" : " Share basis: diluted ordinary shares converted to ADS count at the disclosed ratio.") : (zh ? " 股数口径：摊薄股数。" : " Share basis: diluted shares.")}
         </p>
         {leverageNote ? <p>{leverageNote}</p> : null}
+        {floor.is_financial ? <p>{zh ? "银行或保险公司的存款融资结构不适用净债务／所有者盈利杠杆溢价；此处未另加该溢价，高杠杆风险由估值可信度提示反映。" : "Net debt relative to owner earnings is not a suitable leverage measure for deposit-funded banks or insurers. No such premium is applied here; high leverage is reflected in the valuation-confidence warning."}</p>
+          : buffett_epv.leverage_reading && buffett_epv.leverage_reading.leverage == null ? <p>{zh ? "缺少可用净债务或所有者盈利，未计算杠杆溢价。" : "Net debt or owner earnings is unavailable, so no leverage premium is calculated."}</p> : null}
         {oeDcf?.assessable ? (
           <p>
             {zh ? "所有者盈利 DCF：增长 g₁ " : "Owner-earnings DCF: growth g₁ "}{pct(oeDcf.growth_g1)}
-            {oeDcf.declined ? (zh ? "（历史下滑 → 封顶为 0）" : " (history declining → capped at 0)") : ""}{zh ? " · OE FY " : " · OE FY "}{yearsUsedText(oeDcf.oe_fiscal_years ?? [], ttmPeriodEnd)} ·{" "}
+            {oeDcf.declined ? (zh ? "（历史下滑 → 封顶为 0）" : " (history declining → capped at 0)") : ""}{zh ? " · 所有者盈利所用期间：" : " · Owner-earnings periods: "}{valuationPeriods(oeDcf.oe_fiscal_years ?? [], lang, ttm)} ·{" "}
             {zh ? `前 5 年采用初始增速，此后衰减至第 ${oeDcf.expectations_inputs?.capYears ?? 10} 年的零增速；终值增长 ${pct1(oeDcf.terminal_growth)}。` : `Initial growth for 5 years, then fading to zero by year ${oeDcf.expectations_inputs?.capYears ?? 10}; terminal growth ${pct1(oeDcf.terminal_growth)}.`}
-            {oeDcf.discount?.note} {oeDcf.no_bridge_note}
+            {discountDisplay(oeDcf, floor, lang)}
             {reconciliation?.comparable && reconciliation.divergence_pct != null
               ? (zh ? ` 两法中值差 ${pct(reconciliation.divergence_pct)}。` : ` Two-method midpoint gap ${pct(reconciliation.divergence_pct)}.`)
               : ""}
           </p>
         ) : null}
-        {floor.high_leverage_note ? <p>{floor.high_leverage_note}</p> : null}
+
       </div>
     </details>
   );
@@ -907,11 +875,15 @@ export const EarningsPowerFloorCard: FC<{
   showStatus?: boolean;
   /** TTM 基点生效时的 TTM 期末(ISO date);传入则 years_used 头部显示 "TTM {期末}" 而非假 FY 标签。 */
   ttmPeriodEnd?: string;
+  ttmFiscalYear?: number;
   /** 个股页结论带只要摘要(头条/标尺/结论句/低信心原因/价格截至),估值区块只要明细(怎么读 + 假设行 +
    *  方法与数字);默认 all 两半都渲染,输出与拆分前一致。 */
   part?: "all" | "summary" | "details";
   /** 页面手里有可用现价。无价格轴时据此区分"缺现价"和"盈利撑不出正的每股价值";不传按缺现价说。 */
   priceKnown?: boolean;
+  securityUnit?: SecurityUnit;
+  /** Verified ordinary shares represented by one ADS; omitted when unknown. */
+  adsRatio?: number;
 }> = ({
   floor,
   strikeZone,
@@ -923,8 +895,11 @@ export const EarningsPowerFloorCard: FC<{
   lang,
   showStatus = true,
   ttmPeriodEnd,
+  ttmFiscalYear,
   part = "all",
   priceKnown,
+  securityUnit = "share",
+  adsRatio,
 }) => {
   if (!floor) return null;
   const t = COPY[lang];
@@ -954,7 +929,7 @@ export const EarningsPowerFloorCard: FC<{
     <div className="space-y-3">
       {part !== "details" &&
         (showSpine ? (
-          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} compact={part === "summary"} />
+          <ValueSpine floor={floor} sz={strikeZone!} oeDcf={oeDcf} reconciliation={reconciliation} issuer={issuer} ticker={ticker} lang={lang} showStatus={showStatus} verdict={verdict} compact={part === "summary"} securityUnit={securityUnit} />
         ) : showCompactFloor ? (
           <CompactFloor
             reason={compactFloorReason(strikeZone, priceKnown)}
@@ -969,7 +944,7 @@ export const EarningsPowerFloorCard: FC<{
       )}
 
       {part !== "summary" && (
-        <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} />
+        <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} ttmFiscalYear={ttmFiscalYear} securityUnit={securityUnit} adsRatio={adsRatio} />
       )}
     </div>
   );

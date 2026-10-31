@@ -37,6 +37,13 @@ const changedEvidence=buildPublishedValuation(run,{...input,floorInput:{...mappe
 assert.notEqual(changedEvidence.record.inputHashes.fundamentals,priced.record.inputHashes.fundamentals);
 const changedRate=buildPublishedValuation(run,{...input,dgs10:{value:4,date:"2026-01-01"}},provenance);
 assert.notEqual(changedRate.record.inputHashes.assumptions,priced.record.inputHashes.assumptions);
+const nativeEvidence={currency:"CNY",current:{revenue:100,netIncome:20},prior:{revenue:50,netIncome:10},source:{url:"https://www.sec.gov/interim",filedAt:today}};
+const nativePublished=buildPublishedValuation(run,input,{...provenance,financialEvidence:nativeEvidence});
+const refreshedNative=buildPublishedValuation(run,input,{...provenance,financialEvidence:{...nativeEvidence,updated_at:today,created_at:today,id:123}});
+assert.equal(refreshedNative.record.inputHashes.fundamentals,nativePublished.record.inputHashes.fundamentals,"storage timestamps and row IDs cannot manufacture new financial evidence");
+const changedNative=buildPublishedValuation(run,input,{...provenance,financialEvidence:{...nativeEvidence,current:{revenue:200,netIncome:40},prior:{revenue:100,netIncome:20}}});
+assert.notEqual(nativePublished.record.inputHashes.fundamentals,changedNative.record.inputHashes.fundamentals,"complete native evidence changes fingerprint even when growth ratios are identical");
+assert.equal(nativePublished.record.currency,"USD","native ratios do not relabel USD model amounts");
 const changedAds=buildPublishedValuation(run,input,{...provenance,shareBasis:{adsRatio:2,latestSplitDate:null}});
 assert.notEqual(changedAds.record.inputHashes.shareBasis,priced.record.inputHashes.shareBasis);
 const old = buildTrackingRecord(run, {...context,publishedAt:new Date().toISOString()});

@@ -129,6 +129,7 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
     <div className="min-w-0 space-y-4">
       <ListQuerySync onChange={params.syncQuery} />
       <ListToolbar
+        clearLabel={lang === "zh" ? "清除搜索" : "Clear search"}
         searchLabel={ui.search}
         searchPlaceholder={ui.search}
         q={params.qInput}
@@ -150,6 +151,9 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
           sortDir={params.dir}
           onSort={params.setSortKey}
           emptyText={ui.noResults}
+          sortAscLabel={lang === "zh" ? "已按升序排列" : "sorted ascending"}
+          sortDescLabel={lang === "zh" ? "已按降序排列" : "sorted descending"}
+          sortGroupLabel={lang === "zh" ? "排序" : "Sort"}
         />
       </div>
 
@@ -166,6 +170,9 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
           sortDir={params.dir}
           onSort={params.setSortKey}
           emptyText={ui.noResults}
+          sortAscLabel={lang === "zh" ? "已按升序排列" : "sorted ascending"}
+          sortDescLabel={lang === "zh" ? "已按降序排列" : "sorted descending"}
+          sortGroupLabel={lang === "zh" ? "排序" : "Sort"}
         />
       </div>
 

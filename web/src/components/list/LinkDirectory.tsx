@@ -20,13 +20,16 @@ export function LinkDirectory({
   eyebrow,
   title,
   items,
+  sortLocale = "en",
 }: {
   eyebrow: string;
   title: string;
   items: DirectoryItem[];
+  /** Collation for display labels; ticker directories retain the English default. */
+  sortLocale?: string;
 }): React.ReactElement | null {
   if (items.length === 0) return null;
-  const sorted = [...items].sort((a, b) => a.label.localeCompare(b.label, "en", { sensitivity: "base" }));
+  const sorted = [...items].sort((a, b) => a.label.localeCompare(b.label, sortLocale, { sensitivity: "base" }));
   return (
     <FoldedSection eyebrow={eyebrow} title={title}>
       {/* Native anchors keep this complete crawl directory out of the client Link boundary.

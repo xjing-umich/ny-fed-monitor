@@ -10,17 +10,17 @@ function subjectName(r: BlurbRow): string {
 }
 
 /** 共识页解读句。事实派生、无推荐措辞。空数据 → null(不渲染)。 */
-export function consensusBlurb(rows: BlurbRow[], managerCount: number, lang: Lang): string | null {
+export function consensusBlurb(rows: BlurbRow[], managerCount: number, lang: Lang, quarterLabel?: string): string | null {
   if (rows.length === 0) return null;
   const top = rows[0];
   const sumTop5 = rows.slice(0, 5).reduce((s, r) => s + r.primary, 0);
   const d = top.delta ?? 0;
   if (lang === "zh") {
-    const deltaTxt = d === 0 ? "环比持平" : `环比 ${d > 0 ? "+" : "−"}${Math.abs(d)} 位`;
-    return `本季纳入统计的 ${managerCount} 位超级投资者中，${subjectName(top)} 被 ${top.primary} 位同时持有、居共识首位，${deltaTxt}；前五大共识股合计出现 ${sumTop5} 人次。`;
+    const deltaTxt = d === 0 ? "环比持平" : `环比 ${d > 0 ? "+" : "−"}${Math.abs(d)} 家`;
+    return `${quarterLabel ?? "该申报季"}纳入统计的 ${managerCount} 家机构中，${subjectName(top)} 被 ${top.primary} 家同时持有、居共识首位，${deltaTxt}；前 ${Math.min(5, rows.length)} 只股票合计有 ${sumTop5} 次机构持仓记录，同一机构可重复计数。`;
   }
   const deltaTxt = d === 0 ? "unchanged vs last quarter" : `${d > 0 ? "+" : "−"}${Math.abs(d)} vs last quarter`;
-  return `Among the ${managerCount} superinvestors counted this quarter, ${subjectName(top)} is the most widely held — in ${top.primary} portfolios (${deltaTxt}). The top 5 consensus names appear in ${sumTop5} portfolios combined.`;
+  return `Among the ${managerCount} superinvestors counted ${quarterLabel ? `in ${quarterLabel}` : "in this filing period"}, ${subjectName(top)} is the most widely held — in ${top.primary} portfolios (${deltaTxt}). The top ${Math.min(5, rows.length)} stocks account for ${sumTop5} fund-stock holdings, counting a portfolio once for each stock it owns.`;
 }
 
 /** 买/卖页解读句。 */
@@ -32,9 +32,9 @@ export function movesBlurb(rows: BlurbRow[], side: "buy" | "sell", lang: Lang, q
   if (lang === "zh") {
     const verb = side === "buy" ? "买入（新进或增持）" : "卖出（清仓或减持）";
     const tail = names ? `，其后是 ${names}` : "";
-    return `${quarterLabel}，${subjectName(a)} 获最多投资者${verb}——${a.primary} 位${tail}。`;
+    return `${quarterLabel}，${subjectName(a)} 获最多机构${verb}——${a.primary} 家${tail}。`;
   }
-  const verb = side === "buy" ? "buying — opened or added" : "selling — sold or trimmed";
+  const verb = side === "buy" ? "managers opening or increasing positions" : "managers exiting or trimming positions";
   const tail = names ? `, followed by ${names}` : "";
-  return `In ${quarterLabel}, ${subjectName(a)} drew the most ${verb} (${a.primary} superinvestors)${tail}.`;
+  return `In ${quarterLabel}, ${subjectName(a)} drew the most ${verb} (${a.primary} ${a.primary === 1 ? "manager" : "managers"})${tail}.`;
 }

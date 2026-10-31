@@ -11,7 +11,7 @@ async function main(){
  const fixture=publicationFixture({ticker:'FIX',verdict_bucket:'below',in_strike_zone:true,range_lo:60,range_hi:150,price:50,margin_pct:.6,reliable:true});
  const published=fixture.valuation_publication.public_result;
  const values=[snapshot(published)];
- const selection={stocks:[{cusip:'FIX',issuer:'Fixture',holderCount:10,totalValue:100}],cusipToTicker:new Map([['000000001','FIX']]),consensus:[{cusip:'FIX',issuer:'Fixture',holderCount:10,totalValue:100}],screenHoldings:new Map([['FIX',{issuer:'Fixture',holderCount:10}]]),investors:[{slug:'fixture-manager',holdings:[{cusip:'000000001',issuer:'Fixture',value:100,shares:2}],displayHoldings:[{cusip:'000000001',issuer:'Fixture',value:100,shares:2}],tickers:['FIX']}],moves:{mostBought:[],mostSold:[]}};
+ const selection={homeEvidence:[],screenAvailableStocks:new Set<string>(),stocks:[{cusip:'FIX',issuer:'Fixture',holderCount:10,totalValue:100}],cusipToTicker:new Map([['000000001','FIX']]),consensus:[{cusip:'FIX',issuer:'Fixture',holderCount:10,totalValue:100}],screenHoldings:new Map([['FIX',{issuer:'Fixture',holderCount:10}]]),investors:[{slug:'fixture-manager',holdings:[{cusip:'000000001',issuer:'Fixture',value:100,shares:2}],displayHoldings:[{cusip:'000000001',issuer:'Fixture',value:100,shares:2}],tickers:['FIX']}],moves:{mostBought:[],mostSold:[]}};
  const targets=producer.buildAutomaticTargets!({origin:'http://localhost:31486',before:values,after:values,selection,records:[published.record],generations:{[published.record.identity.key]:2},outstanding:[]});
  assert(targets.some((t:{path:string})=>t.path==='/investors/fixture-manager'));
  assert(targets.some((t:{path:string})=>t.path==='/stocks/screener?view=strike_zone&sort=holders'));

@@ -8,7 +8,7 @@ function assert(c: boolean, m: string) {
 // 造 verdict 的小工厂(只填被 deriveValuationPosture 读到的字段, 其余给合法占位)
 function v(partial: Partial<SnapshotVerdict>): SnapshotVerdict {
   return {
-    publication:{identityKey:"fixture",revisionId:"a".repeat(64),ticker:"X",priceDate:"2026-06-30",computedAt:"2026-07-01",attributes:{}},intrinsicValue:null,referenceValue:1,referenceKind:"zero_growth_floor",
+    publication:{identityKey:"fixture",revisionId:"a".repeat(64),ticker:"X",priceDate:"2026-06-30",computedAt:"2026-07-01",attributes:{}},fundamentalsDate:"2026-10-31",securityUnit:"share",requiredMargin:1/3,strikePrice:40,priceSource:"fixture",intrinsicValue:null,referenceValue:1,referenceKind:"zero_growth_floor",
     ticker: "X", bucket: "within", inStrikeZone: false, rangeLo: 1, rangeHi: 2,
     price: 1.5, priceDate: "2026-06-30", marginPct: null, coverage: "full",
     reliable: true, computedAt: "2026-07-01", ...partial,
@@ -91,14 +91,22 @@ const eq = (got: string, want: string, m: string) => assert(got === want, `${m}\
 // cheap>0 + strike>0 + pending + asOf
 const full = pp({ strikeCount: 1, cheap: [ch({ inStrikeZone: true }), ch({})], pending: [ch({})], asOf: "2026-10-22" });
 eq(postureLeadIn(full, "zh"), "该组合的 12 只估值无红旗的美股持仓中，有 2 只现价低于内在价值（其中 1 只落在击球区）；另有 1 只待确认（估值截至 2026年10月22日）：", "zh full");
-eq(postureLeadIn(full, "en"), "Of 12 valued US positions without red flags, 2 trade below intrinsic value (1 in the strike zone); 1 more pending (as of Oct 22, 2026):", "en full");
+eq(postureLeadIn(full, "en"), "Of 12 valued US positions without red flags, 2 positions trade below intrinsic value (1 in the strike zone); 1 more pending (as of Oct 22, 2026):", "en full");
 // cheap>0, 无 strike, 无 pending
 const plain = pp({ cheap: [ch({})], asOf: "2026-10-22" });
 eq(postureLeadIn(plain, "zh"), "该组合的 12 只估值无红旗的美股持仓中，有 1 只现价低于内在价值（估值截至 2026年10月22日）：", "zh no pending");
-eq(postureLeadIn(plain, "en"), "Of 12 valued US positions without red flags, 1 trade below intrinsic value (as of Oct 22, 2026):", "en no pending");
+eq(postureLeadIn(plain, "en"), "Of 12 valued US positions without red flags, 1 position trades below intrinsic value (as of Oct 22, 2026):", "en no pending");
 // cheap=0, 只有待确认, 无 asOf
 const onlyPending = pp({ covered: 5, pending: [ch({}), ch({})] });
 eq(postureLeadIn(onlyPending, "zh"), "该组合的 5 只估值无红旗的美股持仓中，没有现价低于内在价值的；另有 2 只待确认：", "zh only pending");
 eq(postureLeadIn(onlyPending, "en"), "Of 5 valued US positions without red flags, none trade below intrinsic value; 2 more pending:", "en only pending");
 
+
+import * as posturePresentation from "./valuationPosture";
+assert(posturePresentation.investorValuationHandoff?.(empty, 0, "en") === null, "zero filing has no valuation handoff");
+assert(posturePresentation.investorValuationHandoff?.(empty, 3, "en")?.line.includes("no reliable valuation coverage") === true, "missing coverage is not a zero strike-zone conclusion");
+assert(posturePresentation.investorValuationHandoff?.(p, 6, "en")?.line.startsWith("This portfolio holds") === true, "compound manager names do not control English verb agreement");
 console.log("valuationPosture.check OK");
+const refPosture=deriveValuationPosture({holdings:[{cusip:'REFCUSIP',issuer:'Reference'}],cusipToTicker:new Map([['REFCUSIP','REF']]),verdicts:new Map([['REF',v({ticker:'REF',bucket:'below',inStrikeZone:false,reliable:false,referenceOnly:'missing_reinvestment'})]])});
+assert(refPosture.covered===0&&refPosture.cheap.length===0&&refPosture.strikeCount===0&&refPosture.belowCount===0,'zero-growth reference never enters confirmed investor posture');
+assert(refPosture.pending[0]?.referenceOnly==='missing_reinvestment','pending investor summary preserves reference provenance');

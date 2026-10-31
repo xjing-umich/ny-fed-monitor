@@ -244,7 +244,7 @@ async function main() {
       const sicRaw = (sec.company as { sic?: unknown } | null)?.sic;
       const sicNum = sicRaw == null ? undefined : Number(sicRaw);
       const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings);
+      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings, sec.interim);
       // 件⑤:控股集团分部 SOTP。与个股页同一入口(口径不得分裂);reader 自带件④触发集窄闸,
       // 其余票直接返回 undefined、floorInput 一个字段都不动,故对全 universe 零漂移、零额外查询。
       const holdcoSotp = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });
@@ -306,15 +306,18 @@ async function main() {
         continue;
       }
       const v = run.verdict;
-      const filingDates=[...sec.annual,...sec.quarterly].map(row=>row.filing_date).filter((date):date is string=>typeof date === "string").sort();
+      const usedInterim = sec.interim.evidence.filter(evidence => evidence.source.exhibitUrl === floorInput.growth_evidence?.source_url && evidence.current.end === floorInput.growth_evidence?.period_end);
+      const filingDates=[...sec.annual,...sec.quarterly].map(row=>row.filing_date).concat(usedInterim.map(evidence=>evidence.source.publishedAt)).filter((date):date is string=>typeof date === "string").sort();
       const candidate=buildPublishedValuation(run,runInput,{
         identity:confirmedIdentities.get(ticker)!,
         perShareBasis:`${secTypeMap.get(ticker) === "ADR" ? "ADS" : "ordinary"}:ratio=${ads.ratio}:split=${latestSplitDate ?? "none"}`,
         priceSource:fetchedPrice?.source ?? null,fundamentalAsOf:fundamentalsAsOf,
         filedAt:filingDates.at(-1) ?? null,computedAt,
+        financialEvidence:{annual:sec.annual,quarterly:sec.quarterly,filings:sec.filings,interim:usedInterim},
         shareBasis:{securityType:secTypeMap.get(ticker) ?? null,adsRatio:ads.ratio,latestSplitDate,
           ttmSharesFromFy:floorInput.ttm?.shares_from_fy ?? null},
         sources:[
+          ...usedInterim.map(evidence=>({url:evidence.source.exhibitUrl,asOf:evidence.source.publishedAt,periodEnd:evidence.current.end,currency:evidence.currency,evidenceKind:"native_interim_ratios" as const})),
           ...sec.filings.filter(filing=>filing.filing_url).map(filing=>({url:String(filing.filing_url),asOf:filing.filing_date ?? null})),
           ...(identity.cik ? [{url:`https://data.sec.gov/api/xbrl/companyfacts/CIK${identity.cik}.json`,asOf:fundamentalsAsOf}] : []),
           ...(dgs10 ? [{url:"https://fred.stlouisfed.org/series/DGS10",asOf:dgs10.date}] : []),

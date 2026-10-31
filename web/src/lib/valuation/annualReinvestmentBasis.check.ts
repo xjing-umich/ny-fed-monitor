@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {computeValuationFloor}from'./epvFloor';
+import type{ValuationFloorInput,ValuationFloorYear}from'./types';
+const years:ValuationFloorYear[]=[2025,2024,2023,2022,2021].map((fiscal_year,i)=>({fiscal_year,period_end:`${fiscal_year}-12-31`,revenue:1000-i*50,operating_income:200-i*10,net_income:150-i*8,shares_diluted:100,shareholders_equity:800,total_debt:0,cash:100,capex:50,d_and_a:20,operating_working_capital:100-i*10,effective_tax_rate:.2}));
+const base:ValuationFloorInput={ticker:'ANNUAL',years};
+const annual=computeValuationFloor(base);assert.equal(annual?.kind,'floor');
+const ttm=computeValuationFloor({...base,ttm:{period_end:'2026-09-30',quarters_used:['2026-03-31','2026-06-30','2026-09-30'],year:{...years[0],fiscal_year:2026,period_end:'2026-09-30',operating_working_capital:undefined},shares_from_fy:false}});
+assert.equal(ttm?.kind,'floor');
+if(annual?.kind==='floor'&&ttm?.kind==='floor')assert.equal(ttm.sustainable_growth,annual.sustainable_growth,'annual reinvestment must use annual flows and two annual balance endpoints; a TTM quarter cannot erase complete annual evidence');
+console.log('annual reinvestment basis checks OK');

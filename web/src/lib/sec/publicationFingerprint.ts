@@ -5,6 +5,7 @@ export function financialPublicationFingerprint(
   cik: string,
   periods: object[],
   filings: object[],
+  interim?: object[],
 ): string {
   const stableRows = (rows: object[]) =>
     rows
@@ -25,6 +26,7 @@ export function financialPublicationFingerprint(
         cik,
         periods: stableRows(periods),
         filings: stableRows(filings),
+        ...(interim?.length ? { interim: stableRows(interim) } : {}),
       }),
     )
     .digest("hex");

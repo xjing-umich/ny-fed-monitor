@@ -30,7 +30,7 @@ for (const lang of ["zh", "en"] as const) {
   assert.ok(t.includes(lang === "zh" ? "共 ● 新进 3" : "In all: ● 3 new"), `${lang} 计数行`);
   assert.ok(t.includes("E1 CO") && !t.includes("E4 CO") && t.includes(lang === "zh" ? "另 1 只" : "+1 more"), `${lang} 清仓前 3 + 其余`);
   assert.ok(t.includes(lang === "zh" ? "2026年6月30日 之后的买卖这里看不到" : "after Jun 30, 2026 aren't visible here"), `${lang} 滞后一句`);
-  assert.ok(t.includes(lang === "zh" ? "金额按季末价估算，只算正股" : "estimated at quarter-end prices"), `${lang} 口径注`);
+  assert.ok(t.includes(lang === "zh" ? "清仓用上季末持仓市值" : "exits use prior-quarter-end value"), `${lang} 口径注`);
   assert.ok(html.includes('href="/stocks/U"'), `${lang} 链接到个股页`);
   assert.ok(!/text-\[var\(--tt-(positive|negative|warn)\)\]/.test(html), `${lang} 不用红绿`);
 }
@@ -63,14 +63,14 @@ import { InvestorHoldingsTable } from "./InvestorHoldingsTable";
   assert.ok(t.includes("● 新进") && t.includes("未变"), "新进 / 未变");
   assert.ok(t.includes("连续增持·4季") && !t.includes("重磅新进"), "长期信号保留,重磅新进/增持不再重复");
   assert.ok(t.includes("独门"), "独门标签");
-  for (const h of ["标的", "本季", "市值", "占比", "估值", "持有人数"]) assert.ok(t.includes(h), `列 ${h}`);
+  for (const h of ["标的", "持仓数量变动", "持仓市值", "占比", "估值", "持有人数"]) assert.ok(t.includes(h), `列 ${h}`);
   assert.ok(!t.includes("持股数") && !t.includes("信号"), "删掉股数列与信号列");
   const few = renderToStaticMarkup(
     <InvestorHoldingsTable holdings={holdings.slice(0, 3)} lang="en" cusipToTicker={new Map()} verdicts={new Map()} holderCounts={new Map()}
       rowSignals={new Map()} changeByKey={new Map()} hasPrior={false} lonelyTickers={new Set()} filingUrl="u" availableStocks={new Set()} />,
   );
   assert.ok(!few.includes("<details") && !text(few).includes("SEC filing"), "少于 10 行:无折叠、无原文链接");
-  assert.ok(text(few).includes("This qtr") && !text(few).includes("Unchanged"), "无上季:本季列写 —");
+  assert.ok(text(few).includes("Position-size change") && !text(few).includes("Unchanged"), "无上季:本季列写 —");
 }
 
 const guarded = renderToStaticMarkup(<QuarterMovesBlock lang="en" {...props} hrefOf={(c) => c === 'U' ? '/stocks/U' : ''} />);

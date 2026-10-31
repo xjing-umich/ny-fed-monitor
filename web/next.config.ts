@@ -85,6 +85,8 @@ const nextConfig: NextConfig = {
     ]);
 
     return [
+      // Preserve already-published OG image URLs after adding localized metadata IDs.
+      { source: "/:path*/opengraph-image", destination: "/:path*/opengraph-image/default", permanent: true },
       // 等同 Next 默认的去尾斜杠 308(见 POSTHOG_REWRITES 上方说明),仅放过 /ingest/。
       { source: "/:path((?!ingest/).+)/", destination: "/:path", permanent: true },
       ...investorAliasRedirects,

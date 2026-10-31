@@ -11,6 +11,7 @@ export type SecSubmission = {
   filings: {
     recent: {
       accessionNumber: string[];
+      acceptanceDateTime?: string[];
       filingDate: string[];
       reportDate: string[];
       form: string[];
@@ -33,7 +34,7 @@ export type NormalizedFiling = {
   sec_index_url: string;
 };
 
-const SUPPORTED_FORMS = new Set(["10-K", "10-Q", "20-F", "6-K"]);
+const SUPPORTED_FORMS = new Set(["10-K", "10-Q", "20-F", "40-F", "6-K"]);
 
 export async function fetchCompanySubmissions(cik: string) {
   return secFetchJson<SecSubmission>(`${SEC_DATA_BASE}/submissions/CIK${cik}.json`);
@@ -59,13 +60,16 @@ export function normalizeRecentFilings(ticker: string, submission: SecSubmission
       filing_date: recent.filingDate[index] || null,
       report_date: reportDate,
       fiscal_year: fiscalYear,
-      fiscal_period: form === "10-K" || form === "20-F" ? "FY" : null,
+      fiscal_period: form === "10-K" || form === "20-F" || form === "40-F" ? "FY" : null,
       primary_document: primaryDocument,
       filing_url: filingUrl(submission.cik, accessionNumber, primaryDocument),
       sec_index_url: filingIndexUrl(submission.cik, accessionNumber)
     });
-    if (filings.length >= limit) break;
   }
 
-  return filings;
+  const selected = filings.slice(0, limit);
+  // Frequent 6-Ks must not hide the annual financial source (BMM: 26 newer reports).
+  const annual40f = filings.find(filing => filing.form === "40-F");
+  if (limit > 0 && annual40f && !selected.includes(annual40f)) selected.push(annual40f);
+  return selected;
 }

@@ -34,6 +34,7 @@ async function main() {
   const savedError = console.error;
   const savedEnv = { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_SERVICE_KEY };
   const requests: URL[] = [];
+  let snapshotMode: "normal" | "none" | "no-cheap" = "normal";
   let broken: "snapshot-page" | "holder-join" | "snapshot-join" | null = null;
   process.env.SUPABASE_URL = "http://127.0.0.1:54321";
   process.env.SUPABASE_SERVICE_KEY = "local-test-only";
@@ -42,8 +43,11 @@ async function main() {
     assert.equal(url.origin, "http://127.0.0.1:54321", "禁止访问外部服务");
     requests.push(url);
     const table = url.pathname.split("/").at(-1);
+    if (table === "consensus_stock_holders") return Response.json([]);
     assert.ok(table === "tracking_securities" || table === "consensus_holdings");
-    let rows: Record<string, unknown>[] = table === "tracking_securities" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined].map((row,index)=>projectPublicationFixture(publicationFixture(row,index+1),url.searchParams.get("select"))) : [...holdings];
+    let rows: Record<string, unknown>[] = table === "tracking_securities" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined].map((row,index)=>projectPublicationFixture(publicationFixture({...row,security_type:row.ticker === "CHEAP" ? "ADR" : "Common Stock"},index+1),url.searchParams.get("select"))) : [...holdings];
+    if (table === "tracking_securities" && snapshotMode === "none") rows=[];
+    if (table === "tracking_securities" && snapshotMode === "no-cheap") rows=[...snapshots,solo].map((row,index)=>projectPublicationFixture(publicationFixture({...row,in_strike_zone:false,verdict_bucket:"above"},index+1),url.searchParams.get("select")));
     const tickerFilter = url.searchParams.getAll("ticker").find(f=>f.startsWith("in.("));
     const tickerKeys = tickerFilter?.startsWith("in.(") ? tickerFilter.slice(4, -1).split(",") : null;
     for (const [field, filter] of url.searchParams) {
@@ -78,7 +82,7 @@ async function main() {
     }
     return Response.json(rows.slice(from, from + Math.min(requested, 1000)));
   };
-  const page = async (view: "all" | "conviction", sort: "margin" | "holders" = "margin") =>
+  const page = async (view: "all" | "conviction" | "strike_zone", sort: "margin" | "holders" = "margin") =>
     renderToStaticMarkup(await ScreenerPage({ lang: "en", view, sort })).replace(/<[^>]+>/g, "");
   try {
     const all = await page("all");
@@ -95,16 +99,25 @@ async function main() {
     assert.match(conviction, /1205 stocks held by 5\+ managers/, "总数来自全部合法且可估值的高共识票");
     assert.ok(!conviction.includes("SOLO") && !conviction.includes("NOQ") && !conviction.includes("BAD") && !conviction.includes("ZEROP"), "低共识/缺快照/异常值均剔除");
     const projected = await readConvictionScreen();
+    assert.equal(projected.rows.find((r) => r.ticker === "CHEAP")?.securityUnit, "ADS", "row-level traded unit comes from security metadata");
     assert.deepEqual(projected.rows.find((r) => r.ticker === "CHEAP")?.expectations, expectations, "JSON 子字段投影保留原来的预期数据");
     assert.deepEqual(projected.rows.find((r) => r.ticker === "CROWD")?.expectations, expectations, "同次 presentation 保留明确的未评估原因");
     assert.ok(requests.some((u) => Number(u.searchParams.get("offset")) >= 1000), "实际跨过 1000 行服务端上限");
     for (const request of requests) {
       const keys = request.searchParams.get("ticker");
-      if (keys?.startsWith("in.(")) assert.ok(keys.slice(4, -1).split(",").length <= 100, "IN 查询分批,避免超长 URL 和单次截断");
+      if (keys?.startsWith("in.(")) assert.ok(keys.slice(4, -1).split(",").length <= (request.pathname.endsWith("/consensus_stock_holders") ? 200 : 100), "IN 查询分批,避免超长 URL 和单次截断");
       if (request.searchParams.has("offset")) assert.match(request.searchParams.get("order") ?? "", /(?:^|,)(?:ticker|identity_key)\./, "分页排序以唯一身份键保证稳定");
     }
 
     console.error = () => {}; // 以下为预期故障;断言页面结果,不把日志输出当作测试成功。
+    snapshotMode = "none";
+    const unpublished = await page("all");
+    assert.match(unpublished, /Results for the current valuation model are not available yet/, "no current-model rows is unpublished, not a zero-opportunity claim");
+    assert.doesNotMatch(unpublished, /No valued stocks are confirmed|refreshing/i);
+    assert.match(await page("conviction"), /Results for the current valuation model are not available yet/);
+    snapshotMode = "no-cheap";
+    assert.match(await page("strike_zone"), /No stocks match this view/, "successful query with a current universe can honestly report an empty filter");
+    snapshotMode = "normal";
     broken = "snapshot-page";
     assert.match(await page("all"),/Valuation is unavailable/,"后续页故障显示明确不可用，不伪造半张榜单");
     broken = "holder-join";

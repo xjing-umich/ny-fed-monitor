@@ -28,6 +28,8 @@ export type FeaturedEntry = {
   personZh: string | null;
   filed: boolean;
   moves: FeaturedMove[];
+  /** Optional for historical schema-v1 payloads: absent means comparison evidence was not stored. */
+  comparison?: { state: "missing_prior" | "unchanged" | "changed"; priorPeriod: string | null };
 };
 export type Section<T> = { items: T[]; emptyReason: EmptyReason | null };
 

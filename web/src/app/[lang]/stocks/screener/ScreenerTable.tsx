@@ -1,7 +1,7 @@
 import React from "react";
-import Link from "next/link";
+import { OptionalLink } from "@/components/common/OptionalLink";
 import type { Lang } from "@/lib/nav";
-import { stockPath } from "@/lib/urls";
+import { availableStockHref } from "@/lib/stocks/stockLinks";
 import { cleanIssuer, fmtMarginPct, fmtValueBand, fmtPrice, fmtPerShareValue } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
@@ -16,12 +16,13 @@ import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 const TOP_N = 60;
 
 /** asOf = 页头标的价格日期;某行价格日期不同时才在该行标出。 */
-export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: Lang; rows: ScreenerRow[]; highlight?: boolean; asOf?: string | null }) {
+export function ScreenerTable({ lang, rows, availableStocks, highlight = false, asOf, emptyText }: { lang: Lang; rows: ScreenerRow[]; availableStocks: ReadonlySet<string>; highlight?: boolean; asOf?: string | null; emptyText?: string }) {
   const isZh = lang === "zh";
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
   const head = rows.slice(0, TOP_N);
   const tail = rows.slice(TOP_N);
+  const unit = (r: ScreenerRow) => r.securityUnit === "ADS" ? (isZh ? "每 ADS" : "per ADS") : r.securityUnit === "share" ? (isZh ? "每股" : "per share") : (isZh ? "证券单位待核对" : "security unit unavailable");
 
   const columns: Column<ScreenerRow>[] = [
     {
@@ -33,6 +34,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
         return (
           <span className={top ? "font-semibold" : undefined}>
             <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
+            <span className="ml-1 font-data text-xs text-[var(--tt-faint)]">{unit(r)}</span>
           </span>
         );
       },
@@ -71,7 +73,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
     },
     {
       key: "band",
-      header: isZh ? "价值区间 / sh" : "Value range / sh",
+      header: isZh ? "价值区间（美元）" : "Value range (USD)",
       align: "right",
       width: "w-32",
       hideOnMobile: true,
@@ -119,11 +121,12 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
         rows={head}
         getKey={(r) => r.ticker}
         rowAttributes={(r) => r.publication?.attributes}
-        rowHref={(r) => stockPath(lang, r.ticker)}
+        rowHref={(r) => availableStockHref(lang, r.ticker, availableStocks)}
         showRank
-        emptyText={ui.emptyScreener}
+        emptyText={emptyText ?? ui.emptyScreener}
       />
       {/* 价值区间 / 内在价值列只在桌面表格出现(hideOnMobile,DataTable 默认 md 断点),脚注同断点隐藏 */}
+      {rows.length > 0 && <p className="mt-2 text-xs text-[var(--tt-muted)]">{isZh ? "数值按每份上市证券计：普通股为每股，存托凭证为每ADS；换算比例见个股页。" : "Values are per listed share or, for depositary receipts, per ADS. See stock pages for conversion ratios."}</p>}
       <p className="mt-2 hidden text-xs text-[var(--tt-faint)] md:block">
         {isZh
           ? `带 * 的为单法口径，内在价值一列为零增长价值。${BAND_FLOOR_NOTE.zh}`
@@ -139,10 +142,11 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
           <ul className="mt-3 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {tail.map((r, i) => (
               <li {...r.publication?.attributes} key={r.ticker} className="flex items-baseline gap-2 text-sm">
-                <span key="rank" className="w-8 shrink-0 text-right font-data text-xs tabular-nums text-[var(--tt-faint)]">{TOP_N + i + 1}</span>
-                <Link key="security" href={stockPath(lang, r.ticker)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
+                <span className="w-8 shrink-0 text-right font-data text-xs tabular-nums text-[var(--tt-faint)]">{TOP_N + i + 1}</span>
+                <OptionalLink href={availableStockHref(lang, r.ticker, availableStocks)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                   {stockDisplayName(lang, r.ticker, cleanIssuer(r.issuer))}
                   <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{r.ticker}</span>
+                  <span className="ml-1 font-data text-xs text-[var(--tt-faint)]">{unit(r)}</span>
                   {r.marginPct != null && r.marginPct > 0 ? (
                     r.reliable ? (
                       <span className="ml-1.5 font-data text-xs text-[var(--val-below)]">{fmtMarginPct(r.marginPct)}</span>
@@ -156,7 +160,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
                       </span>
                     )
                   ) : null}
-                </Link>
+                </OptionalLink>
               </li>
             ))}
           </ul>

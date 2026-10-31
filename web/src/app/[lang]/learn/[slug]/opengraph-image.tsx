@@ -5,7 +5,13 @@ import { parseReportSlug } from "@/lib/reports/period";
 import { readReportRow } from "@/lib/reports/read";
 import { reportTitle, reportDescription } from "@/lib/reports/copy";
 
-export const alt = "Compounder — Learn";
+export function generateImageMetadata({ params }: { params: { lang: string; slug: string } }) {
+  const lang: Lang = params.lang === "zh" ? "zh" : "en";
+  const article = getArticle(params.slug, lang);
+  const reportPeriod = !article ? parseReportSlug(params.slug) : null;
+  const title = article?.title ?? (reportPeriod ? reportTitle(reportPeriod, lang) : lang === "zh" ? "学习" : "Learn");
+  return [{ id: "default", alt: `${title} — Compounder`, size: OG_SIZE, contentType: OG_CONTENT_TYPE }];
+}
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 // 静态缓存:否则 [lang] 段下的 OG 图每次被抓取都在函数里重绘 PNG(计入 Vercel Fluid Active CPU)。

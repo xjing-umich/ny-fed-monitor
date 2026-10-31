@@ -15,7 +15,7 @@ const ABOUT: Record<Lang, LegalDoc> = {
       {
         heading: "我们做什么",
         paragraphs: [
-          "我们把两类公开数据放到一起：超级投资者的 SEC 13F 持仓和基金之间的重叠，以及单只股票的估值框架。",
+          "我们整理超级投资者公开披露的持仓，并用财报、股价和利率数据估算个股价值。估值由本站模型计算，不是监管机构发布的数据。",
           "想法是把专业投资者会留意的信息，整理成普通人也读得懂的样子。它是你做研究的起点，不是终点。",
         ],
       },
@@ -36,8 +36,8 @@ const ABOUT: Record<Lang, LegalDoc> = {
       {
         heading: "数据与来源",
         paragraphs: [
-          "数据来源于公开渠道，主要为美国证券交易委员会 EDGAR 系统（13F 等申报）。",
-          "请注意：13F 申报具有滞后性（通常在季度结束后最多 45 天披露），反映的是过去某一时点的持仓，不代表当前实际仓位。详见我们的免责声明。",
+          "持仓来自 SEC EDGAR 的13F申报；财务数据来自 SEC XBRL 财报；股价默认取自 Yahoo Finance，必要时使用东方财富；美国国债收益率来自 FRED。各项数据的报告期、价格日期和具体来源以相应页面标注为准。",
+          "13F披露的是季末时点、纳入申报范围的证券持仓。等你读到申报时，仓位可能已过去数周甚至数月，此后也可能发生变化。详见我们的免责声明。",
         ],
       },
       {
@@ -54,31 +54,31 @@ const ABOUT: Record<Lang, LegalDoc> = {
       "Compounder (thecompounder.fyi) is an educational and research tool for value investors. A lot of useful data sits buried in regulatory filings. We pull it into one place and make it readable, so the thinking is left to you.",
     sections: [
       {
-        heading: "What We Do",
+        heading: "What we do",
         paragraphs: [
-          "We bring together two kinds of public data: superinvestors' SEC 13F holdings and where funds overlap, and valuation frameworks for individual stocks.",
+          "We organize superinvestors' disclosed holdings and estimate stock values using financial statements, prices, and interest rates. Valuations are estimates from our own models, not data published by a regulator.",
           "The idea is to take the information professional investors pay attention to and put it in a form anyone can read. It's a place to start your own research, not a finish line.",
         ],
       },
       {
-        heading: "What We Don't Do",
+        heading: "What we don't do",
         paragraphs: [
           "We don't recommend stocks, set price targets, or call buys and sells, and we don't give personalized investment, legal, accounting, or tax advice. Everything here is for information and education only.",
           "We don't manage money, charge advisory fees, or make anything when you buy or sell a security. What you do with your money is your decision, and a licensed professional is the right person to ask when you need real advice.",
         ],
       },
       {
-        heading: "Our Philosophy",
+        heading: "Our philosophy",
         paragraphs: [
           "We come out of the value-investing tradition: Benjamin Graham's margin of safety, and Warren Buffett's preference for good businesses bought at fair prices and held patiently.",
           "Our bias is that understanding a business is worth more than guessing where its price goes next, and that compounding rewards discipline rather than speculation.",
         ],
       },
       {
-        heading: "Data & Sources",
+        heading: "Data and sources",
         paragraphs: [
-          "Data is sourced from public channels, primarily the U.S. Securities and Exchange Commission's EDGAR system (13F and other filings).",
-          "Note that 13F filings are lagging (typically disclosed up to 45 days after quarter-end) and reflect holdings as of a past point in time, not current positions. See our Disclaimer for details.",
+          "Holdings come from SEC EDGAR 13F filings; financials come from SEC XBRL filings; prices use Yahoo Finance, with Eastmoney as a fallback; and U.S. Treasury yields come from FRED. See each page for the reporting period, price date, and specific source.",
+          "A 13F shows reportable securities held at quarter-end. By the time you read it, the positions may be weeks or months old and may have changed. See our Disclaimer for details.",
         ],
       },
       {

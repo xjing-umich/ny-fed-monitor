@@ -13,16 +13,23 @@ import { isMissingTableError } from "../managers/db";
  * No runtime asOf or quote participates in a non-price fingerprint.
  */
 export function buildPublishedValuation(run: ValuationRun, input: RunValuationInput,
-  provenance: Omit<TrackingContext,"modelVersion" | "currency" | "nonPriceInputs" | "publishedAt"> & {shareBasis: unknown},
+  provenance: Omit<TrackingContext,"modelVersion" | "currency" | "nonPriceInputs" | "publishedAt"> & {shareBasis: unknown; financialEvidence?: unknown},
 ): PublishedValuation {
   const json = <T>(value: T): T => JSON.parse(JSON.stringify(value, (_key, item) => {
+    if (typeof item === "number" && !Number.isFinite(item)) throw new Error("Publication inputs must be finite");
+    return item;
+  }));
+  // Database lifecycle metadata is not financial evidence. Keep source disclosure
+  // dates, original native amounts/currency and parser provenance in the fingerprint.
+  const financialEvidence = JSON.parse(JSON.stringify(provenance.financialEvidence ?? null, (key,item) => {
+    if (["id","created_at","updated_at","checked_at","retrieved_at","source_retrieved_at"].includes(key)) return undefined;
     if (typeof item === "number" && !Number.isFinite(item)) throw new Error("Publication inputs must be finite");
     return item;
   }));
   const record = buildTrackingRecord(run, {
     ...provenance, modelVersion:VALUATION_MODEL_VERSION,currency:run.currency,publishedAt:null,
     nonPriceInputs:{
-      fundamentals:json(input.floorInput),
+      fundamentals:json({floorInput:input.floorInput,financialEvidence}),
       assumptions:json({dgs10:input.dgs10,modelVersion:VALUATION_MODEL_VERSION,suppressExpectations:input.suppressExpectations ?? false}),
       shareBasis:json(provenance.shareBasis),
     },

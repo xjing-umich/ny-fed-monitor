@@ -4,7 +4,7 @@ import { buildTrackingRecord } from '../../src/lib/valuation/trackingContract';
 import { createServer } from 'node:http';
 import { writeFileSync } from 'node:fs';
 import { publicationFixture, projectPublicationFixture, fixtureDate } from './publication-fixture';
-const tickers=['FIX',...Array.from({length:64},(_,i)=>`F${String.fromCharCode(65+Math.floor(i/26))}${String.fromCharCode(65+i%26)}`)];
+const tickers=['FIX',...Array.from({length:64},(_,i)=>`F${String.fromCharCode(65+Math.floor(i/26))}${String.fromCharCode(65+i%26)}`),'AAPL','MSFT','BRK.B'];
 const publications=tickers.map((ticker,i)=>publicationFixture({ticker,verdict_bucket:'below',in_strike_zone:true,range_lo:60,range_hi:150,price:50,margin_pct:i===0?.6:.4999,reliable:true},i+1));
 // FIX includes the genuine engine presentation so detail and list numbers can be compared.
 const fix=publications[0].valuation_publication.public_result;
@@ -18,7 +18,7 @@ for (const row of publications) {
  row.valuation_publication.tracking_generation=1 as never;
 }
 const manager={cik:'0000000001',slug:'fixture-manager',name:'Fixture Fund',person:'Fixture Manager',period:'2026-06-30',filed_at:'2026-08-01',total_value:65000000,holding_count:65,top_holding:'Fixture Corporation'};
-const holdings=tickers.map((ticker,i)=>({id:i+1,filing_id:1,cusip:String(i+1).padStart(9,'0'),ticker,issuer:`Fixture ${ticker} Corporation`,title_of_class:'COM',value:(65-i)*100000,shares:1000,weight:1/65,put_call:null}));
+const holdings=tickers.map((ticker,i)=>({id:i+1,filing_id:1,cusip:String(i+1).padStart(9,'0'),ticker,issuer:`Fixture ${ticker} Corporation`,title_of_class:'COM',value:Math.max(1,65-i)*100000,shares:1000,weight:1/65,put_call:null}));
 const consensus=holdings.map((h,i)=>({...h,holder_count:70-i,total_value:h.value}));
 let safety='valid'; let failure=false; let safetyTicker:string|null=null; let delayMs=0;
 const counts:Record<string,number>={};
@@ -43,6 +43,17 @@ const server=createServer(async(req,res)=>{
    fresh.valuation_publication.generation=2;fresh.valuation_publication.tracking_result=old.valuation_publication.tracking_result;fresh.valuation_publication.tracking_generation=old.valuation_publication.tracking_generation;
    publications[i]=fresh;res.end(JSON.stringify(fresh.valuation_publication.public_result.record));return;
  }
+ if(url.pathname==='/fixture/reference') {
+   const i=publications.findIndex(p=>p.ticker===(url.searchParams.get('ticker')??'MSFT'));
+   if(i<0){res.statusCode=400;res.end('{}');return;}
+   const old=publications[i];
+   const pending=publicationFixture({ticker:old.ticker,security_type:'ADR',verdict_bucket:'below',in_strike_zone:false,range_lo:60,range_hi:90,price:50,margin_pct:null,reliable:false,payload:{referenceOnly:'missing_reinvestment'}},i+1);
+   pending.valuation_publication.generation=old.valuation_publication.generation+1;
+   pending.valuation_publication.tracking_result=old.valuation_publication.tracking_result;
+   pending.valuation_publication.tracking_generation=old.valuation_publication.tracking_generation;
+   const holder=consensus.find(row=>row.ticker===old.ticker);if(holder)holder.holder_count=100;
+   publications[i]=pending;res.end(JSON.stringify(pending.valuation_publication.public_result.record));return;
+ }
  if(url.pathname==='/fixture/records') {res.end(JSON.stringify(publications.map(p=>p.valuation_publication.public_result)));return;}
  counts[name]=(counts[name]??0)+1;
  if(name==='tracking_securities' && delayMs)await new Promise(resolve=>setTimeout(resolve,delayMs));
@@ -56,7 +67,7 @@ const server=createServer(async(req,res)=>{
  else if(name==='security_cusips') rows=holdings;
  else if(name==='securities') rows=tickers.map(ticker=>({ticker,exchange:'NYSE',security_type:'Common Stock',ads_ratio:1}));
  else if(name==='consensus_stock_holders') rows=holdings.map(h=>({...h,...manager,period:'2026-06-30',kind:null,prior_weight:null}));
- else if(name==='prices') rows=[{close:50,date:fixtureDate,currency:'USD',source:'fixture'}];
+ else if(name==='prices') rows=tickers.map(ticker=>({ticker,close:50,date:fixtureDate,currency:'USD',source:'fixture'}));
  for(const [key,value] of url.searchParams) {
    if(value.startsWith('eq.')) rows=rows.filter(row=>String(row[key])===value.slice(3));
    if(value.startsWith('in.(')) {const accepted=value.slice(4,-1).replaceAll('"','').split(',');rows=rows.filter(row=>accepted.includes(String(row[key])));}
