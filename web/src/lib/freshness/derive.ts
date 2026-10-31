@@ -2,6 +2,7 @@
 // 取值是 macro `MarketFreshnessStatusValue` 的子集(fresh/stale/empty)，将来并轨零摩擦，
 // 当前不 import 任何 macro 模块。
 import { quarter } from "../i18n/format";
+import { nextSecBusinessDay } from "./secCalendar";
 
 export type FreshnessStatus = "fresh" | "stale" | "empty";
 
@@ -42,15 +43,7 @@ export function tradingDaysBetween(from: Date, to: Date): number {
   return count;
 }
 
-/** 落在周六/周日的截止日顺延到下周一(SEC 规则;不含联邦假日)。 */
-function rollWeekend(deadline: Date): Date {
-  const day = deadline.getUTCDay(); // 0=Sun, 6=Sat
-  if (day === 6) return addDays(deadline, 2);
-  if (day === 0) return addDays(deadline, 1);
-  return deadline;
-}
-
-// 最近一个「已过 SEC 截止日」的季度末(Mar31/Jun30/Sep30/Dec31)。截止日 = 季末 + 45 天,周末顺延到周一。
+// 最近一个「已过 SEC 截止日」的季度末(Mar31/Jun30/Sep30/Dec31)。截止日 = 季末 + 45 天,周末及联邦假日顺延至 SEC 工作日。
 export function mostRecentDueQuarter(today: Date): Date {
   const t = utcDay(today);
   const quarterEnds = [
@@ -68,7 +61,7 @@ export function mostRecentDueQuarter(today: Date): Date {
     }
   }
   const due = candidates
-    .filter((qe) => rollWeekend(addDays(qe, FILING_DEADLINE_DAYS)) < t)
+    .filter((qe) => nextSecBusinessDay(addDays(qe, FILING_DEADLINE_DAYS)) < t)
     .sort((x, y) => y.getTime() - x.getTime());
   // 理论上 due 必非空(去年同季一定已过)；兜底返回最早候选避免崩。
   return due[0] ?? candidates.sort((x, y) => x.getTime() - y.getTime())[0];
@@ -147,7 +140,7 @@ export function isExpectedFiler(latestPeriod: string | null | undefined, period:
 }
 
 /**
- * Moves baseline quarter: do not follow early filers until SEC deadline (weekend-rolled) passed
+ * Moves baseline quarter: do not follow early filers until SEC deadline (weekends and federal holidays extended) passed
  * AND coverage of maxPeriod among expected filers (isExpectedFiler) ≥ MOVES_COVERAGE_MIN.
  */
 export function effectiveMovesPeriod(
@@ -164,7 +157,7 @@ export function effectiveMovesPeriod(
   const filed = expected.filter((p) => p === maxPeriod).length;
   const coverage = { filed, total, excluded: periods.length - total };
   const maxDate = parseUTC(maxPeriod)!;
-  const deadline = rollWeekend(addDays(maxDate, FILING_DEADLINE_DAYS));
+  const deadline = nextSecBusinessDay(addDays(maxDate, FILING_DEADLINE_DAYS));
   // Same strictness as mostRecentDueQuarter: due only when today is strictly after deadline day.
   const due = utcDay(today) > utcDay(deadline);
   const prior = priorQuarterEnd(maxPeriod);
@@ -210,13 +203,13 @@ export function filingDeadline(period: string | null): Date | null {
 }
 
 /**
- * 实际可申报的最后一天:filingDeadline 落在周六/周日时顺延到下周一(SEC 规则;不含联邦假日)。
+ * 实际可申报的最后一天:filingDeadline 落在周末或联邦假日时顺延至下一个 SEC 工作日。
  * 到期判断(mostRecentDueQuarter / effectiveMovesPeriod)、报告可定稿、看门狗、首页截止日都用它;
  * filingDeadline 本身保持 +45 天不变。
  */
 export function effectiveFilingDeadline(period: string | null): Date | null {
   const d = filingDeadline(period);
-  return d ? rollWeekend(d) : null;
+  return d ? nextSecBusinessDay(d) : null;
 }
 
 /**

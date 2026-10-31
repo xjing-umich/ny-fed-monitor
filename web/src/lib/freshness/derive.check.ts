@@ -1,5 +1,5 @@
 // 纯逻辑自检——用 node:assert，零新依赖。运行: npx tsx src/lib/freshness/derive.check.ts
-// 本项目无常驻测试套件(solo dev)，此文件为 ad-hoc 自检，不接入 CI。
+// Included in check:facts; all dates below are fixed fixtures, no production reads.
 import assert from "node:assert/strict";
 import {
   priceFreshness,
@@ -136,14 +136,14 @@ assert.equal(priorQuarterEnd("2025-09-30"), "2025-06-30");
   assert.equal(r.reason, "empty");
 }
 
-// --- effectiveFilingDeadline: 周末顺延到周一(不含联邦假日);filingDeadline 本身不变 ---
+// --- effectiveFilingDeadline: 周末及联邦假日顺延;filingDeadline 本身不变 ---
 assert.equal(filingDeadline("2026-09-30")!.toISOString().slice(0, 10), "2026-11-14", "filingDeadline 仍是 +45 天(周六)");
 assert.equal(effectiveFilingDeadline("2026-09-30")!.toISOString().slice(0, 10), "2026-11-16", "Q3 2026:周六 11/14 → 周一 11/16");
 assert.equal(effectiveFilingDeadline("2026-06-30")!.toISOString().slice(0, 10), "2026-08-14", "Q2 2026:周五 8/14 不顺延");
 assert.equal(effectiveFilingDeadline("2027-03-31")!.toISOString().slice(0, 10), "2027-05-17", "Q1 2027:周六 5/15 → 周一 5/17");
 assert.equal(effectiveFilingDeadline("2026-03-31")!.toISOString().slice(0, 10), "2026-05-15", "Q1 2026:周五 5/15 不顺延");
 assert.equal(effectiveFilingDeadline("2025-06-30")!.toISOString().slice(0, 10), "2025-08-14", "Q2 2025:周四 8/14");
-assert.equal(effectiveFilingDeadline("2026-12-31")!.toISOString().slice(0, 10), "2027-02-15", "Q4 2026:周日 2/14 → 周一 2/15");
+assert.equal(effectiveFilingDeadline("2026-12-31")!.toISOString().slice(0, 10), "2027-02-16", "Q4 2026:周日后接联邦假日,顺延到周二 2/16");
 assert.equal(effectiveFilingDeadline(null), null, "空 → null");
 
 // --- countsAsCurrentHolder: 截止日过后停在上一季 → 不计入当前持有人 ---
@@ -163,8 +163,8 @@ assert.equal(countsAsCurrentHolder("2026-03-31", d("2026-08-15")), false, "截�
 assert.equal(mostRecentDueQuarter(d("2026-11-15")).toISOString().slice(0, 10), "2026-06-30", "周六截止的次日(周日)Q3 未到期");
 assert.equal(mostRecentDueQuarter(d("2026-11-16")).toISOString().slice(0, 10), "2026-06-30", "顺延后的截止日当天 Q3 未到期");
 assert.equal(mostRecentDueQuarter(d("2026-11-17")).toISOString().slice(0, 10), "2026-09-30", "顺延截止日次日 Q3 到期");
-assert.equal(mostRecentDueQuarter(d("2027-02-15")).toISOString().slice(0, 10), "2026-09-30", "Q4 2026 周日截止顺延到 2/15,当天未到期");
-assert.equal(mostRecentDueQuarter(d("2027-02-16")).toISOString().slice(0, 10), "2026-12-31", "Q4 2026 顺延截止次日到期");
+assert.equal(mostRecentDueQuarter(d("2027-02-15")).toISOString().slice(0, 10), "2026-09-30", "Q4 2026 假日 2/15 尚未到期");
+assert.equal(mostRecentDueQuarter(d("2027-02-16")).toISOString().slice(0, 10), "2026-09-30", "Q4 2026 实际截止日 2/16 当天未到期");
 assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-11-15")), true, "11/15 停在 Q2 仍计入");
 assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-11-16")), true, "11/16 周一当天交 Q3 合规,仍计入");
 assert.equal(countsAsCurrentHolder("2026-06-30", d("2026-11-17")), false, "顺延截止次日起停在 Q2 不计入");
@@ -226,5 +226,35 @@ assert.equal(isScopeChange(-0.3), false, "−30% 属价格/调仓范围");
 assert.equal(isScopeChange(0.8), false, "+80% 不算");
 assert.equal(isScopeChange(1), true, "+100% 计入");
 assert.equal(isScopeChange(null), false, "无环比");
+
+
+// SEC Form 13F FAQ Q25, verified 2026-10-31: complete published 2026–2028 schedule.
+for (const [period, deadline] of [
+  ["2025-12-31", "2026-02-17"],
+  ["2026-03-31", "2026-05-15"], ["2026-06-30", "2026-08-14"],
+  ["2026-09-30", "2026-11-16"], ["2026-12-31", "2027-02-16"],
+  ["2027-03-31", "2027-05-17"], ["2027-06-30", "2027-08-16"],
+  ["2027-09-30", "2027-11-15"], ["2027-12-31", "2028-02-14"],
+  ["2028-03-31", "2028-05-15"], ["2028-06-30", "2028-08-14"],
+  ["2028-09-30", "2028-11-14"], ["2028-12-31", "2029-02-14"],
+]) assert.equal(effectiveFilingDeadline(period)!.toISOString().slice(0, 10), deadline, `SEC schedule: ${period}`);
+
+// Holiday extension must govern holder eligibility, moves and health, not just the displayed date.
+for (const [period, prior, eve, deadline, after] of [
+  ["2025-12-31", "2025-09-30", "2026-02-16", "2026-02-17", "2026-02-18"],
+  ["2026-12-31", "2026-09-30", "2027-02-15", "2027-02-16", "2027-02-17"],
+]) {
+  for (const day of [eve, deadline]) {
+    assert.equal(mostRecentDueQuarter(d(day)).toISOString().slice(0, 10), prior);
+    assert.equal(countsAsCurrentHolder(prior, d(day)), true, "prior-quarter holders remain eligible through the actual deadline");
+    const moves = effectiveMovesPeriod([period, period, prior], d(day));
+    assert.equal(moves.period, prior);
+    assert.equal(moves.reason, "before_deadline");
+  }
+  assert.equal(mostRecentDueQuarter(d(after)).toISOString().slice(0, 10), period);
+  assert.equal(countsAsCurrentHolder(prior, d(after)), false);
+  assert.equal(effectiveMovesPeriod([period, period, prior], d(after)).reason, "due_and_covered");
+  assert.equal(effectiveMovesPeriod([period, prior, prior], d(after)).reason, "low_coverage", "coverage gate still applies after the extended deadline");
+}
 
 console.log("derive.check.ts: all assertions passed ✓ (incl. freshness13F, effectiveMovesPeriod, countsAsCurrentHolder, isScopeChange, effectiveFilingDeadline)");

@@ -26,6 +26,16 @@ const today = new Date("2026-06-08T12:00:00Z"); // mostRecentDueQuarter → 2026
   assert.match(r.info[0], /1\/2/, "覆盖率应 1/2 户到位");
 }
 
+// Holiday-extended deadlines must not trigger premature stale/report alerts.
+{
+  const prior = "2026-09-30";
+  assert.equal(evaluate13F(prior, [prior], new Date("2027-02-16T23:59:59Z")).problems.length, 0);
+  assert.equal(evaluate13F(prior, [prior], new Date("2027-02-17T00:00:00Z")).problems.length, 1);
+  const live = { period: "2026-12-31", status: "live" as const };
+  assert.equal(evaluateReport(live, new Date("2027-02-26T23:59:59Z")).problems.length, 0, "actual Feb 16 deadline + 10-day grace remains open");
+  assert.equal(evaluateReport(live, new Date("2027-02-27T00:00:00Z")).problems.length, 1);
+}
+
 // --- evaluateDbSize ---
 // null(取数不可用) → 0 问题, info 含"跳过"
 {

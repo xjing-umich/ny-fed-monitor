@@ -7,6 +7,10 @@ import path from "node:path";
 
 const root = path.resolve(__dirname, "..");
 const checks = [
+  "src/lib/freshness/secCalendar.check.ts",
+  "src/lib/freshness/derive.check.ts",
+  "src/lib/reports/readiness.check.ts",
+  "src/lib/health/checks.check.ts",
   "src/app/[lang]/stocks/screener/screenerCounts.check.tsx",
   "src/app/[lang]/stocks/screener/screenerUniverse.check.tsx",
   "src/app/[lang]/stocks/screener/screenerLinks.check.tsx",

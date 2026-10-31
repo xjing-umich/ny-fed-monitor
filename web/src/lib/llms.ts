@@ -28,7 +28,7 @@ function isoDay(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-// 周末截止顺延到周一,与站内切季同一天。
+// 周末及联邦假日顺延到 SEC 工作日,与站内切季同一天。
 function deadlineOf(periodEnd: string): string {
   const d = effectiveFilingDeadline(periodEnd);
   return d ? isoDay(d) : periodEnd;
@@ -93,7 +93,7 @@ function header(ctx: Ctx, title: string): string[] {
 
 const DATA_SCOPE = [
   `Holdings come from each manager's latest Form 13F-HR on SEC EDGAR. Holder totals and aggregate values exclude put and call options. Individual investor tables retain labeled option rows. The SEC’s reportable list also includes ETFs, closed-end funds and certain convertible securities and warrants.`,
-  `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days, moved to the next Monday when it falls on a weekend) has passed and at least half of the managers expected to file (those that filed the prior quarter or later) have filed for it.`,
+  `Quarter-over-quarter moves (top buys, top sells, the "this quarter" counts on stock pages) only count filings for the baseline quarter. A new quarter becomes the baseline once its filing deadline (quarter-end + ${FILING_DEADLINE_DAYS} days, extended to the next SEC business day when it falls on a weekend or federal holiday) has passed and at least half of the managers expected to file (those that filed the prior quarter or later) have filed for it.`,
   "A manager who has not filed for the most recent quarter past its deadline is not counted as a current holder on consensus and stock pages; the consensus page lists them by name with the quarter their last 13F covers. Before the deadline, the prior quarter's filing still counts.",
   "Valuation ranges start with reported fundamentals. A zero-growth floor is shown separately from intrinsic value and an optimistic top that may include conservative growth assumptions. They show where a price sits against that range; they are not price targets or buy/sell calls.",
 ];

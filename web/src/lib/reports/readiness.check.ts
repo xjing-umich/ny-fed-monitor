@@ -19,6 +19,17 @@ const q2 = { period: "2026-06-30", coverageFiled: 90, coverageTotal: 97 };
 assert(reportReadiness(q2, new Date("2026-08-14T23:59:00Z")).reason === "before_deadline", "Q2 截止日当天");
 assert(reportReadiness(q2, new Date("2026-08-15T00:00:00Z")).reason === "ready", "Q2 次日 ready");
 
+// Q4 holiday deadline: reports cannot become ready one day early.
+for (const [period, deadline, after] of [
+  ["2025-12-31", "2026-02-17", "2026-02-18"],
+  ["2026-12-31", "2027-02-16", "2027-02-17"],
+]) {
+  const q4 = { period, coverageFiled: 90, coverageTotal: 97 };
+  assert(reportReadiness(q4, new Date(`${deadline}T23:59:59Z`)).reason === "before_deadline", `${period}: actual holiday-extended deadline remains open`);
+  assert(reportReadiness(q4, new Date(`${after}T00:00:00Z`)).reason === "ready", `${period}: ready only on the next day`);
+  assert(reportReadiness({ ...q4, coverageFiled: 80 }, new Date(`${after}T00:00:00Z`)).reason === "low_coverage", "holiday extension preserves coverage guard");
+}
+
 // 公开门槛:已申报 / 活跃 ≥ 25% 才建 live 行(之前不上页面、不进 Learn 与 sitemap)。
 assert(PUBLISH_MIN_COVERAGE === 0.25, "门槛 25%");
 assert(!meetsPublishThreshold({ filed: 1, total: 95 }), "1/95 不公开");
