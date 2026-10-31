@@ -4,9 +4,9 @@ import { readStockLinkHolders } from '@/lib/managers/consensusRead';
 import { currentStockKeys, availableStockHref } from '@/lib/stocks/stockLinks';
 import { notFound } from "next/navigation";
 import type { Lang } from "@/lib/nav";
-import type { MoveRow, MoveKind } from "@/lib/aggregations";
+import type { MoveRow } from "@/lib/aggregations";
 import { notableMoves } from "@/lib/aggregations";
-import { absoluteUrl, localePath } from "@/lib/urls";
+import { absoluteUrl, localePath, HTML_LANG } from "@/lib/urls";
 import { cleanIssuer } from "@/lib/format";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { ShareButton } from "@/components/share/ShareButton";
@@ -20,13 +20,6 @@ import { movesBlurb, type BlurbRow } from "@/lib/aggregate/blurb";
 import { getManagerIndex } from "@/lib/managers/source";
 import { managerLabel } from "@/lib/managers/displayName";
 import { effectiveMovesPeriod, quarterLabel } from "@/lib/freshness/derive";
-
-const KIND_LABEL: Record<MoveKind, { zh: string; en: string; tone: "positive" | "warn" }> = {
-  new: { zh: "新进", en: "Opened", tone: "positive" },
-  increased: { zh: "增持", en: "Added", tone: "positive" },
-  exited: { zh: "清仓", en: "Exited", tone: "warn" },
-  decreased: { zh: "减持", en: "Trimmed", tone: "warn" },
-};
 
 function movesFootnote(
   lang: Lang,
@@ -83,12 +76,11 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
   const qLabel = quarterLabel(baseline, lang) || baseline || "—";
 
   const rankRows: RankRow[] = data.map((r) => {
-    const k = KIND_LABEL[r.dominantKind];
     return {
       ticker: r.cusip, issuer: r.issuer, primary: r.count,
       // 金额是买方期末持仓市值合计,只在买入榜带标签展示;卖出榜的金额混了两种口径(减持按剩余、清仓按上季),不展示。
-      ...(side === "buy" ? { value: r.value, valueLabel: isZh ? "买方持仓合计" : "Buyers' combined stake" } : {}),
-      kindLabel: isZh ? k.zh : k.en, kindTone: k.tone,
+      ...(side === "buy" ? { value: r.value, valueLabel: isZh ? "买方季末持仓市值合计" : "Buyers' combined quarter-end holding value" } : {}),
+      kindLabel: side === "buy" ? (isZh ? "新进或增持" : "Opened or increased positions") : (isZh ? "清仓或减持" : "Exited or trimmed positions"), kindTone: side === "buy" ? "positive" : "warn",
       href: availableStockHref(lang, r.cusip, availableStocks),
     };
   });
@@ -106,8 +98,8 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
     heading,
   );
   const sub = side === "buy"
-    ? (isZh ? `在 ${qLabel} 被最多超级投资者新进或增持的股票。` : `Stocks most superinvestors opened or added in ${qLabel}.`)
-    : (isZh ? `在 ${qLabel} 被最多超级投资者清仓或减持的股票。` : `Stocks most superinvestors exited or trimmed in ${qLabel}.`);
+    ? (isZh ? `在 ${qLabel} 被最多超级投资者新进或增持的股票。` : `Stocks in which the most tracked managers opened or increased positions in ${qLabel}.`)
+    : (isZh ? `在 ${qLabel} 被最多超级投资者清仓或减持的股票。` : `Stocks in which the most tracked managers exited or trimmed positions in ${qLabel}.`);
 
   return (
     <>
@@ -116,6 +108,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ItemList",
+          inLanguage: HTML_LANG[lang],
           // 条目带清洗后的名称和个股页链接,AI/搜索引擎能把榜单项对到具体实体。
           itemListElement: rankRows.slice(0, 20).map((r, i) => ({
             "@type": "ListItem", position: i + 1, name: cleanIssuer(r.issuer),

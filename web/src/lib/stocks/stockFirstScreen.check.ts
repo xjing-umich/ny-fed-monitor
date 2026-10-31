@@ -16,6 +16,12 @@ for (const row of [[NaN, 100, 100], [100, 90, 100], [0, 100, 100], [100, 200, -1
 const verdict = { rangeLo: 90, rangeHi: 180, price: 150, priceDate: "2026-10-29", reliable: true, bucket: "below" } as ValuationVerdict;
 const quote = { close: 150, date: "2026-10-29", currency: "USD", source: "yahoo" };
 const input = { verdict, quote, reference: 160, kind: "earnings" as const };
+for (const lang of ["zh", "en"] as const) {
+  const adr = stockValueSummary({ ...input, securityUnit: "ADS" as const }, lang)!;
+  assert.match(adr.rangeLabel, /ADS/, "reliable first-screen summary preserves the traded ADS unit");
+  assert.equal(adr.rangeLo, verdict.rangeLo);
+  assert.equal(adr.rangeHi, verdict.rangeHi);
+}
 const zh = stockValueSummary(input, "zh")!;
 assert.equal(zh.position, "within"); assert.equal(zh.heading, "现价处于价值区间");
 assert.equal(zh.reference, 160); assert.equal(zh.referenceLabel, "内在价值参考");

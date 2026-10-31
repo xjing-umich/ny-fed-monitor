@@ -1,3 +1,4 @@
+import { cleanIssuer } from "@/lib/format";
 import { date as formatDate, weight } from "@/lib/i18n/format";
 // 季度报告双语文案。页面与邮件都从这里取字,保证同一事实同一说法。
 // 只描述已发生的申报与估值位置,不给买卖建议。
@@ -9,11 +10,11 @@ import type { EmptyReason, FeaturedEntry, FeaturedMove, MoveKind, ReportLang, Re
 
 export const pct = (x: number): string => weight(x).replace(/\.0%$/, "%");
 const signed = (n: number): string => (n > 0 ? `+${n}` : `${n}`);
-const label = (s: ReportStock): string => s.ticker ?? s.issuer;
+const label = (s: ReportStock): string => s.ticker ?? cleanIssuer(s.issuer);
 
 export function reportTitle(period: string, lang: ReportLang): string {
   const q = quarterLabel(period, lang);
-  return lang === "zh" ? `${q} 超级投资者共识报告` : `${q} Superinvestor Consensus Report`;
+  return lang === "zh" ? `${q} 超级投资者共识报告` : `${q} superinvestor consensus report`;
 }
 
 /** 英文单复数:1 superinvestor / 2 superinvestors。中文统一“N 位”。 */
@@ -23,12 +24,12 @@ export function superinvestorCount(n: number, lang: ReportLang): string {
 export function holderCountText(n: number, lang: ReportLang): string {
   return lang === "zh" ? `${n} 位` : `${n} ${n === 1 ? "holder" : "holders"}`;
 }
-/** 持有人数环比(成句):0 → “较上季持平” / “unchanged vs. last quarter”。 */
+/** 持有人数环比(成句):0 → “较前次申报持平” / “unchanged vs. previous filing”。 */
 export function holderDeltaText(d: number, lang: ReportLang): string {
-  if (lang === "zh") return d === 0 ? "较上季持平" : `较上季 ${signed(d)}`;
-  return d === 0 ? "unchanged vs. last quarter" : `${signed(d)} vs. last quarter`;
+  if (lang === "zh") return d === 0 ? "较前次申报持平" : `较前次申报 ${signed(d)}`;
+  return d === 0 ? "unchanged vs. previous filing" : `${signed(d)} vs. previous filing`;
 }
-/** 持有人数环比(表格列,列名已写“较上季”):0 → “持平” / “unchanged”。 */
+/** 持有人数环比(表格列,列名已写“较前次申报”):0 → “持平” / “unchanged”。 */
 export function holderDeltaCell(d: number, lang: ReportLang): string {
   if (d === 0) return lang === "zh" ? "持平" : "unchanged";
   return signed(d);
@@ -44,14 +45,14 @@ export function reportDescription(p: ReportPayload, status: ReportStatus, lang: 
     if (b) parts.push(`${b.managerCount} 位超级投资者新进或增持 ${label(b)}`);
     if (h) parts.push(`持有人数最多的是 ${label(h)}（${holderCountText(h.holderCount, lang)}，${holderDeltaText(h.holderDelta, lang)}）`);
     if (sz) parts.push(`被至少 2 位持有的股票中，有 ${sz} 只处在击球区或低于内在价值`);
-    const body = parts.length ? parts.join("；") : "已申报的投资人中暂无满足条件的共识动作";
+    const body = parts.length ? parts.join("；") : "已申报的投资人中，暂没有符合统计条件的共同买卖";
     const prefix = status === "live" ? `${q}，截至目前（${p.coverage.total} 位中 ${p.coverage.filed} 位已申报）` : q;
     return `${prefix}：${body}。`;
   }
   if (b) parts.push(`${superinvestorCount(b.managerCount, lang)} opened or added to ${label(b)}`);
   if (h) parts.push(`the most widely held stock is ${label(h)} (${holderCountText(h.holderCount, lang)}, ${holderDeltaText(h.holderDelta, lang)})`);
   if (sz) parts.push(sz === 1 ? "1 stock held by two or more sits in the strike zone or below intrinsic value" : `${sz} stocks held by two or more sit in the strike zone or below intrinsic value`);
-  const body = parts.length ? parts.join("; ") : "no consensus moves qualify among the funds that have filed";
+  const body = parts.length ? parts.join("; ") : "no shared buying or selling meets the criteria among investors who have filed";
   const prefix = status === "live" ? `${q}, so far (${p.coverage.filed} of ${p.coverage.total} filed)` : q;
   return `${prefix}: ${body}.`;
 }
@@ -103,7 +104,7 @@ export function emptyText(reason: EmptyReason, lang: ReportLang): string {
 
 export function kindLabel(kind: MoveKind, lang: ReportLang): string {
   const zh: Record<MoveKind, string> = { new: "新进", increased: "增持", decreased: "减持", exited: "清仓" };
-  const en: Record<MoveKind, string> = { new: "New position", increased: "Added", decreased: "Trimmed", exited: "Sold out" };
+  const en: Record<MoveKind, string> = { new: "New position", increased: "Added", decreased: "Trimmed", exited: "Exited" };
   return (lang === "zh" ? zh : en)[kind];
 }
 
@@ -123,7 +124,7 @@ export function featuredWeightText(m: Pick<FeaturedMove, "weightBefore" | "weigh
   return lang === "zh" ? `（占组合 ${w}）` : `(portfolio weight ${w})`;
 }
 export function featuredMoveText(m: FeaturedMove, lang: ReportLang): string {
-  const name = m.ticker ?? m.issuer;
+  const name = m.ticker ?? cleanIssuer(m.issuer);
   return lang === "zh"
     ? `${featuredKindLabel(m.kind, lang)} ${name}${featuredWeightText(m, lang)}`
     : `${featuredKindLabel(m.kind, lang)} ${name} ${featuredWeightText(m, lang)}`;
@@ -145,8 +146,8 @@ export function strikeZoneMoreLabel(n: number, lang: ReportLang): string {
 
 export function sectionTitles(lang: ReportLang) {
   return lang === "zh"
-    ? { bought: "共识买入", sold: "共识卖出", mostHeld: "持有人数最多", strikeZone: "被共同持有、处在击球区或低于内在价值", featured: "名家动作", method: "方法与口径", source: "来源：SEC EDGAR 13F 申报" }
-    : { bought: "Consensus buys", sold: "Consensus sells", mostHeld: "Most widely held", strikeZone: "Co-held stocks in the strike zone or below intrinsic value", featured: "Notable investors", method: "Method and definitions", source: "Source: SEC EDGAR 13F filings" };
+    ? { bought: "共识买入", sold: "共识卖出", mostHeld: "持有人数最多", strikeZone: "被共同持有、处在击球区或低于内在价值", featured: "名家动作", method: "统计方法", source: "来源：SEC EDGAR 13F 申报" }
+    : { bought: "Consensus buys", sold: "Consensus sells", mostHeld: "Most widely held", strikeZone: "Co-held stocks in the strike zone or below intrinsic value", featured: "Notable investors", method: "How the figures are counted", source: "Source: SEC EDGAR 13F filings" };
 }
 
 export function stockHref(s: ReportStock, lang: ReportLang): string | null {
@@ -163,8 +164,13 @@ export function notFiledText(lang: ReportLang): string {
   return lang === "zh" ? "未申报" : "Not filed yet";
 }
 
-export function noComparableMovesText(lang: ReportLang): string {
-  return lang === "zh" ? "本季无可比动作（缺上一季申报）" : "No comparable moves (no prior filing)";
+export function noComparableMovesText(lang: ReportLang, comparison?: FeaturedEntry["comparison"]): string {
+  if (comparison?.state === "missing_prior") return lang === "zh"
+    ? "缺少较早申报，暂不能比较持仓变化。" : "No earlier filing is available to compare holdings.";
+  if (comparison?.state === "unchanged") return lang === "zh"
+    ? "按拆股调整后的可比口径，非期权持仓数量未变。" : "Reported non-option holding quantities were unchanged after any split adjustments.";
+  // Historical payloads did not preserve a reason. Do not infer missing data from an empty move list.
+  return lang === "zh" ? "本季暂无可展示的持仓变动。" : "No holding changes to show this quarter.";
 }
 
 export function disclaimerText(lang: ReportLang): string {
@@ -190,7 +196,7 @@ export function methodologyCoverageText(coverage: ReportPayload["coverage"], lan
   // 追踪 = 全名单(total + excluded);计入 = 上一季及之后有申报的 total 位。
   const roster = total + excluded;
   if (lang === "zh") {
-    return `数据来自 SEC EDGAR 上的 13F 申报，覆盖本站追踪的 ${roster} 位中、上一季及之后有申报的 ${total} 位超级投资者${excludedClause(excluded, "zh")}。同季有修正申报时取合并后的版本。`;
+    return `数据来自 SEC EDGAR 上的 13F 申报，本站共追踪 ${roster} 位投资人，本报告计入上一季及之后有申报的 ${total} 位${excludedClause(excluded, "zh")}。同季有修正申报时取合并后的版本。`;
   }
-  return `Data comes from 13F filings on SEC EDGAR for the ${total} of the ${roster} superinvestors this site tracks that filed for the prior quarter or later${excludedClause(excluded, "en")}. Where a quarter was amended, the merged version is used.`;
+  return `Data comes from 13F filings on SEC EDGAR for the investors included here. We track ${superinvestorCount(roster, lang)}; this report includes ${total} who filed for the prior quarter or later${excludedClause(excluded, "en")}. Where a quarter was amended, the merged version is used.`;
 }

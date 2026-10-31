@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { date as formatDate } from "@/lib/i18n/format";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { getFeatured, getLatest, listRest, listArticles, FEATURED_SLUG, ARTICLE_SLUGS, BRAND } from "@/lib/learn";
@@ -21,8 +22,8 @@ const COPY = {
     title: "Value Investing Guides & 13F Reports",
     description: "Learn to read SEC 13F filings, estimate intrinsic value and assess business quality. Guides and quarterly reports drawn from superinvestor portfolios.",
     eyebrow: "Learn",
-    heading: "Learn to read businesses, not tickers",
-    intro: "Plain guides to reading businesses the way serious investors do.",
+    heading: "Look beyond the ticker",
+    intro: "From 13F holdings to financial statements, learn to judge a business for yourself.",
     startHere: "Start here",
     latest: "Latest",
     updated: "Updated",
@@ -31,8 +32,8 @@ const COPY = {
     title: "价值投资指南与 13F 季报",
     description: "从超级投资者的真实持仓出发，学习读懂 SEC 13F 申报、内在价值、跨基金共识与生意质量，并查看季度持仓报告。",
     eyebrow: "学习",
-    heading: "读懂生意，而非代码",
-    intro: "像严肃投资者那样读懂生意的大白话指南。",
+    heading: "从股票代码，看到背后的生意",
+    intro: "从13F持仓到公司财报，学会自己判断一门生意。",
     startHere: "从这里开始",
     latest: "最新",
     updated: "更新于",
@@ -108,7 +109,7 @@ export default async function LearnIndexPage({
 
       {/* 品牌块:凹陷底色区别于列表(不用彩色左描边) */}
       <section className="mt-8 rounded-md bg-[var(--tt-panel-2)] px-4 py-3">
-        <p className="text-sm leading-relaxed text-[var(--tt-muted)]">{brand.body}</p>
+        <p className="text-sm leading-relaxed text-[var(--ink-2)]">{brand.body}</p>
         <Link
           href={localePath(lang, "/about")}
           className="mt-2 inline-block font-data text-xs text-[var(--tt-accent)] no-underline hover:underline max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center"
@@ -129,7 +130,7 @@ export default async function LearnIndexPage({
           <h2 className="mt-2 text-balance text-2xl font-medium leading-tight text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
             {featured.title}
           </h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
+          <p className="mt-1.5 text-sm leading-relaxed text-[var(--ink-2)]">
             {featured.description}
           </p>
         </Link>
@@ -147,12 +148,12 @@ export default async function LearnIndexPage({
           <h2 className="mt-2 text-balance text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
             {latestCard.title}
           </h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
+          <p className="mt-1.5 text-sm leading-relaxed text-[var(--ink-2)]">
             {latestCard.description}
           </p>
           {latestCard.updated ? (
             <p className="mt-2 font-data text-xs text-[var(--tt-faint)]">
-              {c.updated} {latestCard.updated}
+              {c.updated} {formatDate(latestCard.updated, lang)}
             </p>
           ) : null}
         </Link>
@@ -167,12 +168,12 @@ export default async function LearnIndexPage({
                 <h2 className="text-balance text-lg font-medium text-[var(--tt-text)] group-hover:text-[var(--tt-accent)] transition-colors">
                   {a.title}
                 </h2>
-                <p className="mt-1.5 text-sm leading-relaxed text-[var(--tt-muted)]">
+                <p className="mt-1.5 text-sm leading-relaxed text-[var(--ink-2)]">
                   {a.description}
                 </p>
                 {a.updated ? (
                   <p className="mt-2 font-data text-xs text-[var(--tt-faint)]">
-                    {c.updated} {a.updated}
+                    {c.updated} {formatDate(a.updated, lang)}
                   </p>
                 ) : null}
               </Link>

@@ -21,9 +21,9 @@ assert.match(conclusionSentence(exitOnly, "Q2", (m) => m.issuer, "zh"), /净卖�
 assert.match(conclusionSentence(exitOnly, "Q2", (m) => m.issuer, "en"), /net seller of about \$1/);
 
 // 徽章:按金额,中性色。
-assert.deepEqual(investorVerdictChip(base, "zh"), { label: "▲ 本季净买入", tone: "neutral" });
-assert.equal(investorVerdictChip(big({ verdict: "selling" }), "en")!.label, "▼ Net seller this quarter");
-assert.equal(investorVerdictChip(big({ verdict: "mixed" }), "zh")!.label, "基本持平");
+assert.deepEqual(investorVerdictChip(base, "zh"), { label: "▲ 2026Q2 净买入", tone: "neutral" });
+assert.equal(investorVerdictChip(big({ verdict: "selling" }), "en")!.label, "▼ Net seller in Q2 2026");
+assert.equal(investorVerdictChip(big({ verdict: "mixed" }), "zh")!.label, "2026Q2 基本持平");
 assert.equal(investorVerdictChip(null, "zh"), undefined);
 
 // 涨跌拆分:+8% = 交易 +3% + 股价 +5%;上季 0 → null。
@@ -39,15 +39,15 @@ const name = (m: { issuer: string }) => (m.issuer === "UBER" ? "Uber" : m.issuer
 const B = 1e9, M = 1e6;
 assert.equal(
   conclusionSentence(big({ netFlowUsd: 1.2 * B, priorValue: 30 * B, topMoves: [{ ...base.topMoves[0], flowUsd: 400 * M }] }), "Q2 2026", name, "zh"),
-  "Q2 2026 净买入约 12亿美元（约占组合 4%）；最大一笔是新进 Uber，约 4亿美元。",
+  "Q2 2026 净买入约 12亿美元（约占上季非期权组合市值 4%）；最大一笔是新进 Uber，约 4亿美元。",
 );
 assert.equal(
   conclusionSentence(big({ netFlowUsd: -1.2 * B, priorValue: 30 * B, verdict: "selling", topMoves: [{ cusip: "X", issuer: "XCO", kind: "exited", flowUsd: -900 * M, deltaPct: -1, weightAfter: null }] }), "Q2 2026", name, "en"),
-  "Q2 2026: net seller of about $1.2B (about 4% of the portfolio); the biggest move was exiting XCO, about $900M.",
+  "Q2 2026: net seller of about $1.2B (about 4% of prior-quarter non-option portfolio value); the biggest move was exiting XCO, about $900M.",
 );
 assert.equal(
   conclusionSentence(big({ netFlowUsd: 0.1 * B, priorValue: 30 * B, verdict: "mixed" }), "Q2 2026", name, "zh"),
-  "Q2 2026 净买入约 1亿美元（不到组合的 1%）；最大一笔是新进 Uber，约 2美元。",
+  "Q2 2026 净买入约 1亿美元（不到上季非期权组合市值的 1%）；最大一笔是新进 Uber，约 2美元。",
 );
 assert.equal(conclusionSentence(big({ priorValue: 0, topMoves: [] }), "Q2", name, "zh"), "Q2 净买入约 3美元。", "上季 0、无前 5 笔:不出括号与后半句");
 
@@ -71,11 +71,11 @@ const ch = (kind: "new" | "increased" | "decreased", deltaPct: number | null, sp
 assert.deepEqual(quarterCell(ch("new", null), true, "zh"), { text: "● 新进" });
 assert.deepEqual(quarterCell(ch("increased", 0.354), true, "zh"), { text: "▲ +35%" });
 assert.deepEqual(quarterCell(ch("decreased", -0.156, 10), true, "zh"), { text: "▼ −16%", title: "已按 1 拆 10 调整" });
-assert.deepEqual(quarterCell(undefined, true, "en"), { text: "Unchanged" });
+assert.deepEqual(quarterCell(undefined, true, "en"), { text: "Share/unit count unchanged" });
 assert.deepEqual(quarterCell(undefined, false, "zh"), { text: "—" }, "无上季:不说未变");
 
 // 锚点:没有数据的区块不出现;“关于”总在。
-assert.deepEqual(investorAnchors({ moves: true, holdings: true, valuation: true }, "zh").map((a) => `${a.id}:${a.label}`), ["moves:本季动作", "holdings:持仓", "valuation:估值", "about:关于"]);
+assert.deepEqual(investorAnchors({ moves: true, holdings: true, valuation: true }, "zh").map((a) => `${a.id}:${a.label}`), ["moves:申报季变动", "holdings:持仓", "valuation:估值", "about:关于"]);
 assert.deepEqual(investorAnchors({ moves: false, holdings: true, valuation: false }, "en").map((a) => a.id), ["holdings", "about"]);
 
 // 持仓表分段:10 + 最多 90 + 其余链接。
@@ -101,4 +101,11 @@ assert.equal(top5Share([]), null);
 }
 
 assert.equal(valueChangeSplit(big({ latestValue: 1, priorValue: 100 })), null, "范围剧变不将余额变化说成股价贡献");
+
+assert.match(investorVerdictChip(big({ period: "2025-09-30" }), "en", true)!.label, /Q3 2025.*historical filing/);
+
+import * as conclusion from "./investorConclusion";
+assert.equal(conclusion.topHoldingsLabel?.(4, 1, "en"), "Top 4: 100%", "four reported non-option positions cannot be labelled top five");
+assert.equal(conclusion.topHoldingsLabel?.(0, null, "en"), undefined, "empty filing has no concentration claim");
+assert.equal(conclusion.topHoldingsLabel?.(7, .8, "zh"), "前 5 大占 80%", "five is the upper count limit");
 console.log("investorConclusion.check OK");

@@ -249,7 +249,14 @@ export function DataTable<T>({
                 )}
               >
                 {c.header}
-                {isActive && <span aria-hidden>{sortDir === "asc" ? " ↑" : " ↓"}</span>}
+                {isActive && (
+                  <>
+                    <span aria-hidden>{sortDir === "asc" ? " ↑" : " ↓"}</span>
+                    <span className="sr-only">
+                      {sortDir === "asc" ? sortAscLabel : sortDescLabel}
+                    </span>
+                  </>
+                )}
               </button>
             );
           })}

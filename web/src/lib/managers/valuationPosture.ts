@@ -1,3 +1,5 @@
+import { investorHandoffFor, type DiscoveryCta } from "@/lib/discovery/discoveryHandoff";
+import { cleanIssuer } from "@/lib/format";
 import { date as formatDate } from "@/lib/i18n/format";
 import type { Lang } from "@/lib/nav";
 import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
@@ -97,7 +99,18 @@ export function postureLeadIn(posture: ValuationPosture, lang: Lang): string {
   }
   const head = `Of ${posture.covered} valued US positions without red flags, `;
   const body = cheap > 0
-    ? `${cheap} trade below intrinsic value${strike > 0 ? ` (${strike} in the strike zone)` : ""}`
+    ? `${cheap} position${cheap === 1 ? " trades" : "s trade"} below intrinsic value${strike > 0 ? ` (${strike} in the strike zone)` : ""}`
     : "none trade below intrinsic value";
   return `${head}${body}${pending > 0 ? `; ${pending} more pending` : ""}${asOf ? ` (as of ${formatDate(asOf, lang)})` : ""}:`;
+}
+
+/** Empty filings and absent valuation coverage are separate from zero qualifying positions. */
+export function investorValuationHandoff(posture: ValuationPosture, holdingCount: number, lang: Lang): DiscoveryCta | null {
+  if (holdingCount === 0) return null;
+  const cta = investorHandoffFor(posture.strikeCount, lang === "zh" ? "该组合" : "This portfolio", lang, strikePendingIssuers(posture).map(cleanIssuer));
+  if (posture.covered === 0) return {
+    ...cta,
+    line: lang === "zh" ? `该组合尚无可靠估值覆盖${posture.pending.length ? `；${posture.pending.length} 只持仓待确认` : ""}。` : `This portfolio has no reliable valuation coverage yet${posture.pending.length ? `; ${posture.pending.length} position${posture.pending.length === 1 ? " is" : "s are"} pending` : ""}.`,
+  };
+  return cta;
 }

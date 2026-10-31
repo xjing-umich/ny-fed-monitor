@@ -6,7 +6,7 @@ import { date as formatDate } from "@/lib/i18n/format";
 const COPY = {
   zh: {
     provenance: (period: string, filedAt: string) =>
-      `数据截至 ${period}（${filedAt} 提交）· 来源 SEC EDGAR`,
+      `持仓截至 ${period}（${filedAt} 提交）· 来源 SEC EDGAR`,
     stale: (period: string, lag: number) =>
       `⚠ 该投资者最新公开 13F 为 ${period}，落后当前披露季 ${lag} 季。以下持仓与解读反映该期数据，可能并非当前持仓。`,
     inactive: (period: string) =>
@@ -14,7 +14,7 @@ const COPY = {
   },
   en: {
     provenance: (period: string, filedAt: string) =>
-      `Data as of ${period} (filed ${filedAt}) · Source: SEC EDGAR`,
+      `Holdings as of ${period} (filed ${filedAt}) · Source: SEC EDGAR`,
     stale: (period: string, lag: number) =>
       `⚠ This manager's most recent public 13F covers ${period}, ${lag} quarter${lag === 1 ? "" : "s"} behind the latest disclosure quarter. Holdings below reflect that filing and may not be current.`,
     inactive: (period: string) =>

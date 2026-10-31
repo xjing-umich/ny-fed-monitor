@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
+import { notFoundMetadata } from "@/lib/notFoundMetadata";
 import { getArticle, ARTICLE_SLUGS } from "@/lib/learn";
 import { investorPath, stockPath, absoluteUrl, localePath, HTML_LANG } from "@/lib/urls";
 import { altFor, ogFor, breadcrumbLd, titleBrand } from "@/lib/seo";
@@ -35,7 +36,7 @@ export async function generateMetadata({
   const reportPeriod = !getArticle(slug, lang) ? parseReportSlug(slug) : null;
   if (reportPeriod) {
     const row = await readReportRow(reportPeriod);
-    if (!row) return {};
+    if (!row) return notFoundMetadata(lang);
     const title = `${reportTitle(row.period, lang)} — ${titleBrand(lang)}`;
     const description = reportDescription(row.payload, row.status, lang);
     return {
@@ -48,7 +49,7 @@ export async function generateMetadata({
     };
   }
   const article = getArticle(slug, lang);
-  if (!article) return {};
+  if (!article) return notFoundMetadata(lang);
   const title = `${article.seoTitle ?? article.title} — ${titleBrand(lang)}`;
   return {
     title,
@@ -76,7 +77,7 @@ export default async function ArticlePage({
       "@type": "Article",
       headline: reportTitle(row.period, lang),
       description: reportDescription(row.payload, row.status, lang),
-      image: `${url}/opengraph-image`,
+      image: `${url}/opengraph-image/default`,
       datePublished: row.firstLiveAt,
       dateModified: reportLastModified(row.generatedAt, row.finalizedAt),
       inLanguage: HTML_LANG[lang],
@@ -138,7 +139,7 @@ export default async function ArticlePage({
     "@type": "Article",
     headline: article.title,
     description: article.description,
-    image: `${absoluteUrl(localePath(lang, `/learn/${slug}`))}/opengraph-image`,
+    image: `${absoluteUrl(localePath(lang, `/learn/${slug}`))}/opengraph-image/default`,
     datePublished: article.published,
     dateModified: article.updated,
     citation: article.references?.map((source) => source.url),
@@ -211,10 +212,10 @@ function SnapshotNotice({ lang, period, written, note }: { lang: Lang; period: s
     { path: "/investors/sells", en: "Top sells", zh: "最多卖出" },
   ];
   return (
-    <aside className="mt-6 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel-2)] px-4 py-3 text-sm leading-relaxed text-[var(--tt-muted)]">
+    <aside className="mt-6 rounded-md border border-[var(--tt-border)] bg-[var(--tt-panel-2)] px-4 py-3 text-sm leading-relaxed text-[var(--ink-2)]">
       <p>
         {lang === "zh"
-          ? `季度快照：${q} 的 13F 申报（截至 ${formatDate(period, lang)}），写于 ${formatDate(written, lang)}。文中的家数指当时追踪的投资人。最新一季见：`
+          ? `季度快照：${q} 的 13F 申报（截至 ${formatDate(period, lang)}），写于 ${formatDate(written, lang)}。文中的持有人数按写作时追踪的投资人计算。最新一季见：`
           : `Snapshot: ${q} 13F filings (quarter ended ${formatDate(period, lang)}), written ${formatDate(written, lang)}. Counts refer to the investors Compounder tracked at the time. For the latest quarter: `}
         {links.map((l, i) => (
           <span key={l.path}>

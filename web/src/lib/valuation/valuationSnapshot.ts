@@ -268,6 +268,7 @@ export type ScreenerRow = {
   reliable: boolean;
   computedAt: string;
   holderCount: number;
+  securityUnit?: "share" | "ADS" | "unknown";
   expectations?: ExpectationsAssessment;
 };
 
@@ -296,11 +297,34 @@ async function readScreenJoin<T>(
  * strikeTotal / strikePending = 全表击球区已确认 / 待确认计数(与 view 无关, 供顶部句)。
  * 优雅降级:无 env / 表缺(42P01/PGRST205)/ 出错 → 空结果, 绝不抛。
  */
+/** Unit metadata is supplementary: failed or missing identity reads never invent ordinary shares. */
+async function readScreenUnits(tickers: string[]): Promise<Map<string, "share" | "ADS" | "unknown">> {
+  try {
+    const { data, error } = await readScreenJoin<{ ticker: string; security_type: string | null }>(tickers,
+      batch => getDb().from("securities").select("ticker,security_type").in("ticker", batch));
+    if (error) return new Map();
+    return new Map(data.map(row => [row.ticker.toUpperCase(), row.security_type === "ADR" ? "ADS" : row.security_type ? "share" : "unknown"]));
+  } catch { return new Map(); }
+}
+
+export type ScreenAvailability = "available" | "unpublished" | "unavailable";
+
+/** Empty filters only mean zero matches after a successful current-model universe read. */
+async function emptyScreenAvailability(): Promise<ScreenAvailability> {
+  const { count, error } = await withRetry(() => getDb().from("valuation_snapshot")
+    .select("ticker", { count: "exact", head: true })
+    .eq("payload->>model_version", VALUATION_MODEL_VERSION)
+    .eq("payload->>assessment_status", "valid")
+    .not("ticker", "in", QUARANTINED_TICKERS_SQL));
+  if (error || count == null) return "unavailable";
+  return count > 0 ? "available" : "unpublished";
+}
+
 export const readValuationScreen = cache(
   async (
     view: ScreenView,
-  ): Promise<{ rows: ScreenerRow[]; strikeTotal: number; strikePending: number; computedAt: string | null }> => {
-    const empty = { rows: [] as ScreenerRow[], strikeTotal: 0, strikePending: 0, computedAt: null as string | null };
+  ): Promise<{ rows: ScreenerRow[]; strikeTotal: number; strikePending: number; computedAt: string | null; availability: ScreenAvailability }> => {
+    const empty = { rows: [] as ScreenerRow[], strikeTotal: 0, strikePending: 0, computedAt: null as string | null, availability: "unavailable" as ScreenAvailability };
     if (!hasSupabaseEnv()) return empty;
     const isMissingTable = (e: unknown) => {
       const code = (e as { code?: string }).code;
@@ -319,9 +343,10 @@ export const readValuationScreen = cache(
             .eq("in_strike_zone", true)
             .eq("reliable", reliable),
         );
-      const [{ count, error: cErr }, { count: pendingCount }] = await Promise.all([countWhere(true), countWhere(false)]);
+      const [{ count, error: cErr }, { count: pendingCount, error: pErr }] = await Promise.all([countWhere(true), countWhere(false)]);
       if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
-      const strikeTotal = cErr ? 0 : count ?? 0;
+      if (cErr || pErr || count == null || pendingCount == null) return empty;
+      const strikeTotal = count;
       const strikePending = pendingCount ?? 0;
 
       // ② 主查询(thunk 内重建 builder)。strike_zone/below 视图的信心闸 = reliable=true:
@@ -347,10 +372,11 @@ export const readValuationScreen = cache(
         return { ...empty, strikeTotal, strikePending };
       }
       const snapRows = (data ?? []) as Row[];
-      if (snapRows.length === 0) return { rows: [], strikeTotal, strikePending, computedAt: null };
+      if (snapRows.length === 0) return { ...empty, strikeTotal, strikePending, availability: await emptyScreenAvailability() };
 
       // ③ join consensus_holdings 取 issuer + holder_count
       const tickers = snapRows.map((r) => r.ticker.toUpperCase());
+      const units = await readScreenUnits(tickers);
       const holders = new Map<string, { issuer: string; holderCount: number }>();
       const { data: hData, error: hErr } = await readScreenJoin<ScreenHolding>(tickers, (batch) =>
         getDb().from("consensus_holdings").select("ticker,issuer,holder_count").in("ticker", batch),
@@ -380,6 +406,7 @@ export const readValuationScreen = cache(
           reliable: r.reliable ?? true,
           computedAt: r.computed_at,
           holderCount: h?.holderCount ?? 0,
+          securityUnit: units.get(tk) ?? "unknown",
         };
       })
         // 读层防御:坏数据行(价值带与现价严重脱节)不进面 —— 即便快照尚有旧脏行(重跑 ingest 前)。
@@ -388,7 +415,7 @@ export const readValuationScreen = cache(
         (mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx),
         null,
       );
-      return { rows, strikeTotal, strikePending, computedAt };
+      return { rows, strikeTotal, strikePending, computedAt, availability: rows.length ? "available" : await emptyScreenAvailability() };
     } catch (err) {
       console.error(`readValuationScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
       return empty;
@@ -402,8 +429,8 @@ export const readValuationScreen = cache(
  * 便宜∩高共识票靠 deriveFusionSignal 自然浮顶(标注全集+排序,永不空页)。降级:表缺/无 env → 空,绝不抛。
  */
 export const readConvictionScreen = cache(
-  async (): Promise<{ rows: ScreenerRow[]; heldTotal: number; computedAt: string | null }> => {
-    const empty = { rows: [] as ScreenerRow[], heldTotal: 0, computedAt: null as string | null };
+  async (): Promise<{ rows: ScreenerRow[]; heldTotal: number; computedAt: string | null; availability: ScreenAvailability }> => {
+    const empty = { rows: [] as ScreenerRow[], heldTotal: 0, computedAt: null as string | null, availability: "unavailable" as ScreenAvailability };
     if (!hasSupabaseEnv()) return empty;
     const isMissingTable = (e: unknown) => {
       const code = (e as { code?: string }).code;
@@ -424,7 +451,7 @@ export const readConvictionScreen = cache(
         return empty;
       }
       const held = (hData ?? []) as { ticker: string; issuer: string | null; holder_count: number | null }[];
-      if (held.length === 0) return empty;
+      if (held.length === 0) return { ...empty, availability: await emptyScreenAvailability() };
       const tickers = held.map((h) => h.ticker.toUpperCase());
       const holderOf = new Map(tickers.map((tk, i) => [tk, held[i].holder_count ?? 0] as const));
       const issuerOf = new Map(tickers.map((tk, i) => [tk, held[i].issuer ?? ""] as const));
@@ -445,6 +472,7 @@ export const readConvictionScreen = cache(
         // 快照查询报错 → 无行可显,heldTotal 也归 0(与空表一致,不让顶部句报"N 只"却空表)
         return empty;
       }
+      const units = await readScreenUnits(tickers);
       const snapOf = new Map<string, ScreenSnapshot>();
       for (const r of sData) snapOf.set(r.ticker.toUpperCase(), r);
 
@@ -469,6 +497,7 @@ export const readConvictionScreen = cache(
               reliable: r.reliable ?? true,
               computedAt: r.computed_at,
               holderCount: hc,
+              securityUnit: units.get(tk) ?? "unknown",
               expectations: r.expectations ?? undefined,
             },
           ];
@@ -483,7 +512,7 @@ export const readConvictionScreen = cache(
         );
       const computedAt = rows.reduce<string | null>((mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx), null);
       // heldTotal 改口径为「实际展示行数」(有真快照的高共识票),别再报原始高共识票数——避免"N stocks held"文案对不上表格实际行数
-      return { rows, heldTotal: rows.length, computedAt };
+      return { rows, heldTotal: rows.length, computedAt, availability: rows.length ? "available" : await emptyScreenAvailability() };
     } catch (err) {
       console.error(`readConvictionScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
       return empty;

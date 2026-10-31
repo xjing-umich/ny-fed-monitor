@@ -31,4 +31,10 @@ assert(
   "缺 topHolding 退化",
 );
 
+
+// Historical filings cannot be shared as calendar-current transactions.
+const historical = buildShareText({ kind: "investor", managerName: "Scion", topHolding: "Apple", addedName: "Chubb", quarterLabel: "Q3 2025", historical: true }, "en", "Scion");
+assert(historical.includes("Q3 2025") && historical.includes("historical") && !historical.includes("this quarter") && historical.includes("opened a new position"), "historical share carries filing context and action");
+const sold = buildShareText({ kind: "sells", topName: "Apple", count: 1, quarterLabel: "2026Q2" }, "zh", "Fallback");
+assert(sold.includes("清仓或减持") && sold.includes("2026Q2"), "sell count includes both action kinds");
 console.log("shareText.check OK");

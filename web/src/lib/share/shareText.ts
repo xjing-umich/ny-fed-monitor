@@ -3,8 +3,8 @@ import { cleanIssuer } from "@/lib/format";
 
 // 分享文案输入：按页面类型区分（discriminated union）。槽位全部来自页面已查询的确定性数据。
 export type ShareInput =
-  | { kind: "investor"; managerName: string; topHolding: string | null; addedName: string | null }
-  | { kind: "consensus"; topName: string | null; holderCount: number | null; managerCount: number }
+  | { kind: "investor"; managerName: string; topHolding: string | null; addedName: string | null; quarterLabel?: string; historical?: boolean }
+  | { kind: "consensus"; topName: string | null; holderCount: number | null; managerCount: number; quarterLabel?: string }
   | { kind: "buys"; topName: string | null; count: number | null; quarterLabel?: string }
   | { kind: "sells"; topName: string | null; count: number | null; quarterLabel?: string };
 
@@ -23,42 +23,42 @@ export function buildShareText(raw: ShareInput, lang: Lang, fallbackTitle: strin
       if (!input.topHolding) return fallback;
       const added = input.addedName
         ? lang === "zh"
-          ? `，本季新增 ${input.addedName}`
-          : `, added ${input.addedName} this quarter`
+          ? `，新进 ${input.addedName}`
+          : `, opened a new position in ${input.addedName}`
         : "";
       return lang === "zh"
-        ? `${input.managerName} 最新 13F：第一大持仓 ${input.topHolding}${added}。${VIA}`
-        : `${input.managerName}'s latest 13F — top holding ${input.topHolding}${added}. ${VIA}`;
+        ? `${input.managerName} ${input.quarterLabel ?? "最新"} 13F${input.historical ? "（历史申报）" : ""}：第一大持仓 ${input.topHolding}${added}。${VIA}`
+        : `${input.managerName}'s ${input.quarterLabel ?? "latest"} 13F${input.historical ? " (historical filing)" : ""} — top holding ${input.topHolding}${added}. ${VIA}`;
     }
     case "consensus": {
       if (!input.topName || input.holderCount == null) return fallback;
       return lang === "zh"
-        ? `本季 ${input.topName} 被 ${input.holderCount} 位顶级投资者同时持有，居共识首位。${VIA}`
-        : `${input.topName} is held by ${input.holderCount} top investors this quarter — the #1 consensus pick. ${VIA}`;
+        ? `${input.quarterLabel ?? "该申报季"} ${input.topName} 被 ${input.holderCount} 家机构共同持有，在纳入统计的 ${input.managerCount} 家机构中持有人数最多。${VIA}`
+        : `${input.topName} is the most widely held stock${input.quarterLabel ? ` in ${input.quarterLabel}` : " in this filing period"}, held by ${input.holderCount} of the ${input.managerCount} included managers. ${VIA}`;
     }
     case "buys": {
       if (!input.topName || input.count == null) return fallback;
       const q = input.quarterLabel;
       if (lang === "zh") {
         return q
-          ? `${q} ${input.topName} 获最多顶级投资者买入（${input.count} 位）。${VIA}`
-          : `${input.topName} 获最多顶级投资者买入（${input.count} 位）。${VIA}`;
+          ? `${q} ${input.topName} 获最多机构新进或增持（${input.count} 家）。${VIA}`
+          : `${input.topName} 获最多机构新进或增持（${input.count} 家）。${VIA}`;
       }
       return q
-        ? `In ${q}, ${input.topName} drew the most buying from top investors (${input.count}). ${VIA}`
-        : `${input.topName} drew the most buying from top investors (${input.count}). ${VIA}`;
+        ? `In ${q}, ${input.topName} had the most managers opening or increasing positions (${input.count}). ${VIA}`
+        : `${input.topName} had the most managers opening or increasing positions (${input.count}). ${VIA}`;
     }
     case "sells": {
       if (!input.topName || input.count == null) return fallback;
       const q = input.quarterLabel;
       if (lang === "zh") {
         return q
-          ? `${q} ${input.topName} 被最多超级投资者减持（${input.count} 位）。${VIA}`
-          : `${input.topName} 被最多超级投资者减持（${input.count} 位）。${VIA}`;
+          ? `${q} ${input.topName} 被最多机构清仓或减持（${input.count} 家）。${VIA}`
+          : `${input.topName} 被最多机构清仓或减持（${input.count} 家）。${VIA}`;
       }
       return q
-        ? `In ${q}, ${input.topName} saw the most selling from top investors (${input.count}). ${VIA}`
-        : `${input.topName} saw the most selling from top investors (${input.count}). ${VIA}`;
+        ? `In ${q}, ${input.topName} had the most managers exiting or trimming positions (${input.count}). ${VIA}`
+        : `${input.topName} had the most managers exiting or trimming positions (${input.count}). ${VIA}`;
     }
   }
 }

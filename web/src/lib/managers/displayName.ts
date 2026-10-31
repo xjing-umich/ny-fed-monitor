@@ -1,4 +1,5 @@
 import type { Lang } from "@/lib/nav";
+import { quarter } from "@/lib/i18n/format";
 import { managerZhName } from "@/lib/aliases/config";
 
 // 投资人在页面上的展示名。库里的 person 是英文名,也是 slug/搜索/别名的锚,不改;这里只管怎么显示。
@@ -19,6 +20,14 @@ type Stewardship = {
 };
 
 const STEWARDSHIP: Record<string, Stewardship> = {
+  "bridgewater-associates": {
+    label: { en: "Bridgewater Associates", zh: "桥水基金" },
+    titleName: { en: "Bridgewater Associates (founded by Ray Dalio) Portfolio", zh: "桥水基金（达利欧创立）持仓组合" },
+    managedBy: {
+      en: "founded by Ray Dalio; these are Bridgewater’s institutional 13F holdings",
+      zh: "雷·达利欧创立；以下为桥水机构申报的 13F 持仓",
+    },
+  },
   "berkshire-hathaway": {
     // 中文用"与"不用顿号:持有人名单按"、"分隔,"巴菲特、阿贝尔"会被读成两位持有人。
     label: { en: "Warren Buffett & Greg Abel", zh: "巴菲特与阿贝尔" },
@@ -78,7 +87,10 @@ export function managerTitleName(lang: Lang, slug: string, person: string): stri
   return name.endsWith("）") ? `${name}持仓组合` : `${name} 持仓组合`;
 }
 
-export function managerSubtitle(lang: Lang, slug: string, person: string, fund: string): string {
+export function managerSubtitle(lang: Lang, slug: string, person: string, fund: string, filing?: { period: string; status: string }): string {
+  if (filing?.status === "inactive") return lang === "zh"
+    ? `${fund} — 最后公开 13F 为 ${quarter(filing.period, lang)}；以下为历史持仓。`
+    : `${fund} — Last public 13F: ${quarter(filing.period, lang)}; holdings below are historical.`;
   const s = STEWARDSHIP[slug];
   if (s) {
     return lang === "zh"

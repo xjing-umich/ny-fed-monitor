@@ -82,10 +82,10 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
   paras.push(
     en
       ? [
-          `${fund}'s most recent 13F filing, for the quarter ended ${formatDate(latest.period, lang)}, reports ${n} positions worth ${formatUSD(total, lang)}. The top ${topK} holdings represent ${pct0(topKShare)} of that value, ${conc}.`,
+          `${fund}'s most recent 13F filing, for the quarter ended ${formatDate(latest.period, lang)}, reports ${n} non-option ${n === 1 ? "position" : "positions"} worth ${formatUSD(total, lang)}. The top ${topK} ${topK === 1 ? "holding represents" : "holdings represent"} ${pct0(topKShare)} of that value, ${conc}.`,
         ]
       : [
-          `${fund} 最新一期 13F 申报(截至 ${formatDate(latest.period, lang)})报告 ${n} 个持仓，合计市值 ${formatUSD(total, lang)}。前 ${topK} 大持仓占其中 ${pct0(topKShare)}，${conc}。`,
+          `${fund} 最新一期 13F 申报(截至 ${formatDate(latest.period, lang)})报告 ${n} 个非期权持仓，合计市值 ${formatUSD(total, lang)}。前 ${topK} 大持仓占其中 ${pct0(topKShare)}，${conc}。`,
         ],
   );
 
@@ -120,13 +120,13 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
       p.push(
         `Against the prior quarter, ${managerLabel(lang, manager.slug, manager.person)} opened ${news.length} new ${news.length === 1 ? "position" : "positions"}, exited ${exits.length}, added to ${incs.length}, and trimmed ${decs.length}.`,
       );
-      if (news[0]) p.push(" The largest new buy was ", stock(cleanIssuer(news[0].issuer), news[0].cusip), ".");
+      if (news[0]) p.push(news.length === 1 ? " The only new position was " : " The largest new position was ", stock(cleanIssuer(news[0].issuer), news[0].cusip), ".");
       if (exits[0]) p.push(" The largest exit was ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), ".");
     } else {
       p.push(
         zhSpacing(`较上一季度，${managerLabel(lang, manager.slug, manager.person)} 新进 ${news.length} 只，清仓 ${exits.length} 只，增持 ${incs.length} 只，减持 ${decs.length} 只。`),
       );
-      if (news[0]) p.push("其中最大的新进持仓是 ", stock(cleanIssuer(news[0].issuer), news[0].cusip), "。");
+      if (news[0]) p.push(news.length === 1 ? "唯一新进的是 " : "其中最大的新进持仓是 ", stock(cleanIssuer(news[0].issuer), news[0].cusip), "。");
       if (exits[0]) p.push("清仓里金额最大的是 ", stock(cleanIssuer(exits[0].issuer), exits[0].cusip), "。");
     }
     paras.push(p);
@@ -151,11 +151,11 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
       if (en) {
         p.push(`Across all ${F} quarters on file, `, stock(name(core[0]), core[0].cusip), " has appeared in every filing");
         if (core[1]) p.push(", as has ", stock(name(core[1]), core[1].cusip));
-        p.push(`. ${name(core[0])} currently ranks ${ordinalEn(rank1)} by value.`);
+        p.push(". ", stock(name(core[0]), core[0].cusip), ` ranks ${ordinalEn(rank1)} by holding value in this filing.`);
       } else {
         p.push(`在全部 ${F} 个季度的申报中，`, stock(name(core[0]), core[0].cusip), " 每期都在持仓之列");
         if (core[1]) p.push("，", stock(name(core[1]), core[1].cusip), " 亦然");
-        p.push(`。按市值计，${name(core[0])} 目前排在第 ${rank1} 位。`);
+        p.push("。", stock(name(core[0]), core[0].cusip), ` 按持仓市值在该申报中列第 ${rank1} 位。`);
       }
       paras.push(p);
     }

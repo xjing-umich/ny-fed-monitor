@@ -33,4 +33,16 @@ for (const slug of ["dodge-and-cox", "polen-capital", "ruane-cunniff", "tweedy-b
   assert(managerIsOrganization(slug), `${slug} → Organization`);
 assert(!managerIsOrganization("hh-international"), "段永平是 Person");
 
+
+// A founder search alias must not become the institution's current filing subject.
+assert(managerLabel("en", "bridgewater-associates", "Ray Dalio") === "Bridgewater Associates", "Bridgewater institution subject");
+assert(managerLabel("zh", "bridgewater-associates", "Ray Dalio") === "桥水基金", "Bridgewater Chinese institution subject");
+assert(managerIsOrganization("bridgewater-associates"), "Bridgewater is Organization");
+const historicalSubtitle = managerSubtitle("en", "scion-asset-management", "Michael Burry", "Scion", { period: "2025-09-30", status: "inactive" });
+assert(historicalSubtitle.includes("Q3 2025") && /historical/.test(historicalSubtitle) && !/disclosed quarterly/.test(historicalSubtitle), "historical subtitle uses actual filing period");
+
+// Display full personal aliases without making firm aliases into personal names.
+assert(managerLabel("zh", "appaloosa", "David Tepper") === "大卫·泰珀", "full existing personal alias wins over surname");
+assert(managerLabel("zh", "davis-advisors", "Christopher Davis") === "克里斯托弗·戴维斯", "full configured personal alias wins over surname");
+assert(managerLabel("zh", "viking-global", "Andreas Halvorsen") === "Andreas Halvorsen", "unverified full translation falls back to complete English name");
 console.log("displayName.check OK");

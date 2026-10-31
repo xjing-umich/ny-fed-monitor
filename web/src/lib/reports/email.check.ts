@@ -63,13 +63,22 @@ const flat = JSON.parse(JSON.stringify(p)) as ReportPayload;
 flat.mostHeld.items[0] = { ...flat.mostHeld.items[0], holderDelta: 0 };
 flat.bought.items[0] = { ...flat.bought.items[0], managerCount: 1 };
 const fx = renderReportEmail(flat, meta, "en");
-assert(fx.text.includes("17 holders (unchanged vs. last quarter)"), "en 邮件持平");
+assert(fx.text.includes("17 holders (unchanged vs. previous filing)"), "en 邮件持平");
 assert(fx.text.includes("GOOG · 1 superinvestor ·"), `en 邮件单数: ${fx.text}`);
-assert(renderReportEmail(flat, meta, "zh").text.includes("17 位（较上季持平）"), "zh 邮件持平");
+assert(renderReportEmail(flat, meta, "zh").text.includes("17 位（较前次申报持平）"), "zh 邮件持平");
 
 // 名家动作按股数口径并附权重说明(页面与邮件同一套文案)
 assert(zh.text.includes("减持 AAPL（占组合 28% → 22%）"), "zh 名家动作股数口径");
 assert(en.text.includes("Sold some AAPL (portfolio weight 28% → 22%)"), "en 名家动作股数口径");
 assert(zh.text.includes("动作按申报股数的增减判断") && en.text.includes("Moves are based on the change in shares reported"), "名家动作说明两版都有");
 
+const unchanged = structuredClone(p);
+unchanged.featured[0] = { ...unchanged.featured[0], filed: true, moves: [], comparison: { state: "unchanged", priorPeriod: "2026-03-31" } };
+const noPrior = structuredClone(unchanged);
+noPrior.featured[0].comparison = { state: "missing_prior", priorPeriod: null };
+for (const lang of ["zh", "en"] as const) {
+  const unchangedEmail = renderReportEmail(unchanged, meta, lang).text;
+  const noPriorEmail = renderReportEmail(noPrior, meta, lang).text;
+  assert(unchangedEmail !== noPriorEmail, "email forwards structured comparison evidence like the report page");
+}
 console.log("email.check OK");

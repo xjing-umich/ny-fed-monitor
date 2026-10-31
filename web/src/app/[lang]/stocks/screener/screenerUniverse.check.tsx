@@ -33,6 +33,7 @@ async function main() {
   const savedError = console.error;
   const savedEnv = { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_SERVICE_KEY };
   const requests: URL[] = [];
+  let snapshotMode: "normal" | "none" | "no-cheap" = "normal";
   let broken: "snapshot-page" | "holder-join" | "snapshot-join" | null = null;
   process.env.SUPABASE_URL = "http://127.0.0.1:54321";
   process.env.SUPABASE_SERVICE_KEY = "local-test-only";
@@ -41,8 +42,10 @@ async function main() {
     assert.equal(url.origin, "http://127.0.0.1:54321", "禁止访问外部服务");
     requests.push(url);
     const table = url.pathname.split("/").at(-1);
-    assert.ok(table === "valuation_snapshot" || table === "consensus_holdings");
-    let rows: Record<string, unknown>[] = table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined] : [...holdings];
+    assert.ok(table === "valuation_snapshot" || table === "consensus_holdings" || table === "securities");
+    let rows: Record<string, unknown>[] = table === "securities" ? [...snapshots, solo].map(r => ({ ticker: r.ticker, security_type: r.ticker === "CHEAP" ? "ADR" : "Common Stock" })) : table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined] : [...holdings];
+    if (table === "valuation_snapshot" && snapshotMode === "none") rows = [];
+    if (table === "valuation_snapshot" && snapshotMode === "no-cheap") rows = rows.map(r => ({...r, in_strike_zone: false, verdict_bucket: "above"}));
     const tickerFilter = url.searchParams.getAll("ticker").find(f=>f.startsWith("in.("));
     const tickerKeys = tickerFilter?.startsWith("in.(") ? tickerFilter.slice(4, -1).split(",") : null;
     for (const [field, filter] of url.searchParams) {
@@ -77,7 +80,7 @@ async function main() {
     }
     return Response.json(rows.slice(from, from + Math.min(requested, 1000)));
   };
-  const page = async (view: "all" | "conviction", sort: "margin" | "holders" = "margin") =>
+  const page = async (view: "all" | "conviction" | "strike_zone", sort: "margin" | "holders" = "margin") =>
     renderToStaticMarkup(await ScreenerPage({ lang: "en", view, sort })).replace(/<[^>]+>/g, "");
   try {
     const all = await page("all");
@@ -94,6 +97,7 @@ async function main() {
     assert.match(conviction, /1205 stocks held by 5\+ managers/, "总数来自全部合法且可估值的高共识票");
     assert.ok(!conviction.includes("SOLO") && !conviction.includes("NOQ") && !conviction.includes("BAD") && !conviction.includes("ZEROP"), "低共识/缺快照/异常值均剔除");
     const projected = await readConvictionScreen();
+    assert.equal(projected.rows.find((r) => r.ticker === "CHEAP")?.securityUnit, "ADS", "row-level traded unit comes from security metadata");
     assert.deepEqual(projected.rows.find((r) => r.ticker === "CHEAP")?.expectations, expectations, "JSON 子字段投影保留原来的预期数据");
     assert.equal(projected.rows.find((r) => r.ticker === "CROWD")?.expectations, undefined, "没有预期字段时沿用 undefined");
     assert.ok(requests.some((u) => Number(u.searchParams.get("offset")) >= 1000), "实际跨过 1000 行服务端上限");
@@ -104,8 +108,17 @@ async function main() {
     }
 
     console.error = () => {}; // 以下为预期故障;断言页面结果,不把日志输出当作测试成功。
+    snapshotMode = "none";
+    const unpublished = await page("all");
+    assert.match(unpublished, /Results for the current valuation model are not available yet/, "no current-model rows is unpublished, not a zero-opportunity claim");
+    assert.doesNotMatch(unpublished, /No valued stocks are confirmed|refreshing/i);
+    assert.match(await page("conviction"), /Results for the current valuation model are not available yet/);
+    snapshotMode = "no-cheap";
+    assert.match(await page("strike_zone"), /No stocks match this view/, "successful query with a current universe can honestly report an empty filter");
+    snapshotMode = "normal";
     broken = "snapshot-page";
     assert.ok(!(await page("all")).includes("T0000"), "后续快照页失败不返回半张榜单");
+    assert.match(await page("all"), /temporarily unavailable/, "read failure must not look like a successful empty filter");
     broken = "holder-join";
     assert.ok(!(await page("all", "holders")).includes("T0000"), "持有人批次失败不拿残缺计数排序");
     broken = "snapshot-join";
