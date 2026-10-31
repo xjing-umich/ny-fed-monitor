@@ -5,7 +5,7 @@ import { FUNDAMENTAL_TAGS } from "./fundamental-tags";
 import { filingUrl, filingIndexUrl, secFetchJson, secFetchText, sleep } from "./sec-client";
 
 /**
- * companyfacts 漏收的 10-Q/10-K → 读原始申报的 XBRL instance 回填。
+ * companyfacts 漏收的 10-Q/10-K/20-F/40-F → 读原始申报的 XBRL instance 回填。
  *
  * 为什么:SEC 的 companyfacts 汇总接口会漏掉部分申报。2026-10 审计:约 200 家(V/ABT/CB/MDLZ…)
  * 7–8 月就交了 Q2 10-Q,companyfacts 里却最新只到 Q1,而我们只读 companyfacts,每周任务照报
@@ -34,7 +34,8 @@ export const CAPITAL_EXPENDITURE_EXTENSIONS = new Set([
   "PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets",
 ]);
 
-const FORMS = new Set(["10-Q", "10-K"]);
+const ANNUAL_FORMS = new Set(["10-K", "20-F", "40-F"]);
+const FORMS = new Set(["10-Q", ...ANNUAL_FORMS]);
 /** 每家最多回填的申报份数:正常只差 1 份,多于 3 份说明另有问题,不靠这里补。 */
 export const MAX_BACKFILL_FILINGS = 3;
 /** 历史空洞只回看 companyfacts 最新一期前 3 年(≈ normalizer 保留的 12 季),不去翻没有 XBRL 的远古申报。 */
@@ -120,7 +121,8 @@ export function extractGaapFacts(xml: string): GaapFact[] {
   for (const [k, v] of Object.entries(root)) {
     const tag = localName(k);
     // Exact semantic aliases only: arbitrary custom tags and investments stay excluded.
-    const capexExtension = CAPITAL_EXPENDITURE_EXTENSIONS.has(tag);
+    const prefix = prefixOf(k);
+    const capexExtension = CAPITAL_EXPENDITURE_EXTENSIONS.has(tag) && prefix !== "ifrs-full" && prefix !== "ifrs";
     if (prefixOf(k) !== "us-gaap" && !capexExtension) continue;
     for (const f of asArray(v as AnyObj | AnyObj[])) {
       if (typeof f !== "object" || f === null) continue;
@@ -141,18 +143,18 @@ export function extractGaapFacts(xml: string): GaapFact[] {
   return out;
 }
 
-function factsAccessions(facts: CompanyFacts): { accns: Set<string>; latestEnd: string | null; durationEnds: Map<string, number[]> } {
-  const accns = new Set<string>();
+function factsCoverage(facts: CompanyFacts): { latestEnd: string | null; durationEnds: Map<string, number[]> } {
   let latestEnd: string | null = null;
-  // end → 10-Q/10-K 在该 end 上报过的营收/净利期间事实天数(判断某期在 companyfacts 里是否已有同口径数据)。
+  // end → 支持的年度/季度表单所报营收/净利期间天数(判断是否已有同口径数据)。
   // 不算:DEF 14A 薪酬与业绩表的全年净利、10-Q 附注里的公允价值调节表等 —— 都撑不起一行基本面。
   const durationEnds = new Map<string, number[]>();
   for (const [tag, concept] of Object.entries(facts.facts?.["us-gaap"] ?? {})) {
-    for (const list of Object.values(concept.units ?? {})) {
+    // Non-USD monetary facts cannot establish coverage for the USD normalizer.
+    for (const list of [concept.units?.USD ?? []]) {
       for (const u of list) {
-        if (u.accn) accns.add(u.accn);
-        if (u.end && u.form && FORMS.has(u.form) && (!latestEnd || u.end > latestEnd)) latestEnd = u.end;
-        if (u.start && u.end && u.form && FORMS.has(u.form) && CORE_TAGS.has(tag)) {
+        if (!u.end || !Number.isFinite(dayNum(u.end)) || !Number.isFinite(u.val)) continue;
+        if (u.form && FORMS.has(u.form) && (!latestEnd || u.end > latestEnd)) latestEnd = u.end;
+        if (u.start && u.form && FORMS.has(u.form) && CORE_TAGS.has(tag)) {
           const days = Math.round(dayNum(u.end) - dayNum(u.start));
           const list = durationEnds.get(u.end);
           if (list) list.push(days);
@@ -161,36 +163,38 @@ function factsAccessions(facts: CompanyFacts): { accns: Set<string>; latestEnd: 
       }
     }
   }
-  return { accns, latestEnd, durationEnds };
+  return { latestEnd, durationEnds };
 }
 
-/** companyfacts 里是否已有这份申报口径的营收/净利期间事实(10-K:全年;10-Q:单季或 YTD),来自任一 10-Q/10-K(含比较数)。 */
+/** 核心 USD/us-gaap 期间事实:年度表单须为全年,10-Q 须为单季或 YTD(含后来申报的比较数)。 */
 function periodCovered(durationEnds: Map<string, number[]>, filing: NormalizedFiling): boolean {
   const report = filing.report_date!;
-  const fits = filing.form === "10-K" ? (d: number) => d >= 350 && d <= 380 : (d: number) => d >= 80 && d <= 285;
+  const fits = ANNUAL_FORMS.has(filing.form) ? (d: number) => d >= 350 && d <= 380 : (d: number) => d >= 80 && d <= 285;
   for (const [end, days] of durationEnds) if (isOwnPeriod(end, report) && days.some(fits)) return true;
   return false;
 }
 
 /**
- * companyfacts 漏收的申报:10-Q/10-K,accession 不在 companyfacts 里,且属于以下之一:
+ * companyfacts 漏收核心流量的申报:10-Q/10-K/20-F/40-F,且属于以下之一。
+ * accession 可能仅出现在资产负债表中,不能据此声称收入/净利已覆盖。
  *  - 新一期:报告期晚于 companyfacts 已有的最新一期;
  *  - 历史空洞:报告期在最新一期前 HOLE_LOOKBACK_DAYS 内,且 companyfacts 里这一期连同口径的
  *    营收/净利都没有(后来申报的比较数已覆盖的期,不算空洞,不去拉)。
  * 按报告期升序,最多 max 份(超出时保留最新的)。
  */
 export function findMissingFilings(facts: CompanyFacts, filings: NormalizedFiling[], max = MAX_BACKFILL_FILINGS): NormalizedFiling[] {
-  const { accns, latestEnd, durationEnds } = factsAccessions(facts);
+  const { latestEnd, durationEnds } = factsCoverage(facts);
   const holeFloor = latestEnd == null ? null : new Date((dayNum(latestEnd) - HOLE_LOOKBACK_DAYS) * 86_400_000).toISOString().slice(0, 10);
   return filings
-    .filter((f) => FORMS.has(f.form) && f.report_date && f.primary_document && !accns.has(f.accession_number))
-    .filter((f) => latestEnd == null || f.report_date! > latestEnd || (f.report_date! >= holeFloor! && !periodCovered(durationEnds, f)))
+    .filter((f) => FORMS.has(f.form) && f.report_date && Number.isFinite(dayNum(f.report_date)) && f.primary_document)
+    .filter((f) => !periodCovered(durationEnds, f) && (latestEnd == null || f.report_date! > latestEnd || f.report_date! >= holeFloor!))
     .sort((a, b) => (a.report_date! < b.report_date! ? -1 : 1))
     .slice(-max);
 }
 
 /** 把一份申报**自身报告期**的事实以 companyfacts 同形注入(就地修改 facts;比较期事实跳过)。返回注入条数。 */
 export function injectFilingFacts(facts: CompanyFacts, filing: NormalizedFiling, gaap: GaapFact[]): number {
+  if (!filing.report_date || !Number.isFinite(dayNum(filing.report_date))) return 0;
   facts.facts = facts.facts ?? {};
   const ns = (facts.facts["us-gaap"] = facts.facts["us-gaap"] ?? {});
   let n = 0;
@@ -217,7 +221,7 @@ export function injectFilingFacts(facts: CompanyFacts, filing: NormalizedFiling,
 type EdgarIndex = { directory?: { item?: { name?: string }[] } };
 
 /** 提取版 instance = primaryDocument 去 .htm 加 _htm.xml;不在则读目录 index.json 找 *_htm.xml。 */
-async function fetchInstance(filing: NormalizedFiling): Promise<string | null> {
+export async function fetchInstance(filing: NormalizedFiling): Promise<string | null> {
   const dir = filingIndexUrl(filing.cik, filing.accession_number);
   const guess = filing.primary_document?.replace(/\.htm$/i, "_htm.xml");
   if (guess) {
@@ -266,7 +270,7 @@ export function findMissingCapitalExpenditureFilings(facts: CompanyFacts, filing
   if (template) for (const tag of CORE_TAGS) for (const u of facts.facts?.["us-gaap"]?.[tag]?.units.USD ?? []) {
     // Original annual accessions can fall outside recent24. A comparative in a
     // much later filing must not be relabelled as that year's original report.
-    if (!u.start || !u.end || !u.filed || !u.accn || !["10-K", "20-F"].includes(u.form ?? "")) continue;
+    if (!u.start || !u.end || !u.filed || !u.accn || !ANNUAL_FORMS.has(u.form ?? "")) continue;
     const duration = dayNum(u.end)-dayNum(u.start), delay = dayNum(u.filed)-dayNum(u.end);
     if (duration<350 || duration>380 || delay<0 || delay>240) continue;
     historical.push({ ...template, form:u.form!, accession_number:u.accn, report_date:u.end,
@@ -274,7 +278,7 @@ export function findMissingCapitalExpenditureFilings(facts: CompanyFacts, filing
       filing_url:filingUrl(template.cik,u.accn), sec_index_url:filingIndexUrl(template.cik,u.accn) });
   }
   const candidates = [...new Map([...historical,...filings].map(f=>[f.accession_number,f])).values()];
-  const annual = candidates.filter(f => ["10-K", "20-F"].includes(f.form) && f.report_date)
+  const annual = candidates.filter(f => ANNUAL_FORMS.has(f.form) && f.report_date && Number.isFinite(dayNum(f.report_date)))
     .sort((a,b)=>b.report_date!.localeCompare(a.report_date!));
   const retainedPeriods = new Set([...new Set(annual.map(f => f.report_date!))].slice(0,6));
   return annual.filter(f => retainedPeriods.has(f.report_date!))

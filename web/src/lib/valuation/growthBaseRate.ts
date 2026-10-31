@@ -25,6 +25,7 @@ export function historicalGrowthBaseRate(years: ValuationFloorYear[]): number | 
 export type RevenueGrowth = { rate: number; fromYear: number; toYear: number; points: number };
 
 export function revenueGrowthStandard(years: ValuationFloorYear[]): RevenueGrowth | undefined {
+  if (years.some(y => y.revenue_comparability)) return undefined;
   const pts = years
     .filter((y) => y.revenue != null && Number.isFinite(y.revenue) && (y.revenue as number) > 0)
     .map((y) => ({ x: y.fiscal_year, displayYear: y.period_end ? Number(y.period_end.slice(0, 4)) : y.fiscal_year, y: Math.log(y.revenue as number) }));

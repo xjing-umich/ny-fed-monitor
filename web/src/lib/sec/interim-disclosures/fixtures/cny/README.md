@@ -1,0 +1,3 @@
+These nine fixtures preserve the financial cells and table structure from the official SEC sources listed in sources.json. Presentation tags, styling, and excess whitespace were removed; financial values were not rewritten. Each includes the original issuer introduction, accounting-basis excerpt, income-statement caption, and complete selected table(s). NOAH includes the immediately continued income-statement table.
+
+The dates in sources.json are SEC filing availability dates. The original releases sometimes carry earlier datelines. Tests use hand-checked consolidated income, rather than income attributable to parent shareholders or adjusted income. BEKE's source states GAAP without establishing a US jurisdiction, so its expected basis is GAAP-unspecified.

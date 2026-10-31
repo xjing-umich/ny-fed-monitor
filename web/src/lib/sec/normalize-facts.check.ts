@@ -318,3 +318,63 @@ const foreignFocus=mkFacts({Revenues:[["2021-01-01","2021-12-31",100,"2022-04-25
 for(const concept of Object.values(foreignFocus.facts["us-gaap"]))for(const units of Object.values(concept.units))for(const u of units)u.fy=2020;
 const foreignResult=normalizeCompanyFacts("FOREIGN","0000000008",foreignFocus,[],"1231");
 assert(foreignResult.annual[0]?.fiscal_year===2021,"stale 20-F fiscal focus cannot relabel the actual 2021 reporting period as 2020");
+
+// SEC ALNY companyfacts verified 2026-10-31: Q1 total is absent; H1 and Q2 exist.
+const alnyClosureFacts = (quarterStart = "2026-04-01", h1 = true) => mkFacts({
+  Revenues: [
+    ["2025-01-01", "2025-12-31", 3_713_937_000, "2026-02-12", "10-K"],
+    ...(h1 ? [["2026-01-01", "2026-06-30", 2_458_123_000, "2026-07-30", "10-Q", "0001178670-26-000062"]] : []),
+    [quarterStart, "2026-06-30", 1_290_948_000, "2026-07-30", "10-Q", "0001178670-26-000062"],
+  ] as Parameters<typeof mkFacts>[0][string],
+  NetIncomeLoss: [["2026-01-01", "2026-03-31", 205_991_000, "2026-04-30", "10-Q"]],
+});
+const alnyClosure = normalizeCompanyFacts("ALNYX", "0001178670", alnyClosureFacts(), [], "1231");
+const alnyRecovered = alnyClosure.quarterly.find(r => r.period_end === "2026-03-31" && r.fiscal_period === "Q1");
+assert(alnyRecovered?.revenue === 1_167_175_000, "Q1 recovered exactly from reported H1 minus reported standalone Q2");
+const recoveredRaw = alnyRecovered?.raw_facts?.revenue as { filed?: string; tag?: string; derived?: boolean } | undefined;
+assert(recoveredRaw?.derived === true && recoveredRaw.tag?.includes("H1-Q2") === true, "inverse closure preserves derived provenance");
+assert(recoveredRaw?.filed === "2026-07-30" && alnyRecovered?.filing_date === "2026-07-30", "Q1 unavailable before both sources");
+const missingH1 = normalizeCompanyFacts("NOH1", "0001178670", alnyClosureFacts("2026-04-01", false), [], "1231");
+assert(row(missingH1.quarterly, "2026-03-31", "Q1")?.revenue == null, "Q2 alone cannot invent Q1");
+const nonQuarter = normalizeCompanyFacts("STUBQ2", "0001178670", alnyClosureFacts("2026-03-12"), [], "1231");
+assert(row(nonQuarter.quarterly, "2026-03-31", "Q1")?.revenue == null, "partial Q2 cannot invent Q1");
+const crossFiscal = normalizeCompanyFacts("CROSS", "0001178670", mkFacts({
+  Revenues: [["2024-08-01", "2025-07-31", 30_000, "2025-09-26", "10-K"],
+    ["2025-01-01", "2025-06-30", 15_500, "2026-08-05", "10-Q"],
+    ["2025-04-01", "2025-06-30", 8_400, "2026-08-05", "10-Q"]],
+}), [], "0731");
+assert(!crossFiscal.quarterly.some(r => r.period_end === "2025-03-31"), "another fiscal calendar cannot create Q1");
+const invalidInverse = mkFacts({Revenues: [
+  ["2025-01-01", "2025-12-31", 400, "2026-02-01", "10-K"],
+  ["2026-01-01", "2026-06-30", 100, "2026-08-01", "10-Q"],
+  ["2026-04-01", "2026-06-30", 200, "2026-08-01", "10-Q"],
+], EarningsPerShareDiluted: [
+  ["2026-01-01", "2026-06-30", 4, "2026-08-01", "10-Q"],
+  ["2026-04-01", "2026-06-30", 3, "2026-08-01", "10-Q"],
+]});
+const invalidResult = normalizeCompanyFacts("INVALID", "0000000001", invalidInverse, [], "1231");
+assert(!invalidResult.quarterly.some(r => r.fiscal_period === "Q1" && (r.revenue != null || r.eps_diluted != null)), "inverse recovery cannot create negative revenue or subtract nonadditive EPS");
+const futureInverse = alnyClosureFacts();
+for (const c of Object.values(futureInverse.facts["us-gaap"])) for (const units of Object.values(c.units)) for (const f of units) {
+  if (f.start) f.start = f.start.replace(/^202[56]/, "2033");
+  if (f.end) f.end = f.end.replace(/^202[56]/, "2033");
+}
+const futureRecovered = normalizeCompanyFacts("FUTUREINVERSE", "0000000001", futureInverse, [], "1231");
+assert(!futureRecovered.quarterly.some(r => r.period_end.startsWith("2033")), "inverse recovery preserves the future-period guard");
+
+// SWX source-backed continuing revenue must not publish a Centuri-inclusive YoY.
+const swxComparableFacts:CompanyFacts={cik:1692115,entityName:"Southwest Gas Holdings",facts:{"us-gaap":{
+ RevenueFromContractWithCustomerExcludingAssessedTax:{units:{USD:[
+ {start:"2025-01-01",end:"2025-12-31",val:1000,form:"10-K",filed:"2026-02-25",accn:"old"},
+ {start:"2026-04-01",end:"2026-06-30",val:358154000,form:"10-Q",filed:"2026-08-06",accn:"new",source_tag:"us-gaap:RegulatedOperatingRevenue"} as SecFactUnit,
+ {start:"2025-04-01",end:"2025-06-30",val:1120346000,form:"10-Q",filed:"2025-08-06",accn:"prior"}
+ ]}},NetIncomeLoss:{units:{USD:[{start:"2026-04-01",end:"2026-06-30",val:10,form:"10-Q",filed:"2026-08-06",accn:"new"}]}}
+}}};
+const swxNormalized=normalizeCompanyFacts("SWX","0001692115",swxComparableFacts,[],"1231").quarterly.find(r=>r.period_end==="2026-06-30");
+assert(swxNormalized?.revenue===358154000,"verified SWX revenue retained");
+assert(swxNormalized?.missing_fields.revenue_comparability===true,"SWX continuing revenue flagged before growth computation");
+assert(swxNormalized?.revenue_yoy===null,"SWX incompatible revenue comparison stays null");
+
+const mixedInverse=alnyClosureFacts();
+for(const u of mixedInverse.facts["us-gaap"].Revenues.units.USD)if(u.start==="2026-04-01"){u.accn="later-recast-filing";u.filed="2026-10-30";}
+assert(normalizeCompanyFacts("RECASTINVERSE","0001178670",mixedInverse,[],"1231").quarterly.find(r=>r.period_end==="2026-03-31")?.revenue==null,"H1 and Q2 from different filings cannot manufacture a mixed-basis Q1");

@@ -1,3 +1,4 @@
+import {assessGrowthCoverage} from "./growthEvidence";
 import assert from "node:assert/strict";
 import { fundamentalsToFloorInput } from "./fundamentalsToFloorInput";
 import type { FundamentalPeriod } from "../sec/normalize-facts";
@@ -38,6 +39,9 @@ assert.ok(
 async function checks() {
   const { buildGrowthEvidence, assessGrowthCoverage } =
     await import("./growthEvidence");
+  const flaggedAnnual = buildGrowthEvidence([{...fy[0], missing_fields:{revenue_comparability:true}},...fy.slice(1)], []);
+  assert.equal(flaggedAnnual.missing_comparables, true, "continuing operations cannot compare original consolidated annual revenue");
+  assert.equal(flaggedAnnual.revenue_growth, undefined);
   const annual = buildGrowthEvidence(fy, []);
   assert.ok(Math.abs(annual.revenue_growth! - 0.1) < 1e-9);
   assert.ok(Math.abs(annual.earnings_growth! + 0.1) < 1e-9);
@@ -131,3 +135,11 @@ checks().then(async () => {
     "Q2 alone is not complete post-FY YTD",
   );
 });
+
+// Same quarter: SEC period focus may be a fiscal-week end, normalized fact end calendarized.
+assert.equal(assessGrowthCoverage({basis:'interim',period_end:'2026-06-30',latest_period_end:'2026-06-30',latest_filing_period_end:'2026-07-03',pairs:3,missing_comparables:false},'2026-10-31'),undefined,'a three-day fiscal-calendar difference is not a missing newer report');
+assert.equal(assessGrowthCoverage({basis:'interim',period_end:'2026-06-30',latest_period_end:'2026-06-30',latest_filing_period_end:'2026-09-30',pairs:2,missing_comparables:false},'2026-10-31'),'uncovered_filing','a truly later quarter still blocks');
+
+import {revenueGrowthStandard} from "./growthBaseRate";
+const incompatibleInput=fundamentalsToFloorInput("SWX","SWX",[{...fy[0],missing_fields:{revenue_comparability:true}},...fy.slice(1)]);
+assert.equal(revenueGrowthStandard(incompatibleInput.years),undefined,"growth regression cannot span incompatible continuing operations");

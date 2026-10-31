@@ -1,3 +1,4 @@
+import { assessReinvestmentEvidence } from "./reinvestmentEvidence";
 import type { EpvLamp, MarksAdjustment, MoatReading, PerShareUnavailable, ReproductionValue, ValuationFloor, ValuationFloorInput, ValuationFloorYear } from "./types";
 import { maintenanceCapex } from "./maintenanceCapex";
 import { buildReproductionValue } from "./reproductionValue";
@@ -267,7 +268,12 @@ function assembleFloor(
   const { nopatOf, investedCapitalOf } = roicHelpers(roicTax);
   const roicStable = roicStability({ fyYears: years, investedCapitalOf, nopatOf, discountRate: ROIC_HURDLE });
   const roicDeclining = roicTrend({ fyYears: years, investedCapitalOf, nopatOf }) === "declining";
-  const sustainableGrowthRate = sustainableGrowth({ fyYears: years, nopatOf, investedCapitalOf });
+  // Annual reinvestment requires annual flows and two annual capital endpoints.
+  // The TTM earnings head must not replace the latest annual balance here.
+  const annualMarginYears = selectYears(allYears);
+  const reinvestmentYears = annualMarginYears.length >= MIN_YEARS ? annualMarginYears : selectEarningsYears(allYears);
+  const reinvestmentEvidence = assessReinvestmentEvidence({ fyYears: reinvestmentYears, nopatOf, investedCapitalOf });
+  const sustainableGrowthRate = reinvestmentEvidence.status === "unaligned_periods" ? undefined : sustainableGrowth({ fyYears: reinvestmentYears, nopatOf, investedCapitalOf });
   // 金融股(银行/保险,Task 4):非经营性口径(operating_income 不适用)→ 用 SGR = ROE × 留存率
   // 封顶 g_used,取代对无护城河名字系统性放水的扁平 7% cap。sector 不可得 → is_financial=false(退 none 5%)。
   const financialSgr = isFinancial ? sustainableGrowthRateFinancial(years) : undefined;
@@ -404,6 +410,7 @@ function assembleFloor(
     ai_capex_distortion_warning: aiCapexDistortion || undefined,
     moat_cap: moatCap,
     sustainable_growth: sustainableGrowthRate,
+    sustainable_growth_evidence: reinvestmentEvidence,
     is_financial: isFinancial,
     financial_sgr: financialSgr,
     structural_confidence: structuralConfidenceScore,

@@ -154,20 +154,24 @@ export function runValuation(input: RunValuationInput): ValuationRun {
   }
   const strikeZone = deriveStrikeZone(floor, price, input.asOf ? new Date(input.asOf) : new Date());
   const reconciliation = reconcileMethods(strikeZone?.epv?.ceilings, oeDcf, price);
-  const methods = deriveValuationMethods({ floor, strikeZone, oeDcf });
+  const availableMethods = deriveValuationMethods({ floor, strikeZone, oeDcf });
   const fundamentalsCorrupt = guards.fundamentalsCorrupt ?? fundamentalsIntegrityViolated(floorInput.years);
   const verdict = deriveValuationVerdict({
     floor,
     strikeZone,
     oeDcf,
     reconciliation,
-    methods,
+    methods: availableMethods,
     splitCoverageStale: guards.splitCoverageStale,
     capitalStructureDistorted: floor.moat_reading.capital_structure_distorted,
     fundamentalsCorrupt,
+    priceStale: guards.priceStale,
   });
+  const methods = verdict?.methods ?? availableMethods;
   const expectations =
-    !oeDcf.assessable || !oeDcf.expectations_inputs
+    verdict?.referenceOnly
+      ? unassessable("missing_reinvestment")
+      : !oeDcf.assessable || !oeDcf.expectations_inputs
       ? unassessable("no_oe_dcf")
       : !verdict
       ? unassessable("no_verdict")
