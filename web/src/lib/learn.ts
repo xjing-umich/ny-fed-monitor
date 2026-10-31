@@ -40,7 +40,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
   "how-to-read-a-13f": {
     en: {
       slug: "how-to-read-a-13f",
-      title: "How to Read a 13F",
+      title: "How to read a 13F",
       description:
         "What a 13F filing is, what it tells you about an investor's portfolio, and what it leaves out. A plain guide to reading one.",
       published: "2026-06-07",
@@ -51,7 +51,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "What a 13F is",
           paragraphs: [
-            "An institutional manager exercising investment discretion over at least $100 million in Section 13(f) securities is generally required to file Form 13F. The SEC’s official list includes many U.S.-listed shares, ETFs and closed-end funds, plus certain convertible securities, options and warrants. Reports show quarter-end positions, share counts and market values.",
+            "An institutional manager exercising investment discretion over at least $100M in Section 13(f) securities is generally required to file Form 13F. The SEC’s official list includes many U.S.-listed shares, ETFs and closed-end funds, plus certain convertible securities, options and warrants. Reports show quarter-end positions, share counts and market values.",
             "Line these filings up across a lot of well-known investors and you start to see overlap. The stocks that turn up in many portfolios at once are what we mean by consensus.",
           ],
         },
@@ -93,7 +93,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "13F 是什么",
           paragraphs: [
-            "对至少 1 亿美元 Section 13(f) 证券具有投资裁量权的机构管理人，通常须申报 Form 13F。SEC 官方名单包括许多美国上市股票、ETF、封闭式基金，以及部分可转债、期权和权证。文件列出季末持仓、持有数量和市值。",
+            "对至少 1亿美元 Section 13(f) 证券具有投资裁量权的机构管理人，通常须申报 Form 13F。SEC 官方名单包括许多美国上市股票、ETF、封闭式基金，以及部分可转债、期权和权证。文件列出季末持仓、持有数量和市值。",
             "把许多知名投资者的申报摆在一起，你会看到重叠。同时出现在很多组合里的股票，就是我们说的“共识”。",
           ],
         },
@@ -126,7 +126,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
   "what-is-a-superinvestor": {
     en: {
       slug: "what-is-a-superinvestor",
-      title: "What Is a Superinvestor?",
+      title: "What is a superinvestor?",
       description:
         "Where the word comes from, the Graham-to-Buffett tradition behind it, and what these investors share: temperament, patience, and compounding.",
       published: "2026-06-07",
@@ -195,7 +195,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "他们的共同点",
           paragraphs: [
             "让他们与众不同的，主要是性情，而不是智力。投资难就难在：价格剧烈晃动、周围人都在抛的时候，你还坐得住。格雷厄姆有句话，市场短期是投票机，长期是称重机。",
-            "他们也只待在自己懂的范围里，并且对这个范围的边界很诚实。他们以年为单位持有，而不是以季；他们把真金白银押在最看好的几个想法上，而不是什么都买一点。他们还要求买入价足够低，低到即使未来比预想的差，这笔投资仍然划算。",
+            "他们也只待在自己懂的范围里，并且清楚自己懂什么，也承认哪些不懂。他们以年为单位持有，而不是以季；他们把真金白银押在最看好的几个想法上，而不是什么都买一点。他们还要求买入价足够低，低到即使未来比预想的差，这笔投资仍然划算。",
           ],
         },
         {
@@ -212,7 +212,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
   "reading-cross-fund-consensus": {
     en: {
       slug: "reading-cross-fund-consensus",
-      title: "Reading Cross-Fund Consensus",
+      title: "Reading cross-fund consensus",
       description:
         "Which stocks the most superinvestors hold at once: what that overlap tells you, where it misleads, and why it is a starting point, not a buy signal.",
       published: "2026-06-08",
@@ -223,7 +223,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "What consensus means here",
           paragraphs: [
-            "Consensus here is a plain count. For every stock, we look across the superinvestors we track and tally how many of them held it as of their latest 13F. Hold the same name as two or more of them and the stock shows up on the Stocks page, ranked by that holder count.",
+            "Consensus here is a plain count. For every stock, we look across the superinvestors we track and tally how many of them held it as of their latest 13F. A stock appears on the Stocks page when two or more tracked investors hold it. The list is ranked by holder count.",
             "We draw the line at two on purpose. One famous investor owning something tells you about that one investor. Several owning the same thing, each doing their own work, is a different kind of evidence. Two is the point where overlap starts to mean anything at all.",
           ],
         },
@@ -274,14 +274,14 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "重叠为什么值得看",
           paragraphs: [
             "当一群互不通气的人得出同一个结论，这事值得问个为什么。他们各自算过账，最后还是落到了同一家公司上。这不代表他们对，但确实让这家公司成了一个合理的阅读起点。",
-            "共识最好用的时候，是当成筛子，而不是判决。上市公司成千上万，而一份「严肃、独立的投资者反复回头看」的短名单，是条捷径，帮你先去搞懂那些最值得搞懂的生意。把它当成一份阅读清单，由一群读得很仔细的人开出来的。",
+            "你可以把共识持仓当作一份研究清单，先从这些投资人反复关注的公司看起。持有人数能缩小研究范围，不能代替你判断生意和价格。",
           ],
         },
         {
           heading: "共识为什么会骗你",
           paragraphs: [
             "现在说说陷阱。一个高持有人数能从好几个方向骗到你，而它背后的数据，也带着每份 13F 都有的那些盲点。",
-            "这些投资者，没有计数显示得那么独立。他们里很多人读同样的信、坐同样的会、出自同样那几家公司。当一打人持有同一只股票，你看到的可能是一个好点子传开了，而不是一打各自独立的点子。",
+            "这些投资人的判断未必彼此独立。他们可能读同样的股东信、参加同样的会议，或曾在同一家机构工作。十几位投资人持有同一只股票，可能只是同一个观点传开了，并不等于十几份独立判断。",
             "申报是旧的。13F 通常在季末后 45 天内申报；等你读到时，其中的季末仓位可能已过去几个月。其中一些人，可能早就出来了。",
             "而且，扎堆这件事，对价格只字未提。那些投资者每一位都在不同时间、以不同成本、出于你在申报里看不到的理由买入。一只被二十家基金持有的股票，并不因此就便宜。它可能恰恰因为热门而贵。",
           ],
@@ -289,8 +289,8 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "在 Compounder 上怎么用",
           paragraphs: [
-            "用共识来找候选，然后就把它放下。打开「个股」页，看哪些公司被最多投资者持有，让它把你引向值得细看的名字。到这一步，计数的活儿就干完了。",
-            "真正的功夫，从个股页和投资者页才开始：谁在持有、这群人过去几个季度怎么变的、正在买入的是不是你尊重其思路的人。一个有人不断加仓的仓位，比某一天碰巧被一群人拿着，要说明问题得多。",
+            "打开个股列表，找出持有人数最多的公司，再挑值得仔细研究的生意。共识帮你确定研究对象，接下来仍要自己看财报和估值。",
+            "真正的功夫，从个股页和投资者页才开始：谁在持有、这群人过去几个季度怎么变的、正在买入的是不是你尊重其思路的人。一个有人不断增持的仓位，比某一天碰巧被一群人拿着，要说明问题得多。",
             "这一切都不是买入信号，也都不是投资建议。共识让你看到用心的投资者一直在看哪里；这其中有没有哪样该进你自己的组合，是个只有你能回答的问题——在你自己搞懂了那门生意之后。",
           ],
         },
@@ -300,7 +300,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
   "q1-2026-superinvestor-consensus": {
     en: {
       slug: "q1-2026-superinvestor-consensus",
-      title: "Q1 2026: What the Superinvestors Held, Bought, and Sold",
+      title: "Q1 2026: What the superinvestors held, bought, and sold",
       description:
         "A read of the Q1 2026 13F filings: the most widely held stocks, the quarter's biggest buys and sells, and why overlap still isn't a signal.",
       published: "2026-06-11",
@@ -308,12 +308,12 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       updated: "2026-10-30",
       snapshotPeriod: "2026-03-31",
       intro:
-        "Big institutional investors disclose their U.S. stock positions every quarter, and the Q1 2026 filings are in. They cover the quarter that ended March 31 and were filed through mid-May. Below is what the investors we track were holding, what most of them were buying, and what they were selling. It is one quarter's data, and the last section gets into why the overlap you're about to see proves less than it looks.",
+        "This article reviews the Q1 2026 filings of reportable securities held at quarter-end. They cover the quarter that ended March 31 and were filed through mid-May. Below is what the investors we track were holding, what most of them were buying, and what they were selling. It is one quarter's data, and the last section gets into why the overlap you're about to see proves less than it looks.",
       sections: [
         {
           heading: "What we're reading",
           paragraphs: [
-            "These figures come from Form 13F, a quarterly disclosure required of institutional managers meeting the SEC’s $100 million Section 13(f) securities threshold. We line up the filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. If you want the mechanics of a single filing, How to Read a 13F covers them.",
+            "These figures come from Form 13F, a quarterly disclosure required of institutional managers meeting the SEC’s $100M Section 13(f) securities threshold. We line up the filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. If you want the mechanics of a single filing, How to read a 13F covers them.",
             "Everything below is as of the last day of the quarter, March 31, 2026. Some of these positions have surely changed since, and none of the figures tell you what anyone paid.",
           ],
         },
@@ -349,7 +349,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "Why none of this is a signal",
           paragraphs: [
             "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is a past quarter-end snapshot of reportable long positions and says nothing about why a manager bought or what they paid. A name several investors you respect all own is worth your time. It is still not worth buying just because they did.",
-            "Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. The investor and stock pages on Compounder track how these positions move from one quarter to the next. None of this is investment advice.",
+            "Reading cross-fund consensus goes deeper on the trap that consensus sets. The investor and stock pages on Compounder track how these positions move from one quarter to the next. None of this is investment advice.",
           ],
         },
       ],
@@ -366,75 +366,75 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
     },
     zh: {
       slug: "q1-2026-superinvestor-consensus",
-      title: "2026 Q1：超级投资者持有、买入与卖出了什么",
+      title: "2026Q1：超级投资者持有、买入与卖出了什么",
       description:
-        "一份对 2026 Q1 13F 申报的解读：被最多机构持有的股票、本季最大的买入与卖出，以及为什么「重合」依然不是信号。",
+        "一份对 2026Q1 13F 申报的解读：被最多机构持有的股票、本季最大的买入与卖出，以及为什么「重合」依然不是信号。",
       published: "2026-06-11",
       written: "2026-06-11",
       updated: "2026-10-30",
       snapshotPeriod: "2026-03-31",
       intro:
-        "每个季度，大型机构投资者都必须披露他们持有的美股仓位，2026 年 Q1 的申报如今已经出全。这一季截至 3 月 31 日，各家在 5 月中前报齐。下面是我们追踪的这些投资者当时持有什么、其中最多人在买什么、又在卖什么。这只是一个季度的数据；最后一节会讲清楚，你接下来看到的这些重合，为什么远没有它看上去那么有分量。",
+        "本文回顾2026Q1的13F申报，记录截至3月31日、纳入申报范围的证券持仓，样本申报于5月中前提交。下面是我们追踪的这些投资者当时持有什么、其中最多人在买什么、又在卖什么。这只是一个季度的数据；最后一节会讲清楚，你接下来看到的这些重合，为什么远没有它看上去那么有分量。",
       sections: [
         {
           heading: "我们在读什么",
           paragraphs: [
-            "这些数字来自 Form 13F，达到 SEC 对 Section 13(f) 证券 1 亿美元门槛等条件的机构管理人，须按规则提交这份季度申报。我们把 Compounder 超级投资者名单里这些人的申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
-            "下面所有数字，都是季度最后一天，也就是 2026 年 3 月 31 日的状态。其中一些仓位此后必定已经变了，而且没有一个数字告诉你任何人当初买在什么价位。",
+            "这些数字来自 Form 13F，达到 SEC 对 Section 13(f) 证券 1亿美元门槛等条件的机构管理人，须按规则提交这份季度申报。我们把 Compounder 超级投资者名单里这些人的申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
+            "下面所有数字，都是季度最后一天，也就是 2026年3月31日的状态。其中一些仓位此后必定已经变了，而且没有一个数字告诉你任何人当初买在什么价位。",
           ],
         },
         {
           heading: "被最多机构持有的股票",
           paragraphs: [
-            "Alphabet 是被持有得最广的单一标的：16 家追踪组合通过它的 C 类股（GOOG）持有，另有 15 家持有 A 类股（GOOGL）。其后是 Berkshire Hathaway，14 家持有；再是 Microsoft 的 13 家；Visa 和 Meta 各 12 家；Moody's、Amazon、Mastercard 并列 11 家。Apple 以 10 家收尾前十。",
+            "谷歌母公司是被持有得最广的单一标的：16 个追踪组合通过它的 C 类股（GOOG）持有，另有 15 位持有 A 类股（GOOGL）。其后是伯克希尔，14 位持有；再是微软的 13 位；维萨和 Meta 各 12 位；穆迪、亚马逊、万事达并列 11 位。苹果以 10 位收尾前十。",
             "这个阵容很眼熟：支付网络、一家几乎没有对手的评级公司、几只大市值复利机器。都是长期投资者预期十年后还在的公司。",
           ],
         },
         {
           heading: "他们在买什么",
           paragraphs: [
-            "Microsoft 是本季被买得最广的名字，加仓它的基金比加仓任何其他股都多。Alphabet、Amazon、Berkshire 紧随其后，而且每一个都是基金在给已有仓位加码，不是新开仓。钱流向的是这些投资者本就熟悉的公司。",
-            "最值得一提的新仓位是 Sunbelt Rentals，本季有好几家基金从零开仓；这种远离大市值的名字能冲到买入榜前列，并不常见。也有若干基金通过 A 类股新开 Alphabet；医疗保险吸引了真金白银，Elevance 和 UnitedHealth 都跻身被买得较广的名字之列。",
+            "本季度增持微软的投资人最多。谷歌母公司、亚马逊、伯克希尔 紧随其后，而且每一个都是基金在给已有仓位加码，不是新进。钱流向的是这些投资者本就熟悉的公司。",
+            "最值得一提的新仓位是 Sunbelt Rentals，本季有好几家基金从零开仓；这类市值远低于巨头的公司能冲到买入榜前列，并不常见。也有若干基金通过 A 类股新开谷歌母公司；医疗保险吸引了真金白银，Elevance 和联合健康都跻身买入人数较多的股票之列。",
           ],
         },
         {
           heading: "他们在卖什么",
           paragraphs: [
-            "卖出一侧，领头的还是那几个家喻户晓的名字。Alphabet、Visa、Meta、Microsoft 被减得最广，多数是减仓而非清仓。Bank of America、Berkshire、Amazon、Capital One、Mastercard、Charles Schwab 也都出现在被最多基金削减的股票里。",
-            "UnitedHealth 值得放慢看一眼。清仓它的基金比减仓它的还多，而另一拨人却在持续加仓。整个季度，我们追踪的这些投资者在 UnitedHealth 上方向相反。",
+            "卖出一侧，居前的还是那几家知名公司。谷歌母公司、维萨、Meta、微软被减得最广，多数是减持而非清仓。美国银行、伯克希尔、亚马逊、第一资本、万事达、嘉信理财也都出现在被最多基金削减的股票里。",
+            "联合健康值得放慢看一眼。清仓它的基金比减持它的还多，而另一拨人却在持续增持。整个季度，我们追踪的这些投资者在联合健康上方向相反。",
           ],
         },
         {
-          heading: "同时出现在两张榜上的名字",
+          heading: "同时出现在买入榜和卖出榜的股票",
           paragraphs: [
-            "Alphabet、Microsoft、Meta、Amazon、Berkshire、UnitedHealth，同时挤在买入榜和卖出榜的前列。被交易得最多的那些名字，在同一段时间里既有能干的基金在买，也有能干的基金在卖。",
-            "这就是共识凑近了看的样子。一群认真的投资者，研究同一家公司、看的是同样三个月，却走出了相反的结论。持有家数高，只说明一只股票出现在很多人的屏幕上；他们是否认同它，是另一个问题，而答案通常是否定的。",
+            "谷歌母公司、微软、Meta、亚马逊、伯克希尔、联合健康，同时挤在买入榜和卖出榜的前列。买卖人数最多的股票，在同一段时间里既有能干的基金在买，也有能干的基金在卖。",
+            "这就是共识凑近了看的样子。一群认真的投资者，研究同一家公司、看的是同样三个月，却走出了相反的结论。持有人数高，只说明一只股票出现在很多人的屏幕上；他们是否认同它，是另一个问题，而答案通常是否定的。",
           ],
         },
         {
           heading: "为什么这些都不是信号",
           paragraphs: [
-            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 是可申报多头的季末快照，对一位经理为什么买、买在什么价位只字不提。一个被几位你尊重的投资者共同持有的名字，值得你花时间看；但它仍然不值得你因为别人买了就跟着买。",
+            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 是可申报多头的季末快照，对一位经理为什么买、买在什么价位只字不提。一个被几位你尊重的投资者共同持有的公司，值得你花时间看；但它仍然不值得你因为别人买了就跟着买。",
             "《读懂跨基金共识》更深入地讲了共识设下的陷阱。Compounder 的投资者页和个股页，逐季追踪这些仓位怎么变。这一切都不是投资建议。",
           ],
         },
       ],
       related: [
-        { kind: "stock", id: "GOOGL", label: "Alphabet" },
-        { kind: "stock", id: "MSFT", label: "Microsoft" },
-        { kind: "stock", id: "AMZN", label: "Amazon" },
-        { kind: "stock", id: "AAPL", label: "Apple" },
-        { kind: "stock", id: "V", label: "Visa" },
+        { kind: "stock", id: "GOOGL", label: "谷歌母公司" },
+        { kind: "stock", id: "MSFT", label: "微软" },
+        { kind: "stock", id: "AMZN", label: "亚马逊" },
+        { kind: "stock", id: "AAPL", label: "苹果" },
+        { kind: "stock", id: "V", label: "维萨" },
         { kind: "stock", id: "META", label: "Meta" },
-        { kind: "stock", id: "UNH", label: "UnitedHealth" },
-        { kind: "investor", id: "berkshire-hathaway", label: "Berkshire Hathaway" },
+        { kind: "stock", id: "UNH", label: "联合健康" },
+        { kind: "investor", id: "berkshire-hathaway", label: "伯克希尔" },
       ],
     },
   },
   "q2-2026-superinvestor-consensus": {
     en: {
       slug: "q2-2026-superinvestor-consensus",
-      title: "Q2 2026: What the Superinvestors Held, Bought, and Sold",
+      title: "Q2 2026: What the superinvestors held, bought, and sold",
       description:
         "The Q2 2026 13F filings from the 97 investors Compounder tracks: the most widely held stocks, the biggest buys and sells, and why most selling was trimming.",
       published: "2026-10-19",
@@ -442,15 +442,15 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       updated: "2026-10-30",
       snapshotPeriod: "2026-06-30",
       snapshotNote:
-        "At the time, 92 investors counted. Two filings were read correctly only after a later fix (Ackman's 13F-NT notice and Olstein's zero-holdings report), so the live pages now count 94.",
+        "This article preserves the 92-investor snapshot used when it was written. Later fixes to reading Ackman's 13F-NT notice and Olstein's zero-holdings report brought the count to 94. See the live rankings for the latest count and filing status.",
       intro:
-        "The Q2 2026 13F filings cover the quarter that ended June 30, and they were due by August 14. As of 2026-06-30, Compounder tracks 97 investors. Below is what they held, what drew the most buyers, and what drew the most sellers. The short version: the same few mega-caps sit near the top of all three lists, and most of the selling was trimming rather than leaving. Q3 filings are due November 16 (the 45-day mark falls on a Saturday), so this snapshot has a short shelf life.",
+        "The Q2 2026 13F filings cover the quarter that ended June 30, and they were due by August 14. The article's June 30, 2026 snapshot covered 97 tracked investors. Below is what they held, what drew the most buyers, and what drew the most sellers. The short version: the same few mega-caps sit near the top of all three lists, and most of the selling was trimming rather than leaving. Q3 filings are due November 16 (the 45-day mark falls on a Saturday), so this article preserves a historical snapshot.",
       sections: [
         {
           heading: "What we're reading",
           paragraphs: [
-            "These figures come from Form 13F, a quarterly disclosure required of institutional managers meeting the SEC’s $100 million Section 13(f) securities threshold. We line up the Q2 filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. How to Read a 13F covers the mechanics of a single filing.",
-            "One counting rule shapes every number here: only investors with Q2 holdings on file count. Five of the 97 have nothing newer than an earlier quarter on Compounder ([[investor:pershing-square|Bill Ackman]], Robert Olstein, Tom Bancroft, Brian Bares, and Michael Burry), so the holder, buy, and sell counts below cover the other 92. Alphabet's two share classes, GOOGL and GOOG, are counted separately, so one fund holding both shows up on each line.",
+            "These figures come from Form 13F, a quarterly disclosure required of institutional managers meeting the SEC’s $100M Section 13(f) securities threshold. We line up the Q2 filings from the investors on Compounder's superinvestor list and count where they agree and where they moved. How to read a 13F covers the mechanics of a single filing.",
+            "One counting rule shapes every number here: only investors with Q2 holdings on file count. At the time of writing, five of the 97 had nothing newer than an earlier quarter on Compounder ([[investor:pershing-square|Bill Ackman]], Robert Olstein, Tom Bancroft, Brian Bares, and Michael Burry), so the holder, buy, and sell counts below cover the other 92. Alphabet's two share classes, GOOGL and GOOG, are counted separately, so one fund holding both shows up on each line.",
             "Everything below is as of June 30, 2026. Some of these positions have surely changed since, and none of the figures tell you what anyone paid.",
           ],
         },
@@ -458,15 +458,15 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "The most widely held stocks",
           paragraphs: [
             "[[stock:MSFT|Microsoft]] was the most common holding, in 41 of those 92 portfolios. [[stock:GOOGL|Alphabet]]'s A shares came next at 40, then [[stock:AMZN|Amazon]] at 37 and Alphabet's C shares at 35. [[stock:META|Meta]] closed out the top five at 33. Those five lines alone account for 186 positions across the 92 portfolios. [[stock:V|Visa]] (31), [[stock:TSM|Taiwan Semiconductor]] (28), [[stock:AAPL|Apple]] (27), and [[stock:BRK.B|Berkshire Hathaway]] (26) come next, with [[stock:DIS|Disney]] and [[stock:MA|Mastercard]] tied at 21.",
-            "Holder count and dollars can tell different stories. Apple has 27 holders among these investors, which sounds like broad agreement. But [[investor:berkshire-hathaway|Berkshire Hathaway]]'s $65.95 billion stake is 86% of the $76.77 billion they hold in it between them. By headcount Apple is a consensus name. By dollars it is mostly one investor's position.",
+            "Holder count and dollars can tell different stories. Apple has 27 holders among these investors, which sounds like broad agreement. But [[investor:berkshire-hathaway|Berkshire Hathaway]]'s $65.95B stake is 86% of the $76.77B they hold in it between them. By headcount Apple is a consensus name. By dollars it is mostly one investor's position.",
           ],
         },
         {
           heading: "What they were buying",
           paragraphs: [
             "More investors bought Microsoft than any other stock: 19 in all, 17 adding to positions they already held and two starting new ones. Visa and Amazon drew 13 buyers each, and all 13 of Amazon's were topping up existing stakes. Meta drew 12, four of them new. Most of the buying went to companies these investors already owned.",
-            "The standout new name was [[stock:VEEV|Veeva Systems]]. Seven investors opened it from scratch, and nobody added, trimmed, or sold. The positions are small. [[investor:fundsmith|Terry Smith]]'s $145.0 million stake is the largest at 1.1% of his portfolio, and none of the seven weights it above 1.8%. Seven starter positions tell you a business landed on several research lists in the same quarter. They don't yet tell you anyone is convinced.",
-            "Energy drew new money too. Four investors opened [[stock:DVN|Devon Energy]] and four more added to it. The largest is [[investor:davis-advisors|Christopher Davis]]'s new $1.05 billion position, 4.5% of his portfolio. [[stock:SPGI|S&P Global]] picked up four new holders alongside seven adds.",
+            "The standout new name was [[stock:VEEV|Veeva Systems]]. Seven investors opened it from scratch, and nobody added, trimmed, or sold. The positions are small. [[investor:fundsmith|Terry Smith]]'s $145.0M stake is the largest at 1.1% of his portfolio, and none of the seven weights it above 1.8%. Seven starter positions tell you a business landed on several research lists in the same quarter. They don't yet tell you anyone is convinced.",
+            "Energy drew new money too. Four investors opened [[stock:DVN|Devon Energy]] and four more added to it. The largest is [[investor:davis-advisors|Christopher Davis]]'s new $1.05B position, 4.5% of his portfolio. [[stock:SPGI|S&P Global]] picked up four new holders alongside seven adds.",
           ],
         },
         {
@@ -487,9 +487,9 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "Why none of this is a signal",
           paragraphs: [
-            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is a past quarter-end snapshot of reportable long positions and says nothing about why a manager bought or what they paid. By the time you read this, the Q2 positions are more than three months old.",
-            "Q3 filings are due November 16, and the live consensus, buy, and sell pages will roll forward as they come in. Reading Cross-Fund Consensus goes deeper on the trap that consensus sets. None of this is investment advice.",
-            "Counts above are from Compounder's top-buys and top-sells pages and the holder tables on the linked stock and investor pages, for the quarter ended 2026-06-30, checked on 2026-10-19. Holder counts leave out positions those tables tag with an older quarter. Source: SEC Form 13F filings via SEC EDGAR.",
+            "A stock being widely held, or widely bought, is a reason to look closer. It is not a conclusion. A 13F is a past quarter-end snapshot of reportable long positions and says nothing about why a manager bought or what they paid. When this article was written, the Q2 positions were more than three months old.",
+            "Q3 filings are due November 16, and the live consensus, buy, and sell pages will roll forward as they come in. Reading cross-fund consensus goes deeper on the trap that consensus sets. None of this is investment advice.",
+            "Counts above are from Compounder's top-buys and top-sells pages and the holder tables on the linked stock and investor pages, for the quarter ended Jun 30, 2026, checked on Oct 19, 2026. Holder counts leave out positions those tables tag with an older quarter. Source: SEC Form 13F filings via SEC EDGAR.",
           ],
         },
       ],
@@ -507,72 +507,72 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
     },
     zh: {
       slug: "q2-2026-superinvestor-consensus",
-      title: "2026 Q2：超级投资者持有、买入与卖出了什么",
+      title: "2026Q2：超级投资者持有、买入与卖出了什么",
       description:
-        "解读 2026 Q2 的 13F 申报：Compounder 追踪的 97 位投资人最常持有哪些股票、本季买得最广和卖得最广的是谁，以及为什么大部分卖出只是减仓。",
+        "解读 2026Q2 的 13F 申报：Compounder 追踪的 97 位投资人最常持有哪些股票、本季买得最广和卖得最广的是谁，以及为什么大部分卖出只是减持。",
       published: "2026-10-19",
       written: "2026-10-19",
       updated: "2026-10-30",
       snapshotPeriod: "2026-06-30",
-      snapshotNote: "当时计入 92 位。之后修复了两位投资人的申报读取（Ackman 的 13F-NT 代报、Olstein 的零持仓申报），实时页现为 94 位。",
+      snapshotNote: "本文按写作时计入的 92 位投资人保留。此后，Ackman 的13F-NT代报和 Olstein 的零持仓申报读取问题得到修复，计入人数曾调整为 94 位。最新人数与申报状态请查看实时榜单。",
       intro:
-        "2026 年 Q2 的 13F 申报，覆盖截至 6 月 30 日的那个季度，申报截止日为 8 月 14 日。截至 2026-06-30，Compounder 追踪 97 位投资人。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论：三张榜的前排几乎是同一批大市值公司，而卖出一侧大多是减仓，很少有人真的走人。Q3 申报的截止日是 11 月 16 日（第 45 天是周六，顺延到周一），这份快照用不了多久就会被新一季替换。",
+        "2026Q2 的 13F 申报，覆盖截至 6 月 30 日的那个季度，申报截止日为 8 月 14 日。本文以截至 2026年6月30日 的 97 位追踪投资人为样本。下面是他们当时持有什么、最多人在买什么、又在卖什么。先说结论：三张榜的前排几乎是同一批大市值公司，而卖出一侧大多是减持，很少有人真的走人。Q3 申报的截止日是 11 月 16 日（第 45 天是周六，顺延到周一），本文保留这一季的历史快照，最新情况请查看实时榜单。",
       sections: [
         {
           heading: "我们在读什么",
           paragraphs: [
-            "这些数字来自 Form 13F，达到 SEC 对 Section 13(f) 证券 1 亿美元门槛等条件的机构管理人，须按规则提交这份季度申报。我们把 Compounder 超级投资者名单上各位的 Q2 申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
-            "下面所有数字只遵循一条计数规则：在 Compounder 上有 Q2 持仓数据的投资人才算。97 位里有 5 位最新数据还停在更早的季度：[[investor:pershing-square|Bill Ackman]]、Robert Olstein、Tom Bancroft、Brian Bares、Michael Burry，所以持有、买入、卖出的家数都只覆盖其余 92 位。Alphabet 的两类股 GOOGL 和 GOOG 分开计，同时持有两类的基金会在两行里各出现一次。",
-            "下面所有数字，都是 2026 年 6 月 30 日的状态。其中一些仓位此后必定已经变了，而且没有一个数字告诉你任何人当初买在什么价位。",
+            "这些数字来自 Form 13F，达到 SEC 对 Section 13(f) 证券 1亿美元门槛等条件的机构管理人，须按规则提交这份季度申报。我们把 Compounder 超级投资者名单上各位的 Q2 申报排在一起，数他们在哪里一致、又在哪里调了仓。想了解单份申报怎么读，《如何读懂 13F》讲了机制。",
+            "下面所有数字只遵循一条计数规则：在 Compounder 上有 Q2 持仓数据的投资人才算。写作时，97 位里有 5 位的数据还停在更早的季度：[[investor:pershing-square|Bill Ackman]]、Robert Olstein、Tom Bancroft、Brian Bares、Michael Burry，所以持有、买入、卖出的人数都只覆盖其余 92 位。谷歌母公司的两类股 GOOGL 和 GOOG 分开计，同时持有两类的基金会在两行里各出现一次。",
+            "下面所有数字，都是 2026年6月30日的状态。其中一些仓位此后必定已经变了，而且没有一个数字告诉你任何人当初买在什么价位。",
           ],
         },
         {
           heading: "被最多机构持有的股票",
           paragraphs: [
-            "[[stock:MSFT|Microsoft]] 是被持有得最广的标的，这 92 个组合里有 41 个持有它。其后是 [[stock:GOOGL|Alphabet]] 的 A 类股，40 家；[[stock:AMZN|Amazon]] 37 家；Alphabet 的 C 类股 35 家。[[stock:META|Meta]] 以 33 家收住前五。仅这五行，就占了这 92 个组合里的 186 个持仓。再往下是 [[stock:V|Visa]]（31）、[[stock:TSM|台积电]]（28）、[[stock:AAPL|Apple]]（27）和 [[stock:BRK.B|Berkshire Hathaway]]（26），[[stock:DIS|Disney]] 和 [[stock:MA|Mastercard]] 以 21 家并列第十。",
-            "家数和金额，讲的可能是两回事。Apple 在这批投资人里有 27 家持有，听上去是广泛共识。可这些人合计持有的 767.7 亿美元里，[[investor:berkshire-hathaway|伯克希尔]]一家就占了 659.5 亿，约 86%。按家数数，Apple 是共识股；按金额看，它基本是一家的仓位。",
+            "[[stock:MSFT|微软]] 是被持有得最广的标的，这 92 个组合里有 41 个持有它。其后是 [[stock:GOOGL|谷歌母公司]] 的 A 类股，40 位；[[stock:AMZN|亚马逊]] 37 位；谷歌母公司的 C 类股 35 位。[[stock:META|Meta]] 以 33 位收住前五。仅这五行，就占了这 92 个组合里的 186 个持仓。再往下是 [[stock:V|维萨]]（31）、[[stock:TSM|台积电]]（28）、[[stock:AAPL|苹果]]（27）和 [[stock:BRK.B|伯克希尔]]（26），[[stock:DIS|迪士尼]] 和 [[stock:MA|万事达]] 以 21 位并列第十。",
+            "人数和金额，讲的可能是两回事。苹果在这批投资人里有 27 位持有，听上去是广泛共识。可这些人合计持有的 767.7亿美元里，[[investor:berkshire-hathaway|伯克希尔]]一家就占了 659.5亿，约 86%。按持有人数看，苹果是共识股；按金额看，它基本是一家的仓位。",
           ],
         },
         {
           heading: "他们在买什么",
           paragraphs: [
-            "买 Microsoft 的人最多，一共 19 家：17 家在已有仓位上加码，2 家新开仓。Visa 和 Amazon 各有 13 家买入，其中 Amazon 的 13 家全是加仓。Meta 有 12 家买入，4 家是新开。钱大多流向这些投资人本来就持有的公司。",
-            "本季最突出的新名字是 [[stock:VEEV|Veeva Systems]]。7 位投资人从零开仓，没有一家加仓、减仓或卖出。仓位都不大：[[investor:fundsmith|Terry Smith]] 的 1.45 亿美元是最大的一笔，只占他组合的 1.1%；7 家里没有一家的权重超过 1.8%。7 个试探性仓位说明，这门生意在同一个季度进了好几家的研究名单；还说明不了有谁已经下了决心。",
-            "能源股也进了新钱。4 位投资人新开了 [[stock:DVN|Devon Energy]]，另有 4 位加仓。最大的一笔是 [[investor:davis-advisors|Christopher Davis]] 新建的 10.5 亿美元仓位，占他组合的 4.5%。[[stock:SPGI|S&P Global]] 则迎来 4 家新持有人，另有 7 家加仓。",
+            "买微软的人最多，一共 19 位：17 位在已有仓位上加码，2 位新进。维萨和亚马逊各有 13 位买入，其中亚马逊的 13 位全是增持。Meta 有 12 位买入，4 位是新进。钱大多流向这些投资人本来就持有的公司。",
+            "本季最突出的新进股票是 [[stock:VEEV|Veeva Systems]]。7 位投资人新进这只股票，其他投资人没有增持、减持或清仓。仓位都不大：[[investor:fundsmith|Terry Smith]] 的 1.45亿美元是最大的一笔，只占他组合的 1.1%；7 位里没有一位的持仓占比超过 1.8%。7 个试探性仓位说明，这门生意在同一个季度进了多位投资人的研究名单；还说明不了有谁已经下了决心。",
+            "能源股也进了新钱。4 位投资人新进了 [[stock:DVN|德文能源]]，另有 4 位增持。最大的一笔是 [[investor:davis-advisors|Christopher Davis]] 新建的 10.5亿美元仓位，占他组合的 4.5%。[[stock:SPGI|标普全球]] 则迎来 4 位新持有人，另有 7 位增持。",
           ],
         },
         {
           heading: "他们在卖什么",
           paragraphs: [
-            "Alphabet 的 A 类股排在卖出榜第一。26 位投资人卖了一部分，只有 3 位清仓：[[investor:viking-global|Andreas Halvorsen]]、[[investor:cooperman-family-office|Leon Cooperman]] 和 [[investor:arbiter-partners|Paul Isaac]]。C 类股有 19 家卖出，没有一家清仓。接下来是 Microsoft，22 家卖出、4 家清仓；Amazon 20 家卖出、无人清仓；台积电和 Meta 各 17 家。",
-            "顺着这张榜往下读，规律都一样：减仓的远多于清仓。这些人是在给仍然持有的公司调仓位大小。减仓可能是仓位涨得超出了持有人想要的比例，也可能是信心松了一点；申报不会告诉你是哪一种。",
-            "大名字里一边倒的是 Apple。12 家减仓，1 家清仓，4 家加仓，没有一家新开仓。",
+            "谷歌母公司的 A 类股排在卖出榜第一。26 位投资人卖了一部分，只有 3 位清仓：[[investor:viking-global|Andreas Halvorsen]]、[[investor:cooperman-family-office|Leon Cooperman]] 和 [[investor:arbiter-partners|Paul Isaac]]。C 类股有 19 位卖出，无人清仓。接下来是微软，22 位卖出、4 位清仓；亚马逊 20 位卖出、无人清仓；台积电和 Meta 各 17 位。",
+            "顺着这张榜往下读，规律都一样：减持的远多于清仓。这些人是在给仍然持有的公司调仓位大小。减持可能是仓位涨得超出了持有人想要的比例，也可能是信心松了一点；申报不会告诉你是哪一种。",
+            "大市值股票中，买卖明显偏向一侧的是苹果。12 位减持，1 位清仓，4 位增持，无人新进。",
           ],
         },
         {
-          heading: "同时出现在两张榜上的名字",
+          heading: "同时出现在买入榜和卖出榜的股票",
           paragraphs: [
-            "同样三个月里，Microsoft 有 19 家买、22 家卖。Amazon 是 13 对 20，Meta 12 对 17，Visa 13 对 12。大名字里最一边倒的是 Alphabet：A 类股 5 家买、26 家卖，C 类股 9 家买、19 家卖。",
-            "Q1 争议最大的 [[stock:UNH|UnitedHealth]]，这一季平静了不少。8 家买入，其中 2 家新开；13 家卖出，其中 [[investor:markel|Thomas Gayner]] 和 [[investor:appaloosa|David Tepper]] 清了仓。92 位里仍有 19 位持有它。持有家数高，只说明一只股票出现在很多人的屏幕上；他们是否认同它，是另一个问题。看 Q2 的买卖家数，这些名字的答案大多是否定的。",
+            "同样三个月里，微软有 19 位买、22 位卖。亚马逊是 13 对 20，Meta 12 对 17，维萨 13 对 12。大市值股票中买卖人数差距最大的是谷歌母公司：A 类股 5 位买、26 位卖，C 类股 9 位买、19 位卖。",
+            "Q1 争议最大的 [[stock:UNH|联合健康]]，这一季平静了不少。8 位买入，其中 2 位新进；13 位卖出，其中 [[investor:markel|Thomas Gayner]] 和 [[investor:appaloosa|David Tepper]] 清了仓。92 位里仍有 19 位持有它。持有人数高，只说明一只股票出现在很多人的屏幕上；他们是否认同它，是另一个问题。看 Q2 的买卖人数，这些股票的答案大多是否定的。",
           ],
         },
         {
           heading: "为什么这些都不是信号",
           paragraphs: [
-            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 是可申报多头的季末快照，对一位经理为什么买、买在什么价位只字不提。等你读到这里，这些 Q2 仓位已经是三个多月前的事了。",
+            "一只股票被广泛持有、或被广泛买入，只是让你该看得更近的理由，谈不上结论。13F 是可申报多头的季末快照，对一位经理为什么买、买在什么价位只字不提。写作时，这些Q2仓位已是三个多月前的快照。",
             "Q3 申报 11 月 16 日截止（第 45 天是周六，顺延到周一），共识持仓、最多买入、最多卖出这几张实时榜单会随申报陆续滚到新一季。《读懂跨基金共识》更深入地讲了共识设下的陷阱。这一切都不是投资建议。",
-            "上文家数取自 Compounder 的最多买入、最多卖出页面，以及文中链接的个股页和投资人页上的持有人表，报告期截至 2026-06-30，核对于 2026-10-19。持有家数不含这些表里标注为更早季度的仓位。来源：SEC EDGAR 上的 Form 13F 申报。",
+            "上文人数取自 Compounder 的最多买入、最多卖出页面，以及文中链接的个股页和投资人页上的持有人表，报告期截至 2026年6月30日，核对于 2026年10月19日。持有人数不含这些表里标注为更早季度的仓位。来源：SEC EDGAR 上的 Form 13F 申报。",
           ],
         },
       ],
       related: [
-        { kind: "stock", id: "MSFT", label: "Microsoft" },
-        { kind: "stock", id: "GOOGL", label: "Alphabet" },
-        { kind: "stock", id: "AMZN", label: "Amazon" },
+        { kind: "stock", id: "MSFT", label: "微软" },
+        { kind: "stock", id: "GOOGL", label: "谷歌母公司" },
+        { kind: "stock", id: "AMZN", label: "亚马逊" },
         { kind: "stock", id: "META", label: "Meta" },
-        { kind: "stock", id: "AAPL", label: "Apple" },
+        { kind: "stock", id: "AAPL", label: "苹果" },
         { kind: "stock", id: "VEEV", label: "Veeva Systems" },
-        { kind: "stock", id: "UNH", label: "UnitedHealth" },
+        { kind: "stock", id: "UNH", label: "联合健康" },
         { kind: "investor", id: "berkshire-hathaway", label: "伯克希尔" },
         { kind: "investor", id: "fundsmith", label: "Terry Smith" },
       ],
@@ -581,19 +581,19 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
   "reading-business-quality": {
     en: {
       slug: "reading-business-quality",
-      title: "What Makes a Business High Quality: Reading the Numbers Behind Superinvestor Holdings",
+      title: "What makes a business high quality: reading the numbers behind superinvestor holdings",
       description:
         "How to judge a business from a few numbers in its filings (profit margins, free cash flow, returns on capital), worked through stocks superinvestors own.",
       published: "2026-06-11",
       updated: "2026-10-30",
       intro:
-        "Compounder shows you which stocks the superinvestors own and how that ownership shifts each quarter. Knowing who holds a stock is a starting point. The harder and more useful question is whether the underlying business is any good. You can get a long way toward answering that from a handful of numbers in a company's financial statements, and every stock page on the site carries them. This is a guide to reading those numbers, worked through the businesses that turn up most often in superinvestor portfolios. None of it is a verdict on any stock. It is a way to look.",
+        "Compounder shows you which stocks the superinvestors own and how that ownership shifts each quarter. Knowing who holds a stock is a starting point. The harder and more useful question is whether the underlying business is any good. You can get a long way toward answering that from a handful of numbers in a company's financial statements, where the available filings provide enough data. This is a guide to reading those numbers, worked through the businesses that turn up most often in superinvestor portfolios. None of it is a verdict on any stock. It is a way to look.",
       sections: [
         {
           heading: "Quality comes before price",
           paragraphs: [
             "Value investors going back to Graham and Buffett keep two questions apart that beginners tend to blur: is this a good business, and is it trading at a good price. A wonderful company bought at too high a price is still a bad investment. A mediocre one bought cheaply enough can work out fine. This guide is only about the first question. Price is its own discipline, and the numbers here say nothing about it.",
-            "There is no single 'quality' number. You build a picture from a few angles: how profitable the business is, whether that profit turns into cash, how well it earns on the capital it uses, and how steady all of it looks over time. The figures on Compounder's stock pages come straight from SEC filings, so you can run this read on any holding you find on the site.",
+            "There is no single 'quality' number. You build a picture from a few angles: how profitable the business is, whether that profit turns into cash, how well it earns on the capital it uses, and how steady all of it looks over time. The figures on Compounder's stock pages come straight from SEC filings, so you can use them where available to compare a holding’s business fundamentals.",
           ],
         },
         {
@@ -601,14 +601,14 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "Net margin is the share of each dollar of revenue that survives all the way down to profit. It is the quickest read on pricing power. A business that can charge well above what it costs to serve a customer, and keep doing it, posts a high and steady margin. One fighting on price cannot.",
             "The businesses superinvestors cluster in tend to sit at the high end. Use fiscal 2025 as a dated example, as reported in each company’s 10-K. [[stock:V|Visa]] kept 50.1% of revenue as net profit in the year ended September 30, 2025, and [[stock:MA|Mastercard]] 45.6% in calendar 2025. [[stock:GOOGL|Alphabet]] ran 32.8%, [[stock:MCO|Moody's]] 31.9%, and [[stock:META|Meta]] 30.1%, also for calendar 2025. Those are extraordinary numbers, and they are not an accident: a payment network or a ratings franchise takes a small cut of an enormous flow it does not have to fund. [[stock:AAPL|Apple]], at 26.9% for the year ended September 27, 2025, and [[stock:AMZN|Amazon]], at 10.8% for calendar 2025, sit lower, which is the nature of selling physical products and running warehouses rather than tollbooths.",
-            "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read full years and the trend, not one quarter. In the quarter ended June 30, 2026, Alphabet reported net income equal to 94% of its revenue, because $99.0 billion of its $138.8 billion in pretax income came from gains on investments it holds; operating income that quarter was $40.8 billion. That is why the figures here use full fiscal years. A margin that has slid for several years usually means something the latest figure hides.",
+            "Two cautions. Compare margins inside an industry, not across it, because a supermarket and a software company live in different worlds. And read full years and the trend, not one quarter. In the quarter ended June 30, 2026, Alphabet reported net income equal to 94% of its revenue, because $99.0B of its $138.8B in pretax income came from gains on investments it holds; operating income that quarter was $40.8B. That is why the figures here use full fiscal years. A margin that has slid for several years usually means something the latest figure hides.",
           ],
         },
         {
           heading: "Free cash flow: does the profit turn into cash?",
           paragraphs: [
             "Accounting profit and cash are not the same thing, and the gap between them tells you a lot about a business. Free cash flow is the cash left after a company pays to run its operations and reinvest in them. FCF margin is that cash as a share of revenue. Buffett's 'owner earnings' is the same instinct: what the owner could actually take out at the end of the year.",
-            "Put net margin and FCF margin side by side and the businesses separate. Visa turned 53.9% of its fiscal 2025 revenue into free cash, more than its 50.1% net margin, because it barely spends on physical assets: capital spending was $1.5 billion against $40.0 billion of revenue. Mastercard has the same shape, a 52.3% FCF margin against 45.6% net in 2025. These are capital-light machines. Apple's free cash ran a little below its profit in fiscal 2025, 23.7% against 26.9%. Alphabet is a different case: a 32.8% net margin but an 18.2% FCF margin in 2025, because it is pouring money into data centers and chips. Its capital spending went from $52.5 billion in 2024 to $91.4 billion in 2025. Amazon's FCF margin was 1.1% on the same basis, against a 10.8% net margin, as $131.8 billion of capital spending absorbed almost all of its $139.5 billion in operating cash flow.",
+            "Put net margin and FCF margin side by side and the businesses separate. Visa turned 53.9% of its fiscal 2025 revenue into free cash, more than its 50.1% net margin, because it barely spends on physical assets: capital spending was $1.5B against $40.0B of revenue. Mastercard has the same shape, a 52.3% FCF margin against 45.6% net in 2025. These are capital-light machines. Apple's free-cash-flow margin was a little below its net margin in fiscal 2025, 23.7% against 26.9%. Alphabet is a different case: a 32.8% net margin but an 18.2% FCF margin in 2025, because it is pouring money into data centers and chips. Its capital spending went from $52.5B in 2024 to $91.4B in 2025. Amazon's FCF margin was 1.1% on the same basis, against a 10.8% net margin, as $131.8B of capital spending absorbed almost all of its $139.5B in operating cash flow.",
             "A low or negative FCF margin is not automatically a red flag. It can mean a weak business, or a strong one spending hard on its future. Telling those apart is the actual work, and it is why one number is never enough.",
           ],
         },
@@ -622,7 +622,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "Reading them together",
           paragraphs: [
-            "No single number settles anything, and the interesting cases are the ones where the metrics seem to disagree. Alphabet's free cash flow running at a little more than half its net margin is not a flaw. It is a company in a heavy building phase, and the question is whether that spending pays off later. [[stock:BRK.B|Berkshire Hathaway]] shows a low headline return on equity, which mostly reflects an enormous equity base built over decades rather than a weak business. Amazon spent most of its life with little or no free cash flow, by choice.",
+            "No single number settles anything, and the interesting cases are the ones where the metrics seem to disagree. Alphabet's free-cash-flow margin was a little more than half its net margin. The company was investing heavily; the question is whether that spending will earn a return. [[stock:BRK.B|Berkshire Hathaway]] shows a low headline return on equity, which mostly reflects an enormous equity base built over decades rather than a weak business. Amazon spent most of its life with little or no free cash flow, by choice.",
             "The reason to look at several metrics is that each one checks the others. A fat margin with no cash behind it, a high return on capital sitting on a pile of debt, a number that looks fine this quarter but has fallen for three years: each of those only shows up when you line the figures up together. Where the site marks data as incomplete or leaves a field blank, that is part of the read too. Treat a gap as a question, not a pass.",
           ],
         },
@@ -631,7 +631,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           paragraphs: [
             "These figures describe a business as it was on its last filing, up to a few months ago. They say nothing about what comes next. A moat can erode, a new manager can change how capital gets spent, an industry can turn. They also say nothing about price, which is what actually decides your return. A great business is not automatically a great investment. What you pay decides that.",
             "So treat all of this as a way to ask better questions about the companies superinvestors own, not a scorecard that picks them for you. A 13F tells you who holds a stock. These numbers help you judge the business underneath it. What you do with that judgment, and at what price, is yours alone, and none of this is investment advice. The dated examples above stay tied to their filings; stock pages show the latest available figures, if you want to run the read yourself.",
-            "Margin and free-cash-flow figures above are a fiscal-2025 snapshot, as reported in its 10-K and shown on Compounder: Visa, fiscal year ended 2025-09-30; Apple, fiscal year ended 2025-09-27; Alphabet, Meta, Mastercard, Moody's, and Amazon, fiscal year ended 2025-12-31. The single Alphabet quarter cited is from its 10-Q for the period ended 2026-06-30. Figures checked on 2026-10-19. Source: SEC filings via SEC EDGAR.",
+            "Margin and free-cash-flow figures above are a fiscal-2025 snapshot, as reported in its 10-K and shown on Compounder: Visa, fiscal year ended Sep 30, 2025; Apple, fiscal year ended Sep 27, 2025; Alphabet, Meta, Mastercard, Moody's, and Amazon, fiscal year ended Dec 31, 2025. The single Alphabet quarter cited is from its 10-Q for the period ended Jun 30, 2026. Figures checked on Oct 19, 2026. Source: SEC filings via SEC EDGAR.",
           ],
         },
       ],
@@ -654,42 +654,42 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       published: "2026-06-11",
       updated: "2026-10-30",
       intro:
-        "Compounder 让你看到超级投资者持有哪些股票、这份持有每季怎么变。知道谁在持有，只是起点。更难也更有用的问题是：底下那门生意到底好不好。这件事，你能从公司财报里的几个数字走出很远，而站上每个个股页都带着这些数字。这篇就讲怎么读它们，拿超级投资者持仓里最常出现的那些生意逐一做案例。它不是对任何一只股票的定论，而是一种看法的方法。",
+        "知道谁持有一只股票，只是研究的起点。接下来要问：这门生意好不好？这篇用利润率、现金流和资本回报率三个角度，说明怎样从财报判断生意质量。案例来自超级投资者的持仓，不是对这些股票的投资结论。",
       sections: [
         {
           heading: "先看质量，再看价格",
           paragraphs: [
             "从格雷厄姆到巴菲特，价投始终把两个问题分开，而新手往往把它们混在一起：这是不是一门好生意，以及它现在的价格是否划算。一家好公司，买得太贵，仍是一笔糟糕的投资；一家平庸公司，买得足够便宜，也可能不错。这篇只谈第一个问题。价格是另一门功课，下面这些数字对它只字不提。",
-            "没有哪一个数字叫“质量”。你要从几个角度拼出一幅图：这门生意多赚钱、利润能不能变成现金、它用的资本回报如何、以及这一切常年看下来稳不稳。Compounder 个股页上的数字直接来自 SEC 申报，所以你能对站上任何一个持仓跑一遍这套读法。",
+            "没有哪一个数字叫“质量”。你要从几个角度拼出一幅图：这门生意多赚钱、利润能不能变成现金、它用的资本回报如何、以及这一切常年看下来稳不稳。Compounder 个股页上的数字直接来自 SEC 申报，资料足够时，你可以按这套方法比较生意质量。",
           ],
         },
         {
-          heading: "利润率：对定价权的第一眼",
+          heading: "利润率：观察定价权",
           paragraphs: [
-            "净利率，是每一块钱营收里最终活到利润那一步的比例。它是对定价权最快的一眼。一门生意若能收得远高于服务一个客户的成本，还能一直收下去，就会有又高又稳的利润率；靠打价格战的，做不到。",
-            "超级投资者扎堆的生意，往往落在高端。按各家最近一个完整财年的 10-K：[[stock:V|Visa]] 截至 2025 年 9 月 30 日的财年净利率 50.1%，[[stock:MA|Mastercard]] 2025 自然年 45.6%；[[stock:GOOGL|Alphabet]] 32.8%、[[stock:MCO|Moody's]] 31.9%、[[stock:META|Meta]] 30.1%，同样是 2025 自然年。这些是惊人的数字，也并非偶然：一家支付网络或评级特许经营，只是从一笔它不必出资的庞大流水里抽一小道。[[stock:AAPL|Apple]] 截至 2025 年 9 月 27 日的财年是 26.9%，[[stock:AMZN|Amazon]] 2025 自然年 10.8%，要低一些，这是卖实物、跑仓库而非守收费站的本性。",
-            "两点提醒。利润率要在同行业内比，别跨行业比，因为超市和软件公司活在两个世界。还要按整年读、看趋势，别盯着某一个季度。截至 2026 年 6 月 30 日那一季，Alphabet 报出的净利润相当于营收的 94%，因为它 1388 亿美元的税前利润里，有 990 亿来自所持投资的公允价值收益；那一季的经营利润是 408 亿。这也是本文统一用完整财年数字的原因。一个连跌几年的利润率，通常藏着最新数字看不出的东西。",
+            "净利率表示营收最终有多少转化为净利润。持续较高的利润率可以帮助你观察定价权，但还要结合同行和多年趋势判断。",
+            "超级投资者扎堆的生意，往往落在高端。以各家2025财年的10-K为历史样本：[[stock:V|维萨]] 截至 2025年9月30日的财年净利率 50.1%，[[stock:MA|万事达]] 2025 自然年 45.6%；[[stock:GOOGL|谷歌母公司]] 32.8%、[[stock:MCO|穆迪]] 31.9%、[[stock:META|Meta]] 30.1%，同样是 2025 自然年。这些是惊人的数字，也并非偶然：一家支付网络或评级特许经营，只是从一笔它不必出资的庞大流水里抽一小道。[[stock:AAPL|苹果]] 截至 2025年9月27日的财年是 26.9%，[[stock:AMZN|亚马逊]] 2025 自然年 10.8%，要低一些，这是卖实物、跑仓库而非守收费站的本性。",
+            "两点提醒。利润率要在同行业内比，别跨行业比，因为超市和软件公司活在两个世界。还要按整年读、看趋势，别盯着某一个季度。截至 2026年6月30日那一季，谷歌母公司报出的净利润相当于营收的 94%，因为它 1388亿美元的税前利润里，有 990亿来自所持投资的公允价值收益；那一季的经营利润是 408亿。这也是本文统一用完整财年数字的原因。一个连跌几年的利润率，通常藏着最新数字看不出的东西。",
           ],
         },
         {
           heading: "自由现金流：利润变成现金了吗？",
           paragraphs: [
-            "账面利润和现金不是一回事，而两者之间的缺口，能告诉你关于一门生意的很多事。自由现金流，是公司付完维持运营、再投资运营的钱之后剩下的现金。FCF 利润率，就是这笔现金占营收的比例。巴菲特的“股东盈余”（owner earnings）是同一个直觉：到年底，所有者真正能拿走多少。",
-            "把净利率和 FCF 利润率并排放，生意就分出来了。Visa 2025 财年把 53.9% 的营收变成了自由现金，高过它 50.1% 的净利率，因为它几乎不用花钱买实物资产：400 亿美元营收，资本开支只有 15 亿。Mastercard 是同一个形状，2025 年 FCF 利润率 52.3%，净利率 45.6%。这些都是轻资本的机器。Apple 2025 财年的自由现金略低于利润，23.7% 对 26.9%。Alphabet 是另一种情形：2025 年净利率 32.8%，FCF 利润率却只有 18.2%，因为它正把钱砸进数据中心和芯片，资本开支从 2024 年的 525 亿美元涨到 2025 年的 914 亿。Amazon 同口径下 FCF 利润率只有 1.1%，净利率 10.8%：1318 亿美元的资本开支，吃掉了 1395 亿经营现金流里的绝大部分。",
-            "FCF 利润率低、甚至为负，不一定是坏信号。它可能意味着一门弱生意，也可能是一门强生意在为未来重金投入。把这两者分辨开，才是真正的功夫，也正是为什么一个数字永远不够。",
+            "账面利润和现金不是一回事，而两者之间的缺口，能告诉你关于一门生意的很多事。自由现金流，是公司付完维持运营、再投资运营的钱之后剩下的现金。自由现金流利润率（FCF margin），就是这笔现金占营收的比例。巴菲特所说的所有者盈利（owner earnings），关注的是所有者最终可以拿走多少现金。",
+            "把净利率和自由现金流利润率并排放，生意就分出来了。维萨 2025 财年把 53.9% 的营收变成了自由现金，高过它 50.1% 的净利率，因为它几乎不用花钱买实物资产：400亿美元营收，资本开支只有 15亿。万事达也呈现类似的利润与现金流关系：2025 年自由现金流利润率 52.3%，净利率 45.6%。这些都是轻资本的机器。苹果 2025 财年的自由现金流利润率略低于净利率，分别为23.7%和26.9%。谷歌母公司是另一种情形：2025 年净利率 32.8%，自由现金流利润率却只有 18.2%，因为它正把钱砸进数据中心和芯片，资本开支从 2024 年的 525亿美元涨到 2025 年的 914亿。亚马逊同口径下自由现金流利润率只有 1.1%，净利率 10.8%：1318亿美元的资本开支，吃掉了 1395亿经营现金流里的绝大部分。",
+            "自由现金流利润率低、甚至为负，不一定是坏信号。它可能意味着一门弱生意，也可能是一门强生意在为未来重金投入。把这两者分辨开，才是真正的功夫，也正是为什么一个数字永远不够。",
           ],
         },
         {
           heading: "资本回报率，以及它为什么骗人",
           paragraphs: [
             "净资产收益率（ROE）问的是：股东留在公司里的钱，公司从中赚出多少利润。一门能赚到高资本回报、又能按那个回报率把利润再投出去的生意，是投资里最接近“复利机器”的东西，这也是为什么这个指标处在质量投资的中心附近。",
-            "它也是这些数字里最容易读错的，有两种错法。债务和回购会美化它：股东权益是分母，所以一家大举借债、或回购股票直到权益所剩无几的公司，能在脆弱的底子上显出耀眼的回报；这样赚来的高数字，远不如同样的数字坐在稳如堡垒的资产负债表上值钱。还有，回报要按整年、跨周期来读，而不是看单一季度。Compounder 显示的是每期的值，所以请把它当成一个提示：去把多年的全貌和背后的债务调出来看，别凭它本身下定论。",
+            "ROE也容易被误读。借债和回购都可能让股东权益变小，从而推高ROE。因此，同样高的ROE，还要看资产负债表是否稳健。回报要按整年、跨周期来读，而不是看单一季度。Compounder显示的是每期的值，你还需要查看多年趋势和债务情况，不能只凭一个数字下定论。",
           ],
         },
         {
           heading: "把它们放在一起读",
           paragraphs: [
-            "没有哪个数字能单独说了算，而真正有意思的，是那些指标看上去彼此矛盾的情形。Alphabet 的自由现金流只有净利率的一半出头，这不是缺陷。它是一家正处在重投入期的公司，问题在于那些花费日后是否值回。[[stock:BRK.B|Berkshire Hathaway]] 的账面 ROE 很低，这多半反映的是几十年攒下的庞大权益基数，并不说明它是一门弱生意。Amazon 大半生都靠主动选择，过着几乎没有自由现金流的日子。",
+            "没有哪个数字能单独说了算，而真正有意思的，是那些指标看上去彼此矛盾的情形。谷歌母公司的自由现金流利润率约为净利率的一半。这反映了它当时的大额投入，接下来要判断的是，这些投入能否带来回报。[[stock:BRK.B|伯克希尔]] 的账面 ROE 很低，这多半反映的是几十年攒下的庞大权益基数，并不说明它是一门弱生意。亚马逊大半生都靠主动选择，过着几乎没有自由现金流的日子。",
             "看好几个指标的意义，在于每一个都在校验其他几个。一个有利润却没有现金垫底的高利润率、一个坐在一堆债务上的高资本回报、一个这季看着还行却已连跌三年的数字：这些都只有在你把数字排在一起时才会现形。站上把数据标为不完整、或某个字段留空的地方，也是这套读法的一部分。把缺口当成一个问题，而不是一次放行。",
           ],
         },
@@ -697,20 +697,20 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
           heading: "数字读不出什么",
           paragraphs: [
             "这些数字描述的，是一门生意在它上一份申报时的样子，可能已是几个月前。它们对接下来会怎样只字不提：护城河会被侵蚀、一位新管理者会改变资本怎么花、一个行业会转向。它们对价格也只字不提，而价格才真正决定你的回报。一门好生意，并不自动等于一笔好投资。你付了多少，才决定这一点。",
-            "所以把这一切当作向超级投资者所持公司提出更好问题的方法，而不是一张替你挑好股票的评分表。一份 13F 告诉你谁在持有一只股票；这些数字帮你判断它底下那门生意。你拿这份判断去做什么、在什么价位做，只属于你自己，而这一切都不是投资建议。上面每个数字都在个股页上，每期申报刷新，你想自己跑一遍读法，随时可以。",
-            "上文的利润率和自由现金流数字，取自各公司最近一个完整财年的 10-K（即 Compounder 上展示的年度数据）：Visa 财年截至 2025-09-30；Apple 财年截至 2025-09-27；Alphabet、Meta、Mastercard、Moody's、Amazon 财年截至 2025-12-31。文中单独引用的 Alphabet 那一季，出自其截至 2026-06-30 的 10-Q。数字核对于 2026-10-19。来源：SEC EDGAR 申报。",
+            "所以把这一切当作向超级投资者所持公司提出更好问题的方法，而不是一张替你挑好股票的评分表。一份 13F 告诉你谁在持有一只股票；这些数字帮你判断它底下那门生意。你拿这份判断去做什么、在什么价位做，只属于你自己，而这一切都不是投资建议。上面的案例保留各自申报期的历史数字；个股页展示最新可用数据，你可以据此重新比较。",
+            "上文的利润率和自由现金流数字，取自各公司2025财年的10-K历史样本：维萨财年截至 2025年9月30日；苹果财年截至 2025年9月27日；谷歌母公司、Meta、万事达、穆迪、亚马逊财年截至 2025年12月31日。文中单独引用的谷歌母公司那一季，出自其截至 2026年6月30日 的 10-Q。数字核对于 2026年10月19日。来源：SEC EDGAR 申报。",
           ],
         },
       ],
       related: [
-        { kind: "stock", id: "V", label: "Visa" },
-        { kind: "stock", id: "MA", label: "Mastercard" },
-        { kind: "stock", id: "GOOGL", label: "Alphabet" },
-        { kind: "stock", id: "MCO", label: "Moody's" },
+        { kind: "stock", id: "V", label: "维萨" },
+        { kind: "stock", id: "MA", label: "万事达" },
+        { kind: "stock", id: "GOOGL", label: "谷歌母公司" },
+        { kind: "stock", id: "MCO", label: "穆迪" },
         { kind: "stock", id: "META", label: "Meta" },
-        { kind: "stock", id: "AAPL", label: "Apple" },
-        { kind: "stock", id: "AMZN", label: "Amazon" },
-        { kind: "stock", id: "BRK.B", label: "Berkshire Hathaway" },
+        { kind: "stock", id: "AAPL", label: "苹果" },
+        { kind: "stock", id: "AMZN", label: "亚马逊" },
+        { kind: "stock", id: "BRK.B", label: "伯克希尔" },
       ],
     },
   },
@@ -743,7 +743,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "The discount rate is your opportunity cost",
           paragraphs: [
-            "'Discounted' is the word most people skip, and it's the one that carries the weight. In that 1999 Sun Valley talk, Buffett stripped investing down to a sentence: laying out money today to get more money back tomorrow. If that's the deal, a dollar the business earns ten years from now can't be worth a full dollar to you today. You'd rather have the dollar now and put it to work in the meantime. So you knock future cash down to reflect the wait, and how far you knock it down is the discount rate.",
+            "'Discounted' is the word most people skip, and it's the one that carries the weight. In a 1999 talk at Sun Valley, Buffett stripped investing down to a sentence: laying out money today to get more money back tomorrow. If that's the deal, a dollar the business earns ten years from now can't be worth a full dollar to you today. You'd rather have the dollar now and put it to work in the meantime. So you knock future cash down to reflect the wait, and how far you knock it down is the discount rate.",
             "That rate is anything but a technicality. In the same talk, [[investor:berkshire-hathaway|Buffett]] called interest rates the gravity of finance: 'interest rates act as gravity behaves in the physical world. At all times, in all markets, in all parts of the world, the tiniest change in rates changes the value of every financial asset.' A dollar arriving years from now is worth far less when rates are 13% than when they're 4%. Push rates up and every valuation gets pulled down; let them fall and everything floats higher.",
             "Where does the rate come from? Duan gives the ground-level answer: it's really your opportunity cost, and the floor under it is the risk-free rate, something close to the yield on U.S. Treasuries. Compounder uses the ten-year Treasury yield as an anchor when setting its discount assumptions. It's the gravity the rest of your money gets weighed against.",
           ],
@@ -751,7 +751,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "You can only value what you understand",
           paragraphs: [
-            "The four-concept version of value investing has a fourth leg that Graham didn't lean on and Buffett added from fifty years at it: the circle of competence. You can only estimate the future cash of a business you truly understand, and for most of us, most businesses sit outside that circle.",
+            "Another key idea is the circle of competence. You can only estimate the future cash of a business you truly understand, and for most of us, most businesses sit outside that circle.",
             "[[investor:himalaya-capital|Li Lu]]'s version cuts to the edge of it: 'a competence without a boundary isn't real competence.' A view you actually hold is one where you can name the conditions that would prove you wrong. Duan gives the working test. Understanding a company means you can roughly estimate its future cash, and the honest sign that you can is that you stop asking other people whether you understand it. What makes that cash estimable at all is the business model underneath it, and the culture running it. A durable business model, Duan says, is what keeps the future cash coming.",
             "If you can't understand a business, you have no way to know what it's worth. So you leave it alone, even when the price looks cheap.",
           ],
@@ -773,7 +773,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "How this shows up on Compounder",
           paragraphs: [
-            "This is the frame behind what you see on a stock page here. The value estimate shows up as a band, not a single target, because an honest estimate is a range. The margin-of-safety figure only appears when the price sits genuinely below intrinsic value, since flashing a discount on a fairly priced stock would just be noise. And the ten-year Treasury yield sits under all of it as the discount anchor, because that's the opportunity cost everything gets measured against.",
+            "This is the frame behind what you see on a stock page here. The page shows an estimated value range because valuation involves uncertainty. The margin-of-safety figure only appears when the price sits genuinely below intrinsic value, since flashing a discount on a fairly priced stock would just be noise. And the ten-year Treasury yield sits under all of it as the discount anchor, because that's the opportunity cost everything gets measured against.",
             "None of this tells you to buy or sell anything. It's the list of questions worth asking before you decide, and the deciding is yours.",
           ],
         },
@@ -788,7 +788,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       slug: "what-is-intrinsic-value",
       title: "一只股票到底值多少钱",
       description:
-        "内在价值，是价值投资底下最根本的一个概念。它到底是什么、为什么算不出一个精确的数字，以及格雷厄姆、巴菲特、李录、段永平如何一步步把它讲清楚。",
+        "内在价值是什么，为什么估值需要一个区间，以及格雷厄姆、巴菲特、李录、段永平如何判断价格与价值。",
       published: "2026-07-12",
       updated: "2026-10-30",
       intro:
@@ -812,7 +812,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "折现率就是你的机会成本",
           paragraphs: [
-            "「折现」这两个字大多数人会跳过，可它才是最要紧的。就在 1999 年太阳谷那场演讲里，巴菲特把投资剥到只剩一句：今天付出钱，是为了明天收回更多的钱。如果是这么个买卖，那么生意十年后赚到的一块钱，今天对你就不可能值满满一块。你宁愿现在就拿到，好让它在这中间去干活。所以你把未来的现金往下打个折，来抵这段等待；打多深，就是折现率。",
+            "「折现」这两个字大多数人会跳过，可它才是最要紧的。在1999年的太阳谷演讲中，巴菲特把投资剥到只剩一句：今天付出钱，是为了明天收回更多的钱。如果是这么个买卖，那么生意十年后赚到的一块钱，今天对你就不可能值满满一块。你宁愿现在就拿到，好让它在这中间去干活。所以你把未来的现金往下打个折，来抵这段等待；打多深，就是折现率。",
             "这个折现率绝不是什么技术细节。还是那场演讲，[[investor:berkshire-hathaway|巴菲特]]把利率叫作金融世界的地心引力：「利率之于金融，如同地心引力之于物质。任何时候、任何市场、世界任何角落，利率哪怕最微小的变动，都会改变每一项金融资产的价值。」同样一块多年后才到手的钱，利率 13% 时远不如 4% 时值钱。利率往上顶，所有估值都被往下拽；利率一落，一切又往上浮。",
             "折现率从哪儿来？段永平给的答案最实在：它其实就是你的机会成本，而它的底，是无风险回报率，差不多就是美国国债的利率。本站用十年期美国国债收益率作为折现假设的一个锚。它就是你其余的钱用来称重的那股地心引力。",
           ],
@@ -820,7 +820,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "你只能给看得懂的生意估值",
           paragraphs: [
-            "把价值投资讲成四个基本概念，第四条是格雷厄姆没倚重、巴菲特干了五十年才补上的：能力圈。你只能估出一门你真正看得懂的生意的未来现金，而对我们大多数人来说，大多数生意都在这个圈子外头。",
+            "另一个关键概念是能力圈。你只能估出一门你真正看得懂的生意的未来现金，而对我们大多数人来说，大多数生意都在这个圈子外头。",
             "[[investor:himalaya-capital|李录]]的说法直指它的边：「没有边界的能力，就不是真的能力。」你真正持有的观点，是你说得出什么条件会证明它错。段永平给了可上手的判据：看懂一家公司，就是你能大致估出它的未来现金流；而你真能估的诚实信号，是你不再想去问别人「我到底看懂了没」。让这笔现金变得可估的，是它底下的生意模式，和运营它的企业文化。段永平说，好的生意模式，才能让现金一年年不断地流出来。",
             "所以一门你看不懂的生意，你根本无从知道它值多少。这不是价值低，是没有价值可谈。哪怕价格看着便宜，也放着别碰。",
           ],
@@ -842,7 +842,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
         {
           heading: "这些在 Compounder 上怎么体现",
           paragraphs: [
-            "这就是你在这里个股页上看到的东西背后的框架。价值估算显示成一条带，不是单一目标价，因为诚实的估计本就是个区间。安全边际的数字，只在股价确实低于内在价值时才出现，因为给一只定价合理的股票标个「折扣」，只是噪音。而十年期美国国债收益率垫在这一切底下，作为折现的锚，因为那是一切用来衡量的机会成本。",
+            "这就是你在这里个股页上看到的东西背后的框架。页面以价值区间展示估算结果，因为估值本身就有不确定性。安全边际的数字，只在股价确实低于内在价值时才出现，因为给一只定价合理的股票标个「折扣」，只是噪音。而十年期美国国债收益率垫在这一切底下，作为折现的锚，因为那是一切用来衡量的机会成本。",
             "这里没有一句叫你买或卖什么。它只是你自己下判断前该先问的一组问题。答案，没人能替你给。",
           ],
         },
@@ -850,7 +850,7 @@ const ARTICLES: Record<string, Record<Lang, Article>> = {
       related: [
         { kind: "investor", id: "himalaya-capital", label: "李录" },
         { kind: "investor", id: "hh-international", label: "段永平" },
-        { kind: "investor", id: "berkshire-hathaway", label: "Berkshire Hathaway" },
+        { kind: "investor", id: "berkshire-hathaway", label: "伯克希尔" },
       ],
     },
   },
@@ -892,12 +892,12 @@ export const FEATURED_SLUG = "what-is-intrinsic-value";
 export const BRAND: Record<Lang, { body: string; aboutLabel: string }> = {
   en: {
     body:
-      "Compounder comes out of the value-investing tradition — Graham's margin of safety, Buffett's preference for good businesses at fair prices held for years. We pull superinvestors' 13F filings and valuation into one place and keep it readable, so the judgment stays yours. Everything here is for learning, not investment advice.",
+      "Compounder brings together superinvestor holdings and stock valuations as a starting point for research. The judgment stays yours. For education only; not investment advice.",
     aboutLabel: "About Compounder",
   },
   zh: {
     body:
-      "Compounder 出自价值投资这一脉：格雷厄姆的安全边际，巴菲特那种以合理价格买好生意、然后拿住多年的偏好。我们把超级投资者的 13F 和估值归到一处、做得可读，判断留给你。这里的一切只供学习，不构成投资建议。",
+      "Compounder整理超级投资者的持仓与个股估值，帮助你从公开数据开始研究。判断由你自己做。这里的内容仅供学习，不构成投资建议。",
     aboutLabel: "关于 Compounder",
   },
 };

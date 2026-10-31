@@ -15,14 +15,14 @@ const t = (lang: Lang) =>
     ? {
         link: "联系我们",
         title: "联系我们",
-        subtitle: "有问题、反馈或合作意向?给我们留言,我们会尽快回复。",
-        name: "称呼(可选)",
+        subtitle: "有问题、反馈或合作意向？给我们留言，我们会尽快回复。",
+        name: "称呼（可选）",
         email: "你的邮箱",
         message: "留言",
         send: "发送",
         sending: "发送中…",
-        ok: "已收到,谢谢!我们会通过你填写的邮箱回复。",
-        error: "发送失败,请稍后再试。",
+        ok: "已收到，谢谢！我们会通过你填写的邮箱回复。",
+        error: "发送失败，请稍后再试。",
         errors: {
           invalid_email: "请填写有效的邮箱地址。",
           too_short: "留言太短了，多写几句吧。",
@@ -31,8 +31,8 @@ const t = (lang: Lang) =>
         close: "关闭",
       }
     : {
-        link: "Contact Us",
-        title: "Contact Us",
+        link: "Contact us",
+        title: "Contact us",
         subtitle: "Questions, feedback, or partnership ideas? Drop us a note and we'll get back to you.",
         name: "Name (optional)",
         email: "Your email",

@@ -1,3 +1,5 @@
+import { notFoundMetadata } from "@/lib/notFoundMetadata";
+import { adsRatioDisclosure, perSecurityUnit, type SecurityUnit } from "@/lib/valuation/displayFacts";
 import { IDENTITY_QUARANTINES, isIdentityQuarantined } from "@/lib/securities/securityIdentity";
 import { shares as formatShares } from "@/lib/i18n/format";
 import React from "react";
@@ -22,7 +24,7 @@ import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
 import { EntityPage } from "@/components/entity/EntityPage";
 import { NewsletterCTA } from "@/components/entity/NewsletterCTA";
 import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
-import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
+import { formatUSD, cleanIssuer, fmtMarginPct, fmtPrice, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
 import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, snippetWidth, securitySchemaType, edgar13fSourceUrl } from "@/lib/seo";
@@ -106,6 +108,13 @@ export async function generateMetadata({
   const [snap, idx] = await Promise.all([readStockHolders(ticker), getManagerIndex()]);
   const metaNow = new Date();
   const held = (snap ?? []).filter((r) => r.kind !== "exited" && countsAsCurrentHolder(r.period, metaNow));
+  // Match the page's known missing-holder state. Keep generic metadata when local data is unavailable.
+  if (snap && snap.length > 0 && held.length === 0) return notFoundMetadata(lang);
+  if (snap?.length === 0 && cusips.length === 0 && idx.managers.length > 0) {
+    const details = await Promise.all(idx.managers.map(m => getManagerDetail(m.slug)));
+    const hasFallbackHolder = details.some(d => d && countsAsCurrentHolder(d.latest.period, metaNow) && d.latest.holdings.some(h => !h.putCall && h.cusip === ticker));
+    if (!hasFallbackHolder) return notFoundMetadata(lang);
+  }
   const displayPeriod =
     effectiveMovesPeriod(idx.managers.map((m) => m.period), metaNow).period ??
     globalLatestPeriod(held.map((r) => r.period ?? null));
@@ -204,11 +213,13 @@ const HOLDERS_VISIBLE = 10;
 function HoldersTable({
   holders,
   lang,
+  securityUnit = "share",
   asOfPeriod,
   seasonNote,
   trend,
 }: {
   holders: HolderRow[];
+  securityUnit?: "share" | "ADS";
   trend: readonly number[];
   lang: Lang;
   /** 页面"截至"季度;与之不同期的行(落后的旧申报、已交下一季的早申报)标出各自季度。 */
@@ -244,7 +255,7 @@ function HoldersTable({
       ),
     },
     { key: "value", header: lang === "zh" ? `${t.cols.value}（美元）` : t.cols.value, align: "right", width: "w-32", cell: (r) => formatUSD(r.value, lang, "table") },
-    { key: "shares", header: lang === "zh" ? "持股数（股）" : t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => formatShares(r.shares, lang) },
+    { key: "shares", header: securityUnit === "ADS" ? (lang === "zh" ? "持仓数量（ADS）" : "ADS held") : lang === "zh" ? "持股数（股）" : t.cols.shares, align: "right", width: "w-32", hideOnMobile: true, cell: (r) => formatShares(r.shares, lang) },
     { key: "weight", header: t.cols.weight, align: "right", width: "w-40", cell: (r) => <WeightQoQ cur={r.weight} prior={r.priorWeight} lang={lang} /> },
   ];
 
@@ -445,6 +456,9 @@ export default async function StockTickerPage({
   // ADR/ADS 归一化:ADR 用每 ADS 口径;ADR 但比例未策展 → 视同无地板(卡片走 no-floor 分支,不显示错带)。
   const { securityType, adsRatio } = await getSecurityMeta(ticker);
   const ads = resolveAds(securityType, adsRatio);
+  const securityUnit: SecurityUnit = securityType === "ADR" ? "ADS" : "share";
+  const perUnit = perSecurityUnit(securityUnit, lang);
+  const adsNote = adsRatioDisclosure(securityUnit, securityUnit === "ADS" ? ads.ratio : undefined, lang);
   // SIC 用于金融股(银行/保险)判定 → 引擎改用可持续增长率封顶而非扁平 moderate。
   // sec_companies.sic 可能是字符串或 null;安全转 number,NaN/null → undefined(不误触闸)。
   const sicRaw = sec.company?.sic;
@@ -672,8 +686,8 @@ export default async function StockTickerPage({
     comparisonPeriod: asOfPeriod || null,
     variableMeasured:
       lang === "zh"
-        ? ["持有人", "持仓市值（美元）", "持股数", "组合权重", "季度变动"]
-        : ["Holder", "Position value (USD)", "Shares held", "Portfolio weight", "Quarter-over-quarter change"],
+        ? ["持有人", "持仓市值（美元）", securityUnit === "ADS" ? "持仓数量（ADS）" : "持股数", "组合权重", "季度变动"]
+        : ["Holder", "Position value (USD)", securityUnit === "ADS" ? "ADS held" : "Shares held", "Portfolio weight", "Quarter-over-quarter change"],
   });
 
   // 结论带左栏:现价(带日期/来源,过期置灰)并入左栏,不再单列 keyFacts。
@@ -719,6 +733,9 @@ export default async function StockTickerPage({
             showStatus={false}
             verdict={run.verdict}
             ttmPeriodEnd={floorInput.ttm?.period_end}
+            ttmFiscalYear={floorInput.ttm?.year.fiscal_year}
+            securityUnit={securityUnit}
+            adsRatio={securityUnit === "ADS" ? ads.ratio : undefined}
             part="summary"
             priceKnown={!!valuationPrice && valuationPrice.close > 0}
           />
@@ -731,7 +748,7 @@ export default async function StockTickerPage({
         <>
           <div className="flex items-baseline gap-2">
             <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{fmtPerShare(holdcoSotp.per_share.base)}</span>
-            <span className="text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpCentral}</span>
+            <span className="text-xs text-[var(--tt-muted)]">{securityUnit === "ADS" ? (lang === "zh" ? "每 ADS 中枢 · 基础档" : "central estimate · per ADS") : page.valuation.holdcoSotpCentral}</span>
           </div>
           <ValueBandGauge bucket={handoffVerdict.bucket} rangeLo={handoffVerdict.rangeLo} rangeHi={handoffVerdict.rangeHi} price={handoffVerdict.price} reliable={handoffVerdict.reliable} lang={lang} />
         </>
@@ -745,7 +762,7 @@ export default async function StockTickerPage({
         {/* 文案说“下面的资产底只作参考下限”——资产底就紧跟在这句下面。 */}
         {assetFloorShown && valuationFloor?.kind === "floor" && (
           <p className="text-sm text-[var(--tt-muted)]">
-            {page.valuation.assetFloorLabel}: {fmtPerShare(valuationFloor.asset_floor.per_share)}
+            {lang === "zh" ? "资产底" : "Asset floor"}: {fmtPerShare(valuationFloor.asset_floor.per_share)} {perUnit}
           </p>
         )}
       </>
@@ -754,12 +771,13 @@ export default async function StockTickerPage({
     : leftState === "growthEvidenceMissing" ? messageLeft(page.valuation.growthEvidenceMissing)
     : leftState === "fundamentalsSuspect" ? messageLeft(page.valuation.fundamentalsSuspect)
     : leftState === "methodsConflict" && methodsConflict
-      ? messageLeft(page.valuation.methodsConflict(fmtPerShare(methodsConflict.iv), fmtPerShare(methodsConflict.floor), fmtPerShare(methodsConflict.price)))
+      ? messageLeft(page.valuation.methodsConflict(fmtPerShare(methodsConflict.iv), fmtPerShare(methodsConflict.floor), fmtPrice(methodsConflict.price)))
     : unassessedLeft;
 
   // 只有既有闸门允许的可比、可信结论才能进入新概览;其余保留原有解释和明细。
   const summaryEligible = (leftState === "card" && cardSummaryMode(strikeZone, handoffVerdict) === "spine") || leftState === "holdcoSotp";
   const summaryModel = summaryEligible ? stockValueSummary({
+    securityUnit,
     verdict: handoffVerdict,
     quote: latestPrice,
     kind: leftState === "holdcoSotp" ? "sotp" : handoffVerdict?.methods.oeDcf || handoffVerdict?.methods.greenwaldGrowthCeilings ? "earnings" : "zero-growth",
@@ -823,6 +841,7 @@ export default async function StockTickerPage({
           {/* 持有人 — 表 + 文字说明同簇，避免与表双份叙事抢独立一节 */}
           <div>
             <HoldersTable
+              securityUnit={securityUnit}
               holders={holders}
               lang={lang}
               asOfPeriod={asOfPeriod}
@@ -860,6 +879,9 @@ export default async function StockTickerPage({
                       showStatus={false}
                       verdict={run.verdict}
                       ttmPeriodEnd={floorInput.ttm?.period_end}
+            ttmFiscalYear={floorInput.ttm?.year.fiscal_year}
+                      securityUnit={securityUnit}
+                      adsRatio={securityUnit === "ADS" ? ads.ratio : undefined}
                       part="details"
                     />
                   </div>
@@ -886,8 +908,10 @@ export default async function StockTickerPage({
                 holdcoSotp ? (
                   <div className="mt-3">
                     <p className="text-sm text-[var(--tt-muted)]">{page.valuation.holdcoSotpIntro}</p>
+                    {adsNote ? <p className="mt-2 text-xs text-[var(--tt-muted)]">{adsNote}</p> : null}
                     <div className="mt-4 overflow-x-auto">
                       <table className="w-full min-w-[420px] text-sm tabular-nums">
+                        <caption className="mb-2 text-left text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpUnit(securityUnit)}</caption>
                         <thead>
                           <tr className="text-[var(--tt-muted)]">
                             <th className="py-1 text-left font-normal"> </th>
@@ -918,7 +942,7 @@ export default async function StockTickerPage({
                           <tr>
                             <td className="py-1">{page.valuation.holdcoSotpDeferredTax}</td>
                             <td className="py-1 text-right text-[var(--tt-muted)]" colSpan={3}>
-                              −{fmtPerShare(holdcoSotp.columns.deferred_tax)}
+                              {fmtPerShare(Math.abs(holdcoSotp.columns.deferred_tax))}
                             </td>
                           </tr>
                           <tr className="border-t border-[var(--tt-border)] font-medium">

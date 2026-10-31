@@ -36,13 +36,9 @@ const COPY = {
     sentenceMid: "；公司过去营收年增 ",
     span: (from: number, to: number) => `（${from}–${to} 年化）`,
     sentenceSuffix: "。",
-    tierNote: {
-      modest: "低于它自己做到过的。",
-      fair: "和它自己一贯的水平差不多。",
-      demanding: "市场要它明显快过自己一贯的水平。",
-    } as Record<ExpectationsTier, string>,
-    capPrefix: "粗略地说，现价要它按历史营收增速再增长约 ",
-    capSuffix: () => " 年，才刚好撑得起。",
+    metricNote: "所有者盈利与营收口径不同，历史营收增速仅供对照。",
+    capPrefix: "若假设所有者盈利按该历史营收增速增长，现价约需维持 ",
+    capSuffix: () => " 年；这是模型情景。",
     lowConfidence:
       "价值区间信心不足时仍可对照：这里只说明市场在赌多快，不把它当成「确认便宜」。",
   },
@@ -52,16 +48,12 @@ const COPY = {
     boundedBelow: (v: string) => `under ${v}`,
     outOfRange: " (outside the usual range)",
     sentencePrefix: "Today's price pencils in about ",
-    sentenceMid: " a year in owner-earnings for the next few years. Revenue actually grew ",
+    sentenceMid: " a year in owner-earnings for the next few years. Historical revenue grew ",
     span: (from: number, to: number) => ` (${from}–${to}, annualized)`,
     sentenceSuffix: " a year.",
-    tierNote: {
-      modest: "Below what it has already done.",
-      fair: "About its own track record.",
-      demanding: "The market wants it well ahead of its own track record.",
-    } as Record<ExpectationsTier, string>,
-    capPrefix: "Roughly, the price needs its historical revenue growth to run about ",
-    capSuffix: (n: number) => (n === 1 ? " more year to hold up." : " more years to hold up."),
+    metricNote: "Owner earnings and revenue are different; the measures differ and historical revenue growth is shown only for context.",
+    capPrefix: "If owner earnings grew at that historical revenue rate, the price would require about ",
+    capSuffix: (n: number) => n === 1 ? " year of growth in this model scenario." : " years of growth in this model scenario.",
     lowConfidence:
       "Even when the value range is low-confidence: use this to see what the price assumes — not as a cheapness confirmation.",
   },
@@ -105,7 +97,7 @@ export const PriceBetBlock: FC<{
         {historicalSpan ? t.span(historicalSpan.fromYear, historicalSpan.toYear) : ""}
         {t.sentenceSuffix}
       </p>
-      <p className="mt-1 text-sm text-[var(--tt-muted)]">{t.tierNote[expectations.tier]}</p>
+      <p className="mt-1 text-sm text-[var(--tt-muted)]">{t.metricNote}</p>
       {expectations.impliedCapYears != null ? (
         <p className="mt-2 text-xs leading-relaxed text-[var(--tt-muted)]">
           {t.capPrefix}

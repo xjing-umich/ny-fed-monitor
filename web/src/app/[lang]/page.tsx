@@ -38,8 +38,8 @@ export async function generateMetadata({
       : "Superinvestor 13F Holdings & Valuation — Compounder";
   const description =
     l === "zh"
-      ? "追踪巴菲特等顶级投资者的 SEC 13F 季度持仓与跨机构共识，以及个股的保守内在价值区间。数据来源 SEC EDGAR。"
-      : "Track top investors' SEC 13F holdings, cross-fund consensus, and a conservative intrinsic value range per stock. Source: SEC EDGAR.";
+      ? "追踪巴菲特等投资者的 SEC 13F 季末持仓与共同持股。财报资料足够时，提供本站模型估算的个股价值区间及假设。持仓来源 SEC EDGAR。"
+      : "Track investors' SEC 13F quarter-end holdings and shared positions. Where financial data supports an estimate, see stock value ranges and assumptions from our models. Holdings source: SEC EDGAR.";
   return {
     title,
     description,

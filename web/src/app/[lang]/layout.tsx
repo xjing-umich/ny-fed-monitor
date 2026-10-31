@@ -51,11 +51,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const isEn = lang === "en";
+  const title = isEn ? TITLE : "Compounder · 复利 — 13F 持仓与个股估值";
+  const description = isEn ? DESCRIPTION : "追踪投资人的 SEC 13F 持仓、共同持有的股票与个股估值。数据来源：SEC EDGAR。";
 
   return {
     metadataBase: new URL("https://thecompounder.fyi"),
-    title: TITLE,
-    description: DESCRIPTION,
+    title,
+    description,
     applicationName: "Compounder",
     // Google 不读 keywords,百度仍参考;中文页给中文词。
     keywords: isEn
@@ -89,16 +91,16 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       siteName: "Compounder",
-      title: TITLE,
-      description: DESCRIPTION,
+      title,
+      description,
       url: isEn ? "https://thecompounder.fyi" : "https://thecompounder.fyi/zh",
       locale: isEn ? "en_US" : "zh_CN",
       alternateLocale: isEn ? ["zh_CN"] : ["en_US"],
     },
     twitter: {
       card: "summary_large_image",
-      title: TITLE,
-      description: DESCRIPTION,
+      title,
+      description,
     },
   };
 }

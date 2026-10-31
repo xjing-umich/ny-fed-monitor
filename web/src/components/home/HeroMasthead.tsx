@@ -18,13 +18,13 @@ const COPY = {
     // 主张：真数字（投资者数 + 季度）领句，第二句弱化补估值交叉验证的立场
     brand: "Compounder · 复利",
     // 写明季度而非"上季度":申报季里首屏仍是上一季数据,"上季度"会指错季。
-    headline: (n: number, q: string) => `${n} 位超级投资者，${q} 的每一笔持仓。`,
-    headlineNoCount: (q: string) => `${q}，超级投资者刚上报的每一笔持仓。`,
-    headlineMuted: "逐笔对齐第一性原理估值。",
+    headline: (n: number, q: string) => `${n} 位超级投资者，${q} 的公开持仓。`,
+    headlineNoCount: (q: string) => `${q}，超级投资者已披露的持仓。`,
+    headlineMuted: "从公开持仓，进一步查看个股估值。",
     sub: (n: number) =>
-      `聚合本站追踪的 ${n} 位超级投资者的 SEC 13F 季度持仓，按 CUSIP 逐票归并。数据来源 SEC EDGAR。`,
+      `聚合本站追踪的 ${n} 位超级投资者的 SEC 13F 季度持仓，按证券归并，比较不同投资人的持仓。数据来源 SEC EDGAR。`,
     subFallback:
-      "聚合本站追踪的超级投资者 SEC 13F 季度持仓，按 CUSIP 逐票归并。数据来源 SEC EDGAR。",
+      "聚合本站追踪的超级投资者 SEC 13F 季度持仓，按证券归并，比较不同投资人的持仓。数据来源 SEC EDGAR。",
     ctaValuation: "看个股估值",
     ctaInvestors: "浏览投资人",
     bought: "最多人增持",
@@ -32,24 +32,24 @@ const COPY = {
     // 金额 = 这些买方期末持仓市值合计(aggregations.computeNotableMoves),不是买入金额。
     boughtCols: "人数 · 买方持仓合计",
     soldCols: "人数",
-    asOf: (p: string) => `截至 ${p} · 来源 SEC 13F · 通常季末后 45 天内申报`,
+    asOf: (p: string) => `持仓截至 ${p} · 来源 SEC 13F · 季末快照，披露有延迟`,
   },
   en: {
     brand: "Compounder",
-    headline: (n: number, q: string) => `${n} superinvestors. ${q}. Every position they just reported.`,
-    headlineNoCount: (q: string) => `${q}. Every position the smart money just reported.`,
-    headlineMuted: "Each holding checked against a first-principles valuation.",
+    headline: (n: number, q: string) => `${n} superinvestors. ${q}. Disclosed holdings.`,
+    headlineNoCount: (q: string) => `${q}. Disclosed superinvestor holdings.`,
+    headlineMuted: "Go from disclosed holdings to stock valuations.",
     sub: (n: number) =>
-      `SEC 13F holdings from the ${n} superinvestors we track, aggregated by CUSIP. Source: SEC EDGAR.`,
+      `SEC 13F holdings from the ${n} superinvestors we track, grouped by security so you can compare investors. Source: SEC EDGAR.`,
     subFallback:
-      "SEC 13F holdings from the superinvestors we track, aggregated by CUSIP. Source: SEC EDGAR.",
+      "SEC 13F holdings from the superinvestors we track, grouped by security so you can compare investors. Source: SEC EDGAR.",
     ctaValuation: "See per-stock valuation",
     ctaInvestors: "Browse investors",
     bought: "Most bought",
     sold: "Most sold",
     boughtCols: "Investors · Buyers' combined stake",
     soldCols: "Investors",
-    asOf: (p: string) => `As of ${p} · Source SEC 13F · usually filed within 45 days after quarter-end`,
+    asOf: (p: string) => `Holdings as of ${p} · SEC 13F · quarter-end snapshots, disclosed with a delay`,
   },
 };
 
@@ -137,7 +137,7 @@ export default function HeroMasthead({
   const headline =
     typeof investorCount === "number" && investorCount > 0
       ? c.headline(investorCount, quarterLabel(period, lang) || period)
-      : c.headlineNoCount(period);
+      : c.headlineNoCount(quarterLabel(period, lang) || period);
 
   return (
     <section className="grid grid-cols-1 gap-8 md:grid-cols-[1.02fr_0.98fr] md:items-stretch md:gap-10">
@@ -173,7 +173,7 @@ export default function HeroMasthead({
         <p className="mt-4 max-w-[34ch] text-lg leading-snug text-[var(--ink-2)]">
           {c.headlineMuted}
         </p>
-        <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-[var(--tt-muted)]">
+        <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-[var(--ink-2)]">
           {typeof investorCount === "number" && investorCount > 0
             ? c.sub(investorCount)
             : c.subFallback}

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { mostHeld, holderDeltas } from "@/lib/aggregations";
 import { getManagerIndex } from "@/lib/managers/source";
-import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
+import { stockPath, absoluteUrl, localePath, HTML_LANG } from "@/lib/urls";
 import { cleanIssuer } from "@/lib/format";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { altFor, ogFor, rankingMetadata } from "@/lib/seo";
@@ -71,7 +71,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   const top = rankRows[0];
   const shareUrl = absoluteUrl(localePath(lang, "/investors/consensus"));
   const shareText = buildShareText(
-    { kind: "consensus", topName: top?.issuer ?? null, holderCount: top?.primary ?? null, managerCount },
+    { kind: "consensus", topName: top?.issuer ?? null, holderCount: top?.primary ?? null, managerCount, quarterLabel: quarterLabel(effective.period, lang) },
     lang,
     isZh ? "共识持仓" : "Consensus holdings",
   );
@@ -83,6 +83,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ItemList",
+          inLanguage: HTML_LANG[lang],
           // 条目带清洗后的名称和个股页链接,AI/搜索引擎能把榜单项对到具体实体。
           itemListElement: rankRows.slice(0, 20).map((r, i) => ({
             "@type": "ListItem", position: i + 1, name: cleanIssuer(r.issuer),
@@ -107,9 +108,12 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
               />
             }
           />
+          <p className="mt-3 text-sm text-[var(--tt-text)]">
+            {isZh ? `榜内 ${rows.length} 只证券按持有人数入榜；市值占比以这些证券的合计持仓市值为分母。不同类别股份分列，同一机构可在多行计数。` : `The listed ${rows.length} securities are selected by holder count. Value shares use their combined holding value as the denominator. Share classes appear separately; a manager can count in more than one row.`}
+          </p>
           <NotCountedNote lang={lang} managers={overdueManagers} />
         </div>
-        <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang)} />
+        <AggregateBlurb text={consensusBlurb(blurbRows, managerCount, lang, quarterLabel(effective.period, lang))} />
         {valuationAsOf && (
           <p className="mb-2 font-data text-xs text-[var(--tt-faint)]">
             {isZh ? `估值徽章：${valuationAsOf}（SEC 财报 × 收盘价）` : `Valuation badges: ${valuationAsOf} (SEC filings × closing prices)`}

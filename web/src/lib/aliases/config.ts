@@ -59,9 +59,26 @@ export function investorAliasEntries(): AliasEntry[] {
 // 以人姓结尾的公司名(加德纳鲁索 = Gardner Russo)规则分不出,列在下面;新增此类别名时补进来。
 const FIRM_NAMES_ENDING_IN_SURNAME = new Set(["加德纳鲁索", "林赛尔特雷恩"]);
 
-// 中文站上显示的中文名:名家清单的全名 > people[] 本人的 zh > INVESTOR_ALIASES 首词。没有 → null(显示英文名)。
+// 中文展示名:名家清单 > 已有的本人全名别名；仅有西文姓氏音译时返回 null，显示英文全名。
 export function managerZhName(slug: string, person: string): string | null {
-  return FEATURED_ZH.get(slug) ?? zhAnchor(slug, person);
+  const featured = FEATURED_ZH.get(slug);
+  if (featured) return featured;
+  const anchor = zhAnchor(slug, person);
+  if (!anchor) return null;
+  // Full display names are selected only from existing, person-only search aliases.
+  // Keep the short anchor unchanged for alias resolution and Person.alternateName.
+  const full = personNameAliases(slug, person)
+    .filter((name) => name.replace(/·/g, "").length > anchor.replace(/·/g, "").length)
+    .sort((a, b) => b.length - a.length)[0];
+  if (full) {
+    const normalized = full.replace(/·/g, "");
+    const surname = anchor.replace(/·/g, "");
+    return normalized.endsWith(surname) ? `${normalized.slice(0, -surname.length)}·${surname}` : full;
+  }
+  // Chinese personal names and complete existing transliterations remain valid;
+  // a surname-only Western transliteration has no verified full display name.
+  if (person.includes(" ") && !["Duan Yongping", "Li Lu"].includes(person) && !anchor.includes("·") && !["polen-capital", "dodge-and-cox", "ruane-cunniff", "tweedy-browne"].includes(slug)) return null;
+  return anchor;
 }
 
 function zhAnchor(slug: string, person: string): string | null {

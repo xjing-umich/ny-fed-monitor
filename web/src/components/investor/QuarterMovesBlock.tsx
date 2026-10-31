@@ -12,25 +12,25 @@ import { SectionHeading } from "@/components/common/SectionHeading";
 
 const COPY = {
   zh: {
-    eyebrow: "SEC 13F · 本季对上季",
-    title: "本季动作",
+    eyebrow: "SEC 13F · 申报季对上季",
+    title: "该申报季变动",
     approx: (v: string) => `约 ${v}`,
     weight: (w: string) => `现占 ${w}`,
     exited: "清仓：",
     rest: (n: number) => `，另 ${n} 只`,
     lag: (p: string) => `13F 只披露季末持仓，${p} 之后的买卖这里看不到。`,
-    method: "金额按季末价估算，只算正股。",
+    method: "新进用该季末持仓市值；增减按申报数量变化与该季末价格估算；清仓用上季末持仓市值。不含期权，也不是实际成交金额。",
     sep: "、",
   },
   en: {
     eyebrow: "SEC 13F · quarter over quarter",
-    title: "This quarter",
+    title: "Changes in this filing",
     approx: (v: string) => `≈${v}`,
     weight: (w: string) => `now ${w}`,
     exited: "Exited: ",
     rest: (n: number) => ` +${n} more`,
     lag: (p: string) => `13F shows quarter-end positions only; trades after ${p} aren't visible here.`,
-    method: "Dollar amounts are estimated at quarter-end prices, stocks only (no options).",
+    method: "New positions use filing-quarter-end value; adds and trims use changes in reported holdings at filing-quarter-end prices; exits use prior-quarter-end value. Excludes options; these are not actual transaction amounts.",
     sep: ", ",
   },
 } as const;

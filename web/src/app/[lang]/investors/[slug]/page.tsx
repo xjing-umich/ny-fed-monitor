@@ -1,15 +1,16 @@
 import { OptionalLink } from "@/components/common/OptionalLink";
 import { currentStockKeys, availableStockHref } from '@/lib/stocks/stockLinks';
 import { readStockLinkHolders } from '@/lib/managers/consensusRead';
-import { summaryForDetail, investorVerdictChip, valueChangeSplit, valueSplitNote, investorAnchors, top5Share } from "@/lib/managers/investorConclusion";
+import { summaryForDetail, investorVerdictChip, valueChangeSplit, valueSplitNote, investorAnchors, top5Share, topHoldingsLabel } from "@/lib/managers/investorConclusion";
 import { QuarterMovesBlock } from "@/components/investor/QuarterMovesBlock";
 import { InvestorHoldingsTable } from "@/components/investor/InvestorHoldingsTable";
 import { PageAnchorNav } from "@/components/common/PageAnchorNav";
 import { BAND_COPY } from "@/lib/stocks/stockConclusion";
-import { date as formatDate } from "@/lib/i18n/format";
+import { date as formatDate, pctDelta } from "@/lib/i18n/format";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFoundMetadata } from "@/lib/notFoundMetadata";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import { holdingKey } from "@/lib/managers/assemble";
 import type { Lang } from "@/lib/nav";
@@ -35,10 +36,9 @@ import { buildInvestorProse, displayFundName } from "@/lib/managers/profileProse
 import { InvestorProfileProse } from "@/components/entity/InvestorProfileProse";
 import { readValuationVerdicts } from "@/lib/valuation/valuationSnapshot";
 import { readHolderCounts } from "@/lib/managers/consensusRead";
-import { investorHandoffFor } from "@/lib/discovery/discoveryHandoff";
 import { DiscoveryHandoff } from "@/components/discovery/DiscoveryHandoff";
 import { deriveLonelyConviction } from "@/lib/managers/lonelyConviction";
-import { deriveValuationPosture, postureLeadIn, strikePendingIssuers, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
+import { deriveValuationPosture, postureLeadIn, investorValuationHandoff, POSTURE_LIMIT } from "@/lib/managers/valuationPosture";
 import { PENDING_WORD, valuationLabel } from "@/lib/valuation/valuationLabel";
 import { LearnLink } from "@/components/common/LearnLink";
 import { FoldedSection } from "@/components/entity/FoldedSection";
@@ -67,7 +67,7 @@ export async function generateMetadata({
   const { lang: rawLang, slug } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const d = await getManagerDetail(slug);
-  if (!d) return {};
+  if (!d) return notFoundMetadata(lang);
   const { person, name } = d.manager;
   const fundName = displayFundName(name);
   const q = d.latest?.period ? quarterLabel(d.latest.period, lang) : "";
@@ -225,7 +225,7 @@ export default async function InvestorSlugPage({
 
   // 与入库季度汇总复用同一金额口径,不新增数据请求。
   const summary = summaryForDetail(d);
-  const verdict = investorVerdictChip(summary, lang);
+  const verdict = investorVerdictChip(summary, lang, fresh === "inactive");
   const changeByKey = new Map(changes.map((c) => [holdingKey(c), c]));
 
   // 长仓 only 子集(汇总口径排除 put/call 期权行, spec: 期权名义市值会扭曲第一大持仓/组合市值)。
@@ -246,7 +246,7 @@ export default async function InvestorSlugPage({
   const shareAddedName = added ? stockName(added.cusip, added.issuer) : null;
   const shareUrl = absoluteUrl(investorPath(lang, slug));
   const shareText = buildShareText(
-    { kind: "investor", managerName: who, topHolding: shareTopHolding, addedName: shareAddedName },
+    { kind: "investor", managerName: who, topHolding: shareTopHolding, addedName: shareAddedName, quarterLabel: quarterLabel(latest.period, lang), historical: fresh === "inactive" },
     lang,
     who,
   );
@@ -320,26 +320,27 @@ export default async function InvestorSlugPage({
   const top5 = top5Share(longHoldings.map((h) => h.value));
   const keyFacts = [
     {
-      label: lang === "zh" ? "组合市值" : "Portfolio value",
+      label: lang === "zh" ? "非期权持仓市值" : "Non-option portfolio value",
       value: formatUSD(longTotalValue, lang),
       note: split ? valueSplitNote(split, lang)
         : valDeltaPct != null && valDeltaPct !== 0
-          ? (lang === "zh" ? `较上季 ${sign(valDeltaPct)}${Math.abs(valDeltaPct * 100).toFixed(0)}%` : `${sign(valDeltaPct)}${Math.abs(valDeltaPct * 100).toFixed(0)}% vs last quarter`)
+          ? (lang === "zh" ? `较上季 ${pctDelta(valDeltaPct)}` : `${pctDelta(valDeltaPct)} vs last quarter`)
           : undefined,
     },
     {
-      label: lang === "zh" ? "持仓数" : "Holdings",
+      label: lang === "zh" ? "非期权持仓数" : "Non-option positions",
       value: String(longHoldings.length),
       node: countNode,
-      note: top5 != null ? (lang === "zh" ? `前 5 大占 ${Math.round(top5 * 100)}%` : `Top 5: ${Math.round(top5 * 100)}%`) : undefined,
+      note: topHoldingsLabel(longHoldings.length, top5, lang),
     },
   ];
+  const handoff = investorValuationHandoff(posture, longHoldings.length, lang);
   const hasPosture = posture.cheap.length > 0 || posture.pending.length > 0;
   const anchors = investorAnchors({ moves: !!summary, holdings: !zeroReport, valuation: hasPosture }, lang);
   const lonelyTickers = new Set(lonely.map((h) => h.ticker.toUpperCase()));
 
   // Subtitle
-  const subtitle = managerSubtitle(lang, slug, manager.person, fund);
+  const subtitle = managerSubtitle(lang, slug, manager.person, fund, { period: latest.period, status: fresh });
 
   // Related: up to 6 other managers from the index
   const related = idx.managers
@@ -528,7 +529,7 @@ export default async function InvestorSlugPage({
             </FoldedSection>
             <LearnLink lang={lang} slug="what-is-a-superinvestor" label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"} />
           </div>
-          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, who, lang, strikePendingIssuers(posture).map(cleanIssuer))} />
+          {handoff && <DiscoveryHandoff {...handoff} />}
         </>
       </EntityPage>
     </>

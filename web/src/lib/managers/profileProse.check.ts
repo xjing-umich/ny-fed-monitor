@@ -9,7 +9,6 @@ assert.equal(displayFundName("Cooperman Leon G"), "Leon G Cooperman");
 assert.equal(displayFundName("eValue Capital LLC/CA"), "eValue Capital LLC");
 assert.equal(displayFundName("Fundsmith LLP"), "Fundsmith LLP");
 assert.equal(displayFundName("Appaloosa LP"), "Appaloosa LP");
-console.log("profileProse.check OK");
 
 const filing = { period: '2026-06-30', filedAt: '2026-08-14', accession: 'fixture', totalValue: 100, holdings: [{ cusip: '008073AA6', issuer: 'Convertible note', value: 100, shares: 1 }] };
 const detail: ManagerDetail = { manager: { cik: '1', slug: 'fixture', name: 'Fixture', person: 'Manager' }, latest: filing, filings: [filing], changes: [] };
@@ -19,3 +18,12 @@ for (const lang of ['en','zh'] as const) {
  assert.ok(text.includes(lang === 'en' ? 'Section 13(f)' : '13(f)'), 'scope follows the SEC list');
  assert.ok(text.includes(lang === 'en' ? 'within 45 days after quarter-end' : '季末后 45 天内'), '45 days is a deadline');
 }
+
+const prior = { ...filing, period: "2026-03-31", holdings: [] };
+const newHolding = { ...filing.holdings[0], issuer: "APPLE INC" };
+const oneNew: ManagerDetail = { ...detail, prior, latest: { ...filing, holdings: [newHolding] }, changes: [{ ...newHolding, kind: "new", prevShares: 0, deltaPct: null }], filings: [filing, prior, { ...prior, period: "2025-12-31" }] };
+assert.match(buildInvestorProse(oneNew, "en").flat().filter(s => typeof s === "string").join(""), /only new position/, "one opening cannot imply several openings");
+const repeated: ManagerDetail = { ...detail, filings: [filing, { ...filing, period: "2026-03-31" }, { ...filing, period: "2025-12-31" }] };
+const core = buildInvestorProse(repeated, "zh").find(p => p.some(s => typeof s === "string" && s.includes("全部 3")))!;
+assert.equal(core.filter(s => typeof s !== "string").length, 2, "rank sentence must use entity token for localized name too");
+console.log("profileProse.check OK");

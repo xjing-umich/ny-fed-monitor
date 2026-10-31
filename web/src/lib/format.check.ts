@@ -7,6 +7,9 @@ assert(fmtMarginPct(0.002) === "<1%", `微小正margin显示<1%, got ${fmtMargin
 assert(fmtMarginPct(0.23) === "23%", "常规margin不带符号(标签已是安全边际)");
 // 13F 原始发行人名 → 展示名(取自线上个股页的真实样本)。
 const names: [string, string][] = [
+  ["Ishr Ibx Usd Invgd Cb Etf-Ui", "iShares iBoxx $ Investment Grade Corporate Bond ETF"],
+  ["RESTAURANT BRANDS INTERN", "Restaurant Brands International"],
+  ["NORWEGIAN CRUISE LINE HOLDIN", "Norwegian Cruise Line Holdings"],
   ["MICROSOFT CORP.", "Microsoft Corp"],
   ["ALPHABET INC-CL A", "Alphabet Inc Class A"],
   ["VISA INC-CLASS A SHARES", "Visa Inc Class A"],
@@ -67,6 +70,9 @@ for (const [raw, want] of names) {
 }
 // 申报主体名:法律形式写回大写(线上曾显示 "Viking Global Investors Lp"、"Harris Associates L P")。
 const filers: [string, string][] = [
+  ["Sound Shore Management Inc /Ct/", "Sound Shore Management Inc"],
+  ["Southeastern Asset Management Inc/Tn/", "Southeastern Asset Management Inc"],
+  ["Fairfax Financial Holdings Ltd/ Can", "Fairfax Financial Holdings Ltd"],
   ["VIKING GLOBAL INVESTORS LP", "Viking Global Investors LP"],
   ["MILLER VALUE PARTNERS, LLC", "Miller Value Partners, LLC"],
   ["HARRIS ASSOCIATES L P", "Harris Associates LP"],

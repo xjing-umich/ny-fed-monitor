@@ -82,6 +82,10 @@ export function buildQuarterlyReport(input: ReportInput): ReportPayload {
     if (!m) continue;
     const entry: FeaturedEntry = { slug, person: m.person, personZh: m.personZh, filed: m.current !== null, moves: [] };
     if (m.current && m.prior) entry.moves = topWeightMoves(m.current, priorOf(m)!, keyOf, stock);
+    if (m.current !== null) entry.comparison = {
+      state: m.prior === null ? "missing_prior" : entry.moves.length ? "changed" : "unchanged",
+      priorPeriod: m.prior === null ? null : m.priorPeriod ?? null,
+    };
     featured.push(entry);
   }
 

@@ -132,6 +132,7 @@ function fixWordCase(w: string, i: number): string {
 export function cleanFilerName(raw: string): string {
   let name = raw.trim().replace(/\s+/g, " ");
   while (FILER_STATE_SUFFIX.test(name)) name = name.replace(FILER_STATE_SUFFIX, "").trim();
+  name = name.replace(/\s*\/\s*CAN\s*\/?$/i, "").trim();
   const words = name.split(" ");
   // 只折叠完整短语的重复；"Foo Foo Capital" 内部的重复不受影响。
   for (let size = 2; size <= words.length / 2; size++) {
@@ -157,7 +158,7 @@ export function cleanFilerName(raw: string): string {
 }
 
 // 只删除斜杠后的美国注册州缩写；名称主体的 New York 等地名保留。
-const FILER_STATE_SUFFIX = /\s*\/\s*(?:AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY)$/i;
+const FILER_STATE_SUFFIX = /\s*\/\s*(?:AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY)\s*\/?$/i;
 const FILER_LEGAL_FORMS = new Set(["LLC", "LP", "LLP", "PLC", "NV", "SA", "AG", "SE", "ASA", "SAB", "CV", "PBC"]);
 const FILER_NAME_FIXES: Record<string, string> = {
   "cooperman leon g": "Leon G Cooperman",
@@ -165,6 +166,11 @@ const FILER_NAME_FIXES: Record<string, string> = {
 
 // 13F 名被截断到 28 字符、规则补不回来的(多为 ETF),按清洗后的样子写出全名。
 const ISSUER_NAME_FIXES: Record<string, string> = {
+  // LQD verified 2026-10-31: ishares.com/us/products/239566/ (CUSIP 464287242).
+  "Ishr Ibx Usd Invgd Cb Etf-Ui": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
+  // Official company sites verified 2026-10-31: rbi.com and nclhltd.com.
+  "Restaurant Brands Intern": "Restaurant Brands International",
+  "Norwegian Cruise Line Holdin": "Norwegian Cruise Line Holdings",
   "Dr Horton Inc": "D.R. Horton Inc",
   "On Semiconductor Corp": "ON Semiconductor Corp",
   "Interactive Brokers Gro Class A": "Interactive Brokers Group Class A",

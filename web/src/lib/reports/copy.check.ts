@@ -51,7 +51,7 @@ assert(stockHref({ key: 'A"B&C', ticker: 'A"B&C', issuer: "X" }, "en") === "/sto
 assert(positionLabel("strike_zone", "zh") === "击球区" && positionLabel("below", "zh") === "低于内在价值", "zh 位置标签");
 assert(positionLabel("strike_zone", "en") === "Strike zone" && positionLabel("below", "en") === "Below intrinsic value", "en 位置标签");
 assert(notFiledText("zh") === "未申报" && notFiledText("en") === "Not filed yet", "申报标签");
-assert(noComparableMovesText("zh") === "本季无可比动作（缺上一季申报）" && noComparableMovesText("en") === "No comparable moves (no prior filing)", "无可比动作标签");
+assert(!/缺|no prior/.test(noComparableMovesText("zh") + noComparableMovesText("en")), "历史payload缺原因时不能断言缺申报");
 assert(disclaimerText("zh") === "仅供学习，不构成投资建议。" && disclaimerText("en") === "For education only. Not investment advice.", "免责标签");
 
 // —— live 结论保留季度标签
@@ -63,10 +63,10 @@ assert(enFinal.startsWith("Q3 2026: "), `final 前缀只有季度: ${enFinal}`);
 const flat: ReportPayload = { ...p, mostHeld: { items: [{ ...p.mostHeld.items[0], holderDelta: 0 }], emptyReason: null } };
 const enFlat = reportDescription(flat, "final", "en");
 const zhFlat = reportDescription(flat, "final", "zh");
-assert(enFlat.includes("(17 holders, unchanged vs. last quarter)"), `en 持平: ${enFlat}`);
-assert(zhFlat.includes("（17 位，较上季持平）"), `zh 持平: ${zhFlat}`);
-assert(!/[+]0\b|较上季 0/.test(enFlat + zhFlat), "不出现 +0 / 较上季 0");
-assert(reportDescription(p, "final", "zh").includes("较上季 +2"), "非 0 仍带符号");
+assert(enFlat.includes("(17 holders, unchanged vs. previous filing)"), `en 持平: ${enFlat}`);
+assert(zhFlat.includes("（17 位，较前次申报持平）"), `zh 持平: ${zhFlat}`);
+assert(!/[+]0\b|较前次申报 0/.test(enFlat + zhFlat), "不出现 +0 / 较前次申报 0");
+assert(reportDescription(p, "final", "zh").includes("较前次申报 +2"), "非 0 仍带符号");
 assert(holderDeltaCell(0, "zh") === "持平" && holderDeltaCell(0, "en") === "unchanged", "表格列:0 → 持平/unchanged");
 assert(holderDeltaCell(2, "en") === "+2" && holderDeltaCell(-1, "zh") === "-1", "表格列:非 0 带符号");
 
@@ -78,7 +78,7 @@ const one: ReportPayload = {
 };
 const enOne = reportDescription(one, "final", "en");
 assert(enOne.includes("1 superinvestor opened or added to GOOG") && !enOne.includes("1 superinvestors"), `单数 superinvestor: ${enOne}`);
-assert(enOne.includes("(1 holder, +1 vs. last quarter)") && !enOne.includes("1 holders"), `单数 holder: ${enOne}`);
+assert(enOne.includes("(1 holder, +1 vs. previous filing)") && !enOne.includes("1 holders"), `单数 holder: ${enOne}`);
 
 // —— 估值晚于申报季的提示(spec §3.6):asOf 晚于实际截止日 30 天以上才加
 assert(valuationNote("2026-10-24", "zh", "2026-06-30") === "价值位置按 2026年10月24日 收盘价计算（晚于该季申报季）。", `zh 晚于申报季: ${valuationNote("2026-10-24", "zh", "2026-06-30")}`);
@@ -98,7 +98,7 @@ assert(featuredMoveText(dy, "en") === "Sold some AAPL (portfolio weight 36.7% �
 assert(featuredMoveText({ ...dy, kind: "increased" }, "zh").startsWith("增持 "), "zh 增持");
 assert(featuredMoveText({ ...dy, kind: "new", weightBefore: 0, weightAfter: 0.047 }, "zh") === "新进 AAPL（占组合 0% → 4.7%）", "zh 新进");
 assert(featuredMoveText({ ...dy, kind: "exited", weightAfter: 0 }, "en") === "Exited AAPL (portfolio weight 36.7% → 0%)", "en 清仓");
-assert(featuredMoveText({ ...dy, ticker: null, key: "C_X", issuer: "MYSTERY CORP" }, "en").includes("MYSTERY CORP"), "未解析用 issuer");
+assert(featuredMoveText({ ...dy, ticker: null, key: "C_X", issuer: "MYSTERY CORP" }, "en").includes("Mystery"), "未解析用 issuer");
 assert(/股数/.test(featuredWeightNote("zh")) && /股价/.test(featuredWeightNote("zh")), "zh 说明提到股数与股价");
 assert(/shares/.test(featuredWeightNote("en")) && /price/.test(featuredWeightNote("en")), "en 说明提到 shares 与 price");
 assert(!/—/.test(featuredWeightNote("zh") + featuredWeightNote("en")), "不出现 —");
@@ -132,18 +132,18 @@ assert(
   "excluded 缺省 en 原句不变",
 );
 assert(
-  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "zh").includes("覆盖本站追踪的 97 位中、上一季及之后有申报的 94 位超级投资者（另有 3 位上季未申报，不计入）。同季"),
+  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "zh").includes("本站共追踪 97 位投资人，本报告计入上一季及之后有申报的 94 位（另有 3 位上季未申报，不计入）。同季"),
   "zh excluded=3 写明口径与人数",
 );
 assert(
-  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "en").includes("for the 94 of the 97 superinvestors this site tracks that filed for the prior quarter or later (3 others missed last quarter and aren't counted). Where"),
+  methodologyCoverageText({ filed: 2, total: 94, excluded: 3 }, "en").includes("We track 97 superinvestors; this report includes 94 who filed for the prior quarter or later (3 others missed last quarter and aren't counted). Where"),
   "en excluded=3",
 );
-assert(methodologyCoverageText({ filed: 2, total: 94, excluded: 1 }, "en").includes("the 94 of the 95 superinvestors this site tracks that filed for the prior quarter or later (1 other missed last quarter and isn't counted)"), "en 单数 + 名单 = total+excluded");
+assert(methodologyCoverageText({ filed: 2, total: 94, excluded: 1 }, "en").includes("We track 95 superinvestors; this report includes 94 who filed for the prior quarter or later (1 other missed last quarter and isn't counted)"), "en 单数 + 名单 = total+excluded");
 for (const lang of ["zh", "en"] as const) {
   const t0 = methodologyCoverageText({ filed: 2, total: 94, excluded: 0 }, lang);
   assert(!t0.includes("一年以上") && !t0.includes("silent") && !t0.includes("另有") && !t0.includes("missed last quarter"), `excluded=0 不出人数从句 (${lang})`);
-  assert(t0.includes(lang === "zh" ? "追踪的 94 位中、上一季及之后有申报的 94 位" : "the 94 of the 94 superinvestors"), `excluded=0 名单 = total (${lang})`);
+  assert(t0.includes(lang === "zh" ? "追踪 94 位投资人，本报告计入上一季及之后有申报的 94 位" : "We track 94 superinvestors; this report includes 94"), `excluded=0 名单 = total (${lang})`);
 }
 
 console.log("copy.check OK");

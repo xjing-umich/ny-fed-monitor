@@ -44,7 +44,7 @@ export function AggregateRankingList({
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--tt-faint)]">
               {r.pctOfAggregate != null && (
                 <span className="font-data tabular-nums">
-                  {isZh ? `占聚合 ${(r.pctOfAggregate * 100).toFixed(1)}%` : `${(r.pctOfAggregate * 100).toFixed(1)}% of aggregate`}
+                  {isZh ? `占榜内 ${rows.length} 只持仓市值 ${(r.pctOfAggregate * 100).toFixed(1)}%` : `${(r.pctOfAggregate * 100).toFixed(1)}% of the listed ${rows.length} ${rows.length === 1 ? "holding’s value" : "holdings’ combined value"}`}
                 </span>
               )}
               {r.kindLabel && <Badge tone={r.kindTone ?? "neutral"}>{r.kindLabel}</Badge>}

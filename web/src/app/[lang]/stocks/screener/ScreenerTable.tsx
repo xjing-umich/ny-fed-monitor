@@ -16,12 +16,13 @@ import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 const TOP_N = 60;
 
 /** asOf = 页头标的价格日期;某行价格日期不同时才在该行标出。 */
-export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: Lang; rows: ScreenerRow[]; highlight?: boolean; asOf?: string | null }) {
+export function ScreenerTable({ lang, rows, highlight = false, asOf, emptyText }: { lang: Lang; rows: ScreenerRow[]; highlight?: boolean; asOf?: string | null; emptyText?: string }) {
   const isZh = lang === "zh";
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
   const head = rows.slice(0, TOP_N);
   const tail = rows.slice(TOP_N);
+  const unit = (r: ScreenerRow) => r.securityUnit === "ADS" ? (isZh ? "每 ADS" : "per ADS") : r.securityUnit === "share" ? (isZh ? "每股" : "per share") : (isZh ? "证券单位待核对" : "security unit unavailable");
 
   const columns: Column<ScreenerRow>[] = [
     {
@@ -33,6 +34,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
         return (
           <span className={top ? "font-semibold" : undefined}>
             <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
+            <span className="ml-1 font-data text-xs text-[var(--tt-faint)]">{unit(r)}</span>
           </span>
         );
       },
@@ -71,7 +73,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
     },
     {
       key: "band",
-      header: isZh ? "价值区间 / sh" : "Value range / sh",
+      header: isZh ? "价值区间（美元）" : "Value range (USD)",
       align: "right",
       width: "w-32",
       hideOnMobile: true,
@@ -120,9 +122,10 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
         getKey={(r) => r.ticker}
         rowHref={(r) => stockPath(lang, r.ticker)}
         showRank
-        emptyText={ui.emptyScreener}
+        emptyText={emptyText ?? ui.emptyScreener}
       />
       {/* 价值区间 / 内在价值列只在桌面表格出现(hideOnMobile,DataTable 默认 md 断点),脚注同断点隐藏 */}
+      {rows.length > 0 && <p className="mt-2 text-xs text-[var(--tt-muted)]">{isZh ? "数值按每份上市证券计：普通股为每股，存托凭证为每ADS；换算比例见个股页。" : "Values are per listed share or, for depositary receipts, per ADS. See stock pages for conversion ratios."}</p>}
       <p className="mt-2 hidden text-xs text-[var(--tt-faint)] md:block">
         {isZh
           ? `带 * 的为单法口径，内在价值一列为零增长价值。${BAND_FLOOR_NOTE.zh}`
@@ -142,6 +145,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf }: { lang: L
                 <Link href={stockPath(lang, r.ticker)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                   {stockDisplayName(lang, r.ticker, cleanIssuer(r.issuer))}
                   <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{r.ticker}</span>
+                  <span className="ml-1 font-data text-xs text-[var(--tt-faint)]">{unit(r)}</span>
                   {r.marginPct != null && r.marginPct > 0 ? (
                     r.reliable ? (
                       <span className="ml-1.5 font-data text-xs text-[var(--val-below)]">{fmtMarginPct(r.marginPct)}</span>

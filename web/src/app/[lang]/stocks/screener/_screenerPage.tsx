@@ -42,11 +42,11 @@ export function screenerMetadata(lang: Lang): Metadata {
   const meta =
     lang === "zh"
       ? {
-          title: "个股 · 内在价值区间 — Compounder · 复利",
+          title: "估值选股器 · 内在价值区间 — Compounder · 复利",
           description: "按现价相对内在价值的位置筛选个股：哪些落在击球区、安全边际多少。位置观察，非买卖建议。",
         }
       : {
-          title: "Stocks · Intrinsic value range — Compounder",
+          title: "Valuation screener · Intrinsic value range — Compounder",
           description: "Browse stocks by where price sits against intrinsic value — which are in the strike zone, and by margin of safety. Observational, not advice.",
         };
   return {
@@ -88,7 +88,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const pendingNote = strikePending > 0
     ? isZh ? `，另 ${strikePending} 只待确认` : `; ${strikePending} more pending review`
     : "";
-  const noValuationEvidence = rows.length === 0 && !computedAt && strikeTotal === 0 && strikePending === 0;
+  const noValuationEvidence = screen.availability !== "available";
   const geo =
     noValuationEvidence
       ? ""
@@ -105,8 +105,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
       ? `查看至少被 ${CONSENSUS_MIN} 位机构共同持有的股票及其估值。`
       : `Compare valuations of stocks held by at least ${CONSENSUS_MIN} managers.`
     : isZh
-    ? `${heldTotal} 只被 ${CONSENSUS_MIN}+ 位机构共同持有的股票，按现价相对内在价值的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
-    : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers, ordered by where price sits against intrinsic value — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
+    ? `${heldTotal} 只至少被 ${CONSENSUS_MIN} 位机构共同持有、且有当前可用估值的股票，按现价相对内在价值的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
+    : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers with current valuations, ordered by where price sits against intrinsic value — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
 
   const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
 
@@ -131,7 +131,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
                 ? "估值 · 按价值区间"
                 : "Valuation · by value range"
           }
-          title={ui.stocksTitle}
+          title={isZh ? "估值选股器" : "Valuation screener"}
           dateline={
             asOf ? (
               <span className="font-data text-xs text-[var(--tt-muted)]">
@@ -143,8 +143,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
             isConviction
               ? convictionIntro
               : isZh
-                ? `按现价相对内在价值的位置排序，安全边际高者在前。来源：公司财报与公开市场价格。${geo}`
-                : `Ordered by where price sits against intrinsic value, deepest margin of safety first. Source: company filings and public market prices. ${geo}`
+                ? `${sort === "holders" ? "按持有人数从多到少排列；人数相同则按安全边际排列。" : "按安全边际从高到低排列。"}来源：公司财报与公开市场价格。${geo}`
+                : `${sort === "holders" ? "Ordered by holder count, then by margin of safety." : "Ordered by margin of safety, highest first."} Source: company filings and public market prices. ${geo}`
           }
         />
       </div>
@@ -200,7 +200,13 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
         )}
       </nav>
 
-      <ScreenerTable lang={lang} rows={sortedRows} highlight={isConviction} asOf={asOf} />
+      <ScreenerTable lang={lang} rows={sortedRows} highlight={isConviction} asOf={asOf} emptyText={
+        screen.availability === "unpublished"
+          ? isZh ? "当前模型的估值结果尚不可用，暂无法展示筛选名单。" : "Results for the current valuation model are not available yet."
+          : screen.availability === "unavailable"
+            ? isZh ? "暂时无法读取估值结果，请稍后重试。" : "Valuation results are temporarily unavailable. Please try again later."
+            : isZh ? "当前没有符合此筛选条件的股票。" : "No stocks match this view."
+      } />
       {rows.length === 0 && <p className="mt-2 text-center text-sm">
         <Link href={localePath(lang, "/stocks")} className="inline-flex min-h-11 items-center text-[var(--tt-text)] underline underline-offset-4 hover:text-[var(--tt-accent)]">
           {isZh ? "按机构持仓浏览个股 →" : "Browse stocks by institutional holdings →"}
@@ -209,8 +215,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh
-          ? `${asOf ? `估值截至 ${formatDate(asOf, lang)}` : "估值快照日期暂不可用"} · 方法：保守 Greenwald 价值区间 + Owner-Earnings DCF 两法夹逼。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
-          : `${asOf ? `Valuation as of ${formatDate(asOf, lang)}` : "Valuation snapshot date unavailable"} · method: conservative Greenwald value range + Owner-Earnings DCF. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
+          ? `${asOf ? `估值截至 ${formatDate(asOf, lang)}` : "估值快照日期暂不可用"} · 方法：Greenwald 估值与所有者盈利折现，单法结果另行标注。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
+          : `${asOf ? `Valuation as of ${formatDate(asOf, lang)}` : "Valuation snapshot date unavailable"} · methods: Greenwald valuation and owner-earnings DCF; single-method results are marked. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
       </p>
     </>
   );

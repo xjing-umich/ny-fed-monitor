@@ -19,7 +19,7 @@ const HEAD = {
     heading: "超级投资者",
     subtitle: "按持仓市值排列 · 最新 13F 季",
     dirEyebrow: "目录",
-    dirTitle: (n: number) => `全部 ${n} 位投资人，按姓名排序`,
+    dirTitle: (n: number) => `全部 ${n} 位投资者，按名称拼音排序`,
   },
   en: {
     eyebrow: "SEC 13F · quarterly filings",
@@ -101,6 +101,7 @@ export default async function InvestorsPage({
       </div>
       <InvestorListClient lang={lang} managers={managers} nowMs={Date.now()} />
       <LinkDirectory
+        sortLocale={lang === "zh" ? "zh-CN-u-co-pinyin" : "en"}
         eyebrow={head.dirEyebrow}
         title={head.dirTitle(managers.length)}
         items={managers.map((m) => ({
