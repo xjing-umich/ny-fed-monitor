@@ -127,6 +127,21 @@ assert.equal(
   null,
   "Unrecognized no-method snapshot must not become SOTP",
 );
+assert.equal(
+  deriveCompanyExample(
+    {
+      ...input,
+      snapshot: {
+        ...snapshot,
+        reliable: false,
+        referenceOnly: "missing_reinvestment",
+      },
+    },
+    "zh",
+  ).summary,
+  null,
+  "Pending zero-growth reference must not become a confirmed homepage comparison",
+);
 console.log(
   "snapshotExample.check OK: snapshot gates, dates, splits, currency, SOTP and zero growth",
 );

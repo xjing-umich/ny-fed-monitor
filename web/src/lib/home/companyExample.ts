@@ -77,7 +77,14 @@ export function deriveCompanyExample(
   });
   const kind = v ? summaryKind(ticker, v) : null;
   const summary =
-    v && v.ticker === ticker && v.methods && kind && fresh && !splitStale
+    v &&
+    v.reliable &&
+    !v.referenceOnly &&
+    v.ticker === ticker &&
+    v.methods &&
+    kind &&
+    fresh &&
+    !splitStale
       ? stockValueSummary(
           { verdict: { ...v, methods: v.methods }, quote, kind },
           lang,

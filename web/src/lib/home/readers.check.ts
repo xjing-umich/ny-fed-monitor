@@ -11,6 +11,8 @@ function stub(p: string, exports: unknown) {
   } as NodeJS.Module;
 }
 let reads = 0;
+let splitRows: { ticker: string; split_date: string; ratio: number }[] = [];
+let splitError: { message: string } | null = null;
 stub("../managers/db", {
   hasSupabaseEnv: () => true,
   getDb: () => ({
@@ -20,7 +22,7 @@ stub("../managers/db", {
           order: () => ({
             limit: async () => {
               reads++;
-              return { data: [], error: null };
+              return { data: splitRows, error: splitError };
             },
           }),
         }),
@@ -82,6 +84,31 @@ async function main() {
   assert.equal(index.stockAvailable, false);
   assert.equal(index.investorAvailable, true);
   assert.equal(index.items.length, 1);
+  const splitReader = require("./readExampleSplits").readExampleSplits;
+  splitRows = [
+    { ticker: "AAPL", split_date: "2026-10-30", ratio: 1.01 },
+    { ticker: "AAPL", split_date: "2026-10-01", ratio: 2 },
+  ];
+  const splitMap = await splitReader(["AAPL", "MSFT"]);
+  assert.equal(splitMap.get("AAPL"), "2026-10-01");
+  assert.equal(splitMap.get("MSFT"), null);
+  splitRows = Array.from({ length: 61 }, () => ({
+    ticker: "AAPL",
+    split_date: "2026-10-01",
+    ratio: 2,
+  }));
+  assert.equal(
+    await splitReader(["AAPL"]),
+    null,
+    "Truncated split data must not look like confirmed coverage",
+  );
+  splitRows = [];
+  splitError = { message: "unavailable" };
+  assert.equal(
+    await splitReader(["AAPL"]),
+    null,
+    "Failed split read must withhold comparisons",
+  );
   console.log(
     "readers.check OK: 8 bounded reads, no engine/scanning, partial search failure survives",
   );

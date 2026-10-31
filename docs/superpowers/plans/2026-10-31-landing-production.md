@@ -26,22 +26,22 @@
 
 **Files:** create web/src/lib/home/companyExample.ts, readCompanyExamples.ts, snapshotExample.check.ts.
 **Interfaces:** readCompanyExamples(lang)→CompanyExample[]；纯 deriveCompanyExample 接受 current holders、SnapshotVerdict、LatestPrice、拆股日期，产出可序列化模型。UI仅消费 summary 或诚实 fallback。
-- [ ] 先写fixture检查：有效/SOTP/零增长、混合季度/陈旧持有人、无持仓、待确认/缺价/非USD/不同报价日期/坏轴。
-- [ ] 运行确认缺实现失败；实现复用已发布快照和 stockValueSummary 校验；运行全部fixture通过。
+- [x] 先写fixture检查：有效/SOTP/零增长、混合季度/陈旧持有人、无持仓、待确认/缺价/非USD/不同报价日期/坏轴。
+- [x] 运行确认缺实现失败；实现复用已发布快照和 stockValueSummary 校验；运行全部fixture通过。
 
 ### Task 2: 搜索与全页接入
 
 **Files:** create components/home/landing/{LandingHeader,LandingSearch,CompanyExamples,LandingPage}.tsx, landing.module.css; create shell/ShellFrame.tsx; modify app/[lang]/page.tsx and layout.tsx, shell/AppShell.tsx and Footer.tsx; create lib/home/search.ts, search.check.ts.
 **Interfaces:** ShellFrame accepts rendered header/footer slots and children, identifies only /, /en, /zh as home. Landing search consumes real SearchItem[] built with existing managers + readConsensusHeld; group keys derive from typed kind/path.
-- [ ] 先写search fixture，覆盖中文别名/大小写/ticker/分组/空结果；RED→实现→GREEN。
-- [ ] 将确认的HTML/CSS构图转换为组件，复用真实股票summary/坐标与订阅表单；完整来源native details；首页独立样式且SSR默认内容可见。
-- [ ] 首页footer关闭额外订阅，保留其他页面现状；语言/主题沿用existing routing/next-themes。
+- [x] 先写search fixture，覆盖中文别名/大小写/ticker/分组/空结果；RED→实现→GREEN。
+- [x] 将确认的HTML/CSS构图转换为组件，复用真实股票summary/坐标与订阅表单；完整来源native details；首页独立样式且SSR默认内容可见。
+- [x] 首页footer关闭额外订阅，保留其他页面现状；语言/主题沿用existing routing/next-themes。
 
 ### Task 3: 验证、独立review、PR预览
 
-- [ ] typecheck/lint；npm prebuild门禁；相关stockFirstScreen/LinearValueAxis/页面SEO回归；production build。
-- [ ] 浏览器375/768/1440×中英×深浅：搜索公司/投资人、无匹配、键盘、案例、说明、手机菜单、主题/语言、订阅mock成功/失败，详情/列表回归；禁止真实订阅。
-- [ ] 新鲜独立review；修复阻塞问题并验证，提交推送 feat/landing-a5 创建目标db-foundation的PR，附预览构建与验收状态。不自动合并。
+- [x] typecheck/lint；npm prebuild门禁；相关stockFirstScreen/LinearValueAxis/页面SEO回归；production build。
+- [x] 浏览器375/768/1440×中英×深浅：搜索公司/投资人、无匹配、键盘、案例、说明、手机菜单、主题/语言、订阅mock成功/失败，详情/列表回归；禁止真实订阅。
+- [ ] 新鲜独立review已完成，修复阻塞问题并验证；待提交推送 feat/landing-a5 创建目标db-foundation的PR，附预览构建与验收状态。不自动合并。
 
 ## Review 后收敛的读取预算
 
