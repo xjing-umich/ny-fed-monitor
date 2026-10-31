@@ -33,6 +33,15 @@ for (const ticker of ["BMM", "NICM"]) {
   assert.equal(current.raw_facts.profit_loss?.unit, "CAD");
   assert.ok(current.raw_facts.profit_loss?.context_id);
   assert.match(current.raw_facts.profit_loss!.concept, /ifrs.*ProfitLoss/);
+  const acceptedRebindings: string[] = [];
+  for (const [name, rebound] of [
+    ["taxonomy", xml.replaceAll("<ifrs-full:ProfitLoss ", '<ifrs-full:ProfitLoss xmlns:ifrs-full="https://example.com/wrong-taxonomy" ')],
+    ["currency", xml.replaceAll("<measure>iso4217:CAD", '<measure xmlns:iso4217="https://example.com/wrong-currency">iso4217:CAD')],
+  ]) {
+    try { parseNativeFinancials(ticker, filing, rebound, "fixture"); acceptedRebindings.push(name); }
+    catch (error) { assert.match(String(error), /namespace|native financial/i); }
+  }
+  assert.deepEqual(acceptedRebindings, [], "locally rebound taxonomy/unit QNames must never be labeled IFRS/CAD");
   const monetaryUSD = xml.replaceAll("iso4217:CAD", "iso4217:USD");
   assert.throws(() => parseNativeFinancials(ticker, filing, monetaryUSD, "fixture"), /CAD|native financial/i, "USD footnotes cannot become CAD financials");
   assert.throws(() => parseNativeFinancials(ticker, { ...filing, cik: "0000000001" }, xml, "fixture"), /identity/i);

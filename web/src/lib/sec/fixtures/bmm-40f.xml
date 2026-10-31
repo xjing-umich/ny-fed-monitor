@@ -243,7 +243,7 @@
     <ifrs-full:Equity contextRef="I20251231_RetainedEarningsMember" decimals="0" id="Tag274" unitRef="CAD">-50918725</ifrs-full:Equity>
     <ifrs-full:Equity contextRef="I20251231_NoncontrollingInterestsMember" decimals="0" id="Tag275" unitRef="CAD">4347210</ifrs-full:Equity>
     <ifrs-full:Equity contextRef="I20251231" decimals="0" id="Tag287" unitRef="CAD">225007768</ifrs-full:Equity>
-    
+
 <ifrs-full:WeightedAverageShares
       contextRef="D20251231_3"
       decimals="0"

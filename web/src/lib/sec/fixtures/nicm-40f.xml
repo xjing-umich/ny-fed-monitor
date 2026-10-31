@@ -296,7 +296,7 @@
     <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_ZF4qejn3ikKRrsSbvvEXyg" decimals="0" id="Tc_eXXwrkP8i06K-gl1dHnfUg_26_14" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">9494098</ifrs-full:Equity>
     <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_TB7NoHCBAUeRyTgDapXuwg" decimals="0" id="Tc_huj7ajX9YE-JeSxUxu_cNg_26_17" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-111446249</ifrs-full:Equity>
     <ifrs-full:Equity contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_38pb_4Q8tEmPNJhUUF7HEg_26_20" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-9814620</ifrs-full:Equity>
-    
+
 <ifrs-full:WeightedAverageShares
       contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw"
       decimals="0"

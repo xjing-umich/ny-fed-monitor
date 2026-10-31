@@ -62,6 +62,19 @@ export function parseNativeFinancials(ticker: string, filing: NormalizedFiling, 
   const parsed = new XMLParser({ ignoreAttributes: false, parseTagValue: false, processEntities: false }).parse(xml) as Obj;
   const root = child(parsed, "xbrl") as Obj | undefined;
   if (!root) throw new Error("Missing native financial XBRL root");
+  // This audited parser supports root-bound QNames. XML permits local rebinding;
+  // fail closed instead of assigning the root's IFRS/currency URI to such facts.
+  const rejectRebinding = (value: unknown): void => {
+    if (Array.isArray(value)) { value.forEach(rejectRebinding); return; }
+    if (!value || typeof value !== "object") return;
+    for (const [key, nested] of Object.entries(value)) {
+      if ((key === "@_xmlns" || key.startsWith("@_xmlns:")) && root[key] !== undefined && root[key] !== nested) {
+        throw new Error("Unsupported native financial namespace rebinding");
+      }
+      if (!key.startsWith("@_")) rejectRebinding(nested);
+    }
+  };
+  rejectRebinding(root);
   const namespace = (qname: string) => root[`@_xmlns${qname.includes(":") ? `:${qname.split(":")[0]}` : ""}`];
   const isShares = (qname: string | undefined) => !!qname && local(qname) === "shares" && namespace(qname) === "http://www.xbrl.org/2003/instance";
   const isCAD = (qname: string | undefined) => !!qname && local(qname) === "CAD" && namespace(qname) === "http://www.xbrl.org/2003/iso4217";
