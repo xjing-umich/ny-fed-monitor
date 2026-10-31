@@ -7,9 +7,10 @@ const writes:{table:string;method:string;body:unknown}[]=[];
 const transport:typeof fetch=async(input,init)=>{
  const u=new URL(input instanceof Request?input.url:String(input)),method=init?.method??"GET";
  if(u.hostname.endsWith("sec.gov")) {
-  assert.ok(u.pathname.endsWith("company_tickers.json"),"known PDF-only channels must not retry missing companyfacts/submissions");
+  assert.ok(u.pathname.endsWith("company_tickers.json"),"official PDF channels must not retry missing companyfacts/submissions");
   return Response.json({0:{ticker:"OZK",cik_str:1569650,title:"Bank OZK"},1:{ticker:"TRMLF",cik_str:2071881,title:"Tourmaline Oil Corp/ADR"}});
  }
+ if(u.hostname.includes("fdicconnect")||u.hostname.includes("tourmaline"))return new Response("unavailable",{status:503});
  const table=u.pathname.split("/").at(-1)!;
  if(method==="GET")return Response.json(null);
  const body=JSON.parse(String(init?.body));writes.push({table,method,body});
@@ -20,11 +21,11 @@ const db=createClient("https://pending.invalid","fixture",{auth:{persistSession:
 async function main(){
  for(const ticker of ["OZK","TRMLF"]){
   writes.length=0;const r=await ingestCompany(ticker,db);
-  assert.equal(r.status,"source_pending");assert.equal(r.quality_status,"external_source_pending");
-  assert.match(r.error!,/official PDF/);
-  assert.equal(writes.some(w=>w.table!=="sec_ingest_runs"),false,"pending source cannot mutate financials or publish");
-  const finished=writes.find(w=>w.method==="PATCH")!.body as {status:string};assert.equal(finished.status,"source_pending","pending is never successful resumable coverage");
+  assert.equal(r.status,"failed");assert.equal(r.quality_status,"low");
+  assert.match(r.error!,/503/);
+  assert.equal(writes.some(w=>w.table!=="sec_ingest_runs"),false,"source failure cannot mutate financials or publish");
+  const finished=writes.find(w=>w.method==="PATCH")!.body as {status:string};assert.equal(finished.status,"failed","source failures are never successful resumable coverage");
  }
- console.log("pending official sources preserve non-success journal and avoid false writes/retries");
+ console.log("official PDF failures preserve non-success journal and avoid false writes/SEC retries");
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

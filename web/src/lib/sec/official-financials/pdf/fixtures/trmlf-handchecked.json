@@ -1,0 +1,269 @@
+{
+  "researchOnly": true,
+  "security": {
+    "symbol": "TRMLF",
+    "issuer": "Tourmaline Oil Corp.",
+    "cusip": "89156V106",
+    "securityType": "ordinary_common_share",
+    "identityAnchorNote": "CUSIP and OTC mapping supplied by task; PDF identifies issuer/common shares, does not itself print TRMLF/CUSIP. CIK 2071881 and TRMOY are excluded."
+  },
+  "source": {
+    "url": "https://tourmaline.cdn.prismic.io/tourmaline/aaidt1xvIZEnjVXx_FinalQ42025MDAFinancialStatements.pdf",
+    "sha256": "16c2e1132c1b3928745739c3f9bea7d015242c86e8fc12af68ce982960e72214",
+    "checkedAt": "2026-10-31T04:49:38.875178+00:00",
+    "documentAuthorizedAt": "2026-03-04",
+    "auditorReportDate": "2026-03-04",
+    "mdaDate": "2026-03-04",
+    "audited": true,
+    "accountingStandard": "IFRS Accounting Standards as issued by the IASB",
+    "sourceKind": "issuer_financial_reports_pdf",
+    "currency": "CAD",
+    "monetaryMultiplier": 1000,
+    "shareMultiplier": 1,
+    "epsMultiplier": 1,
+    "columnOrder": [
+      2025,
+      2024
+    ]
+  },
+  "valuesAsPrinted": {
+    "2025": {
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "revenueFromContractsWithCustomers": 6302997,
+      "netIncomeAndComprehensiveIncome": 262672,
+      "incomeFromOperations": 455291,
+      "cashFlowFromOperatingActivities": 3387019,
+      "propertyPlantEquipmentCashFlow": -2988595,
+      "propertyAcquisitionsCashFlow": -19307,
+      "corporateAcquisitionsCashFlow": 0,
+      "totalAssets": 22621607,
+      "totalLiabilities": null,
+      "totalShareholdersEquity": 15436278,
+      "totalCurrentAssets": 1977246,
+      "totalCurrentLiabilities": 2396552,
+      "cashEndOfPeriod": 0,
+      "currentDebt": 800000,
+      "longTermDebt": 1052914,
+      "totalDebt": 1852914,
+      "basicEps": 0.69,
+      "dilutedEps": 0.68,
+      "weightedAverageCommonSharesBasic": 381600686,
+      "weightedAverageCommonSharesDiluted": 383938857,
+      "commonSharesIssuedEndOfYear": 387057403,
+      "netIncomeAttributableToParentOwners": null
+    },
+    "2024": {
+      "periodStart": "2024-01-01",
+      "periodEnd": "2024-12-31",
+      "revenueFromContractsWithCustomers": 5650043,
+      "netIncomeAndComprehensiveIncome": 1264109,
+      "incomeFromOperations": 1778714,
+      "cashFlowFromOperatingActivities": 2729780,
+      "propertyPlantEquipmentCashFlow": -2226070,
+      "propertyAcquisitionsCashFlow": -33083,
+      "corporateAcquisitionsCashFlow": -169040,
+      "totalAssets": 22311543,
+      "totalLiabilities": null,
+      "totalShareholdersEquity": 15543564,
+      "totalCurrentAssets": 1352762,
+      "totalCurrentLiabilities": 1520385,
+      "cashEndOfPeriod": 0,
+      "currentDebt": 0,
+      "longTermDebt": 1272775,
+      "totalDebt": 1272775,
+      "basicEps": 3.54,
+      "dilutedEps": 3.51,
+      "weightedAverageCommonSharesBasic": 357032435,
+      "weightedAverageCommonSharesDiluted": 360249193,
+      "commonSharesIssuedEndOfYear": 373684018,
+      "netIncomeAttributableToParentOwners": null
+    }
+  },
+  "unsupportedReasons": {
+    "totalLiabilities": "No explicitly labelled total liabilities row. Do not misread Total Liabilities and Shareholders Equity as total liabilities. Any assets-minus-equity result must be marked derived rather than a printed fact.",
+    "netIncomeAttributableToParentOwners": "No explicit parent-owner attribution row; consolidated net income must not be synthesized into parent-owner earnings.",
+    "freeCashFlow": "Not a requested raw IFRS row; do not synthesize from PP&E or marketing cash-flow definitions."
+  },
+  "pageLocations": {
+    "totalAssets": {
+      "pdfPage": 42,
+      "printedPage": 40,
+      "rowLabel": "Total Assets",
+      "unit": "CAD thousands",
+      "periodType": "instant"
+    },
+    "totalShareholdersEquity": {
+      "pdfPage": 42,
+      "printedPage": 40,
+      "rowLabel": "Total shareholders' equity",
+      "unit": "CAD thousands",
+      "periodType": "instant"
+    },
+    "totalCurrentAssets": {
+      "pdfPage": 42,
+      "printedPage": 40,
+      "rowLabel": "Total current assets",
+      "unit": "CAD thousands",
+      "periodType": "instant"
+    },
+    "totalCurrentLiabilities": {
+      "pdfPage": 42,
+      "printedPage": 40,
+      "rowLabel": "Total current liabilities",
+      "unit": "CAD thousands",
+      "periodType": "instant"
+    },
+    "currentDebt": {
+      "pdfPage": 42,
+      "printedPage": 40,
+      "rowLabel": "Current debt (note 10)",
+      "unit": "CAD thousands",
+      "periodType": "instant"
+    },
+    "longTermDebt": {
+      "pdfPage": 42,
+      "printedPage": 40,
+      "rowLabel": "Long-term debt (note 10)",
+      "unit": "CAD thousands",
+      "periodType": "instant"
+    },
+    "totalDebt": {
+      "pdfPage": 79,
+      "printedPage": 77,
+      "rowLabel": "Total debt",
+      "unit": "CAD thousands",
+      "periodType": "instant"
+    },
+    "incomeFromOperations": {
+      "pdfPage": 43,
+      "printedPage": 41,
+      "rowLabel": "Income from operations",
+      "unit": "CAD thousands",
+      "periodType": "annual_duration"
+    },
+    "netIncomeAndComprehensiveIncome": {
+      "pdfPage": 43,
+      "printedPage": 41,
+      "rowLabel": "Net income and comprehensive income",
+      "unit": "CAD thousands",
+      "periodType": "annual_duration"
+    },
+    "cashFlowFromOperatingActivities": {
+      "pdfPage": 45,
+      "printedPage": 43,
+      "rowLabel": "Total cash flow from operating activities",
+      "unit": "CAD thousands",
+      "periodType": "annual_duration"
+    },
+    "propertyPlantEquipmentCashFlow": {
+      "pdfPage": 45,
+      "printedPage": 43,
+      "rowLabel": "Property, plant and equipment (note 7)",
+      "section": "Investing",
+      "unit": "CAD thousands",
+      "periodType": "annual_duration",
+      "signedAsPrinted": true
+    },
+    "propertyAcquisitionsCashFlow": {
+      "pdfPage": 45,
+      "printedPage": 43,
+      "rowLabel": "Property acquisitions (note 7)",
+      "section": "Investing",
+      "unit": "CAD thousands",
+      "periodType": "annual_duration",
+      "signedAsPrinted": true
+    },
+    "corporateAcquisitionsCashFlow": {
+      "pdfPage": 45,
+      "printedPage": 43,
+      "rowLabel": "Corporate acquisitions (note 7)",
+      "section": "Investing",
+      "unit": "CAD thousands",
+      "periodType": "annual_duration",
+      "signedAsPrinted": true
+    },
+    "cashEndOfPeriod": {
+      "pdfPage": 45,
+      "printedPage": 43,
+      "rowLabel": "Cash, end of period",
+      "unit": "CAD thousands",
+      "periodType": "instant",
+      "zeroNote": "Printed dash; footnote explicitly defines cash as cash and cash equivalents."
+    },
+    "commonSharesIssuedEndOfYear": {
+      "pdfPage": 82,
+      "printedPage": 80,
+      "rowLabel": "Balance, end of year",
+      "section": "12. SHARE CAPITAL / (b) Common Shares Issued",
+      "unit": "actual common shares",
+      "periodType": "instant",
+      "columnOrder": [
+        "2025 Number of Shares",
+        "2025 Amount CAD thousands",
+        "2024 Number of Shares",
+        "2024 Amount CAD thousands"
+      ]
+    },
+    "revenueFromContractsWithCustomers": {
+      "pdfPage": 83,
+      "printedPage": 81,
+      "rowLabel": "Revenue from contracts with customers",
+      "section": "13. REVENUE",
+      "unit": "CAD thousands",
+      "periodType": "annual_duration"
+    },
+    "basicEps": {
+      "pdfPage": 86,
+      "printedPage": 84,
+      "rowLabel": "Earnings per share – basic",
+      "section": "15. EARNINGS PER SHARE",
+      "unit": "CAD per common share",
+      "periodType": "annual_duration"
+    },
+    "dilutedEps": {
+      "pdfPage": 86,
+      "printedPage": 84,
+      "rowLabel": "Earnings per share – fully diluted",
+      "section": "15. EARNINGS PER SHARE",
+      "unit": "CAD per common share",
+      "periodType": "annual_duration"
+    },
+    "weightedAverageCommonSharesBasic": {
+      "pdfPage": 86,
+      "printedPage": 84,
+      "rowLabel": "Weighted average number of common shares – basic",
+      "unit": "actual common shares",
+      "periodType": "annual_duration"
+    },
+    "weightedAverageCommonSharesDiluted": {
+      "pdfPage": 86,
+      "printedPage": 84,
+      "rowLabel": "Weighted average number of common shares – diluted",
+      "unit": "actual common shares",
+      "periodType": "annual_duration"
+    }
+  },
+  "mustRejectRevenueDecoys": {
+    "commoditySalesFromProduction": [
+      4940024,
+      4729771
+    ],
+    "unlabelledIncomeStatementSubtotal": [
+      6019970,
+      5370871
+    ]
+  },
+  "scope": {
+    "annualOnly": true,
+    "fiscalYears": [
+      2025,
+      2024
+    ],
+    "valuationEligible": false,
+    "fxConversion": false,
+    "adrConversion": false,
+    "interim": false,
+    "ttm": false
+  }
+}
