@@ -1,24 +1,13 @@
 import { notFound } from "next/navigation";
-import { readStockLinkHolders } from '@/lib/managers/consensusRead';
-import { currentStockKeys } from '@/lib/stocks/stockLinks';
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
-import { notableMoves, consensusHeldTop, consensusCount } from "@/lib/aggregations";
-import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
-import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
-import { investorPath, localePath, HTML_LANG } from "@/lib/urls";
+import { localePath, HTML_LANG } from "@/lib/urls";
 import { altFor, ogFor } from "@/lib/seo";
 import { effectiveMovesPeriod } from "@/lib/freshness/derive";
-import { listReportPeriods } from "@/lib/reports/read";
 import type { Lang } from "@/lib/nav";
-import HeroMasthead from "@/components/home/HeroMasthead";
-import { DataStrip } from "@/components/common/DataStrip";
-import StepIndex from "@/components/home/StepIndex";
-import FoundationsGrid from "@/components/home/FoundationsGrid";
-import PhilosophyQuote from "@/components/home/PhilosophyQuote";
-import LearnTeaser from "@/components/home/LearnTeaser";
-import ClosingCTA from "@/components/home/ClosingCTA";
-import { Section } from "@/components/common/Section";
+import { readSearchIndex } from "@/lib/home/searchIndex";
+import { readCompanyExamples } from "@/lib/home/readCompanyExamples";
+import LandingPage from "@/components/home/landing/LandingPage";
 
 // 13F 季度更、价格日更;首页按列表页节奏重验。
 // 周期按 Vercel Hobby 额度定(ISR Writes 按 8KB 计、全站 ~2200 页):列表页 3 天、详情页 7 天;
@@ -63,34 +52,15 @@ export default async function HomePage({
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
 
-  // 全部廉价并行读(Supabase / bundled JSON)。无外部 API、无重计算。
-  const [idx, moves, heldTop, heldCount, strike, dgs10, reports] = await Promise.all([
-    getManagerIndex(),
-    notableMoves(6),
-    consensusHeldTop(8),
-    consensusCount(),
-    readStrikeZoneLeaders(6),
-    getLatestDgs10(),
-    listReportPeriods(),
+  const [idx, index, examples] = await Promise.all([
+    getManagerIndex().catch(() => ({ managers: [] })),
+    readSearchIndex(lang),
+    readCompanyExamples(lang),
   ]);
-
-  const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
-  const moveKeys = [...moves.mostBought, ...moves.mostSold].map((r) => r.cusip);
-  const availableMoves = currentStockKeys((await readStockLinkHolders(moveKeys)) ?? [], new Date());
-  const movesEffective = effectiveMovesPeriod(
-    topManagers.map((m) => m.period),
+  const filing = effectiveMovesPeriod(
+    idx.managers.map((m) => m.period),
     new Date(),
   );
-  // Masthead "as of" 用与下方 moves 面板同一口径(effectiveMovesPeriod),而非单只最大 AUM
-  // 基金的最新期。否则 13F 申报季内,头部基金已交新季但整体未过披露门槛时,masthead 会显示
-  // "as of Q2" 而 moves 面板显示 "Q1",同屏自相矛盾且夸大覆盖。无数据时回退到头部基金期。
-  const period = movesEffective.period ?? topManagers[0]?.period ?? "";
-  // 申报季进度行上的“Qn 报告 →”只在该季报告行已存在(已过公开门槛)时出现,否则会链到 404。
-  const filingReportExists = !!movesEffective.maxPeriod && reports.some((r) => r.period === movesEffective.maxPeriod);
-
-  // Link the philosophy band's featured quote to Buffett's page if we track him.
-  const buffett = topManagers.find((m) => /buffett/i.test(m.person) || /berkshire/i.test(m.name));
-  const buffettHref = buffett ? investorPath(lang, buffett.slug) : undefined;
 
   const ld = {
     "@context": "https://schema.org",
@@ -120,43 +90,17 @@ export default async function HomePage({
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-2 pb-16 pt-6 sm:pb-20 sm:pt-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
-
-      <HeroMasthead
-        lang={lang}
-        period={period}
-        movesPeriod={movesEffective.period ?? ""}
-        filing={movesEffective}
-        filingReportExists={filingReportExists}
-        moves={moves}
-        availableStocks={availableMoves}
-        investorCount={movesEffective.coverage.total > 0 ? movesEffective.coverage.total : topManagers.length}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
       />
-
-      {/* Real-data stat bar — carries the 10Y macro signal + real-data proof (own top margin, no wrapper). */}
-      <DataStrip lang={lang} consensusCount={heldCount} dgs10={dgs10} />
-
-      {/* Near-full-width to break the max-w-5xl rhythm. */}
-      <Section rhythm="xl" className="mx-auto max-w-6xl">
-        <StepIndex lang={lang} investors={topManagers.slice(0, 16)} held={heldTop} strike={strike} />
-      </Section>
-
-      <Section rhythm="lg">
-        <FoundationsGrid lang={lang} />
-      </Section>
-
-      <Section rhythm="md">
-        <PhilosophyQuote lang={lang} featuredHref={buffettHref} />
-      </Section>
-
-      <Section rhythm="md">
-        <LearnTeaser lang={lang} />
-      </Section>
-
-      <Section rhythm="xl">
-        <ClosingCTA lang={lang} />
-      </Section>
-    </div>
+      <LandingPage
+        lang={lang}
+        index={index}
+        examples={examples}
+        filing={filing}
+      />
+    </>
   );
 }
