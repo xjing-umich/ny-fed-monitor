@@ -1,33 +1,31 @@
-import React from "react";
-import TopNav from "./TopNav";
-import MobileDrawer from "./MobileDrawer";
+import type { ReactNode } from "react";
 import Footer from "./Footer";
-import type { Lang } from "@/lib/nav";
-import type { SearchItem } from "./SearchBox";
-import { LogoMark } from "@/components/brand/Logo";
 import ShellFrame from "./ShellFrame";
-import LandingHeader from "@/components/home/landing/LandingHeader";
+import SiteHeader from "./SiteHeader";
+import type { Lang } from "@/lib/nav";
+import type { SearchIndex } from "@/lib/search/types";
 import landingStyles from "@/components/home/landing/landing.module.css";
 
-interface AppShellProps {
+export default function AppShell({
+  lang,
+  index,
+  children,
+}: {
   lang: Lang;
-  items: SearchItem[];
-  children: React.ReactNode;
-}
-
-export default function AppShell({ lang, items, children }: AppShellProps) {
+  index: SearchIndex;
+  children: ReactNode;
+}) {
+  const header = <SiteHeader lang={lang} index={index} />;
   return (
     <>
-      {/* Skip link — first tab stop, lets keyboard users bypass the nav */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-[var(--tt-border)] focus:bg-[var(--tt-panel)] focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--tt-text)] focus:no-underline focus:shadow-md"
       >
         {lang === "zh" ? "跳到主内容" : "Skip to content"}
       </a>
-
       <ShellFrame
-        homeHeader={<LandingHeader lang={lang} />}
+        header={header}
         homeFooter={
           <Footer
             lang={lang}
@@ -36,23 +34,6 @@ export default function AppShell({ lang, items, children }: AppShellProps) {
           />
         }
         footer={<Footer lang={lang} />}
-        header={
-          <>
-            {/* Desktop top nav */}
-            <TopNav lang={lang} items={items} />
-
-            {/* Mobile header strip with hamburger */}
-            <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 bg-[var(--tt-bg)] border-b border-[var(--tt-border)]">
-              <MobileDrawer lang={lang} items={items} />
-              <span className="flex items-center gap-2 flex-1 truncate">
-                <LogoMark className="h-[20px] w-[20px] text-[var(--tt-accent)] shrink-0" />
-                <span className="font-display text-lg font-medium tracking-tight text-[var(--tt-text)]">
-                  Compounder
-                </span>
-              </span>
-            </header>
-          </>
-        }
       >
         {children}
       </ShellFrame>

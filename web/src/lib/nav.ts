@@ -2,11 +2,12 @@ export type Lang = "zh" | "en";
 
 export const TOP_NAV = [
   { key: "home", zh: "首页", en: "Home", href: "" },
-  { key: "investors", zh: "超级投资者", en: "Superinvestors", href: "/investors" },
+  { key: "investors", zh: "投资人", en: "Investors", href: "/investors" },
   { key: "stocks", zh: "个股", en: "Stocks", href: "/stocks" },
   { key: "strike", zh: "击球区", en: "Strike zone", href: "/stocks/screener?view=strike_zone" },
   { key: "learn", zh: "学习", en: "Learn", href: "/learn" },
 ] as const;
+export const PRIMARY_NAV=TOP_NAV.filter(entry=>entry.key!=='home');
 
 /** barePath 已由导航组件去除语言前缀;筛选器及内部 variant 只高亮击球区。 */
 export function isNavActive(key: string, href: string, barePath: string): boolean {

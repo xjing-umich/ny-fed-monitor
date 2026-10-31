@@ -43,7 +43,7 @@ function BargainMark({ bargain, lang }: { bargain: { inStrikeZone: boolean; marg
       {bargain.inStrikeZone && (
         <span
           aria-hidden
-          className="rounded-sm border border-[var(--tt-accent)] px-1 py-px font-data text-xs leading-none text-[var(--tt-accent)]"
+          className="rounded-sm border border-[var(--val-below)] px-1 py-px font-data text-xs leading-none text-[var(--val-below)]"
         >
           {isZh ? "击球区" : "Strike zone"}
         </span>

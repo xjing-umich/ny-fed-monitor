@@ -7,7 +7,7 @@
 /* Tokens v2 (2026-10-19) — docs/superpowers/specs/2026-10-19-design-tokens-type-v2-design.md
    :root = 浅色,.dark = 深色;默认跟随系统(next-themes defaultTheme="system")。
    v2 令牌是唯一真相源。下方别名层(--tt-* / shadcn 名)只在 :root 定义一次,
-   .dark 只覆盖 v2 原值,别名自动跟随。中性色向品牌绿(色相 165)带少量彩度。
+   .dark 只覆盖 v2 原值,别名自动跟随。中性色沿用 A5 冷蓝，金融语义色独立于品牌色。
    改色后跑 npm run check:tokens(两套主题文字配对 ≥ 4.5:1)。
    别名层假定 .dark 与 :root 落在同一元素(<html>)上;若在子树上单独加 .dark,
    只会翻转 v2 令牌,别名(--tt-* / shadcn 名)不会跟随。 */
@@ -17,17 +17,17 @@
   --font-cjk: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Noto Sans CJK SC", "Source Han Sans SC", ui-sans-serif, system-ui, sans-serif;
   /* ── v2 · light ── */
-  --canvas:          oklch(0.985 0.004 165);
-  --surface:         oklch(1 0 0);
-  --sunk:            oklch(0.965 0.006 165);
-  --line:            oklch(0.905 0.008 165);
-  --line-strong:     oklch(0.84 0.010 165);
-  --ink-1:           oklch(0.23 0.018 165);  /* 正文 */
-  --ink-2:           oklch(0.43 0.016 165);  /* 辅助 */
-  --ink-3:           oklch(0.52 0.014 165);  /* 时间戳 / 来源 */
-  --brand:           oklch(0.47 0.105 158);  /* Logo、主按钮、焦点 */
-  --brand-soft:      oklch(0.95 0.03 158);
-  --on-brand:        oklch(1 0 0);
+  --canvas: oklch(0.978279 0.007393 260.732);
+  --surface: oklch(1.000000 0.000000 0.000);
+  --sunk: oklch(0.964189 0.013083 251.559);
+  --line: oklch(0.918028 0.016716 250.849);
+  --line-strong: oklch(0.653002 0.055307 255.719);
+  --ink-1: oklch(0.248192 0.054725 258.646);  /* 正文 */
+  --ink-2: oklch(0.450504 0.055544 254.575);  /* 辅助 */
+  --ink-3: oklch(0.508193 0.049512 256.029);  /* 时间戳 / 来源 */
+  --brand: oklch(0.484016 0.159772 255.794);  /* Logo、主按钮、焦点 */
+  --brand-soft: oklch(0.948143 0.019417 252.880);
+  --on-brand: oklch(1.000000 0.000000 0.000);
   --val-below:       oklch(0.52 0.13 152);   /* 估值:低于价值 / 击球区 */
   --val-below-soft:  oklch(0.962 0.03 152);
   --val-within:      oklch(0.50 0.035 250);  /* 估值:价值带内 */
@@ -54,13 +54,13 @@
   --accent:              var(--brand-soft);
   --accent-foreground:   var(--brand);
   --destructive:         var(--alert);
-  --positive:            var(--brand);
+  --positive:            var(--val-below);
   --warn:                var(--val-above);
   --border:              var(--line);
   --border-strong:       var(--line-strong);
   --input:               var(--line-strong);
   --ring:                var(--brand);
-  --radius:              0.375rem;
+  --radius:              0.5rem;
 
   --glow-primary:        none; /* v2 关闭发光,变量保留以免消费方失效 */
   --glow-warn:           none;
@@ -91,7 +91,7 @@
   --tt-muted:         var(--ink-2);
   --tt-faint:         var(--ink-3);
   --tt-accent:        var(--brand);
-  --tt-positive:      var(--brand);
+  --tt-positive:      var(--val-below);
   --tt-negative:      var(--alert);
   --tt-warn:          var(--val-above);
 
@@ -103,17 +103,17 @@
 
 /* ── v2 · dark:只覆盖 v2 原值 ── */
 .dark {
-  --canvas:          oklch(0.175 0.010 165);
-  --surface:         oklch(0.205 0.012 165);
-  --sunk:            oklch(0.24 0.012 165);
-  --line:            oklch(0.29 0.012 165);
-  --line-strong:     oklch(0.36 0.012 165);
-  --ink-1:           oklch(0.94 0.008 165);
-  --ink-2:           oklch(0.76 0.012 165);
-  --ink-3:           oklch(0.66 0.012 165);
-  --brand:           oklch(0.76 0.13 158);
-  --brand-soft:      oklch(0.27 0.05 158);
-  --on-brand:        oklch(0.175 0.010 165);
+  --canvas: oklch(0.190345 0.041333 256.483);
+  --surface: oklch(0.232561 0.049040 254.582);
+  --sunk: oklch(0.271444 0.053527 251.290);
+  --line: oklch(0.346711 0.051594 253.456);
+  --line-strong: oklch(0.533673 0.063043 253.695);
+  --ink-1: oklch(0.958204 0.019966 257.471);
+  --ink-2: oklch(0.790985 0.040674 253.058);
+  --ink-3: oklch(0.726058 0.045804 251.626);
+  --brand: oklch(0.837570 0.094583 235.363);
+  --brand-soft: oklch(0.311818 0.070331 251.690);
+  --on-brand: oklch(0.190345 0.041333 256.483);
   --val-below:       oklch(0.76 0.14 152);
   --val-below-soft:  oklch(0.27 0.05 152);
   --val-within:      oklch(0.74 0.04 250);
@@ -128,11 +128,11 @@
 @theme inline {
   --color-background:    var(--background);
   --color-foreground:    var(--foreground);
-  /* Geist / Saira 只有拉丁字形:汉字落到后面显式写出的中文字体,而不是由浏览器默认设置决定
+  /* Geist 只有拉丁字形:汉字落到后面显式写出的中文字体,而不是由浏览器默认设置决定
      (Windows / Linux 上可能落到宋体)。 */
   --font-sans:           var(--font-geist-sans), var(--font-cjk);
   --font-mono:           var(--font-geist-mono);
-  --font-display:        var(--font-display), "Helvetica Neue", Arial, var(--font-cjk);
+  --font-display:        var(--font-geist-sans), var(--font-cjk);
   --font-heading:        var(--font-geist-sans), var(--font-cjk);
 
   /* v2 语义色工具类(bg-canvas / text-ink-2 / border-line / bg-val-below-soft …) */
@@ -248,7 +248,7 @@
     font-variant-numeric: tabular-nums;
   }
   .font-display {
-    font-family: var(--font-display), "Helvetica Neue", Arial, var(--font-cjk);
+    font-family: var(--font-geist-sans), var(--font-cjk);
     font-optical-sizing: auto;
   }
   /* 负字距只对 latin 生效:zh 标题落到系统 CJK 后 tracking-tight 会显得局促,

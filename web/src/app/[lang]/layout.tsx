@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { Metadata, Viewport } from "next";
-import { Saira } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "../globals.css";
@@ -11,18 +10,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
 import { HTML_LANG } from "@/lib/urls";
-import { getSearchIndex } from "@/lib/home/searchIndex";
-
-// Engineered industrial sans for the wordmark and headlines: straight-sided
-// "spec-sheet nameplate" geometry that pairs cleanly with PingFang/system CJK
-// (a serif slab clashed with it). Latin subset only — zh headlines fall through
-// the system CJK stack. 600 trimmed: every font-display consumer uses font-medium.
-const saira = Saira({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  display: "swap",
-  variable: "--font-display",
-});
+import { readSearchIndex } from "@/lib/home/searchIndex";
 
 // This is the app's root layout, nested under the [lang] dynamic segment so
 // that <html lang> can be localized per locale. Site-wide SEO defaults live
@@ -141,13 +129,13 @@ export default async function LangLayout({
   const lang = rawLang as Lang;
   const htmlLang = HTML_LANG[lang];
 
-  const items = await getSearchIndex(lang);
+  const index = await readSearchIndex(lang);
 
   return (
     <html
       lang={htmlLang}
       suppressHydrationWarning
-      className={`${saira.variable} ${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
       <body
         className="min-h-full"
@@ -159,7 +147,7 @@ export default async function LangLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppShell lang={lang} items={items}>
+          <AppShell lang={lang} index={index}>
             {children}
           </AppShell>
         </ThemeProvider>
