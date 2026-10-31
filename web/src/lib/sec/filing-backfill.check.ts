@@ -3,7 +3,7 @@
  * 无 IO:内嵌一份迷你 instance + 假 companyfacts,覆盖单位/维度/scale、新一期与历史空洞的挑选,
  * 以及「比较期数不注入、同期取最早申报」两条不改历史的规则。
  */
-import { extractGaapFacts, findMissingFilings, injectFilingFacts, isOwnPeriod } from "./filing-backfill";
+import { extractGaapFacts, findMissingFilings, findMissingCapitalExpenditureFilings, injectFilingFacts, isOwnPeriod } from "./filing-backfill";
 import type { CompanyFacts } from "./company-facts";
 import type { NormalizedFiling } from "./company-submissions";
 import { normalizeCompanyFacts } from "./normalize-facts";
@@ -115,7 +115,8 @@ const holeFilings = [
 const holes = findMissingFilings(mkHoleFacts(), holeFilings, 10).map((f) => f.accession_number);
 check("挑出最新一期之前的空洞(10-Q 与 10-K)", holes.includes("Q3-25") && holes.includes("FY-25"), holes.join(","));
 check("超出 3 年回看窗口的远古申报不挑", !holes.includes("OLD"));
-check("在 companyfacts 里的申报不挑", !holes.includes("Q2-25") && !holes.includes("Q1-26") && !holes.includes("Q2-26"));
+check("已有核心期间事实的申报不挑", !holes.includes("Q2-25") && !holes.includes("Q2-26"));
+check("同 accession 只有资产负债表时仍补核心流量", holes.includes("Q1-26"));
 const coveredFacts = mkHoleFacts();
 coveredFacts.facts["us-gaap"].Revenues.units.USD.push(
   // 后来申报里的去年同期比较数已覆盖 2025-09-30 → 不算空洞,不去拉
@@ -134,7 +135,37 @@ footnoteFacts.facts["us-gaap"].FairValueMeasurementWithUnobservableInputsReconci
   { start: "2025-01-01", end: "2025-12-31", val: 1_685_000, accn: "Q1-26", form: "10-Q", filed: "2026-04-29" },
 ] } };
 check("10-Q 附注里的非核心全年数不算覆盖", findMissingFilings(footnoteFacts, holeFilings, 10).some((f) => f.accession_number === "FY-25"));
-check("超过上限时保留最新的", findMissingFilings(mkHoleFacts(), holeFilings, 1).map((f) => f.accession_number).join() === "FY-25");
+check("超过上限时保留最新的", findMissingFilings(mkHoleFacts(), holeFilings, 1).map((f) => f.accession_number).join() === "Q1-26");
+
+console.log("foreign annual source backfill");
+for (const form of ["20-F", "40-F"]) {
+  const annual = filing(`FY-${form}`, form, "2025-12-31", "2026-03-01");
+  const annualFacts: CompanyFacts = { cik: 1800, entityName: "Foreign USD", facts: { "us-gaap": {
+    Assets: { units: { USD: [{ end: "2025-12-31", val: 1000, accn: annual.accession_number, form }] } },
+    Revenues: { units: { USD: [{ start: "2024-01-01", end: "2024-12-31", val: 100, form, accn: "PRIOR" }] } },
+  } } };
+  check(`${form} 同 accession 仅有时点事实仍可回填`, findMissingFilings(annualFacts, [annual]).length === 1);
+  annualFacts.facts["us-gaap"].Revenues.units.USD.push({ start: "2025-10-01", end: "2025-12-31", val: 30, form, accn: annual.accession_number });
+  check(`${form} 同期单季数不能代替全年数`, findMissingFilings(annualFacts, [annual]).length === 1);
+  annualFacts.facts["us-gaap"].Revenues.units.EUR = [{ start: "2025-01-01", end: "2025-12-31", val: 110, form, accn: annual.accession_number }];
+  check(`${form} EUR 全年数不能声称 USD 核心已覆盖`, findMissingFilings(annualFacts, [annual]).length === 1);
+  annualFacts.facts["ifrs-full"] = { Revenue: { units: { USD: [{ start: "2025-01-01", end: "2025-12-31", val: 120, form }] } } };
+  check(`${form} IFRS 数不能声称 us-gaap 核心已覆盖`, findMissingFilings(annualFacts, [annual]).length === 1);
+  const annualXml = XML.replaceAll("2026-04-01", "2025-01-01").replaceAll("2026-06-30", "2025-12-31")
+    .replaceAll("2025-04-01", "2024-01-01").replaceAll("2025-06-30", "2024-12-31");
+  injectFilingFacts(annualFacts, annual, extractGaapFacts(annualXml));
+  check(`${form} 注入自身 USD 全年流量后不再下载`, findMissingFilings(annualFacts, [annual]).length === 0);
+  const injected = annualFacts.facts["us-gaap"].RevenueFromContractWithCustomerExcludingAssessedTax.units.USD;
+  check(`${form} 不注入年度比较数`, injected.length === 1 && injected[0].start === "2025-01-01" && injected[0].end === "2025-12-31");
+  check(`${form} 资本开支年度源同样可选`, findMissingCapitalExpenditureFilings(annualFacts, [annual]).some(f => f.accession_number === annual.accession_number));
+}
+const wrongNamespace = XML.replaceAll("us-gaap:", "ifrs-full:");
+check("IFRS 收入/净利不注入 us-gaap", !extractGaapFacts(wrongNamespace).some(f => ["RevenueFromContractWithCustomerExcludingAssessedTax", "NetIncomeLoss"].includes(f.tag)));
+const ifrsCapital = XML.replace("</xbrli:xbrl>", '<ifrs-full:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets contextRef="q2" unitRef="usd">123</ifrs-full:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets></xbrli:xbrl>');
+check("IFRS 命名空间不能经资本开支别名注入", !extractGaapFacts(ifrsCapital).some(f => f.tag === "PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets"));
+const invalidAnnual = filing("INVALID", "20-F", "invalid-date", "2026-03-01");
+check("无效自身报告期不触发回填", findMissingFilings(mkFacts(), [invalidAnnual]).length === 0);
+check("无报告期不注入任何比较数", injectFilingFacts(mkFacts(), { ...invalidAnnual, report_date: null }, g) === 0);
 
 // 端到端:补 Q3-25 空洞;它的去年同期比较数用的是优先级更高的概念,也不能顶掉历史上用 Revenues 报的原值。
 const Q3_XML = XML.replaceAll("2026-04-01", "2025-07-01").replaceAll("2026-06-30", "2025-09-30")

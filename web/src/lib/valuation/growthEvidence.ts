@@ -15,7 +15,14 @@ export type GrowthEvidence = {
   revenue_growth?: number;
   earnings_growth?: number;
   pairs: number;
+  source_url?: string;
+  source_available_at?: string;
+  currency?: string | null;
+  presentation_unit?: "$";
+  shared_unit_verified?: boolean;
+  comparison_basis?: "quarter" | "ytd" | "half_year";
   missing_comparables: boolean;
+  annual_missing_comparables?: boolean;
   current_earnings_nonpositive?: boolean;
 };
 export type GrowthFiling = { form: string; report_date?: string | null };
@@ -70,7 +77,7 @@ export function buildGrowthEvidence(
     : [];
   const latestPeriod = recent.at(-1)?.period_end ?? latest?.period_end;
   const latestFiling = filings
-    .filter((f) => ["10-Q", "10-K", "20-F"].includes(f.form) && f.report_date)
+    .filter((f) => ["10-Q", "10-K", "20-F", "40-F"].includes(f.form) && f.report_date)
     .map((f) => f.report_date!)
     .sort()
     .at(-1);
@@ -80,10 +87,10 @@ export function buildGrowthEvidence(
     annual_period_end: latest?.period_end,
     latest_period_end: latestPeriod,
     latest_filing_period_end: latestFiling,
-    revenue_growth: yoy(latest?.revenue, prior?.revenue),
+    revenue_growth: latest?.missing_fields?.revenue_comparability || prior?.missing_fields?.revenue_comparability ? undefined : yoy(latest?.revenue, prior?.revenue),
     earnings_growth: yoy(latest?.net_income, prior?.net_income),
     pairs: 0,
-    missing_comparables: ![
+    missing_comparables: latest?.missing_fields?.revenue_comparability === true || prior?.missing_fields?.revenue_comparability === true || ![
       latest?.revenue,
       latest?.net_income,
       prior?.revenue,
@@ -92,6 +99,7 @@ export function buildGrowthEvidence(
     current_earnings_nonpositive:
       finite(latest?.net_income) && latest.net_income <= 0,
   };
+  result.annual_missing_comparables = result.missing_comparables;
   if (!recent.length) return result;
   const matches = recent.map(
     (q) =>
@@ -115,7 +123,7 @@ export function buildGrowthEvidence(
     matches.some((p) => !p) ||
     new Set(matches.map((p) => p?.period_end)).size !== recent.length ||
     ![...recent, ...matches].every(
-      (p) => p && finite(p.revenue) && finite(p.net_income),
+      (p) => p && finite(p.revenue) && finite(p.net_income) && p.missing_fields?.revenue_comparability !== true,
     )
   ) {
     result.missing_comparables = true;
@@ -150,9 +158,10 @@ export function assessGrowthCoverage(
   if (
     evidence.latest_filing_period_end &&
     (!evidence.latest_period_end ||
-      evidence.latest_filing_period_end > evidence.latest_period_end)
+      day(evidence.latest_filing_period_end) - day(evidence.latest_period_end) > 7)
   )
     return "uncovered_filing";
+  if (evidence.source_available_at && (!Number.isFinite(day(evidence.source_available_at)) || day(evidence.source_available_at) > day(asOf))) return "missing_period";
   if (evidence.missing_comparables) return "missing_comparables";
   if (day(asOf) - day(evidence.latest_period_end) > 180)
     return "missing_interim";

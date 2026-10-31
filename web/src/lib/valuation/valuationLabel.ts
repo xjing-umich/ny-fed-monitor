@@ -13,7 +13,7 @@ export type ValuationLabel = {
   tone: "val-below" | "val-within" | "val-above" | "neutral";
 };
 export type VerdictLike =
-  | { bucket: VerdictBucket; inStrikeZone: boolean; reliable: boolean; coverage?: "full" | "single_lamp" }
+  | { bucket: VerdictBucket; inStrikeZone: boolean; reliable: boolean; coverage?: "full" | "single_lamp"; referenceOnly?: "missing_reinvestment" }
   | null
   | undefined;
 
@@ -44,6 +44,7 @@ const COPY = {
 export function valuationLabel(v: VerdictLike, lang: Lang): ValuationLabel {
   const t = COPY[lang];
   if (!v) return { tier: "unassessed", label: t.unassessed, pending: false, title: t.unassessedWhy, tone: "neutral" };
+  if(v.referenceOnly==="missing_reinvestment")return {tier:"unassessed",label:lang==="zh"?"零增长参考":"Zero-growth reference",pending:true,tone:"neutral",title:lang==="zh"?"近期财报已覆盖，但历史再投资证据不足。仅保留零增长参考，不计增长溢价，不计入已确认击球区。":"Recent financial periods are covered, but historical reinvestment evidence is insufficient. Zero-growth reference only; no growth premium or confirmed strike-zone signal."};
   const lampTitle = v.coverage === "single_lamp" ? t.singleLamp : null;
   const cheap = v.inStrikeZone || v.bucket === "below";
   if (cheap) {

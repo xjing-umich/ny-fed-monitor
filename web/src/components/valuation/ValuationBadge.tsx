@@ -28,11 +28,11 @@ export function ValuationBadge({
 }): React.ReactElement {
   const l = valuationLabel(verdict, lang);
   if (l.tier === "unassessed") {
-    return <span className="text-xs text-[var(--tt-faint)]" title={l.title ?? undefined}>{l.label}</span>;
+    return <span className="text-xs text-[var(--tt-faint)]" title={l.title ?? undefined}>{l.label}{l.pending ? ` · ${PENDING_WORD[lang]}` : ""}</span>;
   }
   const isCheap = l.tier === "strike" || l.tier === "below";
   if (density === "table" && !isCheap) {
-    return <span className="text-xs text-[var(--tt-muted)]" title={l.title ?? undefined}>{l.label}</span>;
+    return <span className="text-xs text-[var(--tt-muted)]" title={l.title ?? undefined}>{l.label}{l.pending ? ` · ${PENDING_WORD[lang]}` : ""}</span>;
   }
   const cls = l.pending
     ? "border-[var(--tt-border)] text-[var(--tt-muted)]"

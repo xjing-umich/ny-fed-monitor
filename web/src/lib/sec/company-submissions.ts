@@ -11,6 +11,7 @@ export type SecSubmission = {
   filings: {
     recent: {
       accessionNumber: string[];
+      acceptanceDateTime?: string[];
       filingDate: string[];
       reportDate: string[];
       form: string[];
@@ -33,7 +34,7 @@ export type NormalizedFiling = {
   sec_index_url: string;
 };
 
-const SUPPORTED_FORMS = new Set(["10-K", "10-Q", "20-F", "6-K", "40-F"]);
+const SUPPORTED_FORMS = new Set(["10-K", "10-Q", "20-F", "40-F", "6-K"]);
 
 export async function fetchCompanySubmissions(cik: string) {
   return secFetchJson<SecSubmission>(`${SEC_DATA_BASE}/submissions/CIK${cik}.json`);

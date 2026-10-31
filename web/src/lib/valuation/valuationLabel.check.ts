@@ -29,3 +29,5 @@ assert.equal(l.title, "No valuation yet: usable filings are missing, the method 
 l = valuationLabel(v({ bucket: "above", coverage: "single_lamp" }), "en");
 assert.ok(l.title?.includes("Single-method"), "单法口径说明");
 console.log("valuationLabel.check OK");
+
+for(const lang of ["en","zh"] as const)for(const bucket of ["below","within","above"] as const){const label=valuationLabel({...v({bucket,reliable:false}),referenceOnly:"missing_reinvestment"},lang);assert.equal(label.pending,true);assert.equal(label.tone,"neutral");assert.match(label.label,lang==="zh"?/^零增长参考$/:/^Zero-growth reference$/);assert.doesNotMatch(label.label,/击球区|intrinsic value|低于内在价值/);}

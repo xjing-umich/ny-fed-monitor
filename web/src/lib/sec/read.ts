@@ -1,3 +1,4 @@
+import {readInterimDisclosureRows, interimDisclosureData} from "./interim-disclosures/store";
 import { isIdentityQuarantined } from "../securities/securityIdentity";
 import { getDb, withRetry } from "@/lib/managers/db";
 import { CFP_SELECT } from "./columns";
@@ -23,13 +24,14 @@ export type SecLatestSummary = {
 };
 
 export async function getSecCompanyData(ticker: string) {
-  if (isIdentityQuarantined(ticker)) return { company: null, filings: [], annual: [], quarterly: [], latest: null };
+  if (isIdentityQuarantined(ticker)) return { company: null, filings: [], annual: [], quarterly: [], latest: null, interim: interimDisclosureData([]) };
   let db;
   try {
     db = getDb();
   } catch {
     return {
       company: null,
+      interim: interimDisclosureData([]),
       filings: [],
       annual: [],
       quarterly: [],
@@ -52,9 +54,11 @@ export async function getSecCompanyData(ticker: string) {
         .order("filing_date", { ascending: false }).order("accession_number", { ascending: false }).limit(24))
     : { data: [], error: null };
   if (filingResult.error) throw new Error(`SEC filings read failed (${upper}): ${filingResult.error.message}`);
+  const interim = company?.is_foreign_issuer ? interimDisclosureData(await readInterimDisclosureRows(db, upper)) : interimDisclosureData([]);
   const rows = periodsResult.data ?? [];
   return {
     company,
+    interim,
     filings: filingResult.data ?? [],
     annual: rows.filter((row) => row.fiscal_period === "FY"),
     quarterly: rows.filter((row) => row.fiscal_period !== "FY").slice(0, 12),

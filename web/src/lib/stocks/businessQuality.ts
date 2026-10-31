@@ -1,3 +1,4 @@
+import type {InterimDisclosureData} from "../sec/interim-disclosures/store";
 import type { SecLatestSummary } from "@/lib/sec/read";
 
 export type BusinessQuality = {
@@ -18,6 +19,7 @@ const LOW_QUALITY = new Set(["low", "unresolved", "missing"]);
 
 /** 一条年报期(FY)行 —— 头条指标与趋势折线都从这里派生。 */
 type AnnualRow = {
+  missing_fields?: Record<string, boolean>;
   form?: string;
   revenue: number | null;
   net_income: number | null;
@@ -42,6 +44,7 @@ type AnnualRow = {
 export function deriveBusinessQuality(input: {
   latest: SecLatestSummary | null;
   annual: AnnualRow[];
+  interim?: InterimDisclosureData;
   filings?: { form: string; report_date?: string | null; filing_date?: string | null }[];
 }): BusinessQuality | null {
   const { latest, annual } = input;
@@ -54,6 +57,7 @@ export function deriveBusinessQuality(input: {
   const revenueYears: string[] = [];
   const marginSeries: number[] = [];
   for (const r of asc) {
+    if (asc.some(y => y.missing_fields?.revenue_comparability)) break;
     if (r.revenue != null && r.revenue > 0) {
       revenueSeries.push(r.revenue);
       revenueYears.push((r.period_end as string).slice(0, 4));
@@ -81,7 +85,8 @@ export function deriveBusinessQuality(input: {
 
   const revenueSpan =
     revenueYears.length === 0 ? "" : revenueYears.length === 1 ? revenueYears[0] : `${revenueYears[0]}–${revenueYears[revenueYears.length - 1]}`;
-  const disclosure = (input.filings ?? []).filter(f => ["10-K", "10-Q", "20-F", "40-F"].includes(f.form) && f.report_date)
+  const verified = (input.interim?.evidence ?? []).map(e => ({form:"6-K",report_date:e.current.end,filing_date:e.source.publishedAt}));
+  const disclosure = [...(input.filings ?? []).filter(f=>f.form!=="6-K"),...verified].filter(f => ["10-K", "10-Q", "20-F", "40-F", "6-K"].includes(f.form) && f.report_date)
     .sort((a,b) => b.report_date!.localeCompare(a.report_date!) || (b.filing_date ?? "").localeCompare(a.filing_date ?? ""))[0];
   const latestEnd = [latest.latest_10q_period_end, latest.latest_10k_period_end].filter((d): d is string => !!d).sort().at(-1);
   const latestDisclosure = disclosure

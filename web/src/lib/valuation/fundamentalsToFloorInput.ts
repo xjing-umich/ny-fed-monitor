@@ -1,3 +1,5 @@
+import { applyVerifiedInterimEvidence } from "./verifiedInterimEvidence";
+import type { InterimDisclosureData } from "../sec/interim-disclosures/store";
 import { buildGrowthEvidence, type GrowthFiling } from "./growthEvidence";
 import type { FundamentalPeriod } from "@/lib/sec/normalize-facts";
 import type { MarksAdjustment, ValuationFloorInput, ValuationFloorYear } from "./types";
@@ -71,6 +73,7 @@ function toFloorYear(r: FundamentalPeriod, adsRatio: number): ValuationFloorYear
     fiscal_year: r.fiscal_year as number,
     period_end: r.period_end,
     revenue: u(r.revenue),
+    ...(r.missing_fields?.revenue_comparability ? {revenue_comparability:true} : {}),
     gross_profit: u(r.gross_profit),
     operating_income: u(r.operating_income),
     operating_margin: u(r.operating_margin),
@@ -116,6 +119,7 @@ export function fundamentalsToFloorInput(
   sic?: number | null,
   quarterRows?: FundamentalPeriod[],
   filings?: GrowthFiling[],
+  interim?: InterimDisclosureData,
 ): ValuationFloorInput {
   const fyRows = (rows ?? [])
     .filter((r) => r.fiscal_period === "FY" && r.fiscal_year != null)
@@ -149,6 +153,7 @@ export function fundamentalsToFloorInput(
   // Do not compare raw quarterly marks with adjusted annual operating earnings.
   const adjustedQs = marks ? (quarterRows ?? []).map(r => r.investment_fv_gain_loss != null && Number.isFinite(r.investment_fv_gain_loss)
     ? applyMarks(r) : { ...r, net_income: null }) : (quarterRows ?? []);
-  const growth_evidence = buildGrowthEvidence(adjustedFy, adjustedQs, filings);
+  const baseEvidence = buildGrowthEvidence(adjustedFy, adjustedQs, filings);
+  const growth_evidence = interim?.incomplete ? { ...baseEvidence, missing_comparables: true } : applyVerifiedInterimEvidence(baseEvidence, interim?.evidence ?? [], !!marks);
   return { growth_evidence, ticker, company_name: companyName ?? undefined, years, sic: sic ?? undefined, ...(ttm ? { ttm } : {}), ...(marks ? { marks_adjustment: marks } : {}) };
 }

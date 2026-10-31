@@ -450,7 +450,7 @@ export default async function StockTickerPage({
   const sicRaw = sec.company?.sic;
   const sicNum = sicRaw == null ? undefined : Number(sicRaw);
   const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings);
+  const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings, sec.interim);
   // 件⑤:投资主导型控股集团的分部 SOTP。reader 自带件④触发集的窄闸 —— 其余票直接返回
   // undefined,floorInput 一个字段都不动(零漂移);读库失败同样返回 undefined,退回件④抑制。
   // 与 scripts/valuation-ingest.ts 走同一个入口,页面与 screener/首页榜口径不分裂。
@@ -555,7 +555,7 @@ export default async function StockTickerPage({
     .sort()
     .pop();
   const secTooOld = newestSecPeriod != null && isFundamentalsStale(newestSecPeriod, new Date().toISOString());
-  const bq = secTooOld ? null : deriveBusinessQuality({ latest: sec.latest, annual: sec.annual, filings: sec.filings });
+  const bq = secTooOld ? null : deriveBusinessQuality({ latest: sec.latest, annual: sec.annual, filings: sec.filings, interim: sec.interim });
 
   // 安全边际 keyFact 只在"已确认便宜"时占位(reliable + 击球区/低于内在价值)。
   const marginShown = !!(
@@ -579,7 +579,7 @@ export default async function StockTickerPage({
     capitalStructureDistorted,
     fundamentalsCorrupt,
     methodsConflict: !!methodsConflict,
-    growthEvidenceMissing: !!oeDcf?.growth_coverage_gap,
+    growthEvidenceMissing: !!oeDcf?.growth_coverage_gap && !handoffVerdict?.referenceOnly,
   });
   const assetFloorShown =
     holdcoNotAssessable &&
@@ -955,7 +955,7 @@ export default async function StockTickerPage({
                   {page.valuation.ttmBasis(floorInput.ttm.period_end)}
                 </p>
               )}
-              {bq.latestDisclosure && <p className="mt-2 text-xs text-[var(--tt-muted)]">{lang === "zh" ? `最新披露：${bq.latestDisclosure.form ?? "财报"}，报告期截至 ${bq.latestDisclosure.periodEnd}${bq.latestDisclosure.filedAt ? `（${bq.latestDisclosure.filedAt} 提交）` : ""}。${bq.annualForm ? "以下比率为完整财年口径。" : "以下比率为已取得的报告期口径。"}` : `Latest disclosure: ${bq.latestDisclosure.form ?? "financial report"}, period ended ${bq.latestDisclosure.periodEnd}${bq.latestDisclosure.filedAt ? ` (filed ${bq.latestDisclosure.filedAt})` : ""}. ${bq.annualForm ? "Ratios below use the full fiscal year." : "Ratios below use the available reporting period."}`}</p>}
+              {bq.latestDisclosure && <p className="mt-2 text-xs text-[var(--tt-muted)]">{lang === "zh" ? `已核验财报：${bq.latestDisclosure.form ?? "财报"}，报告期截至 ${bq.latestDisclosure.periodEnd}${bq.latestDisclosure.filedAt ? `（${bq.latestDisclosure.filedAt} 提交）` : ""}。${bq.annualForm ? "以下比率为完整财年口径。" : "以下比率为已取得的报告期口径。"}${sec.interim.incomplete ? " 有较新的财务披露尚未核验。" : ""}` : `Verified financial report: ${bq.latestDisclosure.form ?? "financial report"}, period ended ${bq.latestDisclosure.periodEnd}${bq.latestDisclosure.filedAt ? ` (filed ${bq.latestDisclosure.filedAt})` : ""}. ${bq.annualForm ? "Ratios below use the full fiscal year." : "Ratios below use the available reporting period."}${sec.interim.incomplete ? " A newer financial disclosure remains unverified." : ""}`}</p>}
               <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                 {[
                   revenueGrowth
