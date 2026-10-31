@@ -57,7 +57,7 @@ export function AggregateRankingList({
           <div className="shrink-0 text-right">
             <div className="font-data text-2xl font-medium tabular-nums text-[var(--tt-text)]">{r.primary}</div>
             {r.delta != null ? (
-              <div className={`font-data text-xs tabular-nums ${r.delta > 0 ? "text-[var(--tt-accent)]" : r.delta < 0 ? "text-[var(--tt-negative)]" : "text-[var(--tt-faint)]"}`}>
+              <div className={`font-data text-xs tabular-nums ${r.delta > 0 ? "text-[var(--tt-positive)]" : r.delta < 0 ? "text-[var(--tt-negative)]" : "text-[var(--tt-faint)]"}`}>
                 {r.delta === 0 ? (isZh ? "持平" : "—") : `${r.delta > 0 ? "+" : "−"}${Math.abs(r.delta)} ${isZh ? "位" : ""}`}
               </div>
             ) : (
