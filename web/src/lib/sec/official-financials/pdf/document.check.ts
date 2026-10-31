@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 assert.ok(fs.existsSync(new URL('./document.ts',import.meta.url)),'bounded native PDF text extraction is not implemented');
 async function main(){
  const {extractPdfDocument}=await import('./document');
  for(const ticker of ['ozk','trmlf']){
   const data=new Uint8Array(fs.readFileSync(new URL('./fixtures/'+ticker+'-original-pages.pdf',import.meta.url)));
+  const sourceHash=createHash('sha256').update(data).digest('hex');
   const doc=await extractPdfDocument(data);
+  assert.equal(createHash('sha256').update(data).digest('hex'),sourceHash,'PDF parsing must preserve original bytes for source SHA provenance');
   const map=JSON.parse(fs.readFileSync(new URL('./fixtures/'+ticker+'-page-map.json',import.meta.url),'utf8'));
   assert.equal(doc.page_count,map.original_pages.length);
   assert.deepEqual(doc.pages.map(p=>p.number),map.original_pages.map((_:number,i:number)=>i+1));

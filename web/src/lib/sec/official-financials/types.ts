@@ -1,6 +1,6 @@
-export type SourceAdapter = "sec_html" | "esef_zip" | "inline_viewer" | "pdf_pending";
+export type SourceAdapter = "sec_html" | "esef_zip" | "inline_viewer" | "fdic_pdf" | "issuer_pdf" | "pdf_pending";
 export type SourceRoute = {
-  ticker: string; cik: string; adapter: SourceAdapter; currency: "INR" | "SEK" | "EUR" | "USD" | "CAD";
+  ticker: string; cik: string; issuer_name: string; is_foreign_issuer: boolean; adapter: SourceAdapter; currency: "INR" | "SEK" | "EUR" | "USD" | "CAD";
   accounting_basis: "Indian-GAAP" | "IFRS" | "US-GAAP";
   issuer_identifier: string; identifier_scheme: "CIK" | "LEI" | "FDIC_CERT" | "CUSIP";
   landing_url: string; source_description: string; audited_at: string;
@@ -17,7 +17,8 @@ export type AnnualSourcePeriod = {
 export type OfficialFinancialPeriod = AnnualSourcePeriod & {
   ticker: string; cik: string; issuer_identifier: string; identifier_scheme: SourceRoute["identifier_scheme"];
   reporting_currency: SourceRoute["currency"]; accounting_basis: SourceRoute["accounting_basis"];
-  source_kind: "sec_20f_html" | "official_esef" | "official_inline_viewer_copy";
+  source_kind: "sec_20f_html" | "official_esef" | "official_inline_viewer_copy" | "official_fdic_annual_pdf" | "official_issuer_annual_pdf";
+  source_pdf_page_count?: number; source_pdf_extractor?: string;
   source_document_id: string; source_url: string; source_landing_url: string;
   source_accession: string | null; source_published_at: string | null; source_report_period_end: string;
   source_sha256: string; source_retrieved_at: string;

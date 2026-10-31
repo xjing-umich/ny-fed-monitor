@@ -1,0 +1,168 @@
+{
+  "props": {
+    "pageProps": {
+      "sliceContext": {
+        "documentFeeds": {
+          "Financial Reports": [
+            {
+              "id": "aoTMOREAACgA1Aww",
+              "type": "financial_report",
+              "lang": "en-us",
+              "first_publication_date": "2026-08-18T21:20:01+0000",
+              "data": {
+                "title": [
+                  {
+                    "type": "heading1",
+                    "text": "2026 Q2 Interim Report - French",
+                    "spans": [],
+                    "direction": "ltr"
+                  }
+                ],
+                "link": {
+                  "link_type": "Media",
+                  "key": "54c42616-45cf-41fb-ab4f-c2d14f6dafa7",
+                  "kind": "file",
+                  "id": "ND8hy54k_TuEKuEB",
+                  "url": "https://tourmaline.cdn.prismic.io/tourmaline/ND8hy54k_TuEKuEB_Q22026TOUMD%26AandFinancialStatements-FRENCH.pdf",
+                  "name": "2026 Q2 Interim Report - French.pdf",
+                  "size": "1125888"
+                },
+                "date": "2026-07-01"
+              }
+            },
+            {
+              "id": "ampjDhEAACgA8arf",
+              "type": "financial_report",
+              "lang": "en-us",
+              "first_publication_date": "2026-07-29T21:03:37+0000",
+              "data": {
+                "title": [
+                  {
+                    "type": "heading1",
+                    "text": "2026 Q2 Interim Report ",
+                    "spans": [],
+                    "direction": "ltr"
+                  }
+                ],
+                "link": {
+                  "link_type": "Media",
+                  "key": "9e802f79-ca02-4333-a90c-3f91938f581d",
+                  "kind": "file",
+                  "id": "ybGyEnMdUiwV8RN3",
+                  "url": "https://tourmaline.cdn.prismic.io/tourmaline/ybGyEnMdUiwV8RN3_Q22026TOUMDA%26FinancialStatements-Final.pdf",
+                  "name": "Q2 2026 TOU MDA & Financial Statements - Final.pdf",
+                  "size": "740838"
+                },
+                "date": "2026-06-30"
+              }
+            },
+            {
+              "id": "aaieChoAAEQAt0Fp",
+              "type": "financial_report",
+              "lang": "en-us",
+              "first_publication_date": "2026-03-04T22:03:37+0000",
+              "data": {
+                "title": [
+                  {
+                    "type": "heading1",
+                    "text": "2025 Annual Information Form",
+                    "spans": [],
+                    "direction": "ltr"
+                  }
+                ],
+                "link": {
+                  "link_type": "Media",
+                  "key": "d60b85af-187f-4a7c-9276-4141452c3046",
+                  "kind": "file",
+                  "id": "aaiec1xvIZEnjVX3",
+                  "url": "https://tourmaline.cdn.prismic.io/tourmaline/aaiec1xvIZEnjVX3_TOUAIFDecember312025-FINAL.pdf",
+                  "name": "TOU AIF December 31 2025 - FINAL.pdf",
+                  "size": "1028988"
+                },
+                "date": "2025-12-31"
+              }
+            },
+            {
+              "id": "aaidFBoAAEgAt0Ao",
+              "type": "financial_report",
+              "lang": "en-us",
+              "first_publication_date": "2026-03-04T22:03:37+0000",
+              "data": {
+                "title": [
+                  {
+                    "type": "heading1",
+                    "text": "2025 Q4 and Year End Audited Financial Statements",
+                    "spans": [],
+                    "direction": "ltr"
+                  }
+                ],
+                "link": {
+                  "link_type": "Media",
+                  "key": "ce160323-f819-4811-a553-945cc151f44f",
+                  "kind": "file",
+                  "id": "aaidt1xvIZEnjVXx",
+                  "url": "https://tourmaline.cdn.prismic.io/tourmaline/aaidt1xvIZEnjVXx_FinalQ42025MDAFinancialStatements.pdf",
+                  "name": "Final Q4 2025 MDA Financial Statements.pdf",
+                  "size": "1028768"
+                },
+                "date": "2025-12-30"
+              }
+            },
+            {
+              "id": "Z8jL-h4AAE8AEQWi",
+              "type": "financial_report",
+              "lang": "en-us",
+              "first_publication_date": "2025-03-05T22:11:10+0000",
+              "data": {
+                "title": [
+                  {
+                    "type": "heading1",
+                    "text": "2024 Q4 and Year End Audited Financial Statements",
+                    "spans": [],
+                    "direction": "ltr"
+                  }
+                ],
+                "link": {
+                  "link_type": "Media",
+                  "key": "f947f98b-0216-47a4-94d0-0f0ed94f74c0",
+                  "kind": "file",
+                  "id": "Z8jBcBsAHJWomKQx",
+                  "url": "https://tourmaline.cdn.prismic.io/tourmaline/Z8jBcBsAHJWomKQx_FinalQ42024MDAFinancialStatements.pdf",
+                  "name": "Final Q4 2024 MDA  Financial Statements.pdf",
+                  "size": "954635"
+                },
+                "date": "2024-12-29"
+              }
+            },
+            {
+              "id": "Z-1VahsAAEwAhBba",
+              "type": "financial_report",
+              "lang": "en-us",
+              "first_publication_date": "2025-04-02T15:19:43+0000",
+              "data": {
+                "title": [
+                  {
+                    "type": "heading1",
+                    "text": "2024 Q4 and Year End Audited Financial Statements - French",
+                    "spans": [],
+                    "direction": "ltr"
+                  }
+                ],
+                "link": {
+                  "link_type": "Media",
+                  "key": "e95f3f8a-cc7a-46de-bddb-99adeedfe5a4",
+                  "kind": "file",
+                  "id": "Z-1VUndAxsiBwPAC",
+                  "url": "https://tourmaline.cdn.prismic.io/tourmaline/Z-1VUndAxsiBwPAC_FinalQ42024TourmalineMDAFinancialStatements-French-.pdf",
+                  "name": "Final Q4 2024 Tourmaline MDA  Financial Statements (French).pdf",
+                  "size": "1425843"
+                },
+                "date": "2024-12-22"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

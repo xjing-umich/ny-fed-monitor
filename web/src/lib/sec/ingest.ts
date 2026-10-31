@@ -170,11 +170,12 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
   const officialRoute = getOfficialSourceRoute(ticker, match.cik);
   if (officialRoute?.adapter === "pdf_pending") throw new OfficialSourcePendingError(officialRoute);
   if (officialRoute) {
-    const submission = await fetchCompanySubmissions(match.cik);
-    const official = await fetchOfficialFinancials(officialRoute, submission);
-    const filings = normalizeRecentFilings(ticker, submission);
+    const pdfRoute = officialRoute.adapter === "fdic_pdf" || officialRoute.adapter === "issuer_pdf";
+    const submission = pdfRoute ? null : await fetchCompanySubmissions(match.cik);
+    const official = await fetchOfficialFinancials(officialRoute, submission ?? undefined);
+    const filings = submission ? normalizeRecentFilings(ticker, submission) : [];
     if (official.filing && !filings.some(f => f.accession_number === official.filing!.accession_number)) filings.push(official.filing);
-    return { submission, filings, isForeignIssuer: true,
+    return { submission, filings, isForeignIssuer: officialRoute.is_foreign_issuer,
       normalized: { annual: [] as FundamentalPeriod[], quarterly: [] as FundamentalPeriod[] },
       backfill: { filled: [] as string[], failed: [] as string[] }, revenueBackfill: { filled: [] as string[], failed: [] as string[] },
       predecessor: null, nativePeriods: [] as NativeFinancialPeriod[], officialPeriods: official.periods };
@@ -254,14 +255,15 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     const sourceTable = nativePeriods.length ? "sec_native_financial_periods" : officialPeriods.length ? "official_financial_periods" : null;
     if (sourceTable) {
       // Fail before company/filing mutation if the native source schema has not been applied.
-      const { error } = await supabase.from(sourceTable).select("ticker").limit(0);
+      const pdfSource = officialPeriods.some(p => p.source_kind === "official_fdic_annual_pdf" || p.source_kind === "official_issuer_annual_pdf");
+      const { error } = await supabase.from(sourceTable).select(pdfSource ? "ticker,source_pdf_page_count,source_pdf_extractor" : "ticker").limit(0);
       if (error) throw error;
     }
 
     let interimRows: StoredInterimDisclosure[] = [];
     let interimUpdates: StoredInterimDisclosure[] = [];
     let interimIssues: string[] = [];
-    if (isForeignIssuer && normalized.annual.length >= 3) {
+    if (submission && isForeignIssuer && normalized.annual.length >= 3) {
       const previous = (await readInterimDisclosureRows(supabase, ticker, true))!;
       const discovered = await discoverInterimDisclosures(ticker, filingsForInterimDiscovery(ticker, submission), previous, new Date().toISOString());
       interimUpdates = discovered.rows;
@@ -269,16 +271,15 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       interimRows = [...new Map([...previous, ...interimUpdates].map(r => [`${r.accession_number}|${r.source_url}`, r])).values()];
     }
 
+    const officialRoute = officialPeriods.length ? getOfficialSourceRoute(ticker, match.cik) : null;
     const { error: companyError } = await supabase.from("sec_companies").upsert(
       {
         ticker,
         normalized_ticker: normalizeTicker(ticker),
         cik: match.cik,
-        company_name: submission.name ?? match.companyName,
-        exchange: submission.exchanges?.[0] ?? null,
-        sic: submission.sic ?? null,
-        sic_description: submission.sicDescription ?? null,
-        fiscal_year_end: submission.fiscalYearEnd ?? officialPeriods[0]?.source_report_period_end.slice(5).replace("-", "") ?? null,
+        company_name: submission?.name ?? officialRoute?.issuer_name ?? match.companyName,
+        ...(submission ? { exchange: submission.exchanges?.[0] ?? null, sic: submission.sic ?? null, sic_description: submission.sicDescription ?? null } : {}),
+        fiscal_year_end: submission?.fiscalYearEnd ?? officialPeriods[0]?.source_report_period_end.slice(5).replace("-", "") ?? null,
         is_foreign_issuer: isForeignIssuer,
         updated_at: new Date().toISOString()
       },
@@ -298,7 +299,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       if (error) throw error;
       const first = officialPeriods[0];
       const result: IngestCompanyResult = {
-        ticker, cik: match.cik, status: "success", foreign_issuer: true,
+        ticker, cik: match.cik, status: "success", foreign_issuer: isForeignIssuer,
         saved: { company: true, filings: filings.length, annual_periods: 0, quarterly_periods: 0, latest: false, native_annual_periods: officialPeriods.length },
         quality_status: "native_currency", reporting_currency: first.reporting_currency, valuation_blockers: first.valuation_blockers,
         source_coverage: { status: "supported", provider: first.source_kind, landing_url: first.source_landing_url, audited_at: getOfficialSourceRoute(ticker, match.cik)!.audited_at },
@@ -310,6 +311,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       return result;
     }
 
+    if (!submission) throw new Error('SEC submission missing for a non-PDF financial route');
     if (nativePeriods.length) {
       const { error } = await supabase.from("sec_native_financial_periods").upsert(
         nativePeriods.map(period => ({ ...period, updated_at: new Date().toISOString() })),
@@ -318,7 +320,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       if (error) throw error;
       // Separate source storage: no USD period/latest writes, no ADR or FX conversion.
       const result: IngestCompanyResult = {
-        ticker, cik: match.cik, status: "success", foreign_issuer: true,
+        ticker, cik: match.cik, status: "success", foreign_issuer: isForeignIssuer,
         saved: { company: true, filings: filings.length, annual_periods: 0, quarterly_periods: 0, latest: false,
           native_annual_periods: nativePeriods.length },
         quality_status: "native_currency", reporting_currency: "CAD",

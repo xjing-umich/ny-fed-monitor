@@ -1,0 +1,94 @@
+[
+  {
+    "instFlngId": 11477,
+    "orgCertNum": 110,
+    "instFincLglName": "Bank OZK",
+    "instFlngEvtCausDttm": "2024-03-01",
+    "instFyEndDte": null,
+    "instFlngPubDisplInd": "N",
+    "instFlngForm": {
+      "instFlngFormNme": "Form 10-K/A~Amendment to Annual Report"
+    },
+    "instFlngAtchList": [
+      {
+        "instFlngId": 11477,
+        "instFlngAtchId": 1,
+        "instFlngAtchAmndCde": "O",
+        "instFlngAtchStatCde": "S",
+        "instFlngAtchDnldInd": "N",
+        "instFlngAtchOrglNme": "Bank OZK File Form 10K-A - 12.31.2023 - FINAL.pdf",
+        "instFlngAtchSizeQty": 780264,
+        "instFlngAtchCrteDttm": "2024-03-01T22:55:51.000+00:00"
+      }
+    ]
+  },
+  {
+    "instFlngId": 11868,
+    "orgCertNum": 110,
+    "instFincLglName": "Bank OZK",
+    "instFlngEvtCausDttm": "2026-02-25",
+    "instFyEndDte": null,
+    "instFlngPubDisplInd": "N",
+    "instFlngForm": {
+      "instFlngFormNme": "Form 10-K~Annual Report"
+    },
+    "instFlngAtchList": [
+      {
+        "instFlngId": 11868,
+        "instFlngAtchId": 1,
+        "instFlngAtchAmndCde": "O",
+        "instFlngAtchStatCde": "S",
+        "instFlngAtchDnldInd": "N",
+        "instFlngAtchOrglNme": "Bank OZK 2025 Form 10-K - FINAL.pdf",
+        "instFlngAtchSizeQty": 1641145,
+        "instFlngAtchCrteDttm": "2026-02-26T01:53:51.000+00:00"
+      }
+    ]
+  },
+  {
+    "instFlngId": 12022,
+    "orgCertNum": 110,
+    "instFincLglName": "Bank OZK",
+    "instFlngEvtCausDttm": "2026-10-20",
+    "instFyEndDte": null,
+    "instFlngPubDisplInd": "N",
+    "instFlngForm": {
+      "instFlngFormNme": "Form 8-K~Current Report"
+    },
+    "instFlngAtchList": [
+      {
+        "instFlngId": 12022,
+        "instFlngAtchId": 1,
+        "instFlngAtchAmndCde": "O",
+        "instFlngAtchStatCde": "P",
+        "instFlngAtchDnldInd": "N",
+        "instFlngAtchOrglNme": "Bank OZK Q32026 Form 8K - Earnings Release, Management Comments & Financial Supplement.pdf",
+        "instFlngAtchSizeQty": 2077994,
+        "instFlngAtchCrteDttm": "2026-10-20T19:45:04.177+00:00"
+      }
+    ]
+  },
+  {
+    "instFlngId": 4925,
+    "orgCertNum": 110,
+    "instFincLglName": "Bank OZK",
+    "instFlngEvtCausDttm": "2019-03-15",
+    "instFyEndDte": "2018-12-31",
+    "instFlngPubDisplInd": "N",
+    "instFlngForm": {
+      "instFlngFormNme": "Annual Report to Shareholders (ARS) or Combined ARS/10-K"
+    },
+    "instFlngAtchList": [
+      {
+        "instFlngId": 4925,
+        "instFlngAtchId": 1,
+        "instFlngAtchAmndCde": "O",
+        "instFlngAtchStatCde": "S",
+        "instFlngAtchDnldInd": "N",
+        "instFlngAtchOrglNme": "2018 Annual Report (with wrap).pdf",
+        "instFlngAtchSizeQty": 13259545,
+        "instFlngAtchCrteDttm": "2019-03-15T14:52:13.000+00:00"
+      }
+    ]
+  }
+]

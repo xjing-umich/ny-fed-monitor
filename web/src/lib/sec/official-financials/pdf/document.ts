@@ -10,7 +10,9 @@ const fail = (message: string): never => { throw new Error(`Official PDF: ${mess
 export async function extractPdfDocument(bytes: Uint8Array): Promise<PdfDocument> {
   if (bytes.byteLength > 16_000_000 || !new TextDecoder().decode(bytes.subarray(0, 8)).startsWith('%PDF-')) fail('invalid or oversized PDF');
   const started = performance.now();
-  const pdf = await getDocumentProxy(bytes, { isEvalSupported: false, disableFontFace: true, useSystemFonts: false,
+  // PDF.js transfers/detaches its input buffer; the caller retains the original
+  // download for source-byte identity and SHA provenance.
+  const pdf = await getDocumentProxy(bytes.slice(), { isEvalSupported: false, disableFontFace: true, useSystemFonts: false,
     useWorkerFetch: false, disableAutoFetch: true, disableStream: true, maxImageSize: 1, stopAtErrors: true });
   try {
     if (pdf.numPages < 1 || pdf.numPages > 200) fail('unsupported PDF page count');

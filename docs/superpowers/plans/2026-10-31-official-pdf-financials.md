@@ -37,12 +37,12 @@
 ### Task 2: Latest official discovery and canonical source routing
 
 **Files:** create `official-financials/pdf/discovery.ts`/checks, modify registry/types/source/ingest and focused integration/outcome checks.
-**Interfaces:** discovery returns verified official annual URL/report end/publication date; PDF provider attaches SHA/source kinds/PDF metadata. SourceRoute carries issuer name and domestic/foreign identity. PDF prepare returns no SEC submission/filings and uses source-verified metadata.
+**Interfaces:** discovery returns official annual URL/publication date (and title fiscal end for TRMLF; FDIC report end is verified from the actual PDF cover); PDF provider attaches SHA/source kinds/PDF metadata. SourceRoute carries issuer name and domestic/foreign identity. PDF prepare returns no SEC submission/filings and uses source-verified metadata.
 
-- [ ] Write/run RED latest FDIC form/amendment/public attachment and English issuer feed discovery checks, future-year stale-fallback refusal and URL/HTTP boundaries; implement and verify.
-- [ ] Write/run RED supported-route integration, domestic/foreign metadata, schema capability gate, failures and identical-source fingerprint checks; implement without SEC facts/submissions probes.
-- [ ] Update existing pending/HTTP/CLI checks so newly supported PDF errors are failed500/nonzero, generic pending mapping remains non-success; run fresh source-only dry-runs both issuers.
-- [ ] Verify and commit.
+- [x] Write/run RED latest FDIC form/amendment/public attachment and English issuer feed discovery checks, future-year stale-fallback refusal and URL/HTTP boundaries; implement and verify.
+- [x] Write/run RED supported-route integration, domestic/foreign metadata, schema capability gate, failures and identical-source fingerprint checks; implement without SEC facts/submissions probes.
+- [x] Update existing pending/HTTP/CLI checks so newly supported PDF errors are failed500/nonzero, generic pending mapping remains non-success; run fresh source-only dry-runs both issuers.
+- [x] Verify and commit.
 
 ### Task 3: Schema roll-forward, whole-branch review and PR
 

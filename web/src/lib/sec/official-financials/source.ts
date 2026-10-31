@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { unzipSync, strFromU8 } from 'fflate';
-import { getSecUserAgent } from '../sec-client';
+import { downloadOfficialBytes as download, trustedOfficialUrl as trusted } from './download';
 import { normalizeRecentFilings, type SecSubmission, type NormalizedFiling } from '../company-submissions';
 import { htmlText } from '../interim-disclosures/html';
 import { parseIbnAnnual } from './ibn';
@@ -11,29 +11,6 @@ import type { SourceRoute, OfficialFinancialPeriod } from './types';
 const MAX_DOCUMENT=48_000_000,MAX_ARCHIVE=24_000_000;
 const validDate=(value:string)=>/^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(Date.parse(value))&&new Date(value).toISOString().slice(0,10)===value;
 const fail=(why:string):never=>{throw new Error(`Official annual source: ${why}`);};
-function trusted(url:string,origins:string[]):URL{
- const u=new URL(url);
- if(u.protocol!=='https:'||u.username||u.password||!origins.includes(u.origin))fail('untrusted official URL');
- return u;
-}
-async function download(url:string,origins:string[],limit:number):Promise<Uint8Array>{
- let current=trusted(url,origins);
- for(let redirect=0;redirect<4;redirect++){
-  const response=await fetch(current.href,{headers:{'User-Agent':getSecUserAgent()},redirect:'manual',signal:AbortSignal.timeout(60000)});
-  if([301,302,303,307,308].includes(response.status)){
-   const location=response.headers.get('location');if(!location)fail('redirect without location');
-   current=trusted(new URL(location!,current).href,origins);continue;
-  }
-  if(!response.ok)fail(`HTTP ${response.status}: ${current.href}`);
-  if(Number(response.headers.get('content-length')??0)>limit)fail('document exceeds size limit');
-  if(!response.body)fail('empty document');
-  const reader=response.body!.getReader(),chunks:Uint8Array[]=[];let size=0;
-  try{for(;;){const{done,value}=await reader.read();if(done)break;size+=value.length;if(size>limit)fail('document exceeds size limit');chunks.push(value);}}
-  finally{await reader.cancel();}
-  const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}return bytes;
- }
- return fail('too many redirects');
-}
 export function extractEsefReport(bytes:Uint8Array):{xml:string;name:string}{
  if(bytes.byteLength>MAX_ARCHIVE)fail('ESEF archive exceeds size limit');
  let invalid=false;const reports:{name:string;size:number}[]=[];
@@ -74,6 +51,7 @@ export function discoverEuropeanAnnual(route:SourceRoute,html:string):{url:strin
 }
 export async function fetchOfficialFinancials(route:SourceRoute,submission?:SecSubmission):Promise<{periods:OfficialFinancialPeriod[];filing:NormalizedFiling|null}>{
  if(route.adapter==='pdf_pending')throw new OfficialSourcePendingError(route);
+ if(route.adapter==='fdic_pdf'||route.adapter==='issuer_pdf')return (await import('./pdf/provider')).fetchPdfAnnual(route);
  const retrieved=new Date().toISOString();let filing:NormalizedFiling|null=null;
  let url:string,reportEnd:string,publishedAt:string|null,document:Uint8Array,periods;
  if(route.adapter==='sec_html'){
