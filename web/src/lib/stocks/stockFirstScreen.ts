@@ -47,7 +47,7 @@ export function stockValueSummary(input: {
   quote: LatestPrice | null;
   reference?: number;
   kind: StockSummaryKind;
-  securityUnit?: "share" | "ADS";
+  securityUnit?: "share" | "ADS" | "unknown";
 }, lang: Lang): StockValueSummary | null {
   const { verdict: v, quote: q } = input;
   const pending=v?.referenceOnly==="missing_reinvestment";
@@ -71,7 +71,7 @@ export function stockValueSummary(input: {
   const gap = position === "within" || !Number.isFinite(percent) ? null : lang === "zh"
     ? `比${point ? "模型参考" : position === "below" ? "模型下沿" : "模型上沿"}${position === "below" ? "低" : "高"}约 ${percent < 1 ? "<1" : percent}%`
     : `About ${percent < 1 ? "<1" : percent}% ${position === "below" ? "below" : "above"} the ${point ? "model estimate" : position === "below" ? "lower estimate" : "upper estimate"}`;
-  const unitLabel = input.securityUnit === "ADS" ? (lang === "zh" ? "每 ADS" : "per ADS") : lang === "zh" ? "每股" : "per share";
+  const unitLabel = input.securityUnit === "unknown" ? (lang === "zh" ? "证券单位未知" : "security unit unknown") : input.securityUnit === "ADS" ? (lang === "zh" ? "每 ADS" : "per ADS") : lang === "zh" ? "每股" : "per share";
   const rangeLabel = lang === "zh" ? `${kind === "sotp" ? "分部估值区间" : kind === "zero-growth" ? "零增长价值参考" : point ? "模型价值参考" : "模型价值区间"} · ${unitLabel}`
     : `${kind === "sotp" ? "Sum-of-the-parts range" : kind === "zero-growth" ? "Zero-growth estimate" : point ? "Model estimate" : "Model value range"} · ${unitLabel}`;
   return {

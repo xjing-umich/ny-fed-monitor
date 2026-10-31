@@ -9,6 +9,7 @@ import type { ValuationRun } from "./runValuation";
 import { VALUATION_MODEL_VERSION } from "./modelVersion";
 import { isPriceStale } from "./priceAge";
 import { isFundamentalsStale } from "./fundamentalsStale";
+import { parseDisplayBasis } from "./displayFacts";
 import { isImplausibleBand } from "./deriveValuationVerdict";
 
 export type PublishedValuation = { record: TrackingRecord; presentation: ValuationRun };
@@ -95,7 +96,7 @@ function publicValue(row: DirectoryRow): PublishedValuation | null {
   if ((["intrinsicValue","referenceValue","referenceKind","rangeLo","rangeHi","price","priceDate","marginPct","requiredMargin","strikePrice"] as const)
     .some(key => verdict[key] !== record[key])) return null;
   if (record.status === "valid" && (!verdict.reliable || verdict.inStrikeZone !== record.inStrikeZone)) return null;
-  return {record,presentation:run};
+  return {record,presentation:{...run,displayBasis:parseDisplayBasis(run.displayBasis)}};
 }
 function publicPendingReason(reason: string, verdict: ValuationRun["verdict"]): boolean {
   return ["unreliable_valuation", "valuation_pending"].includes(reason) ||

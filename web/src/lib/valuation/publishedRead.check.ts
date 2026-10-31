@@ -28,6 +28,17 @@ const mapped = fundamentalsToFloorInput("GOOG","GOOG",[
 const input: RunValuationInput={floorInput:mapped,price:{close:50,date:today,currency:"USD",source:"fixture"},dgs10:{value:4,date:today},guards:{adsSuppressed:false,fundamentalsStale:false,priceStale:false,splitCoverageStale:false}};
 const provenance={...context,shareBasis:{adsRatio:1,latestSplitDate:null}};
 const mappedPublished=buildPublishedValuation(runValuation(input),input,provenance);
+assert.deepEqual(mappedPublished.presentation.displayBasis,{version:1,ttm:null,adsRatio:1},"publication retains explicit annual / ordinary-share explanatory basis");
+const ttmInput:RunValuationInput={...input,floorInput:{...mapped,ttm:{year:{...mapped.years[0],fiscal_year:2026},period_end:"2026-03-31",quarters_used:["2026-03-31"],shares_from_fy:false}}};
+const ttmPublished=buildPublishedValuation(run,ttmInput,{...provenance,identity:{...context.identity,securityType:"ADR"},shareBasis:{adsRatio:2}});
+assert.deepEqual(ttmPublished.presentation.displayBasis,{version:1,ttm:{year:2026,periodEnd:"2026-03-31"},adsRatio:2},"TTM and conversion disclosure freeze from the published inputs");
+ttmInput.floorInput.ttm!.period_end="2026-09-30";
+assert.equal(ttmPublished.presentation.displayBasis?.ttm?.periodEnd,"2026-03-31","later research mutation cannot relabel the published period");
+const {displayBasis: retainedBasis,...numericPresentation}=mappedPublished.presentation;
+assert(retainedBasis);
+assert.deepEqual(numericPresentation,JSON.parse(JSON.stringify(runValuation(input))),"retaining explanations must not change any model output");
+const legacyPublishedRecord=buildTrackingRecord(runValuation(input),{...context,nonPriceInputs:{fundamentals:JSON.parse(JSON.stringify({floorInput:input.floorInput,financialEvidence:null})),assumptions:{dgs10:input.dgs10,modelVersion:VALUATION_MODEL_VERSION,suppressExpectations:false},shareBasis:provenance.shareBasis}});
+assert.notEqual(legacyPublishedRecord.revisionId,mappedPublished.record.revisionId,"enriching legacy presentation must require a new publication proof");
 assert(mappedPublished.record.inputHashes.fundamentals,"actual mapped optional fields must fingerprint");
 assert.throws(()=>buildPublishedValuation(run,{...input,floorInput:{...mapped,years:[{...mapped.years[0],revenue:NaN}]}},provenance),/finite/,
   "nonfinite engine input must never normalize to null silently");
@@ -46,6 +57,7 @@ assert.notEqual(nativePublished.record.inputHashes.fundamentals,changedNative.re
 assert.equal(nativePublished.record.currency,"USD","native ratios do not relabel USD model amounts");
 const changedAds=buildPublishedValuation(run,input,{...provenance,shareBasis:{adsRatio:2,latestSplitDate:null}});
 assert.notEqual(changedAds.record.inputHashes.shareBasis,priced.record.inputHashes.shareBasis);
+assert.equal(changedAds.record.inputHashes.fundamentals,priced.record.inputHashes.fundamentals,"ADS changes remain classified as share-basis changes");
 const old = buildTrackingRecord(run, {...context,publishedAt:new Date().toISOString()});
 const newerRun = {...run,verdict:{...run.verdict!,price:51,marginPct:.49}};
 const candidate = buildTrackingRecord(newerRun,context);
@@ -79,7 +91,12 @@ await new Promise<void>(resolve=>server.listen(0,"127.0.0.1",resolve));
 process.env.SUPABASE_URL=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
 process.env.SUPABASE_SERVICE_KEY="fixture-only";
 try {
+ rows=[fixture(candidate,{...newerRun,displayBasis:mappedPublished.presentation.displayBasis})];
+ assert.deepEqual((await readPublicValuations(["GOOG"])).get("GOOG")?.presentation.displayBasis,mappedPublished.presentation.displayBasis,"full reader retains same-run basis");
+ rows=[fixture(candidate,{...newerRun,displayBasis:{version:1,ttm:{year:2026,periodEnd:"bad-date"},adsRatio:-2}})];
+ assert.equal((await readPublicValuations(["GOOG"])).get("GOOG")?.presentation.displayBasis,undefined,"malformed basis is unknown, never a fabricated explanation");
  rows=[fixture()];
+ assert.equal((await readPublicValuations(["GOOG"])).get("GOOG")?.presentation.displayBasis,undefined,"legacy presentation stays readable without inferred basis");
  assert.equal((await readPublicValuations(["GOOG"])).get("GOOG")?.record.price,51);
  assert.equal((await readTrackingValuations([context.identity.key])).get(context.identity.key)?.price,50,"candidate must not enter tracking");
  assert.equal((await readValuationSafety(["GOOG"])).get("GOOG")?.status,"pending");

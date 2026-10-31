@@ -459,8 +459,6 @@ export default async function StockTickerPage({
   const { securityType, adsRatio } = await getSecurityMeta(ticker);
   const ads = resolveAds(securityType, adsRatio);
   const securityUnit: SecurityUnit = securityType === "ADR" ? "ADS" : "share";
-  const perUnit = perSecurityUnit(securityUnit, lang);
-  const adsNote = adsRatioDisclosure(securityUnit, securityUnit === "ADS" ? ads.ratio : undefined, lang);
   // SIC 用于金融股(银行/保险)判定 → 引擎改用可持续增长率封顶而非扁平 moderate。
   // sec_companies.sic 可能是字符串或 null;安全转 number,NaN/null → undefined(不误触闸)。
   const sicRaw = sec.company?.sic;
@@ -501,6 +499,12 @@ export default async function StockTickerPage({
   const publicationAvailability = await optionalValuation(readPublicValuations([ticker]));
   const published = publicationAvailability.value?.get(ticker);
   const run:ValuationRun = published?.presentation ?? {currency:"USD",floor:undefined,strikeZone:undefined,oeDcf:undefined,reconciliation:undefined,verdict:null,expectations:{assessable:false,reason:"publication_unavailable"},methods:{zeroGrowthEpv:false,oeDcf:false,greenwaldGrowthCeilings:false}};
+  // Valuation explanations share the published run; research/holdings retain current metadata.
+  const valuationUnit: SecurityUnit = published?.record.identity.securityType === "ADR" ? "ADS"
+    : ["Common Stock","Ordinary Shares","Common Shares"].includes(published?.record.identity.securityType ?? "") ? "share" : "unknown";
+  const displayBasis = run.displayBasis;
+  const perUnit = perSecurityUnit(valuationUnit, lang);
+  const adsNote = adsRatioDisclosure(valuationUnit, displayBasis?.adsRatio ?? undefined, lang);
   const dgs10 = run.oeDcf?.discount?.dgs10_date ? {date:run.oeDcf.discount.dgs10_date} : null;
   const publication = published ? publicationStamp(published) : null;
   const valuationSource = publicationSourceAttributes(stockPath(lang,ticker),projectionDigest("detail",published?.record ?? null,{ticker}));
@@ -700,10 +704,11 @@ export default async function StockTickerPage({
             lang={lang}
             showStatus={false}
             verdict={run.verdict}
-            ttmPeriodEnd={floorInput.ttm?.period_end}
-            ttmFiscalYear={floorInput.ttm?.year.fiscal_year}
-            securityUnit={securityUnit}
-            adsRatio={securityUnit === "ADS" ? ads.ratio : undefined}
+            ttmPeriodEnd={displayBasis?.ttm?.periodEnd}
+            ttmFiscalYear={displayBasis?.ttm?.year}
+            periodBasisKnown={displayBasis != null}
+            securityUnit={valuationUnit}
+            adsRatio={displayBasis?.adsRatio ?? undefined}
             part="summary"
             priceKnown={published?.record.price != null && published.record.price > 0}
           />
@@ -716,7 +721,7 @@ export default async function StockTickerPage({
         <>
           <div className="flex items-baseline gap-2">
             <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{fmtPerShare(holdcoSotp.per_share.base)}</span>
-            <span className="text-xs text-[var(--tt-muted)]">{securityUnit === "ADS" ? (lang === "zh" ? "每 ADS 中枢 · 基础档" : "central estimate · per ADS") : page.valuation.holdcoSotpCentral}</span>
+            <span className="text-xs text-[var(--tt-muted)]">{valuationUnit === "unknown" ? (lang === "zh" ? "中枢 · 证券单位未知" : "central estimate · security unit unknown") : valuationUnit === "ADS" ? (lang === "zh" ? "每 ADS 中枢 · 基础档" : "central estimate · per ADS") : page.valuation.holdcoSotpCentral}</span>
           </div>
           <ValueBandGauge bucket={handoffVerdict.bucket} rangeLo={handoffVerdict.rangeLo} rangeHi={handoffVerdict.rangeHi} price={handoffVerdict.price} reliable={handoffVerdict.reliable} lang={lang} />
         </>
@@ -745,7 +750,7 @@ export default async function StockTickerPage({
   // 只有既有闸门允许的可比、可信结论才能进入新概览;其余保留原有解释和明细。
   const summaryEligible = (leftState === "card" && cardSummaryMode(strikeZone, handoffVerdict) === "spine") || leftState === "holdcoSotp";
   const summaryModel = summaryEligible ? stockValueSummary({
-    securityUnit,
+    securityUnit: valuationUnit,
     verdict: handoffVerdict,
     quote: published ? {close:published.record.price!,date:published.record.priceDate!,currency:published.record.currency,source:published.record.priceSource ?? ""} : null,
     kind: leftState === "holdcoSotp" ? "sotp" : handoffVerdict?.methods.oeDcf || handoffVerdict?.methods.greenwaldGrowthCeilings ? "earnings" : "zero-growth",
@@ -848,10 +853,11 @@ export default async function StockTickerPage({
                       lang={lang}
                       showStatus={false}
                       verdict={run.verdict}
-                      ttmPeriodEnd={floorInput.ttm?.period_end}
-            ttmFiscalYear={floorInput.ttm?.year.fiscal_year}
-                      securityUnit={securityUnit}
-                      adsRatio={securityUnit === "ADS" ? ads.ratio : undefined}
+                      ttmPeriodEnd={displayBasis?.ttm?.periodEnd}
+                      ttmFiscalYear={displayBasis?.ttm?.year}
+                      periodBasisKnown={displayBasis != null}
+                      securityUnit={valuationUnit}
+                      adsRatio={displayBasis?.adsRatio ?? undefined}
                       part="details"
                     />
                   </div>
@@ -877,7 +883,7 @@ export default async function StockTickerPage({
                     {adsNote ? <p className="mt-2 text-xs text-[var(--tt-muted)]">{adsNote}</p> : null}
                     <div className="mt-4 overflow-x-auto">
                       <table className="w-full min-w-[420px] text-sm tabular-nums">
-                        <caption className="mb-2 text-left text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpUnit(securityUnit)}</caption>
+                        <caption className="mb-2 text-left text-xs text-[var(--tt-muted)]">{valuationUnit === "unknown" ? (lang === "zh" ? "证券单位未知" : "Security unit unknown") : page.valuation.holdcoSotpUnit(valuationUnit)}</caption>
                         <thead>
                           <tr className="text-[var(--tt-muted)]">
                             <th className="py-1 text-left font-normal"> </th>

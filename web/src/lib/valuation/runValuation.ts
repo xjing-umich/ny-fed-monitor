@@ -46,7 +46,16 @@ export type RunValuationInput = {
   asOf?: string;
 };
 
+/** Small explanatory facts retained with the published run, never refreshed from research. */
+export type ValuationDisplayBasis = {
+  version: 1;
+  /** null means a known annual-only run; absent displayBasis means unknown legacy basis. */
+  ttm: { year: number; periodEnd: string } | null;
+  adsRatio: number | null;
+};
+
 export type ValuationRun = {
+  displayBasis?: ValuationDisplayBasis;
   /** SEC per-share valuation unit; foreign quotes are suppressed, never implicitly converted. */
   currency: "USD";
   floor: ValuationFloor | PerShareUnavailable | undefined;

@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SecurityIdentity } from "../securities/trackingIdentity";
 import { resolveTrackingIdentity } from "../securities/trackingIdentity";
 import { buildTrackingRecord, type TrackingContext } from "./trackingContract";
-import type { RunValuationInput, ValuationRun } from "./runValuation";
+import type { RunValuationInput, ValuationRun, ValuationDisplayBasis } from "./runValuation";
 import { VALUATION_MODEL_VERSION } from "./modelVersion";
 import { PublicationUnavailableError, type PublishedValuation, type SafetyState } from "./publishedRead";
 import { isMissingTableError } from "../managers/db";
@@ -26,15 +26,23 @@ export function buildPublishedValuation(run: ValuationRun, input: RunValuationIn
     if (typeof item === "number" && !Number.isFinite(item)) throw new Error("Publication inputs must be finite");
     return item;
   }));
+  const ratio = (provenance.shareBasis as { adsRatio?: unknown } | null)?.adsRatio;
+  const displayBasis: ValuationDisplayBasis = {
+    version: 1,
+    ttm: input.floorInput.ttm ? {year:input.floorInput.ttm.year.fiscal_year,periodEnd:input.floorInput.ttm.period_end} : null,
+    adsRatio: typeof ratio === "number" && Number.isFinite(ratio) && ratio > 0 ? ratio : null,
+  };
+  // Version the retained explanation so old HTML cannot prove a newly enriched publication.
+  // Actual dates already belong to floorInput; ratio stays in the share-basis fingerprint.
   const record = buildTrackingRecord(run, {
     ...provenance, modelVersion:VALUATION_MODEL_VERSION,currency:run.currency,publishedAt:null,
     nonPriceInputs:{
-      fundamentals:json({floorInput:input.floorInput,financialEvidence}),
+      fundamentals:json({floorInput:input.floorInput,financialEvidence,displayBasisVersion:displayBasis.version}),
       assumptions:json({dgs10:input.dgs10,modelVersion:VALUATION_MODEL_VERSION,suppressExpectations:input.suppressExpectations ?? false}),
       shareBasis:json(provenance.shareBasis),
     },
   });
-  return {record,presentation:json(run)};
+  return {record,presentation:json({...run,displayBasis})};
 }
 /** Controlled writer only; generation conflicts must be recomputed from current state, never blindly retried. */
 export async function writeValuationPublication(db: SupabaseClient, args: {

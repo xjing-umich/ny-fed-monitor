@@ -1,5 +1,7 @@
 /** Synthetic local PostgREST fixture only. No live credentials or market data. */
 import { runValuation, type RunValuationInput } from '../../src/lib/valuation/runValuation';
+import { buildPublishedValuation } from '../../src/lib/valuation/publishedAdapter';
+import { fundamentalsToFloorInput } from '../../src/lib/valuation/fundamentalsToFloorInput';
 import { buildTrackingRecord } from '../../src/lib/valuation/trackingContract';
 import { createServer } from 'node:http';
 import { writeFileSync } from 'node:fs';
@@ -9,9 +11,30 @@ const publications=tickers.map((ticker,i)=>publicationFixture({ticker,verdict_bu
 // FIX includes the genuine engine presentation so detail and list numbers can be compared.
 const fix=publications[0].valuation_publication.public_result;
 const runInput:RunValuationInput={floorInput:{ticker:'FIX',company_name:'Fixture FIX',years:Array.from({length:5},(_,i)=>({fiscal_year:2025-i,revenue:10000-i*1000,operating_income:4500-i*450,net_income:3000-i*300,effective_tax_rate:.15,shareholders_equity:5000-i*500,cash:2000-i*200,total_debt:1000,shares_diluted:1000,d_and_a:600-i*60,capex:550-i*50}))},price:{close:20,date:fixtureDate,currency:'USD',source:'fixture'},dgs10:{value:4.2,date:fixtureDate},guards:{adsSuppressed:false,fundamentalsStale:false,priceStale:false,splitCoverageStale:false}};
+const sameRunFixture=process.env.FIXTURE_DISPLAY_BASIS==='1';
+// Divergent generations: published March TTM / 2 ordinary shares per ADS;
+// current research September TTM / 8 ordinary shares per ADS. No live data.
+const researchPeriods=runInput.floorInput.years.map(y=>({...y,ticker:'FIX',cik:'0000000001',form:'10-K',fiscal_period:'FY',period_end:`${y.fiscal_year}-12-31`,filing_date:'2026-02-01',cash_and_equivalents:y.cash,capex:-y.capex!,missing_fields:{},raw_facts:{},is_derived:false}));
+const q=(year:number)=>({...researchPeriods[0],fiscal_year:year,form:'10-Q',fiscal_period:'Q3',period_end:`${year}-09-30`,filing_date:'2026-10-20',revenue:2500,net_income:750,operating_income:1125});
+const currentResearch=[...researchPeriods,q(2026),q(2025)];
+if(sameRunFixture){
+ const mapped=fundamentalsToFloorInput('FIX','Fixture FIX',researchPeriods as never,8,null,currentResearch.filter(p=>p.form==='10-Q') as never);
+ if(mapped.ttm?.period_end!=='2026-09-30')throw new Error('Divergent research must produce a real newer TTM');
+ runInput.floorInput.ttm={year:{...runInput.floorInput.years[0],fiscal_year:2026},period_end:'2026-03-31',quarters_used:['2026-03-31'],shares_from_fy:false};
+ for(const row of publications.slice(0,2)){row.identity.securityType='ADR';row.valuation_publication.public_result.record.identity.securityType='ADR';}
+}
 const run=runValuation(runInput);
 fix.presentation=run;
 fix.record=buildTrackingRecord(run,{identity:fix.record.identity,modelVersion:fix.record.modelVersion,currency:'USD',perShareBasis:'ordinary',priceSource:'fixture',fundamentalAsOf:fixtureDate,filedAt:fixtureDate,computedAt:fixtureDate,publishedAt:null,nonPriceInputs:{fundamentals:{fixture:true},assumptions:{rate:4.2},shareBasis:{adsRatio:1}},sources:[{url:'https://www.sec.gov/fixture',asOf:fixtureDate}]});
+if(sameRunFixture){
+ const frozen=buildPublishedValuation(run,runInput,{identity:fix.record.identity,perShareBasis:'ADS:ratio=2:split=none',priceSource:'fixture',fundamentalAsOf:'2026-03-31',filedAt:'2026-05-01',computedAt:fixtureDate,shareBasis:{securityType:'ADR',adsRatio:2},sources:[{url:'https://www.sec.gov/fixture',asOf:'2026-03-31'}]});
+ Object.assign(fix,frozen);
+ const legacy=publications[1].valuation_publication.public_result;
+ const legacyPublished=buildPublishedValuation(run,runInput,{identity:legacy.record.identity,perShareBasis:'ADS:ratio=2:split=none',priceSource:'fixture',fundamentalAsOf:'2026-03-31',filedAt:'2026-05-01',computedAt:fixtureDate,shareBasis:{securityType:'ADR',adsRatio:2},sources:[{url:'https://www.sec.gov/fixture',asOf:'2026-03-31'}]});
+ // Historical row never retained explanatory metadata; must remain honest.
+ delete (legacyPublished.presentation as unknown as Record<string,unknown>).displayBasis;
+ Object.assign(legacy,legacyPublished);
+}
 for (const row of publications) {
  row.valuation_publication.publication_status='confirmed';
  row.valuation_publication.tracking_result={...row.valuation_publication.public_result.record,publishedAt:new Date().toISOString()} as never;
@@ -65,7 +88,9 @@ const server=createServer(async(req,res)=>{
  else if(name==='holdings') rows=holdings;
  else if(name==='consensus_holdings') rows=consensus;
  else if(name==='security_cusips') rows=holdings;
- else if(name==='securities') rows=tickers.map(ticker=>({ticker,exchange:'NYSE',security_type:'Common Stock',ads_ratio:1}));
+ else if(name==='securities') rows=tickers.map(ticker=>({ticker,exchange:'NYSE',security_type:sameRunFixture&&['FIX','FAA'].includes(ticker)?'ADR':'Common Stock',ads_ratio:sameRunFixture?8:1}));
+ else if(sameRunFixture&&name==='company_fundamentals_periods') rows=['FIX','FAA'].flatMap(ticker=>currentResearch.map(p=>({...p,ticker})));
+ else if(sameRunFixture&&name==='sec_companies') rows=['FIX','FAA'].map(ticker=>({ticker,cik:'0000000001',company_name:`Fixture ${ticker}`,sic:'3571',is_foreign_issuer:false}));
  else if(name==='consensus_stock_holders') rows=holdings.map(h=>({...h,...manager,period:'2026-06-30',kind:null,prior_weight:null}));
  else if(name==='prices') rows=tickers.map(ticker=>({ticker,close:50,date:fixtureDate,currency:'USD',source:'fixture'}));
  for(const [key,value] of url.searchParams) {

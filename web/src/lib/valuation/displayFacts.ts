@@ -3,16 +3,29 @@ import type { EpvLamp, OeDcfAssessment, ValuationFloor } from "./types";
 import { date } from "@/lib/i18n/format";
 import { ACQUIRED_RESET_DISCOUNT } from "./reproductionValue";
 
-export type SecurityUnit = "share" | "ADS";
+import type { ValuationDisplayBasis } from "./runValuation";
+
+/** Legacy or malformed metadata must not acquire dates/ratios from newer research. */
+export function parseDisplayBasis(value: unknown): ValuationDisplayBasis | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const basis = value as ValuationDisplayBasis;
+  if (basis.version !== 1 || !(basis.adsRatio === null || (typeof basis.adsRatio === "number" && Number.isFinite(basis.adsRatio) && basis.adsRatio > 0))) return undefined;
+  if (basis.ttm !== null && (!basis.ttm || !Number.isInteger(basis.ttm.year) || typeof basis.ttm.periodEnd !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(basis.ttm.periodEnd) || !Number.isFinite(Date.parse(basis.ttm.periodEnd)) || new Date(basis.ttm.periodEnd).toISOString().slice(0,10) !== basis.ttm.periodEnd)) return undefined;
+  return basis;
+}
+export type SecurityUnit = "share" | "ADS" | "unknown";
 export function perSecurityUnit(unit: SecurityUnit, lang: Lang): string {
+  if (unit === "unknown") return lang === "zh" ? "/ 单位未知" : "/ unit unknown";
   return unit === "ADS" ? "/ ADS" : lang === "zh" ? "/ 股" : "/ sh";
 }
 export function adsRatioDisclosure(unit: SecurityUnit, ratio: number | undefined, lang: Lang): string | null {
-  if (unit !== "ADS" || ratio == null || !Number.isFinite(ratio) || ratio <= 0) return null;
+  if (unit !== "ADS") return null;
+  if (ratio == null || !Number.isFinite(ratio) || ratio <= 0) return lang === "zh" ? "此估值记录的 ADS 换算比例未知。" : "The ADS conversion ratio is unknown for this valuation record.";
   return lang === "zh" ? `1 ADS = ${ratio} 股普通股。以下估值以每 ADS 为单位。` : `1 ADS = ${ratio} ordinary shares. Values below are per ADS.`;
 }
 /** Identify the synthetic period by its fiscal key, not by its position in an R&D subset. */
-export function valuationPeriods(years: number[], lang: Lang, ttm?: { year: number; periodEnd: string }): string {
+export function valuationPeriods(years: number[], lang: Lang, ttm?: { year: number; periodEnd: string } | null): string {
+  if (ttm === null) return lang === "zh" ? "期间口径未保留" : "Period basis was not retained";
   return years.map(year => ttm && year === ttm.year ? `${lang === "zh" ? "最近十二个月，截至" : "TTM to "}${date(ttm.periodEnd, lang)}` : `FY ${year}`).join(lang === "zh" ? "、" : ", ");
 }
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
@@ -53,7 +66,7 @@ export function assetDisplay(floor: ValuationFloor, lang: Lang, unit: SecurityUn
   const a = floor.asset_floor;
   const zh = lang === "zh";
   const bankTbv = floor.is_financial && a.intangibles_separated && !(a.capitalized_rd && a.capitalized_rd > 0) && !(a.tangible_net_assets != null && a.tangible_net_assets < 0);
-  const label = bankTbv ? unit === "ADS" ? (zh ? "每 ADS 有形净资产" : "Tangible book value per ADS") : (zh ? "每股有形净资产（TBVPS）" : "Tangible book value per share (TBVPS)") : zh ? "资产价值" : "Asset value";
+  const label = bankTbv && unit === "unknown" ? (zh ? "有形净资产（证券单位未知）" : "Tangible book value (security unit unknown)") : bankTbv ? unit === "ADS" ? (zh ? "每 ADS 有形净资产" : "Tangible book value per ADS") : (zh ? "每股有形净资产（TBVPS）" : "Tangible book value per share (TBVPS)") : zh ? "资产价值" : "Asset value";
   const rd = a.capitalized_rd != null;
   let basis = !a.assessable ? zh ? "现有资料无法支持可用的资产价值。" : "Available information does not support a usable asset value."
     : !a.intangibles_separated

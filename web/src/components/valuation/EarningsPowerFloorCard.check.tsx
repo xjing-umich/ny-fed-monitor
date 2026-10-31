@@ -127,4 +127,14 @@ for (const lang of ["zh", "en"] as const) {
   assert.ok(cur.includes("现价以 HKD 计价") && !cur.includes("Latest price is in"), "zh 币种:中文说法,不再夹英文原因");
   assert.ok(sum(fx, true, "en").includes("quoted in HKD"), "en 币种");
 }
+for (const lang of ["en","zh"] as const) {
+  const renderBasis=(known:boolean)=>renderToStaticMarkup(<EarningsPowerFloorCard floor={run.floor} strikeZone={run.strikeZone} oeDcf={run.oeDcf} lang={lang} part="details" securityUnit="ADS" adsRatio={known?2:undefined} ttmPeriodEnd="2026-03-31" ttmFiscalYear={2025} periodBasisKnown={known}/>).replace(/<[^>]+>/g," ");
+  const known=renderBasis(true);
+  assert(known.includes("1 ADS = 2"),"published ratio is shown");
+  assert(known.includes(lang==="zh"?"最近十二个月，截至2026年3月31日":"TTM to Mar 31, 2026"),"published fiscal key uses its own TTM label");
+  const legacy=renderBasis(false);
+  assert(legacy.includes(lang==="zh"?"期间口径未保留":"Period basis was not retained"),"legacy periods explicitly unknown");
+  assert(legacy.includes(lang==="zh"?"ADS 换算比例未知":"ADS conversion ratio is unknown"),"legacy ADS ratio explicitly unknown");
+  assert(!legacy.includes("TTM to")&&!legacy.includes("FY 2025")&&!legacy.includes("最近十二个月，截至"),"missing basis cannot invent FY or TTM labels");
+}
 console.log("EarningsPowerFloorCard.check OK");
