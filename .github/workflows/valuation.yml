@@ -21,7 +21,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "22" }
-      - run: npm ci
+      - id: dependencies
+        run: npm ci
         working-directory: web
       - id: valuation
         run: npm run valuation:ingest
@@ -46,3 +47,18 @@ jobs:
             exit 0
           fi
           npm run valuation:revalidate
+
+      # Task6 must provide automatic durable route manifests from actual shared render inputs.
+      # Gate remains off until renderer integration/acceptance; no manual manifest artifact.
+      # Runs on later failed ingests too, so durable previous publication work is retried.
+      - name: Verify rendered tracking generations
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' && vars.VALUATION_PUBLICATION_VERIFY_ENABLED == '1' }}
+        working-directory: web
+        run: npm run valuation:publication:verify
+        env:
+          VALUATION_PUBLICATION_VERIFY_ENABLED: "1"
+          VALUATION_PUBLICATION_BINDING: ${{ vars.VALUATION_PUBLICATION_BINDING }}
+          VALUATION_PUBLICATION_SEED_KEYS: ${{ secrets.VALUATION_PUBLICATION_SEED_KEYS }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}

@@ -63,3 +63,24 @@ export async function refreshSnapshotPublication(
   }
   return { pending: pending.length, acknowledged };
 }
+
+/** Invalidate only the concrete affected pages. Success is NOT rendered-generation proof. */
+export async function refreshTrackingPublicationPaths(
+  origin: string, paths: string[], secret: string, fetcher: typeof fetch = fetch,
+): Promise<void> {
+  const { parsePublicationPaths } = await import("../../src/lib/revalidate/targets");
+  const unique=[...new Set(paths)];
+  for (let from=0;from<unique.length;from+=500) {
+    const batch=parsePublicationPaths(unique.slice(from,from+500));
+    for (let attempt=0;;attempt++) {
+      try {
+        const response=await fetcher(new URL("/api/revalidate?source=tracking-publication",origin),{
+          method:"POST",redirect:"error",headers:{Authorization:`Bearer ${secret}`,"Content-Type":"application/json"},
+          body:JSON.stringify({paths:batch}),signal:AbortSignal.timeout(15_000),
+        });
+        if (!response.ok || (await response.json()).ok!==true) throw new Error("Tracking cache invalidation failed");
+        break;
+      } catch(error) { if (attempt===3) throw error; }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { DATA_DRIVEN_PATHS, DATA_DRIVEN_ROUTE_HANDLERS } from "./paths";
+import { DATA_DRIVEN_PATHS, DATA_DRIVEN_ROUTE_HANDLERS, publicationPath } from "./paths";
 /** Concrete rewrite destinations: invalidating /stocks/T alone misses the /en cache. */
 export function parseTickers(value: unknown): string[] {
   if (
@@ -31,4 +31,16 @@ export function targetedPaths(
       ...DATA_DRIVEN_ROUTE_HANDLERS,
     ]),
   ];
+}
+
+/** Proof refresh accepts concrete public pages only, under the existing ingest authorization. */
+export function parsePublicationPaths(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length===0 || value.length>500) throw new Error("Invalid publication path list");
+  return [...new Set(value.map(path=>publicationPath(path)))];
+}
+export function publicationRevalidationPaths(paths: string[]): string[] {
+  return [...new Set(paths.map(path=> {
+    const pathname=new URL(publicationPath(path),"https://publication.invalid").pathname;
+    return pathname==="/zh" || pathname.startsWith("/zh/") ? pathname : pathname==="/" ? "/en" : `/en${pathname}`;
+  }))];
 }

@@ -23,7 +23,9 @@ create function auth.uid() returns uuid language sql as $$ select null::uuid $$;
 SQL
 psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 \
   -f "$script_root/supabase/migrations/20261031_valuation_publication.sql" \
-  -f "$script_root/supabase/checks/valuation_publication.sql"
+  -f "$script_root/supabase/migrations/20261031_tracking_publication_confirmation.sql" \
+  -f "$script_root/supabase/checks/valuation_publication.sql" \
+  -f "$script_root/supabase/checks/tracking_publication.sql"
 # Two sessions race the same initial generation. Exactly one may commit.
 race_sql="select public.write_valuation_publication('{\"key\":\"figi:BBG000000099\",\"ticker\":\"RACE\",\"figi\":\"BBG000000099\",\"cik\":null,\"cusip\":null,\"securityType\":\"Common Stock\",\"source\":\"fixture\",\"checkedAt\":\"2026-10-31\"}',0,null,null)"
 psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 -c "$race_sql" > "$scratch_pg/race-a.log" 2>&1 &
