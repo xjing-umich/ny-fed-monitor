@@ -9,6 +9,7 @@
 import fs from "node:fs";
 import { readFundamentalQueue } from "../src/lib/sec/fundamentalPublication";
 import { isIdentityQuarantined } from "../src/lib/securities/securityIdentity";
+import { parseResumeSince, readCompletedFundamentals, remainingFundamentals } from "./lib/fundamentalsResume";
 
 function loadEnvLocal() {
   if (!fs.existsSync(".env.local")) return;
@@ -46,6 +47,7 @@ async function main() {
   const dry = process.argv.includes("--dry");
   const limitArg = process.argv.find((a) => /^\d+$/.test(a));
   const limit = limitArg ? Number(limitArg) : undefined;
+  const resumeSince = parseResumeSince(process.env.SEC_RESUME_SINCE);
 
   const { getDb } = await import("../src/lib/managers/db");
   const { getTickerCikMap } = await import("../src/lib/sec/ticker-cik");
@@ -60,12 +62,14 @@ async function main() {
   const unresolvable = held.length - target.length;
 
   console.log(`held tickers: ${held.length} · resolvable US companies: ${target.length} · unresolvable (CUSIP/foreign/ETF): ${unresolvable}`);
-  const run = limit ? target.slice(0, limit) : target;
+  const db = getDb();
+  const completed = await readCompletedFundamentals(db, resumeSince);
+  const run = remainingFundamentals(limit ? target.slice(0, limit) : target, completed);
+  if (resumeSince) console.log(`Resuming since ${resumeSince}; skipping ${target.filter(t => completed.has(t.trim().toUpperCase())).length} completed targets`);
   console.log(`will ingest: ${run.length}${limit ? ` (limited to ${limit})` : ""}`);
   console.log(`first 20: ${run.slice(0, 20).join(", ")}`);
   if (dry) return;
 
-  const db = getDb();
   await readFundamentalQueue(db); // Fail before SEC writes if queue migration is absent.
   const summary = { total: run.length, success: 0, foreign: 0, unresolved: 0, failed: 0 } as Record<string, number>;
   const failures: string[] = [];
