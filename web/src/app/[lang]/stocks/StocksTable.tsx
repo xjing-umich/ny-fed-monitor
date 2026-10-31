@@ -90,7 +90,7 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
       header: g.security,
       role: "primary",
       cell: (r) => (
-        <span className="flex min-w-0 max-w-full items-baseline gap-2">
+        <span className="flex min-w-0 max-w-full flex-wrap items-baseline gap-2">
           <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
           {r.bargain ? <BargainMark bargain={r.bargain} lang={lang} /> : null}
         </span>

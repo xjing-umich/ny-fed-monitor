@@ -20,6 +20,7 @@ async function main() {
   const savedFetch = globalThis.fetch;
   let confirmed = true;
   let emptyRows = false;
+  let noSnapshots = false;
   process.env.SUPABASE_URL = "http://127.0.0.1:54321";
   process.env.SUPABASE_SERVICE_KEY = "local-test-only";
   globalThis.fetch = async (input, init) => {
@@ -28,6 +29,7 @@ async function main() {
     if (url.pathname === "/rest/v1/consensus_holdings") return Response.json([]);
     assert.equal(url.pathname, "/rest/v1/valuation_snapshot");
     const rows = snapshot.filter((r) => {
+      if (noSnapshots) return false;
       if (!confirmed && r.reliable) return false;
       for (const key of ["in_strike_zone", "reliable"] as const) {
         const filter = url.searchParams.get(key);
@@ -55,6 +57,17 @@ async function main() {
     for (const lang of ["zh", "en"] as const) {
       const text = renderToStaticMarkup(await ScreenerPage({ lang, view: "strike_zone", sort: "margin" })).replace(/<[^>]+>/g, "");
       assert.match(text, lang === "zh" ? /另 2 只待确认/ : /2 more pending review/, `${lang}: 没有已确认行仍应显示全表待确认数`);
+    }
+    noSnapshots = true;
+    for (const lang of ["zh", "en"] as const) {
+      for (const view of ["all", "below", "strike_zone", "conviction"] as const) {
+        const html = renderToStaticMarkup(await ScreenerPage({ lang, view, sort: "margin" }));
+        const text = html.replace(/<[^>]+>/g, "");
+        assert.ok(!text.includes(lang === "zh" ? "当前没有已确认的击球区股票" : "No valued stocks are confirmed"), "缺少结果不能作为没有击球区的证据");
+        assert.ok(!text.includes(lang === "zh" ? "刷新中" : "refreshing"), "无任务证据不承诺刷新中");
+        if (view === "conviction") assert.ok(!text.includes(lang === "zh" ? "0 只被" : "0 stocks held"), "缺少结果不虚构持仓宇宙为零");
+        assert.ok(html.includes(`href="${lang === "zh" ? "/zh" : ""}/stocks"`), "空结果仍能按持仓浏览");
+      }
     }
   } finally {
     globalThis.fetch = savedFetch;

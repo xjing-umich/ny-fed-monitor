@@ -1,13 +1,19 @@
 name: Daily Fundamentals (full holdings)
 on:
   # SEC EDGAR companyfacts → fundamentals for the FULL 13F holdings universe
-  # (consensus_holdings ∩ SEC US-company map, ~1.6k companies, ~35-40min).
+  # (consensus_holdings ∩ SEC US-company map, ~2k companies, ~90min).
   # Idempotent per ticker; the universe is read live each run so newly-held
   # names are auto-covered. Check each weekday during filing season; keep Saturday full refresh.
   # No 300s limit on Actions (the Vercel cron only covers the hardcoded core).
   schedule:
     - cron: "0 7 * * 1-6"   # Mon–Sat 07:00 UTC, before valuation at 12:00 UTC
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      resume_since:
+        description: "Optional UTC batch start within 24h; resume only the same ingestion code"
+        required: false
+        default: ""
+        type: string
 concurrency:
   group: sec-fundamentals
   cancel-in-progress: false
@@ -16,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       changed_tickers: ${{ steps.publish.outputs.changed_tickers }}
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,6 +35,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SEC_RESUME_SINCE: ${{ inputs.resume_since || '' }}
           # SEC requires a contact User-Agent. Uses the repo secret if set, else a default contact.
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || 'Compounder Research junlinzhu@jobright.ai' }}
 

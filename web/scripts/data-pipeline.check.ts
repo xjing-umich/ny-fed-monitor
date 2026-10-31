@@ -4,6 +4,7 @@ const root = path.resolve(__dirname, "..");
 const checks = [
   "src/lib/securities/identity.check.ts",
   "scripts/lib/writeFailures.check.ts",
+  "scripts/lib/fundamentalsResume.check.ts",
   "src/lib/sec/read-boundaries.check.ts",
   "src/app/api/sec/fundamentals/latest/route.check.ts",
   "src/lib/sec/normalize-facts.check.ts",
