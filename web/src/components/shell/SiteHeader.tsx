@@ -52,6 +52,14 @@ export default function SiteHeader({
   useEffect(() => {
     menu.current?.close();
   }, [pathname]);
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const closeOnDesktop = () => {
+      if (desktop.matches) menu.current?.close();
+    };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
   return (
     <header className={s.header} data-site-header>
       <div className={s.inner}>
@@ -80,7 +88,7 @@ export default function SiteHeader({
         </nav>
         {!home && (
           <div className={s.headerSearch}>
-            <GlobalSearch lang={lang} index={index} />
+            <GlobalSearch key={pathname} lang={lang} index={index} />
           </div>
         )}
         <div className={s.tools}>
