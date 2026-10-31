@@ -1,5 +1,6 @@
 import { isLikelyTicker } from "@/lib/externalLinks";
-import { stockPath } from "@/lib/urls";
+import { readStockLinkHolders } from "@/lib/managers/consensusRead";
+import { availableStockHref, currentStockKeys } from "@/lib/stocks/stockLinks";
 import { date as formatDate } from "@/lib/i18n/format";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -80,6 +81,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const strikePending = isConviction ? 0 : (screen as { strikePending: number }).strikePending;
   const heldTotal = isConviction ? (screen as { heldTotal: number }).heldTotal : 0;
   const sortedRows = isConviction ? rows : sortScreenerRows(rows, sort);
+  // Valuation snapshots can outlive the last current 13F holder/detail route.
+  const availableStocks = currentStockKeys(await readStockLinkHolders(rows.map((r) => r.ticker)) ?? [], new Date());
   // 估值锚定的是收盘价日期;computedAt 是任务跑完的 UTC 日期,美东晚上跑会显示成"明天"。
   // 只有行里都没有价格日期时才退回 computedAt,此时不写"收盘价"。
   const priceAsOf = latestIsoDate(rows.map((r) => r.priceDate));
@@ -113,7 +116,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const path = localePath(lang, '/stocks/screener');
   const name = `${ui.stocksTitle} · ${VIEWS.find((v) => v.key === view)?.[isZh ? 'zh' : 'en'] ?? view}`;
   const ld = [collectionLd({ lang, path, name, description: isConviction ? convictionIntro : geo,
-    items: sortedRows.filter((r) => isLikelyTicker(r.ticker)).map((r) => ({ name: `${r.issuer} (${r.ticker})`, path: stockPath(lang, r.ticker) })), limit: 100 }),
+    items: sortedRows.filter((r) => isLikelyTicker(r.ticker)).map((r) => ({ name: `${r.issuer} (${r.ticker})`, path: availableStockHref(lang, r.ticker, availableStocks) || undefined })), limit: 100 }),
     breadcrumbLd(lang, [{ name: ui.stocksTitle, path: localePath(lang, '/stocks') }, { name: isZh ? '按价值区间' : 'By value range', path }])];
   return (
     <>
@@ -200,7 +203,7 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
         )}
       </nav>
 
-      <ScreenerTable lang={lang} rows={sortedRows} highlight={isConviction} asOf={asOf} emptyText={
+      <ScreenerTable lang={lang} rows={sortedRows} availableStocks={availableStocks} highlight={isConviction} asOf={asOf} emptyText={
         screen.availability === "unpublished"
           ? isZh ? "当前模型的估值结果尚不可用，暂无法展示筛选名单。" : "Results for the current valuation model are not available yet."
           : screen.availability === "unavailable"
