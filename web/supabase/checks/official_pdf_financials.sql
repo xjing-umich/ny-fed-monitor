@@ -31,3 +31,11 @@ grant select on official_financial_periods to pdf_fixture_anon;
 set role pdf_fixture_anon;
 do $$ begin if exists(select from official_financial_periods) then raise exception 'Anonymous role can read source rows';end if;end $$;
 reset role;
+
+do $$ begin
+ if has_function_privilege('anon','public.official_pdf_evidence_matches(jsonb,jsonb,integer,text,text,date)','EXECUTE')
+ or has_function_privilege('authenticated','public.official_pdf_evidence_matches(jsonb,jsonb,integer,text,text,date)','EXECUTE')
+ or not has_function_privilege('service_role','public.official_pdf_evidence_matches(jsonb,jsonb,integer,text,text,date)','EXECUTE') then
+  raise exception 'PDF validator execution must be restricted to owner/service_role despite default grants';
+ end if;
+end $$;

@@ -14,10 +14,11 @@ psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 \
 node "$script_root/scripts/tests/official-pdf-seed.mjs" "$script_root" "$scratch_pg"
 psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 -f "$scratch_pg/legacy.sql" >/dev/null
 psql -X -h "$scratch_pg" -d postgres -At -c "select conname||': '||pg_get_constraintdef(oid) from pg_constraint where conrelid='public.official_financial_periods'::regclass" > "$scratch_pg/constraints-before.txt"
-psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 -c 'create role service_role; create role pdf_fixture_anon;' >/dev/null
+psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 -c 'create role service_role; create role pdf_fixture_anon; create role anon; create role authenticated; alter default privileges in schema public grant execute on functions to anon, authenticated;' >/dev/null
 if [ -f "$script_root/supabase/migrations/20261031_official_pdf_financials.sql" ];then
  psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 -f "$script_root/supabase/migrations/20261031_official_pdf_financials.sql" >/dev/null
 fi
+psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 -f "$script_root/supabase/migrations/20261031_official_pdf_function_privileges.sql" >/dev/null
 psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 \
  -c "do \$\$ begin if not exists(select from information_schema.columns where table_schema='public' and table_name='official_financial_periods' and column_name='source_pdf_page_count') then raise exception 'PDF capability migration missing';end if;end \$\$;" >/dev/null
 psql -X -h "$scratch_pg" -d postgres -v ON_ERROR_STOP=1 -c 'alter role service_role bypassrls;grant select,insert,update on official_financial_periods to service_role;' >/dev/null

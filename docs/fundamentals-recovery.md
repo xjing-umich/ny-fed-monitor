@@ -95,6 +95,8 @@ order by ticker,period_end desc,source_report_period_end desc,
 
 Apply `web/supabase/migrations/20261031_official_pdf_financials.sql` after the existing official-period migration and before PDF ingestion. It adds `source_pdf_page_count` and `source_pdf_extractor` atomically with issuer-specific core, identity and PDF-evidence constraints. The writer checks these columns before company/financial mutation; an existing #273 table without the upgrade fails the capability gate. Existing three official sources keep their original constraints/rows and null PDF metadata. RLS remains enabled without public policies; the immutable PDF evidence validator has no table access and EXECUTE is restricted to the owner/service_role. No production DDL/backfill or merge is performed by this PR.
 
+Then apply `web/supabase/migrations/20261031_official_pdf_function_privileges.sql`. Supabase may grant `anon` and `authenticated` EXECUTE directly through default privileges; revoking PUBLIC alone does not remove these grants. This follow-up explicitly removes both role grants, preserves service_role execution and changes no financial rows or table policies. Verify effective access with `has_function_privilege` after migration.
+
 Run from `web/` with SEC_USER_AGENT configured:
 
 ```sh
