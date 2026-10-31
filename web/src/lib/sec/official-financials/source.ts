@@ -36,15 +36,18 @@ async function download(url:string,origins:string[],limit:number):Promise<Uint8A
 }
 export function extractEsefReport(bytes:Uint8Array):{xml:string;name:string}{
  if(bytes.byteLength>MAX_ARCHIVE)fail('ESEF archive exceeds size limit');
- let invalid=false;
- const files=unzipSync(bytes,{filter:file=>{
+ let invalid=false;const reports:{name:string;size:number}[]=[];
+ // Inspect every directory entry without inflating. fflate's output map would
+ // otherwise hide duplicate names and allocate all reports before ambiguity checks.
+ unzipSync(bytes,{filter:file=>{
   if(!/\.xhtml$/i.test(file.name))return false;
   if(file.originalSize>MAX_DOCUMENT||file.name.startsWith('/')||file.name.includes('\\')||file.name.split('/').includes('..')){invalid=true;return false;}
-  return true;
+  reports.push({name:file.name,size:file.originalSize});return false;
  }});
- const names=Object.keys(files);if(invalid||names.length!==1)fail('ESEF report missing, ambiguous or oversized');
- const xml=strFromU8(files[names[0]]);if(xml.length>MAX_DOCUMENT)fail('ESEF report exceeds size limit');
- return {xml,name:names[0]};
+ if(invalid||reports.length!==1)fail('ESEF report missing, ambiguous or oversized');
+ const report=reports[0],files=unzipSync(bytes,{filter:file=>file.name===report.name});
+ if(files[report.name].byteLength!==report.size||files[report.name].byteLength>MAX_DOCUMENT)fail('ESEF report exceeds size limit');
+ return {xml:strFromU8(files[report.name]),name:report.name};
 }
 export function discoverEuropeanAnnual(route:SourceRoute,html:string):{url:string;reportEnd:string;publishedAt:string|null}{
  const links=[...new Set([...html.matchAll(/\bhref\s*=\s*["']([^"']+)["']/gi)].map(m=>new URL(htmlText(m[1]),route.landing_url).href))];

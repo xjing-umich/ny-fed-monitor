@@ -11,6 +11,14 @@ for(const [ticker,end,lei,currency] of [["HMRZF","2025-11-30","529900O5RR7R39FRD
  assert.equal(periods[0].raw_facts.revenue.unit,currency);
  assert.equal(periods[0].raw_facts.weighted_average_shares.unit,'shares');
  assert.equal(periods[0].raw_facts.weighted_average_shares.scale,ticker==='HMRZF'?1000:1);
+ const moneyUnit=xml.match(new RegExp('<xbrli:unit\\b[^>]*><xbrli:measure>iso4217:'+currency+'</xbrli:measure></xbrli:unit>'))?.[0];assert.ok(moneyUnit);
+ const compoundMoney=xml.replace(moneyUnit,moneyUnit.replace('</xbrli:unit>','<xbrli:measure>xbrli:shares</xbrli:measure></xbrli:unit>'));
+ assert.throws(()=>parseOfficialInlineAnnual(ticker,compoundMoney,end),/inline/i,'a product currency unit cannot be labeled as money');
+ for(const side of ['unitNumerator','unitDenominator']){
+  const compoundEps=xml.replace('</xbrli:'+side+'>','<xbrli:measure>xbrli:shares</xbrli:measure></xbrli:'+side+'>');
+  assert.notEqual(compoundEps,xml);
+  assert.throws(()=>parseOfficialInlineAnnual(ticker,compoundEps,end),/inline/i,'EPS requires exactly one measure on each side');
+ }
  for(const malformed of [
   xml.replaceAll(lei,'00000000000000000000'),xml.replaceAll('iso4217:'+currency,'iso4217:USD'),
   xml.replaceAll('https://xbrl.ifrs.org/taxonomy/2024-03-27/ifrs-full','https://example.com/wrong-ifrs'),

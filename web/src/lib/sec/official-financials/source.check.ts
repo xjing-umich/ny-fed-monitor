@@ -12,6 +12,17 @@ const xml=fixture('hmrzf-annual.xhtml');
 assert.equal(extractEsefReport(zipSync({'reports/annual.xhtml':strToU8(xml),'ignored.bin':new Uint8Array(100)})).xml,xml);
 assert.throws(()=>extractEsefReport(zipSync({'taxonomy.xml':strToU8('not a report')})),/ESEF/);
 assert.throws(()=>extractEsefReport(zipSync({'a.xhtml':strToU8(xml),'b.xhtml':strToU8(xml)})),/ESEF/);
+// Rename both ZIP entries to the same name in local and central headers: object-key
+// counting after unzip would silently choose the second central-directory entry.
+const duplicateNames=zipSync({'a.xhtml':strToU8(xml),'b.xhtml':strToU8(xml+'<!-- second -->')});
+const from=strToU8('b.xhtml'),to=strToU8('a.xhtml');
+for(let i=0;i<=duplicateNames.length-from.length;i++)if(from.every((v,j)=>duplicateNames[i+j]===v))duplicateNames.set(to,i);
+assert.throws(()=>extractEsefReport(duplicateNames),/ESEF/,'duplicate report names must not overwrite a source document');
+// Invalid compressed contents must never be inflated when the directory is
+// already ambiguous. Changing the central compression method makes this visible.
+const ambiguousUnsupported=zipSync({'a.xhtml':strToU8(xml),'b.xhtml':strToU8(xml)});
+for(let i=0;i<ambiguousUnsupported.length-46;i++)if(ambiguousUnsupported[i]===0x50&&ambiguousUnsupported[i+1]===0x4b&&ambiguousUnsupported[i+2]===1&&ambiguousUnsupported[i+3]===2)new DataView(ambiguousUnsupported.buffer).setUint16(i+10,99,true);
+assert.throws(()=>extractEsefReport(ambiguousUnsupported),/ESEF report missing, ambiguous or oversized/,'directory ambiguity is rejected before decompression');
 assert.throws(()=>extractEsefReport(zipSync({'../report.xhtml':strToU8(xml)})),/ESEF/);
 const tooLarge=zipSync({'annual.xhtml':strToU8(xml)});
 const central=tooLarge.findIndex((v,i)=>v===0x50&&tooLarge[i+1]===0x4b&&tooLarge[i+2]===1&&tooLarge[i+3]===2);assert.ok(central>0);

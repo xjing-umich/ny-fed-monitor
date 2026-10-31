@@ -54,5 +54,5 @@
 - [x] Run RED integration checks for schema/write/publication failure, idempotent fingerprint and native isolation.
 - [x] Persist native records only after schema gate, upsert source versions, journal truthful outcomes and queue publication only after successful writes; preserve #270/#268 paths.
 - [x] Run full prebuild/data-pipeline, typecheck, focused lint, disposablePG and live source-only validations.
-- [ ] Obtain independent read-only whole-branch review; fix material findings with reproductions.
+- [x] Obtain independent read-only whole-branch review; fix material findings with reproductions. Two P2 findings (compound-unit cardinality and pre-inflation ZIP ambiguity) reproduced RED and fixed GREEN; full checks and live European originals passed again.
 - [ ] Push and create/attach PR targeting db-foundation; report supported/pending sources and checks, no merge.

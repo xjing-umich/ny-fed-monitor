@@ -71,7 +71,7 @@ export function parseOfficialInlineAnnual(ticker:string,xml:string,reportEnd:str
  const records=new XMLParser({preserveOrder:true,ignoreAttributes:(name:string)=>!retained.has(name)&&!name.startsWith('xmlns')&&!name.endsWith(':nil'),parseTagValue:false,trimValues:false,processEntities:false}).parse(xml) as RecordNode[];
  const contexts=new Map<string,{start?:string;end:string;instant:boolean}>(),units=new Map<string,string>();
  const facts:Element[]=[];
- const contextIds=new Set<string>(),unitIds=new Set<string>();
+ const contextIds=new Set<string>(),unitIds=new Set<string>(),unsupportedUnits=new Set<string>();
  const walk=(nodes:RecordNode[],scope:Record<string,string>)=>{
   for(const node of elements(nodes,scope)){
    if(node.uri===XBRL&&node.name==='context'){
@@ -87,14 +87,18 @@ export function parseOfficialInlineAnnual(ticker:string,xml:string,reportEnd:str
     }
    }else if(node.uri===XBRL&&node.name==='unit'){
     const id=node.attrs['@_id'];if(!id||unitIds.has(id))fail('missing or duplicate unit ID');unitIds.add(id);
-    const measure=one(node,'measure');
-    if(measure){
+    const parts=elements(node.children,node.scope),measures=children(node,'measure');
+    if(parts.length===1&&measures.length===1){
+     const measure=measures[0];
      const q=qname(text(measure.children).trim(),measure.scope);
      if(q.uri==='http://www.xbrl.org/2003/iso4217'&&q.name===route!.currency)units.set(node.attrs['@_id'],route!.currency);
      if(q.uri===XBRL&&q.name==='shares')units.set(node.attrs['@_id'],'shares');
     }else{
-     const divide=one(node,'divide'),num=divide&&one(divide,'unitNumerator'),den=divide&&one(divide,'unitDenominator');
-     const nm=num&&one(num,'measure'),dm=den&&one(den,'measure');
+     const divides=children(node,'divide'),divide=divides[0],num=divide&&one(divide,'unitNumerator'),den=divide&&one(divide,'unitDenominator');
+     if(parts.length!==1||divides.length!==1||elements(divide.children,divide.scope).length!==2||!num||!den
+       ||elements(num.children,num.scope).length!==1||elements(den.children,den.scope).length!==1
+       ||children(num,'measure').length!==1||children(den,'measure').length!==1){unsupportedUnits.add(id);continue;}
+     const nm=one(num,'measure'),dm=one(den,'measure');
      if(nm&&dm){const n=qname(text(nm.children).trim(),nm.scope),d=qname(text(dm.children).trim(),dm.scope);
       if(n.uri==='http://www.xbrl.org/2003/iso4217'&&n.name===route!.currency&&d.uri===XBRL&&d.name==='shares')units.set(node.attrs['@_id'],route!.currency+'/shares');}
     }
@@ -111,6 +115,7 @@ export function parseOfficialInlineAnnual(ticker:string,xml:string,reportEnd:str
   if(!field||!IFRS.test(concept.uri))continue;
   if(field.metric==='revenue'&&concept.name!==(ticker==='HMRZF'?'RevenueFromContractsWithCustomers':'Revenue'))continue;
   const ctx=contexts.get(fact.attrs['@_contextRef']),unit=units.get(fact.attrs['@_unitRef']);
+  if(ctx&&unsupportedUnits.has(fact.attrs['@_unitRef']))fail('unsupported compound unit structure');
   const expected=field.unit==='shares'?'shares':field.unit==='eps'?route!.currency+'/shares':route!.currency;
   if(!ctx||ctx.instant!==!!field.instant||unit!==expected)continue;
   if(Object.entries(fact.attrs).some(([k,v])=>{const q=qname(k.replace(/^@_/,''),fact.scope);return q.uri==='http://www.w3.org/2001/XMLSchema-instance'&&q.name==='nil'&&['true','1'].includes(v);}))continue;
