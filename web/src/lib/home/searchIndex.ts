@@ -8,12 +8,8 @@ import { cleanIssuer } from "@/lib/format";
 import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
 import { investorPath, stockPath } from "@/lib/urls";
 import type { Lang } from "@/lib/nav";
-import type { SearchItem } from "@/components/shell/SearchBox";
-export type SearchIndex = {
-  items: SearchItem[];
-  stockAvailable: boolean;
-  investorAvailable: boolean;
-};
+import type { SearchIndex } from "@/lib/search/types";
+export type { SearchIndex } from "@/lib/search/types";
 export const readSearchIndex = cache(
   async (lang: Lang): Promise<SearchIndex> => {
     const [idx, held] = await Promise.allSettled([
