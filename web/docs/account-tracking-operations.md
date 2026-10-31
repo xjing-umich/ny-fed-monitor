@@ -58,7 +58,7 @@ NEXT_PUBLIC_ACCOUNT_TRACKING_ENABLED=0 npm run build
 
 自动流程：在替换任何候选之前捕获完整旧投影和未完成义务；整批估值计算完毕后，用相同投影函数计算将来的路由内容、摘要和成员，持久化 intent，然后才逐条 CAS 写入。prepare 失败不写候选；中途 CAS 失败保留完整 intent，由后续 verifier 按实际状态生成继任 intent。确认仍只能经过真实公开 HTML 校验与 Task 5 SQL CAS，不能用 `/api/revalidate` 的 200 充当确认。
 
-首次 bootstrap 保守覆盖全部当前投资人页、实际筛选器静态变体、必要汇总与个股页，包括应为空的义务。最近 20 个同源已完成 manifest 提供可信路由库存后，仅保留所选证券变更前后相关路由和全部未完成历史 URL / key 义务；不在此有界库存中的证券重新保守 bootstrap。历史未知 / 已删除路由无法凭空重建，生产器明确失败并保留旧义务，需要先解决真实路由可达性；不得靠删除 intent 放行。
+首次 bootstrap 保守覆盖全部当前投资人页、实际筛选器静态变体、必要汇总与个股页，包括应为空的义务。分页读取全部同源、直接验证完成（非 superseded）的 manifest，按每个证券 / 路由最新 proof 时间保留历史成员，直到后续已完成 proof 明确证明缺席；不能只记曾确认证券键或截取最近若干批次。已建立库存后仍保留所选证券变更前后相关路由及全部未完成历史 URL / key 义务，无库存的证券保守 bootstrap。历史未知 / 已删除路由无法凭空重建，生产器明确失败并保留旧义务，需要先解决真实路由可达性；不得靠删除 intent 放行。
 
 股票列表的筛选 / 分页只在浏览器完成：一个 canonical `/stocks` ISR 数据集的摘要覆盖完整序列化行，SSR 只为实际首屏行标记代次。筛选器的七个视图 / 排序组合沿用原静态 rewrite，各有真实 query canonical 路径。投资人投影复用原持仓上限与估值姿态选择，摘要仍包含全部输入，不能把未渲染的溢出行冒充已验证行。
 
@@ -67,3 +67,5 @@ NEXT_PUBLIC_ACCOUNT_TRACKING_ENABLED=0 npm run build
 本地验证仅使用合成 PostgREST 数据和独立端口的 Next 生产构建 / `next start`，没有复用生产 `.env`。完整 `npm run build` 已通过（含 prebuild），公开页面仍为静态 / SSG，只有安全 API 按请求读取。真实 Supabase、Google、邮箱登录与部署验收尚未执行。
 
 实际 `next start` 失效重建另发现：publication revalidate 必须把公开筛选 query 映射到内部 `/en|zh/stocks/screener/<variant>`，不能丢掉 query 后只刷新默认页。Next 16.2.6 对该路由 `dynamicParams=false` 在干净构建后按路径或路由族失效都会产生 `NoFallbackError` / 404，因此仅该路由允许 ISR fallback；仍预生成六个合法 variant，严格 `parseVariant` 白名单、未知 variant 404、259200 秒 ISR 不变。普通公开 GET 的真实重建与 HTML 代次校验仍是确认条件。
+
+Task 6 review 修复：公开安全 API 的 revision / identity / status 由一次 joined-row 读取共同派生，禁止拼接两个并发读的不同代次。响应式宽度改变会重新核对实际可见版本集合，在发起新请求前同步移除已核实强调；可见集合不变时不重复请求。完成 proof 历史的分页读取量随累计历史增长，在可靠的物化路由库存替代前不得裁剪导致遗漏旧持仓页。

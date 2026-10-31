@@ -20,12 +20,18 @@ for (const row of publications) {
 const manager={cik:'0000000001',slug:'fixture-manager',name:'Fixture Fund',person:'Fixture Manager',period:'2026-06-30',filed_at:'2026-08-01',total_value:65000000,holding_count:65,top_holding:'Fixture Corporation'};
 const holdings=tickers.map((ticker,i)=>({id:i+1,filing_id:1,cusip:String(i+1).padStart(9,'0'),ticker,issuer:`Fixture ${ticker} Corporation`,title_of_class:'COM',value:(65-i)*100000,shares:1000,weight:1/65,put_call:null}));
 const consensus=holdings.map((h,i)=>({...h,holder_count:70-i,total_value:h.value}));
-let safety='valid'; let failure=false;
+let safety='valid'; let failure=false; let safetyTicker:string|null=null; let delayMs=0;
 const counts:Record<string,number>={};
 const server=createServer(async(req,res)=>{
  const url=new URL(req.url!,'http://localhost'); const name=url.pathname.split('/').at(-1)!;
  res.setHeader('content-type','application/json');
- if(url.pathname==='/fixture/state') {safety=url.searchParams.get('safety')??safety; failure=url.searchParams.get('failure')==='1';res.end(JSON.stringify({safety,failure,counts}));return;}
+ if(url.pathname==='/fixture/state') {
+  safety=url.searchParams.get('safety')??safety;
+  if(url.searchParams.has('failure'))failure=url.searchParams.get('failure')==='1';
+  if(url.searchParams.has('safetyTicker'))safetyTicker=url.searchParams.get('safetyTicker')||null;
+  if(url.searchParams.has('delayMs'))delayMs=Math.min(5000,Math.max(0,Number(url.searchParams.get('delayMs'))||0));
+  res.end(JSON.stringify({safety,failure,safetyTicker,delayMs,counts}));return;
+ }
  if(url.pathname==='/fixture/update') {
    const i=publications.findIndex(p=>p.ticker===(url.searchParams.get('ticker')??'FAA'));
    if(i<0){res.statusCode=400;res.end('{}');return;}
@@ -39,9 +45,10 @@ const server=createServer(async(req,res)=>{
  }
  if(url.pathname==='/fixture/records') {res.end(JSON.stringify(publications.map(p=>p.valuation_publication.public_result)));return;}
  counts[name]=(counts[name]??0)+1;
+ if(name==='tracking_securities' && delayMs)await new Promise(resolve=>setTimeout(resolve,delayMs));
  if(name==='tracking_securities' && failure){res.statusCode=503;res.end(JSON.stringify({code:'08006',message:'synthetic fixture failure'}));return;}
  let rows:Record<string,unknown>[]=[];
- if(name==='tracking_securities') rows=publications.map(row=>projectPublicationFixture({...row,valuation_publication:{...row.valuation_publication,safety:{...row.valuation_publication.safety,status:safety,reasons:safety==='valid'?[]:['fixture_invalid']}}},url.searchParams.get('select')));
+ if(name==='tracking_securities') rows=publications.map(row=>projectPublicationFixture({...row,valuation_publication:{...row.valuation_publication,safety:{...row.valuation_publication.safety,status:safetyTicker&&row.ticker!==safetyTicker?'valid':safety,reasons:safety==='valid'||(safetyTicker&&row.ticker!==safetyTicker)?[]:['fixture_invalid']}}},url.searchParams.get('select')));
  else if(name==='manager_index'||name==='managers') rows=[manager];
  else if(name==='filings') rows=[{...manager,id:1,accession:'0000000001-26-000001'}];
  else if(name==='holdings') rows=holdings;

@@ -151,6 +151,9 @@ export async function readTrackingValuations(securityKeys: string[]): Promise<Ma
 export async function readValuationSafety(tickers: string[]): Promise<Map<string,SafetyState>> {
   const keys = [...new Set(tickers.map(ticker => ticker.toUpperCase()).filter(Boolean))];
   const rows = await readRows("ticker",keys,false,true);
+  return safetyMap(rows, keys);
+}
+function safetyMap(rows: DirectoryRow[], keys: string[]): Map<string,SafetyState> {
   const now = new Date(); const out = new Map<string,SafetyState>();
   for (const row of rows) {
     const publication = row.valuation_publication;
@@ -163,10 +166,21 @@ export async function readValuationSafety(tickers: string[]): Promise<Map<string
     const safetyReasons=storedSafety(row);
     const reasons=[...new Set([...checkedReasons,...safetyReasons])];
     const invalid=checkedReasons.length>0 || publication?.safety.status === "invalid" || safetyReasons.includes("safety_unavailable");
-    const pending=publication?.publication_status === "pending" || publication?.safety.status === "pending" || !record;
+    const pending=publication?.publication_status === "pending" || publication?.safety.status === "pending" || !record ||
+      publication?.tracking_generation !== publication?.generation || confirmed?.revisionId !== record?.revisionId;
     out.set(row.ticker,{identityKey:row.identity_key,status:invalid ? "invalid" : pending ? "pending" : "valid",
       reasons:reasons.length ? reasons : pending ? ["publication_pending"] : [],observedAt:now.toISOString()});
   }
   for (const ticker of keys) if (!out.has(ticker)) out.set(ticker,{identityKey:null,status:"pending",reasons:["identity_unconfirmed"],observedAt:now.toISOString()});
   return out;
+}
+
+/** Public API tuple is derived from one joined row snapshot, never two racing reads. */
+export async function readPublicValuationStates(tickers: string[]): Promise<Map<string, SafetyState & {revisionId: string | null}>> {
+  const keys = [...new Set(tickers.map(ticker => ticker.toUpperCase()).filter(Boolean))];
+  const rows = await readRows("ticker", keys, false, true);
+  const values = summaryMap(rows);
+  return new Map([...safetyMap(rows, keys)].map(([ticker, safety]) => [ticker, {
+    ...safety, revisionId: values.get(ticker)?.record.revisionId ?? null,
+  }]));
 }

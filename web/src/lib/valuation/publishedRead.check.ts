@@ -6,6 +6,7 @@ import { runValuation, type RunValuationInput, type ValuationRun } from "./runVa
 import { fundamentalsToFloorInput } from "./fundamentalsToFloorInput";
 import { buildPublishedValuation } from "./publishedAdapter";
 import { readPublicValuations, readTrackingValuations, readValuationSafety, PublicationUnavailableError } from "./publishedRead";
+import { GET as safetyGet } from "../../app/api/valuation/state/route";
 import { readStrikeZoneLeaders, readValuationScreen } from "./valuationSnapshot";
 
 async function main() {
@@ -49,6 +50,7 @@ function fixture(record= candidate, presentation:ValuationRun=newerRun) {
 }
 let errorCode: string | null = null;
 let pageRequests = 0;
+let transitionRows: Record<string, unknown>[][] = [];
 const server = createServer((req,res)=> {
  const url = new URL(req.url!,"http://localhost");
  res.setHeader("content-type","application/json");
@@ -57,7 +59,7 @@ const server = createServer((req,res)=> {
  assert(url.pathname.endsWith("tracking_securities"),"must not read legacy snapshots");
  const start = Number(url.searchParams.get("offset") ?? 0); const limit=Number(url.searchParams.get("limit") ?? 1000);
  pageRequests++;
- const page=rows.slice(start,start+limit).map(row=> {
+ const page=(transitionRows.shift() ?? rows).slice(start,start+limit).map(row=> {
    if (!url.searchParams.get("select")?.includes("public_record:")) return row;
    const p=row.valuation_publication as ReturnType<typeof fixture>["valuation_publication"];
    return {...row,valuation_publication:{...p,public_result:undefined,public_record:p.public_result?.record,
@@ -74,6 +76,22 @@ try {
  assert.equal((await readPublicValuations(["GOOG"])).get("GOOG")?.record.price,51);
  assert.equal((await readTrackingValuations([context.identity.key])).get(context.identity.key)?.price,50,"candidate must not enter tracking");
  assert.equal((await readValuationSafety(["GOOG"])).get("GOOG")?.status,"pending");
+ // The actual API must never combine the candidate revision from one snapshot with
+ // the previous generation's valid state from a concurrent second read.
+ const confirmedOld=fixture(old,run);
+ Object.assign(confirmedOld.valuation_publication,{generation:1,tracking_generation:1,publication_status:"confirmed"});
+ transitionRows=[[fixture()],[confirmedOld]];pageRequests=0;
+ const candidateState=(await (await safetyGet(new Request("http://fixture/api/valuation/state?tickers=GOOG"))).json()).states[0];
+ assert.equal(candidateState.revisionId,candidate.revisionId);
+ assert.equal(candidateState.status,"pending","candidate revision cannot borrow old confirmed safety");
+ assert.equal(pageRequests,1,"revision and safety must share one row snapshot");
+ const confirmedNew=fixture(candidate,newerRun);
+ Object.assign(confirmedNew.valuation_publication,{tracking_result:{...candidate,publishedAt:new Date().toISOString()},tracking_generation:2,publication_status:"confirmed"});
+ transitionRows=[[confirmedOld],[confirmedNew]];pageRequests=0;
+ const oldState=(await (await safetyGet(new Request("http://fixture/api/valuation/state?tickers=GOOG"))).json()).states[0];
+ assert.equal(oldState.revisionId,old.revisionId);assert.equal(oldState.status,"valid");
+ assert.equal(pageRequests,1,"reverse transition also uses only the observed generation");
+ transitionRows=[];
  const unreliableRun={...run,verdict:{...run.verdict!,reliable:false}};
  const unreliable=fixture(buildTrackingRecord(unreliableRun,context),unreliableRun);
  unreliable.valuation_publication.safety={status:"pending",reasons:["unreliable_valuation"],observedAt:new Date().toISOString()};rows=[unreliable];
