@@ -9,27 +9,42 @@ import NewsletterForm from "./NewsletterForm";
 import ScrollToTop from "./ScrollToTop";
 import { localePath } from "@/lib/urls";
 
-const colHeading =
-  "font-data text-xs text-[var(--tt-faint)]";
+const colHeading = "font-data text-xs text-[var(--tt-faint)]";
 const colLink =
   "max-sm:inline-flex max-sm:min-h-[44px] max-sm:items-center text-sm text-[var(--tt-muted)] hover:text-[var(--tt-text)] transition-colors no-underline";
 
-export default function Footer({ lang }: { lang: Lang }) {
+export default function Footer({
+  lang,
+  newsletter = true,
+  className = "",
+}: {
+  lang: Lang;
+  newsletter?: boolean;
+  className?: string;
+}) {
   const c = footerCopy(lang);
   const year = 2026; // Date.* unavailable in this runtime; site launched 2026.
 
   return (
-    <footer className="border-t border-[var(--tt-border)] bg-[var(--tt-panel-2)]">
+    <footer
+      className={`border-t border-[var(--tt-border)] bg-[var(--tt-panel-2)] ${className}`}
+    >
       {/* Columns — width + gutter matched to the main content column (AppShell) */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div
+          className={`grid grid-cols-2 ${newsletter ? "md:grid-cols-4" : "md:grid-cols-3"} gap-8`}
+        >
           {/* Explore */}
           <nav className="flex flex-col gap-3">
             <span className={colHeading}>{c.explore}</span>
             {TOP_NAV.map((entry) => (
               <Link
                 key={entry.key}
-                href={entry.key === "home" ? localePath(lang, "") : localePath(lang, entry.href)}
+                href={
+                  entry.key === "home"
+                    ? localePath(lang, "")
+                    : localePath(lang, entry.href)
+                }
                 className={colLink}
               >
                 {lang === "zh" ? entry.zh : entry.en}
@@ -41,7 +56,11 @@ export default function Footer({ lang }: { lang: Lang }) {
           <nav className="flex flex-col gap-3">
             <span className={colHeading}>{c.legal}</span>
             {LEGAL_LINKS.map((l) => (
-              <Link key={l.slug} href={localePath(lang, `/${l.slug}`)} className={colLink}>
+              <Link
+                key={l.slug}
+                href={localePath(lang, `/${l.slug}`)}
+                className={colLink}
+              >
                 {lang === "zh" ? l.zh : l.en}
               </Link>
             ))}
@@ -57,13 +76,15 @@ export default function Footer({ lang }: { lang: Lang }) {
           </div>
 
           {/* Stay Updated */}
-          <div className="flex flex-col gap-3 col-span-2 md:col-span-1">
-            <span className={colHeading}>{c.newsletter}</span>
-            <p className="text-xs leading-relaxed text-[var(--tt-muted)]">
-              {c.newsletterBlurb}
-            </p>
-            <NewsletterForm lang={lang} />
-          </div>
+          {newsletter && (
+            <div className="flex flex-col gap-3 col-span-2 md:col-span-1">
+              <span className={colHeading}>{c.newsletter}</span>
+              <p className="text-xs leading-relaxed text-[var(--tt-muted)]">
+                {c.newsletterBlurb}
+              </p>
+              <NewsletterForm lang={lang} />
+            </div>
+          )}
         </div>
       </div>
 

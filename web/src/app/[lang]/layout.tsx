@@ -8,15 +8,10 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { THEME_COLOR } from "@/lib/themeColor";
 import { SiteAnalytics } from "@/components/shell/SiteAnalytics";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { getManagerIndex } from "@/lib/managers/source";
-import { mostHeld } from "@/lib/aggregations";
-import { cleanIssuer } from "@/lib/format";
-import { INVESTOR_ALIASES } from "@/lib/investorAliases";
 import AppShell from "@/components/shell/AppShell";
 import type { Lang } from "@/lib/nav";
-import { investorPath, stockPath, HTML_LANG } from "@/lib/urls";
-import { managerLabel } from "@/lib/managers/displayName";
-import { stockDisplayName, stockZhName } from "@/lib/stocks/zhNames";
+import { HTML_LANG } from "@/lib/urls";
+import { getSearchIndex } from "@/lib/home/searchIndex";
 
 // Engineered industrial sans for the wordmark and headlines: straight-sided
 // "spec-sheet nameplate" geometry that pairs cleanly with PingFang/system CJK
@@ -71,7 +66,19 @@ export async function generateMetadata({
           "SEC EDGAR",
           "Compounder",
         ]
-      : ["13F", "13F 持仓", "超级投资者", "巴菲特持仓", "机构持仓", "价值投资", "内在价值", "个股估值", "SEC", "Compounder", "复利"],
+      : [
+          "13F",
+          "13F 持仓",
+          "超级投资者",
+          "巴菲特持仓",
+          "机构持仓",
+          "价值投资",
+          "内在价值",
+          "个股估值",
+          "SEC",
+          "Compounder",
+          "复利",
+        ],
     authors: [{ name: "Compounder" }],
     creator: "Compounder",
     publisher: "Compounder",
@@ -132,32 +139,7 @@ export default async function LangLayout({
   const lang = rawLang as Lang;
   const htmlLang = HTML_LANG[lang];
 
-  // Build search items: investors (+中文别名) + stocks (ticker).
-  // 两个轻量读取并行;mostHeld 提供热门个股下拉建议(任意 ticker 仍可经搜索框回车直达)。
-  const [managerIdx, held] = await Promise.all([getManagerIndex(), mostHeld(250)]);
-
-  const managerItems = managerIdx.managers.map((m) => ({
-    label: managerLabel(lang, m.slug, m.person),
-    href: investorPath(lang, m.slug),
-    // 展示名换成中文后,英文原名留在关键词里,搜 Buffett 仍能命中。
-    keywords: [INVESTOR_ALIASES[m.slug], m.person].filter(Boolean).join(" "),
-  }));
-
-  // 个股建议:按持有人数排序的共识标的(cusip 字段已解析为 ticker)。以 ticker 去重。
-  const seenTickers = new Set<string>();
-  const stockItems = held.flatMap((row) => {
-    const ticker = row.cusip;
-    if (seenTickers.has(ticker)) return [];
-    seenTickers.add(ticker);
-    return [{
-      label: stockDisplayName(lang, ticker, cleanIssuer(row.issuer)),
-      href: stockPath(lang, ticker),
-      // 中文名也进关键词,英文站搜"苹果"同样能命中。
-      keywords: [ticker, stockZhName(ticker)].filter(Boolean).join(" "),
-    }];
-  });
-
-  const items = [...managerItems, ...stockItems];
+  const items = await getSearchIndex(lang);
 
   return (
     <html
@@ -165,7 +147,10 @@ export default async function LangLayout({
       suppressHydrationWarning
       className={`${saira.variable} ${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full" style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}>
+      <body
+        className="min-h-full"
+        style={{ background: "var(--tt-bg)", color: "var(--tt-text)" }}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
