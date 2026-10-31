@@ -32,27 +32,27 @@
 **Files:** `web/src/lib/sec/official-financials/{types,registry}.ts`, routing checks, `ingest.ts`, batch CLIs.
 **Interfaces:** `OfficialFinancialPeriod` carries native metrics and raw field evidence plus original-document identity/currency/basis/provenance; `OfficialSourcePendingError` describes pending PDF adapters.
 
-- [ ] Write and run RED tests for known routing/CIK mismatch and pending status/non-success/resume behavior.
-- [ ] Implement registry and typed period/evidence contract; pending remains a non-success journal result and is reported separately by batch/CLI.
-- [ ] Verify and commit.
+- [x] Write and run RED tests for known routing/CIK mismatch and pending status/non-success/resume behavior.
+- [x] Implement registry and typed period/evidence contract; pending remains a non-success journal result and is reported separately by batch/CLI.
+- [x] Verify and commit.
 
 ### Task2: Native annual parsers and latest source discovery
 
 **Files:** `official-financials/{ibn,inline,source}.ts`, focused checks/fixtures and dependency lockfile.
 **Interfaces:** pure parsers return native annual period data; source discovery validates official URLs and selects latest audited-format reports; full provider attaches document SHA/date/URL identity.
 
-- [ ] Save small source-derived fixtures and literal expected values; run RED for IBN primary-table semantics and European identity/context/number-format behavior.
-- [ ] Implement scoped IBN HTML tables, namespace-aware inline IFRS parser and bounded ESEF extraction; malformed/shifted/duplicate inputs fail.
-- [ ] Test latest-year discovery/6-K truncation, file limits, HTTP errors, malicious links and unsupported formats with controlled external boundaries.
-- [ ] Run real SEC/official-source dry-runs for all five routing outcomes; record latest annual vs unintegrated interim dates without overstating coverage.
-- [ ] Verify and commit.
+- [x] Save small source-derived fixtures and literal expected values; run RED for IBN primary-table semantics and European identity/context/number-format behavior.
+- [x] Implement scoped IBN HTML tables, namespace-aware inline IFRS parser and bounded ESEF extraction; malformed/shifted/duplicate inputs fail.
+- [x] Test latest-year discovery/6-K truncation, file limits, HTTP errors, malicious links and unsupported formats with controlled external boundaries.
+- [x] Run real SEC/official-source dry-runs for all five routing outcomes; record latest annual vs unintegrated interim dates without overstating coverage.
+- [x] Verify and commit.
 
 ### Task3: Persistence, full review and PR
 
 **Files:** native official-period SQL migration and disposablePG check; `ingest.ts`, CLI dry-run, pipeline check registry, recovery documentation.
 
-- [ ] Run RED integration checks for schema/write/publication failure, idempotent fingerprint and native isolation.
-- [ ] Persist native records only after schema gate, upsert source versions, journal truthful outcomes and queue publication only after successful writes; preserve #270/#268 paths.
-- [ ] Run full prebuild/data-pipeline, typecheck, focused lint, disposablePG and live source-only validations.
+- [x] Run RED integration checks for schema/write/publication failure, idempotent fingerprint and native isolation.
+- [x] Persist native records only after schema gate, upsert source versions, journal truthful outcomes and queue publication only after successful writes; preserve #270/#268 paths.
+- [x] Run full prebuild/data-pipeline, typecheck, focused lint, disposablePG and live source-only validations.
 - [ ] Obtain independent read-only whole-branch review; fix material findings with reproductions.
 - [ ] Push and create/attach PR targeting db-foundation; report supported/pending sources and checks, no merge.

@@ -1,0 +1,54 @@
+{
+  "IBN": {
+    "2026-03-31": {
+      "total_income": 3121183593000,
+      "profit_loss": 579362507000,
+      "profit_loss_attributable_to_owners": 542077028000,
+      "total_assets": 29144979720000,
+      "operating_cash_flow": 673254189000,
+      "cash_and_equivalents": 2649807233000,
+      "basic_eps": 75.89
+    },
+    "2025-03-31": {
+      "total_income": 2945869343000,
+      "profit_loss": 545693756000,
+      "profit_loss_attributable_to_owners": 510291955000,
+      "total_assets": 26422414134000,
+      "operating_cash_flow": 1228052582000,
+      "cash_and_equivalents": 2140234637000,
+      "basic_eps": 72.41
+    }
+  },
+  "HMRZF": {
+    "2025-11-30": {
+      "revenue": 228285000000,
+      "profit_loss": 12085000000,
+      "profit_loss_attributable_to_owners": 12158000000,
+      "total_assets": 170273000000,
+      "operating_cash_flow": 31120000000,
+      "weighted_average_shares": 1604033000
+    },
+    "2024-11-30": {
+      "revenue": 234478000000,
+      "profit_loss": 11584000000,
+      "total_assets": 180214000000,
+      "operating_cash_flow": 31756000000
+    }
+  },
+  "HKHHF": {
+    "2025-12-31": {
+      "revenue": 34257000000,
+      "profit_loss": 2138000000,
+      "profit_loss_attributable_to_owners": 952000000,
+      "total_assets": 53474000000,
+      "operating_cash_flow": 5012000000,
+      "weighted_average_shares": 281111034
+    },
+    "2024-12-31": {
+      "revenue": 35955000000,
+      "profit_loss": 1161000000,
+      "total_assets": 53475000000,
+      "operating_cash_flow": 5503000000
+    }
+  }
+}

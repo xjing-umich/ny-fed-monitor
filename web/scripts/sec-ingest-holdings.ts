@@ -105,7 +105,7 @@ async function main() {
   const pending=(await readFundamentalQueue(db)).filter(r=>r.pending).map(r=>r.ticker);
   if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `changed_tickers=${JSON.stringify(pending)}\n`);
   console.log(`Financial page refresh candidates: ${pending.length}`);
-  if (summary.failed || summary.unresolved || summary.source_pending) throw new Error(`Fundamentals incomplete: ${summary.failed} failed, ${summary.unresolved} unresolved`);
+  if (summary.failed || summary.unresolved || summary.source_pending) throw new Error(`Fundamentals incomplete: ${summary.failed} failed, ${summary.unresolved} unresolved, ${summary.source_pending} official-source adapters pending`);
 }
 
 main().catch((e) => {

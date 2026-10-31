@@ -56,3 +56,36 @@ select ticker, period_end, reporting_currency, revenue, profit_loss,
 from public.sec_native_financial_periods
 order by ticker, period_end desc, filing_date desc;
 ```
+
+## Remaining alternate-source issuers (audited 2026-10-31)
+
+Five operating issuers have stable alternate official channels. They remain in the corporate holdings universe; no holdings, prices, security type or ADS ratio is changed.
+
+| Ticker | Actual source | This adapter's outcome |
+|---|---|---|
+| IBN | Latest SEC20-F HTML, primary consolidated Indian-GAAP tables | Two native INR annual periods, FY2026/FY2025; bank total income is kept separate from ordinary revenue. |
+| HMRZF | Latest official annual ESEF ZIP, source LEI and fiscal year validated | Two native IFRS/SEK annual periods, FY2025/FY2024 ending November30. |
+| HKHHF | Latest annual inline viewer linked by Heineken Holding's official index | Two native IFRS/EUR annual periods, FY2025/FY2024. Classified official viewer copy, not formal ESEF; Holding parent-owner profit and share basis retained. |
+| OZK | [FDIC corporate filings, certificate110](https://securitiesfilings.fdicconnect.fdic.gov/api/instflng/cert/110) | `source_pending`, `official_pdf_adapter_pending`. Current formal10-Q is Q2 filed2026-08-05; Q3 8-K2026-10-20 has no CFO statement. FDIC Call Reports are not a substitute for the listed consolidated issuer. |
+| TRMLF | [Official Tourmaline reports](https://www.tourmalineoil.com/investors/financial-reports) | `source_pending`, `official_pdf_adapter_pending`. Latest complete interim is2026Q2; CMS dates are not filing/publication dates. Ordinary CUSIP89156V106 must not become TRMOY ADR units. |
+
+Apply `web/supabase/migrations/20261031_official_financial_periods.sql` before enabling the three new structured-source writers. The private `official_financial_periods` table preserves source versions by `(ticker,source_document_id,period_end)`, original accounting basis/currency, consolidated scope and ordinary-share basis, document SHA/URL, actual verified publication date (nullable when unverified), retrieval timestamp and raw per-field evidence. It is separate from both legacy USD tables and the audited BMM/NICM `sec_native_financial_periods` table. `valuation_eligible=false` is enforced in the database.
+
+From `web/` with SEC_USER_AGENT configured, `npm run sec:ingest -- IBN --dry-run` (and HMRZF/HKHHF) fetches original sources without DB writes. With the migration deployed and normal service credentials, omit `--dry-run` to persist. This PR does not apply production DDL or backfill production data.
+
+Known alternate routes use their actual channels rather than probing missing companyfacts on every run. IBN selects the latest20-F independently of6-K volume and rejects a newer unsupported amendment. European discovery selects the latest annual year from official source links; a newer annual PDF without a supported original causes failure, not a stale fallback. ESEF downloads/extraction are bounded (24MB archive /48MB report); only one report XHTML is accepted. Issuer/LEI, namespace, currency, numeric transformation/scale, dimensions, dates and duplicate facts/IDs are checked before writing.
+
+OZK/TRMLF's pending state is **not success or exclusion**: journals use `source_pending`, batch summaries show a separate count, resume never skips them as completed, and CLI/batch exit nonzero until their PDF adapters exist. Ingestion HTTP endpoints report409 for known pending adapters and500 for actual failures. They perform no companyfacts/submission retry, financial mutation or publication. Actual source HTTP failures, unknown SEC404s and DB/publication failures retain ordinary failed outcomes.
+
+The three supported sources report `quality_status=native_currency`, two `saved.native_annual_periods`, zero USD annual/quarterly rows and explicit valuation blockers. Latest interim/TTM, historical FX, IBN ADS conversion and security/owner normalization remain unintegrated. Original publication dates are not inferred from archive URLs or CMS metadata. Retrieval timestamps do not change financial fingerprints or enqueue duplicate page refreshes.
+
+Source provenance and deterministic examples: `web/src/lib/sec/official-financials/fixtures/README.md`. Latest source observations can be inspected without relabeling currency:
+
+```sql
+select distinct on (ticker,period_end)
+       ticker,period_start,period_end,reporting_currency,accounting_basis,
+       metrics,source_kind,source_url,source_published_at,valuation_eligible
+from public.official_financial_periods
+order by ticker,period_end desc,source_report_period_end desc,
+         source_published_at desc nulls last,source_retrieved_at desc;
+```

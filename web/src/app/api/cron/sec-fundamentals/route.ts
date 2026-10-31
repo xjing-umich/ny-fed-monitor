@@ -1,3 +1,4 @@
+import { financialIngestHttpStatus } from "@/lib/sec/ingestOutcome";
 import { publishFinancialPages } from "@/lib/sec/publishPages";
 import { getDb } from "@/lib/managers/db";
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
@@ -17,5 +18,5 @@ export async function GET(request: Request): Promise<Response> {
   if (!hasSupabaseEnv()) return databaseNotConfigured("sec-fundamentals");
   const summary = await ingestAllCompanies();
   await publishFinancialPages(getDb());
-  return Response.json(summary);
+  return Response.json(summary, { status: financialIngestHttpStatus(summary) });
 }

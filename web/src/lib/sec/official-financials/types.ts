@@ -6,7 +6,7 @@ export type SourceRoute = {
   landing_url: string; source_description: string; audited_at: string;
 };
 export type FieldEvidence = {
-  value: number; unit: string; raw_value: string; scale: number;
+  value: number; unit: string; raw_value: string; scale: number; reported_scale?: number;
   source_label: string; source_locator: string;
   context_id?: string; concept?: string; transformation?: string;
 };
@@ -19,7 +19,7 @@ export type OfficialFinancialPeriod = AnnualSourcePeriod & {
   reporting_currency: SourceRoute["currency"]; accounting_basis: SourceRoute["accounting_basis"];
   source_kind: "sec_20f_html" | "official_esef" | "official_inline_viewer_copy";
   source_document_id: string; source_url: string; source_landing_url: string;
-  source_accession: string | null; source_published_at: string; source_report_period_end: string;
+  source_accession: string | null; source_published_at: string | null; source_report_period_end: string;
   source_sha256: string; source_retrieved_at: string;
   consolidation_scope: "consolidated"; share_basis: "issuer_ordinary";
   valuation_eligible: false; valuation_blockers: string[];

@@ -4,6 +4,13 @@ const root = path.resolve(__dirname, "..");
 const checks = [
   "src/lib/securities/identity.check.ts",
   "src/lib/sec/operating-universe.check.ts",
+  "src/lib/sec/official-financials/registry.check.ts",
+  "src/lib/sec/official-financials/pending.check.ts",
+  "src/lib/sec/official-financials/ibn.check.ts",
+  "src/lib/sec/official-financials/inline.check.ts",
+  "src/lib/sec/official-financials/source.check.ts",
+  "src/lib/sec/official-financials/ingest.check.ts",
+  "src/lib/sec/official-financials/http-outcome.check.ts",
   "src/lib/sec/native-financials.check.ts",
   "src/lib/sec/native-ingest.check.ts",
   "scripts/lib/writeFailures.check.ts",
