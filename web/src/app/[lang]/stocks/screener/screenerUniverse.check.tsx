@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ScreenerPage } from "./_screenerPage";
 import { readConvictionScreen } from "@/lib/valuation/valuationSnapshot";
 
+import { projectPublicationFixture, publicationFixture } from "../../../../../scripts/tests/publication-fixture";
+import { PublicationUnavailableError } from "@/lib/valuation/publishedRead";
 import { VALUATION_MODEL_VERSION } from "@/lib/valuation/modelVersion";
 
 const expectations = { assessable: false as const, reason: "fixture" };
@@ -41,8 +43,8 @@ async function main() {
     assert.equal(url.origin, "http://127.0.0.1:54321", "禁止访问外部服务");
     requests.push(url);
     const table = url.pathname.split("/").at(-1);
-    assert.ok(table === "valuation_snapshot" || table === "consensus_holdings");
-    let rows: Record<string, unknown>[] = table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined] : [...holdings];
+    assert.ok(table === "tracking_securities" || table === "consensus_holdings");
+    let rows: Record<string, unknown>[] = table === "tracking_securities" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined].map((row,index)=>projectPublicationFixture(publicationFixture(row,index+1),url.searchParams.get("select"))) : [...holdings];
     const tickerFilter = url.searchParams.getAll("ticker").find(f=>f.startsWith("in.("));
     const tickerKeys = tickerFilter?.startsWith("in.(") ? tickerFilter.slice(4, -1).split(",") : null;
     for (const [field, filter] of url.searchParams) {
@@ -55,9 +57,9 @@ async function main() {
       return new Response(null, { headers: { "content-range": `*/${rows.length}` } });
     }
     const from = Number(url.searchParams.get("offset") ?? 0);
-    if ((broken === "snapshot-page" && table === "valuation_snapshot" && !tickerKeys && from >= 1000)
+    if ((broken === "snapshot-page" && table === "tracking_securities" && !tickerKeys && from >= 1000)
       || (broken === "holder-join" && table === "consensus_holdings" && tickerKeys?.includes("CROWD"))
-      || (broken === "snapshot-join" && table === "valuation_snapshot" && tickerKeys?.includes("CHEAP"))) {
+      || (broken === "snapshot-join" && table === "tracking_securities")) {
       return Response.json({ code: "TEST", message: "expected page/batch failure" }, { status: 500 });
     }
     const order = url.searchParams.get("order")?.split(",") ?? [];
@@ -95,21 +97,21 @@ async function main() {
     assert.ok(!conviction.includes("SOLO") && !conviction.includes("NOQ") && !conviction.includes("BAD") && !conviction.includes("ZEROP"), "低共识/缺快照/异常值均剔除");
     const projected = await readConvictionScreen();
     assert.deepEqual(projected.rows.find((r) => r.ticker === "CHEAP")?.expectations, expectations, "JSON 子字段投影保留原来的预期数据");
-    assert.equal(projected.rows.find((r) => r.ticker === "CROWD")?.expectations, undefined, "没有预期字段时沿用 undefined");
+    assert.deepEqual(projected.rows.find((r) => r.ticker === "CROWD")?.expectations, expectations, "同次 presentation 保留明确的未评估原因");
     assert.ok(requests.some((u) => Number(u.searchParams.get("offset")) >= 1000), "实际跨过 1000 行服务端上限");
     for (const request of requests) {
       const keys = request.searchParams.get("ticker");
       if (keys?.startsWith("in.(")) assert.ok(keys.slice(4, -1).split(",").length <= 100, "IN 查询分批,避免超长 URL 和单次截断");
-      if (request.searchParams.has("offset")) assert.match(request.searchParams.get("order") ?? "", /(?:^|,)ticker\./, "分页排序以唯一 ticker 保证稳定");
+      if (request.searchParams.has("offset")) assert.match(request.searchParams.get("order") ?? "", /(?:^|,)(?:ticker|identity_key)\./, "分页排序以唯一身份键保证稳定");
     }
 
     console.error = () => {}; // 以下为预期故障;断言页面结果,不把日志输出当作测试成功。
     broken = "snapshot-page";
-    assert.ok(!(await page("all")).includes("T0000"), "后续快照页失败不返回半张榜单");
+    await assert.rejects(page("all"),PublicationUnavailableError,"后续页故障显式抛出，不伪造半张榜单");
     broken = "holder-join";
-    assert.ok(!(await page("all", "holders")).includes("T0000"), "持有人批次失败不拿残缺计数排序");
+    await assert.rejects(page("all","holders"),PublicationUnavailableError,"持有人批次失败不拿残缺计数排序");
     broken = "snapshot-join";
-    assert.ok(!(await page("conviction")).includes("T0000"), "估值 join 批次失败不返回半张共识榜");
+    await assert.rejects(page("conviction"),PublicationUnavailableError,"估值读取失败不返回半张共识榜");
   } finally {
     globalThis.fetch = savedFetch;
     console.error = savedError;

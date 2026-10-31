@@ -1,13 +1,11 @@
-import { QUARANTINED_TICKERS_SQL } from "../securities/securityIdentity";
-import { VALUATION_MODEL_VERSION } from "./modelVersion";
 import "server-only";
 import { cache } from "react";
-import { hasSupabaseEnv, getDb, withRetry, selectAllPages } from "@/lib/managers/db";
+import { getDb, withRetry } from "../managers/db";
+import { readPublicValuationSummaries, readAllPublicValuationSummaries, PublicationUnavailableError, type PublishedValuation, type PublishedValuationSummary } from "./publishedRead";
 import type { VerdictBucket, VerdictCoverage } from "./deriveValuationVerdict";
-import { isImplausibleBand } from "./deriveValuationVerdict";
 import type { ValuationMethods } from "./deriveValuationMethods";
 import type { ExpectationsAssessment, MoatCapAssessment } from "./types";
-import { deriveFusionSignal, CONSENSUS_MIN } from "@/lib/managers/fusionSignal";
+import { deriveFusionSignal, CONSENSUS_MIN } from "../managers/fusionSignal";
 
 export type SnapshotVerdict = {
   ticker: string;
@@ -26,231 +24,19 @@ export type SnapshotVerdict = {
   methods?: ValuationMethods;
 };
 
-type Row = {
-  ticker: string;
-  verdict_bucket: string;
-  in_strike_zone: boolean;
-  range_lo: number;
-  range_hi: number;
-  price: number;
-  price_date: string | null;
-  margin_pct: number | null;
-  coverage: string;
-  reliable: boolean;
-  computed_at: string;
-  payload?: {
-    model_version?: string;
-    assessment_status?: "valid" | "invalidated";
-    expectations?: ExpectationsAssessment;
-    moatCap?: MoatCapAssessment;
-    methods?: ValuationMethods;
-  } | null;
-};
-
-/**
- * 批量读估值快照(投资人页持仓表用)。key=ticker 大写。
- * 关键:任何异常都**优雅返回空 Map,绝不抛**——投资人页是核心 SEO 页,
- * 估值叠加是增益而非命脉。无 env / 表未迁移(42P01)/ 查询出错 / 空入参 → 空 Map,
- * 页面降级为无徽章无精选条。新鲜快照由 scripts/valuation-ingest.ts 周期写入。
- */
-export const readValuationVerdicts = cache(
-  async (tickers: string[]): Promise<Map<string, SnapshotVerdict>> => {
-    const out = new Map<string, SnapshotVerdict>();
-    const keys = Array.from(new Set(tickers.map((t) => t.toUpperCase()).filter(Boolean)));
-    if (keys.length === 0 || !hasSupabaseEnv()) return out;
-    try {
-      const { data, error } = await withRetry(() =>
-        getDb().from("valuation_snapshot").select("*").eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL).in("ticker", keys),
-      );
-      if (error) {
-        // 42P01 = 原生 postgres "undefined table"；PGRST205 = PostgREST 在 schema cache 找不到表。
-        // 二者都意味"表未迁移"，属预期降级态(部署后、跑 migration 前)，静默；其余错误才上报。
-        const code = (error as { code?: string }).code;
-        if (code !== "42P01" && code !== "PGRST205")
-          console.error(`readValuationVerdicts 失败: ${(error as Error).message}`);
-        return out;
-      }
-      for (const r of (data ?? []) as Row[]) {
-        const v: SnapshotVerdict = {
-          ticker: r.ticker.toUpperCase(),
-          bucket: r.verdict_bucket as VerdictBucket,
-          inStrikeZone: r.in_strike_zone,
-          rangeLo: Number(r.range_lo),
-          rangeHi: Number(r.range_hi),
-          price: Number(r.price),
-          priceDate: r.price_date ?? "",
-          marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
-          coverage: r.coverage as VerdictCoverage,
-          reliable: r.reliable ?? true,
-          computedAt: r.computed_at,
-          expectations: r.payload?.expectations,
-          moatCap: r.payload?.moatCap,
-          methods: r.payload?.methods,
-        };
-        // 读层防御:坏数据行(价值带与现价严重脱节 / >80% 假安全边际)不发徽章 → 该行降级 "—"
-        // (覆盖诚实),与 screener 各视图统一过 isImplausibleBand 同口径(即便快照尚有旧脏行)。
-        // single_lamp / reliable=false 非脏数据,保留 —— 徽章分别以 * 与 ⚠ 诚实标注。
-        if (isImplausibleBand(v)) continue;
-        out.set(v.ticker, v);
-      }
-      return out;
-    } catch (err) {
-      console.error(`readValuationVerdicts 异常: ${err instanceof Error ? err.message : String(err)}`);
-      return out;
-    }
-  },
-);
-
 export type BargainVerdict = { inStrikeZone: boolean; marginPct: number; priceDate: string };
-
-/**
- * 读"便宜"票(击球区 或 低于内在价值, reliable)的按-ticker map, 供 /stocks 列表高亮稀有便宜。
- * 行数有界(击球区 + 低于价值, 去重后 ≤~110), 无 IN 巨列表 → 无 URL 超长风险。
- * 前景闸: reliable(SQL) + (inStrikeZone||below)(SQL) + marginPct>0(JS) + !isImplausibleBand(JS),
- * 与 readValuationVerdicts / stocks/[ticker] marginShown 同源。
- * 任何异常/表未迁移(42P01/PGRST205)→ 空 Map 优雅降级(列表零标记, 不抛)。
- */
-export const readBargainVerdicts = cache(
-  async (): Promise<Map<string, BargainVerdict>> => {
-    const out = new Map<string, BargainVerdict>();
-    if (!hasSupabaseEnv()) return out;
-    const isMissingTable = (e: unknown) => {
-      const code = (e as { code?: string }).code;
-      return code === "42P01" || code === "PGRST205";
-    };
-    try {
-      const { data, error } = await withRetry(() =>
-        getDb()
-          .from("valuation_snapshot")
-          .select("ticker,range_lo,range_hi,price,margin_pct,in_strike_zone,verdict_bucket,price_date")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
-          .eq("reliable", true)
-          .or("in_strike_zone.eq.true,verdict_bucket.eq.below")
-          .limit(500),
-      );
-      if (error) {
-        if (!isMissingTable(error))
-          console.error(`readBargainVerdicts 失败: ${(error as Error).message}`);
-        return out;
-      }
-      for (const r of (data ?? []) as Record<string, unknown>[]) {
-        const marginPct = r.margin_pct == null ? null : Number(r.margin_pct);
-        if (marginPct == null || marginPct <= 0) continue;
-        if (
-          isImplausibleBand({
-            rangeLo: Number(r.range_lo),
-            rangeHi: Number(r.range_hi),
-            price: Number(r.price),
-            marginPct,
-          })
-        )
-          continue;
-        out.set(String(r.ticker).toUpperCase(), {
-          inStrikeZone: Boolean(r.in_strike_zone),
-          marginPct,
-          priceDate: r.price_date == null ? "" : String(r.price_date),
-        });
-      }
-      return out;
-    } catch (err) {
-      console.error(`readBargainVerdicts 异常: ${err instanceof Error ? err.message : String(err)}`);
-      return out;
-    }
-  },
-);
 
 export type StrikeLeader = {
   ticker: string;
   rangeLo: number;
   rangeHi: number;
   marginPct: number | null;
-  /** 估值所用收盘价(快照 price),用于反推内在价值。 */
+  /** 估值所用收盘价；内在价值从统一契约直接读取。 */
   price: number;
   computedAt: string;
   /** 估值所用收盘价日期(快照 price_date);页面据此标"估值截至"。 */
   priceDate: string;
 };
-
-/**
- * 取"现在落在 strike zone"的全表总数 + 安全边际最高的 Top N(首页值不值腿用)。
- * total = 已确认(reliable);pending = 击球区但待确认(reliable=false,screener 全部视图里标
- * "Strike zone · pending" 的那些)。两数分开给,页面不再只报 19 却在表里出现 31 个击球区标签。
- * 同样优雅降级:无 env / 表未迁移(42P01 / PGRST205)/ 出错 → { total:0, pending:0, leaders:[] },绝不抛。
- */
-export const readStrikeZoneLeaders = cache(
-  async (limit: number): Promise<{ total: number; pending: number; leaders: StrikeLeader[] }> => {
-    const empty = { total: 0, pending: 0, leaders: [] as StrikeLeader[] };
-    if (!hasSupabaseEnv()) return empty;
-    const isMissingTable = (e: unknown) => {
-      const code = (e as { code?: string }).code;
-      return code === "42P01" || code === "PGRST205";
-    };
-    try {
-      // 计数与 leaders 只认可靠(reliable)的 —— 与 /stocks/screener strike_zone 视图同一信心闸:
-      // 带红旗(周期峰值/高杠杆/模型不稳/per-share 疑错)不据此标"落在 strike zone"。single_lamp
-      // 单法但无红旗仍算数(OE-DCF 对多数深折价名算不出值,若强求两法夹逼会把 tab 架空成几乎为空;
-      // 见 [[valuation-broad-universe-guardrails]] 的口径修订)。(head 计数无法过 isImplausibleBand,
-      // 可能仍含极少脏行;重跑 valuation:ingest 清表后彻底干净。)
-      const countWhere = (reliable: boolean) =>
-        withRetry(() =>
-          getDb()
-            .from("valuation_snapshot")
-            .select("ticker", { count: "exact", head: true })
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
-            .eq("in_strike_zone", true)
-            .eq("reliable", reliable),
-        );
-      const [{ count, error: cErr }, { count: pendingCount }] = await Promise.all([countWhere(true), countWhere(false)]);
-      if (cErr) {
-        if (!isMissingTable(cErr))
-          console.error(`readStrikeZoneLeaders count 失败: ${(cErr as Error).message}`);
-        return empty;
-      }
-      // 多取一些再过滤:坏数据行(假高边际)按 margin DESC 恰会浮到榜首,故 limit 行可能全是脏行;
-      // 取 limit 的数倍、读层过 isImplausibleBand 后再截断,保证首页榜呈现干净的 Top N。
-      const overscan = Math.max(limit * 5, 20);
-      const { data, error } = await withRetry(() =>
-        getDb()
-          .from("valuation_snapshot")
-          .select("ticker,range_lo,range_hi,price,margin_pct,computed_at,price_date")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
-          .eq("in_strike_zone", true)
-          .eq("reliable", true)
-          .order("margin_pct", { ascending: false })
-          .limit(overscan),
-      );
-      if (error) {
-        if (!isMissingTable(error))
-          console.error(`readStrikeZoneLeaders 失败: ${(error as Error).message}`);
-        return empty;
-      }
-      const leaders: StrikeLeader[] = (data ?? [])
-        .filter(
-          (r: Record<string, unknown>) =>
-            !isImplausibleBand({
-              rangeLo: Number(r.range_lo),
-              rangeHi: Number(r.range_hi),
-              price: Number(r.price),
-              marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
-            }),
-        )
-        .slice(0, limit)
-        .map((r: Record<string, unknown>) => ({
-          ticker: String(r.ticker).toUpperCase(),
-          rangeLo: Number(r.range_lo),
-          rangeHi: Number(r.range_hi),
-          marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
-          price: Number(r.price),
-          computedAt: String(r.computed_at),
-          priceDate: r.price_date == null ? "" : String(r.price_date),
-        }));
-      return { total: count ?? leaders.length, pending: pendingCount ?? 0, leaders };
-    } catch (err) {
-      console.error(`readStrikeZoneLeaders 异常: ${err instanceof Error ? err.message : String(err)}`);
-      return empty;
-    }
-  },
-);
 
 export type ScreenView = "strike_zone" | "below" | "all" | "conviction";
 
@@ -271,222 +57,59 @@ export type ScreenerRow = {
   expectations?: ExpectationsAssessment;
 };
 
-type ScreenHolding = { ticker: string; issuer: string | null; holder_count: number | null };
-type ScreenSnapshot = Row & { expectations?: ExpectationsAssessment | null };
-
-/** 按主键关联全量候选:每批最多 100 个 ticker,避免超长 URL 或 PostgREST 单次行数截断。
- * 任一批失败就丢弃整次结果,不拿部分持有人数/估值生成残缺榜单。 */
-async function readScreenJoin<T>(
-  tickers: string[],
-  query: (batch: string[]) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
-): Promise<{ data: T[]; error: { message: string } | null }> {
-  const data: T[] = [];
-  for (let from = 0; from < tickers.length; from += 100) {
-    const { data: batch, error } = await withRetry(() => query(tickers.slice(from, from + 100)));
-    if (error) return { data: [], error };
-    data.push(...(batch ?? []));
-  }
-  return { data, error: null };
+/** Compatibility surface: every value is paired with the presentation from its own publication. */
+function snapshot(value: PublishedValuation | PublishedValuationSummary): SnapshotVerdict {
+  const r=value.record;
+  const p="presentation" in value ? value.presentation : value;
+  const moatCap="presentation" in value ? value.presentation.oeDcf?.moatCap : value.moatCap;
+  return {ticker:r.identity.ticker,bucket:p.verdict!.bucket,inStrikeZone:p.verdict!.inStrikeZone,
+    rangeLo:r.rangeLo!,rangeHi:r.rangeHi!,price:r.price!,priceDate:r.priceDate!,marginPct:r.marginPct,
+    coverage:p.verdict!.coverage,reliable:r.status === "valid",computedAt:r.computedAt,
+    expectations:p.expectations,moatCap,methods:p.methods};
 }
+export const readValuationVerdicts = cache(async (tickers:string[]):Promise<Map<string,SnapshotVerdict>> =>
+  new Map([...(await readPublicValuationSummaries(tickers))].map(([ticker,value])=>[ticker,snapshot(value)])));
 
-/**
- * 估值 screener 数据(/stocks/screener 用)。两查询 join:
- *   ① valuation_snapshot 按 view 过滤 + margin_pct DESC(NULLS LAST)
- *   ② consensus_holdings 批量补 issuer + holder_count(单查询, 零 per-ticker 扇出)
- * strikeTotal / strikePending = 全表击球区已确认 / 待确认计数(与 view 无关, 供顶部句)。
- * 优雅降级:无 env / 表缺(42P01/PGRST205)/ 出错 → 空结果, 绝不抛。
- */
-export const readValuationScreen = cache(
-  async (
-    view: ScreenView,
-  ): Promise<{ rows: ScreenerRow[]; strikeTotal: number; strikePending: number; computedAt: string | null }> => {
-    const empty = { rows: [] as ScreenerRow[], strikeTotal: 0, strikePending: 0, computedAt: null as string | null };
-    if (!hasSupabaseEnv()) return empty;
-    const isMissingTable = (e: unknown) => {
-      const code = (e as { code?: string }).code;
-      return code === "42P01" || code === "PGRST205";
-    };
-    try {
-      // ① strike-zone 全表计数(顶部句)。只数可靠(reliable)的 —— 与下方视图口径一致:
-      // 带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)不足以认定"落在 strike zone"。
-      // single_lamp 单法但无红旗仍计入(不强求两法夹逼,见下 ②)。
-      const countWhere = (reliable: boolean) =>
-        withRetry(() =>
-          getDb()
-            .from("valuation_snapshot")
-            .select("ticker", { count: "exact", head: true })
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
-            .eq("in_strike_zone", true)
-            .eq("reliable", reliable),
-        );
-      const [{ count, error: cErr }, { count: pendingCount }] = await Promise.all([countWhere(true), countWhere(false)]);
-      if (cErr && !isMissingTable(cErr)) console.error(`readValuationScreen count 失败: ${(cErr as Error).message}`);
-      const strikeTotal = cErr ? 0 : count ?? 0;
-      const strikePending = pendingCount ?? 0;
-
-      // ② 主查询(thunk 内重建 builder)。strike_zone/below 视图的信心闸 = reliable=true:
-      // 位置可算但带红旗(周期峰值/高杠杆/模型不稳/per-share疑错)的不标便宜。不强求两法夹逼
-      // (coverage=full)—— OE-DCF 对多数深折价名算不出值,强求会把这两个视图架空成几乎为空;
-      // single_lamp 单法但无红旗的深折价名应当出现在这里(口径修订见 [[valuation-broad-universe-guardrails]])。
-      const runMain = () => {
-        let q = getDb()
-          .from("valuation_snapshot")
-          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
-          .order("margin_pct", { ascending: false, nullsFirst: false })
-          .order("ticker", { ascending: true });
-        // "便宜"视图(strike_zone/below)只要求 reliable=true:带红旗的不据此标便宜。
-        if (view === "strike_zone") q = q.eq("in_strike_zone", true).eq("reliable", true);
-        else if (view === "below") q = q.eq("verdict_bucket", "below").eq("reliable", true);
-        return q;
-      };
-      // 全量分页,而不是先取安全边际前 200:按持有人数排序和异常值过滤都必须覆盖全体。
-      const { data, error } = await selectAllPages<Row>(runMain);
-      if (error) {
-        if (!isMissingTable(error)) console.error(`readValuationScreen 失败: ${(error as Error).message}`);
-        return { ...empty, strikeTotal, strikePending };
-      }
-      const snapRows = (data ?? []) as Row[];
-      if (snapRows.length === 0) return { rows: [], strikeTotal, strikePending, computedAt: null };
-
-      // ③ join consensus_holdings 取 issuer + holder_count
-      const tickers = snapRows.map((r) => r.ticker.toUpperCase());
-      const holders = new Map<string, { issuer: string; holderCount: number }>();
-      const { data: hData, error: hErr } = await readScreenJoin<ScreenHolding>(tickers, (batch) =>
-        getDb().from("consensus_holdings").select("ticker,issuer,holder_count").in("ticker", batch),
-      );
-      if (hErr) {
-        if (!isMissingTable(hErr)) console.error(`readValuationScreen holders 失败: ${(hErr as Error).message}`);
-        return { ...empty, strikeTotal, strikePending };
-      } else {
-        for (const h of (hData ?? []) as { ticker: string; issuer: string | null; holder_count: number | null }[])
-          holders.set(h.ticker.toUpperCase(), { issuer: h.issuer ?? "", holderCount: h.holder_count ?? 0 });
-      }
-
-      const rows: ScreenerRow[] = snapRows.map((r) => {
-        const tk = r.ticker.toUpperCase();
-        const h = holders.get(tk);
-        return {
-          ticker: tk,
-          issuer: h?.issuer || tk,
-          bucket: r.verdict_bucket as VerdictBucket,
-          inStrikeZone: r.in_strike_zone,
-          rangeLo: Number(r.range_lo),
-          rangeHi: Number(r.range_hi),
-          price: Number(r.price),
-          priceDate: r.price_date ?? "",
-          marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
-          coverage: r.coverage as VerdictCoverage,
-          reliable: r.reliable ?? true,
-          computedAt: r.computed_at,
-          holderCount: h?.holderCount ?? 0,
-        };
-      })
-        // 读层防御:坏数据行(价值带与现价严重脱节)不进面 —— 即便快照尚有旧脏行(重跑 ingest 前)。
-        .filter((r) => !isImplausibleBand(r));
-      const computedAt = rows.reduce<string | null>(
-        (mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx),
-        null,
-      );
-      return { rows, strikeTotal, strikePending, computedAt };
-    } catch (err) {
-      console.error(`readValuationScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
-      return empty;
-    }
-  },
-);
-
-/**
- * conviction 视图:机构重仓宇宙(holder_count≥CONSENSUS_MIN)按估值吸引力排序(便宜置顶)。
- * 与 readValuationScreen 相反:先 consensus_holdings 筛高共识,再 join valuation_snapshot。
- * 便宜∩高共识票靠 deriveFusionSignal 自然浮顶(标注全集+排序,永不空页)。降级:表缺/无 env → 空,绝不抛。
- */
-export const readConvictionScreen = cache(
-  async (): Promise<{ rows: ScreenerRow[]; heldTotal: number; computedAt: string | null }> => {
-    const empty = { rows: [] as ScreenerRow[], heldTotal: 0, computedAt: null as string | null };
-    if (!hasSupabaseEnv()) return empty;
-    const isMissingTable = (e: unknown) => {
-      const code = (e as { code?: string }).code;
-      return code === "42P01" || code === "PGRST205";
-    };
-    try {
-      // ① 先读全体高共识票,不能只读持有人数前 200 再按估值排(会漏掉便宜票)。
-      const { data: hData, error: hErr } = await selectAllPages<ScreenHolding>(() =>
-        getDb()
-          .from("consensus_holdings")
-          .select("ticker,issuer,holder_count")
-          .gte("holder_count", CONSENSUS_MIN)
-          .order("holder_count", { ascending: false })
-          .order("ticker", { ascending: true }),
-      );
-      if (hErr) {
-        if (!isMissingTable(hErr)) console.error(`readConvictionScreen holders 失败: ${(hErr as Error).message}`);
-        return empty;
-      }
-      const held = (hData ?? []) as { ticker: string; issuer: string | null; holder_count: number | null }[];
-      if (held.length === 0) return empty;
-      const tickers = held.map((h) => h.ticker.toUpperCase());
-      const holderOf = new Map(tickers.map((tk, i) => [tk, held[i].holder_count ?? 0] as const));
-      const issuerOf = new Map(tickers.map((tk, i) => [tk, held[i].issuer ?? ""] as const));
-
-      // ② join valuation_snapshot
-      const { data: sData, error: sErr } = await readScreenJoin<ScreenSnapshot>(tickers, async (batch) => {
-        const { data, error } = await getDb()
-          .from("valuation_snapshot")
-          // 只投影所需的预期字段,不把整份估值 payload 随全量候选一起读回。
-          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at,expectations:payload->expectations")
-            .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
-          .in("ticker", batch);
-        // PostgREST 把 JSON 投影推导为 Json;业务形状与既有 payload.expectations 相同。
-        return { data: data as ScreenSnapshot[] | null, error };
-      });
-      if (sErr) {
-        if (!isMissingTable(sErr)) console.error(`readConvictionScreen snapshot 失败: ${(sErr as Error).message}`);
-        // 快照查询报错 → 无行可显,heldTotal 也归 0(与空表一致,不让顶部句报"N 只"却空表)
-        return empty;
-      }
-      const snapOf = new Map<string, ScreenSnapshot>();
-      for (const r of sData) snapOf.set(r.ticker.toUpperCase(), r);
-
-      const rows: ScreenerRow[] = tickers
-        // 无快照匹配的高共识票绝不伪造估值——直接丢弃,而非拿 above/$0/none 兜底
-        .flatMap((tk): ScreenerRow[] => {
-          const r = snapOf.get(tk);
-          if (!r) return [];
-          const hc = holderOf.get(tk) ?? 0;
-          return [
-            {
-              ticker: tk,
-              issuer: issuerOf.get(tk) || tk,
-              bucket: r.verdict_bucket as VerdictBucket,
-              inStrikeZone: r.in_strike_zone,
-              rangeLo: Number(r.range_lo),
-              rangeHi: Number(r.range_hi),
-              price: Number(r.price),
-              priceDate: r.price_date ?? "",
-              marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
-              coverage: r.coverage as VerdictCoverage,
-              reliable: r.reliable ?? true,
-              computedAt: r.computed_at,
-              holderCount: hc,
-              expectations: r.expectations ?? undefined,
-            },
-          ];
-        })
-        // 坏数据行(价值带与现价严重脱节)不进面
-        .filter((r) => !isImplausibleBand(r))
-        // 按估值吸引力排序:便宜∩高共识置顶
-        .sort(
-          (a, b) =>
-            deriveFusionSignal({ holderCount: a.holderCount, verdict: a }).attractivenessRank -
-            deriveFusionSignal({ holderCount: b.holderCount, verdict: b }).attractivenessRank,
-        );
-      const computedAt = rows.reduce<string | null>((mx, r) => (mx == null || r.computedAt > mx ? r.computedAt : mx), null);
-      // heldTotal 改口径为「实际展示行数」(有真快照的高共识票),别再报原始高共识票数——避免"N stocks held"文案对不上表格实际行数
-      return { rows, heldTotal: rows.length, computedAt };
-    } catch (err) {
-      console.error(`readConvictionScreen 异常: ${err instanceof Error ? err.message : String(err)}`);
-      return empty;
-    }
-  },
-);
+export const readBargainVerdicts = cache(async ():Promise<Map<string,BargainVerdict>> => {
+  const out=new Map<string,BargainVerdict>();
+  for (const value of (await readAllPublicValuationSummaries()).values()) {
+    const v=snapshot(value);
+    if (v.reliable && (v.inStrikeZone || v.bucket === "below") && v.marginPct != null && v.marginPct>0)
+      out.set(v.ticker,{inStrikeZone:v.inStrikeZone,marginPct:v.marginPct,priceDate:v.priceDate});
+  }
+  return out;
+});
+function marginSort(a:SnapshotVerdict,b:SnapshotVerdict):number {
+  return (b.marginPct ?? -Infinity)-(a.marginPct ?? -Infinity) || a.ticker.localeCompare(b.ticker);
+}
+function strikeCounts(values:SnapshotVerdict[]) {
+  return {total:values.filter(v=>v.inStrikeZone && v.reliable).length,pending:values.filter(v=>v.inStrikeZone && !v.reliable).length};
+}
+export const readStrikeZoneLeaders = cache(async (limit:number):Promise<{total:number;pending:number;leaders:StrikeLeader[]}> => {
+  const values=[...(await readAllPublicValuationSummaries()).values()].map(snapshot);
+  return {...strikeCounts(values),leaders:values.filter(v=>v.inStrikeZone && v.reliable).sort(marginSort).slice(0,Math.max(0,limit))};
+});
+async function holders(tickers:string[]):Promise<Map<string,{issuer:string;holderCount:number}>> {
+  const out=new Map<string,{issuer:string;holderCount:number}>();
+  for (let from=0;from<tickers.length;from+=100) {
+    const {data,error}=await withRetry(()=>getDb().from("consensus_holdings").select("ticker,issuer,holder_count").in("ticker",tickers.slice(from,from+100)));
+    if (error) throw new PublicationUnavailableError("database_unavailable",error.message);
+    for (const row of data ?? []) out.set(row.ticker.toUpperCase(),{issuer:row.issuer ?? row.ticker,holderCount:row.holder_count ?? 0});
+  }
+  return out;
+}
+function newest(rows:SnapshotVerdict[]):string|null {return rows.reduce<string|null>((date,row)=>!date || row.computedAt>date ? row.computedAt : date,null);}
+export const readValuationScreen = cache(async (view:ScreenView):Promise<{rows:ScreenerRow[];strikeTotal:number;strikePending:number;computedAt:string|null}> => {
+  const values=[...(await readAllPublicValuationSummaries()).values()].map(snapshot);
+  const counts=strikeCounts(values);
+  const filtered=values.filter(v=>view === "strike_zone" ? v.inStrikeZone && v.reliable : view === "below" ? v.bucket === "below" && v.reliable : true).sort(marginSort);
+  const holdings=await holders(filtered.map(v=>v.ticker));
+  const rows=filtered.map(v=>({...v,issuer:holdings.get(v.ticker)?.issuer ?? v.ticker,holderCount:holdings.get(v.ticker)?.holderCount ?? 0}));
+  return {rows,strikeTotal:counts.total,strikePending:counts.pending,computedAt:newest(rows)};
+});
+export const readConvictionScreen = cache(async ():Promise<{rows:ScreenerRow[];heldTotal:number;computedAt:string|null}> => {
+  const {rows:all}=await readValuationScreen("all");
+  const rows=all.filter(row=>row.holderCount>=CONSENSUS_MIN).sort((a,b)=>
+    deriveFusionSignal({holderCount:a.holderCount,verdict:a}).attractivenessRank-deriveFusionSignal({holderCount:b.holderCount,verdict:b}).attractivenessRank || marginSort(a,b));
+  return {rows,heldTotal:rows.length,computedAt:newest(rows)};
+});

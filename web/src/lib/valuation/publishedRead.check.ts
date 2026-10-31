@@ -1,0 +1,120 @@
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { buildTrackingRecord, type TrackingContext } from "./trackingContract";
+import { VALUATION_MODEL_VERSION } from "./modelVersion";
+import { runValuation, type RunValuationInput, type ValuationRun } from "./runValuation";
+import { fundamentalsToFloorInput } from "./fundamentalsToFloorInput";
+import { buildPublishedValuation } from "./publishedAdapter";
+import { readPublicValuations, readTrackingValuations, readValuationSafety, PublicationUnavailableError } from "./publishedRead";
+import { readStrikeZoneLeaders, readValuationScreen } from "./valuationSnapshot";
+
+async function main() {
+for (const key of ["SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_KEY", "SUPABASE_SERVICE_ROLE_KEY"]) delete process.env[key];
+await assert.rejects(readPublicValuations(["GOOG"]), PublicationUnavailableError);
+const today = new Date().toISOString().slice(0,10);
+const context: TrackingContext = {
+  identity: { key:"figi:BBG009S3NB30",ticker:"GOOG",figi:"BBG009S3NB30",cik:"0001652044",cusip:"02079K107",securityType:"Common Stock",source:"fixture",checkedAt:today },
+  modelVersion: VALUATION_MODEL_VERSION,currency:"USD",perShareBasis:"ordinary:split-none",priceSource:"fixture",
+  fundamentalAsOf:today,filedAt:today,computedAt:new Date().toISOString(),publishedAt:null,
+  nonPriceInputs:{fundamentals:{revenue:100},assumptions:{dgs10:4,date:today},shareBasis:{adsRatio:1}},sources:[{url:"https://www.sec.gov/fixture",asOf:today}],
+};
+const run: ValuationRun = {currency:"USD",floor:undefined,strikeZone:undefined,oeDcf:undefined,reconciliation:undefined,
+  expectations:{assessable:false,reason:"fixture"},methods:{zeroGrowthEpv:true,oeDcf:true,greenwaldGrowthCeilings:true},
+  verdict:{bucket:"below",coverage:"full",reliable:true,methods:{zeroGrowthEpv:true,oeDcf:true,greenwaldGrowthCeilings:true},rangeLo:60,rangeHi:120,price:50,priceDate:today,marginPct:.5,inStrikeZone:true,intrinsicValue:100,referenceValue:100,referenceKind:"oe_dcf_neutral",requiredMargin:.38,strikePrice:62}};
+const mapped = fundamentalsToFloorInput("GOOG","GOOG",[
+  {fiscal_period:"FY",fiscal_year:2025,period_end:"2025-12-31",shares_diluted:100,net_income:300,revenue:1000} as never,
+]);
+const input: RunValuationInput={floorInput:mapped,price:{close:50,date:today,currency:"USD",source:"fixture"},dgs10:{value:4,date:today},guards:{adsSuppressed:false,fundamentalsStale:false,priceStale:false,splitCoverageStale:false}};
+const provenance={...context,shareBasis:{adsRatio:1,latestSplitDate:null}};
+const mappedPublished=buildPublishedValuation(runValuation(input),input,provenance);
+assert(mappedPublished.record.inputHashes.fundamentals,"actual mapped optional fields must fingerprint");
+assert.throws(()=>buildPublishedValuation(run,{...input,floorInput:{...mapped,years:[{...mapped.years[0],revenue:NaN}]}},provenance),/finite/,
+  "nonfinite engine input must never normalize to null silently");
+const priced=buildPublishedValuation(run,{...input,price:{...input.price!,close:51}},provenance);
+assert.deepEqual(priced.record.inputHashes,mappedPublished.record.inputHashes,"quote does not pollute non-price fingerprints");
+const changedEvidence=buildPublishedValuation(run,{...input,floorInput:{...mapped,years:[{...mapped.years[0],revenue:1001}]}},provenance);
+assert.notEqual(changedEvidence.record.inputHashes.fundamentals,priced.record.inputHashes.fundamentals);
+const changedRate=buildPublishedValuation(run,{...input,dgs10:{value:4,date:"2026-01-01"}},provenance);
+assert.notEqual(changedRate.record.inputHashes.assumptions,priced.record.inputHashes.assumptions);
+const changedAds=buildPublishedValuation(run,input,{...provenance,shareBasis:{adsRatio:2,latestSplitDate:null}});
+assert.notEqual(changedAds.record.inputHashes.shareBasis,priced.record.inputHashes.shareBasis);
+const old = buildTrackingRecord(run, {...context,publishedAt:new Date().toISOString()});
+const newerRun = {...run,verdict:{...run.verdict!,price:51,marginPct:.49}};
+const candidate = buildTrackingRecord(newerRun,context);
+let rows: Record<string, unknown>[] = [];
+function fixture(record= candidate, presentation:ValuationRun=newerRun) {
+ return {identity_key:context.identity.key,ticker:"GOOG",identity:context.identity,is_current:true,
+ valuation_publication:{identity_key:context.identity.key,generation:2,public_result:{record,presentation},tracking_result:old,
+ tracking_generation:1,publication_status:"pending",safety:{status:"valid",reasons:[] as string[],observedAt:new Date().toISOString()}}};
+}
+let errorCode: string | null = null;
+let pageRequests = 0;
+const server = createServer((req,res)=> {
+ const url = new URL(req.url!,"http://localhost");
+ res.setHeader("content-type","application/json");
+ if (errorCode) {res.statusCode=404;res.end(JSON.stringify({code:errorCode,message:"fixture unavailable"}));return;}
+ if (url.pathname.endsWith("consensus_holdings")) {res.end("[]");return;}
+ assert(url.pathname.endsWith("tracking_securities"),"must not read legacy snapshots");
+ const start = Number(url.searchParams.get("offset") ?? 0); const limit=Number(url.searchParams.get("limit") ?? 1000);
+ pageRequests++;
+ const page=rows.slice(start,start+limit).map(row=> {
+   if (!url.searchParams.get("select")?.includes("public_record:")) return row;
+   const p=row.valuation_publication as ReturnType<typeof fixture>["valuation_publication"];
+   return {...row,valuation_publication:{...p,public_result:undefined,public_record:p.public_result?.record,
+     public_verdict:p.public_result?.presentation.verdict,public_currency:p.public_result?.presentation.currency,
+     public_expectations:p.public_result?.presentation.expectations,public_methods:p.public_result?.presentation.methods}};
+ });
+ res.end(JSON.stringify(page));
+});
+await new Promise<void>(resolve=>server.listen(0,"127.0.0.1",resolve));
+process.env.SUPABASE_URL=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
+process.env.SUPABASE_SERVICE_KEY="fixture-only";
+try {
+ rows=[fixture()];
+ assert.equal((await readPublicValuations(["GOOG"])).get("GOOG")?.record.price,51);
+ assert.equal((await readTrackingValuations([context.identity.key])).get(context.identity.key)?.price,50,"candidate must not enter tracking");
+ assert.equal((await readValuationSafety(["GOOG"])).get("GOOG")?.status,"pending");
+ const unreliableRun={...run,verdict:{...run.verdict!,reliable:false}};
+ const unreliable=fixture(buildTrackingRecord(unreliableRun,context),unreliableRun);
+ unreliable.valuation_publication.safety={status:"pending",reasons:["unreliable_valuation"],observedAt:new Date().toISOString()};rows=[unreliable];
+ assert.equal((await readPublicValuations(["GOOG"])).get("GOOG")?.record.status,"pending","current unreliable presentation remains explicitly pending");
+ assert.equal((await readTrackingValuations([context.identity.key])).size,0,"reliability loss suppresses previous confirmed latest");
+ assert.deepEqual(await readStrikeZoneLeaders(5),{total:0,pending:1,leaders:[]});
+ const invalid=fixture(); invalid.valuation_publication.safety={status:"invalid",reasons:["split_coverage_stale"],observedAt:new Date().toISOString()}; rows=[invalid];
+ assert.equal((await readTrackingValuations([context.identity.key])).size,0);
+ assert.equal((await readPublicValuations(["GOOG"])).size,0);
+ assert((await readValuationSafety(["GOOG"])).get("GOOG")?.reasons.includes("split_coverage_stale"));
+ const staleDate = new Date(Date.now()-11*86400000).toISOString().slice(0,10);
+ const stale=fixture(buildTrackingRecord({...run,verdict:{...run.verdict!,priceDate:staleDate}},context),{...run,verdict:{...run.verdict!,priceDate:staleDate}});
+ stale.valuation_publication.tracking_result=stale.valuation_publication.public_result.record;rows=[stale];
+ assert.equal((await readTrackingValuations([context.identity.key])).size,0,"read-time quote expiry");
+ assert.equal((await readStrikeZoneLeaders(5)).total,0);
+ const freshCandidate=fixture(); freshCandidate.valuation_publication.tracking_result=stale.valuation_publication.tracking_result;rows=[freshCandidate];
+ assert.equal((await readTrackingValuations([context.identity.key])).size,0);
+ assert((await readValuationSafety(["GOOG"])).get("GOOG")?.reasons.includes("price_stale"),"safety must explain expired confirmed generation even with fresh candidate");
+ const noValuation=fixture(); noValuation.valuation_publication.public_result=null as never; noValuation.valuation_publication.tracking_result=null as never;
+ noValuation.valuation_publication.safety={status:"pending",reasons:["no_valuation"],observedAt:new Date().toISOString()};rows=[noValuation];
+ assert.equal((await readValuationSafety(["GOOG"])).get("GOOG")?.status,"pending","verified identity without value remains followable/pending");
+ const fundamental=fixture(buildTrackingRecord(run,{...context,fundamentalAsOf:"2020-01-01"}),run);
+ fundamental.valuation_publication.tracking_result=fundamental.valuation_publication.public_result.record; rows=[fundamental];
+ assert.equal((await readTrackingValuations([context.identity.key])).size,0,"read-time fundamental expiry");
+ rows=[{...fixture(),valuation_publication:{...fixture().valuation_publication,public_result:{record:{rangeLo:60,marginPct:.5},presentation:run},tracking_result:{rangeLo:60}}}];
+ assert.equal((await readPublicValuations(["GOOG"])).size,0,"old contract never backsolves IV");
+ assert.equal((await readTrackingValuations([context.identity.key])).size,0);
+ rows=Array.from({length:1005},(_,index)=> {
+   const ticker=`T${index}`; const identity={...context.identity,ticker,key:`figi:BBG${String(index).padStart(9,"0")}`,figi:`BBG${String(index).padStart(9,"0")}`};
+   const record=buildTrackingRecord(run,{...context,identity});
+   return {...fixture(record,run),ticker,identity_key:identity.key,identity};
+ });
+ pageRequests=0;
+ assert.equal((await readStrikeZoneLeaders(5)).total,1005,"counts must use all filtered public results");
+ assert(pageRequests>=2,"must paginate beyond Supabase 1000 cap");
+ assert.equal((await readValuationScreen("strike_zone")).rows.length,1005);
+ errorCode="PGRST205";
+ await assert.rejects(readPublicValuations(["GOOG"]),(error:unknown)=>error instanceof PublicationUnavailableError && error.reason==="schema_missing");
+ errorCode="TEST";
+ await assert.rejects(readTrackingValuations([context.identity.key]),(error:unknown)=>error instanceof PublicationUnavailableError && error.reason==="database_unavailable","database failure must not become normal empty latest");
+} finally {await new Promise<void>((resolve,reject)=>server.close(err=>err?reject(err):resolve()));}
+console.log("publishedRead.check.ts OK");
+}
+main().catch(error=>{console.error(error);process.exitCode=1;});
