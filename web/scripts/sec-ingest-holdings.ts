@@ -74,7 +74,7 @@ async function main() {
   if (dry) return;
 
   await readFundamentalQueue(db); // Fail before SEC writes if queue migration is absent.
-  const summary = { total: run.length, success: 0, foreign: 0, native_currency: 0, unresolved: 0, failed: 0 } as Record<string, number>;
+  const summary = { total: run.length, success: 0, foreign: 0, native_currency: 0, source_pending: 0, unresolved: 0, failed: 0 } as Record<string, number>;
   const failures: string[] = [];
   let i = 0;
   for (const ticker of run) {
@@ -83,6 +83,7 @@ async function main() {
       const res = await ingestCompany(ticker);
       if (res.quality_status === "native_currency") summary.native_currency++;
       if (res.status === "success") summary.success++;
+      else if (res.status === "source_pending") summary.source_pending++;
       else if (res.status === "unresolved") summary.unresolved++;
       else summary.failed++;
       if (res.foreign_issuer) summary.foreign++;
@@ -93,7 +94,7 @@ async function main() {
       console.error(`  ${ticker} threw: ${e instanceof Error ? e.message : String(e)}`);
     }
     if (i % 25 === 0 || i === run.length) {
-      console.log(`[${i}/${run.length}] success=${summary.success} foreign=${summary.foreign} unresolved=${summary.unresolved} failed=${summary.failed}`);
+      console.log(`[${i}/${run.length}] success=${summary.success} foreign=${summary.foreign} source_pending=${summary.source_pending} unresolved=${summary.unresolved} failed=${summary.failed}`);
     }
     await sleep(300);
   }
@@ -104,7 +105,7 @@ async function main() {
   const pending=(await readFundamentalQueue(db)).filter(r=>r.pending).map(r=>r.ticker);
   if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `changed_tickers=${JSON.stringify(pending)}\n`);
   console.log(`Financial page refresh candidates: ${pending.length}`);
-  if (summary.failed || summary.unresolved) throw new Error(`Fundamentals incomplete: ${summary.failed} failed, ${summary.unresolved} unresolved`);
+  if (summary.failed || summary.unresolved || summary.source_pending) throw new Error(`Fundamentals incomplete: ${summary.failed} failed, ${summary.unresolved} unresolved, ${summary.source_pending} official-source adapters pending`);
 }
 
 main().catch((e) => {

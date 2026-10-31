@@ -1,3 +1,6 @@
+import { fetchOfficialFinancials } from "./official-financials/source";
+import type { OfficialFinancialPeriod } from "./official-financials/types";
+import { getOfficialSourceRoute, OfficialSourcePendingError } from "./official-financials/registry";
 import { NATIVE_40F_ISSUERS, type NativeFinancialPeriod } from "./native-financials";
 import { fetchNativeFinancials } from "./native-source";
 import { selectOperatingFundamentals } from "./operating-universe";
@@ -44,12 +47,13 @@ function errorMessage(error: unknown) {
 export type IngestCompanyResult = {
   ticker: string;
   cik: string | null;
-  status: "success" | "failed" | "unresolved";
+  status: "success" | "failed" | "unresolved" | "source_pending";
   foreign_issuer?: boolean;
   publication_fingerprint?: string;
   interim_disclosures?: { supported: number; issues: string[] };
   saved: SavedSummary;
   quality_status: string;
+  source_coverage?: { status: "supported" | "adapter_pending"; provider: string; landing_url: string; audited_at: string; reason?: string };
   reporting_currency?: string;
   valuation_blockers?: string[];
   error?: string;
@@ -163,6 +167,18 @@ async function upsertLatest(
  */
 export async function prepareCompanyFundamentals(ticker: string, match: TickerCikMatch) {
   assertSecurityIdentity(ticker);
+  const officialRoute = getOfficialSourceRoute(ticker, match.cik);
+  if (officialRoute?.adapter === "pdf_pending") throw new OfficialSourcePendingError(officialRoute);
+  if (officialRoute) {
+    const submission = await fetchCompanySubmissions(match.cik);
+    const official = await fetchOfficialFinancials(officialRoute, submission);
+    const filings = normalizeRecentFilings(ticker, submission);
+    if (official.filing && !filings.some(f => f.accession_number === official.filing!.accession_number)) filings.push(official.filing);
+    return { submission, filings, isForeignIssuer: true,
+      normalized: { annual: [] as FundamentalPeriod[], quarterly: [] as FundamentalPeriod[] },
+      backfill: { filled: [] as string[], failed: [] as string[] }, revenueBackfill: { filled: [] as string[], failed: [] as string[] },
+      predecessor: null, nativePeriods: [] as NativeFinancialPeriod[], officialPeriods: official.periods };
+  }
   const [submission, facts] = await Promise.all([
     fetchCompanySubmissions(match.cik),
     fetchCompanyFacts(match.cik).catch(error => {
@@ -175,7 +191,7 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
     return { submission, filings: normalizeRecentFilings(ticker, submission), isForeignIssuer: true,
       normalized: { annual: [] as FundamentalPeriod[], quarterly: [] as FundamentalPeriod[] },
       backfill: { filled: [] as string[], failed: [] as string[] },
-      revenueBackfill: { filled: [] as string[], failed: [] as string[] }, predecessor: null, nativePeriods };
+      revenueBackfill: { filled: [] as string[], failed: [] as string[] }, predecessor: null, nativePeriods, officialPeriods: [] as OfficialFinancialPeriod[] };
   }
   const ownFilings = normalizeRecentFilings(ticker, submission);
   // 控股重组 / 再注册:新 CIK 的 companyfacts 只有重组后的申报,历史在前身 CIK 下(2026-10:XOM)。
@@ -209,7 +225,7 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
     const patched = await applyClassSharesFallback(normalized.annual, filings);
     if (patched > 0) console.log(`  ${ticker}: class-dimension share fallback patched ${patched} FY rows`);
   }
-  return { submission, filings, isForeignIssuer, normalized, backfill, revenueBackfill, predecessor, nativePeriods: [] as NativeFinancialPeriod[] };
+  return { submission, filings, isForeignIssuer, normalized, backfill, revenueBackfill, predecessor, nativePeriods: [] as NativeFinancialPeriod[], officialPeriods: [] as OfficialFinancialPeriod[] };
 }
 
 export async function ingestCompany(tickerInput: string, supabase = createServiceSupabaseClient()): Promise<IngestCompanyResult> {
@@ -234,10 +250,11 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       return result;
     }
 
-    const { submission, filings, isForeignIssuer, normalized, nativePeriods } = await prepareCompanyFundamentals(ticker, match);
-    if (nativePeriods.length) {
-      // Fail before company/filing mutation if the native schema has not been applied.
-      const { error } = await supabase.from("sec_native_financial_periods").select("ticker").limit(0);
+    const { submission, filings, isForeignIssuer, normalized, nativePeriods, officialPeriods } = await prepareCompanyFundamentals(ticker, match);
+    const sourceTable = nativePeriods.length ? "sec_native_financial_periods" : officialPeriods.length ? "official_financial_periods" : null;
+    if (sourceTable) {
+      // Fail before company/filing mutation if the native source schema has not been applied.
+      const { error } = await supabase.from(sourceTable).select("ticker").limit(0);
       if (error) throw error;
     }
 
@@ -261,7 +278,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
         exchange: submission.exchanges?.[0] ?? null,
         sic: submission.sic ?? null,
         sic_description: submission.sicDescription ?? null,
-        fiscal_year_end: submission.fiscalYearEnd ?? null,
+        fiscal_year_end: submission.fiscalYearEnd ?? officialPeriods[0]?.source_report_period_end.slice(5).replace("-", "") ?? null,
         is_foreign_issuer: isForeignIssuer,
         updated_at: new Date().toISOString()
       },
@@ -269,8 +286,29 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     );
     if (companyError) throw companyError;
 
-    const { error: filingsError } = await supabase.from("sec_filings").upsert(filings, { onConflict: "accession_number" });
-    if (filingsError) throw filingsError;
+    if (filings.length) {
+      const { error: filingsError } = await supabase.from("sec_filings").upsert(filings, { onConflict: "accession_number" });
+      if (filingsError) throw filingsError;
+    }
+    if (officialPeriods.length) {
+      const { error } = await supabase.from("official_financial_periods").upsert(
+        officialPeriods.map(p => ({ ...p, updated_at: new Date().toISOString() })),
+        { onConflict: "ticker,source_document_id,period_end" },
+      );
+      if (error) throw error;
+      const first = officialPeriods[0];
+      const result: IngestCompanyResult = {
+        ticker, cik: match.cik, status: "success", foreign_issuer: true,
+        saved: { company: true, filings: filings.length, annual_periods: 0, quarterly_periods: 0, latest: false, native_annual_periods: officialPeriods.length },
+        quality_status: "native_currency", reporting_currency: first.reporting_currency, valuation_blockers: first.valuation_blockers,
+        source_coverage: { status: "supported", provider: first.source_kind, landing_url: first.source_landing_url, audited_at: getOfficialSourceRoute(ticker, match.cik)!.audited_at },
+        // A fresh retrieval of identical source bytes must not trigger another publication.
+        publication_fingerprint: financialPublicationFingerprint(match.cik, officialPeriods.map(p => ({ ...p, source_retrieved_at: undefined })), filings),
+      };
+      await queueCompanyPublication(supabase, ticker, result.publication_fingerprint!, priorPublication);
+      await finishRun(supabase, runId, "success", result);
+      return result;
+    }
 
     if (nativePeriods.length) {
       const { error } = await supabase.from("sec_native_financial_periods").upsert(
@@ -342,15 +380,17 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     return result;
   } catch (error) {
     const message = errorMessage(error);
+    const pending = error instanceof OfficialSourcePendingError ? error : null;
     const result: IngestCompanyResult = {
       ticker,
-      cik: null,
-      status: "failed",
+      cik: pending?.route.cik ?? null,
+      status: pending ? "source_pending" : "failed",
       saved: emptySaved,
-      quality_status: "low",
+      quality_status: pending ? "external_source_pending" : "low",
+      ...(pending ? { source_coverage: { status: "adapter_pending" as const, provider: pending.route.adapter, landing_url: pending.route.landing_url, audited_at: pending.route.audited_at, reason: pending.code } } : {}),
       error: message
     };
-    await finishRun(supabase, runId, "failed", result, message);
+    await finishRun(supabase, runId, result.status, result, message);
     return result;
   }
 }
@@ -431,6 +471,7 @@ export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT)
     total: tickers.length,
     success: results.filter((result) => result.status === "success").length,
     failed: results.filter((result) => result.status === "failed").length,
+    source_pending: results.filter((result) => result.status === "source_pending").length,
     foreign_issuer: results.filter((result) => result.foreign_issuer).length,
     skipped: excluded.length,
     excluded_non_operating: excluded,

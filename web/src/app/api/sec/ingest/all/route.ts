@@ -1,3 +1,4 @@
+import { financialIngestHttpStatus } from "@/lib/sec/ingestOutcome";
 import { publishFinancialPages } from "@/lib/sec/publishPages";
 import { getDb } from "@/lib/managers/db";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,5 +14,5 @@ export async function POST(request: NextRequest) {
   const limit = typeof body.limit === "number" ? body.limit : undefined;
   const summary = await ingestAllCompanies(limit);
   await publishFinancialPages(getDb());
-  return NextResponse.json(summary);
+  return NextResponse.json(summary, { status: financialIngestHttpStatus(summary) });
 }
