@@ -101,3 +101,6 @@ eq(postureLeadIn(onlyPending, "zh"), "该组合的 5 只估值无红旗的美股
 eq(postureLeadIn(onlyPending, "en"), "Of 5 valued US positions without red flags, none trade below intrinsic value; 2 more pending:", "en only pending");
 
 console.log("valuationPosture.check OK");
+const refPosture=deriveValuationPosture({holdings:[{cusip:'REFCUSIP',issuer:'Reference'}],cusipToTicker:new Map([['REFCUSIP','REF']]),verdicts:new Map([['REF',v({ticker:'REF',bucket:'below',inStrikeZone:false,reliable:false,referenceOnly:'missing_reinvestment'})]])});
+assert(refPosture.covered===0&&refPosture.cheap.length===0&&refPosture.strikeCount===0&&refPosture.belowCount===0,'zero-growth reference never enters confirmed investor posture');
+assert(refPosture.pending[0]?.referenceOnly==='missing_reinvestment','pending investor summary preserves reference provenance');

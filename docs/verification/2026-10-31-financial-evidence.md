@@ -24,6 +24,6 @@ Local replay with captured financial rows plus verified foreign comparable-incom
 
 ## Checks
 
-The release gate includes 31 data-pipeline behavior checks, app/scripts TypeScript, all valuation checks, bilingual SSR reference/badge checks, local PostgreSQL migration/permission/constraint checks, and a Next compile-mode build. Source parser review covers complete original SEC bodies as well as fixtures, including currency conflict, changed column order, non-GAAP heading, duplicate subtotal/income and publication-time regressions.
+The release gate includes 32 data-pipeline behavior checks, app/scripts TypeScript, all valuation checks, bilingual SSR reference/badge checks, local PostgreSQL migration/permission/constraint checks, and a Next compile-mode build. Source parser review covers complete original SEC bodies as well as fixtures, including currency conflict, changed column order, non-GAAP heading, duplicate subtotal/income and publication-time regressions.
 
 Production migration/deployment/reingestion have not been performed by this branch. Follow `docs/financial-evidence-rollout-2026-10-31.md`; reingestion must precede a claim that repaired source evidence is live. Prior snapshot calculations are invalidated by `2026-10-31-coverage-v2` and the existing model-release workflow recomputes them.

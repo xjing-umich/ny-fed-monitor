@@ -22,6 +22,7 @@ const checks = [
   "src/lib/valuation/valuationLabel.check.ts",
   "src/lib/stocks/stockFirstScreen.check.ts",
   "src/lib/stocks/valuationVerdictChip.check.ts",
+  "src/lib/managers/valuationPosture.check.ts",
   "src/lib/valuation/reinvestmentEvidence.check.ts",
   "src/lib/valuation/annualReinvestmentBasis.check.ts",
   "src/lib/valuation/growthEvidence.check.ts",

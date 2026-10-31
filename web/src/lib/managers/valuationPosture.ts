@@ -9,6 +9,7 @@ export type CheapHolding = {
   marginPct: number | null; // 安全边际(分数); 展示 Math.round(*100)%
   inStrikeZone: boolean;
   bucket: VerdictBucket;
+  referenceOnly?: "missing_reinvestment";
 };
 
 export type ValuationPosture = {
@@ -46,7 +47,7 @@ export function deriveValuationPosture(input: {
     if (!vd.reliable) {
       // 待确认:照实列出,但不进分母、不进便宜计数(spec 2026-10-23 §三.2)
       if (vd.inStrikeZone || vd.bucket === "below")
-        pending.push({ issuer: h.issuer, ticker, marginPct: vd.marginPct, inStrikeZone: vd.inStrikeZone, bucket: vd.bucket });
+        pending.push({ issuer: h.issuer, ticker, marginPct: vd.marginPct, inStrikeZone: vd.inStrikeZone, bucket: vd.bucket, ...(vd.referenceOnly?{referenceOnly:vd.referenceOnly}:{}) });
       continue; // 信心闸
     }
     covered += 1;
