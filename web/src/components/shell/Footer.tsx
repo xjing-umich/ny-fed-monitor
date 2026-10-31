@@ -94,7 +94,7 @@ export default function Footer({
           <span className="flex items-center gap-1.5">
             <LogoMark className="h-[14px] w-[14px] text-[var(--tt-faint)] shrink-0" />
             <span className="font-display text-sm font-medium text-[var(--tt-faint)]">
-              Compounder
+              Compounder{lang === "zh" ? " · 复利" : ""}
             </span>
           </span>
           <span className="flex-1 min-w-[200px] text-xs text-[var(--tt-muted)]">
