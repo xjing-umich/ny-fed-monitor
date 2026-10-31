@@ -100,3 +100,33 @@ do $$ begin
  if has_function_privilege('anon','public.prepare_tracking_publication_v1(jsonb)','execute') then raise exception 'anon intent'; end if;
 end $$;
 rollback;
+
+-- Fair durable retry turns: failed/ineligible work stays queued without starving older work.
+begin;
+set local role service_role;
+select public.prepare_tracking_publication_v1(jsonb_build_object('schemaVersion',1,'intentId',lpad(to_hex(n),64,'0'),
+ 'origin',case when n<=10 then 'https://ineligible.invalid' else 'https://fixture.invalid' end,
+ 'generations',jsonb_build_array(jsonb_build_object('identityKey','fixture','generation',n)),
+ 'targets',jsonb_build_array(jsonb_build_object('fixture',n)))) from generate_series(1,25) n;
+reset role;
+-- The confirmable tail is older by publication date; scheduling must not keep choosing newest 20.
+update public.tracking_publication_intents set prepared_at=now()-interval '1 day' where intent_id>lpad(to_hex(20),64,'0');
+create temporary table retry_turns(turn int, manifest jsonb);
+grant insert,select on retry_turns to service_role;
+set local role service_role;
+insert into retry_turns select 1,manifest from public.next_tracking_publication_batch_v1();
+insert into retry_turns select 2,manifest from public.next_tracking_publication_batch_v1();
+do $$ begin
+ if (select count(*) from retry_turns where turn=1)<>20 or (select count(*) from retry_turns where turn=2)<>20 then raise exception 'retry budget changed'; end if;
+ if (select count(distinct manifest->>'intentId') from retry_turns)<>25 then raise exception 'older queued intents starved'; end if;
+ if (select count(*) from public.tracking_publication_intents where completed_at is null)<>25 then raise exception 'scheduler dropped blocked obligations'; end if;
+ begin
+  update public.tracking_publication_intents set retry_order=0;
+  raise exception 'service bypassed retry scheduler';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+do $$ begin
+ if has_function_privilege('anon','public.next_tracking_publication_batch_v1()','execute') or has_function_privilege('authenticated','public.next_tracking_publication_batch_v1()','execute') then raise exception 'browser scheduled private queue'; end if;
+end $$;
+rollback;

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { publicationTargets, verifyPublishedPages, assertPublicationBinding, createPublicationClient, prepareTrackingPublication, confirmTrackingPublication, type PublicationContext } from "./trackingPublication";
+import { publicationTargets, publicationManifest, verifyPublishedPages, assertPublicationBinding, createPublicationClient, prepareTrackingPublication, confirmTrackingPublication, type PublicationContext, type PublicationManifest } from "./trackingPublication";
 import { publicationSourceDigest, publicationRowAttributes, publicationSourceAttributes } from "../../src/lib/valuation/publicationProof";
 import { refreshTrackingPublicationPaths } from "./valuationPublication";
 import type { TrackingRecord } from "../../src/lib/valuation/trackingContract";
@@ -16,17 +16,30 @@ async function main() {
   assert.equal(publicationSourceDigest({ a: 1, b: 2 }), publicationSourceDigest({ b: 2, a: 1 }));
   const member = { identityKey: key, revisionId: revision };
   let mode = "fresh", hits = 0, active = 0, peak = 0;
-  let queueManifests: unknown[]=[];
+  let queueManifests: PublicationManifest[]=[];
+  let fairQueue=false;
+  const scheduledBatchSizes:number[]=[];
   const rpcBodies: {path:string;body:Record<string,unknown>}[]=[];
   const attrs = (obj: Record<string,string>) => Object.entries(obj).map(([k,v]) => `${k}="${v}"`).join(" ");
   const server = createServer(async (req,res) => {
     if (req.url!.startsWith("/rest/v1/tracking_publication_intents")) {
-      res.setHeader("content-type","application/json"); res.end(JSON.stringify(queueManifests.map(manifest=>({manifest})))); return;
+      res.setHeader("content-type","application/json"); res.end(JSON.stringify(queueManifests.slice(0,Number(new URL(req.url!,"http://fixture.invalid").searchParams.get("limit") ?? 20)).map(manifest=>({manifest})))); return;
     }
     if (req.method==="POST") {
       let body=""; for await(const chunk of req) body+=chunk;
       rpcBodies.push({path:req.url!,body:JSON.parse(body)});
       res.setHeader("content-type","application/json");
+      if (req.url!.includes("next_tracking_publication_batch_v1")) {
+        const batch=queueManifests.slice(0,20);
+        queueManifests=[...queueManifests.slice(20),...batch];
+        scheduledBatchSizes.push(batch.length);
+        res.end(JSON.stringify(batch.map(manifest=>({manifest})))); return;
+      }
+      const parsed=JSON.parse(body);
+      if (fairQueue && req.url!.includes("revalidate") && parsed.paths.some((path:string)=>path.includes("blocked="))) {
+        res.statusCode=503;res.end('{"ok":false}');return;
+      }
+      if (fairQueue && req.url!.includes("confirm_tracking")) queueManifests=queueManifests.filter(manifest=>manifest.intentId!==parsed.p_proof.intentId);
       res.end(req.url!.includes("confirm_tracking") ? '{"confirmed":1,"pending":0}' : '{"ok":true}'); return;
     }
     assert.equal(req.headers.authorization,undefined,"ordinary GET must not carry credentials");
@@ -83,7 +96,7 @@ async function main() {
     await assert.rejects(confirmTrackingPublication(wrongOriginDb,proof),/binding/i);
     await assert.rejects(prepareTrackingPublication(wrongOriginDb,targets),/binding/i);
 
-    queueManifests=[rpcBodies[0].body.p_manifest];
+    queueManifests=[rpcBodies[0].body.p_manifest as PublicationManifest];
     async function runWorkflow(binding:unknown) {
       const child=spawn(process.execPath,["node_modules/tsx/dist/cli.mjs","--tsconfig","scripts/tsconfig.json","scripts/valuation-publication-verify.ts"],{
         env:{...process.env,VALUATION_PUBLICATION_VERIFY_ENABLED:"1",SUPABASE_URL:origin,SUPABASE_SERVICE_KEY:"fixture-service-key",INGEST_SECRET:"fixture-ingest-secret",
@@ -103,6 +116,27 @@ async function main() {
     assert.equal(rpcBodies.filter(call=>call.path.includes("confirm_tracking")).length,beforeFailure,"failed rendered proof never reaches confirmation RPC");
     const wrongBackend=await runWorkflow({origin,supabaseUrl:"https://production.supabase.co"});
     assert.equal(wrongBackend.code,1,"workflow rejects mismatched backend before probing");
+    // >20 durable intents: the newest prefix is permanently blocked/ineligible, while
+    // five older valid intents must progress on the next bounded workflow invocation.
+    mode="fresh";fairQueue=true;
+    const blocked=Array.from({length:20},(_,index)=>publicationManifest(targets.map((target,position)=>({
+      ...target,
+      ...(index>=10 && position===0 ? {path:`/stocks?blocked=${index}`,url:`${origin}/stocks?blocked=${index}`} : {}),
+      expectations:target.expectations.map(expected=>({...expected,generation:100+index,...(index<10 ? {identityKey:"fixture:unwatched"}:{})})),
+    }))));
+    const olderValid=Array.from({length:5},(_,index)=>publicationManifest(targets.map(target=>({...target,
+      expectations:target.expectations.map(expected=>({...expected,generation:200+index})),
+    }))));
+    queueManifests=[...blocked,...olderValid];
+    const firstTurn=await runWorkflow({origin,supabaseUrl:origin});
+    assert.equal(firstTurn.code,1,"blocked obligations remain pending");
+    const secondTurn=await runWorkflow({origin,supabaseUrl:origin});
+    assert.match(secondTurn.output,/confirmed=5,/ ,"older valid intents must progress across bounded runs");
+    assert.equal(queueManifests.length,20,"blocked/ineligible intents remain durable after valid work completes");
+    assert.deepEqual(new Set(queueManifests.map(manifest=>manifest.intentId)),new Set(blocked.map(manifest=>manifest.intentId)));
+    assert.ok(scheduledBatchSizes.every(size=>size<=20),"each scheduler call remains bounded");
+    assert.ok(scheduledBatchSizes.length>=2,"workflow uses durable scheduler progress");
+    fairQueue=false;
     for (const failure of ["stale","zh-stale","investor-stale","ghost","old-digest","script-only","noscript-only","outside-region","hidden-region","hidden-row"]) {
       mode=failure;
       await assert.rejects(verifyPublishedPages(targets,fetch),/revision|absence|digest|marker/i,failure);

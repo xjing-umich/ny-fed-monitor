@@ -1,15 +1,20 @@
 -- Apply explicitly AFTER 20261031_valuation_publication.sql. Feature remains off.
 begin;
+-- Durable retry tickets form a round-robin queue; new and retried work joins its tail.
+create sequence public.tracking_publication_retry_order;
+revoke all on sequence public.tracking_publication_retry_order from public,anon,authenticated,service_role;
 -- Prepared BEFORE replacing public candidates, so retries retain earlier route memberships.
 create table public.tracking_publication_intents (
  intent_id text primary key check(intent_id ~ '^[a-f0-9]{64}$'),
  manifest jsonb not null,
  prepared_at timestamptz not null default now(),
+ retry_order bigint not null default nextval('public.tracking_publication_retry_order'),
  completed_at timestamptz,
  superseded_by text references public.tracking_publication_intents(intent_id),
  last_proof jsonb
 );
-create index tracking_publication_pending on public.tracking_publication_intents(prepared_at desc) where completed_at is null;
+alter sequence public.tracking_publication_retry_order owned by public.tracking_publication_intents.retry_order;
+create index tracking_publication_pending on public.tracking_publication_intents(retry_order) where completed_at is null;
 -- Optional Task8 hook absent today: publication must not lose pending baseline work.
 create table public.tracking_publication_baseline_outbox (
  identity_key text not null references public.tracking_securities(identity_key),
@@ -47,6 +52,23 @@ begin
 end $$;
 revoke all on function public.prepare_tracking_publication_v1(jsonb) from public,anon,authenticated;
 grant execute on function public.prepare_tracking_publication_v1(jsonb) to service_role;
+
+-- Reserve a bounded fair turn before returning work. Failure, ineligibility, or worker death
+-- does not erase an obligation: it remains pending at the tail for a later invocation.
+-- New arrivals also join the tail, so they cannot perpetually leapfrog older retries.
+create function public.next_tracking_publication_batch_v1() returns table(manifest jsonb)
+language sql security definer set search_path=pg_catalog,public as $$
+ with next_turn as (
+  select intent_id from public.tracking_publication_intents
+  where completed_at is null order by retry_order limit 20 for update skip locked
+ )
+ update public.tracking_publication_intents p
+ set retry_order=nextval('public.tracking_publication_retry_order')
+ from next_turn where p.intent_id=next_turn.intent_id
+ returning p.manifest;
+$$;
+revoke all on function public.next_tracking_publication_batch_v1() from public,anon,authenticated;
+grant execute on function public.next_tracking_publication_batch_v1() to service_role;
 
 -- Trust boundary: only the service workflow can attest ordinary public GET observations.
 -- No browser writes, no DB-echo acceptance endpoint. All targets must pass before any promotion.

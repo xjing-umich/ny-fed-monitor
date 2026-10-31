@@ -18,23 +18,25 @@ async function main() {
   const binding=JSON.parse(rawBinding) as PublicationBinding;
   const db=createPublicationClient(url,key,binding);
   // Until Task7 supplies active keys, only explicitly configured seed securities are probed.
-  // Read newest-first so an obsolete CAS intent cannot starve a later reconciled intent.
-  const {data,error}=await db.from("tracking_publication_intents").select("manifest")
-    .is("completed_at",null).order("prepared_at",{ascending:false}).limit(20);
+  // Durable round-robin tickets advance before processing, including skipped/failed work.
+  // A worker crash retains every obligation without pinning the next run to the same prefix.
+  const {data,error}=await db.rpc("next_tracking_publication_batch_v1");
   if (error) throw new Error("PUBLICATION_QUEUE_UNAVAILABLE");
   let confirmed=0,pending=0,failed=0;
   for (const row of data ?? []) {
-    const saved=row.manifest as PublicationManifest;
-    // Rebuild canonical manifest; never trust stored JSON to redirect credentials or GETs.
-    const manifest=publicationManifest(saved.targets);
-    if (manifest.intentId!==saved.intentId || manifest.origin!==new URL(binding.origin).origin ||
-        manifest.generations.some(generation=>!seeds.has(generation.identityKey))) { pending+=manifest.generations.length; continue; }
+    let candidateCount=1;
     try {
+      const saved=row.manifest as PublicationManifest;
+      // Rebuild canonical manifest; never trust stored JSON to redirect credentials or GETs.
+      const manifest=publicationManifest(saved.targets);
+      candidateCount=manifest.generations.length;
+      if (manifest.intentId!==saved.intentId || manifest.origin!==new URL(binding.origin).origin ||
+          manifest.generations.some(generation=>!seeds.has(generation.identityKey))) { pending+=candidateCount; continue; }
       await refreshTrackingPublicationPaths(manifest.origin,manifest.targets.map(target=>target.path),secret);
       const proof=await verifyPublishedPages(manifest.targets,fetch);
       const result=await confirmTrackingPublication(db,proof);
       confirmed+=result.confirmed; pending+=result.pending;
-    } catch { failed++; pending+=manifest.generations.length; }
+    } catch { failed++; pending+=candidateCount; }
   }
   console.log(`Rendered publication verification: confirmed=${confirmed}, pending=${pending}, failed_batches=${failed}.`);
   if (failed || pending) process.exitCode=1;
