@@ -52,4 +52,6 @@
 - [x] Write/run RED disposable PostgreSQL admission/identity/core/units/valuation/metadata constraints, upgrade existing #273 rows, and PDF migration-absent gate checks; implement migration and GREEN.
 - [x] Register checks; run full prebuild/data-pipeline, typecheck, targeted lint, disposable PG and actual-original/source-only validations; update runbook/provenance.
 - [x] Commit; independent read-only whole-branch review; reproduce/fix material findings RED→GREEN and rerun suite.
-- [ ] Push and create/attach PR targeting db-foundation; report checks and annual-only boundaries, no merge or production writes.
+- [x] Push and create/attach PR targeting db-foundation; report checks and annual-only boundaries, no merge or production writes.
+
+PR: https://github.com/xjing-umich/ny-fed-monitor/pull/278 (base `db-foundation`). Review material findings resolved; source acceptance 4 rows/82 fields, 47 pipeline checks, type/lint, disposable PostgreSQL and configured production build passed. No merge or production writes.
