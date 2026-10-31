@@ -279,7 +279,7 @@ export function sustainableGrowth(input: {
   investedCapitalOf: (y: ValuationFloorYear) => number | undefined;
 }): number | undefined {
   const { fyYears, nopatOf, investedCapitalOf } = input;
-  const sorted = [...fyYears].sort((a, b) => a.fiscal_year - b.fiscal_year); // 升序,供 ΔWC
+  const sorted = [...fyYears].sort((a, b) => a.period_end && b.period_end ? a.period_end.localeCompare(b.period_end) : a.fiscal_year - b.fiscal_year); // Actual annual endpoints, independent of presentation FY labels.
   const roics: number[] = [];
   const reinvest: number[] = [];
   for (let i = 1; i < sorted.length; i++) {

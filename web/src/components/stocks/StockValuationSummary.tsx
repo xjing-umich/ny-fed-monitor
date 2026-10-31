@@ -26,6 +26,7 @@ export function StockValuationSummary({ model, lang, marginText }: { model: Stoc
   return (
     <section aria-label={zh ? "价格与价值判断" : "Price and value assessment"}>
       <h2 className="text-balance font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-5xl">{model.heading}</h2>
+      {model.pending && <p className="mt-2 max-w-prose text-sm leading-relaxed text-[var(--tt-muted)]">{zh ? "近期财报已覆盖，但历史再投资证据不足。本参考假设零增长，未计增长溢价，未计入已确认击球区。" : "Recent financial periods are covered, but historical reinvestment evidence is insufficient. This reference assumes zero growth, includes no growth premium, and is excluded from the confirmed strike zone."}</p>}
       {model.gap && <p className={`mt-2 text-base ${POSITION_COLOR[model.position]}`}><span aria-hidden>● </span>{model.gap}</p>}
       {marginText && <p className="mt-2 font-data text-sm font-medium text-[var(--val-below)]">{marginText}</p>}
       <dl className={`mt-6 grid max-w-3xl gap-x-5 gap-y-4 sm:gap-x-14 ${wideAmounts ? "grid-cols-1" : "grid-cols-2"}`}>

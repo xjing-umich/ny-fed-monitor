@@ -1,0 +1,234 @@
+[
+  {
+    "ticker": "AER",
+    "accessionNumber": "0001628280-26-067786",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1378789/000162828026067786/aer-09302026xinterimreport.htm",
+    "publishedAt": "2026-10-28",
+    "periodEnd": "2026-09-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "ARCO",
+    "accessionNumber": "0000950103-26-012286",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1508478/000095010326012286/dp251668_6k.htm",
+    "publishedAt": "2026-08-13",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "NICE",
+    "accessionNumber": "0001178913-26-003846",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1003935/000117891326003846/exhibit_99-1.htm",
+    "publishedAt": "2026-08-05",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "BULL",
+    "accessionNumber": "0001213900-26-099290",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1866364/000121390026099290/ea030409301ex99-1.htm",
+    "publishedAt": "2026-09-11",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "SBLK",
+    "accessionNumber": "0000950157-26-000860",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1386716/000095015726000860/sblk-20260630.htm",
+    "publishedAt": "2026-08-07",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "ITRN",
+    "accessionNumber": "0001178913-26-004047",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1337117/000117891326004047/exhibit_99-1.htm",
+    "publishedAt": "2026-08-12",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "WB",
+    "accessionNumber": "0001104659-26-098504",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1595761/000110465926098504/tm2623262d1_ex99-1.htm",
+    "publishedAt": "2026-08-19",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "JOYY",
+    "accessionNumber": "0001104659-26-101098",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1530238/000110465926101098/tm2624081d1_ex99-1.htm",
+    "publishedAt": "2026-08-26",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "INMD",
+    "accessionNumber": "0001178913-26-003831",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1742692/000117891326003831/exhibit_99-1.htm",
+    "publishedAt": "2026-08-05",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "TSEM",
+    "accessionNumber": "0001178913-26-004158",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/928876/000117891326004158/exhibit_99-1.htm",
+    "publishedAt": "2026-08-17",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "CHKP",
+    "accessionNumber": "0001178913-26-003696",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1015922/000117891326003696/zk2635799.htm",
+    "publishedAt": "2026-07-30",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "CAMT",
+    "accessionNumber": "0001178913-26-003975",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1109138/000117891326003975/zk2635905.htm",
+    "publishedAt": "2026-08-10",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "NVMI",
+    "accessionNumber": "0001178913-26-003892",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1109345/000117891326003892/zk2635873.htm",
+    "publishedAt": "2026-08-06",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "BRSL",
+    "accessionNumber": "0001628280-26-052120",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1619762/000162828026052120/brightstarq226earningspres.htm",
+    "publishedAt": "2026-08-04",
+    "periodEnd": "2026-06-30",
+    "status": "unsupported"
+  },
+  {
+    "ticker": "SIMO",
+    "accessionNumber": "0001193125-26-436478",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1329394/000119312526436478/d135156dex991.htm",
+    "publishedAt": "2026-10-29",
+    "periodEnd": "2026-09-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "NBIS",
+    "accessionNumber": "0001104659-26-094844",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1513845/000110465926094844/nbis-20260812xex99d2.htm",
+    "publishedAt": "2026-08-12",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "DOX",
+    "accessionNumber": "0001193125-26-355408",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1062579/000119312526355408/6k_q3_26.htm",
+    "publishedAt": "2026-08-18",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "WIX",
+    "accessionNumber": "0001628280-26-052108",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1576789/000162828026052108/secondquarter2026results.htm",
+    "publishedAt": "2026-08-04",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "MNDY",
+    "accessionNumber": "0001178913-26-003971",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1845338/000117891326003971/exhibit_99-1.htm",
+    "publishedAt": "2026-08-10",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "GLBE",
+    "accessionNumber": "0001178913-26-004050",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1835963/000117891326004050/exhibit_99-1.htm",
+    "publishedAt": "2026-08-12",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "GENI",
+    "accessionNumber": "0001193125-26-336663",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1834489/000119312526336663/geni-ex99_1.htm",
+    "publishedAt": "2026-08-06",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "MRT",
+    "accessionNumber": "0001213900-26-091423",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1852767/000121390026091423/ea030232901ex99-2.htm",
+    "publishedAt": "2026-08-19",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "CGEN",
+    "accessionNumber": "0001178913-26-003754",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1119774/000117891326003754/exhibit_99-1.htm",
+    "publishedAt": "2026-08-03",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "AQN",
+    "accessionNumber": "0001174169-26-000031",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1174169/000117416926000031/aqunf-20260630.htm",
+    "publishedAt": "2026-08-07",
+    "periodEnd": "2026-06-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "DSGX",
+    "accessionNumber": "0001104659-26-106807",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1050140/000110465926106807/dsgx-20260731xex99d1.htm",
+    "publishedAt": "2026-09-11",
+    "periodEnd": "2026-07-31",
+    "status": "supported"
+  },
+  {
+    "ticker": "FSV",
+    "accessionNumber": "0001171843-26-006994",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1637810/000117184326006994/exh_991.htm",
+    "publishedAt": "2026-10-30",
+    "periodEnd": "2026-09-30",
+    "status": "supported"
+  },
+  {
+    "ticker": "MGA",
+    "accessionNumber": "0001104659-26-120352",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/749098/000110465926120352/tm2628312d1_ex99-1.htm",
+    "publishedAt": "2026-10-30",
+    "periodEnd": "2026-09-30",
+    "status": "unsupported"
+  },
+  {
+    "ticker": "STM",
+    "accessionNumber": "0000932787-26-000086",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/932787/000093278726000086/c3419c-q326earningspressre.htm",
+    "publishedAt": "2026-10-29",
+    "periodEnd": "2026-09-26",
+    "status": "supported"
+  },
+  {
+    "ticker": "DRTS",
+    "accessionNumber": "0001213900-26-087224",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1871321/000121390026087224/ea030079101ex99-1.htm",
+    "publishedAt": "2026-08-10",
+    "periodEnd": "2026-06-30",
+    "status": "unsupported"
+  }
+]

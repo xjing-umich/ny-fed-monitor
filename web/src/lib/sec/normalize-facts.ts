@@ -379,7 +379,7 @@ function collectFlow(facts: CompanyFacts, field: FundamentalField) {
 // Single quarters are taken directly when the filer reports a single-quarter
 // fact; otherwise derived from the YTD chain (Qk = cumulative_k − cumulative_{k-1}).
 // Q4 is always derived (never filed).
-function deriveFlowSeries(byKey: Map<string, PickedFact>, starts: number[]) {
+function deriveFlowSeries(byKey: Map<string, PickedFact>, starts: number[], field: FundamentalField) {
   const direct = new Map<string, PickedFact>(); // `${fyStart}|${q}` -> single quarter
   const cum = new Map<string, PickedFact>(); // `${fyStart}|${k}` -> cumulative-through-k
   for (const [key, p] of byKey) {
@@ -409,6 +409,31 @@ function deriveFlowSeries(byKey: Map<string, PickedFact>, starts: number[]) {
   for (const key of [...direct.keys(), ...cum.keys()]) fiscalYears.add(key.split("|")[0]);
 
   for (const fy of fiscalYears) {
+    // A missing Q1 can be recovered from a reported H1 and its reported Q2.
+    // Require the exact same end and two ordinary contiguous quarters; recast
+    // comparisons and transition stubs must not manufacture a fiscal anchor.
+    const h1 = cum.get(`${fy}|2`);
+    const q2 = direct.get(`${fy}|2`);
+    if (field !== "eps_diluted" && field !== "shares_diluted"
+      && !cum.has(`${fy}|1`) && h1?.start && q2?.start
+      && h1.end === q2.end && h1.tag === q2.tag
+      && h1.accn != null && h1.accn === q2.accn
+      && (field !== "revenue" || h1.val >= q2.val)
+      && q2.days != null && q2.days >= 80 && q2.days <= 100) {
+      const endDay = toDay(q2.start) - 1;
+      const days = endDay - toDay(h1.start);
+      if (days >= 80 && days <= 100 && Math.abs(toDay(h1.start) - Number(fy)) <= 7) {
+        const recovered: PickedFact = {
+          val: h1.val - q2.val, start: h1.start,
+          end: new Date(endDay * DAY_MS).toISOString().slice(0, 10),
+          filed: h1.filed > q2.filed ? h1.filed : q2.filed,
+          accn: null, tag: `derived(H1-Q2:${h1.tag})`, days,
+          form: q2.form, derived: true,
+        };
+        cum.set(`${fy}|1`, recovered);
+        direct.set(`${fy}|1`, recovered);
+      }
+    }
     for (let q = 1; q <= 4; q += 1) {
       const directQ = direct.get(`${fy}|${q}`);
       const ck = cum.get(`${fy}|${q}`);
@@ -573,6 +598,12 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
     .filter((f) => f !== "9999-99-99");
   const firstFiled = filedDates.length ? filedDates.reduce((min, f) => (f < min ? f : min)) : null;
   const matchedFiling = filings.find((f) => f.report_date === draft.period_end);
+  const recoveredAvailable = Object.values(draft.picks)
+    .filter((p) => p.tag.startsWith("derived(H1-Q2:") && p.filed !== "9999-99-99")
+    .map((p) => p.filed).sort().at(-1);
+  const originalFiled = matchedFiling?.filing_date ?? firstFiled;
+  const availableFiled = recoveredAvailable && (!originalFiled || recoveredAvailable > originalFiled)
+    ? recoveredAvailable : originalFiled;
 
   const missing = Object.fromEntries(
     [...FLOW_FIELDS, ...INSTANT_FIELD_LIST]
@@ -588,7 +619,7 @@ function finalizeRow(ticker: string, cik: string, draft: RowDraft, filings: Norm
     fiscal_year: draft.fiscal_year,
     fiscal_period: draft.fiscal_period,
     period_end: draft.period_end,
-    filing_date: matchedFiling?.filing_date ?? firstFiled,
+    filing_date: availableFiled,
     accession_number: matchedFiling?.accession_number ?? Object.values(draft.picks).find((p) => p.accn)?.accn ?? null,
     revenue: v.revenue,
     gross_profit: v.gross_profit,
@@ -657,7 +688,7 @@ function withYearOverYear(rows: FundamentalPeriod[]) {
     if (!prior) return row;
     return {
       ...row,
-      revenue_yoy: safeDiv(row.revenue !== null && prior.revenue !== null ? row.revenue - prior.revenue : null, prior.revenue),
+      revenue_yoy: row.missing_fields.revenue_comparability || prior.missing_fields.revenue_comparability ? null : safeDiv(row.revenue !== null && prior.revenue !== null ? row.revenue - prior.revenue : null, prior.revenue),
       net_income_yoy: safeDiv(
         row.net_income !== null && prior.net_income !== null ? row.net_income - prior.net_income : null,
         prior.net_income
@@ -684,7 +715,7 @@ export function normalizeCompanyFacts(
   //    on one fiscal calendar shared by all fields (fiscal-year starts from the facts).
   const starts = fiscalYearStarts(facts, fyeMonth);
   const flowSeries = new Map<FundamentalField, ReturnType<typeof deriveFlowSeries>>();
-  for (const field of FLOW_FIELDS) flowSeries.set(field, deriveFlowSeries(collectFlow(facts, field), starts));
+  for (const field of FLOW_FIELDS) flowSeries.set(field, deriveFlowSeries(collectFlow(facts, field), starts, field));
 
   // 2. Instant fields keyed by period_end.
   const instant = new Map<FundamentalField, Map<string, PickedFact>>();
@@ -778,6 +809,10 @@ export function normalizeCompanyFacts(
 
   // 5. Finalize, split, sort, limit, then compute YoY within each series.
   const finalized = drafts.map((d) => finalizeRow(ticker, cik, d, filings));
+  // SWX post-Centuri regulated revenue cannot compare original consolidated history.
+  if (Number(cik) === 1692115) for (const row of finalized) {
+    if (String((row.raw_facts?.revenue as {tag?:string}|undefined)?.tag ?? "").includes("RegulatedOperatingRevenue")) row.missing_fields.revenue_comparability = true;
+  }
   // 数据准确性护栏: 丢弃 period_end 落在未来 90 天之后的行。XBRL 偶有公司自报错标年份
   // (如 LEGH 把 2024-Q1 标成 2033-03-31), 这种行会污染"最新期"物化(latest 按 period_end
   // 倒序选最新 → 2033>2026 被当最新, 盖住真最新季)。90 天容差留给正常的提前申报。

@@ -141,6 +141,7 @@ export type ValuationFloor = {
    * 上限(下游 Task 消费);不可评估(有效年不足/投入资本无效)→ undefined。
    */
   sustainable_growth?: number;
+  sustainable_growth_evidence?: import("./reinvestmentEvidence").ReinvestmentEvidence;
   /**
    * true when the issuer is a bank, credit institution, or insurer by SIC (spec 2026-07-26: sic∈[6020,6099]∪[6100,6199]∪[6300,6399]).
    * Drives the g_used cap onto sustainable-growth-rate (SGR) instead of the flat franchise/
@@ -241,6 +242,7 @@ export type StrikeZoneAssessment = {
 
 // ── Input contract (mapped from stored FundamentalPeriod rows) ───────────────
 export type ValuationFloorYear = {
+  revenue_comparability?: boolean;
   fiscal_year: number;
   /** Actual period end for display spans, including legacy stored FY labels. */
   period_end?: string;

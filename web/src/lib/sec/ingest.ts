@@ -1,3 +1,6 @@
+import { backfillConsolidatedRevenue } from "./issuerRevenueBackfill";
+import { discoverInterimDisclosures, filingsForInterimDiscovery } from "./interim-disclosures/discovery";
+import { readInterimDisclosureRows, saveInterimDisclosures, interimPublicationContent, type StoredInterimDisclosure } from "./interim-disclosures/store";
 import { readCompanyPublication, queueCompanyPublication } from "./fundamentalPublication";
 import { financialPublicationFingerprint } from "./publicationFingerprint";
 import { assertSecurityIdentity } from "../securities/securityIdentity";
@@ -40,6 +43,7 @@ export type IngestCompanyResult = {
   status: "success" | "failed" | "unresolved";
   foreign_issuer?: boolean;
   publication_fingerprint?: string;
+  interim_disclosures?: { supported: number; issues: string[] };
   saved: SavedSummary;
   quality_status: string;
   error?: string;
@@ -101,7 +105,7 @@ async function upsertLatest(
   quarterly: FundamentalPeriod[],
   fallbackQualityStatus?: string
 ) {
-  const latest10k = latestByForm(annual, ["10-K", "20-F"]);
+  const latest10k = latestByForm(annual, ["10-K", "20-F", "40-F"]);
   const latest10q = latestByForm(quarterly, ["10-Q", "6-K"]);
   const latest = latestPeriod([...annual, ...quarterly]);
   if (!latest) {
@@ -164,7 +168,8 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
     new Map([...(predecessor?.filings ?? []), ...ownFilings].map((filing) => [filing.accession_number, filing])).values()
   ).sort((a, b) => (b.filing_date ?? "").localeCompare(a.filing_date ?? ""));
   const forms = new Set(filings.map((filing) => filing.form));
-  const isForeignIssuer = KNOWN_FOREIGN_ISSUERS.has(ticker) || (!forms.has("10-K") && forms.has("20-F"));
+  const latestAnnualForm = submission.filings.recent.form.find(form => /^(10-K|20-F|40-F)(?:\/A)?$/.test(form));
+  const isForeignIssuer = latestAnnualForm ? !latestAnnualForm.startsWith("10-K") : KNOWN_FOREIGN_ISSUERS.has(ticker) || (!forms.has("10-K") && (forms.has("20-F") || forms.has("40-F")));
 
   // companyfacts 会漏收部分 10-Q/10-K(2026-10:~200 家缺 Q2,另有最新一期之前的空洞)→ 从原始申报的 XBRL instance 回填后再归一。
   const backfill = await backfillMissingFilings(facts, filings);
@@ -173,6 +178,9 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
   const capitalBackfill = await backfillCapitalExpenditures(facts, filings);
   if (capitalBackfill.filled.length) console.log(`  ${ticker}: ${capitalBackfill.filled.join("; ")}`);
   if (capitalBackfill.failed.length) console.warn(`  ${ticker}: capital expenditure remains unavailable for ${capitalBackfill.failed.length} annual filing(s)`);
+  const revenueBackfill = await backfillConsolidatedRevenue(facts, filings, match.cik);
+  if (revenueBackfill.filled.length) console.log(`  ${ticker}: ${revenueBackfill.filled.join("; ")}`);
+  if (revenueBackfill.failed.length) console.warn(`  ${ticker}: consolidated revenue remains unavailable: ${revenueBackfill.failed.join("; ")}`);
   // 银行总营收 = NII + 非利息收入(回填之后合成,回填进来的新季度也覆盖到)。
   synthesizeBankRevenue(facts);
   const normalized = normalizeCompanyFacts(ticker, match.cik, facts, filings, submission.fiscalYearEnd);
@@ -182,7 +190,7 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
     const patched = await applyClassSharesFallback(normalized.annual, filings);
     if (patched > 0) console.log(`  ${ticker}: class-dimension share fallback patched ${patched} FY rows`);
   }
-  return { submission, filings, isForeignIssuer, normalized, backfill, predecessor };
+  return { submission, filings, isForeignIssuer, normalized, backfill, revenueBackfill, predecessor };
 }
 
 export async function ingestCompany(tickerInput: string, supabase = createServiceSupabaseClient()): Promise<IngestCompanyResult> {
@@ -208,6 +216,17 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     }
 
     const { submission, filings, isForeignIssuer, normalized } = await prepareCompanyFundamentals(ticker, match);
+
+    let interimRows: StoredInterimDisclosure[] = [];
+    let interimUpdates: StoredInterimDisclosure[] = [];
+    let interimIssues: string[] = [];
+    if (isForeignIssuer && normalized.annual.length >= 3) {
+      const previous = (await readInterimDisclosureRows(supabase, ticker, true))!;
+      const discovered = await discoverInterimDisclosures(ticker, filingsForInterimDiscovery(ticker, submission), previous, new Date().toISOString());
+      interimUpdates = discovered.rows;
+      interimIssues = discovered.issues;
+      interimRows = [...new Map([...previous, ...interimUpdates].map(r => [`${r.accession_number}|${r.source_url}`, r])).values()];
+    }
 
     const { error: companyError } = await supabase.from("sec_companies").upsert(
       {
@@ -254,14 +273,16 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       isForeignIssuer ? "foreign" : undefined
     );
 
+    await saveInterimDisclosures(supabase, interimUpdates);
     const qualityStatus = isForeignIssuer ? "foreign" : latestPeriod([...normalized.annual, ...normalized.quarterly])?.data_quality ?? "low";
     const result: IngestCompanyResult = {
       ticker,
       cik: match.cik,
-      status: "success",
+      status: interimIssues.length ? "failed" : "success",
       publication_fingerprint: financialPublicationFingerprint(match.cik,
         [...normalized.annual, ...normalized.quarterly],
-        filings.map(f => ({ accession_number: f.accession_number, form: f.form, report_date: f.report_date, filing_date: f.filing_date }))),
+        filings.map(f => ({ accession_number: f.accession_number, form: f.form, report_date: f.report_date, filing_date: f.filing_date })), interimPublicationContent(interimRows)),
+      interim_disclosures: { supported: interimRows.filter(r => r.status === "supported").length, issues: interimIssues },
       foreign_issuer: isForeignIssuer,
       saved: {
         company: true,
@@ -273,7 +294,7 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       quality_status: qualityStatus
     };
     await queueCompanyPublication(supabase, ticker, result.publication_fingerprint!, priorPublication);
-    await finishRun(supabase, runId, "success", result);
+    await finishRun(supabase, runId, result.status, result, interimIssues.length ? interimIssues.join("; ") : undefined);
     return result;
   } catch (error) {
     const message = errorMessage(error);
