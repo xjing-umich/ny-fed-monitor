@@ -41,3 +41,15 @@ for (const lang of ["en", "zh"] as const) for (const kind of ["stocks", "investo
   assert(!listMetadata(lang, kind, 0, null).title.includes("Q2"), "empty data must not invent a quarter");
 }
 console.log("seo.check OK");
+
+// Ranking snippets use real quarter/leader data, and do not invent leaders on empty views.
+for (const lang of ['en','zh'] as const) {
+ const { rankingMetadata } = require('./seo');
+ for (const kind of ['buys','sells','consensus'] as const) {
+  const meta = rankingMetadata(lang, kind, '2026-06-30', { ticker: 'MSFT', count: 20 });
+  assert(meta.description.includes('MSFT') && meta.description.includes('20'), 'actual leader in snippet');
+  assert(meta.title.includes(lang === 'en' ? 'Q2 2026' : '2026Q2'), 'actual comparison quarter in title');
+  assert(snippetWidth(meta.description) <= 160, 'bounded ranking snippet');
+  assert(!rankingMetadata(lang, kind, null, null).description.includes('MSFT'), 'no invented leader');
+ }
+}

@@ -12,8 +12,7 @@ export type DirectoryItem = {
 /**
  * 列表枢纽页的全量目录(纯 RSC, 零 hydration)。
  *
- * /investors、/stocks 的交互表格是客户端组件(useSearchParams + 按钮分页),预渲染时整块
- * 落到 Suspense fallback,服务端 HTML 里一个条目链接都没有;爬虫只能靠 sitemap 找到详情页。
+ * /investors、/stocks 默认第一页同时输出数字和链接。其余分页条目也须有服务器可见的入口。
  * 这里把全部条目按字母序输出为普通 <a>,保证 sitemap 里的每个 URL 都有一条站内链接。
  * 默认折叠,不和上方表格抢版面;<details> 内的链接照常在 HTML 中,可被抓取。
  */

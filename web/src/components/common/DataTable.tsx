@@ -270,7 +270,7 @@ export function DataTable<T>({
                   {c.cell(row, i)}
                 </span>
               ))}
-              <span className="min-w-0 font-medium text-[var(--tt-text)]">
+              <span className="min-w-0 flex-1 font-medium text-[var(--tt-text)]">
                 {primaryCol.cell(row, i)}
               </span>
             </span>

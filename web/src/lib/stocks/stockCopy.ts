@@ -68,7 +68,7 @@ export const STOCK_PAGE_COPY = {
   zh: {
     subtitle: (n: number) => `${n} 位超级投资者持有。`,
     disclaimer:
-      "仅供教育与信息参考，不构成投资建议。13F 持仓为机构自行申报，可能滞后最多 45 天。",
+      "仅供教育与信息参考，不构成投资建议。13F 持仓为机构自行申报的季末快照，通常在季末后 45 天内申报，遇周末或假日顺延；不代表当前仓位。",
     price: "现价",
     marginOfSafety: "安全边际",
     bq: {
@@ -133,7 +133,7 @@ export const STOCK_PAGE_COPY = {
   en: {
     subtitle: (n: number) => `Held by ${n} superinvestor${n === 1 ? "" : "s"}.`,
     disclaimer:
-      "Educational data only — not investment advice. 13F positions are self-reported and can lag up to 45 days.",
+      "Educational data only — not investment advice. 13F positions are self-reported quarter-end snapshots, usually filed within 45 days after quarter-end, extended for weekends and holidays; they do not represent current positions.",
     price: "Price",
     marginOfSafety: "Margin of safety",
     bq: {

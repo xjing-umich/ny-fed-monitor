@@ -1,8 +1,10 @@
+import { isLikelyTicker } from "@/lib/externalLinks";
+import { stockPath } from "@/lib/urls";
 import { date as formatDate } from "@/lib/i18n/format";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, collectionLd, breadcrumbLd } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
@@ -108,8 +110,14 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
 
   const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
 
+  const path = localePath(lang, '/stocks/screener');
+  const name = `${ui.stocksTitle} · ${VIEWS.find((v) => v.key === view)?.[isZh ? 'zh' : 'en'] ?? view}`;
+  const ld = [collectionLd({ lang, path, name, description: isConviction ? convictionIntro : geo,
+    items: sortedRows.filter((r) => isLikelyTicker(r.ticker)).map((r) => ({ name: `${r.issuer} (${r.ticker})`, path: stockPath(lang, r.ticker) })), limit: 100 }),
+    breadcrumbLd(lang, [{ name: ui.stocksTitle, path: localePath(lang, '/stocks') }, { name: isZh ? '按价值区间' : 'By value range', path }])];
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <SubNav lang={lang} section="stocks" active="screener" />
 
       <div className="mb-4">

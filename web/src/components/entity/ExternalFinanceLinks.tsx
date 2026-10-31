@@ -18,12 +18,14 @@ export function ExternalFinanceLinks({
   variant,
   lang,
   exchange,
+  includeSec = true,
 }: {
   ticker: string;
   variant: Variant;
   lang: Lang;
   /** Google Finance 交易所代码(如 NASDAQ/NYSE)；缺省则 Google 回退搜索。 */
   exchange?: string | null;
+  includeSec?: boolean;
 }): React.ReactElement {
   const links = buildExternalFinanceLinks(ticker, exchange);
   const t = LABELS[lang];
@@ -64,7 +66,7 @@ export function ExternalFinanceLinks({
         <GoogleIcon size={iconSize} />
         {variant === "prominent" ? <span>Google Finance</span> : null}
       </a>
-      <a
+      {includeSec && <a
         href={links.sec}
         target="_blank"
         rel="noopener noreferrer"
@@ -74,7 +76,7 @@ export function ExternalFinanceLinks({
       >
         <FileText size={iconSize} strokeWidth={1.75} />
         {variant === "prominent" ? <span>SEC EDGAR</span> : null}
-      </a>
+      </a>}
     </span>
   );
 }

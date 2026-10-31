@@ -9,6 +9,7 @@ import { EntityName } from "@/components/common/EntityName";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
+import { ListQuerySync } from "@/components/list/ListQuerySync";
 import { useListState } from "@/components/list/useListState";
 import { LIST_PAGE_SIZE, clampPage } from "@/components/list/listQuery";
 import {
@@ -124,7 +125,8 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
+      <ListQuerySync onChange={params.syncQuery} />
       <ListToolbar
         searchLabel={ui.search}
         searchPlaceholder={ui.search}

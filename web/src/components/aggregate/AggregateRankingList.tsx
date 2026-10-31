@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import { OptionalLink } from '@/components/common/OptionalLink';
 import type { Lang } from "@/lib/nav";
 import { formatUSD } from "@/lib/format";
 import { EntityName } from "@/components/common/EntityName";
@@ -38,9 +38,9 @@ export function AggregateRankingList({
         <li key={r.ticker} className="flex items-center gap-3 py-3">
           <span className="w-6 shrink-0 font-data text-sm tabular-nums text-[var(--tt-faint)]">{i + 1}</span>
           <div className="min-w-0 flex-1">
-            <Link href={r.href} className="font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
+            <OptionalLink href={r.href} className="font-medium text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
               <EntityName issuer={r.issuer} ticker={r.ticker} lang={lang} />
-            </Link>
+            </OptionalLink>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--tt-faint)]">
               {r.pctOfAggregate != null && (
                 <span className="font-data tabular-nums">

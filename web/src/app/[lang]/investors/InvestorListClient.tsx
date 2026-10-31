@@ -12,6 +12,7 @@ import { Badge, type BadgeTone } from "@/components/common/Badge";
 import { quarterLabel, freshness13F, daysAgo, globalLatestPeriod, isScopeChange, parseUTC } from "@/lib/freshness/derive";
 import { ListToolbar } from "@/components/list/ListToolbar";
 import { ListPagination } from "@/components/list/ListPagination";
+import { ListQuerySync } from "@/components/list/ListQuerySync";
 import { useListState } from "@/components/list/useListState";
 import {
   LIST_PAGE_SIZE,
@@ -272,7 +273,8 @@ export const InvestorListClient: React.FC<Props> = ({ lang, managers, nowMs }) =
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
+      <ListQuerySync onChange={params.syncQuery} />
 
       <ListToolbar
         searchLabel={t.search}

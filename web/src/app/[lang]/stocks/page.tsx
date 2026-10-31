@@ -1,5 +1,5 @@
 import { date as formatDate } from "@/lib/i18n/format";
-import { cache, Suspense } from "react";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
@@ -13,7 +13,6 @@ import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { cleanIssuer } from "@/lib/format";
 import { LinkDirectory } from "@/components/list/LinkDirectory";
-import { ListFallback } from "@/components/list/ListFallback";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
@@ -139,9 +138,7 @@ export default async function StocksIndexPage({
         />
       </div>
 
-      <Suspense fallback={<ListFallback />}>
-        <StocksTable lang={lang} rows={tableRows} />
-      </Suspense>
+      <StocksTable lang={lang} rows={tableRows} />
       {/* 全量目录:与 sitemap 同一谓词(isLikelyTicker + 去重),保证 sitemap 里每个个股 URL
           都有一条服务端可见的站内链接。 */}
       <LinkDirectory

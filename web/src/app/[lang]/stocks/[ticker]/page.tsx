@@ -1,5 +1,4 @@
 import { IDENTITY_QUARANTINES, isIdentityQuarantined } from "@/lib/securities/securityIdentity";
-import { date as formatDate } from "@/lib/i18n/format";
 import { shares as formatShares } from "@/lib/i18n/format";
 import React from "react";
 import Link from "next/link";
@@ -7,14 +6,14 @@ import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagerIndex, getManagerDetail } from "@/lib/managers/source";
 import type { HoldingChange } from "@/lib/managers/types";
-import { readStockHolders, readStockTrend, readCoOwnership } from "@/lib/managers/consensusRead";
+import { readStockHolders, readStockTrend, readCoOwnership, read13fSourceFilings } from "@/lib/managers/consensusRead";
 import {
   getCusipMap,
   tickerToCusips,
   getTickerExchangeMap,
   getSecurityMeta,
 } from "@/lib/managers/securities";
-import { countsAsCurrentHolder, effectiveMovesPeriod, filingFreshness, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
+import { countsAsCurrentHolder, effectiveMovesPeriod, quarterLabel, globalLatestPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { investorPath, stockPath, localePath, HTML_LANG } from "@/lib/urls";
 import { resolveEntity, getEntityAliases } from "@/lib/aliases/resolve";
@@ -26,8 +25,8 @@ import { ExternalFinanceLinks } from "@/components/entity/ExternalFinanceLinks";
 import { formatUSD, cleanIssuer, fmtMarginPct, zhSpacing } from "@/lib/format";
 import { priceFactNote, priceSourceName } from "@/lib/valuation/asOf";
 import { ivBelowFloorConflict } from "@/lib/valuation/deriveValuationVerdict";
-import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, securitySchemaType, edgarFilingsUrl } from "@/lib/seo";
-import { snapshotTime } from "@/lib/datasetTime";
+import { altFor, ogFor, datasetLd, breadcrumbLd, fitSnippet, snippetWidth, securitySchemaType, edgar13fSourceUrl } from "@/lib/seo";
+import { snapshotTime, snapshotLabel } from "@/lib/datasetTime";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { buildStockProse } from "@/lib/stocks/stockProse";
 import { StockProse } from "@/components/entity/StockProse";
@@ -116,11 +115,10 @@ export async function generateMetadata({
     const total = formatUSD(held.reduce((s, r) => s + r.value, 0), lang);
     const topRow = [...held].sort((a, b) => b.value - a.value)[0];
     const topFor = (l: Lang) => managerLabel(l, topRow.slug, topRow.person);
-    const q = quarterLabel(displayPeriod, lang);
-    const mixed = held.some((r) => r.period && r.period !== displayPeriod);
+    const q = snapshotLabel(lang, held.map((r) => r.period));
     // 从详到简,取第一个不超出搜索摘要长度的写法:先省来源句,再省最大持有人。
-    const zhHead = `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${mixed ? "多数申报" : ""}截至 ${q}）`;
-    const enHead = `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined as of ${q}${mixed ? " (most filings)" : ""}`;
+    const zhHead = `${n} 位超级投资者持有 ${zhIssuer}（${ticker}），合计 ${total}（${q}）`;
+    const enHead = `${n} superinvestor${n === 1 ? " holds" : "s hold"} ${issuer} (${ticker}): ${total} combined (${q})`;
     description = {
       zh: zhSpacing(fitSnippet(
         `${zhHead}，最大持有人 ${topFor("zh")}。各家仓位与季度增减，来自 SEC 13F 申报。`,
@@ -148,6 +146,9 @@ export async function generateMetadata({
           description: description?.zh ?? zhSpacing(`谁在持有 ${zhIssuer}（${ticker}）？查看机构 13F 持仓明细、仓位大小与持有分布（数据来自 SEC 申报）。`) }
       : { title: `${issuer} (${ticker}) ${noun.en} — Who's Holding | Compounder`,
           description: description?.en ?? `Which superinvestors hold ${issuer} (${ticker})? See institutional 13F holders, position sizes, and ownership from SEC filings.` };
+  if (lang === 'zh' && snippetWidth(meta.title) > 90) {
+    meta.title = `${stockZhName(ticker) ?? issuer}（${ticker}）${noun.zh}持仓 — Compounder · 复利`;
+  }
   return {
     ...meta,
     alternates,
@@ -422,19 +423,14 @@ export default async function StockTickerPage({
   const totalValue = holders.reduce((sum, r) => sum + r.value, 0);
   const topHolder = [...holders].sort((a, b) => b.value - a.value)[0];
 
-  // "截至":展示季度;无全站口径时回退到本票持有人的最新期。提交日取该季内最晚一份。
+  // Comparison baseline only; actual source periods are labeled separately below.
   const asOfPeriod = displayPeriod || (globalLatestPeriod(filings.map((f) => f.period)) ?? "");
-  const asOfFiledAt = filings
-    .filter((f) => f.period === asOfPeriod)
-    .reduce((max, f) => (f.filedAt > max ? f.filedAt : max), "");
   // 已交下一季的早申报者(含在新季清仓、因而不在表里的):正文里点明,避免混期让读者误读口径。
   const aheadBySlug = new Map<string, string>();
   for (const f of filings) if (asOfPeriod && f.period > asOfPeriod) aheadBySlug.set(f.slug, f.period);
   const ahead = aheadBySlug.size
     ? { count: aheadBySlug.size, period: globalLatestPeriod([...aheadBySlug.values()])! }
     : undefined;
-  // 持有人表是否混期(含落后的旧申报):FAQ 措辞据此区分。
-  const mixedPeriods = holders.some((h) => h.period && h.period !== asOfPeriod);
 
   // 确定性服务端正文(SEO 支柱 + 差异化): 复用已聚合的持有人/动向数据派生唯一正文。
   const stockProse = buildStockProse(
@@ -499,9 +495,15 @@ export default async function StockTickerPage({
     ? sec.quarterly?.find((q) => q.period_end === floorInput.ttm!.period_end && !q.is_derived)?.filing_date ?? undefined
     : sec.annual?.[0]?.filing_date ?? undefined;
   const annualForm = sec.annual?.[0]?.form ?? "10-K";
+  const fundamentalsFiling = floorInput.ttm
+    ? sec.quarterly?.find((q) => q.period_end === floorInput.ttm!.period_end && !q.is_derived)
+    : sec.annual?.[0];
+  const fundamentalsHref = fundamentalsFiling?.cik && /^\d{10}-\d{2}-\d{6}$/.test(fundamentalsFiling.accession_number ?? '')
+    ? `https://www.sec.gov/Archives/edgar/data/${Number(fundamentalsFiling.cik)}/${fundamentalsFiling.accession_number.replace(/-/g, '')}/` : undefined;
   const fundamentalsSource = fundamentalsAsOf
     ? {
         name: floorInput.ttm ? `SEC ${annualForm} + 10-Q (XBRL)` : `SEC ${annualForm} (XBRL)`,
+        href: fundamentalsHref,
         asOf: fundamentalsAsOf,
         filed: fundamentalsFiled,
         status: fundamentalsStale ? ("stale" as const) : ("fresh" as const),
@@ -617,8 +619,8 @@ export default async function StockTickerPage({
           "@type": "Answer",
           text:
             lang === "zh"
-              ? zhSpacing(`根据各位投资人最新一份 SEC 13F 披露（${mixedPeriods ? "多数" : ""}截至 ${formatDate(asOfPeriod, lang)} 季度），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue, lang)}，最大持有人为 ${topHolder.person}。`)
-              : `Per each investor's latest SEC 13F filing (${mixedPeriods ? "most for " : ""}the quarter ended ${formatDate(asOfPeriod, lang)}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue, lang)}, with ${topHolder.person} the largest holder.`,
+              ? zhSpacing(`根据各位投资人最新一份 SEC 13F 披露（${snapshotLabel(lang, holders.map((h) => h.period))}），${n} 位超级投资者持有 ${displayName}（${ticker}）：${holderNames.join("、")}。合计市值约 ${formatUSD(totalValue, lang)}，最大持有人为 ${topHolder.person}。`)
+              : `Per each investor's latest SEC 13F filing (${snapshotLabel(lang, holders.map((h) => h.period))}), ${n} superinvestor${n === 1 ? "" : "s"} hold ${issuer} (${ticker}): ${holderNames.join(", ")}. Combined value held is about ${formatUSD(totalValue, lang)}, with ${topHolder.person} the largest holder.`,
         },
       },
     ],
@@ -645,6 +647,7 @@ export default async function StockTickerPage({
 
   // Dataset structured data — the stock's 13F holders table as a factual,
   // SEC-sourced dataset (GEO-friendly; mirrors the investor page's Dataset).
+  const sourceFilings = await read13fSourceFilings(idx.managers.filter((m) => holders.some((h) => h.slug === m.slug)).map((m) => m.cik));
   const dataset = datasetLd({
     lang,
     name:
@@ -656,11 +659,14 @@ export default async function StockTickerPage({
         ? `持有 ${issuer}（${ticker}）的超级投资者及其持股数量、市值与组合权重，来自 SEC 13F 季度申报。`
         : `Superinvestors holding ${issuer} (${ticker}) with share counts, market values, and portfolio weights, from quarterly SEC 13F filings.`,
     path: localePath(lang, `/stocks/${ticker}`),
-    // Snapshots lack accession numbers: cite each actual holder's 13F filing list.
+    // Match the actual holder period/submission; ambiguous or absent identity stays a filing list.
     sources: holders.flatMap((h) => {
       const manager = idx.managers.find((m) => m.slug === h.slug);
       const filing = filings.find((f) => f.slug === h.slug && f.period === h.period);
-      return manager ? [{ url: edgarFilingsUrl(manager.cik), name: `${manager.person} SEC 13F filing`, period: h.period, filedAt: filing?.filedAt }] : [];
+      if (!manager) return [];
+      const matching = sourceFilings.filter((f) => f.cik === manager.cik && f.period === h.period && (!filing?.filedAt || f.filed_at === filing.filedAt));
+      const accession = matching.length === 1 ? matching[0].accession : undefined;
+      return [{ url: edgar13fSourceUrl(manager.cik, accession), name: `${manager.person} SEC 13F ${accession ? 'filing' : 'filings and notices'}`, period: h.period, filedAt: filing?.filedAt }];
     }),
     snapshotPeriods: holders.map((h) => h.period),
     comparisonPeriod: asOfPeriod || null,
@@ -787,7 +793,7 @@ export default async function StockTickerPage({
         // 现价、安全边际、持有人数、合计市值都移进首屏结论带,不在这里重复。
         keyFacts={[]}
         sources={[
-          { name: "SEC EDGAR 13F", asOf: asOfPeriod, filed: asOfFiledAt, status: filingFreshness(asOfPeriod || null, new Date()) },
+          { name: "SEC EDGAR 13F", href: "#filing-sources", asOf: "", periodLabel: snapshotLabel(lang, holders.map((h) => h.period)) },
           ...(latestPrice
             ? [{ name: priceSourceName(lang, latestPrice.source), asOf: latestPrice.date, status: latestPrice.stale ? ("stale" as const) : ("fresh" as const) }]
             : []),
@@ -1022,6 +1028,13 @@ export default async function StockTickerPage({
             </section>
           )}
 
+          <details id="filing-sources" className="border-t border-[var(--tt-border)] pt-3">
+            <summary className="cursor-pointer text-sm text-[var(--tt-text)]">{lang === 'zh' ? '持有人原始 13F 申报来源' : 'Original 13F sources for these holders'}</summary>
+            <ul className="mt-3 space-y-2 text-sm text-[var(--tt-text)]">
+              {dataset.isBasedOn?.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{source.name}</a>{source.temporalCoverage ? ` · ${source.temporalCoverage}` : ''}{source.datePublished ? ` · ${lang === 'zh' ? '提交' : 'filed'} ${source.datePublished}` : ''}</li>)}
+            </ul>
+          </details>
+
           <DiscoveryHandoff {...stockHandoffFor(handoffVerdict, ticker, lang)} />
 
           {/* 外链沉到正文末、Sources 前：不抢质量/估值/持有人主线；detail=图标无框 */}
@@ -1033,7 +1046,7 @@ export default async function StockTickerPage({
               <span className="font-data text-xs text-[var(--tt-faint)]">
                 {ui.alsoOn}
               </span>
-              <ExternalFinanceLinks ticker={ticker} exchange={exchange} variant="detail" lang={lang} />
+              <ExternalFinanceLinks ticker={ticker} exchange={exchange} includeSec={schemaType === "Corporation"} variant="detail" lang={lang} />
             </section>
           )}
         </>

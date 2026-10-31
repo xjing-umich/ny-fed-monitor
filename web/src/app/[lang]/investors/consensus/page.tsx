@@ -1,4 +1,4 @@
-import React from "react";
+import React, { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
@@ -7,7 +7,7 @@ import { getManagerIndex } from "@/lib/managers/source";
 import { stockPath, absoluteUrl, localePath } from "@/lib/urls";
 import { cleanIssuer } from "@/lib/format";
 import { isLikelyTicker } from "@/lib/externalLinks";
-import { altFor, ogFor } from "@/lib/seo";
+import { altFor, ogFor, rankingMetadata } from "@/lib/seo";
 import { ShareButton } from "@/components/share/ShareButton";
 import { buildShareText, shareLabels } from "@/lib/share/shareText";
 import SubNav from "@/components/shell/SubNav";
@@ -32,9 +32,8 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const isZh = rawLang === "zh";
   const lang = isZh ? "zh" : "en";
   const alternates = altFor(lang, "/investors/consensus");
-  const meta = isZh
-    ? { title: "共识持仓 · 超级投资者 — Compounder · 复利", description: "顶级价值投资者 13F 中被最多人同时持有的股票，含季度环比。" }
-    : { title: "Consensus holdings · Superinvestors — Compounder", description: "Stocks held by the most superinvestors (13F), with quarter-over-quarter change." };
+  const { rows, effective } = await getConsensusData();
+  const meta = rankingMetadata(lang, 'consensus', effective.period, rows[0] ? { ticker: rows[0].cusip, count: rows[0].holderCount } : null);
   return {
     ...meta,
     alternates,
@@ -49,7 +48,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
 
-  const [rows, deltas, idx] = await Promise.all([mostHeld(50), holderDeltas(), getManagerIndex()]);
+  const { rows, deltas, idx, effective } = await getConsensusData();
   const verdicts = await readValuationVerdicts(rows.map((r) => r.cusip));
   // 榜上估值徽章来自估值快照:标出所用收盘价日期。
   const valuationAsOf = valuationAsOfText(lang, latestIsoDate([...verdicts.values()].map((v) => v.priceDate)));
@@ -58,7 +57,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   const overdueManagers = idx.managers.filter((m) => !countsAsCurrentHolder(m.period, now));
   const managerCount = idx.managers.length - overdueManagers.length;
   // 「数据截至」与首页 masthead、buys/sells、个股页同一口径(effectiveMovesPeriod)。
-  const asOfLabel = quarterLabel(effectiveMovesPeriod(idx.managers.map((m) => m.period), now).period, lang) || undefined;
+  const asOfLabel = quarterLabel(effective.period, lang) || undefined;
   const totalSum = rows.reduce((s, r) => s + r.totalValue, 0) || 1;
 
   const rankRows: RankRow[] = rows.map((r) => ({
@@ -121,3 +120,8 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
     </>
   );
 }
+
+const getConsensusData = cache(async () => {
+  const [rows, deltas, idx] = await Promise.all([mostHeld(50), holderDeltas(), getManagerIndex()]);
+  return { rows, deltas, idx, effective: effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()) };
+});

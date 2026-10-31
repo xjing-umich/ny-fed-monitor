@@ -11,6 +11,7 @@ export const LAST_UPDATED: Record<LegalSlug, string> = {
 };
 
 export interface LegalSection {
+  id?: string;
   heading: string;
   paragraphs: string[];
 }

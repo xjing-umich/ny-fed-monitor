@@ -49,7 +49,7 @@ export async function generateMetadata({
   }
   const article = getArticle(slug, lang);
   if (!article) return {};
-  const title = `${article.title} — ${titleBrand(lang)}`;
+  const title = `${article.seoTitle ?? article.title} — ${titleBrand(lang)}`;
   return {
     title,
     description: article.description,
@@ -99,7 +99,7 @@ export default async function ArticlePage({
 
   // 季度快照文章:顶部注明数据季度与写作日期,并指向实时榜单,避免过季数字被当成现状引用。
   const snapshotNotice = article.snapshotPeriod ? (
-    <SnapshotNotice lang={lang} period={article.snapshotPeriod} written={article.updated} note={article.snapshotNote} />
+    <SnapshotNotice lang={lang} period={article.snapshotPeriod} written={article.written ?? article.published} note={article.snapshotNote} />
   ) : null;
   const backLabel = lang === "zh" ? "← 返回学习" : "← Back to Learn";
 
@@ -139,8 +139,9 @@ export default async function ArticlePage({
     headline: article.title,
     description: article.description,
     image: `${absoluteUrl(localePath(lang, `/learn/${slug}`))}/opengraph-image`,
-    datePublished: article.updated,
+    datePublished: article.published,
     dateModified: article.updated,
+    citation: article.references?.map((source) => source.url),
     inLanguage: HTML_LANG[lang],
     author: { "@type": "Organization", name: "Compounder", url: "https://thecompounder.fyi" },
     publisher: {
@@ -176,7 +177,7 @@ export default async function ArticlePage({
           {backLabel}
         </Link>
       </div>
-      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={formatDate(article.updated, lang)} updatedLabel={updatedLabel} renderParagraph={renderParagraph} notice={snapshotNotice} />
+      <ProseDoc doc={article} eyebrow={lang === "zh" ? "学习" : "Learn"} updated={formatDate(article.updated, lang)} updatedLabel={updatedLabel} renderParagraph={renderParagraph} notice={snapshotNotice} footer={article.references?.length ? <section id="references" className="mt-8 border-t border-[var(--tt-border)] pt-5"><h2 className="text-xl font-semibold text-[var(--tt-text)]">{lang === 'zh' ? '资料来源' : 'Sources'}</h2><ul className="mt-3 space-y-2 text-sm text-[var(--tt-text)]">{article.references.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{source.label}</a></li>)}</ul></section> : null} />
 
       {/* 文中点名实体的内链(SEO 内链: 把文章权重传给对应实体页) */}
       {article.related && article.related.length > 0 && (

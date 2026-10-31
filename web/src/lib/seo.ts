@@ -1,3 +1,4 @@
+import { quarterLabel } from "./freshness/derive";
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
 import { SITE_ORIGIN, absoluteUrl, localePath, HTML_LANG, hreflangs } from "@/lib/urls";
@@ -112,9 +113,18 @@ export function listMetadata(lang: Lang, kind: "stocks" | "investors", count: nu
 /** 13F 原始申报属美国政府公开记录;与投资人页 Dataset 同一许可声明。 */
 export const SEC_DATA_LICENSE = "https://creativecommons.org/publicdomain/mark/1.0/";
 
-/** EDGAR 公司申报列表页(按 CIK,只看 13F-HR)。 */
+/** Include notices as well as reports: a manager may delegate its holdings filing. */
 export function edgarFilingsUrl(cik: string): string {
-  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik.padStart(10, "0")}&type=13F-HR&dateb=&owner=include&count=40`;
+  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik.padStart(10, "0")}&type=13F&dateb=&owner=include&count=40`;
+}
+
+/** Manager and filing-agent CIKs do not prove the actual reporting filer.
+ * SEC accession search locates the original filing even for delegated 13F-NT reports.
+ * Verified 2026-10-31 against Pershing Square's 0001172661-26-003790. */
+export function edgar13fSourceUrl(cik: string, accession?: string | null): string {
+  return /^\d{10}-\d{2}-\d{6}$/.test(accession ?? '')
+    ? `https://www.sec.gov/edgar/search/#/q=${accession}&dateRange=all`
+    : edgarFilingsUrl(cik);
 }
 
 /** Classify the security itself; a fund share is not its management company. */
@@ -221,4 +231,23 @@ export function altFor(lang: Lang, path: string) {
     canonical: localePath(lang, path),
     languages: hreflangs(path),
   };
+}
+
+/** Search snippets share the same baseline and leaders as the visible ranking. */
+export function rankingMetadata(lang: Lang, kind: 'buys' | 'sells' | 'consensus', period: string | null, leader: { ticker: string; count: number } | null) {
+  const q = quarterLabel(period, lang);
+  const label = lang === 'zh'
+    ? { buys: '最多人买', sells: '最多人卖', consensus: '共识持仓' }[kind]
+    : { buys: 'Top buys', sells: 'Top sells', consensus: 'Consensus holdings' }[kind];
+  const title = `${label}${q ? ` · ${q}` : ''} — ${titleBrand(lang)}`;
+  const description = lang === 'zh'
+    ? fitSnippet(
+      `${label}：${leader ? `${leader.ticker} 居首，${leader.count} 位超级投资者${kind === 'buys' ? '新进或增持' : kind === 'sells' ? '减持或清仓' : '持有'}。` : '查看超级投资者的申报数据。'}${q ? `季度动作以 ${q} 为比较基准。` : ''}来源：SEC 13F。`,
+      `${label}${q ? ` · ${q}` : ''}。${leader ? `${leader.ticker} 居首，涉及 ${leader.count} 位投资人。` : ''}来源：SEC 13F。`,
+    )
+    : fitSnippet(
+      `${leader ? `${leader.ticker} leads with ${leader.count} superinvestors ${kind === 'buys' ? 'opening or adding' : kind === 'sells' ? 'trimming or exiting' : 'reporting holdings'}. ` : ''}${q ? `${q} change-comparison baseline. ` : ''}${label} from SEC 13F filings.`,
+      `${label}${q ? ` · ${q}` : ''}. ${leader ? `${leader.ticker}: ${leader.count} superinvestors. ` : ''}Source: SEC 13F filings.`,
+    );
+  return { title, description };
 }

@@ -21,6 +21,14 @@ const checks = [
   "src/components/stocks/StockConclusionBand.check.tsx",
   "src/app/dataset-pages.check.tsx",
   "src/app/sitemap-time.check.ts",
+  "src/lib/stocks/stockLinks.check.ts",
+  "src/components/investor/InvestorBlocks.check.tsx",
+  "src/components/entity/SourceFooter.check.tsx",
+  "src/lib/seo.check.ts",
+  "src/lib/learn.check.ts",
+  "src/lib/managers/profileProse.check.ts",
+  "src/lib/managers/consensus-links.check.ts",
+  "src/app/move-links.check.tsx",
 ];
 for (const check of checks) {
   const result = spawnSync(process.execPath, [path.join(root, "node_modules/tsx/dist/cli.mjs"), "--tsconfig", "scripts/tsconfig.json", check], { cwd: root, stdio: "inherit" });

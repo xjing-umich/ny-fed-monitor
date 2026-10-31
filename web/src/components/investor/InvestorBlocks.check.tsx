@@ -53,7 +53,7 @@ import { InvestorHoldingsTable } from "./InvestorHoldingsTable";
   ]);
   const html = renderToStaticMarkup(
     <InvestorHoldingsTable holdings={holdings} lang="zh" cusipToTicker={new Map([["C4", "LONE"]])} verdicts={new Map()} holderCounts={new Map()}
-      rowSignals={rowSignals} changeByKey={changeByKey} hasPrior lonelyTickers={new Set(["LONE"])} filingUrl="https://www.sec.gov/x/" />,
+      rowSignals={rowSignals} changeByKey={changeByKey} hasPrior lonelyTickers={new Set(["LONE"])} filingUrl="https://www.sec.gov/x/" availableStocks={new Set(["C0", "LONE"])} />,
   );
   const t = text(html);
   assert.ok(html.includes('id="holdings"') && html.includes("scroll-mt-32"), "锚点 id");
@@ -67,10 +67,14 @@ import { InvestorHoldingsTable } from "./InvestorHoldingsTable";
   assert.ok(!t.includes("持股数") && !t.includes("信号"), "删掉股数列与信号列");
   const few = renderToStaticMarkup(
     <InvestorHoldingsTable holdings={holdings.slice(0, 3)} lang="en" cusipToTicker={new Map()} verdicts={new Map()} holderCounts={new Map()}
-      rowSignals={new Map()} changeByKey={new Map()} hasPrior={false} lonelyTickers={new Set()} filingUrl="u" />,
+      rowSignals={new Map()} changeByKey={new Map()} hasPrior={false} lonelyTickers={new Set()} filingUrl="u" availableStocks={new Set()} />,
   );
   assert.ok(!few.includes("<details") && !text(few).includes("SEC filing"), "少于 10 行:无折叠、无原文链接");
   assert.ok(text(few).includes("This qtr") && !text(few).includes("Unchanged"), "无上季:本季列写 —");
 }
 
+const guarded = renderToStaticMarkup(<QuarterMovesBlock lang="en" {...props} hrefOf={(c) => c === 'U' ? '/stocks/U' : ''} />);
+assert.ok(guarded.includes('href="/stocks/U"'));
+assert.ok(!guarded.includes('href=""') && !guarded.includes('href="/stocks/E1"'));
+assert.ok(text(guarded).includes('E1 CO'), 'exit text remains when no detail page exists');
 console.log("InvestorBlocks.check OK");

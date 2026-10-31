@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { Lang } from "@/lib/nav";
-import { MovesPage, notFoundIfBadLang } from "../_movesPage";
+import { MovesPage, movesMetadata, notFoundIfBadLang } from "../_movesPage";
 import { altFor, ogFor } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 
@@ -11,9 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const { lang: rawLang } = await params;
   const lang: Lang = rawLang === "en" ? "en" : "zh";
   const alternates = altFor(lang, "/investors/buys");
-  const meta = lang === "zh"
-    ? { title: "最多人买 · 超级投资者 — Compounder · 复利", description: "按最新可比 13F 申报季，被最多超级投资者新进或增持的股票。" }
-    : { title: "Top buys · Superinvestors — Compounder", description: "Stocks most superinvestors opened or added in the latest comparable 13F quarter." };
+  const meta = await movesMetadata(lang, "buy");
   return {
     ...meta,
     alternates,

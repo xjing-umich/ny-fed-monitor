@@ -165,10 +165,10 @@ export function buildInvestorProse(d: ManagerDetail, lang: Lang): ProseParagraph
   paras.push(
     en
       ? [
-          `A 13F is filed roughly 45 days after quarter-end and covers only long positions in US-listed equities, so it is a lagging and partial view of the portfolio. Source: SEC EDGAR.`,
+          `Form 13F covers securities on the SEC's Section 13(f) list, including stocks, funds and certain convertible debt; it is not the full portfolio. This site's holder totals exclude put/call positions. Holdings are quarter-end snapshots, normally filed within 45 days after quarter-end, extended for weekends and holidays. Source: SEC EDGAR.`,
         ]
       : [
-          `13F 通常在季度结束后约 45 天提交，且仅涵盖美股多头持仓，因此是滞后且不完整的组合视图。来源：SEC EDGAR。`,
+          `13F 涵盖 SEC 的 13(f) 证券名单，包括股票、基金及部分可转债，不是完整组合。本站持有人汇总另外排除了看涨和看跌期权。持仓属于季末快照，通常在季末后 45 天内申报，遇周末或假日顺延。来源：SEC EDGAR。`,
         ],
   );
 

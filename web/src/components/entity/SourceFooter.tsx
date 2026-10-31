@@ -5,7 +5,7 @@ import type { FreshnessStatus } from "@/lib/freshness/derive";
 type Lang = "zh" | "en";
 
 // asOf = 数据截止日(13F 为报告期季末);filed = 递交 SEC 的日期。两者语义不同,勿混。
-export type Source = { name: string; asOf: string; filed?: string; status?: FreshnessStatus };
+export type Source = { name: string; href?: string; asOf: string; periodLabel?: string; filed?: string; status?: FreshnessStatus };
 
 export type SourceFooterProps = {
   lang: Lang;
@@ -35,9 +35,9 @@ export function SourceFooter({ lang, sources }: SourceFooterProps) {
               </>
             )}
             <span className="not-italic font-medium text-[var(--tt-text)]">
-              {src.name}
+              {src.href ? <a href={src.href} target={src.href.startsWith("http") ? "_blank" : undefined} rel={src.href.startsWith("http") ? "noopener noreferrer" : undefined} className="underline underline-offset-2">{src.name}</a> : src.name}
             </span>{" "}
-            {asOfLabel} {formatDate(src.asOf, lang)}
+            {asOfLabel} {src.periodLabel ?? formatDate(src.asOf, lang)}
             {src.filed ? (
               <span className="text-[var(--tt-faint)]">
                 {" "}

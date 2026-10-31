@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LIST_Q_DEBOUNCE_MS,
   LIST_Q_MAX,
@@ -16,19 +16,19 @@ import {
 export function useListState(opts: ParseOpts) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [query, syncQuery] = useState("");
   const { defaultSort, hasVf } = opts;
   // 用字符串 dep 稳定 allowedSorts 数组 identity(调用方每次渲染都新建数组)。
   const allowedKey = opts.allowedSorts.join("|");
 
   const parsed = useMemo(
     () =>
-      parseListParams(new URLSearchParams(searchParams.toString()), {
+      parseListParams(new URLSearchParams(query), {
         defaultSort,
         hasVf,
         allowedSorts: allowedKey.split("|"),
       }),
-    [searchParams, defaultSort, hasVf, allowedKey]
+    [query, defaultSort, hasVf, allowedKey]
   );
 
   // URL 里的 q 变化(后退/前进、外链带参)时同步进输入框 ——
@@ -88,6 +88,7 @@ export function useListState(opts: ParseOpts) {
 
   return {
     ...parsed,
+    syncQuery,
     qInput,
     setQInput,
     commitQNow,

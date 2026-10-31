@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import { OptionalLink } from "@/components/common/OptionalLink";
 import type { Lang } from "@/lib/nav";
 import type { QuarterSummary } from "@/lib/managers/quarterSummary";
 import { conclusionSentence, moveDeltaText, movesCountsLine, splitNote } from "@/lib/managers/investorConclusion";
@@ -57,9 +57,9 @@ export function QuarterMovesBlock({ lang, summary, quarter, nameOf, hrefOf }: {
           {summary.topMoves.map((m) => (
             <li key={`${m.cusip}|${m.kind}`} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-1 py-2 text-sm">
               <span className="whitespace-nowrap font-data text-xs text-[var(--tt-muted)]">{`${MOVE_GLYPH[m.kind]} ${MOVE_LABEL[lang][m.kind]}`}</span>
-              <Link href={hrefOf(m.cusip)} className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+              <OptionalLink href={hrefOf(m.cusip)} className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
                 {nameOf(m.cusip, m.issuer)}
-              </Link>
+              </OptionalLink>
               <span className="font-data tabular-nums text-[var(--tt-text)]">{c.approx(formatUSD(Math.abs(m.flowUsd), lang))}</span>
               <div className="col-span-2 col-start-2 flex flex-wrap gap-x-3 gap-y-1">
               {m.kind !== "new" && m.kind !== "exited" && (
@@ -81,9 +81,9 @@ export function QuarterMovesBlock({ lang, summary, quarter, nameOf, hrefOf }: {
           {shown.map((e, i) => (
             <React.Fragment key={e.cusip}>
               {i > 0 && c.sep}
-              <Link href={hrefOf(e.cusip)} className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
+              <OptionalLink href={hrefOf(e.cusip)} className="text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]">
                 {nameOf(e.cusip, e.issuer)}
-              </Link>
+              </OptionalLink>
             </React.Fragment>
           ))}
           {rest > 0 && c.rest(rest)}

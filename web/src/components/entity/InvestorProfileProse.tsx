@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import type { Lang } from "@/lib/nav";
-import { stockPath } from "@/lib/urls";
+import { availableStockHref } from "@/lib/stocks/stockLinks";
 import type { ProseParagraph } from "@/lib/managers/profileProse";
 import { stockDisplayName } from "@/lib/stocks/zhNames";
 import { zhJoin } from "@/lib/format";
@@ -15,10 +15,12 @@ export function InvestorProfileProse({
   paragraphs,
   lang,
   cusipToTicker,
+  availableStocks,
 }: {
   paragraphs: ProseParagraph[];
   lang: Lang;
   cusipToTicker: Map<string, string>;
+  availableStocks: ReadonlySet<string>;
 }): React.ReactElement | null {
   if (paragraphs.length === 0) return null;
   const heading = lang === "zh" ? "组合速览" : "Portfolio overview";
@@ -41,15 +43,15 @@ export function InvestorProfileProse({
               {p.map((seg, j) =>
                 typeof seg === "string" ? (
                   <React.Fragment key={j}>{shown[j]}</React.Fragment>
-                ) : (
+                ) : availableStockHref(lang, cusipToTicker.get(seg.cusip) ?? seg.cusip, availableStocks) ? (
                   <Link
                     key={j}
-                    href={stockPath(lang, cusipToTicker.get(seg.cusip) ?? seg.cusip)}
+                    href={availableStockHref(lang, cusipToTicker.get(seg.cusip) ?? seg.cusip, availableStocks)}
                     className="text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]"
                   >
                     {shown[j]}
                   </Link>
-                ),
+                ) : <React.Fragment key={j}>{shown[j]}</React.Fragment>,
               )}
             </p>
           );
