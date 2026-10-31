@@ -19,6 +19,7 @@ async function main(){
  await assert.rejects(extractPdfDocument(new Uint8Array(16_000_001)),/PDF/,'original download has a fixed byte ceiling');
  await assert.rejects(extractPdfDocument(new TextEncoder().encode('%PDF-1.4\nnot a valid document')),/PDF/i);
  for(const [name,reason]of [['encrypted-empty.pdf',/password/i],['empty.pdf',/no usable text/i],['too-many-pages.pdf',/page count/i]]as const)await assert.rejects(extractPdfDocument(new Uint8Array(fs.readFileSync(new URL('./fixtures/'+name,import.meta.url)))),reason,name+' cannot become usable text');
+ await assert.rejects(extractPdfDocument(new Uint8Array(fs.readFileSync(new URL('./fixtures/offset-negative-sign.pdf',import.meta.url)))),/unassociated numeric sign/i,'a real PDF minus offset by2pt must not leave an accepted positive cash outflow');
  console.log('original PDF positioned text, byte and format boundaries OK');
 }
 main().catch(e=>{console.error(e);process.exitCode=1});

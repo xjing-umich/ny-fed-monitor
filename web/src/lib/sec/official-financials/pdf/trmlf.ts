@@ -23,12 +23,14 @@ export function parseTrmlfAnnual(pages: PdfPage[], reportEnd: string) {
     income=block(pages,/^CONSOLIDATED STATEMENTS OF INCOME AND COMPREHENSIVE INCOME$/,undefined,true),
     cash=block(pages,/^CONSOLIDATED STATEMENTS OF CASH FLOW$/,undefined,true),
     revenue=block(pages,/^13\. REVENUE$/,/^14\./),debt=block(pages,/^10\. DEBT$/,/^11\./),
-    shares=block(pages,/^12\. SHARE CAPITAL$/,/^13\./),eps=block(pages,/^15\. EARNINGS PER SHARE$/,/^16\./);
+    shares=block(pages,/^12\. SHARE CAPITAL$/,/^13\./),eps=block(pages,/^15\. EARNINGS PER SHARE$/,/^16\./),
+    basicEps=block([eps.page],/^Basic earnings per share was calculated as follows:$/,/^Diluted earnings per share was calculated as follows:$/),
+    dilutedEps=block([eps.page],/^Diluted earnings per share was calculated as follows:$/,/^16\./);
   for(const b of [balance,income,cash]){columns(b,year,2,b!==balance);moneyHeader(b,'TRMLF');}
   columns(revenue,year,2);moneyHeader(revenue,'TRMLF');
   columns(debt,year,2,false);moneyHeader(debt,'TRMLF');
   const shareText=contents(shares); if(!shareText.includes('(b) Common Shares Issued')||!shareText.includes('(000s) except share amounts Shares Amount Shares Amount'))fail('TRMLF share count/amount columns');
-  columns(shares,year,2);columns(eps,year,2);
+  columns(shares,year,2);columns(basicEps,year,2);columns(dilutedEps,year,2);
   for(const [metric,label]of[['total_assets','Total Assets'],['equity',"Total shareholders' equity"],['current_assets','Total current assets'],['current_liabilities','Total current liabilities']])row(out,metric,balance,label,2,'CAD');
   row(out,'current_debt',balance,'Current debt (note 10)',2,'CAD',1000,true);
   row(out,'long_term_debt',balance,'Long-term debt (note 10)',2,'CAD');
@@ -43,10 +45,10 @@ export function parseTrmlfAnnual(pages: PdfPage[], reportEnd: string) {
   if(!contents(cash).includes('Cash is defined as cash and cash equivalents.'))fail('TRMLF cash definition missing');
   row(out,'cash_and_equivalents',cash,'Cash, end of period',2,'CAD',1000,true);
   row(out,'common_shares_issued',shares,'Balance, end of year',4,'shares',1,false,[0,2]);
-  row(out,'basic_eps',eps,'Earnings per share - basic',2,'CAD/shares',1);
-  row(out,'diluted_eps',eps,'Earnings per share - fully diluted',2,'CAD/shares',1);
-  row(out,'weighted_average_shares',eps,'Weighted average number of common shares - basic',2,'shares',1);
-  row(out,'diluted_weighted_average_shares',eps,'Weighted average number of common shares - diluted',2,'shares',1);
+  row(out,'basic_eps',basicEps,'Earnings per share - basic',2,'CAD/shares',1);
+  row(out,'diluted_eps',dilutedEps,'Earnings per share - fully diluted',2,'CAD/shares',1);
+  row(out,'weighted_average_shares',basicEps,'Weighted average number of common shares - basic',2,'shares',1);
+  row(out,'diluted_weighted_average_shares',dilutedEps,'Weighted average number of common shares - diluted',2,'shares',1);
   for(const p of out)if(p.metrics.current_debt+p.metrics.long_term_debt!==p.metrics.total_debt)fail('TRMLF debt statement/note mismatch');
   return out;
 }

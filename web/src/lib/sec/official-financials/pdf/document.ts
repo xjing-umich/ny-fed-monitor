@@ -34,6 +34,9 @@ export async function extractPdfDocument(bytes: Uint8Array): Promise<PdfDocument
         }
         const lines = rows.map(row => row.items.sort((a, b) => a.transform[4] - b.transform[4]).map(i => i.str).join(' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
         if(lines.some(line=>line.length>4096))fail('PDF line length limit exceeded');
+        // A displaced sign can otherwise be silently ignored by label-based rows,
+        // turning an outflow into an inflow. Refuse ambiguous geometry; never guess.
+        if(lines.some(line=>/^[+\-−–—()\s]+$/.test(line)))fail('unassociated numeric sign or bracket in PDF text');
         chars += lines.reduce((n, line) => n + line.length, 0); if (chars > 8_000_000) fail('PDF text limit exceeded');
         pages.push({ number, lines });
       } finally { page.cleanup(); }

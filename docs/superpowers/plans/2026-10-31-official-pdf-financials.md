@@ -51,5 +51,5 @@
 
 - [x] Write/run RED disposable PostgreSQL admission/identity/core/units/valuation/metadata constraints, upgrade existing #273 rows, and PDF migration-absent gate checks; implement migration and GREEN.
 - [x] Register checks; run full prebuild/data-pipeline, typecheck, targeted lint, disposable PG and actual-original/source-only validations; update runbook/provenance.
-- [ ] Commit; independent read-only whole-branch review; reproduce/fix material findings RED→GREEN and rerun suite.
+- [x] Commit; independent read-only whole-branch review; reproduce/fix material findings RED→GREEN and rerun suite.
 - [ ] Push and create/attach PR targeting db-foundation; report checks and annual-only boundaries, no merge or production writes.

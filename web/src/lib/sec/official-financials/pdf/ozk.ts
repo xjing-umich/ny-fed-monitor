@@ -41,6 +41,11 @@ export function parseOzkAnnual(pages: PdfPage[], reportEnd: string) {
   const precision = pages.some(p => p.lines.some(l => /Weighted-average diluted shares outstanding \(thousands\)/.test(norm(l))));
   if (!precision) fail('OZK weighted share scale not corroborated');
   for (const p of out) {
+    // Corroborate the rounded thousand-share denominators against the printed EPS.
+    for (const [shares, eps] of [['weighted_average_shares', 'basic_eps'], ['diluted_weighted_average_shares', 'diluted_eps']]) {
+      if (p.metrics[shares] <= 0 || Math.abs(p.metrics.net_income_available_to_common / p.metrics[shares] - p.metrics[eps]) > 0.010001)
+        fail('OZK EPS/share scale reconciliation');
+    }
     if (p.metrics.interest_income-p.metrics.interest_expense!==p.metrics.net_interest_income
       || p.metrics.profit_loss+p.metrics.noncontrolling_interest_adjustment-p.metrics.preferred_stock_dividends!==p.metrics.net_income_available_to_common
       || p.metrics.total_liabilities+p.metrics.equity!==p.metrics.total_assets) fail('OZK primary statements fail reconciliation');

@@ -37,6 +37,8 @@ async function main(){
  const ozk=parseOzkAnnual(o.pages,'2025-12-31');assert.equal('revenue'in ozk[0].metrics,false);
  assert.equal(ozk[0].metrics.noncontrolling_interest_adjustment,21000);assert.equal(ozk[1].metrics.noncontrolling_interest_adjustment,-47000);
  assert.equal(ozk[0].raw_facts.weighted_average_shares.scale,1000);assert.equal(ozk[0].raw_facts.basic_eps.scale,1);
+ const changedShareUnit=replace(o,'Denominator for basic EPS – weighted-average common shares 112,769','Denominator for basic EPS – weighted-average common shares 112,769,000');
+ assert.throws(()=>parseOzkAnnual(changedShareUnit.pages,'2025-12-31'),/PDF|EPS/i,'an EPS denominator changed to actual shares must not be multiplied by1000 again');
  const t=load('TRMLF');assert.equal(trmlfAuthorizedAt(t.pages),'2026-03-04');
  assert.throws(()=>parseTrmlfAnnual(replace(t,'Canadian dollars','United States dollars').pages,'2025-12-31'),/PDF|annual/i);
  assert.throws(()=>parseTrmlfAnnual(replace(t,'Tourmaline Oil Corp.','Different Oil Corp.').pages,'2025-12-31'),/PDF|annual/i);
@@ -44,6 +46,10 @@ async function main(){
  const tour=parseTrmlfAnnual(t.pages,'2025-12-31');assert.equal('total_liabilities'in tour[0].metrics,false);
  assert.equal(tour[0].metrics.revenue,6302997000);assert.equal(tour[0].metrics.cash_and_equivalents,0);
  assert.equal(tour[1].metrics.current_debt,0);assert.equal(tour[0].raw_facts.weighted_average_shares.scale,1);
+ const shiftedDiluted=copy(t);const epsPage=shiftedDiluted.pages.find(p=>p.number===86)!;
+ const diluted=epsPage.lines.findIndex(l=>l==='Diluted earnings per share was calculated as follows:');
+ const dilutedYears=epsPage.lines.findIndex((l,i)=>i>diluted&&l==='2025 2024');assert.ok(dilutedYears>diluted);epsPage.lines[dilutedYears]='2024 2023';
+ assert.throws(()=>parseTrmlfAnnual(shiftedDiluted.pages,'2025-12-31'),/PDF|annual/i,'each EPS subtable must have its own verified current/prior header');
  console.log('official PDF annual source semantics, units, periods, columns and failure boundaries OK');
 }
 main().catch(e=>{console.error(e);process.exitCode=1});

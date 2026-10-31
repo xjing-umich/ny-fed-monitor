@@ -8,3 +8,7 @@ Fresh sources audited **2026-10-31 UTC**. Financial expected values were transcr
 `*-original-pages.pdf` contain only relevant original pages extracted without rasterizing; `*-page-map.json` maps packet pages back to actual original PDF1-based pages. Runtime parsers never use this fixture remapping. `*-pages.json` retain positioned-line text from the complete originals, with actual source page numbers. PDF packet SHA is intentionally different from the original document SHA; production provenance hashes the full downloaded original.
 
 The runtime uses pinned unpdf1.7.0's bundled PDF.js5.6 serverless build, verified on Node20.20 (production Node22). More recent unpdf versions require newer Node runtimes. No native canvas, Poppler, OCR or LLM is used in production. All new observations remain original-currency annual data and valuation-ineligible; interim/TTM/FX/security conversion is outside this adapter.
+
+`offset-negative-sign.pdf` is a synthetic real PDF regression: minus at y702, cash-purchase digits at y700. Unassociated numeric-sign/bracket rows fail closed rather than becoming positive amounts. The complete currently audited originals contain no such orphan rows; a future ambiguous layout requires explicit adapter validation.
+
+Parser regressions also reject an OZK denominator changed from rounded thousand shares to actual shares (using the disclosed EPS as an independent consistency check), and require separate verified year headers for each TRMLF basic/diluted EPS subtable.
