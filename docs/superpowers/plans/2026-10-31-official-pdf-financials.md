@@ -49,7 +49,7 @@
 **Files:** create `web/supabase/migrations/20261031_official_pdf_financials.sql`, SQL checks/disposable test; modify pipeline registry and recovery/source docs.
 **Interfaces:** atomic PDF metadata columns act as the pre-write capability gate; issuer-specific numeric core/identity/source constraints admit only validated annual PDF rows while preserving existing official issuers.
 
-- [ ] Write/run RED disposable PostgreSQL admission/identity/core/units/valuation/metadata constraints, upgrade existing #273 rows, and PDF migration-absent gate checks; implement migration and GREEN.
-- [ ] Register checks; run full prebuild/data-pipeline, typecheck, targeted lint, disposable PG and actual-original/source-only validations; update runbook/provenance.
+- [x] Write/run RED disposable PostgreSQL admission/identity/core/units/valuation/metadata constraints, upgrade existing #273 rows, and PDF migration-absent gate checks; implement migration and GREEN.
+- [x] Register checks; run full prebuild/data-pipeline, typecheck, targeted lint, disposable PG and actual-original/source-only validations; update runbook/provenance.
 - [ ] Commit; independent read-only whole-branch review; reproduce/fix material findings RED→GREEN and rerun suite.
 - [ ] Push and create/attach PR targeting db-foundation; report checks and annual-only boundaries, no merge or production writes.
