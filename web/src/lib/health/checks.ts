@@ -77,7 +77,7 @@ export function evaluateDbSize(
 
 export const REPORT_FINALIZE_GRACE_DAYS = 10;
 
-/** 季度报告:实际截止日(周末顺延到周一)+ 10 天(含当天)过后仍未定稿 → 提醒站长。 */
+/** 季度报告:实际截止日(周末及联邦假日顺延)+ 10 天(含当天)过后仍未定稿 → 提醒站长。 */
 export function evaluateReport(
   row: { period: string; status: "live" | "final" } | null,
   today: Date,
