@@ -116,7 +116,9 @@ begin
     v_changed := v_rows>0;
     update public.valuation_publication set generation=generation+1,publication_status='pending',updated_at=now(),
       safety=jsonb_build_object('status','invalid','reasons',jsonb_build_array('valuation_suppressed'),'observedAt',p_observed_at)
-      where identity_key=v_key and safety->>'status'<>'invalid';
+      -- Repeated newer evidence still advances the watermark and invalidates an old CAS token.
+      -- Only an exact duplicate (or older observation rejected above) is a no-op.
+      where identity_key=v_key and (safety->>'status'<>'invalid' or p_observed_at>v_observed);
     get diagnostics v_rows=row_count;
     if v_changed or v_rows>0 then v_count:=v_count+1; end if;
   end loop;
