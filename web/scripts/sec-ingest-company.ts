@@ -47,7 +47,7 @@ async function main() {
   const result = await ingestCompany(ticker);
   console.log(JSON.stringify(result, null, 2));
 
-  if (result.status === "failed") {
+  if (result.status === "failed" || result.status === "source_pending") {
     process.exitCode = 1;
   }
 }

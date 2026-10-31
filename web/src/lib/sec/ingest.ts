@@ -1,3 +1,4 @@
+import { getOfficialSourceRoute, OfficialSourcePendingError } from "./official-financials/registry";
 import { NATIVE_40F_ISSUERS, type NativeFinancialPeriod } from "./native-financials";
 import { fetchNativeFinancials } from "./native-source";
 import { selectOperatingFundamentals } from "./operating-universe";
@@ -44,12 +45,13 @@ function errorMessage(error: unknown) {
 export type IngestCompanyResult = {
   ticker: string;
   cik: string | null;
-  status: "success" | "failed" | "unresolved";
+  status: "success" | "failed" | "unresolved" | "source_pending";
   foreign_issuer?: boolean;
   publication_fingerprint?: string;
   interim_disclosures?: { supported: number; issues: string[] };
   saved: SavedSummary;
   quality_status: string;
+  source_coverage?: { status: "supported" | "adapter_pending"; provider: string; landing_url: string; audited_at: string; reason?: string };
   reporting_currency?: string;
   valuation_blockers?: string[];
   error?: string;
@@ -163,6 +165,8 @@ async function upsertLatest(
  */
 export async function prepareCompanyFundamentals(ticker: string, match: TickerCikMatch) {
   assertSecurityIdentity(ticker);
+  const officialRoute = getOfficialSourceRoute(ticker, match.cik);
+  if (officialRoute?.adapter === "pdf_pending") throw new OfficialSourcePendingError(officialRoute);
   const [submission, facts] = await Promise.all([
     fetchCompanySubmissions(match.cik),
     fetchCompanyFacts(match.cik).catch(error => {
@@ -342,15 +346,17 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
     return result;
   } catch (error) {
     const message = errorMessage(error);
+    const pending = error instanceof OfficialSourcePendingError ? error : null;
     const result: IngestCompanyResult = {
       ticker,
-      cik: null,
-      status: "failed",
+      cik: pending?.route.cik ?? null,
+      status: pending ? "source_pending" : "failed",
       saved: emptySaved,
-      quality_status: "low",
+      quality_status: pending ? "external_source_pending" : "low",
+      ...(pending ? { source_coverage: { status: "adapter_pending" as const, provider: pending.route.adapter, landing_url: pending.route.landing_url, audited_at: pending.route.audited_at, reason: pending.code } } : {}),
       error: message
     };
-    await finishRun(supabase, runId, "failed", result, message);
+    await finishRun(supabase, runId, result.status, result, message);
     return result;
   }
 }
@@ -431,6 +437,7 @@ export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT)
     total: tickers.length,
     success: results.filter((result) => result.status === "success").length,
     failed: results.filter((result) => result.status === "failed").length,
+    source_pending: results.filter((result) => result.status === "source_pending").length,
     foreign_issuer: results.filter((result) => result.foreign_issuer).length,
     skipped: excluded.length,
     excluded_non_operating: excluded,
