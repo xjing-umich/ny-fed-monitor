@@ -65,8 +65,11 @@ export function normalizeRecentFilings(ticker: string, submission: SecSubmission
       filing_url: filingUrl(submission.cik, accessionNumber, primaryDocument),
       sec_index_url: filingIndexUrl(submission.cik, accessionNumber)
     });
-    if (filings.length >= limit) break;
   }
 
-  return filings;
+  const selected = filings.slice(0, limit);
+  // Frequent 6-Ks must not hide the annual financial source (BMM: 26 newer reports).
+  const annual40f = filings.find(filing => filing.form === "40-F");
+  if (limit > 0 && annual40f && !selected.includes(annual40f)) selected.push(annual40f);
+  return selected;
 }

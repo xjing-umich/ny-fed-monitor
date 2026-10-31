@@ -9,6 +9,13 @@ export function getSecUserAgent() {
   return userAgent;
 }
 
+export class SecRequestError extends Error {
+  constructor(public readonly status: number, public readonly url: string) {
+    super(`SEC request failed ${status}: ${url}`);
+    this.name = "SecRequestError";
+  }
+}
+
 export async function secFetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, {
     headers: {
@@ -19,7 +26,7 @@ export async function secFetchJson<T>(url: string): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`SEC request failed ${response.status}: ${url}`);
+    throw new SecRequestError(response.status, url);
   }
 
   return response.json() as Promise<T>;
@@ -34,7 +41,7 @@ export async function secFetchText(url: string): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`SEC request failed ${response.status}: ${url}`);
+    throw new SecRequestError(response.status, url);
   }
 
   return response.text();

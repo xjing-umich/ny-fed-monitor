@@ -1,3 +1,6 @@
+import { NATIVE_40F_ISSUERS, type NativeFinancialPeriod } from "./native-financials";
+import { fetchNativeFinancials } from "./native-source";
+import { selectOperatingFundamentals } from "./operating-universe";
 import { backfillConsolidatedRevenue } from "./issuerRevenueBackfill";
 import { discoverInterimDisclosures, filingsForInterimDiscovery } from "./interim-disclosures/discovery";
 import { readInterimDisclosureRows, saveInterimDisclosures, interimPublicationContent, type StoredInterimDisclosure } from "./interim-disclosures/store";
@@ -16,7 +19,7 @@ import { attachPredecessorHistory } from "./predecessor";
 import { needsClassSharesFallback, applyClassSharesFallback } from "./class-shares-fallback";
 import { needsHoldcoSotp, ingestHoldcoSotp } from "./holdco-ingest";
 import { resolveTickerCik, type TickerCikMatch } from "./ticker-cik";
-import { sleep } from "./sec-client";
+import { SecRequestError, sleep } from "./sec-client";
 import { isLikelyTicker } from "../externalLinks";
 
 type SavedSummary = {
@@ -25,6 +28,7 @@ type SavedSummary = {
   annual_periods: number;
   quarterly_periods: number;
   latest: boolean;
+  native_annual_periods?: number;
 };
 
 function errorMessage(error: unknown) {
@@ -46,6 +50,8 @@ export type IngestCompanyResult = {
   interim_disclosures?: { supported: number; issues: string[] };
   saved: SavedSummary;
   quality_status: string;
+  reporting_currency?: string;
+  valuation_blockers?: string[];
   error?: string;
 };
 
@@ -157,7 +163,20 @@ async function upsertLatest(
  */
 export async function prepareCompanyFundamentals(ticker: string, match: TickerCikMatch) {
   assertSecurityIdentity(ticker);
-  const [submission, facts] = await Promise.all([fetchCompanySubmissions(match.cik), fetchCompanyFacts(match.cik)]);
+  const [submission, facts] = await Promise.all([
+    fetchCompanySubmissions(match.cik),
+    fetchCompanyFacts(match.cik).catch(error => {
+      if (error instanceof SecRequestError && error.status === 404 && NATIVE_40F_ISSUERS[ticker] === match.cik) return null;
+      throw error;
+    }),
+  ]);
+  if (facts === null) {
+    const nativePeriods = await fetchNativeFinancials(ticker, match.cik, submission);
+    return { submission, filings: normalizeRecentFilings(ticker, submission), isForeignIssuer: true,
+      normalized: { annual: [] as FundamentalPeriod[], quarterly: [] as FundamentalPeriod[] },
+      backfill: { filled: [] as string[], failed: [] as string[] },
+      revenueBackfill: { filled: [] as string[], failed: [] as string[] }, predecessor: null, nativePeriods };
+  }
   const ownFilings = normalizeRecentFilings(ticker, submission);
   // 控股重组 / 再注册:新 CIK 的 companyfacts 只有重组后的申报,历史在前身 CIK 下(2026-10:XOM)。
   const predecessor = await attachPredecessorHistory(ticker, match.cik, facts, ownFilings);
@@ -190,7 +209,7 @@ export async function prepareCompanyFundamentals(ticker: string, match: TickerCi
     const patched = await applyClassSharesFallback(normalized.annual, filings);
     if (patched > 0) console.log(`  ${ticker}: class-dimension share fallback patched ${patched} FY rows`);
   }
-  return { submission, filings, isForeignIssuer, normalized, backfill, revenueBackfill, predecessor };
+  return { submission, filings, isForeignIssuer, normalized, backfill, revenueBackfill, predecessor, nativePeriods: [] as NativeFinancialPeriod[] };
 }
 
 export async function ingestCompany(tickerInput: string, supabase = createServiceSupabaseClient()): Promise<IngestCompanyResult> {
@@ -215,7 +234,12 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
       return result;
     }
 
-    const { submission, filings, isForeignIssuer, normalized } = await prepareCompanyFundamentals(ticker, match);
+    const { submission, filings, isForeignIssuer, normalized, nativePeriods } = await prepareCompanyFundamentals(ticker, match);
+    if (nativePeriods.length) {
+      // Fail before company/filing mutation if the native schema has not been applied.
+      const { error } = await supabase.from("sec_native_financial_periods").select("ticker").limit(0);
+      if (error) throw error;
+    }
 
     let interimRows: StoredInterimDisclosure[] = [];
     let interimUpdates: StoredInterimDisclosure[] = [];
@@ -247,6 +271,26 @@ export async function ingestCompany(tickerInput: string, supabase = createServic
 
     const { error: filingsError } = await supabase.from("sec_filings").upsert(filings, { onConflict: "accession_number" });
     if (filingsError) throw filingsError;
+
+    if (nativePeriods.length) {
+      const { error } = await supabase.from("sec_native_financial_periods").upsert(
+        nativePeriods.map(period => ({ ...period, updated_at: new Date().toISOString() })),
+        { onConflict: "ticker,accession_number,period_end" },
+      );
+      if (error) throw error;
+      // Separate source storage: no USD period/latest writes, no ADR or FX conversion.
+      const result: IngestCompanyResult = {
+        ticker, cik: match.cik, status: "success", foreign_issuer: true,
+        saved: { company: true, filings: filings.length, annual_periods: 0, quarterly_periods: 0, latest: false,
+          native_annual_periods: nativePeriods.length },
+        quality_status: "native_currency", reporting_currency: "CAD",
+        valuation_blockers: nativePeriods[0].valuation_blockers,
+        publication_fingerprint: financialPublicationFingerprint(match.cik, nativePeriods, filings),
+      };
+      await queueCompanyPublication(supabase, ticker, result.publication_fingerprint!, priorPublication);
+      await finishRun(supabase, runId, "success", result);
+      return result;
+    }
 
     // 件⑤:投资主导型控股集团才拉 instance 解析分部与第一栏(窄闸,其余票零新增取数)。
     if (needsHoldcoSotp(normalized.annual)) {
@@ -371,8 +415,10 @@ export async function resolveIngestUniverse(
 
 export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT) {
   const supabase = createServiceSupabaseClient();
+  const universe = await resolveIngestUniverse(DEFAULT_UNIVERSE_LIMIT, supabase);
+  const { eligible, excluded } = await selectOperatingFundamentals(supabase, universe);
+  const tickers = eligible.slice(0, limit);
   const runId = await startRun(supabase, "all");
-  const tickers = await resolveIngestUniverse(limit, supabase);
   const results: IngestCompanyResult[] = [];
 
   for (const ticker of tickers) {
@@ -386,7 +432,8 @@ export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT)
     success: results.filter((result) => result.status === "success").length,
     failed: results.filter((result) => result.status === "failed").length,
     foreign_issuer: results.filter((result) => result.foreign_issuer).length,
-    skipped: 0,
+    skipped: excluded.length,
+    excluded_non_operating: excluded,
     unresolved_tickers: results.filter((result) => result.status === "unresolved").map((result) => result.ticker),
     results
   };

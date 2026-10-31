@@ -31,8 +31,12 @@ async function main() {
     const symbol = ticker.trim().toUpperCase();
     const match = await resolveTickerCik(symbol);
     if (!match) throw new Error(`${symbol}: ticker 无法解析到 SEC CIK`);
-    const { normalized, backfill, predecessor } = await prepareCompanyFundamentals(symbol, match);
+    const { normalized, backfill, predecessor, nativePeriods } = await prepareCompanyFundamentals(symbol, match);
     console.log(`${symbol} cik=${match.cik} 前身=${predecessor?.cik ?? "无"} 回填=${backfill.filled.length} 失败=${backfill.failed.length}`);
+    for (const r of nativePeriods) {
+      console.log(`  FY ${r.period_end} ${r.form} ${r.accession_number} filed=${r.filing_date} currency=${r.reporting_currency} revenue=${r.revenue} profit_loss=${r.profit_loss} assets=${r.total_assets} operating_cash_flow=${r.operating_cash_flow} comparative=${r.is_comparative}`);
+      console.log(`    source=${r.source_instance_url} valuation_eligible=${r.valuation_eligible} blockers=${r.valuation_blockers.join(",")}`);
+    }
     for (const r of [...normalized.annual, ...normalized.quarterly]) {
       console.log(`  ${r.fiscal_period?.padEnd(2)} ${r.period_end} ${r.form} ${r.accession_number} filed=${r.filing_date} revenue=${r.revenue} net_income=${r.net_income} ${r.data_quality}`);
     }

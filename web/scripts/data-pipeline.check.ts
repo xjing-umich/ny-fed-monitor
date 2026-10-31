@@ -3,6 +3,9 @@ import path from "node:path";
 const root = path.resolve(__dirname, "..");
 const checks = [
   "src/lib/securities/identity.check.ts",
+  "src/lib/sec/operating-universe.check.ts",
+  "src/lib/sec/native-financials.check.ts",
+  "src/lib/sec/native-ingest.check.ts",
   "scripts/lib/writeFailures.check.ts",
   "scripts/lib/fundamentalsResume.check.ts",
   "src/lib/sec/read-boundaries.check.ts",

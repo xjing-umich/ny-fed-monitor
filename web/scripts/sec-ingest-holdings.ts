@@ -7,6 +7,7 @@
 //   SEC_USER_AGENT="Name email@example.com" npx tsx scripts/sec-ingest-holdings.ts --dry
 //   SEC_USER_AGENT="Name email@example.com" npx tsx scripts/sec-ingest-holdings.ts [limit]
 import fs from "node:fs";
+import { selectOperatingFundamentals } from "../src/lib/sec/operating-universe";
 import { readFundamentalQueue } from "../src/lib/sec/fundamentalPublication";
 import { isIdentityQuarantined } from "../src/lib/securities/securityIdentity";
 import { parseResumeSince, readCompletedFundamentals, remainingFundamentals } from "./lib/fundamentalsResume";
@@ -58,11 +59,13 @@ async function main() {
   const held = await heldUniverse(getDb);
   const map = await getTickerCikMap(); // fetches SEC company_tickers.json (validates SEC_USER_AGENT)
   const resolvable = (t: string) => map.has(normalizeTicker(t)) || map.has(t.trim().toUpperCase());
-  const target = held.filter(resolvable).filter(t => !isIdentityQuarantined(t));
-  const unresolvable = held.length - target.length;
+  const db = getDb();
+  const resolved = held.filter(resolvable).filter(t => !isIdentityQuarantined(t));
+  const { eligible: target, excluded } = await selectOperatingFundamentals(db, resolved);
+  const unresolvable = held.length - resolved.length;
 
   console.log(`held tickers: ${held.length} · resolvable US companies: ${target.length} · unresolvable (CUSIP/foreign/ETF): ${unresolvable}`);
-  const db = getDb();
+  console.log(`excluded non-operating securities: ${excluded.length} · ${excluded.map(row => `${row.ticker} (${row.security_type})`).join(", ")}`);
   const completed = await readCompletedFundamentals(db, resumeSince);
   const run = remainingFundamentals(limit ? target.slice(0, limit) : target, completed);
   if (resumeSince) console.log(`Resuming since ${resumeSince}; skipping ${target.filter(t => completed.has(t.trim().toUpperCase())).length} completed targets`);
@@ -71,13 +74,14 @@ async function main() {
   if (dry) return;
 
   await readFundamentalQueue(db); // Fail before SEC writes if queue migration is absent.
-  const summary = { total: run.length, success: 0, foreign: 0, unresolved: 0, failed: 0 } as Record<string, number>;
+  const summary = { total: run.length, success: 0, foreign: 0, native_currency: 0, unresolved: 0, failed: 0 } as Record<string, number>;
   const failures: string[] = [];
   let i = 0;
   for (const ticker of run) {
     i++;
     try {
       const res = await ingestCompany(ticker);
+      if (res.quality_status === "native_currency") summary.native_currency++;
       if (res.status === "success") summary.success++;
       else if (res.status === "unresolved") summary.unresolved++;
       else summary.failed++;
