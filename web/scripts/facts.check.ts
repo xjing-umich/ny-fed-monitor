@@ -9,6 +9,7 @@ const root = path.resolve(__dirname, "..");
 const checks = [
   "src/app/[lang]/stocks/screener/screenerCounts.check.tsx",
   "src/app/[lang]/stocks/screener/screenerUniverse.check.tsx",
+  "src/app/[lang]/stocks/screener/screenerLinks.check.tsx",
   "src/lib/valuation/bandPosition.check.ts",
   "src/lib/valuation/rangeGauge.check.tsx",
   "src/lib/valuation/valuationLabel.check.ts",

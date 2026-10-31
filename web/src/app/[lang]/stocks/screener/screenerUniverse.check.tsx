@@ -42,6 +42,7 @@ async function main() {
     assert.equal(url.origin, "http://127.0.0.1:54321", "禁止访问外部服务");
     requests.push(url);
     const table = url.pathname.split("/").at(-1);
+    if (table === "consensus_stock_holders") return Response.json([]);
     assert.ok(table === "valuation_snapshot" || table === "consensus_holdings" || table === "securities");
     let rows: Record<string, unknown>[] = table === "securities" ? [...snapshots, solo].map(r => ({ ticker: r.ticker, security_type: r.ticker === "CHEAP" ? "ADR" : "Common Stock" })) : table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined] : [...holdings];
     if (table === "valuation_snapshot" && snapshotMode === "none") rows = [];
@@ -103,7 +104,7 @@ async function main() {
     assert.ok(requests.some((u) => Number(u.searchParams.get("offset")) >= 1000), "实际跨过 1000 行服务端上限");
     for (const request of requests) {
       const keys = request.searchParams.get("ticker");
-      if (keys?.startsWith("in.(")) assert.ok(keys.slice(4, -1).split(",").length <= 100, "IN 查询分批,避免超长 URL 和单次截断");
+      if (keys?.startsWith("in.(")) assert.ok(keys.slice(4, -1).split(",").length <= (request.pathname.endsWith("/consensus_stock_holders") ? 200 : 100), "IN 查询分批,避免超长 URL 和单次截断");
       if (request.searchParams.has("offset")) assert.match(request.searchParams.get("order") ?? "", /(?:^|,)ticker\./, "分页排序以唯一 ticker 保证稳定");
     }
 

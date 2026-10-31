@@ -1,7 +1,7 @@
 import React from "react";
-import Link from "next/link";
+import { OptionalLink } from "@/components/common/OptionalLink";
 import type { Lang } from "@/lib/nav";
-import { stockPath } from "@/lib/urls";
+import { availableStockHref } from "@/lib/stocks/stockLinks";
 import { cleanIssuer, fmtMarginPct, fmtValueBand, fmtPrice, fmtPerShareValue } from "@/lib/format";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { EntityName } from "@/components/common/EntityName";
@@ -16,7 +16,7 @@ import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 const TOP_N = 60;
 
 /** asOf = 页头标的价格日期;某行价格日期不同时才在该行标出。 */
-export function ScreenerTable({ lang, rows, highlight = false, asOf, emptyText }: { lang: Lang; rows: ScreenerRow[]; highlight?: boolean; asOf?: string | null; emptyText?: string }) {
+export function ScreenerTable({ lang, rows, availableStocks, highlight = false, asOf, emptyText }: { lang: Lang; rows: ScreenerRow[]; availableStocks: ReadonlySet<string>; highlight?: boolean; asOf?: string | null; emptyText?: string }) {
   const isZh = lang === "zh";
   const g = stockGlossary(lang);
   const ui = stockUi(lang);
@@ -120,7 +120,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf, emptyText }
         columns={columns}
         rows={head}
         getKey={(r) => r.ticker}
-        rowHref={(r) => stockPath(lang, r.ticker)}
+        rowHref={(r) => availableStockHref(lang, r.ticker, availableStocks)}
         showRank
         emptyText={emptyText ?? ui.emptyScreener}
       />
@@ -142,7 +142,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf, emptyText }
             {tail.map((r, i) => (
               <li key={r.ticker} className="flex items-baseline gap-2 text-sm">
                 <span className="w-8 shrink-0 text-right font-data text-xs tabular-nums text-[var(--tt-faint)]">{TOP_N + i + 1}</span>
-                <Link href={stockPath(lang, r.ticker)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
+                <OptionalLink href={availableStockHref(lang, r.ticker, availableStocks)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                   {stockDisplayName(lang, r.ticker, cleanIssuer(r.issuer))}
                   <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{r.ticker}</span>
                   <span className="ml-1 font-data text-xs text-[var(--tt-faint)]">{unit(r)}</span>
@@ -159,7 +159,7 @@ export function ScreenerTable({ lang, rows, highlight = false, asOf, emptyText }
                       </span>
                     )
                   ) : null}
-                </Link>
+                </OptionalLink>
               </li>
             ))}
           </ul>
