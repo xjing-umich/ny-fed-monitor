@@ -30,6 +30,7 @@ const run = (overrides: Partial<Parameters<typeof runValuation>[0]> = {}) =>
 
 {
   const result = run({ guards: guards({ adsSuppressed: true, fundamentalsStale: true, fundamentalsCorrupt: true }) });
+  assert.equal(result.currency, "USD", "even suppressed outputs retain their engine unit");
   assert.equal(result.floor, undefined);
   assert.equal(result.suppressedReason, "ads_suppressed");
   assert.deepEqual(result.methods, { zeroGrowthEpv: false, oeDcf: false, greenwaldGrowthCeilings: false });
@@ -68,6 +69,7 @@ const run = (overrides: Partial<Parameters<typeof runValuation>[0]> = {}) =>
 }
 {
   const result = run();
+  assert.equal(result.currency, "USD");
   assert(result.verdict, "complete inputs produce a verdict");
   assert.deepEqual(result.methods, result.verdict.methods);
   assert.equal(result.methods.oeDcf, true);
