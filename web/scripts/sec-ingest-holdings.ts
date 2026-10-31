@@ -74,13 +74,14 @@ async function main() {
   if (dry) return;
 
   await readFundamentalQueue(db); // Fail before SEC writes if queue migration is absent.
-  const summary = { total: run.length, success: 0, foreign: 0, unresolved: 0, failed: 0 } as Record<string, number>;
+  const summary = { total: run.length, success: 0, foreign: 0, native_currency: 0, unresolved: 0, failed: 0 } as Record<string, number>;
   const failures: string[] = [];
   let i = 0;
   for (const ticker of run) {
     i++;
     try {
       const res = await ingestCompany(ticker);
+      if (res.quality_status === "native_currency") summary.native_currency++;
       if (res.status === "success") summary.success++;
       else if (res.status === "unresolved") summary.unresolved++;
       else summary.failed++;

@@ -1,0 +1,310 @@
+<!-- SEC source-derived fixture; retrieved 2026-10-31. See README.md for provenance. -->
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:ifrs-full="https://xbrl.ifrs.org/taxonomy/2025-03-27/ifrs-full" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xmlns:dei="http://xbrl.sec.gov/dei/2025" xmlns:iso4217="http://www.xbrl.org/2003/iso4217" xmlns:link="http://www.xbrl.org/2003/linkbase" xmlns:nicm="http://nicolamining.com/20251231" xmlns:srt="http://fasb.org/srt/2025" xmlns:xlink="http://www.w3.org/1999/xlink"><context id="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="Duration_1_1_2025_To_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_vq79zZeknE6RUrcxD-O4ag">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="Duration_1_1_2024_To_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_CXezjgaPDE-11F1ZpAxXwg">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_WarrantReserveMember_jvuyND2AaEa8PL1LYDGHYg">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:WarrantReserveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_7tqlF_mKBE-fAZIYUGDZqw">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_IssuedCapitalMember_SX4t5MYWiECajCr41Hb-lg">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:IssuedCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_Q06MAm7uVkuAV7YK0LwRMg">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:AdditionalPaidinCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2025-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_WarrantReserveMember_-R5B52UTTkiu5vqmwNo37Q">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:WarrantReserveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_TB7NoHCBAUeRyTgDapXuwg">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_ReserveOfEquityComponentOfConvertibleInstrumentsMember_mxuo-f_kVEWHepwPJJBOoQ">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:ReserveOfEquityComponentOfConvertibleInstrumentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_IssuedCapitalMember_F5L6UMEBIk-7Y7brR6-mDQ">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:IssuedCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_ZF4qejn3ikKRrsSbvvEXyg">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:AdditionalPaidinCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_WarrantReserveMember_3qzXbPNinECaQuPJb36-FA">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:WarrantReserveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_7-I1bapb8USuleTReyVD7g">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:RetainedEarningsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_ReserveOfEquityComponentOfConvertibleInstrumentsMember_v2Lv_npY7UqxMV9OCtFUIw">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:ReserveOfEquityComponentOfConvertibleInstrumentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_IssuedCapitalMember_BXTk9-5RcUOOI8oPqEu44w">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:IssuedCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_EwzKQ0M3zU2CFHCEUAn-pQ">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="ifrs-full:ComponentsOfEquityAxis">ifrs-full:AdditionalPaidinCapitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2023_Qcg5_LbfokqRHws2ZNENUg">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+        </entity>
+        <period>
+            <instant>2023-12-31</instant>
+        </period>
+    </context>
+    <context id="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+        </entity>
+        <period>
+            <instant>2024-12-31</instant>
+        </period>
+    </context>
+    <context id="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001526475</identifier>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <unit id="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">
+        <measure>iso4217:CAD</measure>
+    </unit>
+    <unit id="Unit_Divide_CAD_shares_65TLg9W8hUqxQRNrGSUbNQ">
+        <divide>
+            <unitNumerator>
+                <measure>iso4217:CAD</measure>
+            </unitNumerator>
+            <unitDenominator>
+                <measure>shares</measure>
+            </unitDenominator>
+        </divide>
+    </unit>
+    <unit id="Unit_Standard_shares_6-P-I5gzOkeMWWcCstrmWA">
+        <measure>shares</measure>
+    </unit>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw" decimals="0" id="Tc_FqC2w9wlTkK_VlSFLsZhbg_4_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1698401</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_qSaUGJWD7k-qFtMmYZzlhQ_4_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1462218</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:Assets contextRef="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw" decimals="0" id="Tc_fDJ5kRWWzk-np1aJo1eGxw_14_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">14549897</ifrs-full:Assets>
+    <ifrs-full:Assets contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_UWiBvG467kSSWs14uUYYoA_14_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">10659233</ifrs-full:Assets>
+    <ifrs-full:Liabilities contextRef="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw" decimals="0" id="Tc_H6kbIRMQ-UmkOce5YQo68g_27_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">17899660</ifrs-full:Liabilities>
+    <ifrs-full:Liabilities contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_B889kSwzPUa4kz0kmuKtGw_27_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">20473853</ifrs-full:Liabilities>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw" decimals="0" id="Tc_VQRxksSXrUOz8H-045a40Q_35_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-3349763</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_EfKH2tbQLUWz3LMGel0IOg_35_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-9814620</ifrs-full:Equity>
+    <ifrs-full:Revenue contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_kYKJj3YhukKdX8Bzpusx3w_3_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1535138</ifrs-full:Revenue>
+    <ifrs-full:Revenue contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_8aFhY58ZzUKGeabicqUskg_3_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">818157</ifrs-full:Revenue>
+    <ifrs-full:GrossProfit contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_fZTTL24kwEKuIaM1Q5_UXQ_5_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-1527284</ifrs-full:GrossProfit>
+    <ifrs-full:GrossProfit contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_aWNZFH6Et0C2aWvH5ZDvjQ_5_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-1438896</ifrs-full:GrossProfit>
+    <ifrs-full:ProfitLossFromOperatingActivities contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_xH8siAghYkK5MpuCyO4QLA_21_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-9846638</ifrs-full:ProfitLossFromOperatingActivities>
+    <ifrs-full:ProfitLossFromOperatingActivities contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_mbWujlZlYk2sW1v4XQ74WA_21_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-6707584</ifrs-full:ProfitLossFromOperatingActivities>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_l5nEw9qGPE-ClJc0Xo2ccw_28_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5524828</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_4DcWd9jJhEehq23J9htSVw_28_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5230946</ifrs-full:ProfitLoss>
+    <ifrs-full:BasicEarningsLossPerShare contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="2" id="Tc_JQSFEU56IEKaPZYA6UopkA_30_5" unitRef="Unit_Divide_CAD_shares_65TLg9W8hUqxQRNrGSUbNQ">-0.03</ifrs-full:BasicEarningsLossPerShare>
+    <ifrs-full:DilutedEarningsLossPerShare contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="2" id="Tc_JQSFEU56IEKaPZYA6UopkA_30_5_2" unitRef="Unit_Divide_CAD_shares_65TLg9W8hUqxQRNrGSUbNQ">-0.03</ifrs-full:DilutedEarningsLossPerShare>
+    <ifrs-full:BasicEarningsLossPerShare contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="2" id="Tc_OEHC7Hd09kqBi2QUOXytcA_30_8" unitRef="Unit_Divide_CAD_shares_65TLg9W8hUqxQRNrGSUbNQ">-0.03</ifrs-full:BasicEarningsLossPerShare>
+    <ifrs-full:DilutedEarningsLossPerShare contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="2" id="Tc_OEHC7Hd09kqBi2QUOXytcA_30_8_2" unitRef="Unit_Divide_CAD_shares_65TLg9W8hUqxQRNrGSUbNQ">-0.03</ifrs-full:DilutedEarningsLossPerShare>
+    <ifrs-full:AdjustedWeightedAverageShares contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_CVZjRPbJw0Wb-61Drb3oZg_31_5_2" unitRef="Unit_Standard_shares_6-P-I5gzOkeMWWcCstrmWA">185967860</ifrs-full:AdjustedWeightedAverageShares>
+    <ifrs-full:AdjustedWeightedAverageShares contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_S-P1CUfjlUWutYMoTuIRRQ_31_8_2" unitRef="Unit_Standard_shares_6-P-I5gzOkeMWWcCstrmWA">165376575</ifrs-full:AdjustedWeightedAverageShares>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_TTjVdzgYsUWuCGoeV42EcQ_4_3" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5524828</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_9wnlbdO6yUi8i49wdAhyow_4_6" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5230946</ifrs-full:ProfitLoss>
+    <ifrs-full:CashFlowsFromUsedInOperatingActivities contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_l98NqpAtWEGzN9IS3Wrprw_18_3" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5568902</ifrs-full:CashFlowsFromUsedInOperatingActivities>
+    <ifrs-full:CashFlowsFromUsedInOperatingActivities contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_Y6J81rbNKEyRLXWRHK_PIg_18_6" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-3311296</ifrs-full:CashFlowsFromUsedInOperatingActivities>
+    <ifrs-full:PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_ARM6SoXjK0SZb8aHR8HjFQ_21_3" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">179494</ifrs-full:PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities>
+    <ifrs-full:PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_teAwugUpx0qx9s2EuUavrg_21_6" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">452988</ifrs-full:PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_iF94xO0f9ki_mRuZBMLidg_35_3" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1462218</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2023_Qcg5_LbfokqRHws2ZNENUg" decimals="0" id="Tc__hUmTyzoVEeF5X8C5d8qqQ_35_6" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">4756118</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw" decimals="0" id="Tc_Y-OzZRIAjUuiU3MyCVSueg_36_3" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1698401</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_lvQX3lHOwUuripFSETJn3A_36_6" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1462218</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw" decimals="0" id="Tc_gJI-5s-Z3kuvLAwciVGwkA_48_3" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1698401</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:CashAndCashEquivalents contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_75o270Yra0WfAQ-6gQDXpQ_48_6" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1462218</ifrs-full:CashAndCashEquivalents>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_IssuedCapitalMember_F5L6UMEBIk-7Y7brR6-mDQ" decimals="0" id="Tc_yxKTjKLDaUOjKDM6xYlo8Q_6_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">87783671</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_WarrantReserveMember_-R5B52UTTkiu5vqmwNo37Q" decimals="0" id="Tc_UZ8f1eJXaEWNg__y3kpQoQ_6_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1694494</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_ReserveOfEquityComponentOfConvertibleInstrumentsMember_mxuo-f_kVEWHepwPJJBOoQ" decimals="0" id="Tc_VzZtoa1W8kyOMIM7F-heQw_6_11" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">2659366</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_ZF4qejn3ikKRrsSbvvEXyg" decimals="0" id="Tc_PB5SfA8-iEaxENmoxtLJTw_6_14" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">9494098</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_TB7NoHCBAUeRyTgDapXuwg" decimals="0" id="Tc_DbFFHvnC-EKPAv99Lw9HmA_6_17" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-111446249</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_vBpvmXKgB0-s_Gq5FSH7Og_6_20" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-9814620</ifrs-full:Equity>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2025_To_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_vq79zZeknE6RUrcxD-O4ag" decimals="0" id="Tc_6g62h5sl1Em2yrMUwcNRiA_16_17" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5524828</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw" decimals="0" id="Tc_-h9VFWJ_kUSvNRE4JOIMKQ_16_20" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5524828</ifrs-full:ProfitLoss>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_IssuedCapitalMember_SX4t5MYWiECajCr41Hb-lg" decimals="0" id="Tc_mFh9ZpuWYEabnn3WJ89okg_17_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">98320934</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_WarrantReserveMember_jvuyND2AaEa8PL1LYDGHYg" decimals="0" id="Tc_laclOCQbxkSAmLNLVgh17g_17_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1694494</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_Q06MAm7uVkuAV7YK0LwRMg" decimals="0" id="Tc_S3lVXOU0D0qkifOmngt6bw_17_14" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">11119146</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2025_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_7tqlF_mKBE-fAZIYUGDZqw" decimals="0" id="Tc_p7AIQAyGBkC1fjJBlpMdpA_17_17" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-114484337</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2025_6G91h1pnXEKazeT66xwhhw" decimals="0" id="Tc_W13hDZnzNUO5cZISItPt3g_17_20" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-3349763</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_IssuedCapitalMember_BXTk9-5RcUOOI8oPqEu44w" decimals="0" id="Tc_QaIX2YJkVEGmhGktwUWhTQ_19_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">85894218</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_WarrantReserveMember_3qzXbPNinECaQuPJb36-FA" decimals="0" id="Tc_5qoQGtwi002iwUaZhfOjnA_19_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1694494</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_ReserveOfEquityComponentOfConvertibleInstrumentsMember_v2Lv_npY7UqxMV9OCtFUIw" decimals="0" id="Tc_lbeyItaZxkKB2idhjGwuXw_19_11" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">2671669</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_EwzKQ0M3zU2CFHCEUAn-pQ" decimals="0" id="Tc_hpq2cWJ_GUCoa0201JaNbw_19_14" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">8737314</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2023_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_7-I1bapb8USuleTReyVD7g" decimals="0" id="Tc_GBgSGdhMnUSuvBz0uA-lBQ_19_17" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-106215303</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2023_Qcg5_LbfokqRHws2ZNENUg" decimals="0" id="Tc_UV-VrtxTkU6T3ewiRcUtVg_19_20" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-7217608</ifrs-full:Equity>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2024_To_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_CXezjgaPDE-11F1ZpAxXwg" decimals="0" id="Tc_GPTLt10R10iEBo-xVAITgA_25_17" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5230946</ifrs-full:ProfitLoss>
+    <ifrs-full:ProfitLoss contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g" decimals="0" id="Tc_4_mFpJvFO02ED1d-Z_nWjA_25_20" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-5230946</ifrs-full:ProfitLoss>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_IssuedCapitalMember_F5L6UMEBIk-7Y7brR6-mDQ" decimals="0" id="Tc_OKBBwBexsk-tb5EgDZRn7w_26_5" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">87783671</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_WarrantReserveMember_-R5B52UTTkiu5vqmwNo37Q" decimals="0" id="Tc_Y-lsLdKU9ES1qdt4uN0GPw_26_8" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">1694494</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_ReserveOfEquityComponentOfConvertibleInstrumentsMember_mxuo-f_kVEWHepwPJJBOoQ" decimals="0" id="Tc_FmbhG_Rcg0yHuu3gCVUKEQ_26_11" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">2659366</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_AdditionalPaidinCapitalMember_ZF4qejn3ikKRrsSbvvEXyg" decimals="0" id="Tc_eXXwrkP8i06K-gl1dHnfUg_26_14" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">9494098</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_ifrs-full_ComponentsOfEquityAxis_ifrs-full_RetainedEarningsMember_TB7NoHCBAUeRyTgDapXuwg" decimals="0" id="Tc_huj7ajX9YE-JeSxUxu_cNg_26_17" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-111446249</ifrs-full:Equity>
+    <ifrs-full:Equity contextRef="As_Of_12_31_2024_svcaBEmA7kiJVIJsqzQPeQ" decimals="0" id="Tc_38pb_4Q8tEmPNJhUUF7HEg_26_20" unitRef="Unit_Standard_CAD_e2qyHw4gr02cb8JY0QBGYQ">-9814620</ifrs-full:Equity>
+    
+<ifrs-full:WeightedAverageShares
+      contextRef="Duration_1_1_2025_To_12_31_2025_FNgpTX0Opk-3F3GE6bm0Uw"
+      decimals="0"
+      id="Tc_CVZjRPbJw0Wb-61Drb3oZg_31_5"
+      unitRef="Unit_Standard_shares_6-P-I5gzOkeMWWcCstrmWA">185967860</ifrs-full:WeightedAverageShares>
+<ifrs-full:WeightedAverageShares
+      contextRef="Duration_1_1_2024_To_12_31_2024_jnUlX5IJCUWiTSieqbln0g"
+      decimals="0"
+      id="Tc_S-P1CUfjlUWutYMoTuIRRQ_31_8"
+      unitRef="Unit_Standard_shares_6-P-I5gzOkeMWWcCstrmWA">165376575</ifrs-full:WeightedAverageShares>
+</xbrl>
