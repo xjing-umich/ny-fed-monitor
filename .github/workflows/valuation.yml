@@ -1,5 +1,11 @@
 name: Valuation Snapshot (daily)
 on:
+  # New readers reject prior-model snapshots. Recompute on the model release,
+  # independently of the much longer fundamentals workflow.
+  push:
+    branches: [db-foundation]
+    paths:
+      - "web/src/lib/valuation/modelVersion.ts"
   schedule:
     # 每日 12:00 UTC：晚于 prices(工作日 22:00 UTC EOD 入库)与 SEC fundamentals(周一至周六更新)，
     # 确保读到最新在库价格+基本面。幂等：逐 ticker upsert(onConflict=ticker)，重跑只覆盖。
