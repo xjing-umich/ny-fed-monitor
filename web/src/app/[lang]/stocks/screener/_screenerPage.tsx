@@ -86,8 +86,11 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const pendingNote = strikePending > 0
     ? isZh ? `，另 ${strikePending} 只待确认` : `; ${strikePending} more pending review`
     : "";
+  const noValuationEvidence = rows.length === 0 && !computedAt && strikeTotal === 0 && strikePending === 0;
   const geo =
-    strikeTotal > 0
+    noValuationEvidence
+      ? ""
+      : strikeTotal > 0
       ? isZh
         ? `现在 ${strikeTotal} 只可估值股票已确认落在击球区${pendingNote}（价格不高于内在价值扣除安全边际后的值）${asOf ? `，截至 ${formatDate(asOf, lang)}` : ""}。`
         : `${strikeTotal} valued stock${strikeTotal === 1 ? " is" : "s are"} confirmed in the strike zone${pendingNote} (price at or below intrinsic value minus a margin of safety)${asOf ? `, as of ${formatDate(asOf, lang)}` : ""}.`
@@ -95,7 +98,11 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
         ? `当前没有已确认的击球区股票${pendingNote}（价格不高于内在价值扣除安全边际后的值）。`
         : `No valued stocks are confirmed in the strike zone right now${pendingNote} (price at or below intrinsic value minus a margin of safety).`;
 
-  const convictionIntro = isZh
+  const convictionIntro = rows.length === 0 && heldTotal === 0
+    ? isZh
+      ? `查看至少被 ${CONSENSUS_MIN} 位机构共同持有的股票及其估值。`
+      : `Compare valuations of stocks held by at least ${CONSENSUS_MIN} managers.`
+    : isZh
     ? `${heldTotal} 只被 ${CONSENSUS_MIN}+ 位机构共同持有的股票，按现价相对内在价值的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
     : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers, ordered by where price sits against intrinsic value — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
 
@@ -186,11 +193,16 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
       </nav>
 
       <ScreenerTable lang={lang} rows={sortedRows} highlight={isConviction} asOf={asOf} />
+      {rows.length === 0 && <p className="mt-2 text-center text-sm">
+        <Link href={localePath(lang, "/stocks")} className="inline-flex min-h-11 items-center text-[var(--tt-text)] underline underline-offset-4 hover:text-[var(--tt-accent)]">
+          {isZh ? "按机构持仓浏览个股 →" : "Browse stocks by institutional holdings →"}
+        </Link>
+      </p>}
 
       <p className="mt-8 text-xs leading-relaxed text-[var(--tt-muted)]">
         {isZh
-          ? `估值${asOf ? `截至 ${formatDate(asOf, lang)}` : "刷新中"} · 方法：保守 Greenwald 价值区间 + Owner-Earnings DCF 两法夹逼。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
-          : `Valuation ${asOf ? `as of ${formatDate(asOf, lang)}` : "refreshing"} · method: conservative Greenwald value range + Owner-Earnings DCF. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
+          ? `${asOf ? `估值截至 ${formatDate(asOf, lang)}` : "估值快照日期暂不可用"} · 方法：保守 Greenwald 价值区间 + Owner-Earnings DCF 两法夹逼。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
+          : `${asOf ? `Valuation as of ${formatDate(asOf, lang)}` : "Valuation snapshot date unavailable"} · method: conservative Greenwald value range + Owner-Earnings DCF. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
       </p>
     </>
   );
