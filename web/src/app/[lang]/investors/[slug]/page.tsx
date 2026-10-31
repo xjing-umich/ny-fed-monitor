@@ -1,3 +1,8 @@
+import { optionalValuation } from '@/lib/valuation/publicationAvailability';
+import { projectionDigest, investorSelection } from '@/lib/valuation/publicationProjection';
+import { publicationSourceAttributes } from '@/lib/valuation/publicationProof';
+import { ValuationSafetyBoundary } from '@/components/valuation/ValuationSafetyBoundary';
+import { ValuationUnavailable } from '@/components/valuation/publicationMarkers';
 import { OptionalLink } from "@/components/common/OptionalLink";
 import { currentStockKeys, availableStockHref } from '@/lib/stocks/stockLinks';
 import { readStockLinkHolders } from '@/lib/managers/consensusRead';
@@ -180,10 +185,10 @@ export default async function InvestorSlugPage({
     if (info.ticker && isLikelyTicker(info.ticker)) cusipToTicker.set(cusip, info.ticker);
 
   // 估值叠加(读物化快照, 廉价; 失败优雅返回空 Map → 无徽章, 不阻断渲染)。
-  const holdingTickers = longHoldings
-    .map((h) => cusipToTicker.get(h.cusip))
-    .filter((t): t is string => Boolean(t));
-  const verdicts = await readValuationVerdicts(holdingTickers);
+  const {tickers:holdingTickers} = investorSelection(latest.holdings,cusipToTicker);
+  const availability = await optionalValuation(readValuationVerdicts(holdingTickers));
+  const verdicts = availability.value ?? new Map();
+  const source = publicationSourceAttributes(investorPath(lang,slug),projectionDigest("investor",[...verdicts.values()],{holdings:longHoldings,displayHoldings:latest.holdings,tickers:holdingTickers}));
   const holderCounts = await readHolderCounts(holdingTickers);
 
   // 持仓表行内信念徽章(连续加仓/长期核心等): 按 cusip 归并, 零新增 IO(复用已加载的 filings)。
@@ -414,7 +419,8 @@ export default async function InvestorSlugPage({
   }
 
   return (
-    <>
+    <ValuationSafetyBoundary lang={lang} records={[...verdicts.values()].map(v=>v.publication)} sourceAttributes={source}>
+      <ValuationUnavailable lang={lang} reason={availability.unavailable} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
@@ -480,11 +486,11 @@ export default async function InvestorSlugPage({
                 title={lang === "zh" ? "估值姿态" : "Valuation posture"}
               />
               <p className="mb-3 mt-3 text-sm text-[var(--tt-muted)]">
-                {postureLeadIn(posture, lang)}
+                {lang === "zh" ? "按所示历史估值（当前状态待核实）：" : "At the shown historical valuations (current status requires verification): "}{postureLeadIn(posture, lang)}
               </p>
               <ul className="mt-1 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2">
                 {posture.cheap.slice(0, POSTURE_LIMIT).map((h) => (
-                  <li key={h.ticker} className="flex items-baseline gap-2 text-sm">
+                  <li {...verdicts.get(h.ticker)?.publication?.attributes} key={h.ticker} className="flex items-baseline gap-2 text-sm">
                     <OptionalLink
                       href={availableStockHref(lang, h.ticker, availableStocks)}
                       className="min-w-0 truncate text-[var(--tt-text)] no-underline transition-colors hover:text-[var(--tt-accent)]"
@@ -504,7 +510,7 @@ export default async function InvestorSlugPage({
                   // 档位文案与待确认原因都来自 valuationLabel(单一说法源)
                   const vl = valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: false }, lang);
                   return (
-                  <li key={`pending-${h.ticker}`} title={vl.title ?? undefined} className="flex items-baseline gap-2 text-sm">
+                  <li {...verdicts.get(h.ticker)?.publication?.attributes} key={`pending-${h.ticker}`} title={vl.title ?? undefined} className="flex items-baseline gap-2 text-sm">
                     <OptionalLink
                       href={availableStockHref(lang, h.ticker, availableStocks)}
                       className="min-w-0 truncate text-[var(--tt-muted)] no-underline transition-colors hover:text-[var(--tt-accent)]"
@@ -513,7 +519,7 @@ export default async function InvestorSlugPage({
                       <span className="ml-1.5 font-code text-xs text-[var(--tt-faint)]">{h.ticker}</span>
                     </OptionalLink>
                     <span className="ml-auto shrink-0 font-data text-xs tabular-nums text-[var(--tt-faint)]">
-                      {vl.label}
+                      {vl.label}{h.marginPct != null ? ` · ${fmtMarginPct(h.marginPct)}` : ""}
                       {` · ${PENDING_WORD[lang]}`}
                     </span>
                   </li>
@@ -528,9 +534,9 @@ export default async function InvestorSlugPage({
             </FoldedSection>
             <LearnLink lang={lang} slug="what-is-a-superinvestor" label={lang === "zh" ? "什么是超级投资者" : "What is a superinvestor"} />
           </div>
-          <DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, who, lang, strikePendingIssuers(posture).map(cleanIssuer))} />
+          <div><p className="mb-2 text-xs text-[var(--tt-muted)]">{lang === "zh" ? "以下估值位置基于所示历史数据，当前状态待核实。" : "The following valuation positions use the shown historical data; current status requires verification."}</p><DiscoveryHandoff {...investorHandoffFor(posture.strikeCount, who, lang, strikePendingIssuers(posture).map(cleanIssuer))} /></div>
         </>
       </EntityPage>
-    </>
+    </ValuationSafetyBoundary>
   );
 }

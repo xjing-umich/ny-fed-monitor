@@ -3,19 +3,19 @@ import type { Lang } from "@/lib/nav";
 import type { StrikeLeader } from "@/lib/valuation/valuationSnapshot";
 import { stockPath } from "@/lib/urls";
 import { fmtMarginPct, fmtPerShareValue, fmtValueBand } from "@/lib/format";
-import { impliedValue } from "@/lib/valuation/impliedValue";
+
 import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
 
 const COPY = {
   zh: {
-    title: (n: number) => `${n} 只在击球区`,
+    title: (n: number) => `${n} 只在击球区 · 按所示价格`,
     pending: (p: number) => `另 ${p} 只待确认`,
     cols: { ticker: "代码", band: "价值区间", iv: "内在价值", margin: "安全边际" },
     note: `价格不高于内在价值扣除安全边际后的值的标的，按安全边际排序。${BAND_FLOOR_NOTE.zh}仅为位置观察，非建议。`,
   },
   en: {
-    title: (n: number) => `${n} in the strike zone`,
+    title: (n: number) => `${n} in the strike zone · at shown prices`,
     pending: (p: number) => `${p} more pending review`,
     cols: { ticker: "Ticker", band: "Value range", iv: "Intrinsic value", margin: "Margin" },
     note: `Priced at or below intrinsic value minus a margin of safety, ranked by margin of safety. ${BAND_FLOOR_NOTE.en} An observation, not advice.`,
@@ -56,7 +56,7 @@ export default function StrikeLeadersCard({
         </thead>
         <tbody>
           {leaders.map((row) => (
-            <tr key={row.ticker} className="border-b border-[var(--tt-border)] last:border-0">
+            <tr {...row.publication?.attributes} key={row.ticker} className="border-b border-[var(--tt-border)] last:border-0">
               <td className="py-2 pr-3">
                 <Link
                   href={stockPath(lang, row.ticker)}
@@ -70,8 +70,8 @@ export default function StrikeLeadersCard({
               </td>
               <td className="py-2 pr-3 text-right font-data text-sm tabular-nums text-[var(--tt-text)] whitespace-nowrap">
                 {(() => {
-                  const iv = impliedValue(row.price, row.marginPct);
-                  return iv == null ? "—" : fmtPerShareValue(iv);
+                  const iv = row.intrinsicValue ?? row.referenceValue;
+                  return <>{iv == null ? "—" : fmtPerShareValue(iv)}{row.referenceKind !== "oe_dcf_neutral" && <small> {row.referenceKind === "zero_growth_floor" ? (lang === "zh" ? "零增长底" : "Zero-growth floor") : (lang === "zh" ? "SOTP 基础档" : "SOTP base")}</small>}</>;
                 })()}
               </td>
               <td className="py-2 text-right font-data text-sm tabular-nums text-val-below whitespace-nowrap">

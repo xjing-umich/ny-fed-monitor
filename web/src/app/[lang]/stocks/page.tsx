@@ -1,3 +1,8 @@
+import { optionalValuation } from '@/lib/valuation/publicationAvailability';
+import { projectionDigest, projectStockRows } from '@/lib/valuation/publicationProjection';
+import { publicationSourceAttributes } from '@/lib/valuation/publicationProof';
+import { ValuationSafetyBoundary } from '@/components/valuation/ValuationSafetyBoundary';
+import { ValuationUnavailable } from '@/components/valuation/publicationMarkers';
 import { date as formatDate } from "@/lib/i18n/format";
 import { cache } from "react";
 import { notFound } from "next/navigation";
@@ -18,7 +23,7 @@ import PageHeader from "@/components/common/PageHeader";
 import { DataAsOfBadge } from "@/components/aggregate/DataAsOfBadge";
 import { StocksTable, type StockRow } from "./StocksTable";
 import { stockUi } from "@/lib/stocks/stockCopy";
-import { readBargainVerdicts } from "@/lib/valuation/valuationSnapshot";
+import { readAllSnapshots } from "@/lib/valuation/valuationSnapshot";
 import { latestIsoDate } from "@/lib/valuation/asOf";
 
 // 共识持仓为季度级数据,无需每请求重算。静态预渲染 + ISR → 列表页 CDN 秒开,
@@ -52,35 +57,24 @@ const getStocksPageData = cache(async (lang: Lang) => {
   // an internal link from this hub. Single-holder long tail stays out (crawlable
   // but not promoted). Shared source with the sitemap so the two never drift.
   // getManagerIndex 有 cache()，与站内其他页共享，只为 dateline 取全局最新季。
-  const [rows, cusipMap, idx, bargains] = await Promise.all([
+  const [rows, cusipMap, idx, valuationAvailability] = await Promise.all([
     consensusHeld(),
     getCusipMap(),
     getManagerIndex(),
-    readBargainVerdicts(),
+    optionalValuation(readAllSnapshots()),
   ]);
 
   // 绿标来自估值快照:标出所用收盘价日期(快照 + ISR 可能比 13F 数据新或旧)。
-  const bargainAsOf = latestIsoDate([...bargains.values()].map((b) => b.priceDate));
+  const values = valuationAvailability.value ?? [];
+  const bargainAsOf = latestIsoDate(values.map(v=>v.priceDate));
   // 与首页 masthead / 个股页"截至"同一口径:申报季内不跟单只早申报者跳到新季。
   const displayPeriod = effectiveMovesPeriod(idx.managers.map((m) => m.period), new Date()).period;
   const asOfLabel = quarterLabel(displayPeriod, lang) || undefined;
 
   // 服务端预塑形为可序列化行,交给 client 组件(DataTable + 分页)。
-  const maxHolders = rows[0]?.holderCount ?? 1;
-  const tableRows: StockRow[] = rows.map((row) => {
-    const info = cusipMap.get(row.cusip);
-    // mostHeld 的 cusip 字段实为 ticker(consensusRead/tickerizeRows 已 tickerize)。
-    const ticker = info?.ticker ?? row.cusip;
-    const bargain = bargains.get(ticker.toUpperCase());
-    return {
-      ticker,
-      issuer: row.issuer,
-      holderCount: row.holderCount,
-      totalValue: row.totalValue,
-      barWidth: Math.round((row.holderCount / maxHolders) * 32),
-      bargain: bargain ? { inStrikeZone: bargain.inStrikeZone, marginPct: bargain.marginPct } : null,
-    };
-  });
+  const cusipToTicker = new Map([...cusipMap].flatMap(([cusip,info])=>info.ticker&&isLikelyTicker(info.ticker)?[[cusip,info.ticker] as const]:[]));
+  const tableRows: StockRow[] = projectStockRows(rows,cusipToTicker,values);
+  const source = publicationSourceAttributes(localePath(lang,"/stocks"),projectionDigest("stocks",tableRows,{sort:"holders",dir:"desc",pageSize:25}));
 
   const seen = new Set<string>();
   const directory = tableRows.flatMap((r) => {
@@ -89,7 +83,7 @@ const getStocksPageData = cache(async (lang: Lang) => {
     return [{ href: stockPath(lang, r.ticker), label: r.ticker, note: cleanIssuer(r.issuer) }];
   });
 
-  return { idx, bargainAsOf, asOfLabel, tableRows, directory };
+  return { idx, bargainAsOf, asOfLabel, tableRows, directory, source, unavailable:valuationAvailability.unavailable };
 });
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -103,7 +97,7 @@ export default async function StocksIndexPage({
   if (rawLang !== "zh" && rawLang !== "en") notFound();
   const lang = rawLang as Lang;
 
-  const { bargainAsOf, asOfLabel, tableRows, directory } = await getStocksPageData(lang);
+  const { bargainAsOf, asOfLabel, tableRows, directory, source, unavailable } = await getStocksPageData(lang);
   const isZh = lang === "zh";
   const ui = stockUi(lang);
   const meta = listMetadata(lang, "stocks", directory.length, asOfLabel ?? null);
@@ -133,12 +127,15 @@ export default async function StocksIndexPage({
           title={ui.stocksTitle}
           dateline={<DataAsOfBadge lang={lang} asOf={asOfLabel} />}
           intro={isZh
-            ? `按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（价格不高于内在价值扣除安全边际后的值）的以绿色标出${bargainAsOf ? `，估值截至 ${formatDate(bargainAsOf, lang)} 收盘价` : ""}。`
-            : `Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price at or below intrinsic value minus a margin of safety — are marked in green${bargainAsOf ? ` (valuations as of the ${formatDate(bargainAsOf, lang)} close)` : ""}.`}
+            ? `按持有机构数排列，数据来源：SEC 13F 持仓披露。少数落在击球区（价格不高于内在价值扣除安全边际后的值）的标出，当前状态须核实${bargainAsOf ? `，估值截至 ${formatDate(bargainAsOf, lang)} 收盘价` : ""}。`
+            : `Ranked by number of superinvestors holding the security. Source: SEC 13F filings. The few in the strike zone — price at or below intrinsic value minus a margin of safety — are marked, with current status checked when visible${bargainAsOf ? ` (valuations as of the ${formatDate(bargainAsOf, lang)} close)` : ""}.`}
         />
       </div>
 
-      <StocksTable lang={lang} rows={tableRows} />
+      <ValuationSafetyBoundary records={tableRows.flatMap(r=>r.bargain?[r.bargain.publication]:[])} lang={lang} sourceAttributes={source}>
+        <ValuationUnavailable lang={lang} reason={unavailable} />
+        <StocksTable lang={lang} rows={tableRows} />
+      </ValuationSafetyBoundary>
       {/* 全量目录:与 sitemap 同一谓词(isLikelyTicker + 去重),保证 sitemap 里每个个股 URL
           都有一条服务端可见的站内链接。 */}
       <LinkDirectory

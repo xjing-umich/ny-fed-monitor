@@ -5,7 +5,9 @@ import { ScreenerPage, SCREENER_VARIANTS, parseVariant, screenerMetadata } from 
 
 // 公开 URL 是 /stocks/screener?view=…&sort=…,由 next.config.ts rewrites 改写到这里(原因见 _screenerPage.tsx)。
 export const revalidate = 259200; // 列表页 3 天,见 app/[lang]/page.tsx 注释
-export const dynamicParams = false;
+// Next 16.2.6 returns NoFallbackError after on-demand invalidation with false.
+// Keep static generation + ISR; parseVariant still rejects every unknown variant.
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return SCREENER_VARIANTS.map((variant) => ({ variant }));

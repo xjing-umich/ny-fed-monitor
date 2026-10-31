@@ -1,3 +1,7 @@
+import { capturePublicationInputs, publishValuationCandidates } from './lib/publicationProducer';
+import { createPublicationClient, type PublicationBinding } from './lib/trackingPublication';
+import { readAllSnapshots } from '../src/lib/valuation/valuationSnapshot';
+import type { PublishedValuation } from '../src/lib/valuation/publishedRead';
 import { readTrackingIdentity } from "../src/lib/securities/trackingIdentityRead";
 import type { SecurityIdentity } from "../src/lib/securities/trackingIdentity";
 import { buildPublishedValuation, writeValuationPublication, readPublicationWriteState } from "../src/lib/valuation/publishedAdapter";
@@ -117,7 +121,14 @@ async function main() {
   const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
   const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
-  const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
+  const producerEnabled = process.env.VALUATION_PUBLICATION_VERIFY_ENABLED === "1";
+  const binding = producerEnabled ? JSON.parse(process.env.VALUATION_PUBLICATION_BINDING ?? "null") as PublicationBinding | null : null;
+  const seeds = new Set((process.env.VALUATION_PUBLICATION_SEED_KEYS ?? "").split(",").map(key=>key.trim()).filter(Boolean));
+  if (producerEnabled && (!binding || !seeds.size || seeds.size>500)) throw new Error("PUBLICATION_CONFIGURATION_REQUIRED");
+  const db = binding ? createPublicationClient(url,key,binding) : createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
+  // Capture prior render inputs before any candidate replacement or safety mutation.
+  const capturedPublication = binding ? await capturePublicationInputs(db,binding.origin) : null;
+  const candidates:PublishedValuation[]=[];
 
   const output = (name: string, value: number) => {
     if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
@@ -309,10 +320,7 @@ async function main() {
           ...(dgs10 ? [{url:"https://fred.stlouisfed.org/series/DGS10",asOf:dgs10.date}] : []),
         ],
       });
-      const state=publicationState.get(ticker)!;
-      state.generation=await writeValuationPublication(db,{identity:state.identity,expectedGeneration:state.generation,candidate,
-        safety:{status:candidate.record.status === "valid" ? "valid" : "pending",reasons:candidate.record.reasons,observedAt:computedAt}});
-      output("cache_refresh_required",1);
+      candidates.push(candidate);
       rows.push(prepareSnapshotPublication({
         ticker,
         verdict_bucket: v.bucket,
@@ -348,6 +356,10 @@ async function main() {
       console.error(`  ${ticker} 跳过: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
+
+  await publishValuationCandidates(db,{candidates,state:publicationState,
+    ...(binding && capturedPublication ? {publication:{origin:binding.origin,seeds,capture:capturedPublication,current:await readAllSnapshots()}} : {}),
+    onWritten:()=>output("cache_refresh_required",1)});
 
   const publishInvalidationCount = (count: number) => {
     output("invalidated_snapshots", count);

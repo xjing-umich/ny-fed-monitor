@@ -1,10 +1,15 @@
+import { optionalValuation } from '@/lib/valuation/publicationAvailability';
+import { projectionDigest, projectStrike } from '@/lib/valuation/publicationProjection';
+import { publicationSourceAttributes } from '@/lib/valuation/publicationProof';
+import { ValuationSafetyBoundary } from '@/components/valuation/ValuationSafetyBoundary';
+import { ValuationUnavailable } from '@/components/valuation/publicationMarkers';
 import { notFound } from "next/navigation";
 import { readStockLinkHolders } from '@/lib/managers/consensusRead';
 import { currentStockKeys } from '@/lib/stocks/stockLinks';
 import type { Metadata } from "next";
 import { getManagerIndex } from "@/lib/managers/source";
 import { notableMoves, consensusHeldTop, consensusCount } from "@/lib/aggregations";
-import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
+import { readAllSnapshots } from "@/lib/valuation/valuationSnapshot";
 import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { investorPath, localePath, HTML_LANG } from "@/lib/urls";
 import { altFor, ogFor } from "@/lib/seo";
@@ -64,16 +69,19 @@ export default async function HomePage({
   const isZh = lang === "zh";
 
   // 全部廉价并行读(Supabase / bundled JSON)。无外部 API、无重计算。
-  const [idx, moves, heldTop, heldCount, strike, dgs10, reports] = await Promise.all([
+  const [idx, moves, heldTop, heldCount, valuationAvailability, dgs10, reports] = await Promise.all([
     getManagerIndex(),
     notableMoves(6),
     consensusHeldTop(8),
     consensusCount(),
-    readStrikeZoneLeaders(6),
+    optionalValuation(readAllSnapshots()),
     getLatestDgs10(),
     listReportPeriods(),
   ]);
 
+  const valuationInputs = valuationAvailability.value ?? [];
+  const strike = projectStrike(valuationInputs,6);
+  const valuationSource = publicationSourceAttributes(lang === "zh" ? "/zh" : "/", projectionDigest("home",valuationInputs,{limit:6}));
   const topManagers = [...(idx.managers ?? [])].sort((a, b) => b.totalValue - a.totalValue);
   const moveKeys = [...moves.mostBought, ...moves.mostSold].map((r) => r.cusip);
   const availableMoves = currentStockKeys((await readStockLinkHolders(moveKeys)) ?? [], new Date());
@@ -139,7 +147,10 @@ export default async function HomePage({
 
       {/* Near-full-width to break the max-w-5xl rhythm. */}
       <Section rhythm="xl" className="mx-auto max-w-6xl">
-        <StepIndex lang={lang} investors={topManagers.slice(0, 16)} held={heldTop} strike={strike} />
+        <ValuationSafetyBoundary lang={lang} records={strike.leaders.map(v=>v.publication)} sourceAttributes={valuationSource}>
+          <ValuationUnavailable lang={lang} reason={valuationAvailability.unavailable} />
+          <StepIndex lang={lang} investors={topManagers.slice(0, 16)} held={heldTop} strike={strike} />
+        </ValuationSafetyBoundary>
       </Section>
 
       <Section rhythm="lg">

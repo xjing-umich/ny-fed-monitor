@@ -20,6 +20,12 @@ async function main() {
   assert.throws(() => parseTickers(["../investors"]), /ticker/i);
   assert.throws(() => parseTickers("MSFT"), /ticker/i);
   assert.deepEqual(publicationRevalidationPaths(parsePublicationPaths(["/stocks?page=2", "/zh/stocks/screener/cheap", "/stocks?page=2"])),["/en/stocks","/zh/stocks/screener/cheap"]);
+  for (const prefix of ["", "/zh"]) {
+    const base = `${prefix}/stocks/screener`;
+    const internal = `${prefix || "/en"}/stocks/screener`;
+    for (const [query, suffix] of [["", ""], ["?sort=holders", "/all-holders"], ["?view=below", "/below"], ["?view=below&sort=holders", "/below-holders"], ["?view=strike_zone", "/strike_zone"], ["?view=strike_zone&sort=holders", "/strike_zone-holders"], ["?view=conviction", "/conviction"]])
+      assert.deepEqual(publicationRevalidationPaths([base + query]), [internal + suffix], "public query must invalidate its actual static rewrite destination");
+  }
   assert.throws(()=>parsePublicationPaths(["https://other.invalid/stocks"]),/publication/i);
   assert.throws(()=>parsePublicationPaths(["/api/revalidate"]),/publication/i);
   assert.throws(()=>parsePublicationPaths(["//other.invalid"]),/publication/i);

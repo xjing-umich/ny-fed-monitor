@@ -1,3 +1,4 @@
+import { reconcileAutomaticPublication } from './lib/publicationProducer';
 /** Workflow retry entrypoint. Task6 persists manifests automatically BEFORE public replacement.
  * No manual manifest or public proof endpoint; no URLs/keys/manifests printed in Actions logs.
  */
@@ -7,7 +8,7 @@ import { createPublicationClient, publicationManifest, verifyPublishedPages, con
 
 async function main() {
   if (process.env.VALUATION_PUBLICATION_VERIFY_ENABLED!=="1") {
-    console.log("Rendered publication verification disabled pending renderer integration."); return;
+    console.log("Rendered publication verification disabled pending release acceptance."); return;
   }
   const url=process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key=process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -17,6 +18,7 @@ async function main() {
   if (!url || !key || !secret || !rawBinding || !seeds.size || seeds.size>500) throw new Error("PUBLICATION_CONFIGURATION_REQUIRED");
   const binding=JSON.parse(rawBinding) as PublicationBinding;
   const db=createPublicationClient(url,key,binding);
+  await reconcileAutomaticPublication(db,binding.origin,seeds);
   // Until Task7 supplies active keys, only explicitly configured seed securities are probed.
   // Durable round-robin tickets advance before processing, including skipped/failed work.
   // A worker crash retains every obligation without pinning the next run to the same prefix.

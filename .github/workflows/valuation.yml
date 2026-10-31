@@ -30,6 +30,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VALUATION_PUBLICATION_VERIFY_ENABLED: ${{ vars.VALUATION_PUBLICATION_VERIFY_ENABLED }}
+          VALUATION_PUBLICATION_BINDING: ${{ vars.VALUATION_PUBLICATION_BINDING }}
+          VALUATION_PUBLICATION_SEED_KEYS: ${{ secrets.VALUATION_PUBLICATION_SEED_KEYS }}
       # 同 ingest.yml:快照重算完必须刷缓存,否则个股页/screener 继续发旧估值。
       # 但只在每周六(当周 SEC fundamentals 已于周六 07:00 入库)或手动触发时整站刷新:
       # 每日整站刷新 = 每天 ~2200 页重新生成,是 Vercel Hobby ISR Writes 超额的主因。
@@ -48,8 +51,8 @@ jobs:
           fi
           npm run valuation:revalidate
 
-      # Task6 must provide automatic durable route manifests from actual shared render inputs.
-      # Gate remains off until renderer integration/acceptance; no manual manifest artifact.
+      # Ingest prepares durable route manifests before candidate CAS; retry reconciles stale inputs.
+      # Feature gate remains off until real release acceptance; no manual manifest artifact.
       # Runs on later failed ingests too, so durable previous publication work is retried.
       - name: Verify rendered tracking generations
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' && vars.VALUATION_PUBLICATION_VERIFY_ENABLED == '1' }}

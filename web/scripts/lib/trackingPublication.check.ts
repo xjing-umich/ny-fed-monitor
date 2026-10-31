@@ -25,6 +25,11 @@ async function main() {
     if (req.url!.startsWith("/rest/v1/tracking_publication_intents")) {
       res.setHeader("content-type","application/json"); res.end(JSON.stringify(queueManifests.slice(0,Number(new URL(req.url!,"http://fixture.invalid").searchParams.get("limit") ?? 20)).map(manifest=>({manifest})))); return;
     }
+    // Retry now reconciles actual producer inputs before reading its bounded intent queue.
+    // This verifier-only fixture has no current candidates/holdings to reconcile.
+    if (req.url!.startsWith("/rest/v1/") && !["next_tracking_publication_batch_v1","prepare_tracking_publication_v1","confirm_tracking_publication_v1"].some(name=>req.url!.includes(name))) {
+      res.setHeader("content-type","application/json"); res.end("[]"); return;
+    }
     if (req.method==="POST") {
       let body=""; for await(const chunk of req) body+=chunk;
       rpcBodies.push({path:req.url!,body:JSON.parse(body)});

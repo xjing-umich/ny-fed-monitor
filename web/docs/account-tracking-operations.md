@@ -45,3 +45,25 @@ NEXT_PUBLIC_ACCOUNT_TRACKING_ENABLED=0 npm run build
 - 原 lockfile / Node 20.20.0：TypeScript、两项估值检查及完整 prebuild 通过。安装已有 `mute-stream` Node engine 警告。
 - 新 lockfile / Node 22.23.4：干净 `npm ci`、依赖树、TypeScript、两项估值检查、配置 eslint、完整 prebuild 通过；无 peer / engine 警告。配置烟雾验证通过：默认关闭、仅 `1` 开启、缺公开 key 不使用管理 key、服务端项目 URL 失配报错。
 - `NEXT_PUBLIC_ACCOUNT_TRACKING_ENABLED=0` 公开 build 在升级前后均完成编译与 TypeScript；均在 `/[lang]/managers/[cik]` 页面数据收集阶段因缺少既有 `SUPABASE_URL / SUPABASE_SERVICE_KEY` 失败。此工作区未注入生产凭据，不能记录为完整构建通过。
+
+## 2026-10-31 公开估值代次与自动发布
+
+公开个股、首页、股票列表、筛选器及投资人估值区域现在读取同一发布记录；内在价值和比较锚使用记录原值，保留零增长底 / SOTP 基础档区别。个股仍读取基本面用于生意质量与研究，但不再独立运行估值。估值库缺配置、缺表或故障时，页面显示明确不可用，13F 与研究 / SEO 保留。
+
+`VALUATION_PUBLICATION_VERIFY_ENABLED` 仍默认关闭；本次没有开启任何线上开关。真实迁移、Supabase / Google / 邮箱验收仍属于发布前置条件。待验收环境开启此开关后，ingest 和 verifier 必须同时提供：
+
+- `VALUATION_PUBLICATION_BINDING`：受信配置 `{ "origin": "https://站点域名", "supabaseUrl": "https://对应项目.supabase.co" }`，两者由客户端工厂绑定；不要从请求或 manifest 推断。
+- `VALUATION_PUBLICATION_SEED_KEYS`：私有逗号分隔证券身份键，最多 500 个。Task 7 提供活跃关注键前使用此显式种子集合；不要公开到 Actions artifacts / 日志。
+- 现有服务端 Supabase 配置；verifier 另需 `INGEST_SECRET`。无需手工制作 manifest。
+
+自动流程：在替换任何候选之前捕获完整旧投影和未完成义务；整批估值计算完毕后，用相同投影函数计算将来的路由内容、摘要和成员，持久化 intent，然后才逐条 CAS 写入。prepare 失败不写候选；中途 CAS 失败保留完整 intent，由后续 verifier 按实际状态生成继任 intent。确认仍只能经过真实公开 HTML 校验与 Task 5 SQL CAS，不能用 `/api/revalidate` 的 200 充当确认。
+
+首次 bootstrap 保守覆盖全部当前投资人页、实际筛选器静态变体、必要汇总与个股页，包括应为空的义务。最近 20 个同源已完成 manifest 提供可信路由库存后，仅保留所选证券变更前后相关路由和全部未完成历史 URL / key 义务；不在此有界库存中的证券重新保守 bootstrap。历史未知 / 已删除路由无法凭空重建，生产器明确失败并保留旧义务，需要先解决真实路由可达性；不得靠删除 intent 放行。
+
+股票列表的筛选 / 分页只在浏览器完成：一个 canonical `/stocks` ISR 数据集的摘要覆盖完整序列化行，SSR 只为实际首屏行标记代次。筛选器的七个视图 / 排序组合沿用原静态 rewrite，各有真实 query canonical 路径。投资人投影复用原持仓上限与估值姿态选择，摘要仍包含全部输入，不能把未渲染的溢出行冒充已验证行。
+
+安全区域 SSR 默认“待核实”，首次可见、恢复可见、网络恢复和实际行变化时批量请求 `/api/valuation/state`；每批最多 100 证券、`credentials: omit`，无逐行轮询。API 不读 / 写用户 Cookie，响应 `no-store`。网络失败或撤回保留带日期历史数字并关闭确认状态；重新联网只是核对触发器。
+
+本地验证仅使用合成 PostgREST 数据和独立端口的 Next 生产构建 / `next start`，没有复用生产 `.env`。完整 `npm run build` 已通过（含 prebuild），公开页面仍为静态 / SSG，只有安全 API 按请求读取。真实 Supabase、Google、邮箱登录与部署验收尚未执行。
+
+实际 `next start` 失效重建另发现：publication revalidate 必须把公开筛选 query 映射到内部 `/en|zh/stocks/screener/<variant>`，不能丢掉 query 后只刷新默认页。Next 16.2.6 对该路由 `dynamicParams=false` 在干净构建后按路径或路由族失效都会产生 `NoFallbackError` / 404，因此仅该路由允许 ISR fallback；仍预生成六个合法 variant，严格 `parseVariant` 白名单、未知 variant 404、259200 秒 ISR 不变。普通公开 GET 的真实重建与 HTML 代次校验仍是确认条件。

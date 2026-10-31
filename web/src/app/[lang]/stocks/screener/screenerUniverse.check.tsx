@@ -6,7 +6,6 @@ import { ScreenerPage } from "./_screenerPage";
 import { readConvictionScreen } from "@/lib/valuation/valuationSnapshot";
 
 import { projectPublicationFixture, publicationFixture } from "../../../../../scripts/tests/publication-fixture";
-import { PublicationUnavailableError } from "@/lib/valuation/publishedRead";
 import { VALUATION_MODEL_VERSION } from "@/lib/valuation/modelVersion";
 
 const expectations = { assessable: false as const, reason: "fixture" };
@@ -107,11 +106,11 @@ async function main() {
 
     console.error = () => {}; // 以下为预期故障;断言页面结果,不把日志输出当作测试成功。
     broken = "snapshot-page";
-    await assert.rejects(page("all"),PublicationUnavailableError,"后续页故障显式抛出，不伪造半张榜单");
+    assert.match(await page("all"),/Valuation is unavailable/,"后续页故障显示明确不可用，不伪造半张榜单");
     broken = "holder-join";
-    await assert.rejects(page("all","holders"),PublicationUnavailableError,"持有人批次失败不拿残缺计数排序");
+    assert.match(await page("all","holders"),/Valuation is unavailable/,"持有人批次失败显示不可用，不拿残缺计数排序");
     broken = "snapshot-join";
-    await assert.rejects(page("conviction"),PublicationUnavailableError,"估值读取失败不返回半张共识榜");
+    assert.match(await page("conviction"),/Valuation is unavailable/,"估值读取失败明确显示不可用，不返回半张共识榜");
   } finally {
     globalThis.fetch = savedFetch;
     console.error = savedError;

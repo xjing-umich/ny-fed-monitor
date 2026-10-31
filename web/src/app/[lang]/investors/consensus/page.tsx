@@ -1,3 +1,8 @@
+import { optionalValuation } from '@/lib/valuation/publicationAvailability';
+import { projectionDigest } from '@/lib/valuation/publicationProjection';
+import { publicationSourceAttributes } from '@/lib/valuation/publicationProof';
+import { ValuationSafetyBoundary } from '@/components/valuation/ValuationSafetyBoundary';
+import { ValuationUnavailable } from '@/components/valuation/publicationMarkers';
 import React, { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -49,7 +54,9 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   const isZh = lang === "zh";
 
   const { rows, deltas, idx, effective } = await getConsensusData();
-  const verdicts = await readValuationVerdicts(rows.map((r) => r.cusip));
+  const availability = await optionalValuation(readValuationVerdicts(rows.map((r) => r.cusip)));
+  const verdicts = availability.value ?? new Map();
+  const source = publicationSourceAttributes(localePath(lang,"/investors/consensus"),projectionDigest("consensus",[...verdicts.values()],{rows}));
   // 榜上估值徽章来自估值快照:标出所用收盘价日期。
   const valuationAsOf = valuationAsOfText(lang, latestIsoDate([...verdicts.values()].map((v) => v.priceDate)));
   // 已过最近到期季截止日仍没交 13F 的 manager 不计入持有人(与 consensus 快照同一判定),分母同步扣除。
@@ -77,7 +84,8 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
   );
 
   return (
-    <>
+    <ValuationSafetyBoundary lang={lang} records={[...verdicts.values()].map(v=>v.publication)} sourceAttributes={source}>
+      <ValuationUnavailable lang={lang} reason={availability.unavailable} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -117,7 +125,7 @@ export default async function ConsensusPage({ params }: { params: Promise<{ lang
         )}
         <AggregateRankingList lang={lang} rows={rankRows} primaryLabel={isZh ? "持有" : "holders"} />
       </div>
-    </>
+    </ValuationSafetyBoundary>
   );
 }
 

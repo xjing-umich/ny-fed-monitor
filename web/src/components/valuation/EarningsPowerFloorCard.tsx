@@ -564,7 +564,7 @@ function resolveSpine({ floor, sz, oeDcf, reconciliation, verdict: suppliedVerdi
   // hasIv/IV derivation so the headline can never disagree with the bucket it's inside of.
   // No IV (oeDcf not assessable / tiers missing) → single-lamp fallback, headline drops to the
   // zero-growth floor F (today's number), same as the verdict's own fallback anchor.
-  const ivRaw = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
+  const ivRaw = verdict.intrinsicValue;
   const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
   const IV = hasIv ? (ivRaw as number) : undefined;
   return { verdict, hasIv, IV };

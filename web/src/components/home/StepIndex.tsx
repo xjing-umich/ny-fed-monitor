@@ -18,7 +18,7 @@ const COPY = {
       eyebrow: "估值",
       title: "先看盈利和资产，再检查增长假设",
       body: "个股页分开列出零增长底、内在价值与乐观上沿，并写明增长假设。把持仓和这些条件放在一起读，才看得出价格要求你相信什么。",
-      cta: (n: number) => (n > 0 ? `看全部 ${n} 只击球区个股` : "打开价值筛选器"),
+      cta: (n: number) => (n > 0 ? `查看所示数据中 ${n} 只击球区个股` : "打开价值筛选器"),
     },
     consensus: {
       eyebrow: "跨基金共识",
@@ -40,7 +40,7 @@ const COPY = {
       eyebrow: "Valuation",
       title: "Start with earnings and assets. Check the growth assumptions.",
       body: "Stock pages separate a zero-growth floor, intrinsic value and an optimistic top, with the growth assumptions beside them. Read those conditions alongside the holdings to see what a price asks you to believe.",
-      cta: (n: number) => (n > 0 ? `See all ${n} in the strike zone` : "Open the value screener"),
+      cta: (n: number) => (n > 0 ? `See ${n} in the strike zone at shown prices` : "Open the value screener"),
     },
     consensus: {
       eyebrow: "Cross-fund consensus",
