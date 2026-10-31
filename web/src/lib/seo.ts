@@ -177,7 +177,7 @@ export function collectionLd(opts: {
   name: string;
   description: string;
   path: string;
-  items: { name: string; path: string }[];
+  items: { name: string; path?: string }[];
   total?: number;
   limit?: number;
   /** 列表数据最后一次变化的日期(YYYY-MM-DD)。 */
@@ -200,7 +200,7 @@ export function collectionLd(opts: {
         "@type": "ListItem",
         position: i + 1,
         name: it.name,
-        url: absoluteUrl(it.path),
+        ...(it.path ? { url: absoluteUrl(it.path) } : {}),
       })),
     },
   };
