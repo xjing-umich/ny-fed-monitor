@@ -46,6 +46,8 @@ stub('../lib/managers/treasuryRead', { getLatestDgs10: async () => null });
 const prices = require('../lib/managers/priceRead');
 stub('../lib/managers/priceRead', { ...prices, getLatestPrice: async () => null, getLatestSplit: async () => null });
 stub('../lib/valuation/valuationSnapshot', { readValuationVerdicts: async () => new Map() });
+const publishedRead = require('../lib/valuation/publishedRead');
+stub('../lib/valuation/publishedRead', {...publishedRead,readPublicValuations:async()=>new Map()});
 const stockRoute = require('./[lang]/stocks/[ticker]/page');
 const StockPage = stockRoute.default;
 const InvestorPage = require('./[lang]/investors/[slug]/page').default;

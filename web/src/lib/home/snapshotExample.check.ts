@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { projectHome, screenProjectionDigest } from "../valuation/publicationProjection";
 import { deriveCompanyExample } from "./companyExample";
 import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import type { StockHolderApp } from "@/lib/managers/consensusRead";
@@ -22,6 +23,9 @@ const holder = (
 });
 const snapshot: SnapshotVerdict = {
   ticker: "AAPL",
+  priceSource:"fixture",intrinsicValue: 150, referenceValue: 150, referenceKind: "oe_dcf_neutral",
+  requiredMargin: 1/3, strikePrice: 100, securityUnit: "share",
+  publication: {identityKey:"fixture:AAPL",revisionId:"fixture-revision",ticker:"AAPL",priceDate:"2026-10-30",computedAt:"2026-10-31",attributes:{}},
   reliable: true,
   rangeLo: 90,
   rangeHi: 180,
@@ -49,6 +53,8 @@ const input = {
   now,
 };
 const row = deriveCompanyExample(input, "zh");
+const rawAnchor = deriveCompanyExample({...input, snapshot:{...snapshot,intrinsicValue:123.456,referenceValue:123.456,marginPct:.2}}, "en");
+assert.equal(rawAnchor.summary?.reference,123.456,"homepage uses raw IV, never rounded-margin inversion");
 assert.equal(row.holderCount, 2);
 assert.equal(row.totalValue, 200);
 assert.deepEqual(row.periods, ["2026-06-30", "2026-09-30"]);
@@ -142,6 +148,13 @@ assert.equal(
   null,
   "Pending zero-growth reference must not become a confirmed homepage comparison",
 );
+const homeEvidence=[{ticker:input.ticker,holders:input.holders,quote:input.quote,latestSplitDate:null,splitsAvailable:true}];
+const projected=projectHome([snapshot],homeEvidence,"en",now);
+assert.equal(projected.members[0].publication.identityKey,snapshot.publication.identityKey);
+assert.notEqual(projectHome([{...snapshot,intrinsicValue:123.456,referenceValue:123.456}],homeEvidence,"en",now).sourceDigest,projected.sourceDigest);
+assert.notEqual(projectHome([snapshot],[{...homeEvidence[0],splitsAvailable:false}],"en",now).sourceDigest,projected.sourceDigest);
+assert.deepEqual(projectHome([snapshot],[{...homeEvidence[0],holders:[]}],"en",now).members,[],"missing detail destination has no visible numeric proof");
+assert.notEqual(screenProjectionDigest([snapshot],new Map(),"all","margin",[]),screenProjectionDigest([snapshot],new Map(),"all","margin",["AAPL"]),"detail-link availability belongs to complete screen render projection");
 console.log(
   "snapshotExample.check OK: snapshot gates, dates, splits, currency, SOTP and zero growth",
 );

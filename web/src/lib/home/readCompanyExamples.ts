@@ -4,39 +4,24 @@ import type { Lang } from "@/lib/nav";
 import { readStockHolders } from "@/lib/managers/consensusRead";
 import { getLatestPrice } from "@/lib/managers/priceRead";
 import { readValuationVerdicts } from "@/lib/valuation/valuationSnapshot";
-import { deriveCompanyExample } from "./companyExample";
+import { optionalValuation } from "@/lib/valuation/publicationAvailability";
+import { projectHome } from "@/lib/valuation/publicationProjection";
 import { readExampleSplits } from "./readExampleSplits";
-const TICKERS = ["AAPL", "MSFT", "BRK.B"];
-// 8 database reads: one version/validity-filtered snapshot batch,
-// three holders + three latest quotes + one split batch. No SEC reads,
-// valuation engine, source scanning, or writes. Raw evidence is shared by locales.
-const readEvidence = cache(async () => {
-  const [snapshots, splits, rows] = await Promise.all([
-    readValuationVerdicts(TICKERS).catch(() => new Map()),
-    readExampleSplits(TICKERS).catch(() => null),
-    Promise.all(
-      TICKERS.map(async (ticker) => {
-        const [holders, quote] = await Promise.allSettled([
-          readStockHolders(ticker),
-          getLatestPrice(ticker),
-        ]);
-        return {
-          ticker,
-          holders: holders.status === "fulfilled" ? holders.value : null,
-          quote: quote.status === "fulfilled" ? quote.value : null,
-        };
-      }),
-    ),
+export const HOME_TICKERS = ["AAPL", "MSFT", "BRK.B"];
+/** Bounded supplementary evidence, shared by renderer and automatic publication producer. */
+export const readHomeEvidence = cache(async () => {
+  const [splits, rows] = await Promise.all([
+    readExampleSplits(HOME_TICKERS).catch(() => null),
+    Promise.all(HOME_TICKERS.map(async ticker => {
+      const [holders, quote] = await Promise.allSettled([readStockHolders(ticker), getLatestPrice(ticker)]);
+      return {ticker, holders:holders.status === "fulfilled" ? holders.value : null,
+        quote:quote.status === "fulfilled" ? quote.value : null};
+    })),
   ]);
-  return rows.map((row) => ({
-    ...row,
-    latestSplitDate: splits?.get(row.ticker) ?? null,
-    snapshot: splits ? (snapshots.get(row.ticker) ?? null) : null,
-  }));
+  return rows.map(row => ({...row, latestSplitDate:splits?.get(row.ticker) ?? null, splitsAvailable:splits !== null}));
 });
-export const readCompanyExamples = cache(async (lang: Lang) => {
-  const now = new Date();
-  return (await readEvidence()).map((row) =>
-    deriveCompanyExample({ ...row, now }, lang),
-  );
+export const readCompanyExampleState = cache(async (lang: Lang) => {
+  const [availability,evidence] = await Promise.all([optionalValuation(readValuationVerdicts(HOME_TICKERS)),readHomeEvidence()]);
+  return {...projectHome([...(availability.value?.values() ?? [])],evidence,lang),unavailable:availability.unavailable};
 });
+export const readCompanyExamples = cache(async (lang:Lang) => (await readCompanyExampleState(lang)).examples);

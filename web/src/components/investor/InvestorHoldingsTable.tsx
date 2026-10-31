@@ -140,6 +140,7 @@ export function InvestorHoldingsTable({ holdings, lang, cusipToTicker, verdicts,
       columns={columns}
       rows={rows}
       getKey={(h) => holdingKey(h)}
+      rowAttributes={(h)=>verdicts.get((cusipToTicker.get(h.cusip) ?? "").toUpperCase())?.publication?.attributes}
       rowHref={(h) => {
         const tk = cusipToTicker.get(h.cusip);
         return availableStockHref(lang, tk ?? h.cusip, availableStocks);

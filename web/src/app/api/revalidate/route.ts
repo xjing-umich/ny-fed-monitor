@@ -1,4 +1,4 @@
-import { parseTickers, targetedPaths } from "@/lib/revalidate/targets";
+import { parseTickers, targetedPaths, parsePublicationPaths, publicationRevalidationPaths } from "@/lib/revalidate/targets";
 import { revalidatePath } from "next/cache";
 import { isAuthorizedIngestRequest, unauthorizedResponse } from "@/lib/ingestion/auth";
 import { DATA_DRIVEN_PATHS, DATA_DRIVEN_ROUTE_HANDLERS, REPORT_PATHS } from "@/lib/revalidate/paths";
@@ -19,6 +19,14 @@ export async function POST(request: Request): Promise<Response> {
   if (!isAuthorizedIngestRequest(request)) return unauthorizedResponse();
 
   const source = new URL(request.url).searchParams.get("source") ?? "manual";
+  if (source === "tracking-publication") {
+    let paths: string[];
+    try { paths = publicationRevalidationPaths(parsePublicationPaths((await request.json()).paths)); }
+    catch { return Response.json({ error: "Invalid publication paths" }, { status: 400 }); }
+    for (const path of paths) revalidatePath(path);
+    // This acknowledges invalidation only. Ordinary public GET proof is a separate workflow step.
+    return Response.json({ ok: true, source, revalidated: paths, at: new Date().toISOString() });
+  }
   if (request.headers.get("content-type")?.includes("application/json")) {
     let tickers: string[];
     try { tickers = parseTickers((await request.json()).tickers); }

@@ -33,6 +33,7 @@ export type DataTableProps<T> = {
   getKey: (row: T, index: number) => string;
   /** 提供则整行/整卡可点击跳转 */
   rowHref?: (row: T) => string;
+  rowAttributes?: (row:T) => Record<string,string> | undefined;
   /** 显示序号列(从 1 起) */
   showRank?: boolean;
   /** 隐藏桌面表头(用于首页紧凑 teaser) */
@@ -70,6 +71,7 @@ export function DataTable<T>({
   rows,
   getKey,
   rowHref,
+  rowAttributes,
   showRank,
   hideHeader,
   breakpoint = "md",
@@ -181,11 +183,12 @@ export function DataTable<T>({
               const href = rowHref?.(row);
               return (
                 <tr
+                  {...rowAttributes?.(row)}
                   key={getKey(row, i)}
                   className="group transition-colors hover:bg-[var(--tt-surface)]"
                 >
                   {showRank && (
-                    <td className="py-2.5 pr-3 font-data text-xs tabular-nums text-[var(--tt-faint)]">
+                    <td key="rank" className="py-2.5 pr-3 font-data text-xs tabular-nums text-[var(--tt-faint)]">
                       {(rankStart ?? 0) + i + 1}
                     </td>
                   )}
@@ -283,8 +286,8 @@ export function DataTable<T>({
             </span>
           );
           return (
-            <li key={getKey(row, i)} className="py-3">
-              <div className="flex items-start justify-between gap-3">
+            <li {...rowAttributes?.(row)} key={getKey(row, i)} className="py-3">
+              <div key="primary" className="flex items-start justify-between gap-3">
                 {href ? (
                   <Link href={href} className="min-w-0 flex-1 no-underline">
                     {title}
@@ -301,7 +304,7 @@ export function DataTable<T>({
                 )}
               </div>
               {metricCols.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 pl-0">
+                <div key="metrics" className="mt-2 flex flex-wrap gap-x-5 gap-y-1 pl-0">
                   {metricCols.map((c) => (
                     <span
                       key={c.key}

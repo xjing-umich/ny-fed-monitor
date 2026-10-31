@@ -1,3 +1,5 @@
+import { projectionDigest } from '@/lib/valuation/publicationProjection';
+import { publicationSourceAttributes } from '@/lib/valuation/publicationProof';
 import React, { cache } from "react";
 import { rankingMetadata } from "@/lib/seo";
 import { readStockLinkHolders } from '@/lib/managers/consensusRead';
@@ -117,7 +119,7 @@ export async function MovesPage({ lang, side }: { lang: Lang; side: "buy" | "sel
         }) }}
       />
       <SubNav lang={lang} section="investors" active={side === "buy" ? "buys" : "sells"} />
-      <div className="pb-8 sm:pb-10">
+      <div {...publicationSourceAttributes(localePath(lang,`/investors/${shareSlug}`),projectionDigest("moves",[],{side,rows:data}))} className="pb-8 sm:pb-10">
         <div className="mb-6">
           <PageHeader
             eyebrow={isZh ? `13F 动向 · ${qLabel}` : `13F moves · ${qLabel}`}

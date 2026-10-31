@@ -18,7 +18,7 @@ const COPY = {
       eyebrow: "估值",
       title: "先看盈利和资产，再检查增长假设",
       body: "财报资料足够时，我们用盈利能力、资产和现金流估算价值区间，并列明假设与缺失数据。把这些条件与持仓一起读，看价格要求你相信什么。",
-      cta: (n: number) => (n > 0 ? `看全部 ${n} 只击球区个股` : "打开价值筛选器"),
+      cta: (n: number) => (n > 0 ? `查看所示数据中 ${n} 只击球区个股` : "打开价值筛选器"),
     },
     consensus: {
       eyebrow: "跨基金共识",
@@ -40,7 +40,7 @@ const COPY = {
       eyebrow: "Valuation",
       title: "Start with earnings and assets. Check the growth assumptions.",
       body: "Where the filings support an estimate, we show a value range based on earnings, assets, and cash flow, alongside assumptions and missing data. Read those conditions alongside the holdings to see what a price asks you to believe.",
-      cta: (n: number) => (n > 0 ? `See all ${n} in the strike zone` : "Open the value screener"),
+      cta: (n: number) => (n > 0 ? `See ${n} in the strike zone at shown prices` : "Open the value screener"),
     },
     consensus: {
       eyebrow: "Cross-fund consensus",

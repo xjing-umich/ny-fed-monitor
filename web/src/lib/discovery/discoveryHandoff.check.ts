@@ -4,6 +4,7 @@ import { stockHandoffFor, investorHandoffFor } from "./discoveryHandoff";
 import type { ValuationVerdict } from "@/lib/valuation/deriveValuationVerdict";
 
 const v = (over: Partial<ValuationVerdict>): ValuationVerdict => ({
+  intrinsicValue: 1.25, referenceValue: 1.25, referenceKind: "oe_dcf_neutral", requiredMargin: 1 / 3, strikePrice: 1.25 * (1 - 1 / 3),
   bucket: "below", inStrikeZone: false, rangeLo: 1, rangeHi: 2, price: 1,
   priceDate: "2026-01-01", marginPct: 0.2, coverage: "full", reliable: true,
   methods: { zeroGrowthEpv: true, oeDcf: true, greenwaldGrowthCeilings: true },

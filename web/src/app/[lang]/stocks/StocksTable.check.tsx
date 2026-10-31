@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { StockRow } from "./StocksTable";
 const require = createRequire(import.meta.url);
 const nav = require.resolve("next/navigation");
 require.cache[nav] = {
@@ -25,13 +26,24 @@ const html = renderToStaticMarkup(
         holderCount: 2,
         totalValue: 100,
         barWidth: 50,
-        bargain: { inStrikeZone: true, marginPct: 0.3 },
+        bargain: {
+          inStrikeZone: true,
+          marginPct: 0.3,
+          publication: {
+            identityKey: "fixture:TEST",
+            revisionId: "a".repeat(64),
+            ticker: "TEST",
+            priceDate: "2026-10-31",
+            computedAt: "2026-10-31",
+            attributes: {},
+          },
+        },
       },
-    ]}
+    ] satisfies StockRow[]}
   />,
 );
 const badges = [
-  ...html.matchAll(/<span[^>]*class="([^"]*)"[^>]*>击球区<\/span>/g),
+  ...html.matchAll(/<span[^>]*class="([^"]*)"[^>]*>击球区 · 按所示价格<\/span>/g),
 ];
 assert.ok(badges.length > 0, "strike-zone fixture renders a badge");
 for (const badge of badges) {

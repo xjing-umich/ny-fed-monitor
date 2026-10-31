@@ -1,3 +1,8 @@
+import { optionalValuation } from '@/lib/valuation/publicationAvailability';
+import { screenProjectionDigest, screenerPath, projectScreen, projectStrike } from '@/lib/valuation/publicationProjection';
+import { publicationSourceAttributes } from '@/lib/valuation/publicationProof';
+import { ValuationSafetyBoundary } from '@/components/valuation/ValuationSafetyBoundary';
+import { ValuationUnavailable } from '@/components/valuation/publicationMarkers';
 import { isLikelyTicker } from "@/lib/externalLinks";
 import { readStockLinkHolders } from "@/lib/managers/consensusRead";
 import { availableStockHref, currentStockKeys } from "@/lib/stocks/stockLinks";
@@ -9,9 +14,9 @@ import { altFor, ogFor, collectionLd, breadcrumbLd } from "@/lib/seo";
 import { localePath } from "@/lib/urls";
 import SubNav from "@/components/shell/SubNav";
 import PageHeader from "@/components/common/PageHeader";
-import { readValuationScreen, readConvictionScreen, type ScreenView } from "@/lib/valuation/valuationSnapshot";
+import { readScreenInputs, type ScreenView } from "@/lib/valuation/valuationSnapshot";
 import { ScreenerTable } from "./ScreenerTable";
-import { sortScreenerRows, type ScreenSort } from "@/lib/valuation/screenerSort";
+import { type ScreenSort } from "@/lib/valuation/screenerSort";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { CONSENSUS_MIN } from "@/lib/managers/fusionSignal";
 import { latestIsoDate, valuationAsOfText } from "@/lib/valuation/asOf";
@@ -72,17 +77,17 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const ui = stockUi(lang);
 
   const isConviction = view === "conviction";
-  const screen = isConviction
-    ? await readConvictionScreen()
-    : await readValuationScreen(view);
-  const rows = screen.rows;
-  const computedAt = screen.computedAt;
-  const strikeTotal = isConviction ? 0 : (screen as { strikeTotal: number }).strikeTotal;
-  const strikePending = isConviction ? 0 : (screen as { strikePending: number }).strikePending;
-  const heldTotal = isConviction ? (screen as { heldTotal: number }).heldTotal : 0;
-  const sortedRows = isConviction ? rows : sortScreenerRows(rows, sort);
-  // Valuation snapshots can outlive the last current 13F holder/detail route.
+  const availability = await optionalValuation(readScreenInputs());
+  const inputs = availability.value ?? { values: [], holdings: new Map() };
+  const rows = projectScreen(inputs.values, inputs.holdings, view, sort);
+  const counts = projectStrike(inputs.values, 0);
+  const computedAt = rows.reduce<string|null>((date,row)=>!date || row.computedAt>date ? row.computedAt : date,null);
+  const strikeTotal = isConviction ? 0 : counts.total;
+  const strikePending = isConviction ? 0 : counts.pending;
+  const heldTotal = isConviction ? rows.length : 0;
+  const sortedRows = rows;
   const availableStocks = currentStockKeys(await readStockLinkHolders(rows.map((r) => r.ticker)) ?? [], new Date());
+  const source = publicationSourceAttributes(screenerPath(lang,view,sort), screenProjectionDigest(inputs.values,inputs.holdings,view,sort,availableStocks));
   // 估值锚定的是收盘价日期;computedAt 是任务跑完的 UTC 日期,美东晚上跑会显示成"明天"。
   // 只有行里都没有价格日期时才退回 computedAt,此时不写"收盘价"。
   const priceAsOf = latestIsoDate(rows.map((r) => r.priceDate));
@@ -91,25 +96,26 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
   const pendingNote = strikePending > 0
     ? isZh ? `，另 ${strikePending} 只待确认` : `; ${strikePending} more pending review`
     : "";
-  const noValuationEvidence = screen.availability !== "available";
+  const screenAvailability = availability.unavailable ? "unavailable" : inputs.values.length ? "available" : "unpublished";
+  const noValuationEvidence = screenAvailability !== "available";
   const geo =
     noValuationEvidence
       ? ""
       : strikeTotal > 0
       ? isZh
-        ? `现在 ${strikeTotal} 只可估值股票已确认落在击球区${pendingNote}（价格不高于内在价值扣除安全边际后的值）${asOf ? `，截至 ${formatDate(asOf, lang)}` : ""}。`
-        : `${strikeTotal} valued stock${strikeTotal === 1 ? " is" : "s are"} confirmed in the strike zone${pendingNote} (price at or below intrinsic value minus a margin of safety)${asOf ? `, as of ${formatDate(asOf, lang)}` : ""}.`
+        ? `所示数据中 ${strikeTotal} 只可估值股票按所示价格落在击球区（当前状态待核实）${pendingNote}（价格不高于内在价值扣除安全边际后的值）${asOf ? `，截至 ${formatDate(asOf, lang)}` : ""}。`
+        : `${strikeTotal} valued stock${strikeTotal === 1 ? " is" : "s are"} in the strike zone at the shown prices (current status requires verification)${pendingNote} (price at or below intrinsic value minus a margin of safety)${asOf ? `, as of ${formatDate(asOf, lang)}` : ""}.`
       : isZh
-        ? `当前没有已确认的击球区股票${pendingNote}（价格不高于内在价值扣除安全边际后的值）。`
-        : `No valued stocks are confirmed in the strike zone right now${pendingNote} (price at or below intrinsic value minus a margin of safety).`;
+        ? `所示数据中没有击球区股票${pendingNote}（价格不高于内在价值扣除安全边际后的值）。`
+        : `No valued stocks are in the strike zone in this dataset${pendingNote} (price at or below intrinsic value minus a margin of safety).`;
 
   const convictionIntro = rows.length === 0 && heldTotal === 0
     ? isZh
       ? `查看至少被 ${CONSENSUS_MIN} 位机构共同持有的股票及其估值。`
       : `Compare valuations of stocks held by at least ${CONSENSUS_MIN} managers.`
     : isZh
-    ? `${heldTotal} 只至少被 ${CONSENSUS_MIN} 位机构共同持有、且有当前可用估值的股票，按现价相对内在价值的位置排序：便宜的在前。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
-    : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers with current valuations, ordered by where price sits against intrinsic value — cheapest first. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
+    ? `${heldTotal} 只至少被 ${CONSENSUS_MIN}+ 位机构共同持有、且有可用估值的股票，按所示历史价格相对内在价值的位置排序，当前状态待核实。落在击球区且机构共识高的置顶。位置观察，非买卖建议。`
+    : `${heldTotal} stocks held by ${CONSENSUS_MIN}+ managers with available valuations, ordered by the shown historical prices relative to intrinsic value; current status requires verification. Those in the strike zone with high consensus rise to the top. Observational, not advice.`;
 
   const hrefFor = (k: ScreenView) => (k === "all" ? localePath(lang, "/stocks/screener") : localePath(lang, `/stocks/screener?view=${k}`));
 
@@ -119,7 +125,8 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
     items: sortedRows.filter((r) => isLikelyTicker(r.ticker)).map((r) => ({ name: `${r.issuer} (${r.ticker})`, path: availableStockHref(lang, r.ticker, availableStocks) || undefined })), limit: 100 }),
     breadcrumbLd(lang, [{ name: ui.stocksTitle, path: localePath(lang, '/stocks') }, { name: isZh ? '按价值区间' : 'By value range', path }])];
   return (
-    <>
+    <ValuationSafetyBoundary records={rows.map(row=>row.publication)} lang={lang} sourceAttributes={source}>
+      <ValuationUnavailable lang={lang} reason={availability.unavailable} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <SubNav lang={lang} section="stocks" active="screener" />
 
@@ -204,9 +211,9 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
       </nav>
 
       <ScreenerTable lang={lang} rows={sortedRows} availableStocks={availableStocks} highlight={isConviction} asOf={asOf} emptyText={
-        screen.availability === "unpublished"
+        screenAvailability === "unpublished"
           ? isZh ? "当前模型的估值结果尚不可用，暂无法展示筛选名单。" : "Results for the current valuation model are not available yet."
-          : screen.availability === "unavailable"
+          : screenAvailability === "unavailable"
             ? isZh ? "暂时无法读取估值结果，请稍后重试。" : "Valuation results are temporarily unavailable. Please try again later."
             : isZh ? "当前没有符合此筛选条件的股票。" : "No stocks match this view."
       } />
@@ -221,6 +228,6 @@ export async function ScreenerPage({ lang, view, sort }: { lang: Lang; view: Scr
           ? `${asOf ? `估值截至 ${formatDate(asOf, lang)}` : "估值快照日期暂不可用"} · 方法：Greenwald 估值与所有者盈利折现，单法结果另行标注。安全边际是现价相对内在价值的距离，不含质量或时机判断；仅供参考，非投资建议。`
           : `${asOf ? `Valuation as of ${formatDate(asOf, lang)}` : "Valuation snapshot date unavailable"} · methods: Greenwald valuation and owner-earnings DCF; single-method results are marked. Margin of safety is the distance between the price and intrinsic value, not a quality or timing judgment. For reference only, not investment advice.`}
       </p>
-    </>
+    </ValuationSafetyBoundary>
   );
 }

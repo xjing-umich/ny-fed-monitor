@@ -20,12 +20,19 @@ import type {
   ValuePosition,
 } from "./types";
 import type { ValuationMethods } from "./deriveValuationMethods";
+import type { ReferenceKind } from "./trackingContract";
 import { isNetNetAssetFloor, isNetNetBuy } from "./netNet";
 
 export type VerdictBucket = "below" | "within" | "above";
 export type VerdictCoverage = "full" | "single_lamp";
 
 export type ValuationVerdict = {
+  /** Raw branch outputs; display ranges are not arithmetic anchors. */
+  intrinsicValue: number | null;
+  referenceValue: number;
+  referenceKind: ReferenceKind;
+  requiredMargin: number | null;
+  strikePrice: number | null;
   /** Fresh comparable financials, but no supported reinvestment estimate: zero-growth EPV reference only. */
   referenceOnly?: "missing_reinvestment";
   /** 现价相对保守价值带的位置：below=有安全边际 / within=带内 / above=高于。有中枢 IV 时锚 IV；单灯退回零增长底(valueFloor)。 */
@@ -206,6 +213,11 @@ export function deriveValuationVerdict(input: {
     // 诚实性由这条闸 + 整条抑制承担,不是靠一个绕过所有护栏的 true。
     if (isImplausibleBand({ rangeLo: pessimistic, rangeHi: optimistic, price: sotpPrice, marginPct: sotpMarginPct })) return null;
     return {
+      intrinsicValue: null,
+      referenceValue: base,
+      referenceKind: "sotp_base",
+      requiredMargin: MOS_BASE,
+      strikePrice: base * (1 - MOS_BASE),
       bucket: sotpPrice < pessimistic ? "below" : sotpPrice <= optimistic ? "within" : "above",
       // 击球区沿用全站口径:相对中枢(基础档)留出 MOS_BASE=1/3 的安全边际。
       inStrikeZone: sotpPrice <= base * (1 - MOS_BASE),
@@ -236,6 +248,8 @@ export function deriveValuationVerdict(input: {
     if (isImplausibleBand({ rangeLo, rangeHi, price, marginPct: (rangeLo - price) / rangeLo })) return null;
     return {
       referenceOnly: "missing_reinvestment",
+      intrinsicValue: null, referenceValue: rangeLo, referenceKind: "zero_growth_floor",
+      requiredMargin: null, strikePrice: null,
       bucket: price < rangeLo ? "below" : price <= rangeHi ? "within" : "above",
       rangeLo, rangeHi, price, priceDate: strikeZone.price.date,
       reliable: false, inStrikeZone: false, marginPct: null, coverage: "single_lamp",
@@ -279,13 +293,16 @@ export function deriveValuationVerdict(input: {
   let bucket: VerdictBucket;
   let inStrikeZone: boolean;
   let marginPct: number | null;
+  let requiredMargin: number | null;
   if (IV != null) {
     const growthReliance = IV > F ? clamp01((IV - F) / IV) : 0;
     const mos = MOS_BASE + (MOS_MAX - MOS_BASE) * growthReliance;
+    requiredMargin = mos;
     bucket = price < IV ? "below" : price <= rangeHi ? "within" : "above";
     inStrikeZone = price <= IV * (1 - mos);
     marginPct = IV > 0 ? (IV - price) / IV : null;
   } else {
+    requiredMargin = MOS_BASE;
     // 单灯兜底:无含增长中枢 IV → 退回今天的 EPV 锚(零增长底 F，逐字保留)。
     bucket =
       (canReconcile ? bucketFromConsistency(reconciliation?.consistency) : null) ?? bucketFromPosition(epv.position);
@@ -310,6 +327,11 @@ export function deriveValuationVerdict(input: {
       : undefined;
 
   return {
+    intrinsicValue: IV ?? null,
+    referenceValue: IV ?? F,
+    referenceKind: IV != null ? "oe_dcf_neutral" : "zero_growth_floor",
+    requiredMargin,
+    strikePrice: (IV ?? F) * (1 - requiredMargin),
     bucket, inStrikeZone, rangeLo, rangeHi, price, priceDate: strikeZone!.price.date, marginPct, coverage, methods, reliable, netNet,
     ...(ivBelowFloor ? { ivBelowFloor: true as const } : {}),
   };

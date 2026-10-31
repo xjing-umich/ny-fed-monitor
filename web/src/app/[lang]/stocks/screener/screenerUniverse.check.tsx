@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ScreenerPage } from "./_screenerPage";
 import { readConvictionScreen } from "@/lib/valuation/valuationSnapshot";
 
+import { projectPublicationFixture, publicationFixture } from "../../../../../scripts/tests/publication-fixture";
 import { VALUATION_MODEL_VERSION } from "@/lib/valuation/modelVersion";
 
 const expectations = { assessable: false as const, reason: "fixture" };
@@ -43,10 +44,10 @@ async function main() {
     requests.push(url);
     const table = url.pathname.split("/").at(-1);
     if (table === "consensus_stock_holders") return Response.json([]);
-    assert.ok(table === "valuation_snapshot" || table === "consensus_holdings" || table === "securities");
-    let rows: Record<string, unknown>[] = table === "securities" ? [...snapshots, solo].map(r => ({ ticker: r.ticker, security_type: r.ticker === "CHEAP" ? "ADR" : "Common Stock" })) : table === "valuation_snapshot" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined] : [...holdings];
-    if (table === "valuation_snapshot" && snapshotMode === "none") rows = [];
-    if (table === "valuation_snapshot" && snapshotMode === "no-cheap") rows = rows.map(r => ({...r, in_strike_zone: false, verdict_bucket: "above"}));
+    assert.ok(table === "tracking_securities" || table === "consensus_holdings");
+    let rows: Record<string, unknown>[] = table === "tracking_securities" ? [...snapshots, solo, corrupt, zeroPrice, legacy, quarantined].map((row,index)=>projectPublicationFixture(publicationFixture({...row,security_type:row.ticker === "CHEAP" ? "ADR" : "Common Stock"},index+1),url.searchParams.get("select"))) : [...holdings];
+    if (table === "tracking_securities" && snapshotMode === "none") rows=[];
+    if (table === "tracking_securities" && snapshotMode === "no-cheap") rows=[...snapshots,solo].map((row,index)=>projectPublicationFixture(publicationFixture({...row,in_strike_zone:false,verdict_bucket:"above"},index+1),url.searchParams.get("select")));
     const tickerFilter = url.searchParams.getAll("ticker").find(f=>f.startsWith("in.("));
     const tickerKeys = tickerFilter?.startsWith("in.(") ? tickerFilter.slice(4, -1).split(",") : null;
     for (const [field, filter] of url.searchParams) {
@@ -59,9 +60,9 @@ async function main() {
       return new Response(null, { headers: { "content-range": `*/${rows.length}` } });
     }
     const from = Number(url.searchParams.get("offset") ?? 0);
-    if ((broken === "snapshot-page" && table === "valuation_snapshot" && !tickerKeys && from >= 1000)
+    if ((broken === "snapshot-page" && table === "tracking_securities" && !tickerKeys && from >= 1000)
       || (broken === "holder-join" && table === "consensus_holdings" && tickerKeys?.includes("CROWD"))
-      || (broken === "snapshot-join" && table === "valuation_snapshot" && tickerKeys?.includes("CHEAP"))) {
+      || (broken === "snapshot-join" && table === "tracking_securities")) {
       return Response.json({ code: "TEST", message: "expected page/batch failure" }, { status: 500 });
     }
     const order = url.searchParams.get("order")?.split(",") ?? [];
@@ -100,12 +101,12 @@ async function main() {
     const projected = await readConvictionScreen();
     assert.equal(projected.rows.find((r) => r.ticker === "CHEAP")?.securityUnit, "ADS", "row-level traded unit comes from security metadata");
     assert.deepEqual(projected.rows.find((r) => r.ticker === "CHEAP")?.expectations, expectations, "JSON 子字段投影保留原来的预期数据");
-    assert.equal(projected.rows.find((r) => r.ticker === "CROWD")?.expectations, undefined, "没有预期字段时沿用 undefined");
+    assert.deepEqual(projected.rows.find((r) => r.ticker === "CROWD")?.expectations, expectations, "同次 presentation 保留明确的未评估原因");
     assert.ok(requests.some((u) => Number(u.searchParams.get("offset")) >= 1000), "实际跨过 1000 行服务端上限");
     for (const request of requests) {
       const keys = request.searchParams.get("ticker");
       if (keys?.startsWith("in.(")) assert.ok(keys.slice(4, -1).split(",").length <= (request.pathname.endsWith("/consensus_stock_holders") ? 200 : 100), "IN 查询分批,避免超长 URL 和单次截断");
-      if (request.searchParams.has("offset")) assert.match(request.searchParams.get("order") ?? "", /(?:^|,)ticker\./, "分页排序以唯一 ticker 保证稳定");
+      if (request.searchParams.has("offset")) assert.match(request.searchParams.get("order") ?? "", /(?:^|,)(?:ticker|identity_key)\./, "分页排序以唯一身份键保证稳定");
     }
 
     console.error = () => {}; // 以下为预期故障;断言页面结果,不把日志输出当作测试成功。
@@ -118,12 +119,11 @@ async function main() {
     assert.match(await page("strike_zone"), /No stocks match this view/, "successful query with a current universe can honestly report an empty filter");
     snapshotMode = "normal";
     broken = "snapshot-page";
-    assert.ok(!(await page("all")).includes("T0000"), "后续快照页失败不返回半张榜单");
-    assert.match(await page("all"), /temporarily unavailable/, "read failure must not look like a successful empty filter");
+    assert.match(await page("all"),/Valuation is unavailable/,"后续页故障显示明确不可用，不伪造半张榜单");
     broken = "holder-join";
-    assert.ok(!(await page("all", "holders")).includes("T0000"), "持有人批次失败不拿残缺计数排序");
+    assert.match(await page("all","holders"),/Valuation is unavailable/,"持有人批次失败显示不可用，不拿残缺计数排序");
     broken = "snapshot-join";
-    assert.ok(!(await page("conviction")).includes("T0000"), "估值 join 批次失败不返回半张共识榜");
+    assert.match(await page("conviction"),/Valuation is unavailable/,"估值读取失败明确显示不可用，不返回半张共识榜");
   } finally {
     globalThis.fetch = savedFetch;
     console.error = savedError;

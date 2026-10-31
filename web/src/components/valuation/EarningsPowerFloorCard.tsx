@@ -307,7 +307,7 @@ function valuationCautions(
 }
 
 // Full method notes consume structured facts; engine prose stays out of both locales.
-function LampMethod({ lamp, role, lang, ttm, unit }: { lamp: EpvLamp; role: "operating" | "owner"; lang: Lang; ttm?: { year: number; periodEnd: string }; unit: string }) {
+function LampMethod({ lamp, role, lang, ttm, unit }: { lamp: EpvLamp; role: "operating" | "owner"; lang: Lang; ttm?: { year: number; periodEnd: string } | null; unit: string }) {
   const display = lampDisplay(lamp, role, lang);
   return <div>
     <p className="font-medium text-[var(--tt-faint)]">{display.label}{lamp.assessable ? <span className="ml-1 font-data text-[var(--tt-muted)]">{range(lamp.per_share_low, lamp.per_share_high)} {unit}</span> : null}</p>
@@ -531,7 +531,7 @@ function resolveSpine({ floor, sz, oeDcf, reconciliation, verdict: suppliedVerdi
   // hasIv/IV derivation so the headline can never disagree with the bucket it's inside of.
   // No IV (oeDcf not assessable / tiers missing) → single-lamp fallback, headline drops to the
   // zero-growth floor F (today's number), same as the verdict's own fallback anchor.
-  const ivRaw = oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined;
+  const ivRaw = verdict.intrinsicValue;
   const hasIv = ivRaw != null && Number.isFinite(ivRaw) && ivRaw > 0;
   const IV = hasIv ? (ivRaw as number) : undefined;
   return { verdict, hasIv, IV };
@@ -743,6 +743,7 @@ function MethodDetails({
   lang,
   ttmPeriodEnd,
   ttmFiscalYear,
+  periodBasisKnown = true,
   securityUnit = "share",
   adsRatio,
 }: {
@@ -753,6 +754,8 @@ function MethodDetails({
   lang: Lang;
   ttmPeriodEnd?: string;
   ttmFiscalYear?: number;
+  /** false for published legacy records without retained period metadata. */
+  periodBasisKnown?: boolean;
   securityUnit?: SecurityUnit;
   adsRatio?: number;
 }) {
@@ -762,7 +765,7 @@ function MethodDetails({
   const epv = sz?.epv;
   const unit = perSecurityUnit(securityUnit, lang);
   const asset = assetDisplay(floor, lang, securityUnit);
-  const ttm = ttmPeriodEnd && ttmFiscalYear != null ? { year: ttmFiscalYear, periodEnd: ttmPeriodEnd } : undefined;
+  const ttm = !periodBasisKnown ? null : ttmPeriodEnd && ttmFiscalYear != null ? { year: ttmFiscalYear, periodEnd: ttmPeriodEnd } : undefined;
   const ratioNote = adsRatioDisclosure(securityUnit, adsRatio, lang);
   const netNetAssetFloor = sz?.price ? isNetNetAssetFloor(floor.net_net, sz.price.close) : false;
   const netNetBuy = sz?.price ? isNetNetBuy(floor.net_net, sz.price.close) : false;
@@ -827,7 +830,7 @@ function MethodDetails({
         <p>{growthSummary(floor, lang, unit)}</p>
         <p>{zh ? "所用期间：" : "Periods used: "}{valuationPeriods(provenance.years_used, lang, ttm)}
           {zh ? " · 正常化税率 " : " · Normalized tax "}{pct(provenance.normalized_tax_rate)}{zh ? "。" : ". "}{taxDisplay(floor, lang)}
-          {securityUnit === "ADS" ? (zh ? " 股数口径：普通股摊薄股数按比例换算为 ADS 数量。" : " Share basis: diluted ordinary shares converted to ADS count at the disclosed ratio.") : (zh ? " 股数口径：摊薄股数。" : " Share basis: diluted shares.")}
+          {securityUnit === "unknown" ? (zh ? " 股数口径未知。" : " Share basis is unknown.") : securityUnit === "ADS" ? (adsRatio == null ? (zh ? " 本记录未保留普通股与 ADS 的换算依据。" : "This record does not retain the ordinary-share to ADS conversion basis.") : zh ? " 股数口径：普通股摊薄股数按比例换算为 ADS 数量。" : " Share basis: diluted ordinary shares converted to ADS count at the disclosed ratio.") : (zh ? " 股数口径：摊薄股数。" : " Share basis: diluted shares.")}
         </p>
         {leverageNote ? <p>{leverageNote}</p> : null}
         {floor.is_financial ? <p>{zh ? "银行或保险公司的存款融资结构不适用净债务／所有者盈利杠杆溢价；此处未另加该溢价，高杠杆风险由估值可信度提示反映。" : "Net debt relative to owner earnings is not a suitable leverage measure for deposit-funded banks or insurers. No such premium is applied here; high leverage is reflected in the valuation-confidence warning."}</p>
@@ -876,6 +879,8 @@ export const EarningsPowerFloorCard: FC<{
   /** TTM 基点生效时的 TTM 期末(ISO date);传入则 years_used 头部显示 "TTM {期末}" 而非假 FY 标签。 */
   ttmPeriodEnd?: string;
   ttmFiscalYear?: number;
+  /** false for published legacy records without retained period metadata. */
+  periodBasisKnown?: boolean;
   /** 个股页结论带只要摘要(头条/标尺/结论句/低信心原因/价格截至),估值区块只要明细(怎么读 + 假设行 +
    *  方法与数字);默认 all 两半都渲染,输出与拆分前一致。 */
   part?: "all" | "summary" | "details";
@@ -896,6 +901,7 @@ export const EarningsPowerFloorCard: FC<{
   showStatus = true,
   ttmPeriodEnd,
   ttmFiscalYear,
+  periodBasisKnown = true,
   part = "all",
   priceKnown,
   securityUnit = "share",
@@ -944,7 +950,7 @@ export const EarningsPowerFloorCard: FC<{
       )}
 
       {part !== "summary" && (
-        <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} ttmFiscalYear={ttmFiscalYear} securityUnit={securityUnit} adsRatio={adsRatio} />
+        <MethodDetails floor={floor} sz={strikeZone} oeDcf={oeDcf} reconciliation={reconciliation} lang={lang} ttmPeriodEnd={ttmPeriodEnd} ttmFiscalYear={ttmFiscalYear} periodBasisKnown={periodBasisKnown} securityUnit={securityUnit} adsRatio={adsRatio} />
       )}
     </div>
   );

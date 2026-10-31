@@ -5,6 +5,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ScreenerPage } from "./_screenerPage";
 import { readStrikeZoneLeaders } from "@/lib/valuation/valuationSnapshot";
 
+import { projectPublicationFixture, publicationFixture, fixtureDate } from "../../../../../scripts/tests/publication-fixture";
+import { date } from "@/lib/i18n/format";
+
 const snapshot = [
   { ticker: "AAA", reliable: true, in_strike_zone: true },
   { ticker: "BBB", reliable: false, in_strike_zone: true },
@@ -19,7 +22,7 @@ async function main() {
   const savedEnv = { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_SERVICE_KEY };
   const savedFetch = globalThis.fetch;
   let confirmed = true;
-  let emptyRows = false;
+
   let noSnapshots = false;
   process.env.SUPABASE_URL = "http://127.0.0.1:54321";
   process.env.SUPABASE_SERVICE_KEY = "local-test-only";
@@ -29,7 +32,7 @@ async function main() {
     if (url.pathname === "/rest/v1/securities") return Response.json(snapshot.map(r => ({ ticker: r.ticker, security_type: "Common Stock" })));
     if (url.pathname === "/rest/v1/consensus_stock_holders") return Response.json([]);
     if (url.pathname === "/rest/v1/consensus_holdings") return Response.json([]);
-    assert.equal(url.pathname, "/rest/v1/valuation_snapshot");
+    assert.equal(url.pathname, "/rest/v1/tracking_securities");
     const rows = snapshot.filter((r) => {
       if (noSnapshots) return false;
       if (!confirmed && r.reliable) return false;
@@ -42,7 +45,7 @@ async function main() {
     if ((init?.method ?? (input instanceof Request ? input.method : "GET")) === "HEAD") {
       return new Response(null, { headers: { "content-range": `*/${rows.length}` } });
     }
-    return Response.json(emptyRows ? [] : rows.slice(0, Number(url.searchParams.get("limit") ?? rows.length)));
+    return Response.json(rows.map((row,index)=>projectPublicationFixture(publicationFixture(row,index+1),url.searchParams.get("select"))).slice(0, Number(url.searchParams.get("limit") ?? rows.length)));
   };
   try {
     const home = await readStrikeZoneLeaders(5);
@@ -51,11 +54,11 @@ async function main() {
       for (const view of ["strike_zone", "below", "all"] as const) {
         const text = renderToStaticMarkup(await ScreenerPage({ lang, view, sort: "margin" })).replace(/<[^>]+>/g, "");
         assert.match(text, lang === "zh" ? /1 只.*击球区.*另 2 只待确认/ : /1 valued stock.*strike zone.*2 more pending review/, `${lang}/${view}: 两数与首页一致`);
-        assert.ok(text.includes(lang === "zh" ? "2026年10月27日" : "Oct 27, 2026"), "计数修复也保留 #249 的日期本地化");
+        assert.ok(text.includes(date(fixtureDate,lang)), "计数修复也保留 #249 的日期本地化");
       }
     }
     confirmed = false;
-    emptyRows = true;
+
     for (const lang of ["zh", "en"] as const) {
       const text = renderToStaticMarkup(await ScreenerPage({ lang, view: "strike_zone", sort: "margin" })).replace(/<[^>]+>/g, "");
       assert.match(text, lang === "zh" ? /另 2 只待确认/ : /2 more pending review/, `${lang}: 没有已确认行仍应显示全表待确认数`);

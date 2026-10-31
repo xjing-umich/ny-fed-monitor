@@ -23,6 +23,11 @@ assert.equal(reference.bucket, "below");
 assert.equal(reference.reliable, false);
 assert.equal(reference.inStrikeZone, false);
 assert.equal(reference.marginPct, null);
+assert.equal(reference.intrinsicValue, null, "pending reference cannot invent IV");
+assert.equal(reference.referenceValue, 120, "raw zero-growth reference uses conservative earnings floor");
+assert.equal(reference.referenceKind, "zero_growth_floor");
+assert.equal(reference.requiredMargin, null);
+assert.equal(reference.strikePrice, null);
 assert.equal(reference.coverage, "single_lamp");
 assert.deepEqual(reference.methods, { zeroGrowthEpv: true, oeDcf: false, greenwaldGrowthCeilings: false });
 for (const [close, bucket] of [[60, "below"], [120, "within"], [150, "within"], [250, "above"]] as const) {

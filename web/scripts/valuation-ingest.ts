@@ -1,3 +1,11 @@
+import { capturePublicationInputs, publishValuationCandidates } from './lib/publicationProducer';
+import { createPublicationClient, type PublicationBinding } from './lib/trackingPublication';
+import { readAllSnapshots } from '../src/lib/valuation/valuationSnapshot';
+import type { PublishedValuation } from '../src/lib/valuation/publishedRead';
+import { readTrackingIdentity } from "../src/lib/securities/trackingIdentityRead";
+import type { SecurityIdentity } from "../src/lib/securities/trackingIdentity";
+import { buildPublishedValuation, writeValuationPublication, readPublicationWriteState } from "../src/lib/valuation/publishedAdapter";
+import type { RunValuationInput } from "../src/lib/valuation/runValuation";
 import { createHash } from "node:crypto";
 import { prepareSnapshotPublication, readSnapshotPublicationState } from "./lib/valuationPublication";
 import { invalidateValuationSnapshots } from "./lib/invalidateValuationSnapshots";
@@ -113,12 +121,21 @@ async function main() {
   const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
   const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("缺少 SUPABASE_URL / SUPABASE_SERVICE_KEY");
-  const db = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
+  const producerEnabled = process.env.VALUATION_PUBLICATION_VERIFY_ENABLED === "1";
+  const binding = producerEnabled ? JSON.parse(process.env.VALUATION_PUBLICATION_BINDING ?? "null") as PublicationBinding | null : null;
+  const seeds = new Set((process.env.VALUATION_PUBLICATION_SEED_KEYS ?? "").split(",").map(key=>key.trim()).filter(Boolean));
+  if (producerEnabled && (!binding || !seeds.size || seeds.size>500)) throw new Error("PUBLICATION_CONFIGURATION_REQUIRED");
+  const db = binding ? createPublicationClient(url,key,binding) : createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WebSocket as unknown as never } });
+  // Capture prior render inputs before any candidate replacement or safety mutation.
+  const capturedPublication = binding ? await capturePublicationInputs(db,binding.origin) : null;
+  const candidates:PublishedValuation[]=[];
 
   const output = (name: string, value: number) => {
     if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
   };
   output("cache_refresh_required", 0);
+  // Fail explicitly if the publication migration is missing; never publish legacy-only baselines.
+  const publicationState = await readPublicationWriteState(db);
   const priorSnapshots = await readSnapshotPublicationState(db);
   if ([...priorSnapshots.values()].some(row => row.payload.revalidation_pending === true))
     output("cache_refresh_required", 1);
@@ -164,10 +181,41 @@ async function main() {
   const intentionallyUnvaluable = new Set<string>();
   const rows: Record<string, unknown>[] = [];
   const confirmedInvalid = new Set<string>();
-  for (const ticker of universe) {
+  const confirmedIdentities = new Map<string, SecurityIdentity>();
+  const publishSafety = async (ticker:string, reasons:string[]) => {
+    const state=publicationState.get(ticker);
+    if (!state) return;
+    state.generation=await writeValuationPublication(db,{identity:state.identity,expectedGeneration:state.generation,
+      safety:{status:"invalid",reasons,observedAt:computedAt}});
+    output("cache_refresh_required",1);
+  };
+  const valuationUniverse = new Set(universe);
+  for (const ticker of new Set([...universe, ...secTypeMap.keys()])) {
+    // Verify and retain identities even when no valuation exists. Transport failure preserves the
+    // confirmed directory; a source-confirmed mismatch blocks old opportunity signals.
+    let identity:SecurityIdentity|null;
+    try { identity=await readTrackingIdentity(ticker); }
+    catch (error) {
+      if (valuationUniverse.has(ticker)) exceptionSkipped++;
+      console.error(`  ${ticker} identity read failed; retained directory: ${error instanceof Error ? error.message : String(error)}`);
+      continue;
+    }
+    const priorPublication=publicationState.get(ticker);
+    if (!identity || priorPublication && (identity.key !== priorPublication.identity.key ||
+      (["figi","cik","cusip","securityType"] as const).some(key=>identity![key] !== priorPublication.identity[key]))) {
+      await publishSafety(ticker,["identity_unconfirmed"]);
+      confirmedInvalid.add(ticker);
+      continue;
+    }
+    const generation=await writeValuationPublication(db,{identity,expectedGeneration:priorPublication?.generation ?? 0,
+      ...(priorPublication ? {} : {safety:{status:"pending" as const,reasons:["no_valuation"],observedAt:computedAt}})});
+    publicationState.set(ticker,{identity,generation});
+    confirmedIdentities.set(ticker,identity);
+    if (!valuationUniverse.has(ticker)) continue;
     // 非经营性证券:不进盈利法估值。旧快照行应删(有意抑制,非瞬时故障)。
     if (!isOperatingSecurity(secTypeMap.get(ticker))) {
       confirmedInvalid.add(ticker);
+      await publishSafety(ticker,["non_operating_security"]);
       excludedNonOperating++;
       intentionallyUnvaluable.add(ticker);
       continue;
@@ -176,6 +224,7 @@ async function main() {
     const ads = resolveAds(secTypeMap.get(ticker), adsRatioMap.get(ticker));
     if (ads.suppressed) {
       confirmedInvalid.add(ticker);
+      await publishSafety(ticker,["ads_suppressed"]);
       adrSuppressed++;
       intentionallyUnvaluable.add(ticker);
       continue;
@@ -220,12 +269,13 @@ async function main() {
         floorInput.ttm && !floorInput.ttm.shares_from_fy
           ? floorInput.ttm.period_end
           : sec.annual?.[0]?.period_end ?? null;
+      const latestSplitDate = await getLatestSplit(ticker);
       const splitCoverageStale = isSplitCoverageStale({
         fundamentalsAsOf: splitAsOf,
-        latestSplitDate: await getLatestSplit(ticker),
+        latestSplitDate,
       });
       const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
-      const run = runValuation({
+      const runInput: RunValuationInput = {
         floorInput,
         price: valuationPrice,
         dgs10,
@@ -237,8 +287,11 @@ async function main() {
           fundamentalsCorrupt,
         },
         suppressExpectations: false,
-      });
+        asOf:computedAt,
+      };
+      const run = runValuation(runInput);
       if (!run.verdict) {
+        await publishSafety(ticker,[run.suppressedReason ?? "no_valuation_verdict"]);
         // Unknown transport failures preserve last-good rows; confirmed engine
         // suppressions invalidate their old judgment without deleting any row.
         if (run.oeDcf?.growth_coverage_gap || (run.floor && fetchedPrice) || (fundamentalsStale && fundamentalsAsOf)) confirmedInvalid.add(ticker);
@@ -253,6 +306,24 @@ async function main() {
         continue;
       }
       const v = run.verdict;
+      const usedInterim = sec.interim.evidence.filter(evidence => evidence.source.exhibitUrl === floorInput.growth_evidence?.source_url && evidence.current.end === floorInput.growth_evidence?.period_end);
+      const filingDates=[...sec.annual,...sec.quarterly].map(row=>row.filing_date).concat(usedInterim.map(evidence=>evidence.source.publishedAt)).filter((date):date is string=>typeof date === "string").sort();
+      const candidate=buildPublishedValuation(run,runInput,{
+        identity:confirmedIdentities.get(ticker)!,
+        perShareBasis:`${secTypeMap.get(ticker) === "ADR" ? "ADS" : "ordinary"}:ratio=${ads.ratio}:split=${latestSplitDate ?? "none"}`,
+        priceSource:fetchedPrice?.source ?? null,fundamentalAsOf:fundamentalsAsOf,
+        filedAt:filingDates.at(-1) ?? null,computedAt,
+        financialEvidence:{annual:sec.annual,quarterly:sec.quarterly,filings:sec.filings,interim:usedInterim},
+        shareBasis:{securityType:secTypeMap.get(ticker) ?? null,adsRatio:ads.ratio,latestSplitDate,
+          ttmSharesFromFy:floorInput.ttm?.shares_from_fy ?? null},
+        sources:[
+          ...usedInterim.map(evidence=>({url:evidence.source.exhibitUrl,asOf:evidence.source.publishedAt,periodEnd:evidence.current.end,currency:evidence.currency,evidenceKind:"native_interim_ratios" as const})),
+          ...sec.filings.filter(filing=>filing.filing_url).map(filing=>({url:String(filing.filing_url),asOf:filing.filing_date ?? null})),
+          ...(identity.cik ? [{url:`https://data.sec.gov/api/xbrl/companyfacts/CIK${identity.cik}.json`,asOf:fundamentalsAsOf}] : []),
+          ...(dgs10 ? [{url:"https://fred.stlouisfed.org/series/DGS10",asOf:dgs10.date}] : []),
+        ],
+      });
+      candidates.push(candidate);
       rows.push(prepareSnapshotPublication({
         ticker,
         verdict_bucket: v.bucket,
@@ -282,11 +353,16 @@ async function main() {
       valued++;
       if (floorInput.ttm) ttmBasis++;
     } catch (err) {
+      if (err instanceof Error && (err.name === "PublicationUnavailableError" || err.name === "PublicationWriteError")) throw err;
       // 瞬时故障(Supabase/SEC 抖动):保留历史行,不进 intentionallyUnvaluable。
       exceptionSkipped++;
       console.error(`  ${ticker} 跳过: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
+
+  await publishValuationCandidates(db,{candidates,state:publicationState,
+    ...(binding && capturedPublication ? {publication:{origin:binding.origin,seeds,capture:capturedPublication,current:await readAllSnapshots()}} : {}),
+    onWritten:()=>output("cache_refresh_required",1)});
 
   const publishInvalidationCount = (count: number) => {
     output("invalidated_snapshots", count);

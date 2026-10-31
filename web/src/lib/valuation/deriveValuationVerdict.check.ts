@@ -515,4 +515,28 @@ assert.ok(
   assert(run(130, 150, "moat_band")?.ivBelowFloor === undefined, "IV 130 ≥ F 120 → 无 ivBelowFloor");
 }
 
+
+// Tracking fields must expose each branch's actual arithmetic anchor without changing existing numbers.
+{
+  const full = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { valueFloor: 60, price: 50 }), oeDcf: oeWithIv(100) });
+  assert.strictEqual(full?.referenceValue, 100);
+  assert.strictEqual(full?.referenceKind, "oe_dcf_neutral");
+  assert.strictEqual(full?.intrinsicValue, 100);
+  assert.strictEqual(full?.requiredMargin, .38);
+  assert.strictEqual(full?.strikePrice, 62);
+  const fallback = deriveValuationVerdict({ floor: floorStub(), strikeZone: sz("in_strike_zone", { valueFloor: 60, price: 40 }) });
+  assert.strictEqual(fallback?.referenceValue, 60);
+  assert.strictEqual(fallback?.referenceKind, "zero_growth_floor");
+  assert.strictEqual(fallback?.intrinsicValue, null);
+  assert.strictEqual(fallback?.requiredMargin, 1 / 3);
+  assert.strictEqual(fallback?.strikePrice, 60 * (1 - 1 / 3));
+  const holdco = { ...floorStub(), holdco_not_assessable: true, holdco_sotp: { per_share: { pessimistic: 60, base: 100, optimistic: 140 } } } as ValuationFloor;
+  const sotp = deriveValuationVerdict({ floor: holdco, strikeZone: sz("in_strike_zone", { price: 50 }) });
+  assert.strictEqual(sotp?.referenceValue, 100);
+  assert.strictEqual(sotp?.referenceKind, "sotp_base");
+  assert.strictEqual(sotp?.intrinsicValue, null);
+  assert.strictEqual(sotp?.requiredMargin, 1 / 3);
+  assert.strictEqual(sotp?.strikePrice, 100 * (1 - 1 / 3));
+}
+
 console.log("deriveValuationVerdict.check.ts ✓ all assertions passed");

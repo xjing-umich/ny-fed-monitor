@@ -10,7 +10,7 @@ import { ValuationBadge } from "@/components/valuation/ValuationBadge";
 import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
 import { stockGlossary, stockUi } from "@/lib/stocks/stockCopy";
 import { deriveFusionSignal } from "@/lib/managers/fusionSignal";
-import { impliedValue } from "@/lib/valuation/impliedValue";
+
 import { BAND_FLOOR_NOTE } from "@/lib/valuation/valuationLabel";
 
 const TOP_N = 60;
@@ -85,10 +85,10 @@ export function ScreenerTable({ lang, rows, availableStocks, highlight = false, 
       align: "right",
       width: "w-28",
       hideOnMobile: true,
-      // 由安全边际反推;单法口径(* 标注)时为零增长价值,见表下脚注。
+      // 原始发布记录中的 IV / 比较锚,不从四舍五入的边际反推。
       cell: (r) => {
-        const iv = impliedValue(r.price, r.marginPct);
-        return <span className="font-data tabular-nums text-[var(--tt-text)]">{iv == null ? "—" : fmtPerShareValue(iv)}</span>;
+        const iv = r.intrinsicValue ?? r.referenceValue;
+        return <span className="font-data tabular-nums text-[var(--tt-text)]">{iv == null ? "—" : fmtPerShareValue(iv)}{r.referenceKind !== "oe_dcf_neutral" && <small> {r.referenceKind === "zero_growth_floor" ? (isZh ? "零增长底" : "Zero-growth floor") : (isZh ? "SOTP 基础档" : "SOTP base")}</small>}</span>;
       },
     },
     {
@@ -120,6 +120,7 @@ export function ScreenerTable({ lang, rows, availableStocks, highlight = false, 
         columns={columns}
         rows={head}
         getKey={(r) => r.ticker}
+        rowAttributes={(r) => r.publication?.attributes}
         rowHref={(r) => availableStockHref(lang, r.ticker, availableStocks)}
         showRank
         emptyText={emptyText ?? ui.emptyScreener}
@@ -140,7 +141,7 @@ export function ScreenerTable({ lang, rows, availableStocks, highlight = false, 
           </summary>
           <ul className="mt-3 grid list-none grid-cols-1 gap-x-6 gap-y-1.5 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {tail.map((r, i) => (
-              <li key={r.ticker} className="flex items-baseline gap-2 text-sm">
+              <li {...r.publication?.attributes} key={r.ticker} className="flex items-baseline gap-2 text-sm">
                 <span className="w-8 shrink-0 text-right font-data text-xs tabular-nums text-[var(--tt-faint)]">{TOP_N + i + 1}</span>
                 <OptionalLink href={availableStockHref(lang, r.ticker, availableStocks)} className="min-w-0 truncate text-[var(--tt-text)] no-underline hover:text-[var(--tt-accent)]">
                   {stockDisplayName(lang, r.ticker, cleanIssuer(r.issuer))}

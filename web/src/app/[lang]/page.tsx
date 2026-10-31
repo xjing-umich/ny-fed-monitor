@@ -6,7 +6,8 @@ import { altFor, ogFor } from "@/lib/seo";
 import { effectiveMovesPeriod } from "@/lib/freshness/derive";
 import type { Lang } from "@/lib/nav";
 import { readSearchIndex } from "@/lib/home/searchIndex";
-import { readCompanyExamples } from "@/lib/home/readCompanyExamples";
+import { readCompanyExampleState } from "@/lib/home/readCompanyExamples";
+import { publicationSourceAttributes } from "@/lib/valuation/publicationProof";
 import LandingPage from "@/components/home/landing/LandingPage";
 
 // 13F 季度更、价格日更;首页按列表页节奏重验。
@@ -52,10 +53,10 @@ export default async function HomePage({
   const lang = rawLang as Lang;
   const isZh = lang === "zh";
 
-  const [idx, index, examples] = await Promise.all([
+  const [idx, index, valuation] = await Promise.all([
     getManagerIndex().catch(() => ({ managers: [] })),
     readSearchIndex(lang),
-    readCompanyExamples(lang),
+    readCompanyExampleState(lang),
   ]);
   const filing = effectiveMovesPeriod(
     idx.managers.map((m) => m.period),
@@ -98,7 +99,9 @@ export default async function HomePage({
       <LandingPage
         lang={lang}
         index={index}
-        examples={examples}
+        examples={valuation.examples}
+        valuationSource={publicationSourceAttributes(lang === "zh" ? "/zh" : "/", valuation.sourceDigest)}
+        valuationUnavailable={valuation.unavailable}
         filing={filing}
       />
     </>

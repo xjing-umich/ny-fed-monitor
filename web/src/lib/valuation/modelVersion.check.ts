@@ -1,54 +1,25 @@
 import assert from "node:assert/strict";
-// Exercise the real Supabase query builder with a transport that models SQL filtering.
-process.env.SUPABASE_URL = "https://valuation-evidence.invalid";
-process.env.SUPABASE_SERVICE_KEY = "fixture-service-key";
-const seen: URL[] = [];
-const unfiltered: URL[] = [];
-const identityUnfiltered: URL[] = [];
-globalThis.fetch = async (input, init) => {
-  const u = new URL(
-    typeof input === "string"
-      ? input
-      : input instanceof URL
-        ? input.href
-        : input.url,
-  );
-  seen.push(u);
-  if(u.pathname.endsWith("/valuation_snapshot") && !(u.searchParams.get("ticker") || "").includes("not.in.(SATS)")) identityUnfiltered.push(u);
-  if (u.pathname.endsWith("/valuation_snapshot")) {
-    if (!u.searchParams.has("payload->>model_version") || u.searchParams.get("payload->>assessment_status") !== "eq.valid") unfiltered.push(u);
-    return new Response(init?.method === "HEAD" ? null : "[]", {
-      status: 200,
-      headers: { "content-type": "application/json", "content-range": "*/0" },
-    });
-  }
-  return new Response(
-    u.pathname.endsWith("/consensus_holdings")
-      ? JSON.stringify([
-          { ticker: "NEW", issuer: "New issuer", holder_count: 3 },
-        ])
-      : "[]",
-    { status: 200, headers: { "content-type": "application/json" } },
-  );
+import { projectPublicationFixture, publicationFixture } from "../../../scripts/tests/publication-fixture";
+import * as readers from "./valuationSnapshot";
+process.env.SUPABASE_URL="http://127.0.0.1:54321";
+process.env.SUPABASE_SERVICE_KEY="fixture";
+const base={reliable:true,in_strike_zone:true,verdict_bucket:"below",range_lo:60,range_hi:120,price:50,margin_pct:.5};
+const rows=[publicationFixture({...base,ticker:"NEW"},1),publicationFixture({...base,ticker:"OLD",payload:{model_version:"old"}},2),publicationFixture({...base,ticker:"SATS"},3)];
+let requests=0;
+globalThis.fetch=async input=>{
+ const url=new URL(input instanceof Request ? input.url : String(input));
+ assert.equal(url.origin,"http://127.0.0.1:54321");
+ if (url.pathname.endsWith("/consensus_holdings")) return Response.json([{ticker:"NEW",issuer:"New",holder_count:5}]);
+ assert(url.pathname.endsWith("/tracking_securities"));requests++;
+ return Response.json(rows.map(row=>projectPublicationFixture(row,url.searchParams.get("select"))));
 };
-async function checks() {
-  const m = await import("./valuationSnapshot");
-  await m.readValuationVerdicts(["OLD", "NEW"]);
-  await m.readBargainVerdicts();
-  await m.readStrikeZoneLeaders(5);
-  const rows = await m.readValuationScreen("all");
-  await m.readConvictionScreen();
-  assert.equal(
-    unfiltered.length,
-    0,
-    "batch, count, leaders, all screener and conviction requests must filter model version in SQL before limit",
-  );
-  assert.ok(rows);
-  assert.ok(
-    seen.filter((u) => u.pathname.endsWith("/valuation_snapshot")).length >= 5,
-    "batch, count, leader and screener paths are exercised",
-  );
-  assert.equal(identityUnfiltered.length,0,"all snapshot surfaces must exclude quarantined identities in SQL before count/order/limit");
-  console.log("snapshot SQL version and identity filtering checks passed");
+async function main() {
+ assert.deepEqual([...(await readers.readValuationVerdicts(["OLD","NEW","SATS"])).keys()],["NEW"]);
+ assert.deepEqual([...(await readers.readBargainVerdicts()).keys()],["NEW"]);
+ const leaders=await readers.readStrikeZoneLeaders(5);assert.equal(leaders.total,1);assert.equal(leaders.leaders[0].ticker,"NEW");
+ const screen=await readers.readValuationScreen("all");assert.deepEqual(screen.rows.map(row=>row.ticker),["NEW"]);
+ const conviction=await readers.readConvictionScreen();assert.deepEqual(conviction.rows.map(row=>row.ticker),["NEW"]);
+ assert(requests>=5);
+ console.log("publication version and identity behavior checks passed");
 }
-checks();
+main().catch(error=>{console.error(error);process.exitCode=1;});

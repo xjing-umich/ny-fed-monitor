@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 async function main() {
-  const { targetedPaths, parseTickers } = await import("./targets");
+  const { targetedPaths, parseTickers, parsePublicationPaths, publicationRevalidationPaths } = await import("./targets");
   const paths = targetedPaths(parseTickers(["msft", "MSFT", "GOOG"]), false);
   assert.ok(paths.includes("/en/stocks/MSFT"));
   assert.ok(paths.includes("/zh/stocks/MSFT"));
@@ -19,6 +19,16 @@ async function main() {
   assert.ok(v.includes("/[lang]/stocks/screener/[variant]"));
   assert.throws(() => parseTickers(["../investors"]), /ticker/i);
   assert.throws(() => parseTickers("MSFT"), /ticker/i);
+  assert.deepEqual(publicationRevalidationPaths(parsePublicationPaths(["/stocks?page=2", "/zh/stocks/screener/cheap", "/stocks?page=2"])),["/en/stocks","/zh/stocks/screener/cheap"]);
+  for (const prefix of ["", "/zh"]) {
+    const base = `${prefix}/stocks/screener`;
+    const internal = `${prefix || "/en"}/stocks/screener`;
+    for (const [query, suffix] of [["", ""], ["?sort=holders", "/all-holders"], ["?view=below", "/below"], ["?view=below&sort=holders", "/below-holders"], ["?view=strike_zone", "/strike_zone"], ["?view=strike_zone&sort=holders", "/strike_zone-holders"], ["?view=conviction", "/conviction"]])
+      assert.deepEqual(publicationRevalidationPaths([base + query]), [internal + suffix], "public query must invalidate its actual static rewrite destination");
+  }
+  assert.throws(()=>parsePublicationPaths(["https://other.invalid/stocks"]),/publication/i);
+  assert.throws(()=>parsePublicationPaths(["/api/revalidate"]),/publication/i);
+  assert.throws(()=>parsePublicationPaths(["//other.invalid"]),/publication/i);
   console.log("targeted financial page revalidation checks OK");
 }
 main().catch((e) => {

@@ -33,7 +33,7 @@ for (const lang of ["zh", "en"] as const) {
   assert.ok(pendingText.includes(lang==="zh"?"零增长参考 · 待确认":"Zero-growth reference · pending review"));
   assert.ok(pendingText.includes(lang==="zh"?"未计增长溢价":"no growth premium"));
   assert.ok(!pendingText.includes(lang==="zh"?"内在价值参考":"Intrinsic value reference"));
-  const badgeText=text(renderToStaticMarkup(<ValuationBadge verdict={{...pendingVerdict,ticker:"REF",computedAt:"2026-10-31"}} lang={lang}/>));
+  const badgeText=text(renderToStaticMarkup(<ValuationBadge verdict={{...pendingVerdict,ticker:"REF",fundamentalsDate:"2026-10-31",securityUnit:"share",priceSource:"fixture",publication:{identityKey:"REF",revisionId:"fixture",ticker:"REF",priceDate:"2026-10-30",computedAt:"2026-10-31",attributes:{}},computedAt:"2026-10-31"}} lang={lang}/>));
   assert.equal((badgeText.match(lang==="zh"?/待确认/g:/pending review/g)??[]).length,1,"pending reference badge suffix appears once");
   const sotp = stockValueSummary({ verdict, quote, reference: 140, kind: "sotp" }, lang)!;
   assert.ok(text(renderToStaticMarkup(<StockValuationSummary model={sotp} lang={lang} />)).includes(lang === "zh" ? "分部估值参考" : "SOTP reference"));

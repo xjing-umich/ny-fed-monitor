@@ -114,6 +114,7 @@ export default function CompanyExamples({
         </div>
       </div>
       <div
+        key={row.ticker}
         role="tabpanel"
         tabIndex={0}
         id={id + "-panel"}
@@ -172,6 +173,7 @@ export default function CompanyExamples({
           </Link>
         </div>
         <div
+          {...row.publication?.attributes}
           className={s.companyValue}
           data-position={model?.position ?? "pending"}
         >
@@ -189,7 +191,7 @@ export default function CompanyExamples({
               {model.gap && <p className={s.valueGap}>{model.gap}</p>}
               <dl className={s.valueMetrics}>
                 <div>
-                  <dt>{zh ? "最近收盘价" : "Latest close"}</dt>
+                  <dt>{zh ? "估值采用价格" : "Valuation price"}</dt>
                   <dd className={s.closePrice}>{fmtPrice(model.price)}</dd>
                   <dd className={s.sourceNote}>
                     <time dateTime={model.date}>{model.date}</time> ·{" "}

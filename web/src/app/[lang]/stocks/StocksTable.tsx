@@ -1,5 +1,6 @@
 "use client";
 
+import type { PublicationStamp } from "@/lib/valuation/publicationProjection";
 import React, { useMemo } from "react";
 import type { Lang } from "@/lib/nav";
 import { stockPath } from "@/lib/urls";
@@ -27,7 +28,7 @@ export type StockRow = {
   /** 持有人数条宽(px),服务端按榜首归一化预算 */
   barWidth: number;
   /** 落在击球区/低于内在价值(reliable)才非空 —— 稀有便宜高亮;服务端按前景闸预算 */
-  bargain: { inStrikeZone: boolean; marginPct: number } | null;
+  bargain: { inStrikeZone: boolean; marginPct: number;publication:PublicationStamp } | null;
 };
 
 // 稀有便宜绿标:击球区显 chip「击球区/Strike zone」+ 安全边际%;低于内在价值(非严格击球区)只显绿%。
@@ -39,16 +40,16 @@ function BargainMark({ bargain, lang }: { bargain: { inStrikeZone: boolean; marg
     ? isZh ? `击球区，安全边际 ${pct}` : `In strike zone, margin of safety ${pct}`
     : isZh ? `低于内在价值，安全边际 ${pct}` : `Below intrinsic value, margin of safety ${pct}`;
   return (
-    <span className="inline-flex items-baseline gap-1.5" aria-label={label}>
+    <span className="inline-flex items-baseline gap-1.5" aria-label={`${label} · ${isZh ? "按所示价格" : "at shown price"}`}>
       {bargain.inStrikeZone && (
         <span
           aria-hidden
           className="rounded-sm border border-[var(--val-below)] px-1 py-px font-data text-xs leading-none text-[var(--val-below)]"
         >
-          {isZh ? "击球区" : "Strike zone"}
+          {isZh ? "击球区 · 按所示价格" : "Strike zone · at shown price"}
         </span>
       )}
-      <span aria-hidden className="font-data text-xs tabular-nums text-[var(--val-below)]">
+      <span className="font-data text-xs tabular-nums text-[var(--val-below)]">
         {pct}
       </span>
     </span>
@@ -142,6 +143,7 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
           columns={columns}
           rows={desktopRows}
           getKey={(r) => r.ticker}
+          rowAttributes={(r)=>r.bargain?.publication.attributes}
           rowHref={(r) => stockPath(lang, r.ticker)}
           showRank
           rankStart={desktopRankStart}
@@ -160,6 +162,7 @@ export const StocksTable: React.FC<Props> = ({ lang, rows }) => {
           columns={columns}
           rows={mobileRows}
           getKey={(r) => r.ticker}
+          rowAttributes={(r)=>r.bargain?.publication.attributes}
           rowHref={(r) => stockPath(lang, r.ticker)}
           showRank
           rankStart={0}

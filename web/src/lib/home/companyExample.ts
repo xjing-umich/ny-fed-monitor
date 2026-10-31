@@ -17,6 +17,7 @@ import { snapshotTime } from "@/lib/datasetTime";
 
 export type CompanyExample = {
   ticker: string;
+  publication: SnapshotVerdict["publication"] | null;
   name: string;
   available: boolean;
   holderCount: number | null;
@@ -82,11 +83,17 @@ export function deriveCompanyExample(
     !v.referenceOnly &&
     v.ticker === ticker &&
     v.methods &&
+    quote && !quote.stale && quote.currency === "USD" && quote.date === v.priceDate &&
+    Number.isFinite(quote.close) && quote.close > 0 && Math.abs(quote.close-v.price) <= Math.max(1,quote.close)*1e-9 &&
+    v.securityUnit !== "unknown" &&
     kind &&
     fresh &&
     !splitStale
       ? stockValueSummary(
-          { verdict: { ...v, methods: v.methods }, quote, kind },
+          { verdict: { ...v, methods: v.methods, referenceValue:v.referenceValue!,referenceKind:v.referenceKind! },
+            quote: quote ? {...quote,close:v.price,date:v.priceDate,source:v.priceSource ?? quote.source} : null,
+            reference:v.intrinsicValue ?? v.referenceValue ?? undefined,kind,
+            securityUnit:v.securityUnit === "ADS" ? "ADS" : "share" },
           lang,
         )
       : null;
@@ -112,6 +119,7 @@ export function deriveCompanyExample(
               : "The valuation snapshot is unconfirmed or does not align with the latest quote. Open the full profile for current evidence and methods.";
   return {
     ticker,
+    publication: rows.length && summary ? v?.publication ?? null : null,
     name: stockDisplayName(
       lang,
       ticker,

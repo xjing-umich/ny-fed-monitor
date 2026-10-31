@@ -1,3 +1,10 @@
+import { readPublicValuations } from '@/lib/valuation/publishedRead';
+import type { ValuationRun } from '@/lib/valuation/runValuation';
+import { optionalValuation } from '@/lib/valuation/publicationAvailability';
+import { projectionDigest, publicationStamp } from '@/lib/valuation/publicationProjection';
+import { publicationSourceAttributes } from '@/lib/valuation/publicationProof';
+import { ValuationSafetyBoundary } from '@/components/valuation/ValuationSafetyBoundary';
+import { ValuationUnavailable } from '@/components/valuation/publicationMarkers';
 import { notFoundMetadata } from "@/lib/notFoundMetadata";
 import { adsRatioDisclosure, perSecurityUnit, type SecurityUnit } from "@/lib/valuation/displayFacts";
 import { IDENTITY_QUARANTINES, isIdentityQuarantined } from "@/lib/securities/securityIdentity";
@@ -37,14 +44,9 @@ import {
   fundamentalsToFloorInput,
   resolveAds,
   isFundamentalsStale,
-  isSplitCoverageStale,
-  fundamentalsIntegrityViolated,
-  readHoldcoSotp,
-  runValuation,
 } from "@/lib/valuation";
-import { getLatestDgs10 } from "@/lib/managers/treasuryRead";
 import { EarningsPowerFloorCard, ValueBandGauge, cardSummaryMode, perShare as fmtPerShare } from "@/components/valuation/EarningsPowerFloorCard";
-import { getLatestPrice, fmtPriceFact, getLatestSplit } from "@/lib/managers/priceRead";
+import { getLatestPrice, fmtPriceFact } from "@/lib/managers/priceRead";
 import { WeightQoQ, MoveMark } from "@/components/common/qoqDirection";
 import { holderTrendSeries, type HolderTrendPoint } from "@/lib/stocks/holderTrend";
 import { filingSeasonNote, hasNewQuarterRows } from "@/lib/stocks/filingSeasonNote";
@@ -457,19 +459,12 @@ export default async function StockTickerPage({
   const { securityType, adsRatio } = await getSecurityMeta(ticker);
   const ads = resolveAds(securityType, adsRatio);
   const securityUnit: SecurityUnit = securityType === "ADR" ? "ADS" : "share";
-  const perUnit = perSecurityUnit(securityUnit, lang);
-  const adsNote = adsRatioDisclosure(securityUnit, securityUnit === "ADS" ? ads.ratio : undefined, lang);
   // SIC 用于金融股(银行/保险)判定 → 引擎改用可持续增长率封顶而非扁平 moderate。
   // sec_companies.sic 可能是字符串或 null;安全转 number,NaN/null → undefined(不误触闸)。
   const sicRaw = sec.company?.sic;
   const sicNum = sicRaw == null ? undefined : Number(sicRaw);
   const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
   const floorInput = fundamentalsToFloorInput(ticker, issuer, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings, sec.interim);
-  // 件⑤:投资主导型控股集团的分部 SOTP。reader 自带件④触发集的窄闸 —— 其余票直接返回
-  // undefined,floorInput 一个字段都不动(零漂移);读库失败同样返回 undefined,退回件④抑制。
-  // 与 scripts/valuation-ingest.ts 走同一个入口,页面与 screener/首页榜口径不分裂。
-  const holdcoSotp0 = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });
-  if (holdcoSotp0) floorInput.holdcoSotp = holdcoSotp0;
   // as-of 重锚(spec §6):TTM 生效 → 新鲜度/拆股闸都按 TTM 期末判。
   const fundamentalsAsOf = floorInput.ttm?.period_end ?? sec.annual?.[0]?.period_end ?? null;
   // 基本面过期闸:与 ingest 同语义 — 最新 FY 期末超阈值 → 抑制估值(不造陈旧幻觉)。
@@ -482,28 +477,6 @@ export default async function StockTickerPage({
   // A stale quote is never used for valuation, but is still shown as the latest key fact.
   const fetchedPrice = await getLatestPrice(ticker);
   const latestPrice = fetchedPrice;
-  const priceStale = fetchedPrice?.stale === true;
-  const valuationPrice = priceStale ? null : fetchedPrice;
-
-  // 拆股口径护栏:基本面 as-of 早于最近拆股 → 每股口径与拆股后价格错配,整条抑制估值判定。
-  // as-of 仅在 TTM 每股股数真取自最新10-Q(非回退 FY0)时才前滚到 TTM 期末;否则退回 FY 期末,
-  // 否则拆股落在 (FY0期末, TTM期末] 且最新10-Q缺股数时会漏抑制假"便宜"信号(spec §6)。
-  const latestSplitDate = await getLatestSplit(ticker);
-  const splitAsOf =
-    floorInput.ttm && !floorInput.ttm.shares_from_fy
-      ? floorInput.ttm.period_end
-      : sec.annual?.[0]?.period_end ?? null;
-  const splitCoverageStale = isSplitCoverageStale({
-    fundamentalsAsOf: splitAsOf,
-    latestSplitDate,
-  });
-
-  // 基本面口径护栏:opInc>revenue / gross>revenue 物理不可能 → 数据损坏,整条抑制估值判定。
-  const fundamentalsCorrupt = fundamentalsIntegrityViolated(floorInput.years);
-
-  // Second intrinsic-value method (Buffett owner-earnings DCF) + two-method cross-check.
-  // DGS10 read is best-effort; null → DCF uses the 9–11% fallback band (flagged in-card).
-  const dgs10 = await getLatestDgs10();
   // 基本面来源脚注:TTM 生效 = 最新 10-K 叠加 10-Q(提交日取 TTM 期末那份 10-Q);否则最新年报。
   const fundamentalsFiled = floorInput.ttm
     ? sec.quarterly?.find((q) => q.period_end === floorInput.ttm!.period_end && !q.is_derived)?.filing_date ?? undefined
@@ -523,19 +496,18 @@ export default async function StockTickerPage({
         status: fundamentalsStale ? ("stale" as const) : ("fresh" as const),
       }
     : null;
-  const run = runValuation({
-    floorInput,
-    price: valuationPrice,
-    dgs10,
-    guards: {
-      adsSuppressed: ads.suppressed,
-      fundamentalsStale,
-      priceStale,
-      splitCoverageStale,
-      fundamentalsCorrupt,
-    },
-    suppressExpectations: false,
-  });
+  const publicationAvailability = await optionalValuation(readPublicValuations([ticker]));
+  const published = publicationAvailability.value?.get(ticker);
+  const run:ValuationRun = published?.presentation ?? {currency:"USD",floor:undefined,strikeZone:undefined,oeDcf:undefined,reconciliation:undefined,verdict:null,expectations:{assessable:false,reason:"publication_unavailable"},methods:{zeroGrowthEpv:false,oeDcf:false,greenwaldGrowthCeilings:false}};
+  // Valuation explanations share the published run; research/holdings retain current metadata.
+  const valuationUnit: SecurityUnit = published?.record.identity.securityType === "ADR" ? "ADS"
+    : ["Common Stock","Ordinary Shares","Common Shares"].includes(published?.record.identity.securityType ?? "") ? "share" : "unknown";
+  const displayBasis = run.displayBasis;
+  const perUnit = perSecurityUnit(valuationUnit, lang);
+  const adsNote = adsRatioDisclosure(valuationUnit, displayBasis?.adsRatio ?? undefined, lang);
+  const dgs10 = run.oeDcf?.discount?.dgs10_date ? {date:run.oeDcf.discount.dgs10_date} : null;
+  const publication = published ? publicationStamp(published) : null;
+  const valuationSource = publicationSourceAttributes(stockPath(lang,ticker),projectionDigest("detail",published?.record ?? null,{ticker}));
   const { floor: valuationFloor, strikeZone, oeDcf, reconciliation } = run;
   const handoffVerdict = run.verdict;
   const holdcoNotAssessable =
@@ -587,11 +559,11 @@ export default async function StockTickerPage({
   // 结论带(spec 2026-10-25 §三.1):左栏状态与原估值区块同一优先级。
   const leftState = conclusionLeftState({
     hasFloor: !!valuationFloor,
-    splitCoverageStale,
+    splitCoverageStale: false,
     holdcoNotAssessable,
     hasHoldcoSotp: !!holdcoSotp,
     capitalStructureDistorted,
-    fundamentalsCorrupt,
+    fundamentalsCorrupt: false,
     methodsConflict: !!methodsConflict,
     growthEvidenceMissing: !!oeDcf?.growth_coverage_gap && !handoffVerdict?.referenceOnly,
   });
@@ -732,12 +704,13 @@ export default async function StockTickerPage({
             lang={lang}
             showStatus={false}
             verdict={run.verdict}
-            ttmPeriodEnd={floorInput.ttm?.period_end}
-            ttmFiscalYear={floorInput.ttm?.year.fiscal_year}
-            securityUnit={securityUnit}
-            adsRatio={securityUnit === "ADS" ? ads.ratio : undefined}
+            ttmPeriodEnd={displayBasis?.ttm?.periodEnd}
+            ttmFiscalYear={displayBasis?.ttm?.year}
+            periodBasisKnown={displayBasis != null}
+            securityUnit={valuationUnit}
+            adsRatio={displayBasis?.adsRatio ?? undefined}
             part="summary"
-            priceKnown={!!valuationPrice && valuationPrice.close > 0}
+            priceKnown={published?.record.price != null && published.record.price > 0}
           />
         </>
       )
@@ -748,7 +721,7 @@ export default async function StockTickerPage({
         <>
           <div className="flex items-baseline gap-2">
             <span className="font-data text-2xl font-semibold tracking-tight text-[var(--tt-text)]">{fmtPerShare(holdcoSotp.per_share.base)}</span>
-            <span className="text-xs text-[var(--tt-muted)]">{securityUnit === "ADS" ? (lang === "zh" ? "每 ADS 中枢 · 基础档" : "central estimate · per ADS") : page.valuation.holdcoSotpCentral}</span>
+            <span className="text-xs text-[var(--tt-muted)]">{valuationUnit === "unknown" ? (lang === "zh" ? "中枢 · 证券单位未知" : "central estimate · security unit unknown") : valuationUnit === "ADS" ? (lang === "zh" ? "每 ADS 中枢 · 基础档" : "central estimate · per ADS") : page.valuation.holdcoSotpCentral}</span>
           </div>
           <ValueBandGauge bucket={handoffVerdict.bucket} rangeLo={handoffVerdict.rangeLo} rangeHi={handoffVerdict.rangeHi} price={handoffVerdict.price} reliable={handoffVerdict.reliable} lang={lang} />
         </>
@@ -777,20 +750,22 @@ export default async function StockTickerPage({
   // 只有既有闸门允许的可比、可信结论才能进入新概览;其余保留原有解释和明细。
   const summaryEligible = (leftState === "card" && cardSummaryMode(strikeZone, handoffVerdict) === "spine") || leftState === "holdcoSotp";
   const summaryModel = summaryEligible ? stockValueSummary({
-    securityUnit,
+    securityUnit: valuationUnit,
     verdict: handoffVerdict,
-    quote: latestPrice,
+    quote: published ? {close:published.record.price!,date:published.record.priceDate!,currency:published.record.currency,source:published.record.priceSource ?? ""} : null,
     kind: leftState === "holdcoSotp" ? "sotp" : handoffVerdict?.methods.oeDcf || handoffVerdict?.methods.greenwaldGrowthCeilings ? "earnings" : "zero-growth",
-    reference: leftState === "holdcoSotp" ? holdcoSotp?.per_share.base : oeDcf?.assessable ? oeDcf.tiers?.neutral.per_share : undefined,
+    reference: published?.record.intrinsicValue ?? published?.record.referenceValue ?? undefined,
   }, lang) : null;
   const marginText = marginShown ? `${page.marginOfSafety} ${fmtMarginPct(handoffVerdict!.marginPct!)}` : null;
-  const firstScreen = summaryModel ? <StockValuationSummary model={summaryModel} lang={lang} marginText={marginText} /> : <>
+  const firstScreenContent = summaryModel ? <StockValuationSummary model={summaryModel} lang={lang} marginText={marginText} /> : <>
     <h2 className="text-balance font-display text-3xl font-medium leading-tight tracking-tight text-[var(--tt-text)] sm:text-5xl">{stockFallbackHeading(leftState, handoffVerdict?.reliable, lang)}</h2>
     {bandLeft}
   </>;
 
+  const firstScreen = <div {...publication?.attributes}>{firstScreenContent}</div>;
   return (
-    <>
+    <ValuationSafetyBoundary lang={lang} records={publication ? [publication] : []} sourceAttributes={valuationSource}>
+      <ValuationUnavailable lang={lang} reason={publicationAvailability.unavailable ?? (!published ? "no_published_valuation" : null)} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(securityEntity) }} />
@@ -860,7 +835,7 @@ export default async function StockTickerPage({
 
           {/* 估值与方法:结论(标尺/中枢/提示句)已在首屏结论带,这里只放明细 */}
           {hasValuationDetails && (
-            <section id="valuation" className="scroll-mt-32">
+            <section {...publication?.attributes} id="valuation" className="scroll-mt-32">
               <SectionHeading
                 eyebrow={page.valuation.eyebrow}
                 title={valuationTitle}
@@ -878,18 +853,15 @@ export default async function StockTickerPage({
                       lang={lang}
                       showStatus={false}
                       verdict={run.verdict}
-                      ttmPeriodEnd={floorInput.ttm?.period_end}
-            ttmFiscalYear={floorInput.ttm?.year.fiscal_year}
-                      securityUnit={securityUnit}
-                      adsRatio={securityUnit === "ADS" ? ads.ratio : undefined}
+                      ttmPeriodEnd={displayBasis?.ttm?.periodEnd}
+                      ttmFiscalYear={displayBasis?.ttm?.year}
+                      periodBasisKnown={displayBasis != null}
+                      securityUnit={valuationUnit}
+                      adsRatio={displayBasis?.adsRatio ?? undefined}
                       part="details"
                     />
                   </div>
-                  {floorInput.ttm && (
-                    <p className="mt-2 text-xs text-[var(--tt-muted)]">
-                      {page.valuation.ttmBasis(floorInput.ttm.period_end)}
-                    </p>
-                  )}
+                  {published?.record.fundamentalAsOf && <p className="mt-2 text-xs text-[var(--tt-muted)]">{lang === "zh" ? "估值基本面期末" : "Valuation fundamentals period ended"} {published.record.fundamentalAsOf}</p>}
                   {expectations?.assessable && (
                     <PriceBetBlock
                       expectations={expectations}
@@ -911,7 +883,7 @@ export default async function StockTickerPage({
                     {adsNote ? <p className="mt-2 text-xs text-[var(--tt-muted)]">{adsNote}</p> : null}
                     <div className="mt-4 overflow-x-auto">
                       <table className="w-full min-w-[420px] text-sm tabular-nums">
-                        <caption className="mb-2 text-left text-xs text-[var(--tt-muted)]">{page.valuation.holdcoSotpUnit(securityUnit)}</caption>
+                        <caption className="mb-2 text-left text-xs text-[var(--tt-muted)]">{valuationUnit === "unknown" ? (lang === "zh" ? "证券单位未知" : "Security unit unknown") : page.valuation.holdcoSotpUnit(valuationUnit)}</caption>
                         <thead>
                           <tr className="text-[var(--tt-muted)]">
                             <th className="py-1 text-left font-normal"> </th>
@@ -1075,6 +1047,6 @@ export default async function StockTickerPage({
           )}
         </>
       </EntityPage>
-    </>
+    </ValuationSafetyBoundary>
   );
 }

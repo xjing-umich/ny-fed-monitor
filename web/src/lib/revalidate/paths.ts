@@ -41,3 +41,15 @@ export const REPORT_PATHS = ["/[lang]/learn/[slug]", "/[lang]/learn", "/[lang]"]
 
 /** 读同一批数据的路由处理器(非 page.tsx,不在上面的双向校验里)。字面路径,revalidatePath 不带 type。 */
 export const DATA_DRIVEN_ROUTE_HANDLERS = ["/llms.txt", "/llms-full.txt"] as const;
+
+/** Concrete public proof paths. Reject APIs, credentials and noncanonical query spellings. */
+export function publicationPath(value: string): string {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || value.length>1024 || /[\\#\s]/.test(value)) throw new Error("Invalid publication path");
+  const url=new URL(value,"https://publication.invalid");
+  if (url.pathname+url.search!==value || !/^\/(?:zh(?:\/|$))?(?:(?:stocks|investors)(?:\/[A-Za-z0-9._-]+)*\/?)?$/.test(url.pathname)) throw new Error("Invalid publication path");
+  return value;
+}
+export function requiredPublicationPaths(ticker: string): string[] {
+  if (!/^[A-Z]{1,6}(\.[A-Z])?$/.test(ticker)) throw new Error("Invalid publication ticker");
+  return ["", "/zh"].flatMap(prefix=>[prefix || "/",`${prefix}/stocks`,`${prefix}/stocks/screener`,`${prefix}/investors/consensus`,`${prefix}/stocks/${ticker}`]);
+}

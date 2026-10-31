@@ -7,15 +7,17 @@ import type { ScreenerRow } from "@/lib/valuation/valuationSnapshot";
 const require = createRequire(import.meta.url);
 const rows: ScreenerRow[] = Array.from({ length: 64 }, (_, i) => ({
   ticker: i === 0 ? "LIVE" : i === 1 ? "TYL" : i === 60 ? "TAIL" : i === 61 ? "EXIT" : i === 62 ? "STALE" : i === 63 ? "UNK" : `F${String.fromCharCode(65 + Math.floor(i / 26))}${String.fromCharCode(65 + i % 26)}`,
+  fundamentalsDate:"2026-10-31",requiredMargin:1/3,strikePrice:40,priceSource:"fixture",
+  intrinsicValue:100,referenceValue:100,referenceKind:"oe_dcf_neutral",
+  publication:{identityKey:`fixture:${i}`,revisionId:"fixture",ticker:`F${i}`,priceDate:"2026-10-30",computedAt:"2026-10-31",attributes:{}},
   issuer: `Fixture issuer ${i}`, bucket: "below", inStrikeZone: true,
   rangeLo: 80, rangeHi: 150, price: 50, priceDate: "2026-10-30",
   marginPct: 0.5 - i / 1000, coverage: "full", reliable: true,
   holderCount: 100 - i, securityUnit: "share", computedAt: "2026-10-31T01:00:00Z",
 }));
-const screen = { rows, availability: "available", computedAt: "2026-10-31T01:00:00Z", strikeTotal: rows.length, strikePending: 0, heldTotal: rows.length };
 const id = require.resolve("../../../../lib/valuation/valuationSnapshot");
 require.cache[id] = { id, filename: id, loaded: true, exports: {
-  readValuationScreen: async () => screen, readConvictionScreen: async () => screen,
+  readScreenInputs: async () => ({values:rows,holdings:new Map(rows.map(row=>[row.ticker,{issuer:row.issuer,holderCount:row.holderCount}]))}),
 } } as NodeJS.Module;
 const { ScreenerPage } = require("./_screenerPage");
 

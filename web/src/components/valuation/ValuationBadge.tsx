@@ -1,4 +1,5 @@
 import React from "react";
+import { fmtMarginPct } from "@/lib/format";
 import type { Lang } from "@/lib/nav";
 import type { SnapshotVerdict } from "@/lib/valuation/valuationSnapshot";
 import { valuationLabel, PENDING_WORD } from "@/lib/valuation/valuationLabel";
@@ -32,7 +33,7 @@ export function ValuationBadge({
   }
   const isCheap = l.tier === "strike" || l.tier === "below";
   if (density === "table" && !isCheap) {
-    return <span className="text-xs text-[var(--tt-muted)]" title={l.title ?? undefined}>{l.label}{l.pending ? ` · ${PENDING_WORD[lang]}` : ""}</span>;
+    return <span {...verdict?.publication?.attributes} className="text-xs text-[var(--tt-muted)]" title={l.title ?? undefined}>{l.label}{l.pending ? ` · ${PENDING_WORD[lang]}` : ""}</span>;
   }
   const cls = l.pending
     ? "border-[var(--tt-border)] text-[var(--tt-muted)]"
@@ -49,7 +50,7 @@ export function ValuationBadge({
     <span aria-hidden className="ml-0.5 opacity-60">*</span>
   ) : null;
   const title = l.title ?? undefined;
-  const label = l.label;
+  const label = isCheap ? `${l.label} · ${lang === "zh" ? "按所示价格" : "at shown price"}` : l.label;
 
   const badge = (
     <span
@@ -63,11 +64,11 @@ export function ValuationBadge({
   const exTier = verdict?.expectations?.assessable ? verdict.expectations.tier : undefined;
   if (density === "full" && exTier) {
     return (
-      <span className="inline-flex flex-col gap-0.5">
-        {badge}
+      <span {...verdict?.publication?.attributes} className="inline-flex flex-col gap-0.5">
+        {badge}{verdict?.marginPct != null && <span className="font-data text-xs">{fmtMarginPct(verdict.marginPct)}</span>}
         <span className="font-data text-xs text-[var(--tt-faint)]">{EXPECT[lang][exTier]}</span>
       </span>
     );
   }
-  return badge;
+  return <span {...verdict?.publication?.attributes}>{badge}{verdict?.marginPct != null && <span className="ml-1 font-data text-xs">{fmtMarginPct(verdict.marginPct)}</span>}</span>;
 }

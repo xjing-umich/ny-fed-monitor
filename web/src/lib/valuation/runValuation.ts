@@ -46,7 +46,18 @@ export type RunValuationInput = {
   asOf?: string;
 };
 
+/** Small explanatory facts retained with the published run, never refreshed from research. */
+export type ValuationDisplayBasis = {
+  version: 1;
+  /** null means a known annual-only run; absent displayBasis means unknown legacy basis. */
+  ttm: { year: number; periodEnd: string } | null;
+  adsRatio: number | null;
+};
+
 export type ValuationRun = {
+  displayBasis?: ValuationDisplayBasis;
+  /** SEC per-share valuation unit; foreign quotes are suppressed, never implicitly converted. */
+  currency: "USD";
   floor: ValuationFloor | PerShareUnavailable | undefined;
   strikeZone: StrikeZoneAssessment | undefined;
   oeDcf: OeDcfAssessment | undefined;
@@ -90,6 +101,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
 
   if (guards.adsSuppressed) {
     return {
+      currency: "USD",
       floor: undefined,
       strikeZone: undefined,
       oeDcf: undefined,
@@ -103,6 +115,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
 
   if (guards.fundamentalsStale) {
     return {
+      currency: "USD",
       floor: undefined,
       strikeZone: undefined,
       oeDcf: undefined,
@@ -117,6 +130,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
   const floor = computeValuationFloor(floorInput);
   if (!floor) {
     return {
+      currency: "USD",
       floor,
       strikeZone: undefined,
       oeDcf: undefined,
@@ -130,6 +144,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
 
   if (floor.kind === "per_share_unavailable") {
     return {
+      currency: "USD",
       floor,
       strikeZone: undefined,
       oeDcf: undefined,
@@ -183,6 +198,7 @@ export function runValuation(input: RunValuationInput): ValuationRun {
         });
 
   return {
+    currency: "USD",
     floor,
     strikeZone,
     oeDcf,

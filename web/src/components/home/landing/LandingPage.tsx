@@ -12,6 +12,9 @@ import { filingProgressText } from "@/components/home/filingProgressText";
 import NewsletterForm from "@/components/shell/NewsletterForm";
 import LandingSearch from "./LandingSearch";
 import CompanyExamples, { CompanyMark } from "./CompanyExamples";
+import { ValuationSafetyBoundary } from '@/components/valuation/ValuationSafetyBoundary';
+import { ValuationUnavailable } from '@/components/valuation/publicationMarkers';
+import type { PublicationUnavailableError } from '@/lib/valuation/publishedRead';
 import s from "./landing.module.css";
 
 function ResearchMap({ lang }: { lang: Lang }) {
@@ -107,11 +110,15 @@ export default function LandingPage({
   lang,
   index,
   examples,
+  valuationSource,
+  valuationUnavailable,
   filing,
 }: {
   lang: Lang;
   index: SearchIndex;
   examples: CompanyExample[];
+  valuationSource: Record<string,string>;
+  valuationUnavailable: PublicationUnavailableError["reason"] | null;
   filing: EffectiveMovesPeriod;
 }) {
   const zh = lang === "zh";
@@ -256,7 +263,10 @@ export default function LandingPage({
           </a>
         </div>
       </section>
-      <CompanyExamples lang={lang} examples={examples} />
+      <ValuationSafetyBoundary lang={lang} records={examples.flatMap(row=>row.publication ? [row.publication] : [])} sourceAttributes={valuationSource}>
+        <ValuationUnavailable lang={lang} reason={valuationUnavailable} />
+        <CompanyExamples lang={lang} examples={examples} />
+      </ValuationSafetyBoundary>
       <section
         className={`${s.evidenceSection} ${s.sectionSpace}`}
         aria-labelledby="landing-evidence"

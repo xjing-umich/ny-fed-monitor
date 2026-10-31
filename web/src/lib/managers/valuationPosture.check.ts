@@ -8,6 +8,7 @@ function assert(c: boolean, m: string) {
 // 造 verdict 的小工厂(只填被 deriveValuationPosture 读到的字段, 其余给合法占位)
 function v(partial: Partial<SnapshotVerdict>): SnapshotVerdict {
   return {
+    publication:{identityKey:"fixture",revisionId:"a".repeat(64),ticker:"X",priceDate:"2026-06-30",computedAt:"2026-07-01",attributes:{}},fundamentalsDate:"2026-10-31",securityUnit:"share",requiredMargin:1/3,strikePrice:40,priceSource:"fixture",intrinsicValue:null,referenceValue:1,referenceKind:"zero_growth_floor",
     ticker: "X", bucket: "within", inStrikeZone: false, rangeLo: 1, rangeHi: 2,
     price: 1.5, priceDate: "2026-06-30", marginPct: null, coverage: "full",
     reliable: true, computedAt: "2026-07-01", ...partial,
