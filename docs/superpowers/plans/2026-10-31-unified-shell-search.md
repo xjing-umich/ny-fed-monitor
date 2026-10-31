@@ -20,17 +20,17 @@
 
 **Files:** create lib/search/{types,match,match.check}.ts and components/shell/{GlobalSearch.tsx,search.module.css}; adapt LandingSearch and legacy SearchBox; move shared index types/imports.
 
-- [ ] 写扩展fixture验证T/F/ON/MA、精确名称、中文别名、分组、空白/无匹配及有界结果。先观察RED，再提升已有匹配逻辑并GREEN。
-- [ ] 把首页交互提升为共享组件：header/hero/menu三种外观；统一局部故障提示、鼠标/键盘、组合输入保护、选择后导航、焦点外关闭和可滚动结果。
-- [ ] 通过现有索引/快照回归；不新增数据读取或浏览器数据库请求。
+- [x] 写扩展fixture验证T/F/ON/MA、精确名称、中文别名、分组、空白/无匹配及有界结果。先观察RED，再提升已有匹配逻辑并GREEN。
+- [x] 把首页交互提升为共享组件：header/hero/menu三种外观；统一局部故障提示、鼠标/键盘、组合输入保护、选择后导航、焦点外关闭和可滚动结果。
+- [x] 通过现有索引/快照回归；不新增数据读取或浏览器数据库请求。
 
 ## Task 2 — Shared shell and tokens
 
 **Files:** create shell/{SiteHeader.tsx,siteHeader.module.css}; modify AppShell, ShellFrame usage, Footer, nav, globals and root layout; remove unused duplicate headers/drawer. Normalize landing local aliases to global palette.
 
-- [ ] 针对导航所属项、品牌/金融语义色分离补行为约束；实现共享桌面和手机header，路由切换关闭菜单，语言切换保留当前路径与查询。
-- [ ] 提升色板并运行tokens/type/lexicon门禁；保留估值状态色，统一通用字体与页脚品牌。首页hero构图保留。
-- [ ] 验证个股列表筛选、排序、分页与导航/语言切换相容，缺数据说明不被主题掩盖。
+- [x] 针对导航所属项、品牌/金融语义色分离补行为约束；实现共享桌面和手机header，路由切换关闭菜单，语言切换保留当前路径与查询。
+- [x] 提升色板并运行tokens/type/lexicon门禁；保留估值状态色，统一通用字体与页脚品牌。首页hero构图保留。
+- [x] 验证个股列表筛选、排序、分页与导航/语言切换相容，缺数据说明不被主题掩盖。
 
 ## Task 3 — Acceptance and PR
 
