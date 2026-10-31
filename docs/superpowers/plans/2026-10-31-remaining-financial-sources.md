@@ -55,4 +55,4 @@
 - [x] Persist native records only after schema gate, upsert source versions, journal truthful outcomes and queue publication only after successful writes; preserve #270/#268 paths.
 - [x] Run full prebuild/data-pipeline, typecheck, focused lint, disposablePG and live source-only validations.
 - [x] Obtain independent read-only whole-branch review; fix material findings with reproductions. Two P2 findings (compound-unit cardinality and pre-inflation ZIP ambiguity) reproduced RED and fixed GREEN; full checks and live European originals passed again.
-- [ ] Push and create/attach PR targeting db-foundation; report supported/pending sources and checks, no merge.
+- [x] Push and create/attach PR targeting db-foundation; report supported/pending sources and checks, no merge. [PR #273](https://github.com/xjing-umich/ny-fed-monitor/pull/273).
