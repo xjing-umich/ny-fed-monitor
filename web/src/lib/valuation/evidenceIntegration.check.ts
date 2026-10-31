@@ -42,7 +42,7 @@ const execute = (asOf: string) =>
   });
 const fresh = execute("2026-04-01T00:00:00Z");
 assert.ok(
-  fresh.oeDcf?.growth_g1! > 0,
+  fresh.oeDcf != null && fresh.oeDcf.growth_g1 != null && fresh.oeDcf.growth_g1 > 0,
   "complete recent evidence can retain positive growth",
 );
 const original = JSON.stringify(input);
@@ -143,6 +143,8 @@ for (const missingCapital of [false, true]) {
   assert.equal(result.floor.growth_value.per_share.neutral, 0);
   if (missingCapital) {
     assert.equal(result.oeDcf?.growth_coverage_gap, "missing_reinvestment");
-    assert.equal(result.verdict, null);
+    assert.equal(result.verdict?.referenceOnly, "missing_reinvestment");
+    assert.equal(result.verdict?.reliable,false);
+    assert.equal(result.verdict?.inStrikeZone,false);
   } else assert.equal(result.oeDcf?.growth_g1, 0);
 }

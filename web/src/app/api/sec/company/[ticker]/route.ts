@@ -21,8 +21,11 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ti
     annual,
     quarterly,
     latest,
+    interim_disclosures: data.interim,
     quality: {
       identity_conflict: isIdentityQuarantined(ticker),
+      interim_schema_available: data.interim.schemaAvailable,
+      interim_evidence_incomplete: data.interim.incomplete,
       missing_fields: annual[0]?.missing_fields ?? quarterly[0]?.missing_fields ?? {},
       foreign_issuer: company?.is_foreign_issuer ?? false,
       latest_filing_is_stale: stale,

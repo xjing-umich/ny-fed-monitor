@@ -51,3 +51,9 @@
 - [Restaurant Brands International公司介绍](https://www.rbi.com/about-us/overview/default.aspx)。
 - [Norwegian Cruise Line Holdings公司信息](https://www.nclhltd.com/investors/company-information)。
 - [iShares LQD官方产品页](https://www.ishares.com/us/products/239566/lqd-ishares-iboxx-investment-grade-corporate-bond-etf)：与原审核Bridgewater持仓中的LQD标识对应，补全展示名称，不修改证券关联或持仓数据。
+
+## PR #269 验收与目标分支整合
+
+2026-10-31，原提交 `81449bb` 的 Vercel 预览部署通过：34个中英文代表页面、4项新旧OG图片检查、2个404路由共40项HTTP检查正常。浏览器确认ADS说明与持仓数量、手机排序方向、375px完整列表宽度、双向语言切换查询与单锚点保留、中文404的唯一title和noindex；本次未复现重复hash。该现象仍保留为历史候选，不据单次通过认定根因已消除。
+
+验收期间目标分支合入PR #268（`019747f`），本分支随后整合该财务覆盖修复。筛选器映射同时保留本轮的证券单位和上游的待确认零增长参考标记；上游模型版本、证据与信号抑制规则保持完整。新增交叉回归确认待确认参考保留ADS单位，同时不显示安全边际或内在价值中点。专项只读复审通过，整合后79项检查及应用/脚本TypeScript检查通过。生产入库、迁移和财务重算不属于本轮操作；最终部署及合并状态以PR为准。

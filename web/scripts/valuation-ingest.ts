@@ -195,7 +195,7 @@ async function main() {
       const sicRaw = (sec.company as { sic?: unknown } | null)?.sic;
       const sicNum = sicRaw == null ? undefined : Number(sicRaw);
       const sic = sicNum != null && Number.isFinite(sicNum) ? sicNum : undefined;
-      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings);
+      const floorInput = fundamentalsToFloorInput(ticker, ticker, sec.annual, ads.ratio, sic, sec.quarterly, sec.filings, sec.interim);
       // 件⑤:控股集团分部 SOTP。与个股页同一入口(口径不得分裂);reader 自带件④触发集窄闸,
       // 其余票直接返回 undefined、floorInput 一个字段都不动,故对全 universe 零漂移、零额外查询。
       const holdcoSotp = await readHoldcoSotp({ ticker, annual: sec.annual, floorInput });

@@ -503,7 +503,7 @@ export default async function InvestorSlugPage({
                 {/* 待确认:便宜档但估值带红旗,照实列出,中性色 + 后缀,不计入上面的数 */}
                 {posture.pending.map((h) => {
                   // 档位文案与待确认原因都来自 valuationLabel(单一说法源)
-                  const vl = valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: false }, lang);
+                  const vl = valuationLabel({ bucket: h.bucket, inStrikeZone: h.inStrikeZone, reliable: false, referenceOnly:h.referenceOnly }, lang);
                   return (
                   <li key={`pending-${h.ticker}`} title={vl.title ?? undefined} className="flex items-baseline gap-2 text-sm">
                     <OptionalLink

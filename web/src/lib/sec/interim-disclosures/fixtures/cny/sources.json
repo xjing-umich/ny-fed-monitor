@@ -1,0 +1,65 @@
+[
+  {
+    "ticker": "NTES",
+    "accessionNumber": "0001104659-26-098940",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1110646/000110465926098940/tm2623482d1_ex99-1.htm",
+    "publishedAt": "2026-08-20",
+    "fixture": "ntes-2026-h1.html"
+  },
+  {
+    "ticker": "JD",
+    "accessionNumber": "0001193125-26-347753",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1549802/000119312526347753/d143720dex991.htm",
+    "publishedAt": "2026-08-13",
+    "fixture": "jd-2026-h1.html"
+  },
+  {
+    "ticker": "TCOM",
+    "accessionNumber": "0001193125-26-392473",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1269238/000119312526392473/d167816dex991.htm",
+    "publishedAt": "2026-09-16",
+    "fixture": "tcom-2026-h1.html"
+  },
+  {
+    "ticker": "HTHT",
+    "accessionNumber": "0001104659-26-109789",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1483994/000110465926109789/htht-20260923xex99d1.htm",
+    "publishedAt": "2026-09-23",
+    "fixture": "htht-2026-h1.html"
+  },
+  {
+    "ticker": "FINV",
+    "accessionNumber": "0001493152-26-040491",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1691445/000149315226040491/ex99-1.htm",
+    "publishedAt": "2026-08-28",
+    "fixture": "finv-2026-h1.html"
+  },
+  {
+    "ticker": "ATAT",
+    "accessionNumber": "0001104659-26-098930",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1853717/000110465926098930/tm2623265d1_ex99-1.htm",
+    "publishedAt": "2026-08-20",
+    "fixture": "atat-2026-h1.html"
+  },
+  {
+    "ticker": "QFIN",
+    "accessionNumber": "0001104659-26-100792",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1741530/000110465926100792/tm2623873d1_ex99-1.htm",
+    "publishedAt": "2026-08-25",
+    "fixture": "qfin-2026-h1.html"
+  },
+  {
+    "ticker": "BEKE",
+    "accessionNumber": "0001104659-26-100295",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1809587/000110465926100295/tm2623857d1_ex99-1.htm",
+    "publishedAt": "2026-08-24",
+    "fixture": "beke-2026-h1.html"
+  },
+  {
+    "ticker": "NOAH",
+    "accessionNumber": "0001104659-26-101029",
+    "exhibitUrl": "https://www.sec.gov/Archives/edgar/data/1499543/000110465926101029/tm2623683d1_ex99-1.htm",
+    "publishedAt": "2026-08-26",
+    "fixture": "noah-2026-h1.html"
+  }
+]

@@ -26,6 +26,7 @@ export function linearValueAxis(lo: number, hi: number, price: number): LinearVa
 export type StockSummaryKind = "earnings" | "zero-growth" | "sotp";
 export type StockValueSummary = {
   kind: StockSummaryKind;
+  pending?: boolean;
   price: number;
   rangeLo: number;
   rangeHi: number;
@@ -48,8 +49,10 @@ export function stockValueSummary(input: {
   kind: StockSummaryKind;
   securityUnit?: "share" | "ADS";
 }, lang: Lang): StockValueSummary | null {
-  const { verdict: v, quote: q, kind } = input;
-  if (!v?.reliable || !q || q.stale || q.currency.toUpperCase() !== "USD" || !Number.isFinite(q.close) || q.close <= 0) return null;
+  const { verdict: v, quote: q } = input;
+  const pending=v?.referenceOnly==="missing_reinvestment";
+  const kind=pending?"zero-growth":input.kind;
+  if ((!v?.reliable && !pending) || !v || !q || q.stale || q.currency.toUpperCase() !== "USD" || !Number.isFinite(q.close) || q.close <= 0) return null;
   if (q.date !== v.priceDate || !Number.isFinite(v.price) || Math.abs(q.close - v.price) > Math.max(1, q.close) * 1e-9) return null;
   const axis = linearValueAxis(v.rangeLo, v.rangeHi, v.price);
   if (!axis) return null;
@@ -72,9 +75,9 @@ export function stockValueSummary(input: {
   const rangeLabel = lang === "zh" ? `${kind === "sotp" ? "分部估值区间" : kind === "zero-growth" ? "零增长价值参考" : point ? "模型价值参考" : "模型价值区间"} · ${unitLabel}`
     : `${kind === "sotp" ? "Sum-of-the-parts range" : kind === "zero-growth" ? "Zero-growth estimate" : point ? "Model estimate" : "Model value range"} · ${unitLabel}`;
   return {
-    kind, price: v.price, rangeLo: v.rangeLo, rangeHi: v.rangeHi, date: q.date, source: priceSourceName(lang, q.source), reference,
+    kind, pending, price: v.price, rangeLo: v.rangeLo, rangeHi: v.rangeHi, date: q.date, source: priceSourceName(lang, q.source), reference,
     referenceLabel: lang === "zh" ? kind === "sotp" ? "分部估值参考" : "内在价值参考" : kind === "sotp" ? "SOTP reference" : "Intrinsic value reference",
-    rangeLabel, position, heading, gap, axis,
+    rangeLabel, position, heading:pending?(lang==="zh"?"零增长参考 · 待确认":"Zero-growth reference · pending review"):heading, gap:pending?null:gap, axis,
   };
 }
 

@@ -106,3 +106,6 @@ assert(posturePresentation.investorValuationHandoff?.(empty, 0, "en") === null, 
 assert(posturePresentation.investorValuationHandoff?.(empty, 3, "en")?.line.includes("no reliable valuation coverage") === true, "missing coverage is not a zero strike-zone conclusion");
 assert(posturePresentation.investorValuationHandoff?.(p, 6, "en")?.line.startsWith("This portfolio holds") === true, "compound manager names do not control English verb agreement");
 console.log("valuationPosture.check OK");
+const refPosture=deriveValuationPosture({holdings:[{cusip:'REFCUSIP',issuer:'Reference'}],cusipToTicker:new Map([['REFCUSIP','REF']]),verdicts:new Map([['REF',v({ticker:'REF',bucket:'below',inStrikeZone:false,reliable:false,referenceOnly:'missing_reinvestment'})]])});
+assert(refPosture.covered===0&&refPosture.cheap.length===0&&refPosture.strikeCount===0&&refPosture.belowCount===0,'zero-growth reference never enters confirmed investor posture');
+assert(refPosture.pending[0]?.referenceOnly==='missing_reinvestment','pending investor summary preserves reference provenance');

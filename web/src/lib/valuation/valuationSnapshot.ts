@@ -20,6 +20,7 @@ export type SnapshotVerdict = {
   marginPct: number | null;
   coverage: VerdictCoverage;
   reliable: boolean;
+  referenceOnly?: "missing_reinvestment";
   computedAt: string;
   expectations?: ExpectationsAssessment;
   moatCap?: MoatCapAssessment;
@@ -34,9 +35,11 @@ type Row = {
   range_hi: number;
   price: number;
   price_date: string | null;
+  reference_only?: string | null;
   margin_pct: number | null;
   coverage: string;
   reliable: boolean;
+  referenceOnly?: "missing_reinvestment";
   computed_at: string;
   payload?: {
     model_version?: string;
@@ -44,6 +47,7 @@ type Row = {
     expectations?: ExpectationsAssessment;
     moatCap?: MoatCapAssessment;
     methods?: ValuationMethods;
+    referenceOnly?: "missing_reinvestment";
   } | null;
 };
 
@@ -82,6 +86,7 @@ export const readValuationVerdicts = cache(
           marginPct: r.margin_pct == null ? null : Number(r.margin_pct),
           coverage: r.coverage as VerdictCoverage,
           reliable: r.reliable ?? true,
+          referenceOnly: r.payload?.referenceOnly,
           computedAt: r.computed_at,
           expectations: r.payload?.expectations,
           moatCap: r.payload?.moatCap,
@@ -266,6 +271,7 @@ export type ScreenerRow = {
   marginPct: number | null;
   coverage: VerdictCoverage;
   reliable: boolean;
+  referenceOnly?: "missing_reinvestment";
   computedAt: string;
   holderCount: number;
   securityUnit?: "share" | "ADS" | "unknown";
@@ -273,7 +279,7 @@ export type ScreenerRow = {
 };
 
 type ScreenHolding = { ticker: string; issuer: string | null; holder_count: number | null };
-type ScreenSnapshot = Row & { expectations?: ExpectationsAssessment | null };
+type ScreenSnapshot = Row & { expectations?: ExpectationsAssessment | null; reference_only?: "missing_reinvestment" | null };
 
 /** 按主键关联全量候选:每批最多 100 个 ticker,避免超长 URL 或 PostgREST 单次行数截断。
  * 任一批失败就丢弃整次结果,不拿部分持有人数/估值生成残缺榜单。 */
@@ -356,7 +362,7 @@ export const readValuationScreen = cache(
       const runMain = () => {
         let q = getDb()
           .from("valuation_snapshot")
-          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at")
+          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at,reference_only:payload->>referenceOnly")
             .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
           .order("margin_pct", { ascending: false, nullsFirst: false })
           .order("ticker", { ascending: true });
@@ -389,7 +395,7 @@ export const readValuationScreen = cache(
           holders.set(h.ticker.toUpperCase(), { issuer: h.issuer ?? "", holderCount: h.holder_count ?? 0 });
       }
 
-      const rows: ScreenerRow[] = snapRows.map((r) => {
+      const rows: ScreenerRow[] = snapRows.map((r): ScreenerRow => {
         const tk = r.ticker.toUpperCase();
         const h = holders.get(tk);
         return {
@@ -407,6 +413,7 @@ export const readValuationScreen = cache(
           computedAt: r.computed_at,
           holderCount: h?.holderCount ?? 0,
           securityUnit: units.get(tk) ?? "unknown",
+          referenceOnly: r.reference_only === "missing_reinvestment" ? "missing_reinvestment" : undefined,
         };
       })
         // 读层防御:坏数据行(价值带与现价严重脱节)不进面 —— 即便快照尚有旧脏行(重跑 ingest 前)。
@@ -461,7 +468,7 @@ export const readConvictionScreen = cache(
         const { data, error } = await getDb()
           .from("valuation_snapshot")
           // 只投影所需的预期字段,不把整份估值 payload 随全量候选一起读回。
-          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at,expectations:payload->expectations")
+          .select("ticker,verdict_bucket,in_strike_zone,range_lo,range_hi,price,price_date,margin_pct,coverage,reliable,computed_at,expectations:payload->expectations,reference_only:payload->>referenceOnly")
             .eq("payload->>model_version", VALUATION_MODEL_VERSION).eq("payload->>assessment_status", "valid").not("ticker", "in", QUARANTINED_TICKERS_SQL)
           .in("ticker", batch);
         // PostgREST 把 JSON 投影推导为 Json;业务形状与既有 payload.expectations 相同。
@@ -498,6 +505,7 @@ export const readConvictionScreen = cache(
               computedAt: r.computed_at,
               holderCount: hc,
               securityUnit: units.get(tk) ?? "unknown",
+              referenceOnly: r.reference_only === "missing_reinvestment" ? "missing_reinvestment" : undefined,
               expectations: r.expectations ?? undefined,
             },
           ];

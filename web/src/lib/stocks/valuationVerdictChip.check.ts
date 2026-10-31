@@ -43,3 +43,5 @@ eq(valuationSectionTitle(null, "zh"), "估值", "null zh → 回退");
 eq(valuationSectionTitle(null, "en"), "Valuation", "null en → 回退");
 
 console.log("valuationVerdictChip.check OK");
+
+for(const lang of ["zh","en"] as const){const ref={...v({reliable:false}),referenceOnly:"missing_reinvestment" as const};const expected=lang==="zh"?"零增长参考 · 待确认":"Zero-growth reference · pending review";assert(valuationVerdictChip(ref,lang)?.label===expected,"reference pending suffix appears exactly once");assert(valuationSectionTitle(ref,lang)===expected,"reference section title matches badge");}
