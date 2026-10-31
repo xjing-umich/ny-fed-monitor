@@ -1,3 +1,4 @@
+import { selectOperatingFundamentals } from "./operating-universe";
 import { readCompanyPublication, queueCompanyPublication } from "./fundamentalPublication";
 import { financialPublicationFingerprint } from "./publicationFingerprint";
 import { assertSecurityIdentity } from "../securities/securityIdentity";
@@ -351,7 +352,9 @@ export async function resolveIngestUniverse(
 export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT) {
   const supabase = createServiceSupabaseClient();
   const runId = await startRun(supabase, "all");
-  const tickers = await resolveIngestUniverse(limit, supabase);
+  const universe = await resolveIngestUniverse(DEFAULT_UNIVERSE_LIMIT, supabase);
+  const { eligible, excluded } = await selectOperatingFundamentals(supabase, universe);
+  const tickers = eligible.slice(0, limit);
   const results: IngestCompanyResult[] = [];
 
   for (const ticker of tickers) {
@@ -365,7 +368,8 @@ export async function ingestAllCompanies(limit: number = DEFAULT_UNIVERSE_LIMIT)
     success: results.filter((result) => result.status === "success").length,
     failed: results.filter((result) => result.status === "failed").length,
     foreign_issuer: results.filter((result) => result.foreign_issuer).length,
-    skipped: 0,
+    skipped: excluded.length,
+    excluded_non_operating: excluded,
     unresolved_tickers: results.filter((result) => result.status === "unresolved").map((result) => result.ticker),
     results
   };
